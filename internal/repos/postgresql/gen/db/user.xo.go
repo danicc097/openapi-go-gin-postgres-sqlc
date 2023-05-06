@@ -327,124 +327,6 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
-// UserPaginatedByUserID returns a cursor-paginated list of User.
-func UserPaginatedByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
-users.username,
-users.email,
-users.first_name,
-users.last_name,
-users.full_name,
-users.external_id,
-users.api_key_id,
-users.scopes,
-users.role_rank,
-users.has_personal_notifications,
-users.has_global_notifications,
-users.created_at,
-users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
-(case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys on user_api_keys.user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
-  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id
--- M2M join generated from "work_item_member_work_item_id_fkey"
-left join (
-	select
-			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
-  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.user_id > $9`+
-		` ORDER BY 
-		user_id DESC  AND users.deleted_at is %s `, c.deletedAt)
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, userID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // UserPaginatedByCreatedAt returns a cursor-paginated list of User.
 func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
@@ -545,9 +427,8 @@ left join (
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.created_at > $9`+
-		` ORDER BY 
-		created_at DESC  AND users.deleted_at is %s `, c.deletedAt)
+		` WHERE users.created_at > $9  AND users.deleted_at is %s  ORDER BY 
+		created_at DESC`, c.deletedAt)
 	sqlstr += c.limit
 
 	// run

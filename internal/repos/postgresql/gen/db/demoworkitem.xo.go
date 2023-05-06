@@ -229,9 +229,7 @@ demo_work_items.reopened,
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id > $2` +
-		` ORDER BY 
-		work_item_id DESC `
+		` WHERE demo_work_items.work_item_id > $2 `
 	sqlstr += c.limit
 
 	// run

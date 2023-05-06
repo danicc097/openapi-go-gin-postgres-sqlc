@@ -130,59 +130,6 @@ func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// BookAuthorPaginatedByBookIDAuthorID returns a cursor-paginated list of BookAuthor.
-func BookAuthorPaginatedByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
-	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := `SELECT ` +
-		`book_authors.book_id,
-book_authors.author_id,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
-(case when $2::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids ` +
-		`FROM public.book_authors ` +
-		`-- M2M join generated from "book_authors_book_id_fkey"
-left join (
-	select
-			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
-		from book_authors
-    	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
-  ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
-
--- M2M join generated from "book_authors_author_id_fkey"
-left join (
-	select
-			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
-  ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
-` +
-		` WHERE book_authors.book_id > $3 AND book_authors.author_id > $4` +
-		` ORDER BY 
-		book_id DESC ,
-		author_id DESC `
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, bookID, authorID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthor])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // BookAuthorByBookIDAuthorID retrieves a row from 'public.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.

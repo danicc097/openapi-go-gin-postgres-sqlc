@@ -5,6 +5,9 @@ create extension if not exists "uuid-ossp" schema extensions;
 create table users (
   user_id uuid default gen_random_uuid () primary key
   , name text not null
+  , created_at timestamp with time zone default current_timestamp not null unique
+  , updated_at timestamp with time zone default current_timestamp not null
+  , deleted_at timestamp with time zone
 );
 
 create table books (

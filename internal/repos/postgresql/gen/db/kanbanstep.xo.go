@@ -234,9 +234,7 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id > $3` +
-		` ORDER BY 
-		kanban_step_id DESC `
+		` WHERE kanban_steps.kanban_step_id > $3 `
 	sqlstr += c.limit
 
 	// run
@@ -275,9 +273,7 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id > $3` +
-		` ORDER BY 
-		project_id DESC `
+		` WHERE kanban_steps.project_id > $3 `
 	sqlstr += c.limit
 
 	// run
@@ -316,9 +312,7 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order > $3` +
-		` ORDER BY 
-		step_order DESC `
+		` WHERE kanban_steps.step_order > $3 `
 	sqlstr += c.limit
 
 	// run
