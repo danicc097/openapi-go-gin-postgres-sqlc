@@ -2341,6 +2341,10 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 	return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 }
 
+func validCursorField(f Field) bool {
+	return f.Type == "time.Time" || f.Type == "int" || f.Type == "int64"
+}
+
 // cursor_columns returns a list of possible combinations of columns for cursor pagination.
 func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tables) [][]Field {
 	var cursorCols [][]Field
@@ -2353,16 +2357,20 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 		}
 	}
 	existingCursors := make(map[string]bool)
-
-	cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
+	pkAreValidCursor := true
 	for _, pk := range table.PrimaryKeys {
-		existingCursors[pk.SQLName] = true
+		if !validCursorField(pk) {
+			pkAreValidCursor = false
+		}
+	}
+	if pkAreValidCursor {
+		cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
 	}
 
 	for _, z := range table.Fields {
 		for _, c := range tableConstraints {
 			if c.Type == "unique" && c.ColumnName == z.SQLName {
-				if z.Type == "time.Time" || z.Type == "int" {
+				if validCursorField(z) {
 					if existingCursors[z.SQLName] {
 						continue
 					}

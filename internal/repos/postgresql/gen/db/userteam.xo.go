@@ -129,59 +129,6 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// UserTeamPaginatedByTeamIDUserID returns a cursor-paginated list of UserTeam.
-func UserTeamPaginatedByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := `SELECT ` +
-		`user_team.team_id,
-user_team.user_id,
-(case when $1::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $2::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams ` +
-		`FROM public.user_team ` +
-		`-- M2M join generated from "user_team_user_id_fkey"
-left join (
-	select
-			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
-  ) as joined_users on joined_users.user_team_team_id = user_team.user_id
-
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
-  ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
-` +
-		` WHERE user_team.team_id > $3 AND user_team.user_id > $4` +
-		` ORDER BY 
-		team_id DESC ,
-		user_id DESC `
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, teamID, userID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // UserTeamByUserIDTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.

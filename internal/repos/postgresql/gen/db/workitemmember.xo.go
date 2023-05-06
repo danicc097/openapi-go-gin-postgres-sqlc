@@ -193,62 +193,6 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemMemberPaginatedByWorkItemIDMember returns a cursor-paginated list of WorkItemMember.
-func WorkItemMemberPaginatedByWorkItemIDMember(ctx context.Context, db DB, workItemID int64, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]WorkItemMember, error) {
-	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := `SELECT ` +
-		`work_item_member.work_item_id,
-work_item_member.member,
-work_item_member.role,
-(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items,
-(case when $2::boolean = true then COALESCE(joined_members.__users, '{}') end) as members ` +
-		`FROM public.work_item_member ` +
-		`-- M2M join generated from "work_item_member_work_item_id_fkey"
-left join (
-	select
-			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
-  ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
-
--- M2M join generated from "work_item_member_member_fkey"
-left join (
-	select
-			work_item_member.work_item_id as work_item_member_work_item_id
-			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from work_item_member
-    	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
-			, role
-  ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
-` +
-		` WHERE work_item_member.work_item_id > $3 AND work_item_member.member > $4` +
-		` ORDER BY 
-		work_item_id DESC ,
-		member DESC `
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, workItemID, member)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemMember/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemMember])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemMember/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // WorkItemMembersByMemberWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_member_work_item_id_idx'.

@@ -169,57 +169,6 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// UserPaginatedByUserID returns a cursor-paginated list of User.
-func UserPaginatedByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{joins: UserJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := `SELECT ` +
-		`users.user_id,
-users.name,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
-(case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
-		`FROM public.users ` +
-		`-- M2M join generated from "book_authors_book_id_fkey"
-left join (
-	select
-			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
-		from book_authors
-    	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
-  ) as joined_books on joined_books.book_authors_author_id = users.user_id
-
--- M2O join generated from "book_reviews_reviewer_fkey"
-left join (
-  select
-  reviewer as book_reviews_user_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    book_reviews
-  group by
-        reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id` +
-		` WHERE users.user_id > $3` +
-		` ORDER BY 
-		user_id DESC `
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, userID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // UserByUserID retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_pkey'.
