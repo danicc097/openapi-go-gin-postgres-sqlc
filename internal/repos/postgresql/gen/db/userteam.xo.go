@@ -163,8 +163,10 @@ left join (
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.team_id > $3 AND user_team.user_id > $4 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE user_team.team_id > $3 AND user_team.user_id > $4` +
+		` ORDER BY 
+		team_id DESC ,
+		user_id DESC `
 	sqlstr += c.limit
 
 	// run

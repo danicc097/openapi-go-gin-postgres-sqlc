@@ -222,8 +222,10 @@ left join (
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
-		` WHERE work_item_member.work_item_id > $3 AND work_item_member.member > $4 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE work_item_member.work_item_id > $3 AND work_item_member.member > $4` +
+		` ORDER BY 
+		work_item_id DESC ,
+		member DESC `
 	sqlstr += c.limit
 
 	// run

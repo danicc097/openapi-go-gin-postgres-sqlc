@@ -175,8 +175,9 @@ func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version int64
 schema_migrations.dirty ` +
 		`FROM public.schema_migrations ` +
 		`` +
-		` WHERE schema_migrations.version > $1 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE schema_migrations.version > $1` +
+		` ORDER BY 
+		version DESC `
 	sqlstr += c.limit
 
 	// run

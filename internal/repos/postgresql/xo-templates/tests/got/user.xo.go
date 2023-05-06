@@ -196,8 +196,9 @@ left join (
     book_reviews
   group by
         reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id` +
-		` WHERE users.user_id > $3 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE users.user_id > $3` +
+		` ORDER BY 
+		user_id DESC `
 	sqlstr += c.limit
 
 	// run

@@ -1543,7 +1543,6 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}, columns []Field
 		}
 		returns = append(returns, rt)
 	case Table: // Paginated query
-		fmt.Printf("columns: %v\n", columns)
 		params = append(params, f.params(columns, true))
 		params = append(params, "opts ..."+x.GoName+"SelectConfigOption")
 		rt := "[]" + x.GoName
@@ -2027,7 +2026,6 @@ func (f *Funcs) db_paginated(name string, v interface{}, columns []Field) string
 	var p []string
 	prefix := ""
 	p = append(p, f.names(prefix, columns))
-	fmt.Printf("p: %v\n", p)
 	var params []string
 	for _, paramStr := range p {
 		// f.names will join but with pascal case
@@ -2183,7 +2181,6 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			for _, p := range x {
 				names = append(names, prefix+checkName(p.GoName))
 			}
-			fmt.Printf("names: %v\n", names)
 		case Proc:
 			if params := f.params(x.Params, false); params != "" {
 				names = append(names, params)
@@ -2370,13 +2367,11 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 			}
 		}
 	}
-	fmt.Printf("cursorCols: %v\n", cursorCols)
 
 	return cursorCols
 }
 
 // sqlstr_paginated builds a cursor-paginated query string from columns.
-// TODO fixed orderby instead of appending opts
 func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []Field) string {
 	switch x := v.(type) {
 	case Table:
@@ -2427,10 +2422,13 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			n++
 		}
 
+		var orderbys []string
+
 		// use PK if incremental. else created_at if exists.
 		// ensure there are unique fields else return
 		for _, c := range columns {
 			filters = append(filters, fmt.Sprintf("%s.%s > %s", x.SQLName, c.SQLName, f.nth(n)))
+			orderbys = append(orderbys, c.SQLName+" DESC") // TODO loop indexes and if one has specific order generate another query
 			n++
 		}
 
@@ -2440,6 +2438,7 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			"FROM " + f.schemafn(x.SQLName) + " ",
 			strings.Join(joins, "\n"),
 			" WHERE " + strings.Join(filters, " AND "),
+			" ORDER BY \n\t\t" + strings.Join(orderbys, " ,\n\t\t"),
 		}
 
 		if tableHasDeletedAt {

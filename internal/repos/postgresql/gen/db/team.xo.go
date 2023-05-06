@@ -251,8 +251,9 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.team_id > $5 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE teams.team_id > $5` +
+		` ORDER BY 
+		team_id DESC `
 	sqlstr += c.limit
 
 	// run
@@ -311,8 +312,9 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.project_id > $5 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE teams.project_id > $5` +
+		` ORDER BY 
+		project_id DESC `
 	sqlstr += c.limit
 
 	// run

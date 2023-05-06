@@ -164,8 +164,10 @@ left join (
     group by book_authors_book_id
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
 ` +
-		` WHERE book_authors.book_id > $3 AND book_authors.author_id > $4 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE book_authors.book_id > $3 AND book_authors.author_id > $4` +
+		` ORDER BY 
+		book_id DESC ,
+		author_id DESC `
 	sqlstr += c.limit
 
 	// run

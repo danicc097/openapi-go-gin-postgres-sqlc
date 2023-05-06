@@ -225,8 +225,9 @@ work_item_comments.updated_at,
 left join users on users.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id > $3 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE work_item_comments.work_item_comment_id > $3` +
+		` ORDER BY 
+		work_item_comment_id DESC `
 	sqlstr += c.limit
 
 	// run

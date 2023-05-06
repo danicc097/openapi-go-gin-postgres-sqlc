@@ -261,8 +261,9 @@ left join teams on teams.team_id = time_entries.team_id
 left join users on users.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.time_entry_id > $5 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE time_entries.time_entry_id > $5` +
+		` ORDER BY 
+		time_entry_id DESC `
 	sqlstr += c.limit
 
 	// run

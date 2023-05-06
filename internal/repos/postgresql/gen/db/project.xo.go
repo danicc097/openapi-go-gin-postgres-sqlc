@@ -286,8 +286,9 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id > $6 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE projects.project_id > $6` +
+		` ORDER BY 
+		project_id DESC `
 	sqlstr += c.limit
 
 	// run

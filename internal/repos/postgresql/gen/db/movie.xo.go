@@ -186,8 +186,9 @@ movies.year,
 movies.synopsis ` +
 		`FROM public.movies ` +
 		`` +
-		` WHERE movies.movie_id > $1 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE movies.movie_id > $1` +
+		` ORDER BY 
+		movie_id DESC `
 	sqlstr += c.limit
 
 	// run

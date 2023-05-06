@@ -412,8 +412,9 @@ left join (
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.user_id > $9  AND users.deleted_at is %s `, c.deletedAt)
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE users.user_id > $9`+
+		` ORDER BY 
+		user_id DESC  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
@@ -529,8 +530,9 @@ left join (
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.created_at > $9  AND users.deleted_at is %s `, c.deletedAt)
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE users.created_at > $9`+
+		` ORDER BY 
+		created_at DESC  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.limit
 
 	// run

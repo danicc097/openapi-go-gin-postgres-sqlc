@@ -200,8 +200,9 @@ user_notifications.user_id,
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id > $3 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE user_notifications.user_notification_id > $3` +
+		` ORDER BY 
+		user_notification_id DESC `
 	sqlstr += c.limit
 
 	// run
@@ -237,8 +238,9 @@ user_notifications.user_id,
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id > $3 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE user_notifications.notification_id > $3` +
+		` ORDER BY 
+		notification_id DESC `
 	sqlstr += c.limit
 
 	// run

@@ -211,8 +211,9 @@ user_api_keys.user_id,
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "users_api_key_id_fkey(O2O inferred)"
 left join users on users.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_api_key_id > $2 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE user_api_keys.user_api_key_id > $2` +
+		` ORDER BY 
+		user_api_key_id DESC `
 	sqlstr += c.limit
 
 	// run

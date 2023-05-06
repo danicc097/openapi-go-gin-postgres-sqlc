@@ -214,8 +214,9 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id > $3 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE activities.activity_id > $3` +
+		` ORDER BY 
+		activity_id DESC `
 	sqlstr += c.limit
 
 	// run
@@ -259,8 +260,9 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id > $3 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE activities.project_id > $3` +
+		` ORDER BY 
+		project_id DESC `
 	sqlstr += c.limit
 
 	// run

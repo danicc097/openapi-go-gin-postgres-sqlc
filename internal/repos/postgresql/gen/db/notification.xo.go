@@ -272,8 +272,9 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id > $4 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+		` WHERE notifications.notification_id > $4` +
+		` ORDER BY 
+		notification_id DESC `
 	sqlstr += c.limit
 
 	// run
