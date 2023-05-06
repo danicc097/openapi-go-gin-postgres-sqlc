@@ -191,17 +191,11 @@ func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 	sqlstr := `SELECT ` +
 		`demo_two_work_items.work_item_id,
 demo_two_work_items.custom_date_for_project_2,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $2::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
-(case when $3::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
-left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id
--- O2O join generated from "demo_two_work_items_pkey(O2O reference)"
-left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_work_items.work_item_id
--- O2O join generated from "demo_two_work_items_pkey"
-left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_work_items.work_item_id` +
-		` WHERE demo_two_work_items.work_item_id > $4 `
+left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id` +
+		` WHERE demo_two_work_items.work_item_id > $2 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
@@ -232,17 +226,11 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 	sqlstr := `SELECT ` +
 		`demo_two_work_items.work_item_id,
 demo_two_work_items.custom_date_for_project_2,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $2::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
-(case when $3::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
-left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id
--- O2O join generated from "demo_two_work_items_pkey(O2O reference)"
-left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_work_items.work_item_id
--- O2O join generated from "demo_two_work_items_pkey"
-left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_work_items.work_item_id` +
-		` WHERE demo_two_work_items.work_item_id = $4 `
+left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id` +
+		` WHERE demo_two_work_items.work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

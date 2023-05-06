@@ -2414,6 +2414,9 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 
 		var n int
 		for _, c := range tableConstraints {
+			if c.Type != "foreign_key" {
+				continue
+			}
 			joinStmts, selectStmts := createJoinStatement(tables, c, x, funcs, f.nth, n)
 			if joinStmts.String() == "" || selectStmts.String() == "" {
 				continue
@@ -2704,6 +2707,9 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 
 		var n int
 		for _, c := range tableConstraints {
+			if c.Type != "foreign_key" {
+				continue
+			}
 			joinStmts, selectStmts := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
 			if joinStmts.String() == "" || selectStmts.String() == "" {
 				continue

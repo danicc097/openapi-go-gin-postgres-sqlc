@@ -328,9 +328,7 @@ work_items.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
-(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $8::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item `+
+(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -375,12 +373,8 @@ left join (
     	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_pkey(O2O reference)"
-left join work_items on work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "work_items_pkey"
-left join work_items on work_items.work_item_id = work_items.work_item_id`+
-		` WHERE work_items.work_item_id > $9  AND work_items.deleted_at is %s `, c.deletedAt)
+`+
+		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s `, c.deletedAt)
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
@@ -426,9 +420,7 @@ work_items.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
-(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $8::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item `+
+(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -473,12 +465,8 @@ left join (
     	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_pkey(O2O reference)"
-left join work_items on work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "work_items_pkey"
-left join work_items on work_items.work_item_id = work_items.work_item_id`+
-		` WHERE work_items.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
+`+
+		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -527,9 +515,7 @@ work_items.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
-(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $8::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item `+
+(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -574,12 +560,8 @@ left join (
     	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_pkey(O2O reference)"
-left join work_items on work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "work_items_pkey"
-left join work_items on work_items.work_item_id = work_items.work_item_id`+
-		` WHERE work_items.work_item_id = $9  AND work_items.deleted_at is %s `, c.deletedAt)
+`+
+		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -626,9 +608,7 @@ work_items.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
-(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $8::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item `+
+(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -673,12 +653,8 @@ left join (
     	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_pkey(O2O reference)"
-left join work_items on work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "work_items_pkey"
-left join work_items on work_items.work_item_id = work_items.work_item_id`+
-		` WHERE work_items.team_id = $9  AND work_items.deleted_at is %s `, c.deletedAt)
+`+
+		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

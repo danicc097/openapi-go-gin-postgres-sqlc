@@ -215,17 +215,11 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
-(case when $3::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
-left join work_items on work_items.work_item_id = demo_work_items.work_item_id
--- O2O join generated from "demo_work_items_pkey(O2O reference)"
-left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id
--- O2O join generated from "demo_work_items_pkey"
-left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id > $4 `
+left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.work_item_id > $2 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
@@ -259,17 +253,11 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
-(case when $3::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
-left join work_items on work_items.work_item_id = demo_work_items.work_item_id
--- O2O join generated from "demo_work_items_pkey(O2O reference)"
-left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id
--- O2O join generated from "demo_work_items_pkey"
-left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id = $4 `
+left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -304,17 +292,11 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
-(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
-(case when $3::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
-left join work_items on work_items.work_item_id = demo_work_items.work_item_id
--- O2O join generated from "demo_work_items_pkey(O2O reference)"
-left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id
--- O2O join generated from "demo_work_items_pkey"
-left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.ref = $4 AND demo_work_items.line = $5 `
+left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.ref = $2 AND demo_work_items.line = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

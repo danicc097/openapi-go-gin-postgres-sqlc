@@ -201,9 +201,7 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
-(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -215,19 +213,8 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
--- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
-left join activities on activities.name = activities.project_id
--- M2O join generated from "activities_name_project_id_key"
-left join (
-  select
-  name as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
-		` WHERE activities.activity_id > $5 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.activity_id > $3 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
@@ -259,9 +246,7 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
-(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -273,19 +258,8 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
--- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
-left join activities on activities.name = activities.project_id
--- M2O join generated from "activities_name_project_id_key"
-left join (
-  select
-  name as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
-		` WHERE activities.project_id > $5 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.project_id > $3 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
@@ -320,9 +294,7 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
-(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -334,19 +306,8 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
--- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
-left join activities on activities.name = activities.project_id
--- M2O join generated from "activities_name_project_id_key"
-left join (
-  select
-  name as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
-		` WHERE activities.name = $5 AND activities.project_id = $6 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.name = $3 AND activities.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -382,9 +343,7 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
-(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -396,19 +355,8 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
--- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
-left join activities on activities.name = activities.project_id
--- M2O join generated from "activities_name_project_id_key"
-left join (
-  select
-  name as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
-		` WHERE activities.name = $5 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.name = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -446,9 +394,7 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
-(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -460,19 +406,8 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
--- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
-left join activities on activities.name = activities.project_id
--- M2O join generated from "activities_name_project_id_key"
-left join (
-  select
-  name as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
-		` WHERE activities.project_id = $5 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -510,9 +445,7 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
-(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -524,19 +457,8 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
--- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
-left join activities on activities.name = activities.project_id
--- M2O join generated from "activities_name_project_id_key"
-left join (
-  select
-  name as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
-		` WHERE activities.activity_id = $5 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.activity_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

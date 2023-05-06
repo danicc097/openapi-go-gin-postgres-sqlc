@@ -194,39 +194,13 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.user_id = user_notifications.user_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id > $7 `
+left join users on users.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_notification_id > $3 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
@@ -257,39 +231,13 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.user_id = user_notifications.user_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id > $7 `
+left join users on users.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id > $3 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
@@ -323,39 +271,13 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.user_id = user_notifications.user_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $7 AND user_notifications.user_id = $8 `
+left join users on users.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -390,39 +312,13 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.user_id = user_notifications.user_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $7 `
+left join users on users.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -459,39 +355,13 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.user_id = user_notifications.user_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id = $7 `
+left join users on users.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_notification_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -526,39 +396,13 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.user_id = user_notifications.user_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_id = $7 `
+left join users on users.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
