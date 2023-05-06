@@ -84,7 +84,6 @@ type WorkItemWorkItemTagJoins struct {
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.joins = WorkItemWorkItemTagJoins{
-
 			WorkItemTags: s.joins.WorkItemTags || joins.WorkItemTags,
 			WorkItems:    s.joins.WorkItems || joins.WorkItems,
 		}
@@ -169,7 +168,7 @@ left join (
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemTagIDWorkItemID)
+	rows, err := db.Query(ctx, sqlstr, workItemTagID, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/db.Query: %w", err))
 	}

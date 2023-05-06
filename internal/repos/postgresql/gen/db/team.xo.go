@@ -119,7 +119,6 @@ type TeamJoins struct {
 func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.joins = TeamJoins{
-
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
 			Users:       s.joins.Users || joins.Users,

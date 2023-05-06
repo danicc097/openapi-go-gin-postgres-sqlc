@@ -99,7 +99,6 @@ type WorkItemTypeJoins struct {
 func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
 		s.joins = WorkItemTypeJoins{
-
 			Project:  s.joins.Project || joins.Project,
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}

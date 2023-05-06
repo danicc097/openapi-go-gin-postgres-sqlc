@@ -180,7 +180,6 @@ type WorkItemJoins struct {
 func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.joins = WorkItemJoins{
-
 			DemoTwoWorkItem:  s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
 			DemoWorkItem:     s.joins.DemoWorkItem || joins.DemoWorkItem,
 			TimeEntries:      s.joins.TimeEntries || joins.TimeEntries,

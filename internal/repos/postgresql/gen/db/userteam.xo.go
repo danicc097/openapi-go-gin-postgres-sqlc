@@ -85,7 +85,6 @@ type UserTeamJoins struct {
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.joins = UserTeamJoins{
-
 			Users: s.joins.Users || joins.Users,
 			Teams: s.joins.Teams || joins.Teams,
 		}
@@ -170,7 +169,7 @@ left join (
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, teamIDUserID)
+	rows, err := db.Query(ctx, sqlstr, teamID, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/Paginated/db.Query: %w", err))
 	}

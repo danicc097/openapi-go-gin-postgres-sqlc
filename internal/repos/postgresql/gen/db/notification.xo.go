@@ -148,7 +148,6 @@ type NotificationJoins struct {
 func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
 		s.joins = NotificationJoins{
-
 			UserReceiver:      s.joins.UserReceiver || joins.UserReceiver,
 			UserSender:        s.joins.UserSender || joins.UserSender,
 			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,

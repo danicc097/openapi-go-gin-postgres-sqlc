@@ -116,7 +116,6 @@ type WorkItemCommentJoins struct {
 func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
 		s.joins = WorkItemCommentJoins{
-
 			User:     s.joins.User || joins.User,
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}

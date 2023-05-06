@@ -129,7 +129,6 @@ type ProjectJoins struct {
 func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.joins = ProjectJoins{
-
 			Activities:    s.joins.Activities || joins.Activities,
 			KanbanSteps:   s.joins.KanbanSteps || joins.KanbanSteps,
 			Teams:         s.joins.Teams || joins.Teams,

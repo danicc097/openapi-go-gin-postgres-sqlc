@@ -99,7 +99,6 @@ type ActivityJoins struct {
 func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
 		s.joins = ActivityJoins{
-
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
 		}

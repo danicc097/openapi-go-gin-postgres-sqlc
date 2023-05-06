@@ -108,7 +108,6 @@ type UserAPIKeyJoins struct {
 func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
 		s.joins = UserAPIKeyJoins{
-
 			User: s.joins.User || joins.User,
 		}
 	}

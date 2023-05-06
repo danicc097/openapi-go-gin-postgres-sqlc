@@ -95,7 +95,6 @@ type DemoTwoWorkItemJoins struct {
 func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
 		s.joins = DemoTwoWorkItemJoins{
-
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
 	}

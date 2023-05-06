@@ -1814,7 +1814,6 @@ type %s struct {
 func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		s.joins = %[1]sJoins{
-
 	`, name))
 
 	for _, j := range joinNames {
@@ -2028,10 +2027,16 @@ func (f *Funcs) db_paginated(name string, v interface{}, columns []Field) string
 	var p []string
 	prefix := ""
 	p = append(p, f.names(prefix, columns))
-	for i, param := range p {
-		p[i] = camel(param)
+	fmt.Printf("p: %v\n", p)
+	var params []string
+	for _, paramStr := range p {
+		// f.names will join but with pascal case
+		pp := strings.Split(paramStr, ", ")
+		for _, p := range pp {
+			params = append(params, camel(p))
+		}
 	}
-	return f.db(name, strings.Join(p, ", "))
+	return f.db(name, strings.Join(params, ", "))
 }
 
 // db_named generates a db.<name>Context(ctx, sql.Named(name, res)...)

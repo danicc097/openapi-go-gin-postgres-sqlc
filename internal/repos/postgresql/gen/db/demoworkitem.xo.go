@@ -116,7 +116,6 @@ type DemoWorkItemJoins struct {
 func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
 		s.joins = DemoWorkItemJoins{
-
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
 	}

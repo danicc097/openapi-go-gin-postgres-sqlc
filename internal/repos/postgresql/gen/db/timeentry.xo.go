@@ -142,7 +142,6 @@ type TimeEntryJoins struct {
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		s.joins = TimeEntryJoins{
-
 			Activity: s.joins.Activity || joins.Activity,
 			Team:     s.joins.Team || joins.Team,
 			User:     s.joins.User || joins.User,

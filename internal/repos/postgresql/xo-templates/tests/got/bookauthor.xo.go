@@ -170,7 +170,7 @@ left join (
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, bookIDAuthorID)
+	rows, err := db.Query(ctx, sqlstr, bookID, authorID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/Paginated/db.Query: %w", err))
 	}
