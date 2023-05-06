@@ -311,6 +311,12 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 
 // PaginatedWorkItemByWorkItemID returns a cursor-paginated list of WorkItem.
 func (wi *WorkItem) PaginatedWorkItemByWorkItemID(ctx context.Context, db DB) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -384,7 +390,7 @@ left join work_items on work_items.work_item_id = work_items.work_item_id`+
 		` WHERE work_items.work_item_id > $9  AND work_items.deleted_at is %s `, c.deletedAt)
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt, wi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", err))
 	}

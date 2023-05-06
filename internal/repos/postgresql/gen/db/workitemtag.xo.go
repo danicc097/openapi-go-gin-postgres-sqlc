@@ -195,6 +195,12 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 
 // PaginatedWorkItemTagByWorkItemTagID returns a cursor-paginated list of WorkItemTag.
 func (wit *WorkItemTag) PaginatedWorkItemTagByWorkItemTagID(ctx context.Context, db DB) ([]WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
@@ -232,7 +238,7 @@ left join (
 		` WHERE work_item_tags.work_item_tag_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
 	}
@@ -245,6 +251,12 @@ left join (
 
 // PaginatedWorkItemTagByProjectID returns a cursor-paginated list of WorkItemTag.
 func (wit *WorkItemTag) PaginatedWorkItemTagByProjectID(ctx context.Context, db DB) ([]WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
@@ -282,7 +294,7 @@ left join (
 		` WHERE work_item_tags.project_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
 	}
@@ -295,6 +307,12 @@ left join (
 
 // PaginatedWorkItemTagByProjectID returns a cursor-paginated list of WorkItemTag.
 func (wit *WorkItemTag) PaginatedWorkItemTagByProjectID(ctx context.Context, db DB) ([]WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
@@ -332,7 +350,7 @@ left join (
 		` WHERE work_item_tags.project_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
 	}

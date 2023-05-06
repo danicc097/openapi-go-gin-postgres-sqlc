@@ -315,6 +315,12 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // PaginatedUserByUserID returns a cursor-paginated list of User.
 func (u *User) PaginatedUserByUserID(ctx context.Context, db DB) ([]User, error) {
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -410,7 +416,7 @@ left join (
 		` WHERE users.user_id > $9  AND users.deleted_at is %s `, c.deletedAt)
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID)
+	rows, err := db.Query(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
 	}
@@ -423,6 +429,12 @@ left join (
 
 // PaginatedUserByCreatedAt returns a cursor-paginated list of User.
 func (u *User) PaginatedUserByCreatedAt(ctx context.Context, db DB) ([]User, error) {
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -518,7 +530,7 @@ left join (
 		` WHERE users.created_at > $9  AND users.deleted_at is %s `, c.deletedAt)
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID)
+	rows, err := db.Query(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.CreatedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
 	}

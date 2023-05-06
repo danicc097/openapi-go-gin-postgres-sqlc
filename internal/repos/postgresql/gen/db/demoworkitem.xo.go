@@ -210,6 +210,12 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // PaginatedDemoWorkItemByWorkItemID returns a cursor-paginated list of DemoWorkItem.
 func (dwi *DemoWorkItem) PaginatedDemoWorkItemByWorkItemID(ctx context.Context, db DB) ([]DemoWorkItem, error) {
+	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`demo_work_items.work_item_id,
 demo_work_items.ref,
@@ -229,7 +235,7 @@ left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work
 		` WHERE demo_work_items.work_item_id > $4 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened, dwi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened, dwi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/db.Query: %w", err))
 	}

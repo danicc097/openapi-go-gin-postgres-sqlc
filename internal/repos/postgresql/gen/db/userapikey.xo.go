@@ -197,6 +197,12 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // PaginatedUserAPIKeyByUserAPIKeyID returns a cursor-paginated list of UserAPIKey.
 func (uak *UserAPIKey) PaginatedUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB) ([]UserAPIKey, error) {
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
@@ -209,7 +215,7 @@ left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.user_api_key_id > $2 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
+	rows, err := db.Query(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/db.Query: %w", err))
 	}

@@ -234,6 +234,12 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 
 // PaginatedTimeEntryByTimeEntryID returns a cursor-paginated list of TimeEntry.
 func (te *TimeEntry) PaginatedTimeEntryByTimeEntryID(ctx context.Context, db DB) ([]TimeEntry, error) {
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`time_entries.time_entry_id,
 time_entries.work_item_id,
@@ -259,7 +265,7 @@ left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.time_entry_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
+	rows, err := db.Query(ctx, sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/db.Query: %w", err))
 	}

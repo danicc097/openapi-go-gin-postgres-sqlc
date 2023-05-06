@@ -173,6 +173,12 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 
 // PaginatedMovieByMovieID returns a cursor-paginated list of Movie.
 func (m *Movie) PaginatedMovieByMovieID(ctx context.Context, db DB) ([]Movie, error) {
+	c := &MovieSelectConfig{joins: MovieJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`movies.movie_id,
 movies.title,
@@ -183,7 +189,7 @@ movies.synopsis ` +
 		` WHERE movies.movie_id > $1 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
+	rows, err := db.Query(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis, m.MovieID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Paginated/db.Query: %w", err))
 	}

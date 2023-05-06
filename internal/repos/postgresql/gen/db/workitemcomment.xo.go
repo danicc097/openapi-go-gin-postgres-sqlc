@@ -206,6 +206,12 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 
 // PaginatedWorkItemCommentByWorkItemCommentID returns a cursor-paginated list of WorkItemComment.
 func (wic *WorkItemComment) PaginatedWorkItemCommentByWorkItemCommentID(ctx context.Context, db DB) ([]WorkItemComment, error) {
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`work_item_comments.work_item_comment_id,
 work_item_comments.work_item_id,
@@ -223,7 +229,7 @@ left join work_items on work_items.work_item_id = work_item_comments.work_item_i
 		` WHERE work_item_comments.work_item_comment_id > $3 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/db.Query: %w", err))
 	}

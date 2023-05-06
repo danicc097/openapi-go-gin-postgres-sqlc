@@ -188,6 +188,12 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 
 // PaginatedWorkItemMemberByWorkItemIDMember returns a cursor-paginated list of WorkItemMember.
 func (wim *WorkItemMember) PaginatedWorkItemMemberByWorkItemIDMember(ctx context.Context, db DB) ([]WorkItemMember, error) {
+	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`work_item_member.work_item_id,
 work_item_member.member,
@@ -220,7 +226,7 @@ left join (
 		` WHERE work_item_member.work_item_id > $3 AND work_item_member.member > $4 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wim.Role, wim.WorkItemID, wim.Member)
+	rows, err := db.Query(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role, wim.WorkItemID, wim.Member)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemMember/Paginated/db.Query: %w", err))
 	}

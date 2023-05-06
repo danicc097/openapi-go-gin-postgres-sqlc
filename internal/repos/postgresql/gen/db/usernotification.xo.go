@@ -195,6 +195,12 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 
 // PaginatedUserNotificationByUserNotificationID returns a cursor-paginated list of UserNotification.
 func (un *UserNotification) PaginatedUserNotificationByUserNotificationID(ctx context.Context, db DB) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
@@ -236,7 +242,7 @@ left join (
 		` WHERE user_notifications.user_notification_id > $7 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	rows, err := db.Query(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
 	}
@@ -249,6 +255,12 @@ left join (
 
 // PaginatedUserNotificationByNotificationID returns a cursor-paginated list of UserNotification.
 func (un *UserNotification) PaginatedUserNotificationByNotificationID(ctx context.Context, db DB) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
@@ -290,7 +302,7 @@ left join (
 		` WHERE user_notifications.notification_id > $7 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	rows, err := db.Query(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID, un.NotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
 	}
@@ -303,6 +315,12 @@ left join (
 
 // PaginatedUserNotificationByNotificationID returns a cursor-paginated list of UserNotification.
 func (un *UserNotification) PaginatedUserNotificationByNotificationID(ctx context.Context, db DB) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
@@ -344,7 +362,7 @@ left join (
 		` WHERE user_notifications.notification_id > $7 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	rows, err := db.Query(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID, un.NotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
 	}

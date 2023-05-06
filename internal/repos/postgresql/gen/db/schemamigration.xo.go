@@ -164,6 +164,12 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 
 // PaginatedSchemaMigrationByVersion returns a cursor-paginated list of SchemaMigration.
 func (sm *SchemaMigration) PaginatedSchemaMigrationByVersion(ctx context.Context, db DB) ([]SchemaMigration, error) {
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`schema_migrations.version,
 schema_migrations.dirty ` +
@@ -172,7 +178,7 @@ schema_migrations.dirty ` +
 		` WHERE schema_migrations.version > $1 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, sm.Dirty, sm.Version)
+	rows, err := db.Query(ctx, sqlstr, sm.Version, sm.Dirty, sm.Version)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/db.Query: %w", err))
 	}

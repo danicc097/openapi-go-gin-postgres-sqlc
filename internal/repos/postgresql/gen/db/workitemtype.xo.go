@@ -195,6 +195,12 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 
 // PaginatedWorkItemTypeByWorkItemTypeID returns a cursor-paginated list of WorkItemType.
 func (wit *WorkItemType) PaginatedWorkItemTypeByWorkItemTypeID(ctx context.Context, db DB) ([]WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
@@ -224,7 +230,7 @@ left join (
 		` WHERE work_item_types.work_item_type_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
 	}
@@ -237,6 +243,12 @@ left join (
 
 // PaginatedWorkItemTypeByProjectID returns a cursor-paginated list of WorkItemType.
 func (wit *WorkItemType) PaginatedWorkItemTypeByProjectID(ctx context.Context, db DB) ([]WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
@@ -266,7 +278,7 @@ left join (
 		` WHERE work_item_types.project_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
 	}
@@ -279,6 +291,12 @@ left join (
 
 // PaginatedWorkItemTypeByProjectID returns a cursor-paginated list of WorkItemType.
 func (wit *WorkItemType) PaginatedWorkItemTypeByProjectID(ctx context.Context, db DB) ([]WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
@@ -308,7 +326,7 @@ left join (
 		` WHERE work_item_types.project_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
 	}

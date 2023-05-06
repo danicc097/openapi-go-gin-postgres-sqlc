@@ -195,6 +195,12 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 
 // PaginatedActivityByActivityID returns a cursor-paginated list of Activity.
 func (a *Activity) PaginatedActivityByActivityID(ctx context.Context, db DB) ([]Activity, error) {
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`activities.activity_id,
 activities.project_id,
@@ -231,7 +237,7 @@ left join (
 		` WHERE activities.activity_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	rows, err := db.Query(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
 	}
@@ -244,6 +250,12 @@ left join (
 
 // PaginatedActivityByProjectID returns a cursor-paginated list of Activity.
 func (a *Activity) PaginatedActivityByProjectID(ctx context.Context, db DB) ([]Activity, error) {
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`activities.activity_id,
 activities.project_id,
@@ -280,7 +292,7 @@ left join (
 		` WHERE activities.project_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	rows, err := db.Query(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
 	}
@@ -293,6 +305,12 @@ left join (
 
 // PaginatedActivityByProjectID returns a cursor-paginated list of Activity.
 func (a *Activity) PaginatedActivityByProjectID(ctx context.Context, db DB) ([]Activity, error) {
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`activities.activity_id,
 activities.project_id,
@@ -329,7 +347,7 @@ left join (
 		` WHERE activities.project_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	rows, err := db.Query(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
 	}

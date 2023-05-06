@@ -209,6 +209,12 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 
 // PaginatedKanbanStepByKanbanStepID returns a cursor-paginated list of KanbanStep.
 func (ks *KanbanStep) PaginatedKanbanStepByKanbanStepID(ctx context.Context, db DB) ([]KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
@@ -240,7 +246,7 @@ left join (
 		` WHERE kanban_steps.kanban_step_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
 	}
@@ -253,6 +259,12 @@ left join (
 
 // PaginatedKanbanStepByProjectID returns a cursor-paginated list of KanbanStep.
 func (ks *KanbanStep) PaginatedKanbanStepByProjectID(ctx context.Context, db DB) ([]KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
@@ -284,7 +296,7 @@ left join (
 		` WHERE kanban_steps.project_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
 	}
@@ -297,6 +309,12 @@ left join (
 
 // PaginatedKanbanStepByProjectID returns a cursor-paginated list of KanbanStep.
 func (ks *KanbanStep) PaginatedKanbanStepByProjectID(ctx context.Context, db DB) ([]KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
@@ -328,7 +346,7 @@ left join (
 		` WHERE kanban_steps.project_id > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
 	}
@@ -341,6 +359,12 @@ left join (
 
 // PaginatedKanbanStepByStepOrder returns a cursor-paginated list of KanbanStep.
 func (ks *KanbanStep) PaginatedKanbanStepByStepOrder(ctx context.Context, db DB) ([]KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
@@ -372,7 +396,7 @@ left join (
 		` WHERE kanban_steps.step_order > $5 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.StepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
 	}

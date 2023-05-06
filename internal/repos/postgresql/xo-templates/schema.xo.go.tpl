@@ -387,9 +387,15 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ end }}
 
 {{ range cursor_columns $t $constraints $tables }}
-{{ $suffix := print $t.GoName "By" (join_str_camel_export . "") }}
+{{ $suffix := print $t.GoName "By" (fields_to_goname . "") }}
 // {{ func_name_context_suffixed "Paginated" $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
 {{ recv_context_suffixed $t "Paginated" $suffix }} {
+	{{ initial_opts $t }}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	{{ sqlstr_paginated $t $constraints $tables . }}
 	// run
 

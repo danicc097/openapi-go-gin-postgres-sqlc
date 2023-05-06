@@ -1302,11 +1302,11 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"func_name_context_suffixed": f.func_name_context_suffixed,
 		"recv_context_suffixed":      f.recv_context_suffixed,
 		// helpers
-		"join_str_camel_export": join_str_camel_export,
-		"check_name":            checkName,
-		"eval":                  eval,
-		"add":                   add,
-		"not_updatable":         notUpdatable,
+		"fields_to_goname": fields_to_goname,
+		"check_name":       checkName,
+		"eval":             eval,
+		"add":              add,
+		"not_updatable":    notUpdatable,
 	}
 }
 
@@ -1856,10 +1856,10 @@ func (f *Funcs) recv(name string, context bool, t Table, v interface{}) string {
 	return fmt.Sprintf("func (%s *%s) %s(%s) (%s)", short, t.GoName, name, strings.Join(p, ", "), strings.Join(r, ", "))
 }
 
-func join_str_camel_export(strs []string, sep string) string {
+func fields_to_goname(fields []Field, sep string) string {
 	var res string
-	for _, s := range strs {
-		res += camelExport(s)
+	for _, s := range fields {
+		res += s.GoName
 	}
 
 	return res
@@ -1994,22 +1994,16 @@ func (f *Funcs) db_update(name string, v interface{}) string {
 
 // db_paginated generates a db.<name>Context(ctx, sqlstr, params)
 // query for cursor pagination
-func (f *Funcs) db_paginated(name string, v interface{}, columns []string) string {
+// TODO only needs to add fn args as params as is, e.g. createdAt time.Time, ... then just append those.
+// deleted_at from opts remains.
+// orderby desc is the default
+func (f *Funcs) db_paginated(name string, v interface{}, columns []Field) string {
 	var ignore []interface{}
 	var p []string
 	switch x := v.(type) {
 	case Table:
 		prefix := f.short(x.GoName) + "."
-		for _, pk := range x.Generated {
-			ignore = append(ignore, pk.GoName)
-		}
-		for _, pk := range x.PrimaryKeys {
-			ignore = append(ignore, pk.GoName)
-		}
-		for _, pk := range x.Ignored {
-			ignore = append(ignore, pk.GoName)
-		}
-		p = append(p, f.names_ignore(prefix, x, ignore...), f.names(prefix, x.PrimaryKeys))
+		p = append(p, f.names_ignore(prefix, x, ignore...), f.names(prefix, columns))
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 9: %T ]]", v)
 	}
@@ -2310,8 +2304,8 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 }
 
 // cursor_columns returns a list of possible combinations of columns for cursor pagination.
-func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tables) [][]string {
-	var cursorCols [][]string
+func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tables) [][]Field {
+	var cursorCols [][]Field
 	var tableConstraints []Constraint
 	if tc, ok := f.tableConstraints[table.SQLName]; ok {
 		tableConstraints = tc
@@ -2320,18 +2314,14 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 			f.loadConstraints(constraints, table.SQLName)
 		}
 	}
-	pkCols := make([]string, len(table.PrimaryKeys))
-	for i, pk := range table.PrimaryKeys {
-		pkCols[i] = pk.SQLName
-	}
-	cursorCols = append(cursorCols, pkCols) // assume its incremental. if it's not then simply dont call it...
+	cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
 
 	// build table fieldnames
 	for _, z := range table.Fields {
 		for _, c := range tableConstraints {
 			if c.Type == "unique" && c.ColumnName == z.SQLName {
 				if z.Type == "time.Time" || z.Type == "int" {
-					cursorCols = append(cursorCols, []string{z.SQLName})
+					cursorCols = append(cursorCols, []Field{z})
 				}
 			}
 		}
@@ -2343,7 +2333,7 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 
 // sqlstr_paginated builds a cursor-paginated query string from columns.
 // TODO fixed orderby instead of appending opts
-func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []string) string {
+func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []Field) string {
 	switch x := v.(type) {
 	case Table:
 		var filters, fields, joins []string
@@ -2393,7 +2383,7 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 		// use PK if incremental. else created_at if exists.
 		// ensure there are unique fields else return
 		for _, c := range columns {
-			filters = append(filters, fmt.Sprintf("%s.%s > %s", x.SQLName, c, f.nth(n)))
+			filters = append(filters, fmt.Sprintf("%s.%s > %s", x.SQLName, c.SQLName, f.nth(n)))
 			n++
 		}
 

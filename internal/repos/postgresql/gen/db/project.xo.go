@@ -222,6 +222,12 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 
 // PaginatedProjectByProjectID returns a cursor-paginated list of Project.
 func (p *Project) PaginatedProjectByProjectID(ctx context.Context, db DB) ([]Project, error) {
+	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`projects.project_id,
 projects.name,
@@ -284,7 +290,7 @@ left join (
 		` WHERE projects.project_id > $6 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Paginated/db.Query: %w", err))
 	}

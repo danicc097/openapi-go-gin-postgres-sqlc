@@ -239,6 +239,12 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 
 // PaginatedNotificationByNotificationID returns a cursor-paginated list of Notification.
 func (n *Notification) PaginatedNotificationByNotificationID(ctx context.Context, db DB) ([]Notification, error) {
+	c := &NotificationSelectConfig{joins: NotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`notifications.notification_id,
 notifications.receiver_rank,
@@ -270,7 +276,7 @@ left join (
 		` WHERE notifications.notification_id > $4 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
+	rows, err := db.Query(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/db.Query: %w", err))
 	}

@@ -217,6 +217,12 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 
 // PaginatedTeamByTeamID returns a cursor-paginated list of Team.
 func (t *Team) PaginatedTeamByTeamID(ctx context.Context, db DB) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`teams.team_id,
 teams.project_id,
@@ -268,7 +274,7 @@ left join (
 		` WHERE teams.team_id > $7 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID)
+	rows, err := db.Query(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
 	}
@@ -281,6 +287,12 @@ left join (
 
 // PaginatedTeamByProjectID returns a cursor-paginated list of Team.
 func (t *Team) PaginatedTeamByProjectID(ctx context.Context, db DB) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`teams.team_id,
 teams.project_id,
@@ -332,7 +344,7 @@ left join (
 		` WHERE teams.project_id > $7 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID)
+	rows, err := db.Query(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
 	}
@@ -345,6 +357,12 @@ left join (
 
 // PaginatedTeamByProjectID returns a cursor-paginated list of Team.
 func (t *Team) PaginatedTeamByProjectID(ctx context.Context, db DB) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
 	sqlstr := `SELECT ` +
 		`teams.team_id,
 teams.project_id,
@@ -396,7 +414,7 @@ left join (
 		` WHERE teams.project_id > $7 `
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID)
+	rows, err := db.Query(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
 	}
