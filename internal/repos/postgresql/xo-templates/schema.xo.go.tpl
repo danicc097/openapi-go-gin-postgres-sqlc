@@ -204,7 +204,7 @@ NOTE: instead using inferred O2O joins now
 // Change properties via SQL column comments, joined with ",":
 //     - "property:private" to exclude a field from JSON.
 //     - "type:<pkg.type>" to override the type annotation.
-//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//     - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 {{- end }}
 type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
@@ -213,7 +213,7 @@ type {{ $t.GoName }} struct {
 {{ join_fields $t $constraints $tables }}
 }
 {{/* NOTE: ensure sqlc does not generate clashing names */}}
-// {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'
+// {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}CreateParams struct {
 {{ range $t.Fields -}}
 	{{ field . "CreateParams" $t -}}
@@ -313,17 +313,30 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 }
 
 
-// {{ func_name_context "Upsert" "" }} performs an upsert for {{ $t.GoName }}.
-{{ recv_context $t "Upsert" "" }} {
-	// upsert
-	{{ sqlstr "upsert" $t }}
-	// run
-	{{ logf $t $t.Ignored }}{{/* upsert will require generated fields, but exclude ignored fields */}}
-	if _, err := {{ db_prefix "Exec" true false $t }}; err != nil {
-		return logerror(err)
+// {{ func_name_context "Upsert" "" }} upserts a {{ $t.GoName }} in the database.
+// Requires appropiate PK(s) to be set beforehand.
+{{ recv_context $t "Upsert" "" }}  {
+	var err error
+
+  {{ range $t.Fields -}}
+    {{ set_field . "UpsertParams" $t -}}
+  {{ end }}
+
+  {{ short $t }}, err = {{ short $t }}.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+			  return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+		  {{ short $t }}, err = {{ short $t }}.Update(ctx, db)
+      if err != nil {
+			  return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+      }
+		}
 	}
-	// set exists
-	return nil
+
+  return {{ short $t }}, err
 }
 
 {{- end }}

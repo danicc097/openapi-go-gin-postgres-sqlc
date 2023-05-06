@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -13,7 +16,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type WorkItemType struct {
 	WorkItemTypeID int    `json:"workItemTypeID" db:"work_item_type_id" required:"true"` // work_item_type_id
 	ProjectID      int    `json:"projectID" db:"project_id" required:"true"`             // project_id
@@ -26,7 +29,7 @@ type WorkItemType struct {
 
 }
 
-// WorkItemTypeCreateParams represents insert params for 'public.work_item_types'
+// WorkItemTypeCreateParams represents insert params for 'public.work_item_types'.
 type WorkItemTypeCreateParams struct {
 	ProjectID   int    `json:"projectID" required:"true"`   // project_id
 	Name        string `json:"name" required:"true"`        // name
@@ -153,25 +156,31 @@ func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, erro
 	return wit, nil
 }
 
-// Upsert performs an upsert for WorkItemType.
-func (wit *WorkItemType) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.work_item_types (` +
-		`work_item_type_id, project_id, name, description, color` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` ON CONFLICT (work_item_type_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
-	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color); err != nil {
-		return logerror(err)
+// Upsert upserts a WorkItemType in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (wit *WorkItemType) Upsert(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
+	var err error
+
+	wit.ProjectID = params.ProjectID
+	wit.Name = params.Name
+	wit.Description = params.Description
+	wit.Color = params.Color
+
+	wit, err = wit.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wit, err = wit.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return wit, err
 }
 
 // Delete deletes the WorkItemType from the database.

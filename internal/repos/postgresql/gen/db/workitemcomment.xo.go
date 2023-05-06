@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -16,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type WorkItemComment struct {
 	WorkItemCommentID int64     `json:"workItemCommentID" db:"work_item_comment_id" required:"true"` // work_item_comment_id
 	WorkItemID        int64     `json:"workItemID" db:"work_item_id" required:"true"`                // work_item_id
@@ -30,7 +33,7 @@ type WorkItemComment struct {
 
 }
 
-// WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'
+// WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'.
 type WorkItemCommentCreateParams struct {
 	WorkItemID int64     `json:"workItemID" required:"true"` // work_item_id
 	UserID     uuid.UUID `json:"userID" required:"true"`     // user_id
@@ -170,25 +173,30 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 	return wic, nil
 }
 
-// Upsert performs an upsert for WorkItemComment.
-func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_comment_id, work_item_id, user_id, message` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`)` +
-		` ON CONFLICT (work_item_comment_id) DO ` +
-		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message)
-	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message); err != nil {
-		return logerror(err)
+// Upsert upserts a WorkItemComment in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (wic *WorkItemComment) Upsert(ctx context.Context, db DB, params *WorkItemCommentCreateParams) (*WorkItemComment, error) {
+	var err error
+
+	wic.WorkItemID = params.WorkItemID
+	wic.UserID = params.UserID
+	wic.Message = params.Message
+
+	wic, err = wic.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wic, err = wic.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return wic, err
 }
 
 // Delete deletes the WorkItemComment from the database.

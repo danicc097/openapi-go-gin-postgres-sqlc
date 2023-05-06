@@ -4,8 +4,11 @@ package got
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -13,7 +16,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Book struct {
 	BookID int    `json:"bookID" db:"book_id" required:"true"` // book_id
 	Name   string `json:"name" db:"name" required:"true"`      // name
@@ -22,7 +25,7 @@ type Book struct {
 	BookReviewsJoin *[]BookReview  `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
 }
 
-// BookCreateParams represents insert params for 'public.books'
+// BookCreateParams represents insert params for 'public.books'.
 type BookCreateParams struct {
 	Name string `json:"name" required:"true"` // name
 }
@@ -133,25 +136,28 @@ func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 	return b, nil
 }
 
-// Upsert performs an upsert for Book.
-func (b *Book) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.books (` +
-		`book_id, name` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` ON CONFLICT (book_id) DO ` +
-		`UPDATE SET ` +
-		`name = EXCLUDED.name ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, b.BookID, b.Name)
-	if _, err := db.Exec(ctx, sqlstr, b.BookID, b.Name); err != nil {
-		return logerror(err)
+// Upsert upserts a Book in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (b *Book) Upsert(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
+	var err error
+
+	b.Name = params.Name
+
+	b, err = b.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			b, err = b.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return b, err
 }
 
 // Delete deletes the Book from the database.

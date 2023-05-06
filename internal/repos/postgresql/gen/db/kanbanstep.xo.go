@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -13,7 +16,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type KanbanStep struct {
 	KanbanStepID  int    `json:"kanbanStepID" db:"kanban_step_id" required:"true"`  // kanban_step_id
 	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`         // project_id
@@ -28,7 +31,7 @@ type KanbanStep struct {
 
 }
 
-// KanbanStepCreateParams represents insert params for 'public.kanban_steps'
+// KanbanStepCreateParams represents insert params for 'public.kanban_steps'.
 type KanbanStepCreateParams struct {
 	ProjectID     int    `json:"projectID" required:"true"`     // project_id
 	StepOrder     int    `json:"stepOrder" required:"true"`     // step_order
@@ -167,25 +170,33 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 	return ks, nil
 }
 
-// Upsert performs an upsert for KanbanStep.
-func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`kanban_step_id, project_id, step_order, name, description, color, time_trackable` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
-		`)` +
-		` ON CONFLICT (kanban_step_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
-	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable); err != nil {
-		return logerror(err)
+// Upsert upserts a KanbanStep in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (ks *KanbanStep) Upsert(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {
+	var err error
+
+	ks.ProjectID = params.ProjectID
+	ks.StepOrder = params.StepOrder
+	ks.Name = params.Name
+	ks.Description = params.Description
+	ks.Color = params.Color
+	ks.TimeTrackable = params.TimeTrackable
+
+	ks, err = ks.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			ks, err = ks.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return ks, err
 }
 
 // Delete deletes the KanbanStep from the database.

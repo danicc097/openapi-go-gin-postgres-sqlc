@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -13,14 +16,14 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type SchemaMigration struct {
 	Version int64 `json:"version" db:"version" required:"true"` // version
 	Dirty   bool  `json:"dirty" db:"dirty" required:"true"`     // dirty
 
 }
 
-// SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'
+// SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'.
 type SchemaMigrationCreateParams struct {
 	Version int64 `json:"version" required:"true"` // version
 	Dirty   bool  `json:"dirty" required:"true"`   // dirty
@@ -129,25 +132,29 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 	return sm, nil
 }
 
-// Upsert performs an upsert for SchemaMigration.
-func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.schema_migrations (` +
-		`version, dirty` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` ON CONFLICT (version) DO ` +
-		`UPDATE SET ` +
-		`dirty = EXCLUDED.dirty ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, sm.Version, sm.Dirty)
-	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
-		return logerror(err)
+// Upsert upserts a SchemaMigration in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
+	var err error
+
+	sm.Version = params.Version
+	sm.Dirty = params.Dirty
+
+	sm, err = sm.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			sm, err = sm.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return sm, err
 }
 
 // Delete deletes the SchemaMigration from the database.

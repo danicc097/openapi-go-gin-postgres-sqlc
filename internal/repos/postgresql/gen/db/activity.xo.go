@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -13,7 +16,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Activity struct {
 	ActivityID   int    `json:"activityID" db:"activity_id" required:"true"`     // activity_id
 	ProjectID    int    `json:"projectID" db:"project_id" required:"true"`       // project_id
@@ -26,7 +29,7 @@ type Activity struct {
 
 }
 
-// ActivityCreateParams represents insert params for 'public.activities'
+// ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
 	ProjectID    int    `json:"projectID" required:"true"`    // project_id
 	Name         string `json:"name" required:"true"`         // name
@@ -153,25 +156,31 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	return a, nil
 }
 
-// Upsert performs an upsert for Activity.
-func (a *Activity) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.activities (` +
-		`activity_id, project_id, name, description, is_productive` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` ON CONFLICT (activity_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, is_productive = EXCLUDED.is_productive ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive)
-	if _, err := db.Exec(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive); err != nil {
-		return logerror(err)
+// Upsert upserts a Activity in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
+	var err error
+
+	a.ProjectID = params.ProjectID
+	a.Name = params.Name
+	a.Description = params.Description
+	a.IsProductive = params.IsProductive
+
+	a, err = a.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			a, err = a.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return a, err
 }
 
 // Delete deletes the Activity from the database.

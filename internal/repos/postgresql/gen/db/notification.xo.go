@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -16,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Notification struct {
 	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`                                                 // notification_id
 	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank" required:"true"`                                                     // receiver_rank
@@ -35,7 +38,7 @@ type Notification struct {
 
 }
 
-// NotificationCreateParams represents insert params for 'public.notifications'
+// NotificationCreateParams represents insert params for 'public.notifications'.
 type NotificationCreateParams struct {
 	ReceiverRank     *int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
 	Title            string           `json:"title" required:"true"`                                                        // title
@@ -203,25 +206,35 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 	return n, nil
 }
 
-// Upsert performs an upsert for Notification.
-func (n *Notification) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.notifications (` +
-		`notification_id, receiver_rank, title, body, label, link, sender, receiver, notification_type` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
-		`)` +
-		` ON CONFLICT (notification_id) DO ` +
-		`UPDATE SET ` +
-		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
-	if _, err := db.Exec(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType); err != nil {
-		return logerror(err)
+// Upsert upserts a Notification in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
+	var err error
+
+	n.ReceiverRank = params.ReceiverRank
+	n.Title = params.Title
+	n.Body = params.Body
+	n.Label = params.Label
+	n.Link = params.Link
+	n.Sender = params.Sender
+	n.Receiver = params.Receiver
+	n.NotificationType = params.NotificationType
+
+	n, err = n.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			n, err = n.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return n, err
 }
 
 // Delete deletes the Notification from the database.

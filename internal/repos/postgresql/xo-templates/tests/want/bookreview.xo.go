@@ -4,9 +4,12 @@ package got
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -14,7 +17,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type BookReview struct {
 	BookReviewID int       `json:"bookReviewID" db:"book_review_id" required:"true"` // book_review_id
 	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
@@ -24,7 +27,7 @@ type BookReview struct {
 	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (generated from M2O)
 }
 
-// BookReviewCreateParams represents insert params for 'public.book_reviews'
+// BookReviewCreateParams represents insert params for 'public.book_reviews'.
 type BookReviewCreateParams struct {
 	BookID   int       `json:"bookID" required:"true"`   // book_id
 	Reviewer uuid.UUID `json:"reviewer" required:"true"` // reviewer
@@ -137,25 +140,29 @@ func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
 	return br, nil
 }
 
-// Upsert performs an upsert for BookReview.
-func (br *BookReview) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.book_reviews (` +
-		`book_review_id, book_id, reviewer` +
-		`) VALUES (` +
-		`$1, $2, $3` +
-		`)` +
-		` ON CONFLICT (book_review_id) DO ` +
-		`UPDATE SET ` +
-		`book_id = EXCLUDED.book_id, reviewer = EXCLUDED.reviewer ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, br.BookReviewID, br.BookID, br.Reviewer)
-	if _, err := db.Exec(ctx, sqlstr, br.BookReviewID, br.BookID, br.Reviewer); err != nil {
-		return logerror(err)
+// Upsert upserts a BookReview in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (br *BookReview) Upsert(ctx context.Context, db DB, params *BookReviewCreateParams) (*BookReview, error) {
+	var err error
+
+	br.BookID = params.BookID
+	br.Reviewer = params.Reviewer
+
+	br, err = br.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			br, err = br.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return br, err
 }
 
 // Delete deletes the BookReview from the database.

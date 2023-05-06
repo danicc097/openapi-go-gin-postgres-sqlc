@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -16,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type WorkItem struct {
 	WorkItemID     int64      `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
 	Title          string     `json:"title" db:"title" required:"true"`                      // title
@@ -40,7 +43,7 @@ type WorkItem struct {
 
 }
 
-// WorkItemCreateParams represents insert params for 'public.work_items'
+// WorkItemCreateParams represents insert params for 'public.work_items'.
 type WorkItemCreateParams struct {
 	Title          string     `json:"title" required:"true"`          // title
 	Description    string     `json:"description" required:"true"`    // description
@@ -243,25 +246,35 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	return wi, nil
 }
 
-// Upsert performs an upsert for WorkItem.
-func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.work_items (` +
-		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
-		`)` +
-		` ON CONFLICT (work_item_id) DO ` +
-		`UPDATE SET ` +
-		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt); err != nil {
-		return logerror(err)
+// Upsert upserts a WorkItem in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+	var err error
+
+	wi.Title = params.Title
+	wi.Description = params.Description
+	wi.WorkItemTypeID = params.WorkItemTypeID
+	wi.Metadata = params.Metadata
+	wi.TeamID = params.TeamID
+	wi.KanbanStepID = params.KanbanStepID
+	wi.Closed = params.Closed
+	wi.TargetDate = params.TargetDate
+
+	wi, err = wi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wi, err = wi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return wi, err
 }
 
 // Delete deletes the WorkItem from the database.

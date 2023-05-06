@@ -4,10 +4,13 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -15,7 +18,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type DemoWorkItem struct {
 	WorkItemID    int64     `json:"workItemID" db:"work_item_id" required:"true"`       // work_item_id
 	Ref           string    `json:"ref" db:"ref" required:"true"`                       // ref
@@ -27,7 +30,7 @@ type DemoWorkItem struct {
 
 }
 
-// DemoWorkItemCreateParams represents insert params for 'public.demo_work_items'
+// DemoWorkItemCreateParams represents insert params for 'public.demo_work_items'.
 type DemoWorkItemCreateParams struct {
 	WorkItemID    int64     `json:"workItemID" required:"true"`    // work_item_id
 	Ref           string    `json:"ref" required:"true"`           // ref
@@ -168,25 +171,32 @@ func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, erro
 	return dwi, nil
 }
 
-// Upsert performs an upsert for DemoWorkItem.
-func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.demo_work_items (` +
-		`work_item_id, ref, line, last_message_at, reopened` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` ON CONFLICT (work_item_id) DO ` +
-		`UPDATE SET ` +
-		`ref = EXCLUDED.ref, line = EXCLUDED.line, last_message_at = EXCLUDED.last_message_at, reopened = EXCLUDED.reopened ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened)
-	if _, err := db.Exec(ctx, sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened); err != nil {
-		return logerror(err)
+// Upsert upserts a DemoWorkItem in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
+	var err error
+
+	dwi.WorkItemID = params.WorkItemID
+	dwi.Ref = params.Ref
+	dwi.Line = params.Line
+	dwi.LastMessageAt = params.LastMessageAt
+	dwi.Reopened = params.Reopened
+
+	dwi, err = dwi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			dwi, err = dwi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return dwi, err
 }
 
 // Delete deletes the DemoWorkItem from the database.

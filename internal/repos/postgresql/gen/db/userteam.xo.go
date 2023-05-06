@@ -14,7 +14,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
@@ -24,7 +24,7 @@ type UserTeam struct {
 
 }
 
-// UserTeamCreateParams represents insert params for 'public.user_team'
+// UserTeamCreateParams represents insert params for 'public.user_team'.
 type UserTeamCreateParams struct {
 	TeamID int       `json:"teamID" required:"true"` // team_id
 	UserID uuid.UUID `json:"userID" required:"true"` // user_id

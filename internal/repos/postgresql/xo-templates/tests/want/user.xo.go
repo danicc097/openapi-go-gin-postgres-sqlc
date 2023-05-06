@@ -4,9 +4,12 @@ package got
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -14,7 +17,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type User struct {
 	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
 	Name   string    `json:"name" db:"name" required:"true"`      // name
@@ -23,7 +26,7 @@ type User struct {
 	BookReviewsJoin *[]BookReview `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
 }
 
-// UserCreateParams represents insert params for 'public.users'
+// UserCreateParams represents insert params for 'public.users'.
 type UserCreateParams struct {
 	Name string `json:"name" required:"true"` // name
 }
@@ -130,25 +133,28 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	return u, nil
 }
 
-// Upsert performs an upsert for User.
-func (u *User) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.users (` +
-		`user_id, name` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` ON CONFLICT (user_id) DO ` +
-		`UPDATE SET ` +
-		`name = EXCLUDED.name ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, u.UserID, u.Name)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Name); err != nil {
-		return logerror(err)
+// Upsert upserts a User in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	var err error
+
+	u.Name = params.Name
+
+	u, err = u.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			u, err = u.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return u, err
 }
 
 // Delete deletes the User from the database.

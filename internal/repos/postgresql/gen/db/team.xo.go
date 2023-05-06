@@ -4,10 +4,13 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -15,7 +18,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Team struct {
 	TeamID      int       `json:"teamID" db:"team_id" required:"true"`          // team_id
 	ProjectID   int       `json:"projectID" db:"project_id" required:"true"`    // project_id
@@ -31,7 +34,7 @@ type Team struct {
 
 }
 
-// TeamCreateParams represents insert params for 'public.teams'
+// TeamCreateParams represents insert params for 'public.teams'.
 type TeamCreateParams struct {
 	ProjectID   int    `json:"projectID" required:"true"`   // project_id
 	Name        string `json:"name" required:"true"`        // name
@@ -175,25 +178,30 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	return t, nil
 }
 
-// Upsert performs an upsert for Team.
-func (t *Team) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.teams (` +
-		`team_id, project_id, name, description` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`)` +
-		` ON CONFLICT (team_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
-	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {
-		return logerror(err)
+// Upsert upserts a Team in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (t *Team) Upsert(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
+	var err error
+
+	t.ProjectID = params.ProjectID
+	t.Name = params.Name
+	t.Description = params.Description
+
+	t, err = t.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			t, err = t.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return t, err
 }
 
 // Delete deletes the Team from the database.

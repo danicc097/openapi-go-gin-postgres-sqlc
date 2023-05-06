@@ -13,7 +13,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type WorkItemWorkItemTag struct {
 	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
 	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
@@ -23,7 +23,7 @@ type WorkItemWorkItemTag struct {
 
 }
 
-// WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'
+// WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagCreateParams struct {
 	WorkItemTagID int   `json:"workItemTagID" required:"true"` // work_item_tag_id
 	WorkItemID    int64 `json:"workItemID" required:"true"`    // work_item_id

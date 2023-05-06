@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/google/uuid"
@@ -18,7 +21,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type User struct {
 	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true"`                                      // user_id
 	Username                 string        `json:"username" db:"username" required:"true"`                                   // username
@@ -47,7 +50,7 @@ type User struct {
 
 }
 
-// UserCreateParams represents insert params for 'public.users'
+// UserCreateParams represents insert params for 'public.users'.
 type UserCreateParams struct {
 	Username                 string        `json:"username" required:"true"`                                 // username
 	Email                    string        `json:"email" required:"true"`                                    // email
@@ -253,25 +256,37 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	return u, nil
 }
 
-// Upsert performs an upsert for User.
-func (u *User) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
-		`)` +
-		` ON CONFLICT (user_id) DO ` +
-		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {
-		return logerror(err)
+// Upsert upserts a User in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	var err error
+
+	u.Username = params.Username
+	u.Email = params.Email
+	u.FirstName = params.FirstName
+	u.LastName = params.LastName
+	u.ExternalID = params.ExternalID
+	u.APIKeyID = params.APIKeyID
+	u.Scopes = params.Scopes
+	u.RoleRank = params.RoleRank
+	u.HasPersonalNotifications = params.HasPersonalNotifications
+	u.HasGlobalNotifications = params.HasGlobalNotifications
+
+	u, err = u.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			u, err = u.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return u, err
 }
 
 // Delete deletes the User from the database.

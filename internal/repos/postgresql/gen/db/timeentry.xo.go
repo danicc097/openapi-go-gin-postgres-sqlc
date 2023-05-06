@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -16,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type TimeEntry struct {
 	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id" required:"true"`        // time_entry_id
 	WorkItemID      *int64    `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
@@ -34,7 +37,7 @@ type TimeEntry struct {
 
 }
 
-// TimeEntryCreateParams represents insert params for 'public.time_entries'
+// TimeEntryCreateParams represents insert params for 'public.time_entries'.
 type TimeEntryCreateParams struct {
 	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
 	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
@@ -198,25 +201,34 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 	return te, nil
 }
 
-// Upsert performs an upsert for TimeEntry.
-func (te *TimeEntry) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.time_entries (` +
-		`time_entry_id, work_item_id, activity_id, team_id, user_id, comment, start, duration_minutes` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
-		`)` +
-		` ON CONFLICT (time_entry_id) DO ` +
-		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, activity_id = EXCLUDED.activity_id, team_id = EXCLUDED.team_id, user_id = EXCLUDED.user_id, comment = EXCLUDED.comment, start = EXCLUDED.start, duration_minutes = EXCLUDED.duration_minutes ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
-	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes); err != nil {
-		return logerror(err)
+// Upsert upserts a TimeEntry in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
+	var err error
+
+	te.WorkItemID = params.WorkItemID
+	te.ActivityID = params.ActivityID
+	te.TeamID = params.TeamID
+	te.UserID = params.UserID
+	te.Comment = params.Comment
+	te.Start = params.Start
+	te.DurationMinutes = params.DurationMinutes
+
+	te, err = te.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			te, err = te.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return te, err
 }
 
 // Delete deletes the TimeEntry from the database.

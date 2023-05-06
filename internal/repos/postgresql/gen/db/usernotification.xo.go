@@ -4,9 +4,12 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -14,7 +17,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type UserNotification struct {
 	UserNotificationID int64     `json:"userNotificationID" db:"user_notification_id" required:"true"` // user_notification_id
 	NotificationID     int       `json:"notificationID" db:"notification_id" required:"true"`          // notification_id
@@ -26,7 +29,7 @@ type UserNotification struct {
 
 }
 
-// UserNotificationCreateParams represents insert params for 'public.user_notifications'
+// UserNotificationCreateParams represents insert params for 'public.user_notifications'.
 type UserNotificationCreateParams struct {
 	NotificationID int       `json:"notificationID" required:"true"` // notification_id
 	Read           bool      `json:"read" required:"true"`           // read
@@ -147,25 +150,30 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 	return un, nil
 }
 
-// Upsert performs an upsert for UserNotification.
-func (un *UserNotification) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.user_notifications (` +
-		`user_notification_id, notification_id, read, user_id` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`)` +
-		` ON CONFLICT (user_notification_id) DO ` +
-		`UPDATE SET ` +
-		`notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
-	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID); err != nil {
-		return logerror(err)
+// Upsert upserts a UserNotification in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (un *UserNotification) Upsert(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {
+	var err error
+
+	un.NotificationID = params.NotificationID
+	un.Read = params.Read
+	un.UserID = params.UserID
+
+	un, err = un.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			un, err = un.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
 	}
-	// set exists
-	return nil
+
+	return un, err
 }
 
 // Delete deletes the UserNotification from the database.
