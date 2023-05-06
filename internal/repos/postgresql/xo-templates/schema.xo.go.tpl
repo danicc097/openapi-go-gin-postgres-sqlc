@@ -231,6 +231,36 @@ func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}Cr
   return {{ short $t }}.Insert(ctx, db)
 }
 
+{{/**
+
+TODO:
+
+// UpsertUser upserts a User in the database with the given params.
+func UpsertUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	var err error
+	u := &User{
+		Name: params.Name,
+	}
+
+	u, err = u.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+			  // wrap with Insert failed
+        break
+			}
+		  u, err = u.Update(ctx, db)
+      if err != nil {
+        // wrap with Update failed
+      }
+		}
+	}
+
+	return u, err
+}
+
+ */}}
 
 // {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'
 type {{ $t.GoName }}UpdateParams struct {
