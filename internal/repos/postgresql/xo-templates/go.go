@@ -2451,13 +2451,13 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			"FROM " + f.schemafn(x.SQLName) + " ",
 			strings.Join(joins, "\n"),
 			" WHERE " + strings.Join(filters, " AND "),
-			" ORDER BY \n\t\t" + strings.Join(orderbys, " ,\n\t\t"),
 		}
 
 		if tableHasDeletedAt {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s `, c.deletedAt)",
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s`, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
+				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 			)
 		} else {
 			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))

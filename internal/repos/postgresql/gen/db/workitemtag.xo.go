@@ -224,9 +224,7 @@ left join (
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.work_item_tag_id > $3` +
-		` ORDER BY 
-		work_item_tag_id DESC `
+		` WHERE work_item_tags.work_item_tag_id > $3 `
 	sqlstr += c.limit
 
 	// run
@@ -271,9 +269,7 @@ left join (
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.project_id > $3` +
-		` ORDER BY 
-		project_id DESC `
+		` WHERE work_item_tags.project_id > $3 `
 	sqlstr += c.limit
 
 	// run

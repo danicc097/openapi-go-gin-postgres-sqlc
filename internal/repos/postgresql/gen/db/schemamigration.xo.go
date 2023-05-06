@@ -182,9 +182,7 @@ func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version int64
 schema_migrations.dirty ` +
 		`FROM public.schema_migrations ` +
 		`` +
-		` WHERE schema_migrations.version > $1` +
-		` ORDER BY 
-		version DESC `
+		` WHERE schema_migrations.version > $1 `
 	sqlstr += c.limit
 
 	// run

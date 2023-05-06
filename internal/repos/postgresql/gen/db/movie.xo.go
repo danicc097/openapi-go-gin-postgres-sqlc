@@ -194,9 +194,7 @@ movies.year,
 movies.synopsis ` +
 		`FROM public.movies ` +
 		`` +
-		` WHERE movies.movie_id > $1` +
-		` ORDER BY 
-		movie_id DESC `
+		` WHERE movies.movie_id > $1 `
 	sqlstr += c.limit
 
 	// run

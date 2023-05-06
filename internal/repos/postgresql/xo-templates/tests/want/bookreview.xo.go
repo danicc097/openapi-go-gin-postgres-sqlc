@@ -196,9 +196,7 @@ book_reviews.reviewer,
 left join books on books.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_review_id > $3` +
-		` ORDER BY 
-		book_review_id DESC `
+		` WHERE book_reviews.book_review_id > $3 `
 	sqlstr += c.limit
 
 	// run
@@ -233,9 +231,7 @@ book_reviews.reviewer,
 left join books on books.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_id > $3` +
-		` ORDER BY 
-		book_id DESC `
+		` WHERE book_reviews.book_id > $3 `
 	sqlstr += c.limit
 
 	// run

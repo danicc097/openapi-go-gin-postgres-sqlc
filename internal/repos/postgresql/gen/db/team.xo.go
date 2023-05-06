@@ -259,9 +259,7 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.team_id > $5` +
-		` ORDER BY 
-		team_id DESC `
+		` WHERE teams.team_id > $5 `
 	sqlstr += c.limit
 
 	// run
@@ -320,9 +318,7 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.project_id > $5` +
-		` ORDER BY 
-		project_id DESC `
+		` WHERE teams.project_id > $5 `
 	sqlstr += c.limit
 
 	// run

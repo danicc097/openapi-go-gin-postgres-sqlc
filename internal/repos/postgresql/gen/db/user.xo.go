@@ -427,9 +427,8 @@ left join (
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.created_at > $9`+
-		` ORDER BY 
-		created_at DESC  AND users.deleted_at is %s `, c.deletedAt)
+		` WHERE users.created_at > $9  AND users.deleted_at is %s  ORDER BY 
+		created_at DESC`, c.deletedAt)
 	sqlstr += c.limit
 
 	// run

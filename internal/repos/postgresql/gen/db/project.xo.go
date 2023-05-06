@@ -295,9 +295,7 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id > $6` +
-		` ORDER BY 
-		project_id DESC `
+		` WHERE projects.project_id > $6 `
 	sqlstr += c.limit
 
 	// run
