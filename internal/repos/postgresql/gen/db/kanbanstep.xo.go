@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -50,6 +53,35 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 	}
 
 	return ks.Insert(ctx, db)
+}
+
+// UpsertKanbanStep upserts a KanbanStep in the database with the given params.
+func UpsertKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {
+	var err error
+	ks := &KanbanStep{
+		ProjectID:     params.ProjectID,
+		StepOrder:     params.StepOrder,
+		Name:          params.Name,
+		Description:   params.Description,
+		Color:         params.Color,
+		TimeTrackable: params.TimeTrackable,
+	}
+
+	ks, err = ks.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			ks, err = ks.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return ks, nil
 }
 
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'
@@ -165,27 +197,6 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 	*ks = newks
 
 	return ks, nil
-}
-
-// Upsert performs an upsert for KanbanStep.
-func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`kanban_step_id, project_id, step_order, name, description, color, time_trackable` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
-		`)` +
-		` ON CONFLICT (kanban_step_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
-	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the KanbanStep from the database.

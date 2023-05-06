@@ -4,8 +4,11 @@ package got
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -34,6 +37,30 @@ func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, er
 	}
 
 	return b.Insert(ctx, db)
+}
+
+// UpsertBook upserts a Book in the database with the given params.
+func UpsertBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
+	var err error
+	b := &Book{
+		Name: params.Name,
+	}
+
+	b, err = b.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			b, err = b.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return b, nil
 }
 
 // BookUpdateParams represents update params for 'public.books'
@@ -131,27 +158,6 @@ func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 	*b = newb
 
 	return b, nil
-}
-
-// Upsert performs an upsert for Book.
-func (b *Book) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.books (` +
-		`book_id, name` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` ON CONFLICT (book_id) DO ` +
-		`UPDATE SET ` +
-		`name = EXCLUDED.name ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, b.BookID, b.Name)
-	if _, err := db.Exec(ctx, sqlstr, b.BookID, b.Name); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the Book from the database.

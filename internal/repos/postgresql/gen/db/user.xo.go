@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/google/uuid"
@@ -77,6 +80,39 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 	}
 
 	return u.Insert(ctx, db)
+}
+
+// UpsertUser upserts a User in the database with the given params.
+func UpsertUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	var err error
+	u := &User{
+		Username:                 params.Username,
+		Email:                    params.Email,
+		FirstName:                params.FirstName,
+		LastName:                 params.LastName,
+		ExternalID:               params.ExternalID,
+		APIKeyID:                 params.APIKeyID,
+		Scopes:                   params.Scopes,
+		RoleRank:                 params.RoleRank,
+		HasPersonalNotifications: params.HasPersonalNotifications,
+		HasGlobalNotifications:   params.HasGlobalNotifications,
+	}
+
+	u, err = u.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			u, err = u.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return u, nil
 }
 
 // UserUpdateParams represents update params for 'public.users'
@@ -251,27 +287,6 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	*u = newu
 
 	return u, nil
-}
-
-// Upsert performs an upsert for User.
-func (u *User) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
-		`)` +
-		` ON CONFLICT (user_id) DO ` +
-		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the User from the database.

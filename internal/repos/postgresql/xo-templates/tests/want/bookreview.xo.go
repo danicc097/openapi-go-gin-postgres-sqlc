@@ -4,9 +4,12 @@ package got
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -38,6 +41,31 @@ func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams
 	}
 
 	return br.Insert(ctx, db)
+}
+
+// UpsertBookReview upserts a BookReview in the database with the given params.
+func UpsertBookReview(ctx context.Context, db DB, params *BookReviewCreateParams) (*BookReview, error) {
+	var err error
+	br := &BookReview{
+		BookID:   params.BookID,
+		Reviewer: params.Reviewer,
+	}
+
+	br, err = br.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			br, err = br.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return br, nil
 }
 
 // BookReviewUpdateParams represents update params for 'public.book_reviews'
@@ -135,27 +163,6 @@ func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
 	*br = newbr
 
 	return br, nil
-}
-
-// Upsert performs an upsert for BookReview.
-func (br *BookReview) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.book_reviews (` +
-		`book_review_id, book_id, reviewer` +
-		`) VALUES (` +
-		`$1, $2, $3` +
-		`)` +
-		` ON CONFLICT (book_review_id) DO ` +
-		`UPDATE SET ` +
-		`book_id = EXCLUDED.book_id, reviewer = EXCLUDED.reviewer ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, br.BookReviewID, br.BookID, br.Reviewer)
-	if _, err := db.Exec(ctx, sqlstr, br.BookReviewID, br.BookID, br.Reviewer); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the BookReview from the database.

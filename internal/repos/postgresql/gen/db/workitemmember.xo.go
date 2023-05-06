@@ -4,9 +4,12 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/google/uuid"
@@ -43,6 +46,32 @@ func CreateWorkItemMember(ctx context.Context, db DB, params *WorkItemMemberCrea
 	}
 
 	return wim.Insert(ctx, db)
+}
+
+// UpsertWorkItemMember upserts a WorkItemMember in the database with the given params.
+func UpsertWorkItemMember(ctx context.Context, db DB, params *WorkItemMemberCreateParams) (*WorkItemMember, error) {
+	var err error
+	wim := &WorkItemMember{
+		WorkItemID: params.WorkItemID,
+		Member:     params.Member,
+		Role:       params.Role,
+	}
+
+	wim, err = wim.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wim, err = wim.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return wim, nil
 }
 
 // WorkItemMemberUpdateParams represents update params for 'public.work_item_member'
@@ -150,27 +179,6 @@ func (wim *WorkItemMember) Update(ctx context.Context, db DB) (*WorkItemMember, 
 	*wim = newwim
 
 	return wim, nil
-}
-
-// Upsert performs an upsert for WorkItemMember.
-func (wim *WorkItemMember) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.work_item_member (` +
-		`work_item_id, member, role` +
-		`) VALUES (` +
-		`$1, $2, $3` +
-		`)` +
-		` ON CONFLICT (work_item_id, member) DO ` +
-		`UPDATE SET ` +
-		`role = EXCLUDED.role ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
-	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the WorkItemMember from the database.

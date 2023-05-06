@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -66,6 +69,37 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 	}
 
 	return wi.Insert(ctx, db)
+}
+
+// UpsertWorkItem upserts a WorkItem in the database with the given params.
+func UpsertWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+	var err error
+	wi := &WorkItem{
+		Title:          params.Title,
+		Description:    params.Description,
+		WorkItemTypeID: params.WorkItemTypeID,
+		Metadata:       params.Metadata,
+		TeamID:         params.TeamID,
+		KanbanStepID:   params.KanbanStepID,
+		Closed:         params.Closed,
+		TargetDate:     params.TargetDate,
+	}
+
+	wi, err = wi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wi, err = wi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return wi, nil
 }
 
 // WorkItemUpdateParams represents update params for 'public.work_items'
@@ -241,27 +275,6 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	*wi = newwi
 
 	return wi, nil
-}
-
-// Upsert performs an upsert for WorkItem.
-func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.work_items (` +
-		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
-		`)` +
-		` ON CONFLICT (work_item_id) DO ` +
-		`UPDATE SET ` +
-		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the WorkItem from the database.

@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -58,6 +61,36 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 	}
 
 	return te.Insert(ctx, db)
+}
+
+// UpsertTimeEntry upserts a TimeEntry in the database with the given params.
+func UpsertTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
+	var err error
+	te := &TimeEntry{
+		WorkItemID:      params.WorkItemID,
+		ActivityID:      params.ActivityID,
+		TeamID:          params.TeamID,
+		UserID:          params.UserID,
+		Comment:         params.Comment,
+		Start:           params.Start,
+		DurationMinutes: params.DurationMinutes,
+	}
+
+	te, err = te.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			te, err = te.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return te, nil
 }
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'
@@ -196,27 +229,6 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 	*te = newte
 
 	return te, nil
-}
-
-// Upsert performs an upsert for TimeEntry.
-func (te *TimeEntry) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.time_entries (` +
-		`time_entry_id, work_item_id, activity_id, team_id, user_id, comment, start, duration_minutes` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
-		`)` +
-		` ON CONFLICT (time_entry_id) DO ` +
-		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, activity_id = EXCLUDED.activity_id, team_id = EXCLUDED.team_id, user_id = EXCLUDED.user_id, comment = EXCLUDED.comment, start = EXCLUDED.start, duration_minutes = EXCLUDED.duration_minutes ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
-	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the TimeEntry from the database.

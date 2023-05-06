@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -52,6 +55,33 @@ func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Pr
 	}
 
 	return p.Insert(ctx, db)
+}
+
+// UpsertProject upserts a Project in the database with the given params.
+func UpsertProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
+	var err error
+	p := &Project{
+		Name:               params.Name,
+		Description:        params.Description,
+		WorkItemsTableName: params.WorkItemsTableName,
+		BoardConfig:        params.BoardConfig,
+	}
+
+	p, err = p.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			p, err = p.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return p, nil
 }
 
 // ProjectUpdateParams represents update params for 'public.projects'
@@ -184,27 +214,6 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	*p = newp
 
 	return p, nil
-}
-
-// Upsert performs an upsert for Project.
-func (p *Project) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.projects (` +
-		`project_id, name, description, work_items_table_name, board_config` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` ON CONFLICT (project_id) DO ` +
-		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, board_config = EXCLUDED.board_config ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
-	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the Project from the database.

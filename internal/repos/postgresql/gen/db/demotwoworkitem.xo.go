@@ -4,10 +4,13 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -38,6 +41,31 @@ func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCr
 	}
 
 	return dtwi.Insert(ctx, db)
+}
+
+// UpsertDemoTwoWorkItem upserts a DemoTwoWorkItem in the database with the given params.
+func UpsertDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
+	var err error
+	dtwi := &DemoTwoWorkItem{
+		WorkItemID:            params.WorkItemID,
+		CustomDateForProject2: params.CustomDateForProject2,
+	}
+
+	dtwi, err = dtwi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			dtwi, err = dtwi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return dtwi, nil
 }
 
 // DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'
@@ -145,27 +173,6 @@ func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkIte
 	*dtwi = newdtwi
 
 	return dtwi, nil
-}
-
-// Upsert performs an upsert for DemoTwoWorkItem.
-func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.demo_two_work_items (` +
-		`work_item_id, custom_date_for_project_2` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` ON CONFLICT (work_item_id) DO ` +
-		`UPDATE SET ` +
-		`custom_date_for_project_2 = EXCLUDED.custom_date_for_project_2 ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
-	if _, err := db.Exec(ctx, sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the DemoTwoWorkItem from the database.

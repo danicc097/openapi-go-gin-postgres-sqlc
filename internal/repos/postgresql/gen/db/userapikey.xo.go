@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -43,6 +46,32 @@ func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams
 	}
 
 	return uak.Insert(ctx, db)
+}
+
+// UpsertUserAPIKey upserts a UserAPIKey in the database with the given params.
+func UpsertUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
+	var err error
+	uak := &UserAPIKey{
+		APIKey:    params.APIKey,
+		ExpiresOn: params.ExpiresOn,
+		UserID:    params.UserID,
+	}
+
+	uak, err = uak.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			uak, err = uak.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return uak, nil
 }
 
 // UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'
@@ -159,27 +188,6 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 	*uak = newuak
 
 	return uak, nil
-}
-
-// Upsert performs an upsert for UserAPIKey.
-func (uak *UserAPIKey) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.user_api_keys (` +
-		`user_api_key_id, api_key, expires_on, user_id` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`)` +
-		` ON CONFLICT (user_api_key_id) DO ` +
-		`UPDATE SET ` +
-		`api_key = EXCLUDED.api_key, expires_on = EXCLUDED.expires_on, user_id = EXCLUDED.user_id ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID)
-	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the UserAPIKey from the database.

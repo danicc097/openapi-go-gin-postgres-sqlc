@@ -4,10 +4,13 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -47,6 +50,32 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 	}
 
 	return t.Insert(ctx, db)
+}
+
+// UpsertTeam upserts a Team in the database with the given params.
+func UpsertTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
+	var err error
+	t := &Team{
+		ProjectID:   params.ProjectID,
+		Name:        params.Name,
+		Description: params.Description,
+	}
+
+	t, err = t.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			t, err = t.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return t, nil
 }
 
 // TeamUpdateParams represents update params for 'public.teams'
@@ -173,27 +202,6 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	*t = newt
 
 	return t, nil
-}
-
-// Upsert performs an upsert for Team.
-func (t *Team) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.teams (` +
-		`team_id, project_id, name, description` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`)` +
-		` ON CONFLICT (team_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
-	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the Team from the database.

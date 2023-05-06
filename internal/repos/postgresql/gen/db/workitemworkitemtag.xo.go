@@ -4,6 +4,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -37,6 +38,11 @@ func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkI
 	}
 
 	return wiwit.Insert(ctx, db)
+}
+
+// UpsertWorkItemWorkItemTag upserts a WorkItemWorkItemTag in the database with the given params.
+func UpsertWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
+	return nil, errors.New("WorkItemWorkItemTag is not updatable")
 }
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'

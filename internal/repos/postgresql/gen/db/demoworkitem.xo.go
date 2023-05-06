@@ -4,10 +4,13 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -47,6 +50,34 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 	}
 
 	return dwi.Insert(ctx, db)
+}
+
+// UpsertDemoWorkItem upserts a DemoWorkItem in the database with the given params.
+func UpsertDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
+	var err error
+	dwi := &DemoWorkItem{
+		WorkItemID:    params.WorkItemID,
+		Ref:           params.Ref,
+		Line:          params.Line,
+		LastMessageAt: params.LastMessageAt,
+		Reopened:      params.Reopened,
+	}
+
+	dwi, err = dwi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			dwi, err = dwi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return dwi, nil
 }
 
 // DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'
@@ -166,27 +197,6 @@ func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, erro
 	*dwi = newdwi
 
 	return dwi, nil
-}
-
-// Upsert performs an upsert for DemoWorkItem.
-func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.demo_work_items (` +
-		`work_item_id, ref, line, last_message_at, reopened` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` ON CONFLICT (work_item_id) DO ` +
-		`UPDATE SET ` +
-		`ref = EXCLUDED.ref, line = EXCLUDED.line, last_message_at = EXCLUDED.last_message_at, reopened = EXCLUDED.reopened ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened)
-	if _, err := db.Exec(ctx, sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the DemoWorkItem from the database.

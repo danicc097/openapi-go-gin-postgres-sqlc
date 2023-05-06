@@ -4,9 +4,12 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -42,6 +45,32 @@ func CreateUserNotification(ctx context.Context, db DB, params *UserNotification
 	}
 
 	return un.Insert(ctx, db)
+}
+
+// UpsertUserNotification upserts a UserNotification in the database with the given params.
+func UpsertUserNotification(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {
+	var err error
+	un := &UserNotification{
+		NotificationID: params.NotificationID,
+		Read:           params.Read,
+		UserID:         params.UserID,
+	}
+
+	un, err = un.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			un, err = un.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return un, nil
 }
 
 // UserNotificationUpdateParams represents update params for 'public.user_notifications'
@@ -145,27 +174,6 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 	*un = newun
 
 	return un, nil
-}
-
-// Upsert performs an upsert for UserNotification.
-func (un *UserNotification) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.user_notifications (` +
-		`user_notification_id, notification_id, read, user_id` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`)` +
-		` ON CONFLICT (user_notification_id) DO ` +
-		`UPDATE SET ` +
-		`notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
-	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the UserNotification from the database.

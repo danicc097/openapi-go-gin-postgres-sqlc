@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -38,6 +41,32 @@ func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie,
 	}
 
 	return m.Insert(ctx, db)
+}
+
+// UpsertMovie upserts a Movie in the database with the given params.
+func UpsertMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
+	var err error
+	m := &Movie{
+		Title:    params.Title,
+		Year:     params.Year,
+		Synopsis: params.Synopsis,
+	}
+
+	m, err = m.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			m, err = m.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return m, nil
 }
 
 // MovieUpdateParams represents update params for 'public.movies'
@@ -136,27 +165,6 @@ func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 	*m = newm
 
 	return m, nil
-}
-
-// Upsert performs an upsert for Movie.
-func (m *Movie) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.movies (` +
-		`movie_id, title, year, synopsis` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`)` +
-		` ON CONFLICT (movie_id) DO ` +
-		`UPDATE SET ` +
-		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis)
-	if _, err := db.Exec(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the Movie from the database.

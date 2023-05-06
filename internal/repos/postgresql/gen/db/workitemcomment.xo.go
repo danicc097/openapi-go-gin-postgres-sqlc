@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -46,6 +49,32 @@ func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCr
 	}
 
 	return wic.Insert(ctx, db)
+}
+
+// UpsertWorkItemComment upserts a WorkItemComment in the database with the given params.
+func UpsertWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCreateParams) (*WorkItemComment, error) {
+	var err error
+	wic := &WorkItemComment{
+		WorkItemID: params.WorkItemID,
+		UserID:     params.UserID,
+		Message:    params.Message,
+	}
+
+	wic, err = wic.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wic, err = wic.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return wic, nil
 }
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
@@ -168,27 +197,6 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 	*wic = newwic
 
 	return wic, nil
-}
-
-// Upsert performs an upsert for WorkItemComment.
-func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_comment_id, work_item_id, user_id, message` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`)` +
-		` ON CONFLICT (work_item_comment_id) DO ` +
-		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message)
-	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the WorkItemComment from the database.

@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -34,6 +37,31 @@ func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCr
 	}
 
 	return sm.Insert(ctx, db)
+}
+
+// UpsertSchemaMigration upserts a SchemaMigration in the database with the given params.
+func UpsertSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
+	var err error
+	sm := &SchemaMigration{
+		Version: params.Version,
+		Dirty:   params.Dirty,
+	}
+
+	sm, err = sm.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			sm, err = sm.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return sm, nil
 }
 
 // SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'
@@ -127,27 +155,6 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 	*sm = newsm
 
 	return sm, nil
-}
-
-// Upsert performs an upsert for SchemaMigration.
-func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.schema_migrations (` +
-		`version, dirty` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` ON CONFLICT (version) DO ` +
-		`UPDATE SET ` +
-		`dirty = EXCLUDED.dirty ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, sm.Version, sm.Dirty)
-	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the SchemaMigration from the database.

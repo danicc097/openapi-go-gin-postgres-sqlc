@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -44,6 +47,33 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 	}
 
 	return a.Insert(ctx, db)
+}
+
+// UpsertActivity upserts a Activity in the database with the given params.
+func UpsertActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
+	var err error
+	a := &Activity{
+		ProjectID:    params.ProjectID,
+		Name:         params.Name,
+		Description:  params.Description,
+		IsProductive: params.IsProductive,
+	}
+
+	a, err = a.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			a, err = a.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return a, nil
 }
 
 // ActivityUpdateParams represents update params for 'public.activities'
@@ -151,27 +181,6 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	*a = newa
 
 	return a, nil
-}
-
-// Upsert performs an upsert for Activity.
-func (a *Activity) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.activities (` +
-		`activity_id, project_id, name, description, is_productive` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` ON CONFLICT (activity_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, is_productive = EXCLUDED.is_productive ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive)
-	if _, err := db.Exec(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the Activity from the database.

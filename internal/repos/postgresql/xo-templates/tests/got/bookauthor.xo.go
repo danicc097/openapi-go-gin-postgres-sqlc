@@ -4,6 +4,7 @@ package got
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -37,6 +38,11 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 	}
 
 	return ba.Insert(ctx, db)
+}
+
+// UpsertBookAuthor upserts a BookAuthor in the database with the given params.
+func UpsertBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
+	return nil, errors.New("BookAuthor is not updatable")
 }
 
 // BookAuthorUpdateParams represents update params for 'public.book_authors'

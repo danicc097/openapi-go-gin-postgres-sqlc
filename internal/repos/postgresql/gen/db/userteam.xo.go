@@ -4,6 +4,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -38,6 +39,11 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 	}
 
 	return ut.Insert(ctx, db)
+}
+
+// UpsertUserTeam upserts a UserTeam in the database with the given params.
+func UpsertUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*UserTeam, error) {
+	return nil, errors.New("UserTeam is not updatable")
 }
 
 // UserTeamUpdateParams represents update params for 'public.user_team'

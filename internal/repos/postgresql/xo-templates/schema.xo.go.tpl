@@ -231,36 +231,36 @@ func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}Cr
   return {{ short $t }}.Insert(ctx, db)
 }
 
-{{/**
-
-TODO:
-
-// UpsertUser upserts a User in the database with the given params.
-func UpsertUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+// Upsert{{ $t.GoName }} upserts a {{ $t.GoName }} in the database with the given params.
+func Upsert{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}CreateParams) (*{{ $t.GoName }}, error) {
+{{ if not_updatable $t.Fields -}}
+  return nil, errors.New("{{ $t.GoName }} is not updatable")
+{{ else -}}
 	var err error
-	u := &User{
-		Name: params.Name,
-	}
+  {{ short $t }} := &{{ $t.GoName }}{
+{{ range $t.Fields -}}
+	{{ set_field . "CreateParams" $t -}}
+{{ end -}}
+  }
 
-	u, err = u.Insert(ctx, db)
+  {{ short $t }}, err = {{ short $t }}.Insert(ctx, db)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-			  // wrap with Insert failed
-        break
+			  return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-		  u, err = u.Update(ctx, db)
+		  {{ short $t }}, err = {{ short $t }}.Update(ctx, db)
       if err != nil {
-        // wrap with Update failed
+			  return nil, fmt.Errorf("UpsertUser/Update: %w", err)
       }
 		}
 	}
 
-	return u, err
+  return {{ short $t }}, nil
+{{ end -}}
 }
 
- */}}
 
 // {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'
 type {{ $t.GoName }}UpdateParams struct {
@@ -340,20 +340,6 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
   *{{ short $t }} = new{{ short $t }}
 
 	return {{ short $t }}, nil
-}
-
-
-// {{ func_name_context "Upsert" "" }} performs an upsert for {{ $t.GoName }}.
-{{ recv_context $t "Upsert" "" }} {
-	// upsert
-	{{ sqlstr "upsert" $t }}
-	// run
-	{{ logf $t $t.Ignored }}{{/* upsert will require generated fields, but exclude ignored fields */}}
-	if _, err := {{ db_prefix "Exec" true false $t }}; err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 {{- end }}

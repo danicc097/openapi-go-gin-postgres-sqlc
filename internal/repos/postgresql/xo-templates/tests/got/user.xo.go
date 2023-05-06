@@ -4,9 +4,12 @@ package got
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -35,6 +38,30 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 	}
 
 	return u.Insert(ctx, db)
+}
+
+// UpsertUser upserts a User in the database with the given params.
+func UpsertUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	var err error
+	u := &User{
+		Name: params.Name,
+	}
+
+	u, err = u.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			u, err = u.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return u, nil
 }
 
 // UserUpdateParams represents update params for 'public.users'
@@ -128,27 +155,6 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	*u = newu
 
 	return u, nil
-}
-
-// Upsert performs an upsert for User.
-func (u *User) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.users (` +
-		`user_id, name` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` ON CONFLICT (user_id) DO ` +
-		`UPDATE SET ` +
-		`name = EXCLUDED.name ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, u.UserID, u.Name)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Name); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the User from the database.

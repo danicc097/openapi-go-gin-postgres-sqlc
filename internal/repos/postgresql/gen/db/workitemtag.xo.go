@@ -4,8 +4,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -44,6 +47,33 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 	}
 
 	return wit.Insert(ctx, db)
+}
+
+// UpsertWorkItemTag upserts a WorkItemTag in the database with the given params.
+func UpsertWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreateParams) (*WorkItemTag, error) {
+	var err error
+	wit := &WorkItemTag{
+		ProjectID:   params.ProjectID,
+		Name:        params.Name,
+		Description: params.Description,
+		Color:       params.Color,
+	}
+
+	wit, err = wit.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wit, err = wit.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return wit, nil
 }
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'
@@ -151,27 +181,6 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error)
 	*wit = newwit
 
 	return wit, nil
-}
-
-// Upsert performs an upsert for WorkItemTag.
-func (wit *WorkItemTag) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.work_item_tags (` +
-		`work_item_tag_id, project_id, name, description, color` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` ON CONFLICT (work_item_tag_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
-	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the WorkItemTag from the database.

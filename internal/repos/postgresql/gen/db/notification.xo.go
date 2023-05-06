@@ -4,11 +4,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -61,6 +64,37 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 	}
 
 	return n.Insert(ctx, db)
+}
+
+// UpsertNotification upserts a Notification in the database with the given params.
+func UpsertNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
+	var err error
+	n := &Notification{
+		ReceiverRank:     params.ReceiverRank,
+		Title:            params.Title,
+		Body:             params.Body,
+		Label:            params.Label,
+		Link:             params.Link,
+		Sender:           params.Sender,
+		Receiver:         params.Receiver,
+		NotificationType: params.NotificationType,
+	}
+
+	n, err = n.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			n, err = n.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return n, nil
 }
 
 // NotificationUpdateParams represents update params for 'public.notifications'
@@ -201,27 +235,6 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 	*n = newn
 
 	return n, nil
-}
-
-// Upsert performs an upsert for Notification.
-func (n *Notification) Upsert(ctx context.Context, db DB) error {
-	// upsert
-	sqlstr := `INSERT INTO public.notifications (` +
-		`notification_id, receiver_rank, title, body, label, link, sender, receiver, notification_type` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
-		`)` +
-		` ON CONFLICT (notification_id) DO ` +
-		`UPDATE SET ` +
-		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type ` +
-		` RETURNING * `
-	// run
-	logf(sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
-	if _, err := db.Exec(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType); err != nil {
-		return logerror(err)
-	}
-	// set exists
-	return nil
 }
 
 // Delete deletes the Notification from the database.
