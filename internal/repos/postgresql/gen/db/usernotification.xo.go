@@ -319,69 +319,6 @@ left join (
 	return res, nil
 }
 
-// UserNotificationPaginatedByNotificationID returns a cursor-paginated list of UserNotification.
-func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := `SELECT ` +
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id,
-(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
-(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-		`FROM public.user_notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
-left join notifications on notifications.notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
-left join user_notifications on user_notifications.user_id = user_notifications.user_id
--- M2O join generated from "user_notifications_notification_id_user_id_key"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id > $7 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, notificationID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.

@@ -166,6 +166,56 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// BookPaginatedByBookID returns a cursor-paginated list of Book.
+func BookPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
+	c := &BookSelectConfig{joins: BookJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`books.book_id,
+books.name,
+(case when $1::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids,
+(case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
+		`FROM public.books ` +
+		`-- M2M join generated from "book_authors_author_id_fkey"
+left join (
+	select
+			book_authors.book_id as book_authors_book_id
+			, array_agg(users.*) filter (where users.* is not null) as __author_ids
+		from book_authors
+    	join users on users.user_id = book_authors.author_id
+    group by book_authors_book_id
+  ) as joined_author_ids on joined_author_ids.book_authors_book_id = books.book_id
+
+-- M2O join generated from "book_reviews_book_id_fkey"
+left join (
+  select
+  book_id as book_reviews_book_id
+    , array_agg(book_reviews.*) as book_reviews
+  from
+    book_reviews
+  group by
+        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id` +
+		` WHERE books.book_id > $3 `
+	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, bookID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Book/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Book])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Book/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // BookByBookID retrieves a row from 'public.books' as a Book.
 //
 // Generated from index 'books_pkey'.

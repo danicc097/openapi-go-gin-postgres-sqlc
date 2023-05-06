@@ -295,57 +295,6 @@ left join (
 	return res, nil
 }
 
-// WorkItemTypePaginatedByProjectID returns a cursor-paginated list of WorkItemType.
-func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := `SELECT ` +
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
-(case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
-(case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
--- O2O join generated from "work_item_types_name_project_id_key (Generated from M2O)"
-left join work_item_types on work_item_types.name = work_item_types.project_id
--- M2O join generated from "work_item_types_name_project_id_key"
-left join (
-  select
-  name as work_item_types_project_id
-    , array_agg(work_item_types.*) as work_item_types
-  from
-    work_item_types
-  group by
-        name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
-		` WHERE work_item_types.project_id > $5 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, projectID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // WorkItemTypeByNameProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_name_project_id_key'.

@@ -2337,14 +2337,22 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 			f.loadConstraints(constraints, table.SQLName)
 		}
 	}
-	cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
+	existingCursors := make(map[string]bool)
 
-	// build table fieldnames
+	cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
+	for _, pk := range table.PrimaryKeys {
+		existingCursors[pk.SQLName] = true
+	}
+
 	for _, z := range table.Fields {
 		for _, c := range tableConstraints {
 			if c.Type == "unique" && c.ColumnName == z.SQLName {
 				if z.Type == "time.Time" || z.Type == "int" {
+					if existingCursors[z.SQLName] {
+						continue
+					}
 					cursorCols = append(cursorCols, []Field{z})
+					existingCursors[z.SQLName] = true
 				}
 			}
 		}

@@ -311,65 +311,6 @@ left join (
 	return res, nil
 }
 
-// WorkItemTagPaginatedByProjectID returns a cursor-paginated list of WorkItemTag.
-func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := `SELECT ` +
-		`work_item_tags.work_item_tag_id,
-work_item_tags.project_id,
-work_item_tags.name,
-work_item_tags.description,
-work_item_tags.color,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items,
-(case when $3::boolean = true and work_item_tags.name is not null then row(work_item_tags.*) end) as work_item_tag,
-(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags ` +
-		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = work_item_tags.project_id
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
-		from work_item_work_item_tag
-    	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by work_item_work_item_tag_work_item_tag_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-
--- O2O join generated from "work_item_tags_name_project_id_key (Generated from M2O)"
-left join work_item_tags on work_item_tags.name = work_item_tags.project_id
--- M2O join generated from "work_item_tags_name_project_id_key"
-left join (
-  select
-  name as work_item_tags_project_id
-    , array_agg(work_item_tags.*) as work_item_tags
-  from
-    work_item_tags
-  group by
-        name) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = work_item_tags.project_id` +
-		` WHERE work_item_tags.project_id > $5 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, projectID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // WorkItemTagByNameProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.

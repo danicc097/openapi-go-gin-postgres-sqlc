@@ -313,59 +313,6 @@ left join (
 	return res, nil
 }
 
-// KanbanStepPaginatedByProjectID returns a cursor-paginated list of KanbanStep.
-func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	sqlstr := `SELECT ` +
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
-(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
-(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
-		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
-left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
--- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
-left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
--- M2O join generated from "kanban_steps_project_id_step_order_key"
-left join (
-  select
-  project_id as kanban_steps_project_id
-    , array_agg(kanban_steps.*) as kanban_steps
-  from
-    kanban_steps
-  group by
-        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
-		` WHERE kanban_steps.project_id > $5 `
-	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
-	sqlstr += c.limit
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, projectID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", err))
-	}
-	return res, nil
-}
-
 // KanbanStepPaginatedByStepOrder returns a cursor-paginated list of KanbanStep.
 func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
