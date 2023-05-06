@@ -354,3 +354,17 @@ left join (
 	}
 	return res, nil
 }
+
+// FKTeam_TeamID returns the Team associated with the UserTeam's (TeamID).
+//
+// Generated from foreign key 'user_team_team_id_fkey'.
+func (ut *UserTeam) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
+	return TeamByTeamID(ctx, db, ut.TeamID)
+}
+
+// FKUser_UserID returns the User associated with the UserTeam's (UserID).
+//
+// Generated from foreign key 'user_team_user_id_fkey'.
+func (ut *UserTeam) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, ut.UserID)
+}

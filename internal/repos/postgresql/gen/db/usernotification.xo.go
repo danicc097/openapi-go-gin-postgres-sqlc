@@ -427,3 +427,17 @@ left join users on users.user_id = user_notifications.user_id` +
 	}
 	return res, nil
 }
+
+// FKNotification_NotificationID returns the Notification associated with the UserNotification's (NotificationID).
+//
+// Generated from foreign key 'user_notifications_notification_id_fkey'.
+func (un *UserNotification) FKNotification_NotificationID(ctx context.Context, db DB) (*Notification, error) {
+	return NotificationByNotificationID(ctx, db, un.NotificationID)
+}
+
+// FKUser_UserID returns the User associated with the UserNotification's (UserID).
+//
+// Generated from foreign key 'user_notifications_user_id_fkey'.
+func (un *UserNotification) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, un.UserID)
+}

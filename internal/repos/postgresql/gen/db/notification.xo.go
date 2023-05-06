@@ -416,3 +416,17 @@ left join (
 	}
 	return res, nil
 }
+
+// FKUser_Receiver returns the User associated with the Notification's (Receiver).
+//
+// Generated from foreign key 'notifications_receiver_fkey'.
+func (n *Notification) FKUser_Receiver(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, *n.Receiver)
+}
+
+// FKUser_Sender returns the User associated with the Notification's (Sender).
+//
+// Generated from foreign key 'notifications_sender_fkey'.
+func (n *Notification) FKUser_Sender(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, n.Sender)
+}

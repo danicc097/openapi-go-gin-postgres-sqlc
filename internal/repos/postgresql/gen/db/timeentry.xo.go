@@ -445,3 +445,31 @@ left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 	}
 	return res, nil
 }
+
+// FKActivity_ActivityID returns the Activity associated with the TimeEntry's (ActivityID).
+//
+// Generated from foreign key 'time_entries_activity_id_fkey'.
+func (te *TimeEntry) FKActivity_ActivityID(ctx context.Context, db DB) (*Activity, error) {
+	return ActivityByActivityID(ctx, db, te.ActivityID)
+}
+
+// FKTeam_TeamID returns the Team associated with the TimeEntry's (TeamID).
+//
+// Generated from foreign key 'time_entries_team_id_fkey'.
+func (te *TimeEntry) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
+	return TeamByTeamID(ctx, db, *te.TeamID)
+}
+
+// FKUser_UserID returns the User associated with the TimeEntry's (UserID).
+//
+// Generated from foreign key 'time_entries_user_id_fkey'.
+func (te *TimeEntry) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, te.UserID)
+}
+
+// FKWorkItem_WorkItemID returns the WorkItem associated with the TimeEntry's (WorkItemID).
+//
+// Generated from foreign key 'time_entries_work_item_id_fkey'.
+func (te *TimeEntry) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
+	return WorkItemByWorkItemID(ctx, db, *te.WorkItemID)
+}

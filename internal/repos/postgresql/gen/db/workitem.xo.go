@@ -686,3 +686,24 @@ left join (
 	}
 	return res, nil
 }
+
+// FKKanbanStep_KanbanStepID returns the KanbanStep associated with the WorkItem's (KanbanStepID).
+//
+// Generated from foreign key 'work_items_kanban_step_id_fkey'.
+func (wi *WorkItem) FKKanbanStep_KanbanStepID(ctx context.Context, db DB) (*KanbanStep, error) {
+	return KanbanStepByKanbanStepID(ctx, db, wi.KanbanStepID)
+}
+
+// FKTeam_TeamID returns the Team associated with the WorkItem's (TeamID).
+//
+// Generated from foreign key 'work_items_team_id_fkey'.
+func (wi *WorkItem) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
+	return TeamByTeamID(ctx, db, wi.TeamID)
+}
+
+// FKWorkItemType_WorkItemTypeID returns the WorkItemType associated with the WorkItem's (WorkItemTypeID).
+//
+// Generated from foreign key 'work_items_work_item_type_id_fkey'.
+func (wi *WorkItem) FKWorkItemType_WorkItemTypeID(ctx context.Context, db DB) (*WorkItemType, error) {
+	return WorkItemTypeByWorkItemTypeID(ctx, db, wi.WorkItemTypeID)
+}

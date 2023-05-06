@@ -488,3 +488,10 @@ left join (
 
 	return &wit, nil
 }
+
+// FKProject_ProjectID returns the Project associated with the WorkItemTag's (ProjectID).
+//
+// Generated from foreign key 'work_item_tags_project_id_fkey'.
+func (wit *WorkItemTag) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, wit.ProjectID)
+}

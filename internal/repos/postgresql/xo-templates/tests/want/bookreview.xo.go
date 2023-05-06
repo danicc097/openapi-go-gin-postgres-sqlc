@@ -410,3 +410,17 @@ left join users on users.user_id = book_reviews.reviewer` +
 	}
 	return res, nil
 }
+
+// FKBook_BookID returns the Book associated with the BookReview's (BookID).
+//
+// Generated from foreign key 'book_reviews_book_id_fkey'.
+func (br *BookReview) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
+	return BookByBookID(ctx, db, br.BookID)
+}
+
+// FKUser_Reviewer returns the User associated with the BookReview's (Reviewer).
+//
+// Generated from foreign key 'book_reviews_reviewer_fkey'.
+func (br *BookReview) FKUser_Reviewer(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, br.Reviewer)
+}

@@ -593,3 +593,10 @@ left join work_items on work_items.team_id = teams.team_id` +
 
 	return &t, nil
 }
+
+// FKProject_ProjectID returns the Project associated with the Team's (ProjectID).
+//
+// Generated from foreign key 'teams_project_id_fkey'.
+func (t *Team) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, t.ProjectID)
+}

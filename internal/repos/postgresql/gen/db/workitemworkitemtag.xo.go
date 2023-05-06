@@ -403,3 +403,17 @@ left join (
 	}
 	return res, nil
 }
+
+// FKWorkItem_WorkItemID returns the WorkItem associated with the WorkItemWorkItemTag's (WorkItemID).
+//
+// Generated from foreign key 'work_item_work_item_tag_work_item_id_fkey'.
+func (wiwit *WorkItemWorkItemTag) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
+	return WorkItemByWorkItemID(ctx, db, wiwit.WorkItemID)
+}
+
+// FKWorkItemTag_WorkItemTagID returns the WorkItemTag associated with the WorkItemWorkItemTag's (WorkItemTagID).
+//
+// Generated from foreign key 'work_item_work_item_tag_work_item_tag_id_fkey'.
+func (wiwit *WorkItemWorkItemTag) FKWorkItemTag_WorkItemTagID(ctx context.Context, db DB) (*WorkItemTag, error) {
+	return WorkItemTagByWorkItemTagID(ctx, db, wiwit.WorkItemTagID)
+}
