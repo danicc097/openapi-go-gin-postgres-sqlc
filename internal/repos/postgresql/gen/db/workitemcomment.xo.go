@@ -204,6 +204,36 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// PaginatedWorkItemCommentByWorkItemCommentID returns a cursor-paginated list of WorkItemComment.
+func (wic *WorkItemComment) PaginatedWorkItemCommentByWorkItemCommentID(ctx context.Context, db DB) ([]WorkItemComment, error) {
+	sqlstr := `SELECT ` +
+		`work_item_comments.work_item_comment_id,
+work_item_comments.work_item_id,
+work_item_comments.user_id,
+work_item_comments.message,
+work_item_comments.created_at,
+work_item_comments.updated_at,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.work_item_comments ` +
+		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
+left join users on users.user_id = work_item_comments.user_id
+-- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
+left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_comment_id > $3 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // WorkItemCommentByWorkItemCommentID retrieves a row from 'public.work_item_comments' as a WorkItemComment.
 //
 // Generated from index 'work_item_comments_pkey'.
@@ -280,14 +310,14 @@ left join work_items on work_items.work_item_id = work_item_comments.work_item_i
 	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

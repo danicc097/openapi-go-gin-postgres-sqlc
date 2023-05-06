@@ -1293,14 +1293,20 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"join_fields":  f.join_fields,
 		"short":        f.short,
 		// sqlstr funcs
-		"querystr":     f.querystr,
-		"sqlstr":       f.sqlstr,
-		"sqlstr_index": f.sqlstr_index,
+		"querystr":                   f.querystr,
+		"sqlstr":                     f.sqlstr,
+		"sqlstr_index":               f.sqlstr_index,
+		"sqlstr_paginated":           f.sqlstr_paginated,
+		"db_paginated":               f.db_paginated,
+		"cursor_columns":             f.cursor_columns,
+		"func_name_context_suffixed": f.func_name_context_suffixed,
+		"recv_context_suffixed":      f.recv_context_suffixed,
 		// helpers
-		"check_name":    checkName,
-		"eval":          eval,
-		"add":           add,
-		"not_updatable": notUpdatable,
+		"join_str_camel_export": join_str_camel_export,
+		"check_name":            checkName,
+		"eval":                  eval,
+		"add":                   add,
+		"not_updatable":         notUpdatable,
 	}
 }
 
@@ -1447,10 +1453,10 @@ func (f *Funcs) has_deleted_at(t Table) bool {
 }
 
 // func_name_context generates a name for the func.
-func (f *Funcs) func_name_context(v interface{}) string {
+func (f *Funcs) func_name_context(v interface{}, suffix string) string {
 	switch x := v.(type) {
 	case string:
-		return x
+		return x + suffix
 	case Query:
 		return x.Name
 	case Table:
@@ -1816,7 +1822,7 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 // func_context generates a func signature for v with context determined by the
 // context mode.
 func (f *Funcs) func_context(v interface{}) string {
-	return f.funcfn(f.func_name_context(v), f.contextfn(), v)
+	return f.funcfn(f.func_name_context(v, ""), f.contextfn(), v)
 }
 
 // func_none genarates a func signature for v without context.
@@ -1840,18 +1846,41 @@ func (f *Funcs) recv(name string, context bool, t Table, v interface{}) string {
 		if x == "Upsert" || x == "Delete" || x == "SoftDelete" { // upsert and delete only exec
 			break
 		}
+		if x == "Paginated" { // upsert and delete only exec
+			r = append(r, "[]"+t.GoName)
+			break
+		}
 		r = append(r, "*"+t.GoName)
 	}
 	r = append(r, "error")
 	return fmt.Sprintf("func (%s *%s) %s(%s) (%s)", short, t.GoName, name, strings.Join(p, ", "), strings.Join(r, ", "))
 }
 
+func join_str_camel_export(strs []string, sep string) string {
+	var res string
+	for _, s := range strs {
+		res += camelExport(s)
+	}
+
+	return res
+}
+
+// cant explode in template
+func (f *Funcs) func_name_context_suffixed(typ interface{}, suffixes string) string {
+	return f.func_name_context(typ, suffixes)
+}
+
+// cant explode in template
+func (f *Funcs) recv_context_suffixed(typ interface{}, v interface{}, suffixes string) string {
+	return f.recv_context(typ, v, suffixes)
+}
+
 // recv_context builds a receiver func definition with context determined by
 // the context mode.
-func (f *Funcs) recv_context(typ interface{}, v interface{}) string {
+func (f *Funcs) recv_context(typ interface{}, v interface{}, suffixes string) string {
 	switch x := typ.(type) {
 	case Table:
-		return f.recv(f.func_name_context(v), f.contextfn(), x, v)
+		return f.recv(f.func_name_context(v, suffixes), f.contextfn(), x, v)
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 4: %T ]]", typ)
 }
@@ -1942,6 +1971,30 @@ func (f *Funcs) db_prefix(name string, includeGenerated bool, includeIgnored boo
 // db_update generates a db.<name>Context(ctx, sqlstr, regularparams,
 // primaryparams)
 func (f *Funcs) db_update(name string, v interface{}) string {
+	var ignore []interface{}
+	var p []string
+	switch x := v.(type) {
+	case Table:
+		prefix := f.short(x.GoName) + "."
+		for _, pk := range x.Generated {
+			ignore = append(ignore, pk.GoName)
+		}
+		for _, pk := range x.PrimaryKeys {
+			ignore = append(ignore, pk.GoName)
+		}
+		for _, pk := range x.Ignored {
+			ignore = append(ignore, pk.GoName)
+		}
+		p = append(p, f.names_ignore(prefix, x, ignore...), f.names(prefix, x.PrimaryKeys))
+	default:
+		return fmt.Sprintf("[[ UNSUPPORTED TYPE 9: %T ]]", v)
+	}
+	return f.db(name, strings.Join(p, ", "))
+}
+
+// db_paginated generates a db.<name>Context(ctx, sqlstr, params)
+// query for cursor pagination
+func (f *Funcs) db_paginated(name string, v interface{}, columns []string) string {
 	var ignore []interface{}
 	var p []string
 	switch x := v.(type) {
@@ -2256,6 +2309,114 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 	return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 }
 
+// cursor_columns returns a list of possible combinations of columns for cursor pagination.
+func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tables) [][]string {
+	var cursorCols [][]string
+	var tableConstraints []Constraint
+	if tc, ok := f.tableConstraints[table.SQLName]; ok {
+		tableConstraints = tc
+	} else {
+		if len(constraints) > 0 {
+			f.loadConstraints(constraints, table.SQLName)
+		}
+	}
+	pkCols := make([]string, len(table.PrimaryKeys))
+	for i, pk := range table.PrimaryKeys {
+		pkCols[i] = pk.SQLName
+	}
+	cursorCols = append(cursorCols, pkCols) // assume its incremental. if it's not then simply dont call it...
+
+	// build table fieldnames
+	for _, z := range table.Fields {
+		for _, c := range tableConstraints {
+			if c.Type == "unique" && c.ColumnName == z.SQLName {
+				if z.Type == "time.Time" || z.Type == "int" {
+					cursorCols = append(cursorCols, []string{z.SQLName})
+				}
+			}
+		}
+	}
+	fmt.Printf("cursorCols: %v\n", cursorCols)
+
+	return cursorCols
+}
+
+// sqlstr_paginated builds a cursor-paginated query string from columns.
+// TODO fixed orderby instead of appending opts
+func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []string) string {
+	switch x := v.(type) {
+	case Table:
+		var filters, fields, joins []string
+		var tableConstraints []Constraint
+		switch cc := constraints.(type) {
+		case []Constraint:
+			if tc, ok := f.tableConstraints[x.SQLName]; ok {
+				tableConstraints = tc
+			} else {
+				if len(cc) > 0 {
+					f.loadConstraints(cc, x.SQLName)
+				}
+			}
+		default:
+			break
+		}
+
+		var tableHasDeletedAt bool
+		for _, field := range x.Fields {
+			if field.SQLName == "deleted_at" {
+				tableHasDeletedAt = true
+			}
+		}
+
+		// build table fieldnames
+		for _, z := range x.Fields {
+			// add current table fields
+			fields = append(fields, x.SQLName+"."+f.colname(z))
+		}
+		// create joins for constraints
+		funcs := template.FuncMap{
+			"singularize": singularize,
+		}
+
+		var n int
+		for _, c := range tableConstraints {
+			joinStmts, selectStmts := createJoinStatement(tables, c, x, funcs, f.nth, n)
+			if joinStmts.String() == "" || selectStmts.String() == "" {
+				continue
+			}
+
+			fields = append(fields, selectStmts.String())
+			joins = append(joins, joinStmts.String())
+			n++
+		}
+
+		// use PK if incremental. else created_at if exists.
+		// ensure there are unique fields else return
+		for _, c := range columns {
+			filters = append(filters, fmt.Sprintf("%s.%s > %s", x.SQLName, c, f.nth(n)))
+			n++
+		}
+
+		lines := []string{
+			"SELECT ",
+			strings.Join(fields, ",\n") + " ",
+			"FROM " + f.schemafn(x.SQLName) + " ",
+			strings.Join(joins, "\n"),
+			" WHERE " + strings.Join(filters, " AND "),
+		}
+
+		if tableHasDeletedAt {
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s `, c.deletedAt)",
+				strings.Join(lines, "` +\n\t `"),
+				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
+			)
+		} else {
+			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+		}
+	}
+	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
+}
+
 // sqlstr_insert_base builds an INSERT query
 // If not all, sequence columns are skipped.
 func (f *Funcs) sqlstr_insert_base(all bool, v interface{}) []string {
@@ -2507,10 +2668,9 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			"singularize": singularize,
 		}
 
-		// IMPORTANT: automatic O2O generation before constraints to retain correct order
 		var n int
 		for _, c := range tableConstraints {
-			joinStmts, selectStmts := createJoinStatement(tables, c, x, funcs, f.nth, n)
+			joinStmts, selectStmts := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
 			if joinStmts.String() == "" || selectStmts.String() == "" {
 				continue
 			}
@@ -2569,9 +2729,9 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		return // don't duplicate
 	}
 	for _, c := range cc {
-		if c.Type != "foreign_key" {
-			continue
-		}
+		// if c.Type != "foreign_key" {
+		// 	continue
+		// }
 		if c.Cardinality == M2M && c.RefTableName == table {
 			for _, c1 := range cc {
 				if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
@@ -2590,7 +2750,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 
 // createJoinStatement returns select queries and join statements strings
 // for a given index table.
-func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
+func createJoinStatement(tables Tables, c Constraint, table Table, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
 	var joinTpl, selectTpl string
 	joins := &bytes.Buffer{}
 	selects := &bytes.Buffer{}
@@ -2612,7 +2772,7 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 		params["LookupJoinTablePK"] = c.RefColumnName
 		params["LookupJoinTablePKAgg"] = c.RefTableName
 		params["LookupJoinTablePKSuffix"] = c.RefTableName
-		params["CurrentTable"] = x.Table.SQLName
+		params["CurrentTable"] = table.SQLName
 		params["LookupTable"] = c.TableName
 		params["LookupExtraCols"] = []string{}
 
@@ -2643,34 +2803,34 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 	case M2O:
 		joinTpl = M2OJoin
 		selectTpl = M2OSelect
-		if c.RefTableName == x.Table.SQLName {
+		if c.RefTableName == table.SQLName {
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
 			params["JoinRefColumn"] = c.RefColumnName
-			params["CurrentTable"] = x.Table.SQLName
+			params["CurrentTable"] = table.SQLName
 
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
 		}
-		if c.TableName == x.Table.SQLName {
+		if c.TableName == table.SQLName {
 			params["JoinColumn"] = c.RefColumnName
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
-			params["CurrentTable"] = x.Table.SQLName
+			params["CurrentTable"] = table.SQLName
 
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.RefColumnName
 			}
 		}
 	case O2O:
-		if c.TableName == x.Table.SQLName {
+		if c.TableName == table.SQLName {
 			joinTpl = O2OJoin
 			selectTpl = O2OSelect
 			params["JoinColumn"] = c.RefColumnName
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
-			params["CurrentTable"] = x.Table.SQLName
+			params["CurrentTable"] = table.SQLName
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
@@ -2678,13 +2838,13 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 		}
 
 		// dummy created automatically to avoid this duplication
-		// if c.RefTableName == x.Table.SQLName {
+		// if c.RefTableName == table.SQLName {
 		// 	joinTpl = O2OJoin
 		// 	selectTpl = O2OSelect
 		// 	params["JoinColumn"] = c.ColumnName
 		// 	params["JoinTable"] = c.TableName
 		// 	params["JoinRefColumn"] = c.RefColumnName
-		// 	params["CurrentTable"] = x.Table.SQLName
+		// 	params["CurrentTable"] = table.SQLName
 		// 	break
 		// }
 

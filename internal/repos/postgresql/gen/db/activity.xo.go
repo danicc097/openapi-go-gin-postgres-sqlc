@@ -23,6 +23,8 @@ type Activity struct {
 
 	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
+	ActivityJoin    *Activity    `json:"-" db:"activity" openapi-go:"ignore"`     // O2O (generated from M2O)
+	ActivitiesJoin  *[]Activity  `json:"-" db:"activities" openapi-go:"ignore"`   // M2O
 
 }
 
@@ -93,6 +95,8 @@ const ()
 type ActivityJoins struct {
 	Project     bool
 	TimeEntries bool
+	Activity    bool
+	Activities  bool
 }
 
 // WithActivityJoin joins with the given tables.
@@ -102,6 +106,8 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
+			Activity:    s.joins.Activity || joins.Activity,
+			Activities:  s.joins.Activities || joins.Activities,
 		}
 	}
 }
@@ -187,6 +193,153 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// PaginatedActivityByActivityID returns a cursor-paginated list of Activity.
+func (a *Activity) PaginatedActivityByActivityID(ctx context.Context, db DB) ([]Activity, error) {
+	sqlstr := `SELECT ` +
+		`activities.activity_id,
+activities.project_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
+(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+		`FROM public.activities ` +
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+-- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
+left join activities on activities.name = activities.project_id
+-- M2O join generated from "activities_name_project_id_key"
+left join (
+  select
+  name as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+  group by
+        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
+		` WHERE activities.activity_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedActivityByProjectID returns a cursor-paginated list of Activity.
+func (a *Activity) PaginatedActivityByProjectID(ctx context.Context, db DB) ([]Activity, error) {
+	sqlstr := `SELECT ` +
+		`activities.activity_id,
+activities.project_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
+(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+		`FROM public.activities ` +
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+-- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
+left join activities on activities.name = activities.project_id
+-- M2O join generated from "activities_name_project_id_key"
+left join (
+  select
+  name as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+  group by
+        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
+		` WHERE activities.project_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedActivityByProjectID returns a cursor-paginated list of Activity.
+func (a *Activity) PaginatedActivityByProjectID(ctx context.Context, db DB) ([]Activity, error) {
+	sqlstr := `SELECT ` +
+		`activities.activity_id,
+activities.project_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
+(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
+		`FROM public.activities ` +
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+-- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
+left join activities on activities.name = activities.project_id
+-- M2O join generated from "activities_name_project_id_key"
+left join (
+  select
+  name as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+  group by
+        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
+		` WHERE activities.project_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
@@ -205,7 +358,9 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
+(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -217,14 +372,25 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $3 AND activities.project_id = $4 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+-- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
+left join activities on activities.name = activities.project_id
+-- M2O join generated from "activities_name_project_id_key"
+left join (
+  select
+  name as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+  group by
+        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
+		` WHERE activities.name = $5 AND activities.project_id = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Activity, c.joins.Activities, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
 	}
@@ -254,7 +420,9 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
+(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -266,23 +434,34 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $3 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+-- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
+left join activities on activities.name = activities.project_id
+-- M2O join generated from "activities_name_project_id_key"
+left join (
+  select
+  name as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+  group by
+        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
+		` WHERE activities.name = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Activity, c.joins.Activities, name)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -305,7 +484,9 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
+(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -317,23 +498,34 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id = $3 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+-- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
+left join activities on activities.name = activities.project_id
+-- M2O join generated from "activities_name_project_id_key"
+left join (
+  select
+  name as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+  group by
+        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
+		` WHERE activities.project_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Activity, c.joins.Activities, projectID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -356,7 +548,9 @@ activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true and activities.name is not null then row(activities.*) end) as activity,
+(case when $4::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
@@ -368,14 +562,25 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id = $3 `
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+-- O2O join generated from "activities_name_project_id_key (Generated from M2O)"
+left join activities on activities.name = activities.project_id
+-- M2O join generated from "activities_name_project_id_key"
+left join (
+  select
+  name as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+  group by
+        name) joined_activities on joined_activities.activities_project_id = activities.project_id` +
+		` WHERE activities.activity_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, activityID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, activityID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Activity, c.joins.Activities, activityID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))
 	}

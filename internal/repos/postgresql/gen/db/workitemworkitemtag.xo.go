@@ -4,93 +4,119 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"database/sql/driver"
+	"encoding/csv"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"regexp"
+	"strings"
+	"time"
 
-	"github.com/jackc/pgx/v5"
+  
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/lib/pq"
+	"github.com/lib/pq/hstore"
+
+	"github.com/google/uuid"
+
 )
-
 // WorkItemWorkItemTag represents a row from 'public.work_item_work_item_tag'.
 // Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//     - "property:private" to exclude a field from JSON.
+//     - "type:<pkg.type>" to override the type annotation.
+//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type WorkItemWorkItemTag struct {
-	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
-	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
+	WorkItemTagID int `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
+	WorkItemID int64 `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
+
+	WorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_tags" openapi-go:"ignore"` // M2M
+	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 
 }
 
 // WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'
 type WorkItemWorkItemTagCreateParams struct {
-	WorkItemTagID int   `json:"workItemTagID" required:"true"` // work_item_tag_id
-	WorkItemID    int64 `json:"workItemID" required:"true"`    // work_item_id
+	WorkItemTagID int `json:"workItemTagID" required:"true"` // work_item_tag_id
+	WorkItemID int64 `json:"workItemID" required:"true"` // work_item_id
 }
 
 // CreateWorkItemWorkItemTag creates a new WorkItemWorkItemTag in the database with the given params.
 func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
-	wiwit := &WorkItemWorkItemTag{
-		WorkItemTagID: params.WorkItemTagID,
-		WorkItemID:    params.WorkItemID,
-	}
-
-	return wiwit.Insert(ctx, db)
+  wiwit := &WorkItemWorkItemTag{
+	WorkItemTagID: params.WorkItemTagID,
+	WorkItemID: params.WorkItemID,
 }
+
+  return wiwit.Insert(ctx, db)
+}
+
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'
 type WorkItemWorkItemTagUpdateParams struct {
-	WorkItemTagID *int   `json:"workItemTagID" required:"true"` // work_item_tag_id
-	WorkItemID    *int64 `json:"workItemID" required:"true"`    // work_item_id
+	WorkItemTagID *int `json:"workItemTagID" required:"true"` // work_item_tag_id
+	WorkItemID *int64 `json:"workItemID" required:"true"` // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_work_item_tag struct fields with the specified params.
 func (wiwit *WorkItemWorkItemTag) SetUpdateParams(params *WorkItemWorkItemTagUpdateParams) {
-	if params.WorkItemTagID != nil {
-		wiwit.WorkItemTagID = *params.WorkItemTagID
-	}
-	if params.WorkItemID != nil {
-		wiwit.WorkItemID = *params.WorkItemID
-	}
+if params.WorkItemTagID != nil {
+	wiwit.WorkItemTagID = *params.WorkItemTagID
+}
+if params.WorkItemID != nil {
+	wiwit.WorkItemID = *params.WorkItemID
+}
 }
 
-type WorkItemWorkItemTagSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   WorkItemWorkItemTagJoins
-}
-type WorkItemWorkItemTagSelectConfigOption func(*WorkItemWorkItemTagSelectConfig)
 
-// WithWorkItemWorkItemTagLimit limits row selection.
-func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOption {
+	type WorkItemWorkItemTagSelectConfig struct {
+		limit       string
+		orderBy     string
+		joins  WorkItemWorkItemTagJoins
+	}
+	type WorkItemWorkItemTagSelectConfigOption func(*WorkItemWorkItemTagSelectConfig)
+
+	// WithWorkItemWorkItemTagLimit limits row selection.
+	func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOption {
+		return func(s *WorkItemWorkItemTagSelectConfig) {
+			if limit > 0 {
+				s.limit = fmt.Sprintf(" limit %d ", limit)
+			}
+		}
+	}
+	type WorkItemWorkItemTagOrderBy = string
+	const (
+	)
+type WorkItemWorkItemTagJoins struct {
+WorkItemTags bool
+WorkItems bool
+}
+
+	// WithWorkItemWorkItemTagJoin joins with the given tables.
+func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
-		if limit > 0 {
-			s.limit = fmt.Sprintf(" limit %d ", limit)
+		s.joins = WorkItemWorkItemTagJoins{
+
+			WorkItemTags:  s.joins.WorkItemTags || joins.WorkItemTags,
+		WorkItems:  s.joins.WorkItems || joins.WorkItems,
+
 		}
 	}
 }
 
-type WorkItemWorkItemTagOrderBy = string
 
-const ()
-
-type WorkItemWorkItemTagJoins struct {
-}
-
-// WithWorkItemWorkItemTagJoin joins with the given tables.
-func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
-	return func(s *WorkItemWorkItemTagSelectConfig) {
-		s.joins = WorkItemWorkItemTagJoins{}
-	}
-}
 
 // Insert inserts the WorkItemWorkItemTag to the database.
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
-	// insert (manual)
+// insert (manual)
 	sqlstr := `INSERT INTO public.work_item_work_item_tag (` +
-		`work_item_tag_id, work_item_id` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` RETURNING * `
+	 `work_item_tag_id, work_item_id` +
+	 `) VALUES (` +
+	 `$1, $2` +
+	 `)` +
+	 ` RETURNING * `
 	// run
 	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
 	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
@@ -101,18 +127,19 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Insert/pgx.CollectOneRow: %w", err))
 	}
-	*wiwit = newwiwit
+  *wiwit = newwiwit
 
 	return wiwit, nil
 }
 
+
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
 
 // Delete deletes the WorkItemWorkItemTag from the database.
-func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
-	// delete with composite primary key
+func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) (error) {
+// delete with composite primary key
 	sqlstr := `DELETE FROM public.work_item_work_item_tag ` +
-		`WHERE work_item_tag_id = $1 AND work_item_id = $2 `
+	 `WHERE work_item_tag_id = $1 AND work_item_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID); err != nil {
 		return logerror(err)
@@ -120,11 +147,59 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+
+
+
+
+// PaginatedWorkItemWorkItemTagByWorkItemTagIDWorkItemID returns a cursor-paginated list of WorkItemWorkItemTag.
+func (wiwit *WorkItemWorkItemTag) PaginatedWorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB) ([]WorkItemWorkItemTag, error) {
+	sqlstr := `SELECT ` +
+	 `work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
+(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.work_item_work_item_tag ` +
+	 `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+		from work_item_work_item_tag
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+		from work_item_work_item_tag
+    	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+` +
+	 ` WHERE work_item_work_item_tag.work_item_tag_id > $3 AND work_item_work_item_tag.work_item_id > $4 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, , wiwit.WorkItemTagID, wiwit.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+
 // WorkItemWorkItemTagByWorkItemIDWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
 func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int64, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) (*WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -132,17 +207,38 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id ` +
-		`FROM public.work_item_work_item_tag ` +
-		`` +
-		` WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2 `
+	 `work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
+(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.work_item_work_item_tag ` +
+	 `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+		from work_item_work_item_tag
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+		from work_item_work_item_tag
+    	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+` +
+	 ` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, workItemID, workItemTagID)
+  rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItems, workItemID, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/db.Query: %w", err))
 	}
@@ -150,6 +246,7 @@ work_item_work_item_tag.work_item_id ` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &wiwit, nil
 }
@@ -158,7 +255,8 @@ work_item_work_item_tag.work_item_id ` +
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
 func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -166,26 +264,47 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id ` +
-		`FROM public.work_item_work_item_tag ` +
-		`` +
-		` WHERE work_item_work_item_tag.work_item_id = $1 `
+	 `work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
+(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.work_item_work_item_tag ` +
+	 `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+		from work_item_work_item_tag
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+		from work_item_work_item_tag
+    	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+` +
+	 ` WHERE work_item_work_item_tag.work_item_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItems, workItemID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
-
+  
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -194,7 +313,8 @@ work_item_work_item_tag.work_item_id ` +
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
 func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -202,26 +322,47 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id ` +
-		`FROM public.work_item_work_item_tag ` +
-		`` +
-		` WHERE work_item_work_item_tag.work_item_tag_id = $1 `
+	 `work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
+(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.work_item_work_item_tag ` +
+	 `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+		from work_item_work_item_tag
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+		from work_item_work_item_tag
+    	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+` +
+	 ` WHERE work_item_work_item_tag.work_item_tag_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItems, workItemTagID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
-
+  
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -230,7 +371,8 @@ work_item_work_item_tag.work_item_id ` +
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
 func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -238,26 +380,52 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id ` +
-		`FROM public.work_item_work_item_tag ` +
-		`` +
-		` WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2 `
+	 `work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
+(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.work_item_work_item_tag ` +
+	 `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+		from work_item_work_item_tag
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+		from work_item_work_item_tag
+    	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+` +
+	 ` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTagID, workItemID)
-	rows, err := db.Query(ctx, sqlstr, workItemTagID, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItems, workItemTagID, workItemID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemTagIDWorkItemID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
-
+  
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemTagIDWorkItemID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
+
+
+
+
+

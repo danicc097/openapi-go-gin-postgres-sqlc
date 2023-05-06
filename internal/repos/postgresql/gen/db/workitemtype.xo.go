@@ -21,8 +21,10 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
+	ProjectJoin       *Project        `json:"-" db:"project" openapi-go:"ignore"`         // O2O (generated from M2O)
+	WorkItemJoin      *WorkItem       `json:"-" db:"work_item" openapi-go:"ignore"`       // O2O (inferred)
+	WorkItemTypeJoin  *WorkItemType   `json:"-" db:"work_item_type" openapi-go:"ignore"`  // O2O (generated from M2O)
+	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O
 
 }
 
@@ -91,8 +93,10 @@ type WorkItemTypeOrderBy = string
 const ()
 
 type WorkItemTypeJoins struct {
-	Project  bool
-	WorkItem bool
+	Project       bool
+	WorkItem      bool
+	WorkItemType  bool
+	WorkItemTypes bool
 }
 
 // WithWorkItemTypeJoin joins with the given tables.
@@ -100,8 +104,10 @@ func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOptio
 	return func(s *WorkItemTypeSelectConfig) {
 		s.joins = WorkItemTypeJoins{
 
-			Project:  s.joins.Project || joins.Project,
-			WorkItem: s.joins.WorkItem || joins.WorkItem,
+			Project:       s.joins.Project || joins.Project,
+			WorkItem:      s.joins.WorkItem || joins.WorkItem,
+			WorkItemType:  s.joins.WorkItemType || joins.WorkItemType,
+			WorkItemTypes: s.joins.WorkItemTypes || joins.WorkItemTypes,
 		}
 	}
 }
@@ -187,6 +193,132 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// PaginatedWorkItemTypeByWorkItemTypeID returns a cursor-paginated list of WorkItemType.
+func (wit *WorkItemType) PaginatedWorkItemTypeByWorkItemTypeID(ctx context.Context, db DB) ([]WorkItemType, error) {
+	sqlstr := `SELECT ` +
+		`work_item_types.work_item_type_id,
+work_item_types.project_id,
+work_item_types.name,
+work_item_types.description,
+work_item_types.color,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
+(case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
+		`FROM public.work_item_types ` +
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
+-- O2O join generated from "work_item_types_name_project_id_key (Generated from M2O)"
+left join work_item_types on work_item_types.name = work_item_types.project_id
+-- M2O join generated from "work_item_types_name_project_id_key"
+left join (
+  select
+  name as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+  group by
+        name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
+		` WHERE work_item_types.work_item_type_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedWorkItemTypeByProjectID returns a cursor-paginated list of WorkItemType.
+func (wit *WorkItemType) PaginatedWorkItemTypeByProjectID(ctx context.Context, db DB) ([]WorkItemType, error) {
+	sqlstr := `SELECT ` +
+		`work_item_types.work_item_type_id,
+work_item_types.project_id,
+work_item_types.name,
+work_item_types.description,
+work_item_types.color,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
+(case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
+		`FROM public.work_item_types ` +
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
+-- O2O join generated from "work_item_types_name_project_id_key (Generated from M2O)"
+left join work_item_types on work_item_types.name = work_item_types.project_id
+-- M2O join generated from "work_item_types_name_project_id_key"
+left join (
+  select
+  name as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+  group by
+        name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
+		` WHERE work_item_types.project_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedWorkItemTypeByProjectID returns a cursor-paginated list of WorkItemType.
+func (wit *WorkItemType) PaginatedWorkItemTypeByProjectID(ctx context.Context, db DB) ([]WorkItemType, error) {
+	sqlstr := `SELECT ` +
+		`work_item_types.work_item_type_id,
+work_item_types.project_id,
+work_item_types.name,
+work_item_types.description,
+work_item_types.color,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
+(case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
+		`FROM public.work_item_types ` +
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
+-- O2O join generated from "work_item_types_name_project_id_key (Generated from M2O)"
+left join work_item_types on work_item_types.name = work_item_types.project_id
+-- M2O join generated from "work_item_types_name_project_id_key"
+left join (
+  select
+  name as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+  group by
+        name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
+		` WHERE work_item_types.project_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // WorkItemTypeByNameProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_name_project_id_key'.
@@ -205,19 +337,32 @@ work_item_types.name,
 work_item_types.description,
 work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
+(case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4 `
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
+-- O2O join generated from "work_item_types_name_project_id_key (Generated from M2O)"
+left join work_item_types on work_item_types.name = work_item_types.project_id
+-- M2O join generated from "work_item_types_name_project_id_key"
+left join (
+  select
+  name as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+  group by
+        name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
+		` WHERE work_item_types.name = $5 AND work_item_types.project_id = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.WorkItemType, c.joins.WorkItemTypes, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", err))
 	}
@@ -247,28 +392,41 @@ work_item_types.name,
 work_item_types.description,
 work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
+(case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.name = $3 `
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
+-- O2O join generated from "work_item_types_name_project_id_key (Generated from M2O)"
+left join work_item_types on work_item_types.name = work_item_types.project_id
+-- M2O join generated from "work_item_types_name_project_id_key"
+left join (
+  select
+  name as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+  group by
+        name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
+		` WHERE work_item_types.name = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.WorkItemType, c.joins.WorkItemTypes, name)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -291,28 +449,41 @@ work_item_types.name,
 work_item_types.description,
 work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
+(case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.project_id = $3 `
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
+-- O2O join generated from "work_item_types_name_project_id_key (Generated from M2O)"
+left join work_item_types on work_item_types.name = work_item_types.project_id
+-- M2O join generated from "work_item_types_name_project_id_key"
+left join (
+  select
+  name as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+  group by
+        name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
+		` WHERE work_item_types.project_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.WorkItemType, c.joins.WorkItemTypes, projectID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -335,19 +506,32 @@ work_item_types.name,
 work_item_types.description,
 work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
+(case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.work_item_type_id = $3 `
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
+-- O2O join generated from "work_item_types_name_project_id_key (Generated from M2O)"
+left join work_item_types on work_item_types.name = work_item_types.project_id
+-- M2O join generated from "work_item_types_name_project_id_key"
+left join (
+  select
+  name as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+  group by
+        name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
+		` WHERE work_item_types.work_item_type_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTypeID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, workItemTypeID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.WorkItemType, c.joins.WorkItemTypes, workItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", err))
 	}

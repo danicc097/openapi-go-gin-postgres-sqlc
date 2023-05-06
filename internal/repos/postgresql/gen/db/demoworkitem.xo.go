@@ -23,7 +23,9 @@ type DemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
+	WorkItemJoin     *WorkItem     `json:"-" db:"work_item" openapi-go:"ignore"`      // O2O
+	DemoWorkItemJoin *DemoWorkItem `json:"-" db:"demo_work_item" openapi-go:"ignore"` // O2O
+	DemoWorkItemJoin *DemoWorkItem `json:"-" db:"demo_work_item" openapi-go:"ignore"` // O2O
 
 }
 
@@ -109,7 +111,9 @@ func WithDemoWorkItemOrderBy(rows ...DemoWorkItemOrderBy) DemoWorkItemSelectConf
 }
 
 type DemoWorkItemJoins struct {
-	WorkItem bool
+	WorkItem     bool
+	DemoWorkItem bool
+	DemoWorkItem bool
 }
 
 // WithDemoWorkItemJoin joins with the given tables.
@@ -117,7 +121,9 @@ func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOptio
 	return func(s *DemoWorkItemSelectConfig) {
 		s.joins = DemoWorkItemJoins{
 
-			WorkItem: s.joins.WorkItem || joins.WorkItem,
+			WorkItem:     s.joins.WorkItem || joins.WorkItem,
+			DemoWorkItem: s.joins.DemoWorkItem || joins.DemoWorkItem,
+			DemoWorkItem: s.joins.DemoWorkItem || joins.DemoWorkItem,
 		}
 	}
 }
@@ -202,6 +208,38 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// PaginatedDemoWorkItemByWorkItemID returns a cursor-paginated list of DemoWorkItem.
+func (dwi *DemoWorkItem) PaginatedDemoWorkItemByWorkItemID(ctx context.Context, db DB) ([]DemoWorkItem, error) {
+	sqlstr := `SELECT ` +
+		`demo_work_items.work_item_id,
+demo_work_items.ref,
+demo_work_items.line,
+demo_work_items.last_message_at,
+demo_work_items.reopened,
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item ` +
+		`FROM public.demo_work_items ` +
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
+left join work_items on work_items.work_item_id = demo_work_items.work_item_id
+-- O2O join generated from "demo_work_items_pkey(O2O reference)"
+left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id
+-- O2O join generated from "demo_work_items_pkey"
+left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.work_item_id > $4 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened, dwi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // DemoWorkItemByWorkItemID retrieves a row from 'public.demo_work_items' as a DemoWorkItem.
 //
 // Generated from index 'demo_work_items_pkey'.
@@ -219,17 +257,23 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item ` +
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
-left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id = $2 `
+left join work_items on work_items.work_item_id = demo_work_items.work_item_id
+-- O2O join generated from "demo_work_items_pkey(O2O reference)"
+left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id
+-- O2O join generated from "demo_work_items_pkey"
+left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.work_item_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, c.joins.DemoWorkItem, c.joins.DemoWorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -258,26 +302,32 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item ` +
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
-left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.ref = $2 AND demo_work_items.line = $3 `
+left join work_items on work_items.work_item_id = demo_work_items.work_item_id
+-- O2O join generated from "demo_work_items_pkey(O2O reference)"
+left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id
+-- O2O join generated from "demo_work_items_pkey"
+left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.ref = $4 AND demo_work_items.line = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, ref, line)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, ref, line)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, c.joins.DemoWorkItem, c.joins.DemoWorkItem, ref, line)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

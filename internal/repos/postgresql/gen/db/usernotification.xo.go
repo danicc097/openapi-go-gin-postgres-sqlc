@@ -21,8 +21,12 @@ type UserNotification struct {
 	Read               bool      `json:"read" db:"read" required:"true"`                               // read
 	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
-	NotificationJoin *Notification `json:"-" db:"notification" openapi-go:"ignore"` // O2O (generated from M2O)
-	UserJoin         *User         `json:"-" db:"user" openapi-go:"ignore"`         // O2O (generated from M2O)
+	NotificationJoin      *Notification       `json:"-" db:"notification" openapi-go:"ignore"`       // O2O (generated from M2O)
+	UserJoin              *User               `json:"-" db:"user" openapi-go:"ignore"`               // O2O (generated from M2O)
+	UserNotificationJoin  *UserNotification   `json:"-" db:"user_notification" openapi-go:"ignore"`  // O2O (generated from M2O)
+	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
+	UserNotificationJoin  *UserNotification   `json:"-" db:"user_notification" openapi-go:"ignore"`  // O2O (generated from M2O)
+	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
 
 }
 
@@ -85,8 +89,12 @@ type UserNotificationOrderBy = string
 const ()
 
 type UserNotificationJoins struct {
-	Notification bool
-	User         bool
+	Notification      bool
+	User              bool
+	UserNotification  bool
+	UserNotifications bool
+	UserNotification  bool
+	UserNotifications bool
 }
 
 // WithUserNotificationJoin joins with the given tables.
@@ -94,8 +102,12 @@ func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelec
 	return func(s *UserNotificationSelectConfig) {
 		s.joins = UserNotificationJoins{
 
-			Notification: s.joins.Notification || joins.Notification,
-			User:         s.joins.User || joins.User,
+			Notification:      s.joins.Notification || joins.Notification,
+			User:              s.joins.User || joins.User,
+			UserNotification:  s.joins.UserNotification || joins.UserNotification,
+			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
+			UserNotification:  s.joins.UserNotification || joins.UserNotification,
+			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
 		}
 	}
 }
@@ -181,6 +193,168 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// PaginatedUserNotificationByUserNotificationID returns a cursor-paginated list of UserNotification.
+func (un *UserNotification) PaginatedUserNotificationByUserNotificationID(ctx context.Context, db DB) ([]UserNotification, error) {
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+left join notifications on notifications.notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
+left join users on users.user_id = user_notifications.user_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.user_id = user_notifications.user_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_notification_id > $7 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedUserNotificationByNotificationID returns a cursor-paginated list of UserNotification.
+func (un *UserNotification) PaginatedUserNotificationByNotificationID(ctx context.Context, db DB) ([]UserNotification, error) {
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+left join notifications on notifications.notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
+left join users on users.user_id = user_notifications.user_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.user_id = user_notifications.user_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id > $7 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedUserNotificationByNotificationID returns a cursor-paginated list of UserNotification.
+func (un *UserNotification) PaginatedUserNotificationByNotificationID(ctx context.Context, db DB) ([]UserNotification, error) {
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+left join notifications on notifications.notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
+left join users on users.user_id = user_notifications.user_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.user_id = user_notifications.user_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id > $7 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
@@ -198,19 +372,45 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 `
+left join users on users.user_id = user_notifications.user_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.user_id = user_notifications.user_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id = $7 AND user_notifications.user_id = $8 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, notificationID, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, notificationID, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, notificationID, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/db.Query: %w", err))
 	}
@@ -239,28 +439,54 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 `
+left join users on users.user_id = user_notifications.user_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.user_id = user_notifications.user_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, notificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, notificationID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -282,19 +508,45 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id = $3 `
+left join users on users.user_id = user_notifications.user_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.user_id = user_notifications.user_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_notification_id = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userNotificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, userNotificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, userNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/db.Query: %w", err))
 	}
@@ -323,28 +575,54 @@ user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $3::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
+(case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_id = $3 `
+left join users on users.user_id = user_notifications.user_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.notification_id = user_notifications.notification_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_notification_id_user_id_key (Generated from M2O)"
+left join user_notifications on user_notifications.user_id = user_notifications.user_id
+-- M2O join generated from "user_notifications_notification_id_user_id_key"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_id = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, userID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

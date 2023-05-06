@@ -23,8 +23,10 @@ type KanbanStep struct {
 	Color         string `json:"color" db:"color" required:"true"`                  // color
 	TimeTrackable bool   `json:"timeTrackable" db:"time_trackable" required:"true"` // time_trackable
 
-	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
+	ProjectJoin     *Project      `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
+	WorkItemJoin    *WorkItem     `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
+	KanbanStepJoin  *KanbanStep   `json:"-" db:"kanban_step" openapi-go:"ignore"`  // O2O (generated from M2O)
+	KanbanStepsJoin *[]KanbanStep `json:"-" db:"kanban_steps" openapi-go:"ignore"` // M2O
 
 }
 
@@ -105,8 +107,10 @@ type KanbanStepOrderBy = string
 const ()
 
 type KanbanStepJoins struct {
-	Project  bool
-	WorkItem bool
+	Project     bool
+	WorkItem    bool
+	KanbanStep  bool
+	KanbanSteps bool
 }
 
 // WithKanbanStepJoin joins with the given tables.
@@ -114,8 +118,10 @@ func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
 		s.joins = KanbanStepJoins{
 
-			Project:  s.joins.Project || joins.Project,
-			WorkItem: s.joins.WorkItem || joins.WorkItem,
+			Project:     s.joins.Project || joins.Project,
+			WorkItem:    s.joins.WorkItem || joins.WorkItem,
+			KanbanStep:  s.joins.KanbanStep || joins.KanbanStep,
+			KanbanSteps: s.joins.KanbanSteps || joins.KanbanSteps,
 		}
 	}
 }
@@ -201,6 +207,182 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// PaginatedKanbanStepByKanbanStepID returns a cursor-paginated list of KanbanStep.
+func (ks *KanbanStep) PaginatedKanbanStepByKanbanStepID(ctx context.Context, db DB) ([]KanbanStep, error) {
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
+		`FROM public.kanban_steps ` +
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = kanban_steps.project_id
+-- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.kanban_step_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedKanbanStepByProjectID returns a cursor-paginated list of KanbanStep.
+func (ks *KanbanStep) PaginatedKanbanStepByProjectID(ctx context.Context, db DB) ([]KanbanStep, error) {
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
+		`FROM public.kanban_steps ` +
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = kanban_steps.project_id
+-- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedKanbanStepByProjectID returns a cursor-paginated list of KanbanStep.
+func (ks *KanbanStep) PaginatedKanbanStepByProjectID(ctx context.Context, db DB) ([]KanbanStep, error) {
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
+		`FROM public.kanban_steps ` +
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = kanban_steps.project_id
+-- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PaginatedKanbanStepByStepOrder returns a cursor-paginated list of KanbanStep.
+func (ks *KanbanStep) PaginatedKanbanStepByStepOrder(ctx context.Context, db DB) ([]KanbanStep, error) {
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
+		`FROM public.kanban_steps ` +
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = kanban_steps.project_id
+-- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.step_order > $5 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // KanbanStepByKanbanStepID retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_pkey'.
@@ -221,19 +403,32 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
 		`FROM public.kanban_steps ` +
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
-left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id = $3 `
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.kanban_step_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, kanbanStepID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, kanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, kanbanStepID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/db.Query: %w", err))
 	}
@@ -265,19 +460,32 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
 		`FROM public.kanban_steps ` +
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
-left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 AND kanban_steps.name = $4 AND kanban_steps.step_order = $5 `
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $5 AND kanban_steps.name = $6 AND kanban_steps.step_order = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID, name, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID, name, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, projectID, name, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/db.Query: %w", err))
 	}
@@ -309,28 +517,41 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
 		`FROM public.kanban_steps ` +
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
-left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 `
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, projectID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -355,28 +576,41 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
 		`FROM public.kanban_steps ` +
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
-left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.name = $3 `
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.name = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, name)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -401,28 +635,41 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
 		`FROM public.kanban_steps ` +
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
-left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order = $3 `
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.step_order = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, stepOrder)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -447,19 +694,32 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item,
+(case when $3::boolean = true and kanban_steps.project_id is not null then row(kanban_steps.*) end) as kanban_step,
+(case when $4::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps ` +
 		`FROM public.kanban_steps ` +
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
-left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 AND kanban_steps.step_order = $4 `
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id
+-- O2O join generated from "kanban_steps_project_id_step_order_key (Generated from M2O)"
+left join kanban_steps on kanban_steps.project_id = kanban_steps.project_id
+-- M2O join generated from "kanban_steps_project_id_step_order_key"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $5 AND kanban_steps.step_order = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, projectID, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/db.Query: %w", err))
 	}

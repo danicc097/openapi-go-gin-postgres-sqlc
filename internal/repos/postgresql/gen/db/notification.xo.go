@@ -237,6 +237,50 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// PaginatedNotificationByNotificationID returns a cursor-paginated list of Notification.
+func (n *Notification) PaginatedNotificationByNotificationID(ctx context.Context, db DB) ([]Notification, error) {
+	sqlstr := `SELECT ` +
+		`notifications.notification_id,
+notifications.receiver_rank,
+notifications.title,
+notifications.body,
+notifications.label,
+notifications.link,
+notifications.created_at,
+notifications.sender,
+notifications.receiver,
+notifications.notification_type,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
+		`FROM public.notifications ` +
+		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
+left join users on users.user_id = notifications.receiver
+-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
+left join users on users.user_id = notifications.sender
+-- M2O join generated from "user_notifications_notification_id_fkey"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
+		` WHERE notifications.notification_id > $4 `
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // NotificationByNotificationID retrieves a row from 'public.notifications' as a Notification.
 //
 // Generated from index 'notifications_pkey'.
@@ -341,14 +385,14 @@ left join (
 	// logf(sqlstr, receiverRank, notificationType, createdAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, c.joins.UserNotifications, receiverRank, notificationType, createdAt)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("Notification/NotificationsByReceiverRankNotificationTypeCreatedAt/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/NotificationsByReceiverRankNotificationTypeCreatedAt/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
