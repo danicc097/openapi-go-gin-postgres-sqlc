@@ -492,37 +492,39 @@ x.gen.xo() {
   cache-gen
   drop-and-migrate-gen-db
   { { {
-    echo "Running generation"
-    # xo schema --help
-    if ! md5sum -c "$CACHE/xo.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
-      md5_all "$CACHE/xo.md5" db/ $XO_TEMPLATES_DIR/ &
-
-      mkdir -p "$PG_REPO_GEN"/db
-      xo_schema -o "$PG_REPO_GEN"/db --debug \
-        --schema public \
-        --ignore "*.created_at" \
-        --ignore "*.updated_at" || err "Failed xo public schema generation" &
-
-      mkdir -p "$PG_REPO_GEN"/db/v
-      xo_schema -o "$PG_REPO_GEN"/db/v \
-        --schema v \
-        --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
-        err "Failed xo v schema generation" &
-
-      mkdir -p "$PG_REPO_GEN"/db/cache
-      xo_schema -o "$PG_REPO_GEN"/db/cache \
-        --schema cache \
-        --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
-        err "Failed xo cache schema generation" &
-
-      wait
-
-      files=$(find "$PG_REPO_GEN/db" \
-        -name "*.go")
-      goimports -w $files
-    else
+    if md5sum -c "$CACHE/xo.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
       echo "Skipping generation (cached). Force regen with --x-force-regen"
+      exit 0
     fi
+    md5_all "$CACHE/xo.md5" go.mod db/ $XO_TEMPLATES_DIR/ &
+
+    echo "Running generation"
+
+    rm -rf "$PG_REPO_GEN"
+
+    mkdir -p "$PG_REPO_GEN"/db
+    xo_schema -o "$PG_REPO_GEN"/db --debug \
+      --schema public \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" || err "Failed xo public schema generation" &
+
+    mkdir -p "$PG_REPO_GEN"/db/v
+    xo_schema -o "$PG_REPO_GEN"/db/v \
+      --schema v \
+      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      err "Failed xo v schema generation" &
+
+    mkdir -p "$PG_REPO_GEN"/db/cache
+    xo_schema -o "$PG_REPO_GEN"/db/cache \
+      --schema cache \
+      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      err "Failed xo cache schema generation" &
+
+    wait
+
+    files=$(find "$PG_REPO_GEN/db" \
+      -name "*.go")
+    goimports -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
 }
@@ -560,20 +562,23 @@ x.gen.jet() {
     # should not be hard to generate all adapters at once jet->xo *Public in a new file alongside jet gen.
     # in the end fields are the same name if goName conventions are followed (configurable via custom jet cmd)
     # if it gives problems for some fields (ID, API and the like)
-    if ! md5sum -c "$CACHE/jet.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
-      md5_all "$CACHE/jet.md5" db/ &
 
-      local gen_path="$PG_REPO_GEN"/jet
-      local schema=public
-      rm -rf "$gen_path"
-      {
-        jet -dbname="$GEN_POSTGRES_DB" -env=.env."$env" --out=./"$gen_path" --schema=$schema
-        mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
-        rm -r "./$gen_path/$GEN_POSTGRES_DB/"
-      }
-    else
+    if md5sum -c "$CACHE/jet.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
       echo "Skipping generation (cached). Force regen with --x-force-regen"
+      exit 0
     fi
+    md5_all "$CACHE/jet.md5" go.mod db/ &
+
+    echo "Running generation"
+
+    local gen_path="$PG_REPO_GEN"/jet
+    local schema=public
+    rm -rf "$gen_path"
+    {
+      jet -dbname="$GEN_POSTGRES_DB" -env=.env."$env" --out=./"$gen_path" --schema=$schema
+      mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
+      rm -r "./$gen_path/$GEN_POSTGRES_DB/"
+    }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
 }
@@ -582,6 +587,12 @@ x.gen.jet() {
 x.gen.gowrap() {
   cache-gen
   { { {
+    if md5sum -c "$CACHE/gowrap.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+      echo "Skipping generation (cached). Force regen with --x-force-regen"
+      exit 0
+    fi
+    md5_all "$CACHE/gowrap.md5" go.mod $repos $GOWRAP_TEMPLATES_DIR &
+
     echo "Running generation"
 
     local suffixes=(
@@ -590,34 +601,27 @@ x.gen.gowrap() {
       "otel:with_otel"
       "prometheus:with_prometheus"
     )
-
     local repos="$REPOS_DIR/repos.go"
+    local repo_interfaces=()
+    find_go_interfaces repo_interfaces $repos
 
-    if ! md5sum -c "$CACHE/gowrap.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
-      local repo_interfaces=()
-      find_go_interfaces repo_interfaces $repos
-
-      md5_all "$CACHE/gowrap.md5" $repos $GOWRAP_TEMPLATES_DIR &
-      for iface in ${repo_interfaces[@]}; do
-        for suffix in ${suffixes[@]}; do
-          {
-            IFS=":" read -r -a arr <<<${suffix}
-            local tmpl="${arr[0]}"
-            local suffix="${arr[1]}"
-            gowrap gen \
-              -g \
-              -p $GOMOD_PKG/$REPOS_DIR \
-              -i $iface \
-              -t "$GOWRAP_TEMPLATES_DIR/$tmpl.tmpl" \
-              -o "$REPOS_DIR/reposwrappers/${iface,,}_$suffix.gen.go"
-          } &
-        done
+    for iface in ${repo_interfaces[@]}; do
+      for suffix in ${suffixes[@]}; do
+        {
+          IFS=":" read -r -a arr <<<${suffix}
+          local tmpl="${arr[0]}"
+          local suffix="${arr[1]}"
+          gowrap gen \
+            -g \
+            -p $GOMOD_PKG/$REPOS_DIR \
+            -i $iface \
+            -t "$GOWRAP_TEMPLATES_DIR/$tmpl.tmpl" \
+            -o "$REPOS_DIR/reposwrappers/${iface,,}_$suffix.gen.go"
+        } &
       done
+    done
 
-      wait
-    else
-      echo "Skipping generation (cached). Force regen with --x-force-regen"
-    fi
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
 }
@@ -647,28 +651,27 @@ x.gen.counterfeiter() {
     repos="$REPOS_DIR/repos.go"
     tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
 
-    echo "Running generation"
-
-    if ! md5sum -c "$CACHE/counterfeiter.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
-      echo "Recreating mocks"
-      {
-        counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-        counterfeiter -o $REPOS_DIR/repostesting/user.gen.go $repos User &
-        counterfeiter -o $REPOS_DIR/repostesting/notification.gen.go $repos Notification &
-        counterfeiter -o $REPOS_DIR/repostesting/project.gen.go $repos Project &
-        counterfeiter -o $REPOS_DIR/repostesting/team.gen.go $repos Team &
-        counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
-        counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
-        md5_all "$CACHE/counterfeiter.md5" $envvar $repos $tfidfpb &
-        wait
-      } 2>&1 # outputs to stderr for some reason
-
-      # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
-      sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
-        internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go
-    else
+    if md5sum -c "$CACHE/counterfeiter.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
       echo "Skipping generation (cached). Force regen with --x-force-regen"
+      exit 0
     fi
+    md5_all "$CACHE/counterfeiter.md5" go.mod $envvar $repos $tfidfpb &
+
+    echo "Recreating mocks"
+    {
+      counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
+      counterfeiter -o $REPOS_DIR/repostesting/user.gen.go $repos User &
+      counterfeiter -o $REPOS_DIR/repostesting/notification.gen.go $repos Notification &
+      counterfeiter -o $REPOS_DIR/repostesting/project.gen.go $repos Project &
+      counterfeiter -o $REPOS_DIR/repostesting/team.gen.go $repos Team &
+      counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
+      counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
+      wait
+    } 2>&1 # outputs to stderr for some reason
+
+    # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
+    sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
+      internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -749,21 +752,19 @@ x.gen() {
 
     x.gen.build-tools # || true (this should not fail compilation anymore, the whole app should be compilable at this point)
 
-    rm -rf "$PG_REPO_GEN"
-
     # TODO try use gnu parallel and exit when anyone fails
     # (with current setup the whole x.gen is executed and only then
     # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
     # shopt -s inherit_errexit
     go generate ./... &
     x.gen.gowrap &
-    x.gen.sqlc &
     x.gen.proto &
     x.gen.xo &
     x.gen.jet &
 
     wait_without_error
 
+    x.gen.sqlc # with md5 cache, can't have xo and sqlc run at the same time, so let's have xo be responsible for rm dir
     x.gen.pregen
 
     x.gen.postgen &
