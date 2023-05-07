@@ -51,25 +51,25 @@ export interface paths {
     /** updates the user by id */
     patch: operations["UpdateUser"];
   };
-  "/project/{id}/initialize": {
+  "/project/{projectName}/initialize": {
     /** creates initial data (teams, work item types, tags...) for a new project */
     post: operations["InitializeProject"];
   };
-  "/project/{id}/": {
+  "/project/{projectName}/": {
     /** returns board data for a project */
     get: operations["GetProject"];
   };
-  "/project/{id}/config": {
+  "/project/{projectName}/config": {
     /** returns the project configuration */
     get: operations["GetProjectConfig"];
     /** updates the project configuration */
     put: operations["UpdateProjectConfig"];
   };
-  "/project/{id}/board": {
+  "/project/{projectName}/board": {
     /** returns board data for a project */
     get: operations["GetProjectBoard"];
   };
-  "/project/{id}/workitems": {
+  "/project/{projectName}/workitems": {
     /** returns workitems for a project */
     get: operations["GetProjectWorkitems"];
   };
@@ -419,6 +419,11 @@ export interface components {
   };
   responses: never;
   parameters: {
+    /**
+     * @description Project name 
+     * @example demo
+     */
+    ProjectName: components["schemas"]["Project"];
     /**
      * @description UUID identifier of entity that needs to be updated 
      * @example 123e4567-e89b-12d3-a456-426614174000

@@ -196,7 +196,7 @@ paths:
       tags:
         - user
       x-required-role: user
-  /project/{id}/initialize:
+  /project/{projectName}/initialize:
     post:
       security:
         - bearer_auth: []
@@ -204,7 +204,7 @@ paths:
       summary: creates initial data (teams, work item types, tags...) for a new project
       operationId: InitializeProject
       parameters:
-        - $ref: '#/components/parameters/PathSerial'
+        - $ref: '#/components/parameters/ProjectName'
       requestBody:
         content:
           application/json:
@@ -217,7 +217,7 @@ paths:
       tags:
         - project
       x-required-role: admin
-  /project/{id}/:
+  /project/{projectName}/:
     get:
       security:
         - bearer_auth: []
@@ -225,7 +225,7 @@ paths:
       summary: returns board data for a project
       operationId: GetProject
       parameters:
-        - $ref: '#/components/parameters/PathSerial'
+        - $ref: '#/components/parameters/ProjectName'
       responses:
         "200":
           description: Project.
@@ -235,7 +235,7 @@ paths:
                 $ref: '#/components/schemas/DbProject'
       tags:
         - project
-  /project/{id}/config:
+  /project/{projectName}/config:
     get:
       security:
         - bearer_auth: []
@@ -243,7 +243,7 @@ paths:
       summary: returns the project configuration
       operationId: GetProjectConfig
       parameters:
-        - $ref: '#/components/parameters/PathSerial'
+        - $ref: '#/components/parameters/ProjectName'
       responses:
         "200":
           description: Project config.
@@ -261,7 +261,7 @@ paths:
       summary: updates the project configuration
       operationId: UpdateProjectConfig
       parameters:
-        - $ref: '#/components/parameters/PathSerial'
+        - $ref: '#/components/parameters/ProjectName'
       requestBody:
         content:
           application/json:
@@ -273,7 +273,7 @@ paths:
       x-required-role: admin
       tags:
         - project
-  /project/{id}/board:
+  /project/{projectName}/board:
     get:
       security:
         - bearer_auth: []
@@ -281,7 +281,7 @@ paths:
       summary: returns board data for a project
       operationId: GetProjectBoard
       parameters:
-        - $ref: '#/components/parameters/PathSerial'
+        - $ref: '#/components/parameters/ProjectName'
       responses:
         "200":
           description: Project successfully initialized.
@@ -291,7 +291,7 @@ paths:
                 $ref: '#/components/schemas/RestProjectBoardResponse'
       tags:
         - project
-  /project/{id}/workitems:
+  /project/{projectName}/workitems:
     get:
       security:
         - bearer_auth: []
@@ -299,7 +299,7 @@ paths:
       summary: returns workitems for a project
       operationId: GetProjectWorkitems
       parameters:
-        - $ref: '#/components/parameters/PathSerial'
+        - $ref: '#/components/parameters/ProjectName'
         - in: query
           schema:
             type: boolean
@@ -320,6 +320,16 @@ paths:
         - project
 components:
   parameters:
+    ProjectName:
+      description: Project name
+      explode: false
+      in: path
+      name: projectName
+      required: true
+      schema:
+        $ref: '#/components/schemas/Project'
+      example: demo
+      style: simple
     uuid:
       description: UUID identifier of entity that needs to be updated
       explode: false

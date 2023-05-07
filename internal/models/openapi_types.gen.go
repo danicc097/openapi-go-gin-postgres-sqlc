@@ -591,6 +591,9 @@ type WorkItemRole string
 // PathSerial defines the model for PathSerial.
 type PathSerial = int
 
+// ProjectName defines the model for ProjectName.
+type ProjectName = Project
+
 // Uuid defines the model for uuid.
 type Uuid = string
 
