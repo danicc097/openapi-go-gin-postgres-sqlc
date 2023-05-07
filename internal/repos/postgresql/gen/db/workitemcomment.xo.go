@@ -336,3 +336,17 @@ left join work_items on work_items.work_item_id = work_item_comments.work_item_i
 	}
 	return res, nil
 }
+
+// FKUser_UserID returns the User associated with the WorkItemComment's (UserID).
+//
+// Generated from foreign key 'work_item_comments_user_id_fkey'.
+func (wic *WorkItemComment) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, wic.UserID)
+}
+
+// FKWorkItem_WorkItemID returns the WorkItem associated with the WorkItemComment's (WorkItemID).
+//
+// Generated from foreign key 'work_item_comments_work_item_id_fkey'.
+func (wic *WorkItemComment) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
+	return WorkItemByWorkItemID(ctx, db, wic.WorkItemID)
+}

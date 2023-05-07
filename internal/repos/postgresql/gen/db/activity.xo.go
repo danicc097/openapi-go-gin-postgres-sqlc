@@ -482,3 +482,10 @@ left join (
 
 	return &a, nil
 }
+
+// FKProject_ProjectID returns the Project associated with the Activity's (ProjectID).
+//
+// Generated from foreign key 'activities_project_id_fkey'.
+func (a *Activity) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, a.ProjectID)
+}

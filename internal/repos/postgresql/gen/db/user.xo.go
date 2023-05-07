@@ -1417,3 +1417,10 @@ left join (
 
 	return &u, nil
 }
+
+// FKUserAPIKey_APIKeyID returns the UserAPIKey associated with the User's (APIKeyID).
+//
+// Generated from foreign key 'users_api_key_id_fkey'.
+func (u *User) FKUserAPIKey_APIKeyID(ctx context.Context, db DB) (*UserAPIKey, error) {
+	return UserAPIKeyByUserAPIKeyID(ctx, db, *u.APIKeyID)
+}

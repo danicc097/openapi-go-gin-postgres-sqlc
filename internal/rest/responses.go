@@ -71,9 +71,10 @@ func extractValidationError(err error, typ string) models.HTTPValidationError {
 	var vErrs []models.ValidationError
 
 	unwrappedErr := err
-	for uErr := errors.Unwrap(unwrappedErr); uErr != nil; {
+	maxCalls := 6
+	for uErr := errors.Unwrap(unwrappedErr); uErr != nil && maxCalls > 0; {
 		e := strings.TrimSpace(uErr.Error())
-		if strings.HasPrefix(e, "response body doesn't match schema:") {
+		if strings.HasPrefix(e, "response body doesn't match schema") {
 			unwrappedErr = errors.Unwrap(uErr)
 
 			origErrs = append(origErrs, "response body error") // this is obviously not catched on client-side validation
@@ -85,6 +86,7 @@ func extractValidationError(err error, typ string) models.HTTPValidationError {
 
 			break
 		}
+		maxCalls--
 	}
 
 	// NOTE: custom schema error count may not match error strings, e.g. missing parameters, etc.

@@ -597,3 +597,10 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 
 	return &ks, nil
 }
+
+// FKProject_ProjectID returns the Project associated with the KanbanStep's (ProjectID).
+//
+// Generated from foreign key 'kanban_steps_project_id_fkey'.
+func (ks *KanbanStep) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, ks.ProjectID)
+}

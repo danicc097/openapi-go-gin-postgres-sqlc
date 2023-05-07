@@ -440,3 +440,10 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 
 	return &wit, nil
 }
+
+// FKProject_ProjectID returns the Project associated with the WorkItemType's (ProjectID).
+//
+// Generated from foreign key 'work_item_types_project_id_fkey'.
+func (wit *WorkItemType) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, wit.ProjectID)
+}

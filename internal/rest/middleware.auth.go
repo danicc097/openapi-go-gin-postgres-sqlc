@@ -45,7 +45,6 @@ func newAuthMiddleware(
 // else redirect to /auth/{provider}/login (no auth middleware here or in */callback).
 func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		a.logger.Sugar().Info("Would have run EnsureAuthenticated and set user in ctx")
 		apiKey := c.Request.Header.Get("x-api-key")
 		auth := c.Request.Header.Get("Authorization")
 		if apiKey != "" {

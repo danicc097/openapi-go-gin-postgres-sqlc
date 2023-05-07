@@ -77,16 +77,13 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{/* generated queries from foreign keys */}}
 
 {{ define "foreignkey" }}
-{{/*
-NOTE: instead using inferred O2O joins now
 {{- $k := .Data -}}
-// {{ func_name_context $k }} returns the {{ $k.RefTable }} associated with the {{ $k.Table.GoName }}'s ({{ names "" $k.Fields }}).
+// {{ func_name_context $k "" }} returns the {{ $k.RefTable }} associated with the {{ $k.Table.GoName }}'s ({{ names "" $k.Fields }}).
 //
 // Generated from foreign key '{{ $k.SQLName }}'.
-{{ recv_context $k.Table $k }} {
+{{ recv_context $k.Table $k ""}} {
 	return {{ foreign_key_context $k }}
 }
-*/}}
 {{ end }}
 
 {{/*

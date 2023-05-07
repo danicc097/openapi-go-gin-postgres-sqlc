@@ -604,6 +604,9 @@ type WorkItemRole string
 // PathSerial defines the model for PathSerial.
 type PathSerial = int
 
+// ProjectName defines the model for ProjectName.
+type ProjectName = Project
+
 // Uuid defines the model for uuid.
 type Uuid = string
 
@@ -717,26 +720,26 @@ type ClientInterface interface {
 	Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProject request
-	GetProject(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetProject(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProjectBoard request
-	GetProjectBoard(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetProjectBoard(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProjectConfig request
-	GetProjectConfig(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetProjectConfig(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateProjectConfig request with any body
-	UpdateProjectConfigWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateProjectConfigWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateProjectConfig(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateProjectConfig(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// InitializeProject request with any body
-	InitializeProjectWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	InitializeProjectWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	InitializeProject(ctx context.Context, id PathSerial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	InitializeProject(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProjectWorkitems request
-	GetProjectWorkitems(ctx context.Context, id PathSerial, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCurrentUser request
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -827,8 +830,8 @@ func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetProject(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetProjectRequest(c.Server, id)
+func (c *Client) GetProject(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectRequest(c.Server, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -839,8 +842,8 @@ func (c *Client) GetProject(ctx context.Context, id PathSerial, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetProjectBoard(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetProjectBoardRequest(c.Server, id)
+func (c *Client) GetProjectBoard(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectBoardRequest(c.Server, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -851,8 +854,8 @@ func (c *Client) GetProjectBoard(ctx context.Context, id PathSerial, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetProjectConfig(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetProjectConfigRequest(c.Server, id)
+func (c *Client) GetProjectConfig(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectConfigRequest(c.Server, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -863,8 +866,8 @@ func (c *Client) GetProjectConfig(ctx context.Context, id PathSerial, reqEditors
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateProjectConfigRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectConfigRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -875,8 +878,8 @@ func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, id PathSerial,
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateProjectConfig(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateProjectConfigRequest(c.Server, id, body)
+func (c *Client) UpdateProjectConfig(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectConfigRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -887,8 +890,8 @@ func (c *Client) UpdateProjectConfig(ctx context.Context, id PathSerial, body Up
 	return c.Client.Do(req)
 }
 
-func (c *Client) InitializeProjectWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewInitializeProjectRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) InitializeProjectWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInitializeProjectRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -899,8 +902,8 @@ func (c *Client) InitializeProjectWithBody(ctx context.Context, id PathSerial, c
 	return c.Client.Do(req)
 }
 
-func (c *Client) InitializeProject(ctx context.Context, id PathSerial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewInitializeProjectRequest(c.Server, id, body)
+func (c *Client) InitializeProject(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInitializeProjectRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -911,8 +914,8 @@ func (c *Client) InitializeProject(ctx context.Context, id PathSerial, body Init
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetProjectWorkitems(ctx context.Context, id PathSerial, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetProjectWorkitemsRequest(c.Server, id, params)
+func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectWorkitemsRequest(c.Server, projectName, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1158,12 +1161,12 @@ func NewPingRequest(server string) (*http.Request, error) {
 }
 
 // NewGetProjectRequest generates requests for GetProject
-func NewGetProjectRequest(server string, id PathSerial) (*http.Request, error) {
+func NewGetProjectRequest(server string, projectName ProjectName) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -1192,12 +1195,12 @@ func NewGetProjectRequest(server string, id PathSerial) (*http.Request, error) {
 }
 
 // NewGetProjectBoardRequest generates requests for GetProjectBoard
-func NewGetProjectBoardRequest(server string, id PathSerial) (*http.Request, error) {
+func NewGetProjectBoardRequest(server string, projectName ProjectName) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -1226,12 +1229,12 @@ func NewGetProjectBoardRequest(server string, id PathSerial) (*http.Request, err
 }
 
 // NewGetProjectConfigRequest generates requests for GetProjectConfig
-func NewGetProjectConfigRequest(server string, id PathSerial) (*http.Request, error) {
+func NewGetProjectConfigRequest(server string, projectName ProjectName) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -1260,23 +1263,23 @@ func NewGetProjectConfigRequest(server string, id PathSerial) (*http.Request, er
 }
 
 // NewUpdateProjectConfigRequest calls the generic UpdateProjectConfig builder with application/json body
-func NewUpdateProjectConfigRequest(server string, id PathSerial, body UpdateProjectConfigJSONRequestBody) (*http.Request, error) {
+func NewUpdateProjectConfigRequest(server string, projectName ProjectName, body UpdateProjectConfigJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateProjectConfigRequestWithBody(server, id, "application/json", bodyReader)
+	return NewUpdateProjectConfigRequestWithBody(server, projectName, "application/json", bodyReader)
 }
 
 // NewUpdateProjectConfigRequestWithBody generates requests for UpdateProjectConfig with any type of body
-func NewUpdateProjectConfigRequestWithBody(server string, id PathSerial, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateProjectConfigRequestWithBody(server string, projectName ProjectName, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -1307,23 +1310,23 @@ func NewUpdateProjectConfigRequestWithBody(server string, id PathSerial, content
 }
 
 // NewInitializeProjectRequest calls the generic InitializeProject builder with application/json body
-func NewInitializeProjectRequest(server string, id PathSerial, body InitializeProjectJSONRequestBody) (*http.Request, error) {
+func NewInitializeProjectRequest(server string, projectName ProjectName, body InitializeProjectJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewInitializeProjectRequestWithBody(server, id, "application/json", bodyReader)
+	return NewInitializeProjectRequestWithBody(server, projectName, "application/json", bodyReader)
 }
 
 // NewInitializeProjectRequestWithBody generates requests for InitializeProject with any type of body
-func NewInitializeProjectRequestWithBody(server string, id PathSerial, contentType string, body io.Reader) (*http.Request, error) {
+func NewInitializeProjectRequestWithBody(server string, projectName ProjectName, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -1354,12 +1357,12 @@ func NewInitializeProjectRequestWithBody(server string, id PathSerial, contentTy
 }
 
 // NewGetProjectWorkitemsRequest generates requests for GetProjectWorkitems
-func NewGetProjectWorkitemsRequest(server string, id PathSerial, params *GetProjectWorkitemsParams) (*http.Request, error) {
+func NewGetProjectWorkitemsRequest(server string, projectName ProjectName, params *GetProjectWorkitemsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -1640,26 +1643,26 @@ type ClientWithResponsesInterface interface {
 	PingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PingResponse, error)
 
 	// GetProject request
-	GetProjectWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectResponse, error)
+	GetProjectWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectResponse, error)
 
 	// GetProjectBoard request
-	GetProjectBoardWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
+	GetProjectBoardWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
 
 	// GetProjectConfig request
-	GetProjectConfigWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectConfigResponse, error)
+	GetProjectConfigWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectConfigResponse, error)
 
 	// UpdateProjectConfig request with any body
-	UpdateProjectConfigWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
+	UpdateProjectConfigWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
 
-	UpdateProjectConfigWithResponse(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
+	UpdateProjectConfigWithResponse(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
 
 	// InitializeProject request with any body
-	InitializeProjectWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
+	InitializeProjectWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
 
-	InitializeProjectWithResponse(ctx context.Context, id PathSerial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
+	InitializeProjectWithResponse(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
 
 	// GetProjectWorkitems request
-	GetProjectWorkitemsWithResponse(ctx context.Context, id PathSerial, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
+	GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
 
 	// GetCurrentUser request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
@@ -2080,8 +2083,8 @@ func (c *ClientWithResponses) PingWithResponse(ctx context.Context, reqEditors .
 }
 
 // GetProjectWithResponse request returning *GetProjectResponse
-func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectResponse, error) {
-	rsp, err := c.GetProject(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectResponse, error) {
+	rsp, err := c.GetProject(ctx, projectName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2089,8 +2092,8 @@ func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, id Pat
 }
 
 // GetProjectBoardWithResponse request returning *GetProjectBoardResponse
-func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error) {
-	rsp, err := c.GetProjectBoard(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error) {
+	rsp, err := c.GetProjectBoard(ctx, projectName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2098,8 +2101,8 @@ func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, i
 }
 
 // GetProjectConfigWithResponse request returning *GetProjectConfigResponse
-func (c *ClientWithResponses) GetProjectConfigWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectConfigResponse, error) {
-	rsp, err := c.GetProjectConfig(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetProjectConfigWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectConfigResponse, error) {
+	rsp, err := c.GetProjectConfig(ctx, projectName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2107,16 +2110,16 @@ func (c *ClientWithResponses) GetProjectConfigWithResponse(ctx context.Context, 
 }
 
 // UpdateProjectConfigWithBodyWithResponse request with arbitrary body returning *UpdateProjectConfigResponse
-func (c *ClientWithResponses) UpdateProjectConfigWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error) {
-	rsp, err := c.UpdateProjectConfigWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateProjectConfigWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error) {
+	rsp, err := c.UpdateProjectConfigWithBody(ctx, projectName, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateProjectConfigResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateProjectConfigWithResponse(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error) {
-	rsp, err := c.UpdateProjectConfig(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateProjectConfigWithResponse(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error) {
+	rsp, err := c.UpdateProjectConfig(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2124,16 +2127,16 @@ func (c *ClientWithResponses) UpdateProjectConfigWithResponse(ctx context.Contex
 }
 
 // InitializeProjectWithBodyWithResponse request with arbitrary body returning *InitializeProjectResponse
-func (c *ClientWithResponses) InitializeProjectWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
-	rsp, err := c.InitializeProjectWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) InitializeProjectWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
+	rsp, err := c.InitializeProjectWithBody(ctx, projectName, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseInitializeProjectResponse(rsp)
 }
 
-func (c *ClientWithResponses) InitializeProjectWithResponse(ctx context.Context, id PathSerial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
-	rsp, err := c.InitializeProject(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) InitializeProjectWithResponse(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
+	rsp, err := c.InitializeProject(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2141,8 +2144,8 @@ func (c *ClientWithResponses) InitializeProjectWithResponse(ctx context.Context,
 }
 
 // GetProjectWorkitemsWithResponse request returning *GetProjectWorkitemsResponse
-func (c *ClientWithResponses) GetProjectWorkitemsWithResponse(ctx context.Context, id PathSerial, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error) {
-	rsp, err := c.GetProjectWorkitems(ctx, id, params, reqEditors...)
+func (c *ClientWithResponses) GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error) {
+	rsp, err := c.GetProjectWorkitems(ctx, projectName, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

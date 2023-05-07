@@ -938,6 +938,7 @@ x.build() {
 
 # Run backend with hot-reloading.
 x.run.backend-hr() {
+  # TODO wait until healthy, else might have errors connecting to mock oidc server on startup, etc.
   run_shared_services up -d --build --remove-orphans
   # NOTE: building binary very unreliable, leads to bin not found.
   # [[ -z $NO_GEN ]] && pre_build_cmd="bin/project gen" # gen too slow at this point, always disable
@@ -1071,6 +1072,11 @@ x.search-stopship() {
       exit 1
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Shows existing user api keys.
+x.dev-utils.api-keys() {
+  dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "select email, api_key from user_api_keys left join users using (user_id);"
 }
 
 # Runs a traefik container with predefined configuration.

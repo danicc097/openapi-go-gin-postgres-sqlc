@@ -324,3 +324,10 @@ left join work_items on work_items.work_item_id = demo_work_items.work_item_id` 
 	}
 	return res, nil
 }
+
+// FKWorkItem_WorkItemID returns the WorkItem associated with the DemoWorkItem's (WorkItemID).
+//
+// Generated from foreign key 'demo_work_items_work_item_id_fkey'.
+func (dwi *DemoWorkItem) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
+	return WorkItemByWorkItemID(ctx, db, dwi.WorkItemID)
+}

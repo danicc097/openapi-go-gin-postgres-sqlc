@@ -2437,8 +2437,6 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 
 		var orderbys []string
 
-		// use PK if incremental. else created_at if exists.
-		// ensure there are unique fields else return
 		for _, c := range columns {
 			filters = append(filters, fmt.Sprintf("%s.%s > %s", x.SQLName, c.SQLName, f.nth(n)))
 			orderbys = append(orderbys, c.SQLName+" DESC") // TODO loop indexes and if one has specific order generate another query

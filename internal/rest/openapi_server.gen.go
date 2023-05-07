@@ -33,23 +33,23 @@ type ServerInterface interface {
 	// (GET /ping)
 	Ping(c *gin.Context)
 	// returns board data for a project
-	// (GET /project/{id}/)
-	GetProject(c *gin.Context, id externalRef0.PathSerial)
+	// (GET /project/{projectName}/)
+	GetProject(c *gin.Context, projectName externalRef0.ProjectName)
 	// returns board data for a project
-	// (GET /project/{id}/board)
-	GetProjectBoard(c *gin.Context, id externalRef0.PathSerial)
+	// (GET /project/{projectName}/board)
+	GetProjectBoard(c *gin.Context, projectName externalRef0.ProjectName)
 	// returns the project configuration
-	// (GET /project/{id}/config)
-	GetProjectConfig(c *gin.Context, id externalRef0.PathSerial)
+	// (GET /project/{projectName}/config)
+	GetProjectConfig(c *gin.Context, projectName externalRef0.ProjectName)
 	// updates the project configuration
-	// (PUT /project/{id}/config)
-	UpdateProjectConfig(c *gin.Context, id externalRef0.PathSerial)
+	// (PUT /project/{projectName}/config)
+	UpdateProjectConfig(c *gin.Context, projectName externalRef0.ProjectName)
 	// creates initial data (teams, work item types, tags...) for a new project
-	// (POST /project/{id}/initialize)
-	InitializeProject(c *gin.Context, id externalRef0.PathSerial)
+	// (POST /project/{projectName}/initialize)
+	InitializeProject(c *gin.Context, projectName externalRef0.ProjectName)
 	// returns workitems for a project
-	// (GET /project/{id}/workitems)
-	GetProjectWorkitems(c *gin.Context, id externalRef0.PathSerial, params externalRef0.GetProjectWorkitemsParams)
+	// (GET /project/{projectName}/workitems)
+	GetProjectWorkitems(c *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
@@ -119,12 +119,12 @@ func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id externalRef0.PathSerial
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
 		return
 	}
 
@@ -132,7 +132,7 @@ func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetProject(c, id)
+	siw.Handler.GetProject(c, projectName)
 }
 
 // GetProjectBoard operation with its own middleware.
@@ -140,12 +140,12 @@ func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id externalRef0.PathSerial
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
 		return
 	}
 
@@ -153,7 +153,7 @@ func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetProjectBoard(c, id)
+	siw.Handler.GetProjectBoard(c, projectName)
 }
 
 // GetProjectConfig operation with its own middleware.
@@ -161,12 +161,12 @@ func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id externalRef0.PathSerial
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
 		return
 	}
 
@@ -174,7 +174,7 @@ func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetProjectConfig(c, id)
+	siw.Handler.GetProjectConfig(c, projectName)
 }
 
 // UpdateProjectConfig operation with its own middleware.
@@ -182,12 +182,12 @@ func (siw *ServerInterfaceWrapper) UpdateProjectConfig(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id externalRef0.PathSerial
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
 		return
 	}
 
@@ -195,7 +195,7 @@ func (siw *ServerInterfaceWrapper) UpdateProjectConfig(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.UpdateProjectConfig(c, id)
+	siw.Handler.UpdateProjectConfig(c, projectName)
 }
 
 // InitializeProject operation with its own middleware.
@@ -203,12 +203,12 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id externalRef0.PathSerial
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
 		return
 	}
 
@@ -216,7 +216,7 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.InitializeProject(c, id)
+	siw.Handler.InitializeProject(c, projectName)
 }
 
 // GetProjectWorkitems operation with its own middleware.
@@ -224,12 +224,12 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id externalRef0.PathSerial
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
 		return
 	}
 
@@ -256,7 +256,7 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 		return
 	}
 
-	siw.Handler.GetProjectWorkitems(c, id, params)
+	siw.Handler.GetProjectWorkitems(c, projectName, params)
 }
 
 // GetCurrentUser operation with its own middleware.
@@ -379,32 +379,32 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(Ping), wrapper.Ping)...,
 	)...)
 
-	router.GET(options.BaseURL+"/project/:id/", append(
+	router.GET(options.BaseURL+"/project/:projectName/", append(
 		wrapper.Handler.authMiddlewares(GetProject),
 		append(wrapper.Handler.middlewares(GetProject), wrapper.GetProject)...,
 	)...)
 
-	router.GET(options.BaseURL+"/project/:id/board", append(
+	router.GET(options.BaseURL+"/project/:projectName/board", append(
 		wrapper.Handler.authMiddlewares(GetProjectBoard),
 		append(wrapper.Handler.middlewares(GetProjectBoard), wrapper.GetProjectBoard)...,
 	)...)
 
-	router.GET(options.BaseURL+"/project/:id/config", append(
+	router.GET(options.BaseURL+"/project/:projectName/config", append(
 		wrapper.Handler.authMiddlewares(GetProjectConfig),
 		append(wrapper.Handler.middlewares(GetProjectConfig), wrapper.GetProjectConfig)...,
 	)...)
 
-	router.PUT(options.BaseURL+"/project/:id/config", append(
+	router.PUT(options.BaseURL+"/project/:projectName/config", append(
 		wrapper.Handler.authMiddlewares(UpdateProjectConfig),
 		append(wrapper.Handler.middlewares(UpdateProjectConfig), wrapper.UpdateProjectConfig)...,
 	)...)
 
-	router.POST(options.BaseURL+"/project/:id/initialize", append(
+	router.POST(options.BaseURL+"/project/:projectName/initialize", append(
 		wrapper.Handler.authMiddlewares(InitializeProject),
 		append(wrapper.Handler.middlewares(InitializeProject), wrapper.InitializeProject)...,
 	)...)
 
-	router.GET(options.BaseURL+"/project/:id/workitems", append(
+	router.GET(options.BaseURL+"/project/:projectName/workitems", append(
 		wrapper.Handler.authMiddlewares(GetProjectWorkitems),
 		append(wrapper.Handler.middlewares(GetProjectWorkitems), wrapper.GetProjectWorkitems)...,
 	)...)
