@@ -48,20 +48,22 @@ errtrap() {
 source ".envrc"
 
 readonly SPEC="openapi.yaml"
+
 readonly BUILD_DIR="bin/build"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
 readonly CERTIFICATES_DIR="certificates"
-readonly REPOS="internal/repos"
-readonly PG_REPO="$REPOS/postgresql"
+readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
+readonly REPOS_DIR="internal/repos"
+readonly PG_REPO_DIR="$REPOS_DIR/postgresql"
+
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
-readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
+readonly DUMPS_DIR="$HOME/openapi_go_gin_postgres_dumps"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 readonly OPID_AUTH="operationAuth.gen.json"
-
-readonly PG_REPO_GEN="$PG_REPO/gen"
+readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
 readonly FRONTEND_SRC="frontend/src"
 readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
 
@@ -478,7 +480,7 @@ x.gen.sqlc() {
   drop-and-migrate-gen-db
   { { {
     echo "Running generation"
-    sqlc generate --experimental -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
+    sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
     rm "$PG_REPO_GEN"/db/models.go # sqlc enums
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
@@ -577,13 +579,13 @@ x.gen.gowrap() {
       "prometheus:with_prometheus"
     )
 
-    local repos="$REPOS/repos.go"
+    local repos="$REPOS_DIR/repos.go"
 
     if ! md5sum -c "$CACHE/gowrap.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
       local repo_interfaces=()
       find_go_interfaces repo_interfaces $repos
 
-      md5sum $repos >"$CACHE/gowrap.md5" &
+      md5sum $repos $GOWRAP_TEMPLATES_DIR/* >"$CACHE/gowrap.md5" &
       for iface in ${repo_interfaces[@]}; do
         for suffix in ${suffixes[@]}; do
           {
@@ -592,10 +594,10 @@ x.gen.gowrap() {
             local suffix="${arr[1]}"
             gowrap gen \
               -g \
-              -p $GOMOD_PKG/$REPOS \
+              -p $GOMOD_PKG/$REPOS_DIR \
               -i $iface \
-              -t "internal/gowrap-templates/$tmpl.tmpl" \
-              -o "$REPOS/reposwrappers/${iface,,}_$suffix.gen.go"
+              -t "$GOWRAP_TEMPLATES_DIR/$tmpl.tmpl" \
+              -o "$REPOS_DIR/reposwrappers/${iface,,}_$suffix.gen.go"
           } &
         done
       done
@@ -629,7 +631,7 @@ x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   { { {
     envvar="internal/envvar/envvar.go"
-    repos="$REPOS/repos.go"
+    repos="$REPOS_DIR/repos.go"
     tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
 
     echo "Running generation"
@@ -638,10 +640,10 @@ x.gen.counterfeiter() {
       echo "Recreating mocks"
       {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-        counterfeiter -o $REPOS/repostesting/user.gen.go $repos User &
-        counterfeiter -o $REPOS/repostesting/notification.gen.go $repos Notification &
-        counterfeiter -o $REPOS/repostesting/project.gen.go $repos Project &
-        counterfeiter -o $REPOS/repostesting/team.gen.go $repos Team &
+        counterfeiter -o $REPOS_DIR/repostesting/user.gen.go $repos User &
+        counterfeiter -o $REPOS_DIR/repostesting/notification.gen.go $repos Notification &
+        counterfeiter -o $REPOS_DIR/repostesting/project.gen.go $repos Project &
+        counterfeiter -o $REPOS_DIR/repostesting/team.gen.go $repos Team &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
         md5sum $envvar $repos $tfidfpb >"$CACHE/counterfeiter.md5" &
@@ -831,7 +833,7 @@ x.lint.frontend() {
 x.lint.sql() {
   { { {
     SQL_DIRS=(
-      "$REPOS"
+      "$REPOS_DIR"
       "db"
     )
     for slq_dir in ${SQL_DIRS[@]}; do
@@ -892,7 +894,7 @@ x.test.xo() {
 
     echo "Running xo template tests"
 
-    test_dir="$PG_REPO/xo-templates/tests"
+    test_dir="$PG_REPO_DIR/xo-templates/tests"
     dockerdb_psql -d $POSTGRES_DB <"$test_dir/schema.sql"
     echo "Schema loaded"
 
@@ -1220,14 +1222,14 @@ x.db.dump() {
       err "pg_dump is already running, aborting new dump"
     fi
 
-    mkdir -p "$DUMPS_FOLDER"
+    mkdir -p "$DUMPS_DIR"
     schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" \
       -c "SELECT version FROM schema_migrations;")
     dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
     dockerdb pg_dump -U postgres -d "postgres_$env" |
-      gzip >"$DUMPS_FOLDER/$dump_file"
+      gzip >"$DUMPS_DIR/$dump_file"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1240,10 +1242,10 @@ x.db.restore() {
     [[ ! -f $dump_file ]] && err "$dump_file does not exist"
     [[ "$dump_file" != *"$dump_prefix"* ]] && confirm "${RED}Dump doesn't match prefix '$dump_prefix'. Continue?${OFF}"
   else
-    mkdir -p "$DUMPS_FOLDER"
-    latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
+    mkdir -p "$DUMPS_DIR"
+    latest_dump_file=$(find "$DUMPS_DIR"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
     if [[ -z "$latest_dump_file" ]]; then
-      err "No $dump_prefix* file found in $DUMPS_FOLDER"
+      err "No $dump_prefix* file found in $DUMPS_DIR"
     fi
     dump_file="$latest_dump_file"
   fi
@@ -1370,8 +1372,8 @@ generate_structs_map() {
 
   structs=()
   enums=()
-  find_go_structs structs "$REPOS/models"
-  find_go_enums enums "$REPOS/models"
+  find_go_structs structs "$REPOS_DIR/models"
+  find_go_enums enums "$REPOS_DIR/models"
   find_deleted_pkg_schemas structs enums Models
   for struct in ${structs[@]}; do
     # openapi-go uses last dir name by default.
@@ -1388,7 +1390,7 @@ package postgen
 import (
   db "$GOMOD_PKG/$PG_REPO_GEN/db"
 	rest "$GOMOD_PKG/internal/rest"
-	repomodels "$GOMOD_PKG/$REPOS/models"
+	repomodels "$GOMOD_PKG/$REPOS_DIR/models"
   )
     var PublicStructs = map[string]any{
 $(printf "%s\n" "${map_fields[@]}")
@@ -1579,7 +1581,7 @@ xo_schema() {
   # not recreating db on every gen can lead to plain wrong generation based on an old dev schema.
   # Also use a unique db to prevent cosmic accidents
   xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
-    --src "$PG_REPO"/xo-templates \
+    --src "$PG_REPO_DIR"/xo-templates \
     "$@"
 }
 
