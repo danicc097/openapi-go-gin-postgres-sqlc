@@ -117,8 +117,8 @@ dependencies:
     specifier: ^6.2.4
     version: 6.2.4
   orval:
-    specifier: ^6.14.4
-    version: 6.14.4(openapi-types@12.0.2)(typescript@4.8.2)
+    specifier: ^6.15.0
+    version: 6.15.0(openapi-types@12.0.2)(typescript@4.8.2)
   prop-types:
     specifier: ^15.8.1
     version: 15.8.1
@@ -889,8 +889,8 @@ packages:
       - supports-color
     dev: true
 
-  /@exodus/schemasafe@1.0.0:
-    resolution: {integrity: sha512-2cyupPIZI69HQxEAPllLXBjQp4njDKkOjYRCYxvMZe3/LY9pp9fBM3Tb1wiFAdP6Emo4v3OEbCLGj6u73Q5KLw==}
+  /@exodus/schemasafe@1.0.1:
+    resolution: {integrity: sha512-PQdbF8dGd4LnbwBlcc4ML8RKYdplm+e9sUeWBTr4zgF13/Shiuov9XznvM4T8cb1CfyKK21yTUkuAIIh/DAH/g==}
     dev: false
 
   /@faker-js/faker@7.6.0:
@@ -967,7 +967,7 @@ packages:
       '@ibm-cloud/openapi-ruleset-utilities': 0.0.1
       '@stoplight/spectral-formats': 1.5.0
       '@stoplight/spectral-functions': 1.7.2
-      '@stoplight/spectral-rulesets': 1.15.0
+      '@stoplight/spectral-rulesets': 1.16.0
       lodash: 4.17.21
       validator: 13.9.0
     transitivePeerDependencies:
@@ -1519,28 +1519,28 @@ packages:
     engines: {node: '>=14'}
     dev: false
 
-  /@orval/angular@6.14.4(openapi-types@12.0.2):
-    resolution: {integrity: sha512-NYc7Rh69AE+BaVS9EWZZpSQ/HmySghh8QdwKohQuQgLYWkdKa9ZY1lSKIOm03N44AepF/w1y5r4iezC7efztzg==}
+  /@orval/angular@6.15.0(openapi-types@12.0.2):
+    resolution: {integrity: sha512-KdE9Bp3eRivrumGSlukrlIGTxD1iLcdAnxogqeVtTS27z1c4SOOpdjLzWT0VlyGLgVdYe+HiHLLhPR48CI8dXg==}
     dependencies:
-      '@orval/core': 6.14.4(openapi-types@12.0.2)
+      '@orval/core': 6.15.0(openapi-types@12.0.2)
     transitivePeerDependencies:
       - encoding
       - openapi-types
       - supports-color
     dev: false
 
-  /@orval/axios@6.14.4(openapi-types@12.0.2):
-    resolution: {integrity: sha512-B1tvN8+rD4YNG2ScqBxdDyO8IKtocVXQBIEB4FwevmPM3rzxF6B9ejzywiqy/TnwrrtzVIosp8PFvIPRZ7TSMg==}
+  /@orval/axios@6.15.0(openapi-types@12.0.2):
+    resolution: {integrity: sha512-PGKCiyGwv/CiywPdP78zb/Hm5qsK37tlh8MwCd+38uU6B1VsZ2lfDLMcAsXe9fgrEqRmpEkgvyr6JTcilE904A==}
     dependencies:
-      '@orval/core': 6.14.4(openapi-types@12.0.2)
+      '@orval/core': 6.15.0(openapi-types@12.0.2)
     transitivePeerDependencies:
       - encoding
       - openapi-types
       - supports-color
     dev: false
 
-  /@orval/core@6.14.4(openapi-types@12.0.2):
-    resolution: {integrity: sha512-ix1k5qx5tpTRQ06waQLyYNm2pljuZJ2TG8ViydSvug35lzdJKCjDSGUs4SN1LqhWX5k+6T5CiJgiWkWfctea7A==}
+  /@orval/core@6.15.0(openapi-types@12.0.2):
+    resolution: {integrity: sha512-Rh6GVpWnCKdCMAe6vdlFMhrTkZo4EIkNkWS2b5T+4PHRsQoTA98jhlGXLsD38hG2tW9+YJfibNBG4xnIYFeFhA==}
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.0.2)
       acorn: 8.8.2
@@ -1569,10 +1569,10 @@ packages:
       - supports-color
     dev: false
 
-  /@orval/msw@6.14.4(openapi-types@12.0.2):
-    resolution: {integrity: sha512-I6iX5V+SrkfTESUP9kdZrsci7jPE45TjQXds+cH+Mg6VDEvVCrF/+ESR5Q4eNgBWvcmBeUrNn6TACJGllf0IgQ==}
+  /@orval/msw@6.15.0(openapi-types@12.0.2):
+    resolution: {integrity: sha512-iKfpp6ixxTBraCnNHeqi1z+Y5Gkr1USM2vLWD3LDWS3kLUqgWbZ2SiL3jma1ja9sWUYpRCFU3TepiYSSMoFYxg==}
     dependencies:
-      '@orval/core': 6.14.4(openapi-types@12.0.2)
+      '@orval/core': 6.15.0(openapi-types@12.0.2)
       cuid: 2.1.8
       lodash.get: 4.4.2
       lodash.omit: 4.5.0
@@ -1583,10 +1583,10 @@ packages:
       - supports-color
     dev: false
 
-  /@orval/query@6.14.4(openapi-types@12.0.2):
-    resolution: {integrity: sha512-EvmEMaA7X062NnIgLSR4CfBFcjFopvsFSLD7Zz3rMRx+gaYJLQtp5VTETGMrYhp6gmY/d5dC1JRF4PWg4Lvv2A==}
+  /@orval/query@6.15.0(openapi-types@12.0.2):
+    resolution: {integrity: sha512-+aHTJSj8qzm00tU0F5++5NVbFBtcWeKV2MdLD6jCSFGQ4EssbOaoXE8noaw4rlX66P76g3vN8awTsf8BOz5hHQ==}
     dependencies:
-      '@orval/core': 6.14.4(openapi-types@12.0.2)
+      '@orval/core': 6.15.0(openapi-types@12.0.2)
       lodash.omitby: 4.6.0
     transitivePeerDependencies:
       - encoding
@@ -1594,20 +1594,20 @@ packages:
       - supports-color
     dev: false
 
-  /@orval/swr@6.14.4(openapi-types@12.0.2):
-    resolution: {integrity: sha512-ixGG86PvPQ7f2kiU3Fu7ocJb4kyg1bobfNzWMakUg6uiTnxVVbu2Nkg87lXQRYu+vDZPKh3JGyS+dU4oU+EYGg==}
+  /@orval/swr@6.15.0(openapi-types@12.0.2):
+    resolution: {integrity: sha512-Bx1a7RA+6eYejdnnPRyLlaXu8ixlYtkhx7P+Qtk3VBNcDH8O0KbVmrpCNpDYHVuIIPSpQHJjX3GtXWKwP7gmCA==}
     dependencies:
-      '@orval/core': 6.14.4(openapi-types@12.0.2)
+      '@orval/core': 6.15.0(openapi-types@12.0.2)
     transitivePeerDependencies:
       - encoding
       - openapi-types
       - supports-color
     dev: false
 
-  /@orval/zod@6.14.4(openapi-types@12.0.2):
-    resolution: {integrity: sha512-9WRmwCXYBAKx6zEh8vvcDiVQe3JwrdKm8f+2qw3sARI8CLCwiIreyVY3HGmm3nMNxBtjCXEeLVqup0xZGNIX9g==}
+  /@orval/zod@6.15.0(openapi-types@12.0.2):
+    resolution: {integrity: sha512-8BfOOfOyxX3Fei0BnrW72CCTY7TWeUXQCvL7eWakiD5sMNmm1FcaCQ6JZwBPX3sGlWR1ElYmRJisd5ihZlaCsg==}
     dependencies:
-      '@orval/core': 6.14.4(openapi-types@12.0.2)
+      '@orval/core': 6.15.0(openapi-types@12.0.2)
       lodash.uniq: 4.5.0
     transitivePeerDependencies:
       - encoding
@@ -1648,13 +1648,13 @@ packages:
       rollup: 2.79.1
     dev: false
 
-  /@stoplight/better-ajv-errors@1.0.3(ajv@8.12.0):
+  /@stoplight/better-ajv-errors@1.0.3(ajv@8.11.0):
     resolution: {integrity: sha512-0p9uXkuB22qGdNfy3VeEhxkU5uwvp/KrBTAbrLBURv6ilxIVwanKwjMc41lQfIVgPGcOkmLbTolfFrSsueu7zA==}
     engines: {node: ^12.20 || >= 14.13}
     peerDependencies:
       ajv: '>=8'
     dependencies:
-      ajv: 8.12.0
+      ajv: 8.11.0
       jsonpointer: 5.0.1
       leven: 3.1.0
     dev: false
@@ -1675,7 +1675,7 @@ packages:
     dependencies:
       '@stoplight/json': 3.20.2
       '@stoplight/path': 1.3.2
-      '@stoplight/types': 13.6.0
+      '@stoplight/types': 13.13.0
       '@types/urijs': 1.19.19
       dependency-graph: 0.11.0
       fast-memoize: 2.5.2
@@ -1691,7 +1691,7 @@ packages:
     dependencies:
       '@stoplight/ordered-object-literal': 1.0.4
       '@stoplight/path': 1.3.2
-      '@stoplight/types': 13.6.0
+      '@stoplight/types': 13.13.0
       jsonc-parser: 2.2.1
       lodash: 4.17.21
       safe-stable-stringify: 1.1.1
@@ -1710,17 +1710,18 @@ packages:
   /@stoplight/spectral-cli@6.6.0:
     resolution: {integrity: sha512-z46fnrvraaWMio8Y9RYYkLO+XdmtxOWpy5qNJF3CsmWua0FZ4iOTryb5Cm3GkB0wEtqxNUCBUHvoo4hS6Noyqg==}
     engines: {node: ^12.20 || >= 14.13}
+    hasBin: true
     dependencies:
       '@stoplight/json': 3.20.2
       '@stoplight/path': 1.3.2
-      '@stoplight/spectral-core': 1.17.0
+      '@stoplight/spectral-core': 1.18.0
       '@stoplight/spectral-parsers': 1.0.2
       '@stoplight/spectral-ref-resolver': 1.0.2
       '@stoplight/spectral-ruleset-bundler': 1.5.1
       '@stoplight/spectral-ruleset-migrator': 1.9.3
-      '@stoplight/spectral-rulesets': 1.15.0
+      '@stoplight/spectral-rulesets': 1.16.0
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.12.0
+      '@stoplight/types': 13.13.0
       chalk: 4.1.2
       cliui: 7.0.4
       eol: 0.9.1
@@ -1738,11 +1739,11 @@ packages:
       - supports-color
     dev: false
 
-  /@stoplight/spectral-core@1.17.0:
-    resolution: {integrity: sha512-7D9og+iX2bCJMGPY7cvt2YdevFGDeSI7S2jPo7HWeGGitkef1FDSQ9AEapdwmCYvOJ7ztUlQdCCLTOb6Aani8w==}
+  /@stoplight/spectral-core@1.18.0:
+    resolution: {integrity: sha512-0aj+IELHvhjoPWoOFj41EJilPbaexUuWFg7GCsiJ3BXrniRp3GnPl+TIZkC1ZuuAr/oi77RviDhW9Gm7ndKB9Q==}
     engines: {node: ^12.20 || >= 14.13}
     dependencies:
-      '@stoplight/better-ajv-errors': 1.0.3(ajv@8.12.0)
+      '@stoplight/better-ajv-errors': 1.0.3(ajv@8.11.0)
       '@stoplight/json': 3.20.2
       '@stoplight/path': 1.3.2
       '@stoplight/spectral-parsers': 1.0.2
@@ -1751,9 +1752,9 @@ packages:
       '@stoplight/types': 13.6.0
       '@types/es-aggregate-error': 1.0.2
       '@types/json-schema': 7.0.11
-      ajv: 8.12.0
-      ajv-errors: 3.0.0(ajv@8.12.0)
-      ajv-formats: 2.1.1(ajv@8.12.0)
+      ajv: 8.11.0
+      ajv-errors: 3.0.0(ajv@8.11.0)
+      ajv-formats: 2.1.1(ajv@8.11.0)
       es-aggregate-error: 1.0.9
       jsonpath-plus: 7.1.0
       lodash: 4.17.21
@@ -1772,7 +1773,7 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@stoplight/json': 3.20.2
-      '@stoplight/spectral-core': 1.17.0
+      '@stoplight/spectral-core': 1.18.0
       '@types/json-schema': 7.0.11
       tslib: 2.5.0
     transitivePeerDependencies:
@@ -1783,15 +1784,15 @@ packages:
     resolution: {integrity: sha512-f+61/FtIkQeIo+a269CeaeqjpyRsgDyIk6DGr7iS4hyuk1PPk7Uf6MNRDs9FEIBh7CpdEJ+HSHbMLwgpymWTIw==}
     engines: {node: '>=12'}
     dependencies:
-      '@stoplight/better-ajv-errors': 1.0.3(ajv@8.12.0)
+      '@stoplight/better-ajv-errors': 1.0.3(ajv@8.11.0)
       '@stoplight/json': 3.20.2
-      '@stoplight/spectral-core': 1.17.0
+      '@stoplight/spectral-core': 1.18.0
       '@stoplight/spectral-formats': 1.5.0
       '@stoplight/spectral-runtime': 1.1.2
-      ajv: 8.12.0
-      ajv-draft-04: 1.0.0(ajv@8.12.0)
-      ajv-errors: 3.0.0(ajv@8.12.0)
-      ajv-formats: 2.1.1(ajv@8.12.0)
+      ajv: 8.11.0
+      ajv-draft-04: 1.0.0(ajv@8.11.0)
+      ajv-errors: 3.0.0(ajv@8.11.0)
+      ajv-formats: 2.1.1(ajv@8.11.0)
       lodash: 4.17.21
       tslib: 2.5.0
     transitivePeerDependencies:
@@ -1803,7 +1804,7 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@stoplight/json': 3.20.2
-      '@stoplight/types': 13.12.0
+      '@stoplight/types': 13.13.0
       '@stoplight/yaml': 4.2.3
       tslib: 2.5.0
     dev: false
@@ -1840,16 +1841,16 @@ packages:
     dependencies:
       '@rollup/plugin-commonjs': 22.0.2(rollup@2.79.1)
       '@stoplight/path': 1.3.2
-      '@stoplight/spectral-core': 1.17.0
+      '@stoplight/spectral-core': 1.18.0
       '@stoplight/spectral-formats': 1.5.0
       '@stoplight/spectral-functions': 1.7.2
       '@stoplight/spectral-parsers': 1.0.2
       '@stoplight/spectral-ref-resolver': 1.0.2
       '@stoplight/spectral-ruleset-migrator': 1.9.3
-      '@stoplight/spectral-rulesets': 1.15.0
+      '@stoplight/spectral-rulesets': 1.16.0
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.12.0
-      '@types/node': 18.16.1
+      '@stoplight/types': 13.13.0
+      '@types/node': 20.1.0
       pony-cause: 1.1.1
       rollup: 2.79.1
       tslib: 2.5.0
@@ -1867,10 +1868,10 @@ packages:
       '@stoplight/path': 1.3.2
       '@stoplight/spectral-functions': 1.7.2
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.12.0
+      '@stoplight/types': 13.13.0
       '@stoplight/yaml': 4.2.3
-      '@types/node': 18.16.1
-      ajv: 8.12.0
+      '@types/node': 20.1.0
+      ajv: 8.11.0
       ast-types: 0.14.2
       astring: 1.8.4
       reserved: 0.1.2
@@ -1880,21 +1881,21 @@ packages:
       - encoding
     dev: false
 
-  /@stoplight/spectral-rulesets@1.15.0:
-    resolution: {integrity: sha512-xgltt54aQPSKKAxPZ2oCA25X/xmDPVCV1e4qxqH5bw/t7LvDWVusBFUrtcl/5HAJIIgkpxOKXKEc2XRC0ea8HQ==}
+  /@stoplight/spectral-rulesets@1.16.0:
+    resolution: {integrity: sha512-vHnQ50zZARymT+LkLD1l0sXoe76iUf0FWFyTp3xSRFvMIvoqFlUHONjKqFUUQzLaidSWWVah3repmAibHTdaSA==}
     engines: {node: '>=12'}
     dependencies:
       '@asyncapi/specs': 4.2.1
-      '@stoplight/better-ajv-errors': 1.0.3(ajv@8.12.0)
+      '@stoplight/better-ajv-errors': 1.0.3(ajv@8.11.0)
       '@stoplight/json': 3.20.2
-      '@stoplight/spectral-core': 1.17.0
+      '@stoplight/spectral-core': 1.18.0
       '@stoplight/spectral-formats': 1.5.0
       '@stoplight/spectral-functions': 1.7.2
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.12.0
+      '@stoplight/types': 13.13.0
       '@types/json-schema': 7.0.11
-      ajv: 8.12.0
-      ajv-formats: 2.1.1(ajv@8.12.0)
+      ajv: 8.11.0
+      ajv-formats: 2.1.1(ajv@8.11.0)
       json-schema-traverse: 1.0.0
       lodash: 4.17.21
       tslib: 2.5.0
@@ -1925,8 +1926,8 @@ packages:
       utility-types: 3.10.0
     dev: false
 
-  /@stoplight/types@13.12.0:
-    resolution: {integrity: sha512-lpyB8b5cNcg/CyQ9W7Q2BxPkHhBA8+9byviGT6uL2Ok/5iao0poCnFUH++Cd7VN1/RaXrv0LT9fyOg4fJIl0iA==}
+  /@stoplight/types@13.13.0:
+    resolution: {integrity: sha512-QzkWObMieLyhDWYR5nXpRe2BoQ+u7jT8TLiYe/xjCllIDIVEFLE7F9vrnm1CPxIIWA3vYdQSePv76CzNCjds0Q==}
     engines: {node: ^12.20 || >=14.13}
     dependencies:
       '@types/json-schema': 7.0.11
@@ -1950,7 +1951,7 @@ packages:
     engines: {node: '>=10.8'}
     dependencies:
       '@stoplight/ordered-object-literal': 1.0.4
-      '@stoplight/types': 13.12.0
+      '@stoplight/types': 13.13.0
       '@stoplight/yaml-ast-parser': 0.0.48
       tslib: 2.5.0
     dev: false
@@ -2046,7 +2047,7 @@ packages:
   /@types/es-aggregate-error@1.0.2:
     resolution: {integrity: sha512-erqUpFXksaeR2kejKnhnjZjbFxUpGZx4Z7ydNL9ie8tEhXPiZTsLeUDJ6aR1F8j5wWUAtOAQWUqkc7givBJbBA==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 20.1.0
     dev: false
 
   /@types/estree@0.0.39:
@@ -2121,16 +2122,11 @@ packages:
     resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
     dev: false
 
-  /@types/node@18.16.1:
-    resolution: {integrity: sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==}
-    dev: false
-
   /@types/node@18.7.23:
     resolution: {integrity: sha512-DWNcCHolDq0ZKGizjx2DZjR/PqsYwAcYUJmfMWqtVU2MBMG5Mo+xFZrhGId5r/O5HOuMPyQEcM6KUBp5lBZZBg==}
 
   /@types/node@20.1.0:
     resolution: {integrity: sha512-O+z53uwx64xY7D6roOi4+jApDGFg0qn6WHcxe5QeqjMaTezBO/mxdfFXIVAVVyNWKx84OmPB3L8kbVYOTeN34A==}
-    dev: true
 
   /@types/numeral@0.0.28:
     resolution: {integrity: sha512-Sjsy10w6XFHDktJJdXzBJmoondAKW+LcGpRFH+9+zXEDj0cOH8BxJuZA9vUDSMAzU1YRJlsPKmZEEiTYDlICLw==}
@@ -2444,6 +2440,7 @@ packages:
   /acorn@8.8.2:
     resolution: {integrity: sha512-xjIYgE8HBrkpd/sJqOGNspf8uHG+NOHGOw6a/Urj8taM2EXfdNAH2oFcPeIFfsv3+kz/mJrS5VuMqbNLjCa2vw==}
     engines: {node: '>=0.4.0'}
+    hasBin: true
     dev: false
 
   /agent-base@6.0.2:
@@ -2453,6 +2450,17 @@ packages:
       debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
+
+  /ajv-draft-04@1.0.0(ajv@8.11.0):
+    resolution: {integrity: sha512-mv00Te6nmYbRp5DCwclxtt7yV/joXJPGS7nM+97GdxvuttCOfgI3K4U25zboyeX0O+myI8ERluxQe5wljMmVIw==}
+    peerDependencies:
+      ajv: ^8.5.0
+    peerDependenciesMeta:
+      ajv:
+        optional: true
+    dependencies:
+      ajv: 8.11.0
+    dev: false
 
   /ajv-draft-04@1.0.0(ajv@8.12.0):
     resolution: {integrity: sha512-mv00Te6nmYbRp5DCwclxtt7yV/joXJPGS7nM+97GdxvuttCOfgI3K4U25zboyeX0O+myI8ERluxQe5wljMmVIw==}
@@ -2465,12 +2473,12 @@ packages:
       ajv: 8.12.0
     dev: false
 
-  /ajv-errors@3.0.0(ajv@8.12.0):
+  /ajv-errors@3.0.0(ajv@8.11.0):
     resolution: {integrity: sha512-V3wD15YHfHz6y0KdhYFjyy9vWtEVALT9UrxfN3zqlI6dMioHnJrqOYfyPKol3oqrnCM9uwkcdCwkJ0WUcbLMTQ==}
     peerDependencies:
       ajv: ^8.0.1
     dependencies:
-      ajv: 8.12.0
+      ajv: 8.11.0
     dev: false
 
   /ajv-formats@2.1.1(ajv@8.11.0):
@@ -2482,17 +2490,6 @@ packages:
         optional: true
     dependencies:
       ajv: 8.11.0
-
-  /ajv-formats@2.1.1(ajv@8.12.0):
-    resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
-    peerDependencies:
-      ajv: ^8.0.0
-    peerDependenciesMeta:
-      ajv:
-        optional: true
-    dependencies:
-      ajv: 8.12.0
-    dev: false
 
   /ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
@@ -2664,6 +2661,7 @@ packages:
 
   /astring@1.8.4:
     resolution: {integrity: sha512-97a+l2LBU3Op3bBQEff79i/E4jMD2ZLFD8rHx9B6mXyB2uQwhJQYfiDqUwtfjF4QA1F2qs//N6Cw8LetMbQjcw==}
+    hasBin: true
     dev: false
 
   /asynckit@0.4.0:
@@ -3053,6 +3051,7 @@ packages:
 
   /cuid@2.1.8:
     resolution: {integrity: sha512-xiEMER6E7TlTPnDxrM4eRiC6TRgjNX9xzEZ5U/Se2YJKr7Mq4pJn/2XEHjl3STcSh96GmkHPcBXLES8M29wyyg==}
+    deprecated: Cuid and other k-sortable and non-cryptographic ids (Ulid, ObjectId, KSUID, all UUIDs) are all insecure. Use @paralleldrive/cuid2 instead.
     dev: false
 
   /d@1.0.1:
@@ -3774,6 +3773,7 @@ packages:
   /esbuild@0.15.18:
     resolution: {integrity: sha512-x/R72SmW3sSFRm5zrrIjAhCeQSAWoni3CmHEqfQrZIQTM3lVCdehdwuIqaOtfC2slvpdlLa62GYoN8SxT23m6Q==}
     engines: {node: '>=12'}
+    hasBin: true
     requiresBuild: true
     optionalDependencies:
       '@esbuild/android-arm': 0.15.18
@@ -3842,6 +3842,7 @@ packages:
   /escodegen@1.14.3:
     resolution: {integrity: sha512-qFcX0XJkdg+PB3xjZZG/wKSuT1PnQWx57+TVSjIMmILd2yC/6ByYElPwJnslDsuWuSAp4AwJGumarAAmJch5Kw==}
     engines: {node: '>=4.0'}
+    hasBin: true
     dependencies:
       esprima: 4.0.1
       estraverse: 4.3.0
@@ -4854,10 +4855,11 @@ packages:
   /ibm-openapi-validator@0.97.5:
     resolution: {integrity: sha512-MlXLjQCZRU0yqQ6EFzBhCehkFXp/rXuGsjsEglK+ldDJZV/YQy7dw1V6ROzoiibjm0f00J7L3ubLvlbIlHilGQ==}
     engines: {node: '>=14.0.0'}
+    hasBin: true
     dependencies:
       '@ibm-cloud/openapi-ruleset': 0.45.5
       '@stoplight/spectral-cli': 6.6.0
-      '@stoplight/spectral-core': 1.17.0
+      '@stoplight/spectral-core': 1.18.0
       '@stoplight/spectral-parsers': 1.0.2
       chalk: 4.1.2
       commander: 2.20.3
@@ -5286,6 +5288,7 @@ packages:
 
   /json-schema-ref-parser@5.1.3:
     resolution: {integrity: sha512-CpDFlBwz/6la78hZxyB9FECVKGYjIIl3Ms3KLqFj99W7IIb7D00/RDgc++IGB4BBALl0QRhh5m4q5WNSopvLtQ==}
+    deprecated: Please switch to @apidevtools/json-schema-ref-parser
     dependencies:
       call-me-maybe: 1.0.2
       debug: 3.2.7
@@ -5803,19 +5806,20 @@ packages:
   /oas-linter@3.2.2:
     resolution: {integrity: sha512-KEGjPDVoU5K6swgo9hJVA/qYGlwfbFx+Kg2QB/kd7rzV5N8N5Mg6PlsoCMohVnQmo+pzJap/F610qTodKzecGQ==}
     dependencies:
-      '@exodus/schemasafe': 1.0.0
+      '@exodus/schemasafe': 1.0.1
       should: 13.2.3
       yaml: 1.10.2
     dev: false
 
   /oas-resolver@2.5.6:
     resolution: {integrity: sha512-Yx5PWQNZomfEhPPOphFbZKi9W93CocQj18NlD2Pa4GWZzdZpSJvYwoiuurRI7m3SpcChrnO08hkuQDL3FGsVFQ==}
+    hasBin: true
     dependencies:
       node-fetch-h2: 2.3.0
       oas-kit-common: 1.0.8
       reftools: 1.1.9
       yaml: 1.10.2
-      yargs: 17.7.1
+      yargs: 17.7.2
     dev: false
 
   /oas-schema-walker@1.1.5:
@@ -5970,17 +5974,18 @@ packages:
       wcwidth: 1.0.1
     dev: false
 
-  /orval@6.14.4(openapi-types@12.0.2)(typescript@4.8.2):
-    resolution: {integrity: sha512-kMFZsSjetAPang7bcitcxtdiQe8ImNCKl4U3tIRex9DrZsTWI0DHJvKjN1hRtDx/4Ya26jV9Wn7JZQWsreKbtg==}
+  /orval@6.15.0(openapi-types@12.0.2)(typescript@4.8.2):
+    resolution: {integrity: sha512-SJx5PlwER6BzBMpnLkvFZkx50+rTvi2tvXgZyjMVjyxskgknb28BhFvYhMlKryT2UL0ihcQWHMnjgov4mScBwQ==}
+    hasBin: true
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.0.2)
-      '@orval/angular': 6.14.4(openapi-types@12.0.2)
-      '@orval/axios': 6.14.4(openapi-types@12.0.2)
-      '@orval/core': 6.14.4(openapi-types@12.0.2)
-      '@orval/msw': 6.14.4(openapi-types@12.0.2)
-      '@orval/query': 6.14.4(openapi-types@12.0.2)
-      '@orval/swr': 6.14.4(openapi-types@12.0.2)
-      '@orval/zod': 6.14.4(openapi-types@12.0.2)
+      '@orval/angular': 6.15.0(openapi-types@12.0.2)
+      '@orval/axios': 6.15.0(openapi-types@12.0.2)
+      '@orval/core': 6.15.0(openapi-types@12.0.2)
+      '@orval/msw': 6.15.0(openapi-types@12.0.2)
+      '@orval/query': 6.15.0(openapi-types@12.0.2)
+      '@orval/swr': 6.15.0(openapi-types@12.0.2)
+      '@orval/zod': 6.15.0(openapi-types@12.0.2)
       ajv: 8.11.0
       cac: 6.7.14
       chalk: 4.1.2
@@ -6740,6 +6745,7 @@ packages:
 
   /resolve@1.22.2:
     resolution: {integrity: sha512-Sb+mjNHOULsBv818T40qSPeRiuWLyaGMa5ewydRLFimneixmVy2zdivRl+AF6jaYPC8ERxGDmFSiqui6SfPd+g==}
+    hasBin: true
     dependencies:
       is-core-module: 2.12.0
       path-parse: 1.0.7
@@ -6781,6 +6787,7 @@ packages:
   /rollup@2.79.1:
     resolution: {integrity: sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==}
     engines: {node: '>=10.0.0'}
+    hasBin: true
     optionalDependencies:
       fsevents: 2.3.2
     dev: false
@@ -6838,6 +6845,7 @@ packages:
 
   /semver@5.7.1:
     resolution: {integrity: sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==}
+    hasBin: true
     dev: false
 
   /semver@6.3.0:
@@ -7166,6 +7174,7 @@ packages:
 
   /swagger2openapi@7.0.8:
     resolution: {integrity: sha512-upi/0ZGkYgEcLeGieoz8gT74oWHA0E7JivX7aN9mAf+Tc7BQoRBvnIGHoPDw+f9TXTW4s6kGYCZJtauP6OYp7g==}
+    hasBin: true
     dependencies:
       call-me-maybe: 1.0.2
       node-fetch: 2.6.9
@@ -7177,7 +7186,7 @@ packages:
       oas-validator: 5.0.8
       reftools: 1.1.9
       yaml: 1.10.2
-      yargs: 17.7.1
+      yargs: 17.7.2
     transitivePeerDependencies:
       - encoding
     dev: false
@@ -7757,6 +7766,7 @@ packages:
   /vm2@3.9.17:
     resolution: {integrity: sha512-AqwtCnZ/ERcX+AVj9vUsphY56YANXxRuqMb7GsDtAr0m0PcQX3u0Aj3KWiXM0YAHy7i6JEeHrwOnwXbGYgRpAw==}
     engines: {node: '>=6.0'}
+    hasBin: true
     dependencies:
       acorn: 8.8.2
       acorn-walk: 8.2.0
@@ -7944,8 +7954,8 @@ packages:
       yargs-parser: 21.1.1
     dev: false
 
-  /yargs@17.7.1:
-    resolution: {integrity: sha512-cwiTb08Xuv5fqF4AovYacTFNxk62th7LKJ6BL9IGUpTJrWoU7/7WdQGTP2SjKf1dUNBGzDd28p/Yfs/GI6JrLw==}
+  /yargs@17.7.2:
+    resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
     dependencies:
       cliui: 8.0.1
