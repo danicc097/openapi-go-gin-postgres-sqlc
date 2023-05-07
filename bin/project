@@ -577,24 +577,33 @@ x.gen.gowrap() {
       "prometheus:with_prometheus"
     )
 
-    local repo_interfaces="User Notification Project Team WorkItemTag WorkItemType"
-    for iface in ${repo_interfaces[@]}; do
-      for suffix in ${suffixes[@]}; do
-        {
-          IFS=":" read -r -a arr <<<${suffix}
-          local tmpl="${arr[0]}"
-          local suffix="${arr[1]}"
-          gowrap gen \
-            -g \
-            -p $GOMOD_PKG/$REPOS \
-            -i $iface \
-            -t "internal/gowrap-templates/$tmpl.tmpl" \
-            -o "$REPOS/reposwrappers/${iface,,}_$suffix.gen.go"
-        } &
-      done
-    done
+    local repos="$REPOS/repos.go"
 
-    wait
+    if ! md5sum -c "$CACHE/gowrap.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
+      local repo_interfaces=()
+      find_go_interfaces repo_interfaces $repos
+
+      md5sum $repos >"$CACHE/gowrap.md5" &
+      for iface in ${repo_interfaces[@]}; do
+        for suffix in ${suffixes[@]}; do
+          {
+            IFS=":" read -r -a arr <<<${suffix}
+            local tmpl="${arr[0]}"
+            local suffix="${arr[1]}"
+            gowrap gen \
+              -g \
+              -p $GOMOD_PKG/$REPOS \
+              -i $iface \
+              -t "internal/gowrap-templates/$tmpl.tmpl" \
+              -o "$REPOS/reposwrappers/${iface,,}_$suffix.gen.go"
+          } &
+        done
+      done
+
+      wait
+    else
+      echo "Skipping generation (cached). Force regen with --x-force-regen"
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -643,7 +652,7 @@ x.gen.counterfeiter() {
       sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
         internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go
     else
-      echo "Skipping generation. Force regen with --x-force-regen"
+      echo "Skipping generation (cached). Force regen with --x-force-regen"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1455,6 +1464,17 @@ find_go_structs() {
     sed -ne 's/[\s]*type\(.*\)struct.*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No structs found in package $pkg"
+  fi
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+find_go_interfaces() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -ne 's/[\s]*type\(.*\)interface.*/\1/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No interfaces found in package $pkg"
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
