@@ -699,15 +699,6 @@ x.gen.frontend() {
   cache-gen
   { { {
     (
-      export ENV_REPLACE_GLOB=frontend/config.json
-      # ensure config has all k:v as "<KEY>": "$<KEY>"
-      # this has to always be run at startup
-      jq \
-        'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-        frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
-      envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
-      frontend/nginx/replace-envvars.sh "$envvars"
-
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
       orval_config="frontend/orval.config.ts"
 
@@ -984,7 +975,7 @@ x.run.backend-hr() {
 
 # Run frontend with hot-reloading.
 x.run.frontend() {
-  x.gen.frontend
+  frontend_config_setup
   cd frontend
   pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
@@ -1606,6 +1597,18 @@ drop-and-migrate-gen-db() {
     x.db.drop
     x.migrate up
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# updates dynamic config with env vars
+frontend_config_setup() {
+  export ENV_REPLACE_GLOB=frontend/config.json
+  # ensure config has all k:v as "<KEY>": "$<KEY>"
+  # this has to always be run at startup
+  jq \
+    'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
+    frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
+  envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
+  frontend/nginx/replace-envvars.sh "$envvars"
 }
 
 # saves the current gen state to allow restoring in the event of early exit
