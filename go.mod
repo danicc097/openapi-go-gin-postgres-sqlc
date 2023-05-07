@@ -27,7 +27,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.15.1
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d
-	github.com/smartystreets/gunit v1.4.3
+	github.com/smartystreets/gunit v1.4.5
 	github.com/stretchr/testify v1.8.2
 	github.com/swaggest/jsonschema-go v0.3.50
 	github.com/swaggest/openapi-go v0.2.30
