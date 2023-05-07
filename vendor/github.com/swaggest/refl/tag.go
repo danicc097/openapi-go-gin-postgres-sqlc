@@ -273,9 +273,8 @@ func PopulateFieldsFromTags(structPtr interface{}, fieldTag reflect.StructTag) e
 // FindTaggedName returns tagged name of an entity field.
 //
 // Entity field is defined by pointer to owner structure and pointer to field in that structure.
-//
-//	entity := MyEntity{}
-//	name, found := sm.FindTaggedName(&entity, &entity.UpdatedAt, "db")
+//   entity := MyEntity{}
+//   name, found := sm.FindTaggedName(&entity, &entity.UpdatedAt, "db")
 func FindTaggedName(structPtr, fieldPtr interface{}, tagName string) (string, error) {
 	if structPtr == nil || fieldPtr == nil {
 		return "", ErrMissingStructOrField
