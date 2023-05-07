@@ -29,7 +29,7 @@ require (
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d
 	github.com/smartystreets/gunit v1.4.3
 	github.com/stretchr/testify v1.8.2
-	github.com/swaggest/jsonschema-go v0.3.50
+	github.com/swaggest/jsonschema-go v0.3.51
 	github.com/swaggest/openapi-go v0.2.30
 	github.com/zitadel/oidc v1.13.4
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.40.0

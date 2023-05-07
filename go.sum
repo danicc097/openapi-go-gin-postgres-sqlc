@@ -1230,8 +1230,8 @@ github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/swaggest/assertjson v1.8.0 h1:XSg4p6iOZMjtpV2tW2SXfD1GsOOTsWcm+sOADODu/DU=
-github.com/swaggest/jsonschema-go v0.3.50 h1:XbEV23CLRl3dq+QyLiAiP7ieJ9+ccc0kciHs7N4iXJc=
-github.com/swaggest/jsonschema-go v0.3.50/go.mod h1:QfUB5HaZ8y5TiFtCPhM7QwvPNKxTsYxDJaLHTLq6jgU=
+github.com/swaggest/jsonschema-go v0.3.51 h1:Cl0hFQ/jtBIP8NlHNuwW6ka3J7zzW5r2jxbLSCUByGY=
+github.com/swaggest/jsonschema-go v0.3.51/go.mod h1:QfUB5HaZ8y5TiFtCPhM7QwvPNKxTsYxDJaLHTLq6jgU=
 github.com/swaggest/openapi-go v0.2.30 h1:Gt7OsuBZ1rwmOWpwhzDuP1s6egoWpArIICCAi/3fcQo=
 github.com/swaggest/openapi-go v0.2.30/go.mod h1:H7ZYe1c/BuYH7xBgw8OmpHKnTmBJC2XeSGf49KvSaRg=
 github.com/swaggest/refl v1.1.0 h1:a+9a75Kv6ciMozPjVbOfcVTEQe81t2R3emvaD9oGQGc=
