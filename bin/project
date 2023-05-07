@@ -699,6 +699,8 @@ x.gen.frontend() {
   cache-gen
   { { {
     (
+      frontend_config_setup
+
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
       orval_config="frontend/orval.config.ts"
 
@@ -864,7 +866,7 @@ x.lint.sql() {
 
 # Run required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
-x.test.backend-setup() {
+x.test.backend.setup() {
   cache-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
@@ -877,9 +879,9 @@ x.test.backend-setup() {
   cache-gen.cleanup
 }
 
-# Test the entire project. Accepts `go test` parameters.
+# Test backend. Accepts `go test` parameters.
 # Args: [...]
-x.test() {
+x.test.backend() {
   { { {
     x.test.xo
 
@@ -888,6 +890,17 @@ x.test() {
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     echo "Running ${GREEN}\"APP_ENV=$env go test $* ./...\"${OFF}"
     APP_ENV="$env" go test "$@" ./...
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Test frontend.
+# Args: [...]
+x.test.frontend() {
+  { { {
+    # TODO accept vitest args
+    frontend_config_setup
+    cd frontend
+    pnpm run test:no-watch
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -910,7 +923,7 @@ x.test.xo() {
     xo_schema -o "$test_dir/got" --debug \
       --schema public \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo public schema generation"
+      --ignore "*.updated_at" >/dev/null || err "Failed xo public schema generation"
 
     files=$(find "$test_dir/got" \
       -name "*.go")

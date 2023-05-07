@@ -48,7 +48,7 @@ services:
     restart: always
     logging: *default-logging
     healthcheck:
-      test: ["CMD", "redis-cli","ping"]
+      test: ["CMD", "redis-cli ping || exit 1"]
 
 networks:
   traefik-net:
