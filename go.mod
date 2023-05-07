@@ -73,7 +73,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9 // indirect
+	github.com/yuin/gopher-lua v1.1.0 // indirect
 	go.opentelemetry.io/otel/metric v0.38.1 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
@@ -83,7 +83,7 @@ require (
 )
 
 require (
-	github.com/alicebob/miniredis/v2 v2.23.0
+	github.com/alicebob/miniredis/v2 v2.30.2
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
