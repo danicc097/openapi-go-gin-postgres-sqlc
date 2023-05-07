@@ -53,4 +53,5 @@ func (n *Notification) Create(ctx context.Context, d db.DBTX, params *db.Notific
 // using UserNotificationsByUserID_PaginatedByNotificationID
 // instead of repeatedly calling FKUser_Sender, or generating an adhoc query,
 // we could have a cache of users client-side, so if sender's user_id is unknown we just GET /users/ with a bunch of ids, return all at once and be done with it.
+// or better yet server side cache for X hours of `users map[uuid]User` for both sender and receiver joins, since contextual info will barely change and ids certainly won't change.
 // MarkAsRead,
