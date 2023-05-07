@@ -896,12 +896,18 @@ x.test.backend() {
 # Test frontend.
 # Args: [...]
 x.test.frontend() {
-  { { {
-    # TODO accept vitest args
-    frontend_config_setup
-    cd frontend
-    pnpm run test:no-watch
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  # TODO accept vitest args
+  frontend_config_setup
+  cd frontend
+  pnpm run test:no-watch
+}
+
+# Test frontend on file changes.
+# Args: [...]
+x.test.frontend.watch() {
+  frontend_config_setup
+  cd frontend
+  pnpm run test
 }
 
 # Run custom xo generation script tests
@@ -939,25 +945,23 @@ x.test.xo() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Test the entire project on file changes. Accepts `go test` parameters.
+# Test backend on file changes. Accepts `go test` parameters.
 # Args: [...]
-x.test-watch() {
-  { { {
-    clear
+x.test.backend.watch() {
+  clear
 
-    latency=2
-    while true; do
-      inotifywait \
-        --monitor ./internal/**/* \
-        --event=close_write \
-        --format='%T %f' \
-        --timefmt='%s' |
-        while read -r event_time event_file 2>/dev/null || sleep $latency; do
-          clear
-          APP_ENV="$env" go test "$@" && echo "${GREEN}✓ All tests passing${OFF}"
-        done
-    done
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  latency=2
+  while true; do
+    inotifywait \
+      --monitor ./internal/**/* \
+      --event=close_write \
+      --format='%T %f' \
+      --timefmt='%s' |
+      while read -r event_time event_file 2>/dev/null || sleep $latency; do
+        clear
+        APP_ENV="$env" go test "$@" ./... && echo "${GREEN}✓ All tests passing${OFF}"
+      done
+  done
 }
 
 # Build the entire project.
