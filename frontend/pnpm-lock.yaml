@@ -114,8 +114,8 @@ dependencies:
     specifier: ^0.49.1
     version: 0.49.1(typescript@4.8.2)
   openapi-typescript:
-    specifier: ^6.0.0
-    version: 6.0.3
+    specifier: ^6.2.4
+    version: 6.2.4
   orval:
     specifier: ^6.14.4
     version: 6.14.4(openapi-types@12.0.2)(typescript@4.8.2)
@@ -2061,7 +2061,7 @@ packages:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 18.16.1
+      '@types/node': 20.1.0
     dev: true
 
   /@types/hast@2.3.4:
@@ -2123,9 +2123,14 @@ packages:
 
   /@types/node@18.16.1:
     resolution: {integrity: sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==}
+    dev: false
 
   /@types/node@18.7.23:
     resolution: {integrity: sha512-DWNcCHolDq0ZKGizjx2DZjR/PqsYwAcYUJmfMWqtVU2MBMG5Mo+xFZrhGId5r/O5HOuMPyQEcM6KUBp5lBZZBg==}
+
+  /@types/node@20.1.0:
+    resolution: {integrity: sha512-O+z53uwx64xY7D6roOi4+jApDGFg0qn6WHcxe5QeqjMaTezBO/mxdfFXIVAVVyNWKx84OmPB3L8kbVYOTeN34A==}
+    dev: true
 
   /@types/numeral@0.0.28:
     resolution: {integrity: sha512-Sjsy10w6XFHDktJJdXzBJmoondAKW+LcGpRFH+9+zXEDj0cOH8BxJuZA9vUDSMAzU1YRJlsPKmZEEiTYDlICLw==}
@@ -3859,6 +3864,7 @@ packages:
 
   /eslint-config-prettier@8.5.0(eslint@8.23.0):
     resolution: {integrity: sha512-obmWKLUNCnhtQRKc+tmnYuQl0pFU1ibYJQ5BGhTVB08bHe9wC8qUeG7c08dj9XX+AuPj1YSGSQIHl1pnDHZR0Q==}
+    hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
     dependencies:
@@ -5207,6 +5213,7 @@ packages:
 
   /js-yaml@3.14.1:
     resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
+    hasBin: true
     dependencies:
       argparse: 1.0.10
       esprima: 4.0.1
@@ -5214,6 +5221,7 @@ packages:
 
   /js-yaml@4.1.0:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
+    hasBin: true
     dependencies:
       argparse: 2.0.1
 
@@ -5344,7 +5352,7 @@ packages:
     dependencies:
       universalify: 2.0.0
     optionalDependencies:
-      graceful-fs: 4.2.11
+      graceful-fs: 4.2.10
     dev: false
 
   /jsonpath-plus@6.0.1:
@@ -5647,6 +5655,7 @@ packages:
   /msw@0.49.1(typescript@4.8.2):
     resolution: {integrity: sha512-JpIIq4P65ofj0HVmDMkJuRwgP9s5kcdutpZ15evMTb2k91/USB7IKWRLV9J1Mzc3OqTdwNj4RwtOWJ5y/FulQQ==}
     engines: {node: '>=14'}
+    hasBin: true
     requiresBuild: true
     peerDependencies:
       typescript: '>= 4.4.x <= 4.9.x'
@@ -5905,14 +5914,15 @@ packages:
   /openapi-types@12.0.2:
     resolution: {integrity: sha512-GuTo7FyZjOIWVhIhQSWJVaws6A82sWIGyQogxxYBYKZ0NBdyP2CYSIgOwFfSB+UVoPExk/YzFpyYitHS8KVZtA==}
 
-  /openapi-typescript@6.0.3:
-    resolution: {integrity: sha512-zEIqeBdpLRNmfPJX6GG4ntnOesDPvzZ7VM+1P6/PzBUP6KVSgAaz32Ly1baMydVzyvBLVcJBHYDY8WRwasiIyg==}
+  /openapi-typescript@6.2.4:
+    resolution: {integrity: sha512-P/VK7oJ3TnIS67o1UzuS1pMnry4mzNzeQG0ZjLdPGT04mN9FeeTgHw1bN6MiANFN0tO6BcRavSL5tUFAh6iiwg==}
+    hasBin: true
     dependencies:
       ansi-colors: 4.1.3
       fast-glob: 3.2.12
       js-yaml: 4.1.0
-      supports-color: 9.2.3
-      undici: 5.12.0
+      supports-color: 9.3.1
+      undici: 5.22.0
       yargs-parser: 21.1.1
     dev: false
 
@@ -7145,8 +7155,8 @@ packages:
     dependencies:
       has-flag: 4.0.0
 
-  /supports-color@9.2.3:
-    resolution: {integrity: sha512-aszYUX/DVK/ed5rFLb/dDinVJrQjG/vmU433wtqVSD800rYsJNWxh2R3USV90aLSU+UsyQkbNeffVLzc6B6foA==}
+  /supports-color@9.3.1:
+    resolution: {integrity: sha512-knBY82pjmnIzK3NifMo3RxEIRD9E0kIzV4BKcyTZ9+9kWgLMxd4PrsTSMoFQUabgRBbF8KOLRDCyKgNV+iK44Q==}
     engines: {node: '>=12'}
     dev: false
 
@@ -7292,6 +7302,7 @@ packages:
   /tsconfck@2.0.1(typescript@4.8.2):
     resolution: {integrity: sha512-/ipap2eecmVBmBlsQLBRbUmUNFwNJV/z2E+X0FPtHNjPwroMZQ7m39RMaCywlCulBheYXgMdUlWDd9rzxwMA0Q==}
     engines: {node: ^14.13.1 || ^16 || >=18, pnpm: ^7.0.1}
+    hasBin: true
     peerDependencies:
       typescript: ^4.3.5
     peerDependenciesMeta:
@@ -7401,9 +7412,9 @@ packages:
       has-symbols: 1.0.3
       which-boxed-primitive: 1.0.2
 
-  /undici@5.12.0:
-    resolution: {integrity: sha512-zMLamCG62PGjd9HHMpo05bSLvvwWOZgGeiWlN/vlqu3+lRo3elxktVGEyLMX+IO7c2eflLjcW74AlkhEZm15mg==}
-    engines: {node: '>=12.18'}
+  /undici@5.22.0:
+    resolution: {integrity: sha512-fR9RXCc+6Dxav4P9VV/sp5w3eFiSdOjJYsbtWfd4s5L5C4ogyuVpdKIVHeW0vV1MloM65/f7W45nR9ZxwVdyiA==}
+    engines: {node: '>=14.0'}
     dependencies:
       busboy: 1.6.0
     dev: false
@@ -7513,6 +7524,7 @@ packages:
 
   /update-browserslist-db@1.0.7(browserslist@4.21.3):
     resolution: {integrity: sha512-iN/XYesmZ2RmmWAiI4Z5rq0YqSiv0brj9Ce9CfhNE4xIW2h+MFxcgkxIzZ+ShkFPUkjU3gQ+3oypadD3RAMtrg==}
+    hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:
@@ -7675,6 +7687,7 @@ packages:
   /vite@3.1.0(terser@5.15.0):
     resolution: {integrity: sha512-YBg3dUicDpDWFCGttmvMbVyS9ydjntwEjwXRj2KBFwSB8SxmGcudo1yb8FW5+M/G86aS8x828ujnzUVdsLjs9g==}
     engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
     peerDependencies:
       less: '*'
       sass: '*'
@@ -7701,6 +7714,7 @@ packages:
   /vitest@0.23.1(happy-dom@8.1.0)(jsdom@20.0.3)(terser@5.15.0):
     resolution: {integrity: sha512-kn9pG+h6VA3yj/xRvwgLKEd33rOlzMqJEg3tl5HSm3WUPlkY1Lr1FK8RN1uIqVKvFxmz6HGU3EQW+xW2kazRkQ==}
     engines: {node: '>=v14.16.0'}
+    hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
       '@vitest/browser': '*'
