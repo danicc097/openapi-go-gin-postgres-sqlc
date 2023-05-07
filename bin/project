@@ -699,25 +699,27 @@ x.gen.frontend() {
   cache-gen
   { { {
     (
-      set -a
-      # export to replace config with envvars
-      source ".env.$env"
-      set +a
+      export ENV_REPLACE_GLOB=frontend/config.json
+      # ensure config has all k:v as "<KEY>": "$<KEY>"
+      # this has to always be run at startup
+      jq \
+        'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
+        frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
+      envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
+      frontend/nginx/replace-envvars.sh "$envvars"
 
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
-      export ENV_REPLACE_GLOB=frontend/config.json
+      orval_config="frontend/orval.config.ts"
+
+      if md5sum -c "$CACHE/frontend.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+        echo "Skipping generation (cached). Force regen with --x-force-regen"
+        exit 0
+      fi
+      md5_all "$CACHE/frontend.md5" $SPEC $orval_config frontend/package.json &
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
 
-      {
-        # ensure config has all k:v as "<KEY>": "$<KEY>"
-        jq \
-          'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-          frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
-        envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
-        frontend/nginx/replace-envvars.sh "$envvars" # FIXME
-      } &
       {
         node frontend/generate-client-validator.js
         # TODO allow custom validate.ts baked into fork
@@ -735,7 +737,7 @@ x.gen.frontend() {
 export type schemas = components['schemas']
 " | cat - "$SCHEMA_OUT" >/tmp/out && mv /tmp/out "$SCHEMA_OUT"
       } &
-      orval --config frontend/orval.config.ts &
+      orval --config $orval_config &
 
       wait_without_error
     )
@@ -982,13 +984,8 @@ x.run.backend-hr() {
 
 # Run frontend with hot-reloading.
 x.run.frontend() {
-  set -a
-  # export to replace config with envvars
-  source ".env.$env"
-  set +a
-
+  x.gen.frontend
   cd frontend
-
   pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
@@ -1919,7 +1916,11 @@ done
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
 ensure_envvars_set "docker/.env.template" "docker/.env"
+
+set -a
+# export to all subsequent commands or scripts
 source ".env.$env"
+set +a
 
 # handle executing x functions
 if [[ -n "$1" ]]; then
