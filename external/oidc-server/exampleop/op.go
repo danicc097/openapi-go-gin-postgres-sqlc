@@ -3,6 +3,7 @@ package exampleop
 import (
 	"context"
 	"crypto/sha256"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -54,6 +55,11 @@ func SetupServer(ctx context.Context, issuer string, storage Storage) *mux.Route
 	key := sha256.Sum256([]byte("test"))
 
 	router := mux.NewRouter()
+	router.Path("/health").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "OK")
+	})
+
 	router.Use(loggingMiddleware)
 	// for simplicity, we provide a very small default page for users who have signed out
 	router.HandleFunc(pathLoggedOut, func(w http.ResponseWriter, req *http.Request) {

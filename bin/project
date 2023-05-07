@@ -851,7 +851,7 @@ x.test.backend-setup() {
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
-    run_shared_services up -d --build --remove-orphans
+    run_shared_services up -d --build --remove-orphans --wait
     [[ -z $NO_GEN ]] && x.gen
     # no need to migrate, done on every test run internally
     drop_and_recreate_db $POSTGRES_TEST_DB
@@ -939,7 +939,7 @@ x.build() {
 # Run backend with hot-reloading.
 x.run.backend-hr() {
   # TODO wait until healthy, else might have errors connecting to mock oidc server on startup, etc.
-  run_shared_services up -d --build --remove-orphans
+  run_shared_services up -d --build --remove-orphans --wait
   # NOTE: building binary very unreliable, leads to bin not found.
   # [[ -z $NO_GEN ]] && pre_build_cmd="bin/project gen" # gen too slow at this point, always disable
   air \
@@ -1009,7 +1009,7 @@ x.backend.sync-deps() {
 x.run-prod() {
   env="prod"
 
-  run_shared_services up -d --build --remove-orphans
+  run_shared_services up -d --build --remove-orphans --wait
   x.db.recreate
 
   x.gen
@@ -1018,7 +1018,7 @@ x.run-prod() {
     --project-name "$PROJECT_PREFIX"_"$env" \
     -f docker-compose."$env".yml \
     --env-file ".env.$env" \
-    up -d --build 2>&1 # https://github.com/docker/compose/issues/7346
+    up -d --build --wait 2>&1 # https://github.com/docker/compose/issues/7346
 
   echo "Migrations:"
   x.migrate up
@@ -1034,7 +1034,7 @@ x.stop-project() {
 # Recreates docker volumes for Postgres, Redis, etc. Unsaved data will be lost.
 x.recreate-shared-services() {
   { { {
-    run_shared_services up -d --build --force-recreate
+    run_shared_services up -d --build --force-recreate --wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
