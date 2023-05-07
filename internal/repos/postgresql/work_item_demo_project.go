@@ -79,9 +79,23 @@ func (u *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.Wor
 		return nil, fmt.Errorf("could not get workItem: %w", parseErrorDetail(err))
 	}
 
-	err = workItem.Delete(ctx, d) // cascades. PK is FK
+	err = workItem.SoftDelete(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not delete workItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not soft delete workItem: %w", parseErrorDetail(err))
+	}
+
+	return workItem, err
+}
+
+func (u *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+	var err error
+	workItem := &db.WorkItem{
+		WorkItemID: id,
+	}
+
+	workItem, err = workItem.Restore(ctx, d)
+	if err != nil {
+		return nil, fmt.Errorf("could not restore workItem: %w", parseErrorDetail(err))
 	}
 
 	return workItem, err

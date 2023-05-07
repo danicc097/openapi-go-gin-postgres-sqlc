@@ -71,8 +71,8 @@ func extractValidationError(err error, typ string) models.HTTPValidationError {
 	var vErrs []models.ValidationError
 
 	unwrappedErr := err
-	maxCalls := 6
-	for uErr := errors.Unwrap(unwrappedErr); uErr != nil && maxCalls > 0; {
+
+	for maxCalls, uErr := 10, errors.Unwrap(unwrappedErr); uErr != nil && maxCalls > 0; {
 		e := strings.TrimSpace(uErr.Error())
 		if strings.HasPrefix(e, "response body doesn't match schema") {
 			unwrappedErr = errors.Unwrap(uErr)
