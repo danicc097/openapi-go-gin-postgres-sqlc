@@ -242,7 +242,8 @@ ensure_envvars_set() {
   { ((n_missing != 0)) && exit 1; } || true
 }
 
-function show_tracebacks() {
+# Usage: trap 'show_tracebacks' ERR
+show_tracebacks() {
   local err_code="$?"
   set +o xtrace
   local bash_command=${BASH_COMMAND}
@@ -258,6 +259,28 @@ function show_tracebacks() {
     done
   fi
   exit 1
+}
+
+md5_all() {
+  if [ $# -lt 2 ]; then
+    echo "Usage: md5_all <output_file> <file_or_directory> [<file_or_directory> ...]"
+    return 1
+  fi
+
+  output_file="$1"
+  shift
+
+  >"$output_file"
+
+  for arg in "$@"; do
+    if [ -d "$arg" ]; then
+      find "$arg" -type f -exec md5sum {} + >>"$output_file"
+    elif [ -f "$arg" ]; then
+      md5sum "$arg" >>"$output_file"
+    else
+      err "Invalid argument: $arg"
+    fi
+  done
 }
 
 ######################## postgres ###########################

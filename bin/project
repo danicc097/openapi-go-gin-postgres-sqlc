@@ -56,6 +56,7 @@ readonly CERTIFICATES_DIR="certificates"
 readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
 readonly REPOS_DIR="internal/repos"
 readonly PG_REPO_DIR="$REPOS_DIR/postgresql"
+readonly XO_TEMPLATES_DIR="$PG_REPO_DIR/xo-templates"
 
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
@@ -493,30 +494,35 @@ x.gen.xo() {
   { { {
     echo "Running generation"
     # xo schema --help
+    if ! md5sum -c "$CACHE/xo.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
+      md5_all "$CACHE/xo.md5" db/ $XO_TEMPLATES_DIR/ &
 
-    mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db --debug \
-      --schema public \
-      --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo public schema generation" &
+      mkdir -p "$PG_REPO_GEN"/db
+      xo_schema -o "$PG_REPO_GEN"/db --debug \
+        --schema public \
+        --ignore "*.created_at" \
+        --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    mkdir -p "$PG_REPO_GEN"/db/v
-    xo_schema -o "$PG_REPO_GEN"/db/v \
-      --schema v \
-      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
-      err "Failed xo v schema generation" &
+      mkdir -p "$PG_REPO_GEN"/db/v
+      xo_schema -o "$PG_REPO_GEN"/db/v \
+        --schema v \
+        --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+        err "Failed xo v schema generation" &
 
-    mkdir -p "$PG_REPO_GEN"/db/cache
-    xo_schema -o "$PG_REPO_GEN"/db/cache \
-      --schema cache \
-      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
-      err "Failed xo cache schema generation" &
+      mkdir -p "$PG_REPO_GEN"/db/cache
+      xo_schema -o "$PG_REPO_GEN"/db/cache \
+        --schema cache \
+        --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+        err "Failed xo cache schema generation" &
 
-    wait
+      wait
 
-    files=$(find "$PG_REPO_GEN/db" \
-      -name "*.go")
-    goimports -w $files
+      files=$(find "$PG_REPO_GEN/db" \
+        -name "*.go")
+      goimports -w $files
+    else
+      echo "Skipping generation (cached). Force regen with --x-force-regen"
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
 }
@@ -554,21 +560,27 @@ x.gen.jet() {
     # should not be hard to generate all adapters at once jet->xo *Public in a new file alongside jet gen.
     # in the end fields are the same name if goName conventions are followed (configurable via custom jet cmd)
     # if it gives problems for some fields (ID, API and the like)
+    if ! md5sum -c "$CACHE/jet.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
+      md5_all "$CACHE/jet.md5" db/ &
 
-    local gen_path="$PG_REPO_GEN"/jet
-    local schema=public
-    rm -rf "$gen_path"
-    {
-      jet -dbname="$GEN_POSTGRES_DB" -env=.env."$env" --out=./"$gen_path" --schema=$schema
-      mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
-      rm -r "./$gen_path/$GEN_POSTGRES_DB/"
-    }
+      local gen_path="$PG_REPO_GEN"/jet
+      local schema=public
+      rm -rf "$gen_path"
+      {
+        jet -dbname="$GEN_POSTGRES_DB" -env=.env."$env" --out=./"$gen_path" --schema=$schema
+        mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
+        rm -r "./$gen_path/$GEN_POSTGRES_DB/"
+      }
+    else
+      echo "Skipping generation (cached). Force regen with --x-force-regen"
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
 }
 
 # Generate interface wrappers with common logic: tracing, timeout...
 x.gen.gowrap() {
+  cache-gen
   { { {
     echo "Running generation"
 
@@ -585,7 +597,7 @@ x.gen.gowrap() {
       local repo_interfaces=()
       find_go_interfaces repo_interfaces $repos
 
-      md5sum $repos $GOWRAP_TEMPLATES_DIR/* >"$CACHE/gowrap.md5" &
+      md5_all "$CACHE/gowrap.md5" $repos $GOWRAP_TEMPLATES_DIR &
       for iface in ${repo_interfaces[@]}; do
         for suffix in ${suffixes[@]}; do
           {
@@ -607,6 +619,7 @@ x.gen.gowrap() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  cache-gen.cleanup
 }
 
 # Generate Go client and server.
@@ -646,7 +659,7 @@ x.gen.counterfeiter() {
         counterfeiter -o $REPOS_DIR/repostesting/team.gen.go $repos Team &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
-        md5sum $envvar $repos $tfidfpb >"$CACHE/counterfeiter.md5" &
+        md5_all "$CACHE/counterfeiter.md5" $envvar $repos $tfidfpb &
         wait
       } 2>&1 # outputs to stderr for some reason
 
@@ -894,7 +907,7 @@ x.test.xo() {
 
     echo "Running xo template tests"
 
-    test_dir="$PG_REPO_DIR/xo-templates/tests"
+    test_dir="$XO_TEMPLATES_DIR/tests"
     dockerdb_psql -d $POSTGRES_DB <"$test_dir/schema.sql"
     echo "Schema loaded"
 
@@ -1581,7 +1594,7 @@ xo_schema() {
   # not recreating db on every gen can lead to plain wrong generation based on an old dev schema.
   # Also use a unique db to prevent cosmic accidents
   xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
-    --src "$PG_REPO_DIR"/xo-templates \
+    --src "$XO_TEMPLATES_DIR" \
     "$@"
 }
 
