@@ -10,12 +10,13 @@ require (
 	github.com/gin-contrib/zap v0.1.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-jet/jet/v2 v2.10.0
-	github.com/go-playground/validator/v10 v10.12.0
+	github.com/go-playground/validator/v10 v10.13.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
+	github.com/jackc/pgconn v1.14.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
 	github.com/jackc/pgx/v5 v5.3.2-0.20230421024359-6defa2a607fd
@@ -58,7 +59,6 @@ require (
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.14.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
 	github.com/jackc/puddle/v2 v2.2.0 // indirect
