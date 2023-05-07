@@ -12,7 +12,7 @@ import (
 // Run receives an instance of a struct that embeds *Fixture.
 // The struct definition may include Setup*, Teardown*, and Test*
 // methods which will be run as an xUnit-style test fixture.
-func Run(fixture interface{}, t *testing.T, options ...option) {
+func Run(fixture any, t *testing.T, options ...option) {
 	t.Helper()
 
 	if strings.Contains(runtime.Version(), "go1.14") {
@@ -27,22 +27,21 @@ func allSequentialForGo1Dot14(options []option) []option {
 	return append(options, Options.AllSequential())
 }
 
-// RunSequential, like Run receives an instance of a struct that embeds *Fixture.
+// RunSequential (like Run) receives an instance of a struct that embeds *Fixture.
 // The fixture is run in much the same way, except that it will not be run in
 // parallel with other fixtures in the same package, nor will test cases of the
 // corresponding fixture be run in parallel with each other.
 //
-// Deprecated
+// # Deprecated
 //
 // Use Run(fixture, t, Options.AllSequential()) instead.
-//
-func RunSequential(fixture interface{}, t *testing.T) {
+func RunSequential(fixture any, t *testing.T) {
 	t.Helper()
 
 	Run(fixture, t, Options.AllSequential())
 }
 
-func run(fixture interface{}, t *testing.T, config configuration) {
+func run(fixture any, t *testing.T, config configuration) {
 	t.Helper()
 
 	ensureEmbeddedFixture(fixture, t)
@@ -55,7 +54,7 @@ func run(fixture interface{}, t *testing.T, config configuration) {
 	runner.RunTestCases()
 }
 
-func ensureEmbeddedFixture(fixture interface{}, t TestingT) {
+func ensureEmbeddedFixture(fixture any, t TestingT) {
 	fixtureType := reflect.TypeOf(fixture)
 	embedded, _ := fixtureType.Elem().FieldByName("Fixture")
 	if embedded.Type != embeddedGoodExample.Type {
