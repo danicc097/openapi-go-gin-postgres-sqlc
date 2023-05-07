@@ -426,8 +426,8 @@ go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin
 ## explicit; go 1.19
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/internal
-# go.opentelemetry.io/contrib/propagators/jaeger v1.15.0
-## explicit; go 1.18
+# go.opentelemetry.io/contrib/propagators/jaeger v1.16.1
+## explicit; go 1.19
 go.opentelemetry.io/contrib/propagators/jaeger
 # go.opentelemetry.io/otel v1.15.1
 ## explicit; go 1.19
