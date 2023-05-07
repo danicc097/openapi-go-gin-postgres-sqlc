@@ -119,10 +119,6 @@ func (a *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.Wor
 	return wi, nil
 }
 
-// repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
-// params for dedicated workItem require workItemID (FK-as-PK)
-// TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
-
 func (a *DemoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
 	_, err := db.CreateWorkItemWorkItemTag(ctx, d, params)
 
@@ -151,4 +147,22 @@ func (a *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uui
 	}
 
 	return wiwit.Delete(ctx, d)
+}
+
+// repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
+// params for dedicated workItem require workItemID (FK-as-PK)
+// TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
+
+func (a *DemoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+	// WorkItemsByTeamID with deleted opt, orderby createdAt
+	return []db.WorkItem{}, errors.New("not implemented")
+}
+
+func (a *DemoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+	// WorkItemsByTeamID with orderby createdAt
+	return []db.WorkItem{}, errors.New("not implemented")
+}
+
+func (a *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+	return a.demowiRepo.Restore(ctx, d, id)
 }

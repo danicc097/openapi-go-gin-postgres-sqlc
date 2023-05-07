@@ -31,6 +31,8 @@ services:
       - ../.env.${APP_ENV:?not set}
     restart: unless-stopped
     logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'pg_isready']
 
   redis:
     image: redis:6-alpine
@@ -45,6 +47,8 @@ services:
       - traefik-net
     restart: always
     logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
 
 networks:
   traefik-net:

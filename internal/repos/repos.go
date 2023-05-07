@@ -65,6 +65,7 @@ type DemoWorkItem interface {
 	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error)
 	Update(ctx context.Context, d db.DBTX, id int64, params DemoWorkItemUpdateParams) (*db.WorkItem, error)
 	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
+	Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
 }
 
 // Notification defines the datastore/repository handling persisting Notification records.

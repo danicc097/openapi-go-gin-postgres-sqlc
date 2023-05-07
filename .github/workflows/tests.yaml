@@ -38,6 +38,7 @@ jobs:
 
       - name: Diff check
         run: |
+          # debug gen: run with --x-force-regen
           git diff --exit-code # -- . ':!dir_to_skip'
 
       - name: Test backend
