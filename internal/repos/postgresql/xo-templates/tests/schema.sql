@@ -21,9 +21,9 @@ create table book_authors (
   , foreign key (book_id) references books (book_id) on delete cascade
 );
 
-comment on column book_authors.author_id is 'cardinality:M2M';
+comment on column book_authors.author_id is '"cardinality":M2M';
 
-comment on column book_authors.book_id is 'cardinality:M2M';
+comment on column book_authors.book_id is '"cardinality":M2M';
 
 create table book_reviews (
   book_review_id serial primary key
@@ -34,6 +34,6 @@ create table book_reviews (
   , foreign key (book_id) references books (book_id) on delete cascade
 );
 
-comment on column book_reviews.reviewer is 'cardinality:M2O';
+comment on column book_reviews.reviewer is '"cardinality":M2O';
 
-comment on column book_reviews.book_id is 'cardinality:M2O';
+comment on column book_reviews.book_id is '"cardinality":M2O';
