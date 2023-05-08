@@ -55,7 +55,6 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	if err != nil {
 		return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
 	}
-	rank := role.Rank
 
 	// append default scopes for role upon registration regardless of provided params
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
@@ -66,7 +65,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 		Username:   params.Username,
 		Email:      params.Email,
 		ExternalID: params.ExternalID,
-		RoleRank:   rank,
+		RoleRank:   role.Rank,
 		Scopes:     params.Scopes,
 	}
 
@@ -74,6 +73,8 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	if err != nil {
 		return nil, fmt.Errorf("urepo.Create: %w", err)
 	}
+
+	u.logger.Infof("user %q registered", user.UserID)
 
 	return user, nil
 }
@@ -125,6 +126,8 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 	if err != nil {
 		return nil, fmt.Errorf("urepo.Update: %w", err)
 	}
+
+	u.logger.Infof("user %q updated", user.UserID)
 
 	return user, nil
 }
@@ -201,6 +204,8 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		return nil, fmt.Errorf("urepo.Update: %w", err)
 	}
 
+	u.logger.Infof("user %q authorization updated", user.UserID)
+
 	return user, nil
 }
 
@@ -211,6 +216,8 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 	if err != nil {
 		return nil, fmt.Errorf("urepo.CreateAPIKey: %w", err)
 	}
+
+	u.logger.Infof("user %q api key created", user.UserID)
 
 	return uak, nil
 }
@@ -272,6 +279,8 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 		return nil, fmt.Errorf("urepo.Delete: %w", err)
 	}
 
+	u.logger.Infof("user %q deleted", user.UserID)
+
 	return user, nil
 }
 
@@ -311,6 +320,8 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID uuid.UUID, team
 	if err != nil {
 		return fmt.Errorf("db.CreateUserTeam: %w", err)
 	}
+
+	u.logger.Infof("user %q assigned to team %d", userID, teamID)
 
 	return nil
 }
