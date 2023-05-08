@@ -8,8 +8,8 @@
 
 export PROC=$$
 
-source "${BASH_SOURCE%/*}/.helpers.sh"
-source "${BASH_SOURCE%/*}/.project.dependencies.sh"
+source ".helpers.sh"
+source ".project.dependencies.sh"
 
 ensure_pwd_is_top_level
 
@@ -67,7 +67,8 @@ readonly OPID_AUTH="operationAuth.gen.json"
 readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
 readonly FRONTEND_SRC="frontend/src"
 readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
-
+# common shared file dependencies for codegen checksums
+readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.dev")
 readonly CACHE=".generate.cache"
 readonly CACHE_GEN="$CACHE/gen"
 readonly CACHE_PG_REPO_GEN="$CACHE_GEN/pgrepo/gen"
@@ -496,7 +497,7 @@ x.gen.xo() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/xo.md5" go.mod db/ $XO_TEMPLATES_DIR/ &
+    md5_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/ &
 
     echo "Running generation"
 
@@ -567,7 +568,7 @@ x.gen.jet() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/jet.md5" go.mod db/ &
+    md5_all "$CACHE/jet.md5" ${CACHE_DEP_FILES[@]} go.mod db/ &
 
     echo "Running generation"
 
@@ -591,7 +592,7 @@ x.gen.gowrap() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/gowrap.md5" go.mod $repos $GOWRAP_TEMPLATES_DIR &
+    md5_all "$CACHE/gowrap.md5" ${CACHE_DEP_FILES[@]} go.mod $repos $GOWRAP_TEMPLATES_DIR &
 
     echo "Running generation"
 
@@ -655,7 +656,7 @@ x.gen.counterfeiter() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/counterfeiter.md5" go.mod $envvar $repos $tfidfpb &
+    md5_all "$CACHE/counterfeiter.md5" ${CACHE_DEP_FILES[@]} go.mod $envvar $repos $tfidfpb &
 
     echo "Recreating mocks"
     {
@@ -708,7 +709,7 @@ x.gen.frontend() {
         echo "Skipping generation (cached). Force regen with --x-force-regen"
         exit 0
       fi
-      md5_all "$CACHE/frontend.md5" $SPEC $orval_config frontend/package.json &
+      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/package.json &
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
@@ -1660,7 +1661,7 @@ cache-gen.restore() {
   rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
   restore_gen_files "$CACHE_GEN" internal
 
-  rm "$CACHE"/*.md5
+  rm "$CACHE"/*.md5 # clear gen cache
 }
 
 backup_gen_files() {
