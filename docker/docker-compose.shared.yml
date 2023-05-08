@@ -35,7 +35,7 @@ services:
       test: ['CMD', 'pg_isready']
 
   redis:
-    image: redis:6-alpine
+    image: redis:7.0.9-alpine3.17
     container_name: redis_${PROJECT_PREFIX:?not set}
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
@@ -48,7 +48,10 @@ services:
     restart: always
     logging: *default-logging
     healthcheck:
-      test: ["CMD", "redis-cli ping || exit 1"]
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
+      interval: 1s
+      timeout: 5s
+      retries: 3
 
 networks:
   traefik-net:
