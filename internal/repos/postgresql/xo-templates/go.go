@@ -1171,10 +1171,10 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		if !found {
 			return Field{}, fmt.Errorf("invalid column comment annotation format: %s", a)
 		}
-		typ = annotation(typ)
+		typ = annotation(strings.TrimSpace(typ))
 		switch typ {
 		case cardinalityAnnot, tagsAnnot, typeAnnot, propertiesAnnot:
-			annotations[typ] = val
+			annotations[typ] = strings.TrimSpace(val)
 		default:
 			return Field{}, fmt.Errorf("invalid column comment annotation type: %s", typ)
 		}
