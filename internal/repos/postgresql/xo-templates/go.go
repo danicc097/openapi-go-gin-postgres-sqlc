@@ -35,12 +35,39 @@ const (
 	O2O cardinality = "O2O"
 )
 
-// TODO split properties by || instead of ,
-var (
-	cardinalityRE = regexp.MustCompile("cardinality:([A-Za-z0-9_-]*)")
-	propertiesRE  = regexp.MustCompile("property:([A-Za-z0-9_-]*)")
-	typeRE        = regexp.MustCompile("type:([\\.A-Za-z0-9_-]*)")
+type annotation = string
+
+// table column custom properties via SQL column comments.
+const (
+	annotationJoinOperator       = " && "
+	annotationAssignmentOperator = ":"
+
+	cardinalityAnnot annotation = `"cardinality"`
+	// custom properties for code generation
+	propertiesAnnot annotation = `"properties"`
+	// literal Go type to override with
+	typeAnnot annotation = `"type"`
+	// literal Go struct tags to be appended
+	tagsAnnot annotation = `"tags"`
+
+	propertiesJoinOperator = ","
+	// ignore fields when marshalling to JSON
+	propertiesPrivate = "private"
+
+	// example: "properties":private,another-property && "type":models.Project && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
 )
+
+const privateFieldProperty = "private"
+
+// to not have to analyze everything for convertConstraints
+var cardinalityRE = regexp.MustCompile(string(cardinalityAnnot) + annotationAssignmentOperator + "([A-Za-z0-9_-]*)")
+
+func columnCommentToAnnotations(c cardinality) bool {
+	if c != "" && c != M2M && c != M2O && c != O2O {
+		return false
+	}
+	return true
+}
 
 func validCardinality(c cardinality) bool {
 	if c != "" && c != M2M && c != M2O && c != O2O {
@@ -55,8 +82,6 @@ func formatJSON(obj interface{}) string {
 }
 
 var ErrNoSingle = errors.New("in query exec mode, the --single or -S must be provided")
-
-const privateFieldProperty = "private"
 
 func IsUpper(s string) bool {
 	for _, r := range s {
@@ -234,7 +259,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 {{- if not .ignoreJSON }} required:"true"
 {{- end }}
 {{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
-{{- end }}`,
+{{- end }}
+{{- .field.ExtraTags }}`,
 			},
 			{
 				ContextKey: PublicFieldTagKey,
@@ -1136,18 +1162,29 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
 
-	var properties []string
-	props := propertiesRE.FindAllStringSubmatch(f.Comment, -1)
-	if len(props) > 0 {
-		for _, p := range props {
-			properties = append(properties, strings.ToLower(p[1]))
+	annotations := make(map[annotation]string)
+	for _, a := range strings.Split(f.Comment, annotationJoinOperator) {
+		if a == "" {
+			continue
+		}
+		typ, val, found := strings.Cut(a, annotationAssignmentOperator)
+		if !found {
+			return Field{}, fmt.Errorf("invalid column comment annotation format: %s", a)
+		}
+		typ = annotation(typ)
+		switch typ {
+		case cardinalityAnnot, tagsAnnot, typeAnnot, propertiesAnnot:
+			annotations[typ] = val
+		default:
+			return Field{}, fmt.Errorf("invalid column comment annotation type: %s", typ)
 		}
 	}
 
-	var typeOverride string
-	match := typeRE.FindStringSubmatch(f.Comment)
-	if len(match) > 0 {
-		typeOverride = match[1]
+	properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
+	typeOverride := annotations[typeAnnot]
+	extraTags := annotations[tagsAnnot]
+	if extraTags != "" {
+		extraTags = " " + extraTags
 	}
 
 	if typeOverride != "" {
@@ -1168,9 +1205,19 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		IsDateOrTime:  f.IsDateOrTime,
 		TypeOverride:  typeOverride,
 		OpenAPISchema: openAPISchema,
+		ExtraTags:     extraTags,
 		Properties:    properties,
 		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
+}
+
+func extractPropertiesAnnotation(annotation annotation) []string {
+	var properties []string
+	for _, p := range strings.Split(annotation, propertiesJoinOperator) {
+		properties = append(properties, strings.TrimSpace(strings.ToLower(p)))
+	}
+
+	return properties
 }
 
 func goType(ctx context.Context, typ xo.Type) (string, string, error) {
@@ -1797,7 +1844,8 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 				var lookupFields []string
 				for _, col := range extraCols {
 					tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"", camel(col.GoName), col.SQLName)
-					isPrivate := contains(col.Properties, privateFieldProperty)
+					properties := extractPropertiesAnnotation(col.Annotations[propertiesAnnot])
+					isPrivate := contains(properties, privateFieldProperty)
 					if !isPrivate {
 						tag = tag + ` required:"true"`
 					}
@@ -3837,6 +3885,8 @@ type Field struct {
 	IsDateOrTime  bool
 	Properties    []string
 	OpenAPISchema string
+	ExtraTags     string
+	Annotations   map[annotation]string
 }
 
 // QueryParam is a custom query parameter template.

@@ -13,85 +13,6 @@ source ".project.dependencies.sh"
 
 ensure_pwd_is_top_level
 
-set -Eeo pipefail
-set -o errtrace
-
-trap 'show_tracebacks' ERR
-
-SCRIPT="$(basename $0)"
-
-trap killgroup SIGINT
-
-trap errtrap SIGUSR1
-trap 'exit-cleanup $LINENO' 0 # EXIT (0) executed on exit from the shell
-
-exit-cleanup() {
-  if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
-    cache-gen.restore #
-  fi
-  cd "$TOP_LEVEL_DIR" || true
-}
-
-killgroup() {
-  printf "\nKilling spawned processes...\n\n"
-  # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
-  kill_descendants 2>/dev/null || true
-  pgrep -P $PROC | xargs kill || true
-  exit 1
-}
-
-errtrap() {
-  printf "\nExiting due to propagated error...\n"
-  killgroup
-}
-
-source ".envrc"
-
-readonly SPEC="openapi.yaml"
-
-readonly BUILD_DIR="bin/build"
-readonly PROTO_DIR="internal/pb"
-readonly MIGRATIONS_DIR="db/migrations"
-readonly CERTIFICATES_DIR="certificates"
-readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
-readonly REPOS_DIR="internal/repos"
-readonly PG_REPO_DIR="$REPOS_DIR/postgresql"
-readonly XO_TEMPLATES_DIR="$PG_REPO_DIR/xo-templates"
-
-readonly POSTGRES_TEST_DB="postgres_test"
-readonly MAX_COMMENT_LEN=88
-readonly DUMPS_DIR="$HOME/openapi_go_gin_postgres_dumps"
-pkg="$(head -1 go.mod)"
-readonly GOMOD_PKG="${pkg#module *}"
-readonly OPID_AUTH="operationAuth.gen.json"
-readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
-readonly FRONTEND_SRC="frontend/src"
-readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
-# common shared file dependencies for codegen checksums
-readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.dev")
-readonly CACHE=".generate.cache"
-readonly CACHE_GEN="$CACHE/gen"
-readonly CACHE_PG_REPO_GEN="$CACHE_GEN/pgrepo/gen"
-readonly CACHE_FRONTEND_GEN="$CACHE_GEN/frontend/gen"
-
-readonly MAX_FNAME_LOG_LEN=13
-
-GEN_POSTGRES_DB="gen_db"
-
-# determines if gen cache should be restore at program exit. 0|1
-restore_cache=0
-# stores the first executing function to track if caching gen is already running,
-# to allow for nested cache-gen and cache-cleanup inside multiple functions.
-restore_cache_caller=""
-
-# stores the first executing function to determine if a migration
-# is needed when running gen* functions which call each other
-gen_migrated=""
-
-pids=""
-env="dev"
-dump_prefix="dump_${env}_"
-
 # log for any function output.
 xlog() {
   local fname="${FUNCNAME[1]#*.}"
@@ -208,7 +129,7 @@ x.install-tools() {
     go install golang.org/x/tools/cmd/goimports@latest &
     go install mvdan.cc/gofumpt@latest &
     go install github.com/danicc097/air@latest &
-    go install github.com/danicc097/xo@latest &
+    go install github.com/danicc097/xo@v1.0.0 &
     go install github.com/mikefarah/yq/v4@v4.27.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
 
@@ -572,7 +493,7 @@ x.gen.jet() {
 
     echo "Running generation"
 
-    local gen_path="$PG_REPO_GEN"/jet
+    local gen_path="$PG_REPO_GEN/jet"
     local schema=public
     rm -rf "$gen_path"
     {
@@ -1110,7 +1031,8 @@ x.dev-utils.api-keys() {
   dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "select email, api_key from user_api_keys left join users using (user_id);"
 }
 
-# Runs a traefik container with predefined configuration.
+# Setups a traefik container with predefined configuration in `install-dir`.
+# Args: install-dir
 x.setup.traefik() {
   git clone --depth=1 https://github.com/danicc097/traefik-bootstrap.git "$1"
   docker network create traefik-net || true
@@ -1245,7 +1167,7 @@ x.db.dump() {
     mkdir -p "$DUMPS_DIR"
     schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" \
       -c "SELECT version FROM schema_migrations;")
-    dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
+    dump_file="${DUMP_PREFIX}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
     dockerdb pg_dump -U postgres -d "postgres_$env" |
@@ -1260,12 +1182,12 @@ x.db.restore() {
   dump_file="$1"
   if [[ -n $dump_file ]]; then
     [[ ! -f $dump_file ]] && err "$dump_file does not exist"
-    [[ "$dump_file" != *"$dump_prefix"* ]] && confirm "${RED}Dump doesn't match prefix '$dump_prefix'. Continue?${OFF}"
+    [[ "$dump_file" != *"$DUMP_PREFIX"* ]] && confirm "${RED}Dump doesn't match prefix '$DUMP_PREFIX'. Continue?${OFF}"
   else
     mkdir -p "$DUMPS_DIR"
-    latest_dump_file=$(find "$DUMPS_DIR"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
+    latest_dump_file=$(find "$DUMPS_DIR"/ -name "$DUMP_PREFIX*.gz" | sort -r | head -n 1)
     if [[ -z "$latest_dump_file" ]]; then
-      err "No $dump_prefix* file found in $DUMPS_DIR"
+      err "No $DUMP_PREFIX* file found in $DUMPS_DIR"
     fi
     dump_file="$latest_dump_file"
   fi
@@ -1656,12 +1578,13 @@ cache-gen.cleanup() {
 
 cache-gen.restore() {
   echo "Restoring previously generated code..."
+  wait
   mv "$CACHE_GEN/$SPEC" "$SPEC"
   rsync -a --delete "$CACHE_PG_REPO_GEN/" "$PG_REPO_GEN/"
   rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
   restore_gen_files "$CACHE_GEN" internal
 
-  rm "$CACHE"/*.md5 # clear gen cache
+  rm "$CACHE_GEN"/*.md5 # clear gen cache
 }
 
 backup_gen_files() {
@@ -1822,6 +1745,13 @@ clean_args() {
   echo "$args"
 }
 
+######################## ENTRYPOINT ########################
+
+set -Eeo pipefail
+set -o errtrace
+
+env="dev"
+
 # --------------------- completion and delegation --------------------
 #      `complete -C foo foo` > `source <(foo bloated_completion)`
 
@@ -1936,6 +1866,8 @@ for arg in ${args[@]}; do
   set -- "$@" "$arg"
 done
 
+######################## INIT ########################
+
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
 ensure_envvars_set "docker/.env.template" "docker/.env"
@@ -1945,7 +1877,79 @@ set -a
 source ".env.$env"
 set +a
 
-# handle executing x functions
+trap 'show_tracebacks' ERR
+trap killgroup SIGINT
+trap errtrap SIGUSR1
+trap 'exit-cleanup $LINENO' 0 # EXIT (0) executed on exit from the shell
+
+exit-cleanup() {
+  if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
+    cache-gen.restore #
+  fi
+  cd "$TOP_LEVEL_DIR" || true
+}
+
+killgroup() {
+  printf "\nKilling spawned processes...\n\n"
+  # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
+  kill_descendants 2>/dev/null || true
+  pgrep -P $PROC | xargs kill || true
+  exit 1
+}
+
+errtrap() {
+  printf "\nExiting due to propagated error...\n"
+  killgroup
+}
+
+source ".envrc"
+
+pids=""
+DUMP_PREFIX="dump_${env}_"
+
+readonly SPEC="openapi.yaml"
+
+readonly BUILD_DIR="bin/build"
+readonly PROTO_DIR="internal/pb"
+readonly MIGRATIONS_DIR="db/migrations"
+readonly CERTIFICATES_DIR="certificates"
+readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
+readonly REPOS_DIR="internal/repos"
+readonly PG_REPO_DIR="$REPOS_DIR/postgresql"
+readonly XO_TEMPLATES_DIR="$PG_REPO_DIR/xo-templates"
+
+readonly POSTGRES_TEST_DB="postgres_test"
+readonly MAX_COMMENT_LEN=88
+readonly DUMPS_DIR="$HOME/openapi_go_gin_postgres_dumps"
+pkg="$(head -1 go.mod)"
+readonly GOMOD_PKG="${pkg#module *}"
+readonly OPID_AUTH="operationAuth.gen.json"
+readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
+readonly FRONTEND_SRC="frontend/src"
+readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
+# common shared file dependencies for codegen checksums
+readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.$env")
+readonly CACHE=".generate.cache"
+readonly CACHE_GEN="$CACHE/gen"
+readonly CACHE_PG_REPO_GEN="$CACHE_GEN/pgrepo/gen"
+readonly CACHE_FRONTEND_GEN="$CACHE_GEN/frontend/gen"
+
+readonly MAX_FNAME_LOG_LEN=13
+
+GEN_POSTGRES_DB="gen_db"
+
+# determines if gen cache should be restore at program exit. 0|1
+restore_cache=0
+# stores the first executing function to track if caching gen is already running,
+# to allow for nested cache-gen and cache-cleanup inside multiple functions.
+restore_cache_caller=""
+
+# stores the first executing function to determine if a migration
+# is needed when running gen* functions which call each other
+gen_migrated=""
+
+################ handle executing x functions ################
+
 if [[ -n "$1" ]]; then
   shift
   for c in "${COMMANDS[@]}"; do
