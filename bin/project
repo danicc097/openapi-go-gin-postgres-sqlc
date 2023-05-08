@@ -572,7 +572,7 @@ x.gen.jet() {
 
     echo "Running generation"
 
-    local gen_path="$PG_REPO_GEN"/jet
+    local gen_path="$PG_REPO_GEN/jet"
     local schema=public
     rm -rf "$gen_path"
     {
@@ -1657,6 +1657,7 @@ cache-gen.cleanup() {
 
 cache-gen.restore() {
   echo "Restoring previously generated code..."
+  wait
   mv "$CACHE_GEN/$SPEC" "$SPEC"
   rsync -a --delete "$CACHE_PG_REPO_GEN/" "$PG_REPO_GEN/"
   rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"

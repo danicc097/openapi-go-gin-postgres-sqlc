@@ -21,7 +21,7 @@ import (
 //   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type DemoWorkItem struct {
 	WorkItemID    int64     `json:"workItemID" db:"work_item_id" required:"true"`       // work_item_id
-	Ref           string    `json:"ref" db:"ref" required:"true"`                       // ref
+	Ref           string    `json:"ref" db:"ref" required:"true" pattern:"^[0-9]{8}$"`  // ref
 	Line          string    `json:"line" db:"line" required:"true"`                     // line
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
@@ -32,11 +32,11 @@ type DemoWorkItem struct {
 
 // DemoWorkItemCreateParams represents insert params for 'public.demo_work_items'.
 type DemoWorkItemCreateParams struct {
-	WorkItemID    int64     `json:"workItemID" required:"true"`    // work_item_id
-	Ref           string    `json:"ref" required:"true"`           // ref
-	Line          string    `json:"line" required:"true"`          // line
-	LastMessageAt time.Time `json:"lastMessageAt" required:"true"` // last_message_at
-	Reopened      bool      `json:"reopened" required:"true"`      // reopened
+	WorkItemID    int64     `json:"workItemID" required:"true"`               // work_item_id
+	Ref           string    `json:"ref" required:"true" pattern:"^[0-9]{8}$"` // ref
+	Line          string    `json:"line" required:"true"`                     // line
+	LastMessageAt time.Time `json:"lastMessageAt" required:"true"`            // last_message_at
+	Reopened      bool      `json:"reopened" required:"true"`                 // reopened
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
@@ -54,10 +54,10 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 
 // DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'
 type DemoWorkItemUpdateParams struct {
-	Ref           *string    `json:"ref" required:"true"`           // ref
-	Line          *string    `json:"line" required:"true"`          // line
-	LastMessageAt *time.Time `json:"lastMessageAt" required:"true"` // last_message_at
-	Reopened      *bool      `json:"reopened" required:"true"`      // reopened
+	Ref           *string    `json:"ref" required:"true" pattern:"^[0-9]{8}$"` // ref
+	Line          *string    `json:"line" required:"true"`                     // line
+	LastMessageAt *time.Time `json:"lastMessageAt" required:"true"`            // last_message_at
+	Reopened      *bool      `json:"reopened" required:"true"`                 // reopened
 }
 
 // SetUpdateParams updates public.demo_work_items struct fields with the specified params.

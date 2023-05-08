@@ -206,6 +206,7 @@
           "type": "string"
         },
         "ref": {
+          "pattern": "^[0-9]{8}$",
           "type": "string"
         },
         "reopened": {

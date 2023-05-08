@@ -259,7 +259,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 {{- if not .ignoreJSON }} required:"true"
 {{- end }}
 {{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
-{{- end }}`,
+{{- end }}
+{{- .field.ExtraTags }}`,
 			},
 			{
 				ContextKey: PublicFieldTagKey,
@@ -1161,9 +1162,6 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
 
-	var typeOverride string
-	var properties []string
-
 	annotations := make(map[annotation]string)
 	for _, a := range strings.Split(f.Comment, annotationJoinOperator) {
 		if a == "" {
@@ -1182,8 +1180,12 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		}
 	}
 
-	properties = extractPropertiesAnnotation(annotations[propertiesAnnot])
-	typeOverride = annotations[typeAnnot]
+	properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
+	typeOverride := annotations[typeAnnot]
+	extraTags := annotations[tagsAnnot]
+	if extraTags != "" {
+		extraTags = " " + extraTags
+	}
 
 	if typeOverride != "" {
 		typ = typeOverride
@@ -1203,6 +1205,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		IsDateOrTime:  f.IsDateOrTime,
 		TypeOverride:  typeOverride,
 		OpenAPISchema: openAPISchema,
+		ExtraTags:     extraTags,
 		Properties:    properties,
 		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
@@ -3882,6 +3885,7 @@ type Field struct {
 	IsDateOrTime  bool
 	Properties    []string
 	OpenAPISchema string
+	ExtraTags     string
 	Annotations   map[annotation]string
 }
 
