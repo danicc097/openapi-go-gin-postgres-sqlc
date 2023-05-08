@@ -35,8 +35,14 @@ const (
 	O2O cardinality = "O2O"
 )
 
-func validCardinality(s string) bool {
-	c := cardinality(s)
+// TODO split properties by || instead of ,
+var (
+	cardinalityRE = regexp.MustCompile("cardinality:([A-Za-z0-9_-]*)")
+	propertiesRE  = regexp.MustCompile("property:([A-Za-z0-9_-]*)")
+	typeRE        = regexp.MustCompile("type:([\\.A-Za-z0-9_-]*)")
+)
+
+func validCardinality(c cardinality) bool {
 	if c != "" && c != M2M && c != M2O && c != O2O {
 		return false
 	}
@@ -908,12 +914,30 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables
 	var cc []Constraint // will create additional dummy constraints for automatic O2O
 cc_label:
 	for _, constraint := range constraints {
-		if !validCardinality(constraint.Cardinality) {
-			return []Constraint{}, fmt.Errorf("invalid cardinality: %s", constraint.Cardinality)
+		var card cardinality
+		cards := cardinalityRE.FindStringSubmatch(constraint.Comment)
+		if len(cards) > 0 {
+			card = cardinality(strings.ToUpper(cards[1]))
+
+			if !validCardinality(card) {
+				return []Constraint{}, fmt.Errorf("invalid cardinality: %s", card)
+			}
 		}
-		card := cardinality(constraint.Cardinality)
+
+		if card != "" {
+			switch constraint.Type {
+			case "foreign_key":
+				fmt.Printf("%-48s | %-12s | %s | %-45s <- %s\n", constraint.Name, constraint.Type, card, constraint.TableName+"."+constraint.ColumnName, constraint.RefTableName+"."+constraint.RefColumnName)
+			case "primary_key":
+				// may be O2O (PK is FK) or M2M (PKs on lookup table)
+				fmt.Printf("%-48s | %-12s | %s | %-45s <- %s\n", constraint.Name, constraint.Type, card, constraint.TableName+"."+constraint.ColumnName, constraint.RefTableName+"."+constraint.RefColumnName)
+			case "unique":
+				fmt.Printf("%-48s | %-12s | %s | %s \n", constraint.Name, constraint.Type, card, constraint.RefTableName+"."+constraint.RefColumnName)
+			}
+		}
 
 		/**
+		 * Mark name clashes between constraint tables
 		 * TODO JoinTableClash pending O2O and M2M testing
 		 */
 		var joinTableClash bool
@@ -924,33 +948,38 @@ cc_label:
 			if c.Name == constraint.Name {
 				continue // itself
 			}
-			ccard := cardinality(c.Cardinality)
+			var ccard cardinality
+			ccards := cardinalityRE.FindStringSubmatch(constraint.Comment)
+			if len(ccards) > 0 {
+				ccard = cardinality(strings.ToUpper(ccards[1]))
+
+				if !validCardinality(ccard) {
+					return []Constraint{}, fmt.Errorf("invalid cardinality: %s", ccard)
+				}
+			}
 		outer:
 			switch card {
 			case M2M:
 				if c.ColumnName == constraint.ColumnName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2M {
 					joinTableClash = true
-					fmt.Printf("%-48s| c.ColumnName == constraint.ColumnName: %s == %s\n", c.Name, c.ColumnName, constraint.ColumnName)
 					break outer
 				}
 			case M2O:
 				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2O {
 					joinTableClash = true
-					fmt.Printf("%-48s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
 					break outer
 				}
 			case O2O:
 				// NOTE: probably needs more checks
 				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == O2O {
 					joinTableClash = true
-					fmt.Printf("%-48s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
 					break outer
 				}
 			}
 		}
 
 		// assume it's O2O. Can be overridden at any time
-		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
+		if constraint.Type == "foreign_key" && card == "" {
 			// FIXME generate constraint only if fk fields len = 1
 			// and check if field is unique or not
 			// ignore duplicate joins generated for partitioned columns to new tables, joined by helper keys, e.g. api_key_id
@@ -961,7 +990,7 @@ cc_label:
 					seenConstraint.Type == constraint.Type &&
 					/* card check to generate joins with vertically partitioned tables.
 					 */
-					seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
+					seenConstraint.Cardinality == card {
 					continue cc_label
 				}
 			}
@@ -982,13 +1011,13 @@ cc_label:
 			continue
 		}
 
-		if constraint.Cardinality == "O2O" {
+		if card == "O2O" {
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
 					seenConstraint.ColumnName == constraint.ColumnName &&
 					seenConstraint.Type == constraint.Type &&
-					seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
+					seenConstraint.Cardinality == card {
 					continue cc_label
 				}
 			}
@@ -1005,7 +1034,7 @@ cc_label:
 			})
 		}
 
-		if constraint.Cardinality == "M2O" {
+		if card == "M2O" {
 			/**
 			 *
 			 */
@@ -1013,7 +1042,7 @@ cc_label:
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
 					seenConstraint.ColumnName == constraint.ColumnName &&
-					seenConstraint.Type == constraint.Type && seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
+					seenConstraint.Type == constraint.Type && seenConstraint.Cardinality == card {
 					continue cc_label
 				}
 			}
@@ -1106,25 +1135,40 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		enumPkg = f.Type.Enum.EnumPkg
 		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
-	if f.TypeOverride != "" {
-		typ = f.TypeOverride
-		openAPISchema = camelExport(strings.Split(f.TypeOverride, ".")[1])
+
+	var properties []string
+	props := propertiesRE.FindAllStringSubmatch(f.Comment, -1)
+	if len(props) > 0 {
+		for _, p := range props {
+			properties = append(properties, strings.ToLower(p[1]))
+		}
+	}
+
+	var typeOverride string
+	match := typeRE.FindStringSubmatch(f.Comment)
+	if len(match) > 0 {
+		typeOverride = match[1]
+	}
+
+	if typeOverride != "" {
+		typ = typeOverride
+		openAPISchema = camelExport(strings.Split(typeOverride, ".")[1])
 	}
 
 	return Field{
-		Type:       typ,
-		GoName:     tf(f.Name),
-		SQLName:    f.Name,
-		Zero:       zero,
-		IsPrimary:  f.IsPrimary,
-		IsSequence: f.IsSequence,
-		IsIgnored:  f.IsIgnored,
-		EnumPkg:    enumPkg,
-		// Comment: f.Comment,  // TODO
+		Type:          typ,
+		GoName:        tf(f.Name),
+		SQLName:       f.Name,
+		Zero:          zero,
+		IsPrimary:     f.IsPrimary,
+		IsSequence:    f.IsSequence,
+		IsIgnored:     f.IsIgnored,
+		EnumPkg:       enumPkg,
+		Comment:       f.Comment,
 		IsDateOrTime:  f.IsDateOrTime,
-		TypeOverride:  f.TypeOverride,
+		TypeOverride:  typeOverride,
 		OpenAPISchema: openAPISchema,
-		Properties:    strings.Split(f.Properties, "|"),
+		Properties:    properties,
 		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
 }

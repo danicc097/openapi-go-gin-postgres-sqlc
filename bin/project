@@ -1659,6 +1659,8 @@ cache-gen.restore() {
   rsync -a --delete "$CACHE_PG_REPO_GEN/" "$PG_REPO_GEN/"
   rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
   restore_gen_files "$CACHE_GEN" internal
+
+  rm "$CACHE"/*.md5
 }
 
 backup_gen_files() {
