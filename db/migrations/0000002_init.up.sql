@@ -22,11 +22,11 @@ create table projects (
   , check (name ~ '^[a-zA-Z0-9_\-]+$')
 );
 
-comment on column projects.work_items_table_name is 'property:private';
+comment on column projects.work_items_table_name is '"properties":private';
 
-comment on column projects.board_config is 'type:models.ProjectConfig';
+comment on column projects.board_config is '"type":models.ProjectConfig';
 
-comment on column projects.name is 'type:models.Project';
+comment on column projects.name is '"type":models.Project';
 
 create table teams (
   team_id serial primary key
@@ -39,7 +39,7 @@ create table teams (
   , unique (name , project_id)
 );
 
-comment on column teams.project_id is 'cardinality:M2O';
+comment on column teams.project_id is '"cardinality":M2O';
 
 create table user_api_keys (
   user_api_key_id serial primary key
@@ -80,15 +80,15 @@ create table users (
   , foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
 );
 
-comment on column users.external_id is 'property:private, property:something-else';
+comment on column users.external_id is '"properties":private,something-else';
 
-comment on column users.api_key_id is 'property:private';
+comment on column users.api_key_id is '"properties":private';
 
-comment on column users.role_rank is 'property:private';
+comment on column users.role_rank is '"properties":private';
 
-comment on column users.scopes is 'type:models.Scopes';
+comment on column users.scopes is '"type":models.Scopes';
 
-comment on column users.updated_at is 'property:private';
+comment on column users.updated_at is '"properties":private';
 
 alter table user_api_keys
   add column user_id uuid not null unique;
@@ -96,7 +96,7 @@ alter table user_api_keys
 alter table user_api_keys
   add foreign key (user_id) references users (user_id) on delete cascade;
 
-comment on column user_api_keys.user_api_key_id is 'property:private';
+comment on column user_api_keys.user_api_key_id is '"properties":private';
 
 -- -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
 -- create unique index on users (user_id , external_id)
@@ -140,9 +140,9 @@ create table notifications (
 
 create index on notifications (receiver_rank , notification_type , created_at);
 
-comment on column notifications.sender is 'cardinality:M2O';
+comment on column notifications.sender is '"cardinality":M2O';
 
-comment on column notifications.receiver is 'cardinality:M2O';
+comment on column notifications.receiver is '"cardinality":M2O';
 
 create table user_notifications (
   user_notification_id bigserial primary key
@@ -154,10 +154,10 @@ create table user_notifications (
   , foreign key (notification_id) references notifications (notification_id) on delete cascade
 );
 
-comment on column user_notifications.user_id is 'cardinality:M2O';
+comment on column user_notifications.user_id is '"cardinality":M2O';
 
 -- user_notif are fan out
-comment on column user_notifications.notification_id is 'cardinality:M2O';
+comment on column user_notifications.notification_id is '"cardinality":M2O';
 
 create index on user_notifications (user_id);
 
@@ -227,9 +227,9 @@ create table user_team (
 
 create index on user_team (team_id , user_id);
 
-comment on column user_team.user_id is 'cardinality:M2M';
+comment on column user_team.user_id is '"cardinality":M2M';
 
-comment on column user_team.team_id is 'cardinality:M2M';
+comment on column user_team.team_id is '"cardinality":M2M';
 
 create table kanban_steps (
   kanban_step_id serial primary key
@@ -255,7 +255,7 @@ create table kanban_steps (
 --   step_order is null;
 create unique index on kanban_steps (project_id , name , step_order);
 
-comment on column kanban_steps.project_id is 'cardinality:M2O';
+comment on column kanban_steps.project_id is '"cardinality":M2O';
 
 -- types restricted per project
 create table work_item_types (
@@ -269,7 +269,7 @@ create table work_item_types (
   , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 );
 
-comment on column work_item_types.project_id is 'cardinality:M2O';
+comment on column work_item_types.project_id is '"cardinality":M2O';
 
 -- create table invoice_types (
 --   invoice_type_id serial primary key
@@ -349,13 +349,13 @@ create table demo_two_work_items (
 );
 
 -- FIXME xo cannot properly infer edge case when PK is FK
-comment on column work_items.work_item_id is 'cardinality:O2O';
+comment on column work_items.work_item_id is '"cardinality":O2O';
 
-comment on column demo_work_items.ref is 'tags:||pattern:"^[0-9]{8}$||"';
+comment on column demo_work_items.ref is '"tags":pattern:"^[0-9]{8}$"';
 
-comment on column demo_work_items.work_item_id is 'cardinality:O2O';
+comment on column demo_work_items.work_item_id is '"cardinality":O2O';
 
-comment on column demo_two_work_items.work_item_id is 'cardinality:O2O';
+comment on column demo_two_work_items.work_item_id is '"cardinality":O2O';
 
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
@@ -372,9 +372,9 @@ create table work_item_comments (
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
 );
 
-comment on column work_item_comments.work_item_id is 'cardinality:M2O';
+comment on column work_item_comments.work_item_id is '"cardinality":M2O';
 
-comment on column work_item_comments.user_id is 'cardinality:M2O';
+comment on column work_item_comments.user_id is '"cardinality":M2O';
 
 create index on work_item_comments (work_item_id);
 
@@ -389,7 +389,7 @@ create table work_item_tags (
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
-comment on column work_item_tags.project_id is 'cardinality:M2O';
+comment on column work_item_tags.project_id is '"cardinality":M2O';
 
 create table work_item_work_item_tag (
   work_item_tag_id int not null
@@ -401,9 +401,9 @@ create table work_item_work_item_tag (
 
 create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
 
-comment on column work_item_work_item_tag.work_item_tag_id is 'cardinality:M2M';
+comment on column work_item_work_item_tag.work_item_tag_id is '"cardinality":M2M';
 
-comment on column work_item_work_item_tag.work_item_id is 'cardinality:M2M';
+comment on column work_item_work_item_tag.work_item_id is '"cardinality":M2M';
 
 -- roles are append-only
 create type work_item_role as ENUM (
@@ -422,11 +422,11 @@ create table work_item_member (
 
 create index on work_item_member (member , work_item_id);
 
-comment on column work_item_member.role is 'type:models.WorkItemRole';
+comment on column work_item_member.role is '"type":models.WorkItemRole';
 
-comment on column work_item_member.work_item_id is 'cardinality:M2M';
+comment on column work_item_member.work_item_id is '"cardinality":M2M';
 
-comment on column work_item_member.member is 'cardinality:M2M';
+comment on column work_item_member.member is '"cardinality":M2M';
 
 -- must be completely dynamic on a project basis
 create table activities (
@@ -440,7 +440,7 @@ create table activities (
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
-comment on column activities.project_id is 'cardinality:M2O';
+comment on column activities.project_id is '"cardinality":M2O';
 
 -- will restrict available activities on a per-project basis
 -- where project_id is null (shared) or project_id = @project_id
@@ -462,13 +462,13 @@ create table time_entries (
   , check (num_nonnulls (team_id , work_item_id) = 1) -- team_id null when a work_item id is associated and viceversa
 );
 
-comment on column time_entries.work_item_id is 'cardinality:M2O';
+comment on column time_entries.work_item_id is '"cardinality":M2O';
 
-comment on column time_entries.team_id is 'cardinality:M2O';
+comment on column time_entries.team_id is '"cardinality":M2O';
 
-comment on column time_entries.activity_id is 'cardinality:M2O';
+comment on column time_entries.activity_id is '"cardinality":M2O';
 
-comment on column time_entries.user_id is 'cardinality:M2O';
+comment on column time_entries.user_id is '"cardinality":M2O';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
 -- columns, but the index is most efficient when there are constraints on the leading (leftmost) columns.

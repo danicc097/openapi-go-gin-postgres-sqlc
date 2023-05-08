@@ -35,7 +35,7 @@ const (
 	O2O cardinality = "O2O"
 )
 
-type annotation string
+type annotation = string
 
 // table column custom properties via SQL column comments.
 const (
@@ -56,6 +56,8 @@ const (
 
 	// example: "properties":private,another-property && "type":models.Project && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
 )
+
+const privateFieldProperty = "private"
 
 // to not have to analyze everything for convertConstraints
 var cardinalityRE = regexp.MustCompile(string(cardinalityAnnot) + annotationAssignmentOperator + "([A-Za-z0-9_-]*)")
@@ -1159,19 +1161,29 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
 
+	var typeOverride string
 	var properties []string
-	props := propertyRE.FindAllStringSubmatch(f.Comment, -1)
-	if len(props) > 0 {
-		for _, p := range props {
-			properties = append(properties, strings.ToLower(p[1]))
+
+	annotations := make(map[annotation]string)
+	for _, a := range strings.Split(f.Comment, annotationJoinOperator) {
+		if a == "" {
+			continue
+		}
+		typ, val, found := strings.Cut(a, annotationAssignmentOperator)
+		if !found {
+			return Field{}, fmt.Errorf("invalid column comment annotation format: %s", a)
+		}
+		typ = annotation(typ)
+		switch typ {
+		case cardinalityAnnot, tagsAnnot, typeAnnot, propertiesAnnot:
+			annotations[typ] = val
+		default:
+			return Field{}, fmt.Errorf("invalid column comment annotation type: %s", typ)
 		}
 	}
 
-	var typeOverride string
-	match := typeRE.FindStringSubmatch(f.Comment)
-	if len(match) > 0 {
-		typeOverride = match[1]
-	}
+	properties = extractPropertiesAnnotation(annotations[propertiesAnnot])
+	typeOverride = annotations[typeAnnot]
 
 	if typeOverride != "" {
 		typ = typeOverride
@@ -1194,6 +1206,15 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		Properties:    properties,
 		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
+}
+
+func extractPropertiesAnnotation(annotation annotation) []string {
+	var properties []string
+	for _, p := range strings.Split(annotation, propertiesJoinOperator) {
+		properties = append(properties, strings.TrimSpace(strings.ToLower(p)))
+	}
+
+	return properties
 }
 
 func goType(ctx context.Context, typ xo.Type) (string, string, error) {
@@ -1820,7 +1841,8 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 				var lookupFields []string
 				for _, col := range extraCols {
 					tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"", camel(col.GoName), col.SQLName)
-					isPrivate := contains(col.Properties, privateFieldProperty)
+					properties := extractPropertiesAnnotation(col.Annotations[propertiesAnnot])
+					isPrivate := contains(properties, privateFieldProperty)
 					if !isPrivate {
 						tag = tag + ` required:"true"`
 					}
@@ -3860,6 +3882,7 @@ type Field struct {
 	IsDateOrTime  bool
 	Properties    []string
 	OpenAPISchema string
+	Annotations   map[annotation]string
 }
 
 // QueryParam is a custom query parameter template.
