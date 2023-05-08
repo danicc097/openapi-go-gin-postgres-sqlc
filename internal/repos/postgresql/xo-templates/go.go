@@ -1112,14 +1112,15 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	}
 
 	return Field{
-		Type:          typ,
-		GoName:        tf(f.Name),
-		SQLName:       f.Name,
-		Zero:          zero,
-		IsPrimary:     f.IsPrimary,
-		IsSequence:    f.IsSequence,
-		IsIgnored:     f.IsIgnored,
-		EnumPkg:       enumPkg,
+		Type:       typ,
+		GoName:     tf(f.Name),
+		SQLName:    f.Name,
+		Zero:       zero,
+		IsPrimary:  f.IsPrimary,
+		IsSequence: f.IsSequence,
+		IsIgnored:  f.IsIgnored,
+		EnumPkg:    enumPkg,
+		// Comment: f.Comment,  // TODO
 		IsDateOrTime:  f.IsDateOrTime,
 		TypeOverride:  f.TypeOverride,
 		OpenAPISchema: openAPISchema,

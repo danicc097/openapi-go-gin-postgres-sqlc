@@ -51,4 +51,4 @@ jobs:
         run: |
           source .envrc
 
-          project test.frontend
+          project test.frontend --x-env=ci
