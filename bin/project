@@ -484,13 +484,6 @@ x.gen.jet() {
     # should not be hard to generate all adapters at once jet->xo *Public in a new file alongside jet gen.
     # in the end fields are the same name if goName conventions are followed (configurable via custom jet cmd)
     # if it gives problems for some fields (ID, API and the like)
-
-    if md5sum -c "$CACHE/jet.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
-      echo "Skipping generation (cached). Force regen with --x-force-regen"
-      exit 0
-    fi
-    md5_all "$CACHE/jet.md5" ${CACHE_DEP_FILES[@]} go.mod db/ &
-
     echo "Running generation"
 
     local gen_path="$PG_REPO_GEN/jet"
