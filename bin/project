@@ -208,7 +208,7 @@ x.install-tools() {
     go install golang.org/x/tools/cmd/goimports@latest &
     go install mvdan.cc/gofumpt@latest &
     go install github.com/danicc097/air@latest &
-    go install github.com/danicc097/xo@latest &
+    go install github.com/danicc097/xo@v1.0.0 &
     go install github.com/mikefarah/yq/v4@v4.27.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
 
@@ -1110,7 +1110,8 @@ x.dev-utils.api-keys() {
   dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "select email, api_key from user_api_keys left join users using (user_id);"
 }
 
-# Runs a traefik container with predefined configuration.
+# Setups a traefik container with predefined configuration in `install-dir`.
+# Args: install-dir
 x.setup.traefik() {
   git clone --depth=1 https://github.com/danicc097/traefik-bootstrap.git "$1"
   docker network create traefik-net || true
