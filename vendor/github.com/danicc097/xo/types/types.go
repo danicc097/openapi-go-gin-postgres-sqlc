@@ -96,14 +96,13 @@ func (p Proc) MarshalYAML() (interface{}, error) {
 type Constraint struct {
 	// "unique" "check" "primary_key" "foreign_key"
 	Type string `json:"key_type"`
-	// "M2M" "O2M" "M2O" "O2O"
-	Cardinality string `json:"cardinality"`
 	// Key name
 	Name          string `json:"name,omitempty"`
 	TableName     string `json:"table_name"`
 	ColumnName    string `json:"column_name"`
 	RefTableName  string `json:"ref_table_name"`
 	RefColumnName string `json:"ref_column_name"`
+	Comment       string `json:"commment"`
 }
 
 // Table is a table or view.
@@ -158,8 +157,7 @@ type Field struct {
 	Interpolate  bool   `json:"interpolate,omitempty"`
 	Join         bool   `json:"join,omitempty"`
 	IsDateOrTime bool   `json:"is_date_or_time,omitempty"`
-	Properties   string `json:"properties,omitempty"`
-	TypeOverride string `json:"type_override,omitempty"`
+	Comment      string `json:"comment,omitempty"`
 }
 
 // Type holds information for a database type.

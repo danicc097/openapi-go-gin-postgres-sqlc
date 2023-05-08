@@ -32,7 +32,7 @@ jobs:
           pnpm i --frozen-lockfile
           cd -
 
-          project test.backend-setup --x-env=ci
+          project test.backend.setup --x-env=ci
 
           project lint --x-env=ci
 
@@ -45,11 +45,10 @@ jobs:
         run: |
           source .envrc
 
-          project test -race -count=40 --x-env=ci
+          project test.backend -race -count=40 --x-env=ci
 
       - name: Test frontend
         run: |
           source .envrc
 
-          cd frontend
-          pnpm run test:no-watch
+          project test.frontend --x-env=ci

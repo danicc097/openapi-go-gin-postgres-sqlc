@@ -99,7 +99,6 @@ import { icon as controls_vertical } from '@elastic/eui/es/components/icon/asset
 import { icon as copy_clipboard } from '@elastic/eui/es/components/icon/assets/copy_clipboard'
 import { icon as copy } from '@elastic/eui/es/components/icon/assets/copy'
 import { icon as crosshairs } from '@elastic/eui/es/components/icon/assets/crosshairs'
-import { icon as crossInACircleFilled } from '@elastic/eui/es/components/icon/assets/crossInACircleFilled'
 import { icon as cross } from '@elastic/eui/es/components/icon/assets/cross'
 import { icon as currency } from '@elastic/eui/es/components/icon/assets/currency'
 import { icon as cut } from '@elastic/eui/es/components/icon/assets/cut'
@@ -547,7 +546,6 @@ const cachedIcons: IconComponentCacheType = {
   copyClipboard: copy_clipboard,
   copy: copy,
   crosshairs: crosshairs,
-  crossInACircleFilled: crossInACircleFilled,
   cross: cross,
   currency: currency,
   cut: cut,

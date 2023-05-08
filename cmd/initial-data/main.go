@@ -197,6 +197,8 @@ func main() {
 	 *
 	 **/
 
+	// TODO: create >20 dynamically from userIDs then
+	// just update them if we want something specific to play with
 	demowi1, err := demoWiSvc.Create(ctx, pool, services.DemoWorkItemCreateParams{
 		DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
 			Base: db.WorkItemCreateParams{

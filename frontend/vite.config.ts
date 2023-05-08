@@ -38,6 +38,9 @@ export default ({ mode }) => {
     define: {
       'process.env.NODE_ENV': `"${mode}"`,
     },
+    esbuild: {
+      logOverride: { 'this-is-undefined-in-esm': 'silent' },
+    },
     build: {
       minify: 'terser',
       terserOptions: {

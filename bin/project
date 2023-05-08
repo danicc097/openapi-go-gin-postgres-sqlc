@@ -8,8 +8,8 @@
 
 export PROC=$$
 
-source "${BASH_SOURCE%/*}/.helpers.sh"
-source "${BASH_SOURCE%/*}/.project.dependencies.sh"
+source ".helpers.sh"
+source ".project.dependencies.sh"
 
 ensure_pwd_is_top_level
 
@@ -67,7 +67,8 @@ readonly OPID_AUTH="operationAuth.gen.json"
 readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
 readonly FRONTEND_SRC="frontend/src"
 readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
-
+# common shared file dependencies for codegen checksums
+readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.dev")
 readonly CACHE=".generate.cache"
 readonly CACHE_GEN="$CACHE/gen"
 readonly CACHE_PG_REPO_GEN="$CACHE_GEN/pgrepo/gen"
@@ -496,7 +497,7 @@ x.gen.xo() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/xo.md5" go.mod db/ $XO_TEMPLATES_DIR/ &
+    md5_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/ &
 
     echo "Running generation"
 
@@ -567,7 +568,7 @@ x.gen.jet() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/jet.md5" go.mod db/ &
+    md5_all "$CACHE/jet.md5" ${CACHE_DEP_FILES[@]} go.mod db/ &
 
     echo "Running generation"
 
@@ -591,7 +592,7 @@ x.gen.gowrap() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/gowrap.md5" go.mod $repos $GOWRAP_TEMPLATES_DIR &
+    md5_all "$CACHE/gowrap.md5" ${CACHE_DEP_FILES[@]} go.mod $repos $GOWRAP_TEMPLATES_DIR &
 
     echo "Running generation"
 
@@ -655,7 +656,7 @@ x.gen.counterfeiter() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/counterfeiter.md5" go.mod $envvar $repos $tfidfpb &
+    md5_all "$CACHE/counterfeiter.md5" ${CACHE_DEP_FILES[@]} go.mod $envvar $repos $tfidfpb &
 
     echo "Recreating mocks"
     {
@@ -699,25 +700,20 @@ x.gen.frontend() {
   cache-gen
   { { {
     (
-      set -a
-      # export to replace config with envvars
-      source ".env.$env"
-      set +a
+      frontend_config_setup
 
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
-      export ENV_REPLACE_GLOB=frontend/config.json
+      orval_config="frontend/orval.config.ts"
+
+      if md5sum -c "$CACHE/frontend.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+        echo "Skipping generation (cached). Force regen with --x-force-regen"
+        exit 0
+      fi
+      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/package.json &
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
 
-      {
-        # ensure config has all k:v as "<KEY>": "$<KEY>"
-        jq \
-          'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-          frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
-        envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
-        frontend/nginx/replace-envvars.sh "$envvars" # FIXME
-      } &
       {
         node frontend/generate-client-validator.js
         # TODO allow custom validate.ts baked into fork
@@ -735,7 +731,7 @@ x.gen.frontend() {
 export type schemas = components['schemas']
 " | cat - "$SCHEMA_OUT" >/tmp/out && mv /tmp/out "$SCHEMA_OUT"
       } &
-      orval --config frontend/orval.config.ts &
+      orval --config $orval_config &
 
       wait_without_error
     )
@@ -871,7 +867,7 @@ x.lint.sql() {
 
 # Run required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
-x.test.backend-setup() {
+x.test.backend.setup() {
   cache-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
@@ -884,9 +880,9 @@ x.test.backend-setup() {
   cache-gen.cleanup
 }
 
-# Test the entire project. Accepts `go test` parameters.
+# Test backend. Accepts `go test` parameters.
 # Args: [...]
-x.test() {
+x.test.backend() {
   { { {
     x.test.xo
 
@@ -896,6 +892,23 @@ x.test() {
     echo "Running ${GREEN}\"APP_ENV=$env go test $* ./...\"${OFF}"
     APP_ENV="$env" go test "$@" ./...
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Test frontend.
+# Args: [...]
+x.test.frontend() {
+  # TODO accept vitest args
+  frontend_config_setup
+  cd frontend
+  pnpm run test:no-watch
+}
+
+# Test frontend on file changes.
+# Args: [...]
+x.test.frontend.watch() {
+  frontend_config_setup
+  cd frontend
+  pnpm run test
 }
 
 # Run custom xo generation script tests
@@ -917,7 +930,7 @@ x.test.xo() {
     xo_schema -o "$test_dir/got" --debug \
       --schema public \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo public schema generation"
+      --ignore "*.updated_at" >/dev/null || err "Failed xo public schema generation"
 
     files=$(find "$test_dir/got" \
       -name "*.go")
@@ -933,25 +946,23 @@ x.test.xo() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Test the entire project on file changes. Accepts `go test` parameters.
+# Test backend on file changes. Accepts `go test` parameters.
 # Args: [...]
-x.test-watch() {
-  { { {
-    clear
+x.test.backend.watch() {
+  clear
 
-    latency=2
-    while true; do
-      inotifywait \
-        --monitor ./internal/**/* \
-        --event=close_write \
-        --format='%T %f' \
-        --timefmt='%s' |
-        while read -r event_time event_file 2>/dev/null || sleep $latency; do
-          clear
-          APP_ENV="$env" go test "$@" && echo "${GREEN}✓ All tests passing${OFF}"
-        done
-    done
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  latency=2
+  while true; do
+    inotifywait \
+      --monitor ./internal/**/* \
+      --event=close_write \
+      --format='%T %f' \
+      --timefmt='%s' |
+      while read -r event_time event_file 2>/dev/null || sleep $latency; do
+        clear
+        APP_ENV="$env" go test "$@" ./... && echo "${GREEN}✓ All tests passing${OFF}"
+      done
+  done
 }
 
 # Build the entire project.
@@ -982,13 +993,8 @@ x.run.backend-hr() {
 
 # Run frontend with hot-reloading.
 x.run.frontend() {
-  set -a
-  # export to replace config with envvars
-  source ".env.$env"
-  set +a
-
+  frontend_config_setup
   cd frontend
-
   pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
@@ -1611,6 +1617,18 @@ drop-and-migrate-gen-db() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# updates dynamic config with env vars
+frontend_config_setup() {
+  export ENV_REPLACE_GLOB=frontend/config.json
+  # ensure config has all k:v as "<KEY>": "$<KEY>"
+  # this has to always be run at startup
+  jq \
+    'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
+    frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
+  envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
+  frontend/nginx/replace-envvars.sh "$envvars"
+}
+
 # saves the current gen state to allow restoring in the event of early exit
 cache-gen() {
   test -n "$restore_cache_caller" && return
@@ -1642,6 +1660,8 @@ cache-gen.restore() {
   rsync -a --delete "$CACHE_PG_REPO_GEN/" "$PG_REPO_GEN/"
   rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
   restore_gen_files "$CACHE_GEN" internal
+
+  rm "$CACHE"/*.md5 # clear gen cache
 }
 
 backup_gen_files() {
@@ -1919,7 +1939,11 @@ done
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
 ensure_envvars_set "docker/.env.template" "docker/.env"
+
+set -a
+# export to all subsequent commands or scripts
 source ".env.$env"
+set +a
 
 # handle executing x functions
 if [[ -n "$1" ]]; then

@@ -12,8 +12,8 @@ dependencies:
     specifier: ^5.0.3
     version: 5.0.3(moment@2.29.4)
   '@elastic/eui':
-    specifier: ^70.3.0
-    version: 70.3.0(@elastic/datemath@5.0.3)(@emotion/css@11.10.5)(@emotion/react@11.10.4)(@types/react-dom@17.0.2)(@types/react@17.0.2)(moment@2.29.4)(prop-types@15.8.1)(react-dom@17.0.2)(react@17.0.2)(typescript@4.8.2)
+    specifier: ^78.0.0
+    version: 78.0.0(@elastic/datemath@5.0.3)(@emotion/css@11.10.5)(@emotion/react@11.10.4)(@types/react-dom@17.0.2)(@types/react@17.0.2)(moment@2.29.4)(prop-types@15.8.1)(react-dom@17.0.2)(react@17.0.2)(typescript@4.8.2)
   '@emotion/css':
     specifier: ^11.10.5
     version: 11.10.5(@babel/core@7.20.2)
@@ -578,9 +578,8 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /@elastic/eui@70.3.0(@elastic/datemath@5.0.3)(@emotion/css@11.10.5)(@emotion/react@11.10.4)(@types/react-dom@17.0.2)(@types/react@17.0.2)(moment@2.29.4)(prop-types@15.8.1)(react-dom@17.0.2)(react@17.0.2)(typescript@4.8.2):
-    resolution: {integrity: sha512-TKQP/JumUG9JCQycYwQ+sQRfpVf3OTShEfsUHeLVSK9yTE+0tdtb5aNIEFvTvsEGnvEMnWHDlCwsYJhyXJTwLw==}
-    requiresBuild: true
+  /@elastic/eui@78.0.0(@elastic/datemath@5.0.3)(@emotion/css@11.10.5)(@emotion/react@11.10.4)(@types/react-dom@17.0.2)(@types/react@17.0.2)(moment@2.29.4)(prop-types@15.8.1)(react-dom@17.0.2)(react@17.0.2)(typescript@4.8.2):
+    resolution: {integrity: sha512-2OZVdLHpQPm8CWpOqnBI0XisohlTtsuDub1r90UTsIZCrwevK3aBrLb8DibpggRfaXXE4QtALYpN8+JoEu8dWw==}
     peerDependencies:
       '@elastic/datemath': ^5.0.2
       '@emotion/css': 11.x
@@ -623,6 +622,7 @@ packages:
       react-focus-on: 3.7.0(@types/react@17.0.2)(react@17.0.2)
       react-input-autosize: 3.0.0(react@17.0.2)
       react-is: 17.0.2
+      react-remove-scroll-bar: 2.3.4(@types/react@17.0.2)(react@17.0.2)
       react-virtualized-auto-sizer: 1.0.7(react-dom@17.0.2)(react@17.0.2)
       react-window: 1.8.8(react-dom@17.0.2)(react@17.0.2)
       refractor: 3.6.0
@@ -631,7 +631,7 @@ packages:
       rehype-stringify: 8.0.0
       remark-breaks: 2.0.2
       remark-emoji: 2.2.0
-      remark-parse: 8.0.3
+      remark-parse-no-trim: 8.0.4
       remark-rehype: 8.1.0
       tabbable: 5.3.3
       text-diff: 1.0.1
@@ -1067,7 +1067,7 @@ packages:
       '@motionone/easing': 10.14.0
       '@motionone/types': 10.14.0
       '@motionone/utils': 10.14.0
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /@motionone/dom@10.13.1:
@@ -1085,7 +1085,7 @@ packages:
     resolution: {integrity: sha512-2vUBdH9uWTlRbuErhcsMmt1jvMTTqvGmn9fHq8FleFDXBlHFs5jZzHJT9iw+4kR1h6a4SZQuCf72b9ji92qNYA==}
     dependencies:
       '@motionone/utils': 10.14.0
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /@motionone/generators@10.14.0:
@@ -1093,7 +1093,7 @@ packages:
     dependencies:
       '@motionone/types': 10.14.0
       '@motionone/utils': 10.14.0
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /@motionone/types@10.14.0:
@@ -1105,7 +1105,7 @@ packages:
     dependencies:
       '@motionone/types': 10.14.0
       hey-listen: 1.0.8
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /@mswjs/cookies@0.2.2:
@@ -2231,6 +2231,7 @@ packages:
 
   /@types/vfile-message@2.0.0:
     resolution: {integrity: sha512-GpTIuDpb9u4zIO165fUy9+fXcULdD8HFRNli04GehoMVbeNq7D6OBnqSmg3lxZnC+UvgUhEWKxdKiwYUkGltIw==}
+    deprecated: This is a stub types definition. vfile-message provides its own type definitions, so you do not need this installed.
     dependencies:
       vfile-message: 3.1.3
     dev: false
@@ -2578,7 +2579,7 @@ packages:
     dependencies:
       '@types/react': 17.0.2
       react: 17.0.2
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /aria-query@4.2.2:
@@ -4301,7 +4302,7 @@ packages:
     resolution: {integrity: sha512-iACCiXeMYOvZqlF1kTiYINzgepRBymz1wwjiuup9u9nayhb6g4fSwiyJ/6adli+EPwrWtpgQAh2PoS7HukEGEg==}
     engines: {node: '>= 10'}
     dependencies:
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /file-uri-to-path@2.0.0:
@@ -4349,7 +4350,7 @@ packages:
     resolution: {integrity: sha512-4n0pYcPTa/uI7Q66BZna61nRT7lDhnuJ9PJr6wiDjx4uStg491ks41y7uOG+s0umaaa+hulNKSldU9aTg9/yVg==}
     engines: {node: '>=10'}
     dependencies:
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /follow-redirects@1.15.2:
@@ -5355,7 +5356,7 @@ packages:
     dependencies:
       universalify: 2.0.0
     optionalDependencies:
-      graceful-fs: 4.2.10
+      graceful-fs: 4.2.11
     dev: false
 
   /jsonpath-plus@6.0.1:
@@ -6378,7 +6379,7 @@ packages:
       react-focus-lock: 2.9.2(@types/react@17.0.2)(react@17.0.2)
       react-remove-scroll: 2.5.5(@types/react@17.0.2)(react@17.0.2)
       react-style-singleton: 2.2.1(@types/react@17.0.2)(react@17.0.2)
-      tslib: 2.4.0
+      tslib: 2.5.0
       use-callback-ref: 1.3.0(@types/react@17.0.2)(react@17.0.2)
       use-sidecar: 1.1.2(@types/react@17.0.2)(react@17.0.2)
     dev: false
@@ -6450,7 +6451,7 @@ packages:
       '@types/react': 17.0.2
       react: 17.0.2
       react-style-singleton: 2.2.1(@types/react@17.0.2)(react@17.0.2)
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /react-remove-scroll@2.5.5(@types/react@17.0.2)(react@17.0.2):
@@ -6467,7 +6468,7 @@ packages:
       react: 17.0.2
       react-remove-scroll-bar: 2.3.4(@types/react@17.0.2)(react@17.0.2)
       react-style-singleton: 2.2.1(@types/react@17.0.2)(react@17.0.2)
-      tslib: 2.4.0
+      tslib: 2.5.0
       use-callback-ref: 1.3.0(@types/react@17.0.2)(react@17.0.2)
       use-sidecar: 1.1.2(@types/react@17.0.2)(react@17.0.2)
     dev: false
@@ -6517,7 +6518,7 @@ packages:
       get-nonce: 1.0.1
       invariant: 2.2.4
       react: 17.0.2
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /react-virtualized-auto-sizer@1.0.7(react-dom@17.0.2)(react@17.0.2):
@@ -6662,8 +6663,8 @@ packages:
       unist-util-visit: 2.0.3
     dev: false
 
-  /remark-parse@8.0.3:
-    resolution: {integrity: sha512-E1K9+QLGgggHxCQtLt++uXltxEprmWzNfg+MxpfHsZlrddKzZ/hZyWHDbK3/Ap8HJQqYJRXP+jHczdL6q6i85Q==}
+  /remark-parse-no-trim@8.0.4:
+    resolution: {integrity: sha512-WtqeHNTZ0LSdyemmY1/G6y9WoEFblTtgckfKF5/NUnri919/0/dEu8RCDfvXtJvu96soMvT+mLWWgYVUaiHoag==}
     dependencies:
       ccount: 1.1.0
       collapse-white-space: 1.0.6
@@ -6675,7 +6676,6 @@ packages:
       parse-entities: 2.0.0
       repeat-string: 1.6.1
       state-toggle: 1.0.3
-      trim: 0.0.1
       trim-trailing-lines: 1.1.4
       unherit: 1.1.3
       unist-util-remove-position: 2.0.1
@@ -7300,10 +7300,6 @@ packages:
     resolution: {integrity: sha512-rjUWSqnfTNrjbB9NQWfPMH/xRK1deHeGsHoVfpxJ++XeYXE0d6B1En37AHfw3jtfTU7dzMzZL2jjpe8Qb5gLIQ==}
     dev: false
 
-  /trim@0.0.1:
-    resolution: {integrity: sha512-YzQV+TZg4AxpKxaTHK3c3D+kRDCGVEE7LemdlQZoQXn0iennk10RsIoY6ikzAqJTc9Xjl9C1/waHom/J86ziAQ==}
-    dev: false
-
   /trough@1.0.5:
     resolution: {integrity: sha512-rvuRbTarPXmMb79SmzEp8aqXNKcK+y0XaB298IXueQ8I2PsrATcPBCSPyK/dDNa2iWOhKlfNnOjdAOTBU/nkFA==}
     dev: false
@@ -7568,7 +7564,7 @@ packages:
     dependencies:
       '@types/react': 17.0.2
       react: 17.0.2
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /use-memo-one@1.1.3(react@17.0.2):
@@ -7592,7 +7588,7 @@ packages:
       '@types/react': 17.0.2
       detect-node-es: 1.1.0
       react: 17.0.2
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /use-sync-external-store@1.2.0(react@17.0.2):
@@ -7624,6 +7620,7 @@ packages:
 
   /uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
     dev: false
 
   /uuid@9.0.0:

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "${BASH_SOURCE%/*}/.helpers.sh"
+source ".helpers.sh"
 
 report_failure() {
   local info="$1"

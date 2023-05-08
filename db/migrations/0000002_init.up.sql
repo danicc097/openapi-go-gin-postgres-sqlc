@@ -351,6 +351,8 @@ create table demo_two_work_items (
 -- FIXME xo cannot properly infer edge case when PK is FK
 comment on column work_items.work_item_id is 'cardinality:O2O';
 
+comment on column demo_work_items.ref is 'tags:||pattern:"^[0-9]{8}$||"';
+
 comment on column demo_work_items.work_item_id is 'cardinality:O2O';
 
 comment on column demo_two_work_items.work_item_id is 'cardinality:O2O';
