@@ -35,12 +35,37 @@ const (
 	O2O cardinality = "O2O"
 )
 
-// TODO split properties by || instead of ,
-var (
-	cardinalityRE = regexp.MustCompile("cardinality:([A-Za-z0-9_-]*)")
-	propertiesRE  = regexp.MustCompile("property:([A-Za-z0-9_-]*)")
-	typeRE        = regexp.MustCompile("type:([\\.A-Za-z0-9_-]*)")
+type annotation string
+
+// table column custom properties via SQL column comments.
+const (
+	annotationJoinOperator       = " && "
+	annotationAssignmentOperator = ":"
+
+	cardinalityAnnot annotation = `"cardinality"`
+	// custom properties for code generation
+	propertiesAnnot annotation = `"properties"`
+	// literal Go type to override with
+	typeAnnot annotation = `"type"`
+	// literal Go struct tags to be appended
+	tagsAnnot annotation = `"tags"`
+
+	propertiesJoinOperator = ","
+	// ignore fields when marshalling to JSON
+	propertiesPrivate = "private"
+
+	// example: "properties":private,another-property && "type":models.Project && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
 )
+
+// to not have to analyze everything for convertConstraints
+var cardinalityRE = regexp.MustCompile(string(cardinalityAnnot) + annotationAssignmentOperator + "([A-Za-z0-9_-]*)")
+
+func columnCommentToAnnotations(c cardinality) bool {
+	if c != "" && c != M2M && c != M2O && c != O2O {
+		return false
+	}
+	return true
+}
 
 func validCardinality(c cardinality) bool {
 	if c != "" && c != M2M && c != M2O && c != O2O {
@@ -55,8 +80,6 @@ func formatJSON(obj interface{}) string {
 }
 
 var ErrNoSingle = errors.New("in query exec mode, the --single or -S must be provided")
-
-const privateFieldProperty = "private"
 
 func IsUpper(s string) bool {
 	for _, r := range s {
@@ -1137,7 +1160,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	}
 
 	var properties []string
-	props := propertiesRE.FindAllStringSubmatch(f.Comment, -1)
+	props := propertyRE.FindAllStringSubmatch(f.Comment, -1)
 	if len(props) > 0 {
 		for _, p := range props {
 			properties = append(properties, strings.ToLower(p[1]))
