@@ -10,12 +10,12 @@ import (
 )
 
 type Activity struct {
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 	aRepo  repos.Activity
 }
 
 // NewActivity returns a new Activity service.
-func NewActivity(logger *zap.Logger, aRepo repos.Activity) *Activity {
+func NewActivity(logger *zap.SugaredLogger, aRepo repos.Activity) *Activity {
 	return &Activity{
 		logger: logger,
 		aRepo:  aRepo,

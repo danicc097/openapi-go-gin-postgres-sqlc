@@ -23,9 +23,9 @@ type testUsers struct {
 func TestUser_UpdateUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t)
+	logger := zaptest.NewLogger(t).Sugar()
 
-	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t), "../../scopes.json", "../../roles.json")
+	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)
 	}
@@ -124,9 +124,9 @@ func TestUser_UpdateUser(t *testing.T) {
 func TestUser_UpdateUserAuthorization(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t)
+	logger := zaptest.NewLogger(t).Sugar()
 
-	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t), "../../scopes.json", "../../roles.json")
+	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)
 	}

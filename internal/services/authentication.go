@@ -21,13 +21,13 @@ type AppClaims struct {
 
 type Authentication struct {
 	pool   *pgxpool.Pool
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 	usvc   *User
 }
 
 // NewAuthentication returns a new authentication service.
 // TODO can we use tx instead of providing pool at startup
-func NewAuthentication(logger *zap.Logger, usvc *User, pool *pgxpool.Pool) *Authentication {
+func NewAuthentication(logger *zap.SugaredLogger, usvc *User, pool *pgxpool.Pool) *Authentication {
 	return &Authentication{
 		logger: logger,
 		usvc:   usvc,

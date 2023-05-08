@@ -53,7 +53,7 @@ type Config struct {
 	Pool    *pgxpool.Pool
 	SQLPool *sql.DB
 	Redis   *rv8.Client
-	Logger  *zap.Logger
+	Logger  *zap.SugaredLogger
 	// SpecPath is the OpenAPI spec filepath.
 	SpecPath               string
 	MovieSvcClient         v1.MovieGenreClient
@@ -124,12 +124,12 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	// - Logs all requests, like a combined access and error log.
 	// - Logs to stdout.
 	// - RFC3339 with UTC time format.
-	router.Use(ginzap.GinzapWithConfig(conf.Logger, &ginzap.Config{
+	router.Use(ginzap.GinzapWithConfig(conf.Logger.Desugar(), &ginzap.Config{
 		TimeFormat: time.RFC3339,
 		UTC:        true,
 		// SkipPaths:  []string{"/no_log"},
 	}))
-	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
+	router.Use(ginzap.RecoveryWithZap(conf.Logger.Desugar(), true))
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"*"},
@@ -266,9 +266,9 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "zap.New")
 	}
 
-	// slogger := logger.Sugar()
+	// slogger := logger
 
-	pool, sqlpool, err := postgresql.New(logger)
+	pool, sqlpool, err := postgresql.New(logger.Sugar())
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "postgresql.New")
 	}
@@ -300,7 +300,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		Pool:                   pool,
 		SQLPool:                sqlpool,
 		Redis:                  rdb,
-		Logger:                 logger,
+		Logger:                 logger.Sugar(),
 		SpecPath:               specPath,
 		ScopePolicyPath:        scopePolicyPath,
 		RolePolicyPath:         rolePolicyPath,

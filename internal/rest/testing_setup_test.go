@@ -99,7 +99,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 		Address:         ":0", // random next available for each test server
 		Pool:            testPool,
 		Redis:           rdb,
-		Logger:          logger,
+		Logger:          logger.Sugar(),
 		SpecPath:        "../../openapi.yaml",
 		MovieSvcClient:  &v1testing.FakeMovieGenreClient{},
 		ScopePolicyPath: "../../scopes.json",
@@ -113,7 +113,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 }
 
 func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
-	logger := zaptest.NewLogger(t)
+	logger := zaptest.NewLogger(t).Sugar()
 	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)

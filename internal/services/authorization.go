@@ -55,7 +55,7 @@ var ScopesByRole = map[models.Role]models.Scopes{
 
 // Authorization represents a service for authorization.
 type Authorization struct {
-	logger         *zap.Logger
+	logger         *zap.SugaredLogger
 	Roles          roles
 	Scopes         scopes
 	existingRoles  []models.Role
@@ -64,7 +64,7 @@ type Authorization struct {
 
 // NewAuthorization returns a new Authorization service.
 // Existing roles and scopes will be loaded from the given policy JSON file paths.
-func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string) (*Authorization, error) {
+func NewAuthorization(logger *zap.SugaredLogger, scopePolicy string, rolePolicy string) (*Authorization, error) {
 	roles := make(roles)
 	scopes := make(scopes)
 

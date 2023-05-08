@@ -25,7 +25,7 @@ import (
 var pgxAfterConnectLock = sync.Mutex{}
 
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
-func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
+func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 	cfg := internal.Config()
 	dsn := url.URL{
 		Scheme: "postgres",
@@ -46,7 +46,7 @@ func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
 
 	if cfg.Postgres.TraceEnabled {
 		poolConfig.ConnConfig.Tracer = &tracelog.TraceLog{
-			Logger:   zapadapter.NewLogger(logger),
+			Logger:   zapadapter.NewLogger(logger.Desugar()),
 			LogLevel: tracelog.LogLevelTrace,
 		}
 	}

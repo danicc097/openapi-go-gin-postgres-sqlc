@@ -10,12 +10,12 @@ import (
 )
 
 type TimeEntry struct {
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 	teRepo repos.TimeEntry
 }
 
 // NewTimeEntry returns a new TimeEntry service.
-func NewTimeEntry(logger *zap.Logger, teRepo repos.TimeEntry) *TimeEntry {
+func NewTimeEntry(logger *zap.SugaredLogger, teRepo repos.TimeEntry) *TimeEntry {
 	return &TimeEntry{
 		logger: logger,
 		teRepo: teRepo,

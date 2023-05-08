@@ -16,7 +16,7 @@ import (
 )
 
 type User struct {
-	logger           *zap.Logger
+	logger           *zap.SugaredLogger
 	urepo            repos.User
 	notificationrepo repos.Notification
 	authzsvc         *Authorization
@@ -35,7 +35,7 @@ type UserRegisterParams struct {
 }
 
 // NewUser returns a new User service.
-func NewUser(logger *zap.Logger, urepo repos.User, notificationrepo repos.Notification, authzsvc *Authorization) *User {
+func NewUser(logger *zap.SugaredLogger, urepo repos.User, notificationrepo repos.Notification, authzsvc *Authorization) *User {
 	return &User{
 		logger:           logger,
 		urepo:            urepo,

@@ -35,7 +35,7 @@ type OAValidatorOptions struct {
 
 // openapiMiddleware handles authentication and authorization middleware.
 type openapiMiddleware struct {
-	Logger *zap.Logger
+	Logger *zap.SugaredLogger
 	router routers.Router //
 }
 
@@ -44,8 +44,7 @@ type openapiMiddleware struct {
 // we just need to add our own onError func and wrap it all in gin.WrapH
 // there's also onLog to use zap
 func newOpenapiMiddleware(
-	logger *zap.Logger,
-	spec *openapi3.T,
+	logger *zap.SugaredLogger, spec *openapi3.T,
 ) *openapiMiddleware {
 	// kinopenapi's own mux based on gorilla for validation only
 	router, err := gorillamux.NewRouter(spec)

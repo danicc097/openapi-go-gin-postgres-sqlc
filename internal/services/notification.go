@@ -10,12 +10,12 @@ import (
 )
 
 type Notification struct {
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 	nrepo  repos.Notification
 }
 
 // NewNotification returns a new Notification service.
-func NewNotification(logger *zap.Logger, nrepo repos.Notification) *Notification {
+func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification) *Notification {
 	return &Notification{
 		logger: logger,
 		nrepo:  nrepo,

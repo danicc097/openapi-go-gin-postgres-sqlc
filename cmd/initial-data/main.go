@@ -23,8 +23,8 @@ import (
 )
 
 var (
-	logger, _ = zap.NewDevelopment()
-	pool      *pgxpool.Pool
+	pool *pgxpool.Pool
+	l, _ = zap.NewDevelopment()
 )
 
 func main() {
@@ -36,10 +36,11 @@ func main() {
 	flag.StringVar(&scopePolicyPath, "scopes-path", "scopes.json", "Scopes policy JSON filepath")
 	flag.Parse()
 
+	logger := l.Sugar()
+
 	if err := envvar.Load(env); err != nil {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
-
 	pool, _, err = postgresql.New(logger)
 	if err != nil {
 		log.Fatalf("postgresql.New: %s\n", err)
@@ -79,7 +80,7 @@ func main() {
 
 	var userIDs []uuid.UUID
 
-	logger.Sugar().Info("Registering users...")
+	logger.Info("Registering users...")
 	for i := 0; i < 10; i++ {
 		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
@@ -91,7 +92,7 @@ func main() {
 		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 		handleError(err)
 
-		logger.Sugar().Info("Registered ", u.Username)
+		logger.Info("Registered ", u.Username)
 		userIDs = append(userIDs, u.UserID)
 	}
 	u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
@@ -104,7 +105,7 @@ func main() {
 	handleError(err)
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 	handleError(err)
-	logger.Sugar().Info("Registered ", u.Username)
+	logger.Info("Registered ", u.Username)
 	userIDs = append(userIDs, u.UserID)
 
 	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
@@ -117,7 +118,7 @@ func main() {
 	handleError(err)
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 	handleError(err)
-	logger.Sugar().Info("Registered ", u.Username)
+	logger.Info("Registered ", u.Username)
 	userIDs = append(userIDs, u.UserID)
 
 	/**
@@ -151,21 +152,21 @@ func main() {
 		IsProductive: true,
 	})
 	handleError(err)
-	logger.Sugar().Info("Created activity ", activity1.Name)
+	logger.Info("Created activity ", activity1.Name)
 	activity2, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Activity 2",
 		Description: "Activity 2 description",
 	})
 	handleError(err)
-	logger.Sugar().Info("Created activity ", activity2.Name)
+	logger.Info("Created activity ", activity2.Name)
 	activity3, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Activity 3",
 		Description: "Activity 3 description",
 	})
 	handleError(err)
-	logger.Sugar().Info("Created activity ", activity3.Name)
+	logger.Info("Created activity ", activity3.Name)
 
 	/**
 	 *
@@ -180,7 +181,7 @@ func main() {
 		Color:       "#be6cc4",
 	})
 	handleError(err)
-	logger.Sugar().Info("Created tag ", wiTag1.Name)
+	logger.Info("Created tag ", wiTag1.Name)
 
 	wiTag2, err := wiTagSvc.Create(ctx, pool, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
@@ -189,7 +190,7 @@ func main() {
 		Color:       "#29b8db",
 	})
 	handleError(err)
-	logger.Sugar().Info("Created tag ", wiTag2.Name)
+	logger.Info("Created tag ", wiTag2.Name)
 
 	/**
 	 *
@@ -223,7 +224,7 @@ func main() {
 		},
 	})
 	handleError(err)
-	logger.Sugar().Info("Created work item with title: ", demowi1.Title)
+	logger.Info("Created work item with title: ", demowi1.Title)
 
 	demoWiSvc.Update(ctx, pool, demowi1.WorkItemID, repos.DemoWorkItemUpdateParams{
 		Base: &db.WorkItemUpdateParams{
@@ -245,7 +246,7 @@ func main() {
 		Start:      time.Now(),
 	})
 	handleError(err)
-	logger.Sugar().Info("Created time entry: ", timeEntry1.Comment)
+	logger.Info("Created time entry: ", timeEntry1.Comment)
 
 	timeEntry2, err := teSvc.Create(ctx, pool, &db.TimeEntryCreateParams{
 		ActivityID: activity2.ActivityID,
@@ -255,7 +256,7 @@ func main() {
 		Start:      time.Now(),
 	})
 	handleError(err)
-	logger.Sugar().Info("Created time entry: ", timeEntry2.Comment)
+	logger.Info("Created time entry: ", timeEntry2.Comment)
 
 	/**
 	 *
@@ -272,6 +273,6 @@ func errAndExit(out []byte, err error) {
 
 func handleError(err error) {
 	if err != nil {
-		logger.Sugar().Fatalf("error: %s", err)
+		l.Sugar().Fatalf("error: %s", err)
 	}
 }

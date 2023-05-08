@@ -20,7 +20,7 @@ import (
 func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	logger, _ := zap.NewDevelopment()
 
-	pool, sqlpool, err := postgresql.New(logger)
+	pool, sqlpool, err := postgresql.New(logger.Sugar())
 	if err != nil {
 		fmt.Printf("Couldn't create pool: %s\n", err)
 		return nil, nil, err

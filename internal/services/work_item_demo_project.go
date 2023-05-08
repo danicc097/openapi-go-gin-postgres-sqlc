@@ -14,7 +14,7 @@ import (
 )
 
 type DemoWorkItem struct {
-	logger     *zap.Logger
+	logger     *zap.SugaredLogger
 	demowiRepo repos.DemoWorkItem
 }
 
@@ -30,7 +30,7 @@ type DemoWorkItemCreateParams struct {
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.
-func NewDemoWorkItem(logger *zap.Logger, demowiRepo repos.DemoWorkItem) *DemoWorkItem {
+func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem) *DemoWorkItem {
 	return &DemoWorkItem{
 		logger:     logger,
 		demowiRepo: demowiRepo,

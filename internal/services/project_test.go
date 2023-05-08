@@ -44,7 +44,7 @@ func Test_MergeConfigFields(t *testing.T) {
 		}, nil
 	}
 	fakeTeamRepo := &repostesting.FakeTeam{}
-	p := services.NewProject(zaptest.NewLogger(t), fakeProjectRepo, fakeTeamRepo)
+	p := services.NewProject(zaptest.NewLogger(t).Sugar(), fakeProjectRepo, fakeTeamRepo)
 
 	type args struct {
 		update map[string]any

@@ -20,13 +20,13 @@ Among the most gruesome horror movies of 2022, The Sadness lives up to its name 
 // movie is an external ML service to showcase calling services from others.
 type movie struct {
 	moviec tfidf.MovieGenreClient
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 	d      db.DBTX
 }
 
 // NewMovie returns a new movie service.
 // This is a sample service to showcase grpc + opentelemetry.
-func NewMovie(d db.DBTX, logger *zap.Logger, moviec tfidf.MovieGenreClient) *movie {
+func NewMovie(d db.DBTX, logger *zap.SugaredLogger, moviec tfidf.MovieGenreClient) *movie {
 	return &movie{
 		d:      d,
 		moviec: moviec,
@@ -36,7 +36,7 @@ func NewMovie(d db.DBTX, logger *zap.Logger, moviec tfidf.MovieGenreClient) *mov
 
 func (m *movie) Create(ctx context.Context, movie *db.Movie) error {
 	predictions, _ := m.PredictGenre(ctx, synopsis)
-	m.logger.Sugar().Infof("Movie predictions: %v", predictions)
+	m.logger.Infof("Movie predictions: %v", predictions)
 
 	if _, err := movie.Insert(ctx, m.d); err != nil {
 		return fmt.Errorf("movierepo.Create: %w", err)
