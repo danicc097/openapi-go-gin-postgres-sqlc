@@ -225,6 +225,12 @@ func main() {
 	handleError(err)
 	logger.Sugar().Info("Created work item with title: ", demowi1.Title)
 
+	demoWiSvc.Update(ctx, pool, demowi1.WorkItemID, repos.DemoWorkItemUpdateParams{
+		Base: &db.WorkItemUpdateParams{
+			KanbanStepID: pointers.New(internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsUnderReview]),
+		},
+	})
+
 	/**
 	 *
 	 * TIME ENTRIES

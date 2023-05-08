@@ -266,6 +266,8 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "zap.New")
 	}
 
+	// slogger := logger.Sugar()
+
 	pool, sqlpool, err := postgresql.New(logger)
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "postgresql.New")
