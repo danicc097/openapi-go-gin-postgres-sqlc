@@ -195,9 +195,45 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 
 type WorkItem_Member struct {
 	Test int                `json:"work_item_member_work_item_id" db:"work_item_member_work_item_id"`
-	User User                `json:"user" db:"user"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
+	User User                `json:"user" db:"user"`
 }
+
+/**
+
+demowiRepo.ByID: work_items/WorkItemByWorkItemID/pgx.CollectOneRow: can't scan into dest[16]: cannot scan record (OID 2249) in binary format into **[]db.WorkItem_Member
+
+SELECT work_items.work_item_id,
+work_items.title,
+work_items.description,
+work_items.work_item_type_id,
+work_items.metadata,
+work_items.team_id,
+work_items.kanban_step_id,
+work_items.closed,
+work_items.target_date,
+work_items.created_at,
+work_items.updated_at,
+work_items.deleted_at,
+(case when true = true then array_agg(joined_members.*) end) as members
+from work_items
+left join (
+  select
+  work_item_member.work_item_id as work_item_member_work_item_id
+  , work_item_member.role as role
+  , row(users.*) as user
+from work_item_member
+  join users on users.user_id = work_item_member.member
+group by work_item_member_work_item_id
+  , role
+  , users.user_id
+) as joined_members on work_item_member_work_item_id = work_items.work_item_id
+
+ WHERE work_items.work_item_id = '1'
+ group by  work_items.work_item_id; -- TODO hopefully we can get rid of generating joins for every single generated join table
+
+ *
+ */
 
 // Insert inserts the WorkItem to the database.
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
@@ -345,7 +381,7 @@ work_items.deleted_at,
 (case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then row(joined_members.*) end) as members,
+(case when $5::boolean = true then array_agg(joined_members.*) end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
@@ -394,7 +430,7 @@ left join (
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)
+		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s  group by  work_items.work_item_id, demo_two_work_items.work_item_id, demo_work_items.work_item_id, joined_time_entries.time_entries, joined_work_item_comments.work_item_comments, joined_work_item_tags.__work_item_tags`, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
