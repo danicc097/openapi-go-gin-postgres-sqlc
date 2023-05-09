@@ -52,6 +52,7 @@ func main() {
 	teamRepo := postgresql.NewTeam()
 	teRepo := postgresql.NewTimeEntry()
 	demoWiRepo := postgresql.NewDemoWorkItem()
+	wiRepo := postgresql.NewWorkItem()
 	wiTagRepo := postgresql.NewWorkItemTag()
 
 	authzSvc, err := services.NewAuthorization(logger, scopePolicyPath, rolePolicyPath)
@@ -61,7 +62,7 @@ func main() {
 	authnSvc := services.NewAuthentication(logger, userSvc, pool)
 	activitySvc := services.NewActivity(logger, activityRepo)
 	teamSvc := services.NewTeam(logger, teamRepo)
-	teSvc := services.NewTimeEntry(logger, teRepo)
+	teSvc := services.NewTimeEntry(logger, teRepo, wiRepo)
 	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo)
 	wiTagSvc := services.NewWorkItemTag(logger, wiTagRepo)
 
