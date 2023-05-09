@@ -65,6 +65,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 
 		// FIXME xo joins scanning when join table has extra fields
 		fmt.Printf("wi.MembersJoin: %v\n", wi.MembersJoin)
+		fmt.Printf("wi.TimeEntriesJoin: %v\n", wi.TimeEntriesJoin)
 
 		memberIDs := make([]uuid.UUID, len(*wi.MembersJoin))
 		for i, m := range *wi.MembersJoin {

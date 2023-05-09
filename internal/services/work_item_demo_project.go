@@ -16,6 +16,7 @@ import (
 type DemoWorkItem struct {
 	logger     *zap.SugaredLogger
 	demowiRepo repos.DemoWorkItem
+	wiRepo     repos.WorkItem
 }
 
 type Member struct {
@@ -30,10 +31,11 @@ type DemoWorkItemCreateParams struct {
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.
-func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem) *DemoWorkItem {
+func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem, wiRepo repos.WorkItem) *DemoWorkItem {
 	return &DemoWorkItem{
 		logger:     logger,
 		demowiRepo: demowiRepo,
+		wiRepo:     wiRepo,
 	}
 }
 
@@ -86,8 +88,10 @@ func (a *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 	}
 
 	opts := db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true, Members: true, WorkItemTags: true})
-	wi, err := db.WorkItemByWorkItemID(ctx, d, demoWi.WorkItemID, opts)
-
+	wi, err := a.demowiRepo.ByID(ctx, d, demoWi.WorkItemID, opts)
+	if err != nil {
+		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
+	}
 	// TODO now query workitem.xo.go joining with tags, members, demoWorkItem, etc... and return that instead.
 	// all work_item_***_project.go services must return db.WorkItem which has specific project joins, which
 	// allows us to share the same generic logic and extend it based on current project, etc.
