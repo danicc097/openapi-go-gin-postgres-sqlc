@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -17,7 +18,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
@@ -78,7 +78,7 @@ func main() {
 	 *
 	 **/
 
-	var userIDs []uuid.UUID
+	var users []*db.User
 
 	logger.Info("Registering users...")
 	for i := 0; i < 10; i++ {
@@ -93,7 +93,7 @@ func main() {
 		handleError(err)
 
 		logger.Info("Registered ", u.Username)
-		userIDs = append(userIDs, u.UserID)
+		users = append(users, u)
 	}
 	u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "manager_1",
@@ -106,7 +106,7 @@ func main() {
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 	handleError(err)
 	logger.Info("Registered ", u.Username)
-	userIDs = append(userIDs, u.UserID)
+	users = append(users, u)
 
 	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "superadmin_1",
@@ -119,7 +119,7 @@ func main() {
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 	handleError(err)
 	logger.Info("Registered ", u.Username)
-	userIDs = append(userIDs, u.UserID)
+	users = append(users, u)
 
 	/**
 	 *
@@ -134,9 +134,11 @@ func main() {
 	})
 	handleError(err)
 
-	for _, id := range userIDs {
-		err = userSvc.AssignTeam(ctx, pool, id, team1.TeamID)
+	for _, u := range users {
+		err = userSvc.AssignTeam(ctx, pool, u.UserID, team1.TeamID)
 		handleError(err)
+		// save up some extra calls
+		u.TeamsJoin = &[]db.Team{*team1}
 	}
 
 	/**
@@ -219,8 +221,8 @@ func main() {
 		},
 		TagIDs: []int{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
 		Members: []services.Member{
-			{UserID: userIDs[0], Role: models.WorkItemRolePreparer},
-			{UserID: userIDs[1], Role: models.WorkItemRoleReviewer},
+			{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
+			{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
 		},
 	})
 	handleError(err)
@@ -238,25 +240,36 @@ func main() {
 	 *
 	 **/
 
-	timeEntry1, err := teSvc.Create(ctx, pool, &db.TimeEntryCreateParams{
-		WorkItemID: &demowi1.WorkItemID,
-		ActivityID: activity1.ActivityID,
-		UserID:     userIDs[0],
-		Comment:    "Doing really important stuff as part of a work item",
-		Start:      time.Now(),
+	_, err = teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+		WorkItemID:      &demowi1.WorkItemID,
+		ActivityID:      activity1.ActivityID,
+		UserID:          users[0].UserID,
+		Comment:         "Doing really important stuff as part of a work item",
+		Start:           time.Now(),
+		DurationMinutes: pointers.New(56),
 	})
 	handleError(err)
-	logger.Info("Created time entry: ", timeEntry1.Comment)
 
-	timeEntry2, err := teSvc.Create(ctx, pool, &db.TimeEntryCreateParams{
-		ActivityID: activity2.ActivityID,
-		UserID:     userIDs[0],
-		TeamID:     &team1.TeamID,
-		Comment:    "Doing really important stuff for the team",
-		Start:      time.Now(),
+	_, err = teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+		ActivityID:      activity2.ActivityID,
+		UserID:          users[0].UserID,
+		TeamID:          &team1.TeamID,
+		Comment:         "Doing really important stuff for the team",
+		Start:           time.Now(),
+		DurationMinutes: pointers.New(26),
 	})
 	handleError(err)
-	logger.Info("Created time entry: ", timeEntry2.Comment)
+
+	for _, u := range users {
+		_, err := teSvc.Create(ctx, pool, u, &db.TimeEntryCreateParams{
+			ActivityID: activity2.ActivityID,
+			UserID:     u.UserID,
+			TeamID:     &team1.TeamID,
+			Comment:    "Generic comment (ongoing activity)",
+			Start:      time.Now().Add(time.Duration(rand.Intn(120)) * time.Hour),
+		})
+		handleError(err)
+	}
 
 	/**
 	 *

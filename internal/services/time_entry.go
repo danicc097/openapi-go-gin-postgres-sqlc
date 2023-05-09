@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
 
 type TimeEntry struct {
@@ -35,13 +37,31 @@ func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntr
 }
 
 // Create creates a new time entry.
-func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
+func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
 	defer newOTELSpan(ctx, "TimeEntry.Create").End()
+
+	if caller.UserID != params.UserID {
+		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot add activity for a different user")
+	}
+
+	if params.TeamID != nil {
+		teamIDs := make([]int, len(*caller.TeamsJoin))
+		for i, t := range *caller.TeamsJoin {
+			teamIDs[i] = t.TeamID
+		}
+		if !slices.Contains(teamIDs, *params.TeamID) {
+			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot link activity to an unassigned team")
+		}
+	}
+
+	// TODO if activity linked to workitem, dont allow if caller is not a member
 
 	teObj, err := a.teRepo.Create(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("teRepo.Create: %w", err)
 	}
+
+	a.logger.Infof("created time entry by user %q", teObj.UserID)
 
 	return teObj, nil
 }
