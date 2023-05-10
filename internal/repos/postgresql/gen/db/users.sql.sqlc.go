@@ -64,21 +64,10 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetU
 }
 
 const RegisterNewUser = `-- name: RegisterNewUser :one
-insert into users (
-  username
-  , email
-  , role_rank)
-values (
-  $1
-  , $2
-  , $3)
+insert into users (username , email , role_rank)
+  values ($1 , $2 , $3)
 returning
-  user_id
-  , username
-  , email
-  , role_rank
-  , created_at
-  , updated_at
+  user_id , username , email , role_rank , created_at , updated_at
 `
 
 type RegisterNewUserParams struct {

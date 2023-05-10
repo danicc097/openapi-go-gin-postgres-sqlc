@@ -1,4 +1,5 @@
 drop schema if exists xo_tests cascade;
+
 create schema if not exists xo_tests;
 
 create table xo_tests.users (
@@ -83,4 +84,3 @@ begin
 end;
 $BODY$
 language plpgsql;
-

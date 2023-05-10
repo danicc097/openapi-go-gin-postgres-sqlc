@@ -659,6 +659,8 @@ x.gen() {
   { { {
     echo "Running code generation"
 
+    x.lint.sql
+
     x.gen.build-tools # || true (this should not fail compilation anymore, the whole app should be compilable at this point)
 
     # TODO try use gnu parallel and exit when anyone fails
