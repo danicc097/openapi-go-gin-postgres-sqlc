@@ -229,7 +229,7 @@ demo_work_items.reopened,
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id > $2 `
+		` WHERE demo_work_items.work_item_id > $2 GROUP BY work_items.work_item_id `
 	sqlstr += c.limit
 
 	// run
@@ -266,7 +266,7 @@ demo_work_items.reopened,
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id = $2 `
+		` WHERE demo_work_items.work_item_id = $2 GROUP BY work_items.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -305,7 +305,7 @@ demo_work_items.reopened,
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.ref = $2 AND demo_work_items.line = $3 `
+		` WHERE demo_work_items.ref = $2 AND demo_work_items.line = $3 GROUP BY work_items.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

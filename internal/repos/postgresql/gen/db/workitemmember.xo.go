@@ -242,7 +242,8 @@ left join (
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
-		` WHERE work_item_member.member = $3 AND work_item_member.work_item_id = $4 `
+		` WHERE work_item_member.member = $3 AND work_item_member.work_item_id = $4 GROUP BY work_item_member.member, 
+work_item_member.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -311,7 +312,8 @@ left join (
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
-		` WHERE work_item_member.work_item_id = $3 AND work_item_member.member = $4 `
+		` WHERE work_item_member.work_item_id = $3 AND work_item_member.member = $4 GROUP BY work_item_member.member, 
+work_item_member.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -378,7 +380,8 @@ left join (
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
-		` WHERE work_item_member.work_item_id = $3 `
+		` WHERE work_item_member.work_item_id = $3 GROUP BY work_item_member.member, 
+work_item_member.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -447,7 +450,8 @@ left join (
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
-		` WHERE work_item_member.member = $3 `
+		` WHERE work_item_member.member = $3 GROUP BY work_item_member.member, 
+work_item_member.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -209,7 +209,8 @@ left join (
     book_reviews
   group by
         book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id` +
-		` WHERE books.book_id > $3 `
+		` WHERE books.book_id > $3 GROUP BY books.book_id, 
+joined_book_reviews.book_reviews `
 	sqlstr += c.limit
 
 	// run
@@ -265,7 +266,8 @@ left join (
     book_reviews
   group by
         book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id` +
-		` WHERE books.book_id = $3 `
+		` WHERE books.book_id = $3 GROUP BY books.book_id, 
+joined_book_reviews.book_reviews `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

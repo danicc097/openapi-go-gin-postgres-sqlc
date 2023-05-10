@@ -295,7 +295,11 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id > $6 `
+		` WHERE projects.project_id > $6 GROUP BY joined_activities.activities, 
+joined_kanban_steps.kanban_steps, 
+joined_teams.teams, 
+joined_work_item_tags.work_item_tags, 
+joined_work_item_types.work_item_types `
 	sqlstr += c.limit
 
 	// run
@@ -381,7 +385,11 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.name = $6 `
+		` WHERE projects.name = $6 GROUP BY joined_activities.activities, 
+joined_kanban_steps.kanban_steps, 
+joined_teams.teams, 
+joined_work_item_tags.work_item_tags, 
+joined_work_item_types.work_item_types `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -469,7 +477,11 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id = $6 `
+		` WHERE projects.project_id = $6 GROUP BY joined_activities.activities, 
+joined_kanban_steps.kanban_steps, 
+joined_teams.teams, 
+joined_work_item_tags.work_item_tags, 
+joined_work_item_types.work_item_types `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -557,7 +569,11 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.work_items_table_name = $6 `
+		` WHERE projects.work_items_table_name = $6 GROUP BY joined_activities.activities, 
+joined_kanban_steps.kanban_steps, 
+joined_teams.teams, 
+joined_work_item_tags.work_item_tags, 
+joined_work_item_types.work_item_types `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

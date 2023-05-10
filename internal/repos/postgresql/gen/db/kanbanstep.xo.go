@@ -234,7 +234,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id > $3 `
+		` WHERE kanban_steps.kanban_step_id > $3 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.limit
 
 	// run
@@ -273,7 +274,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id > $3 `
+		` WHERE kanban_steps.project_id > $3 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.limit
 
 	// run
@@ -312,7 +314,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order > $3 `
+		` WHERE kanban_steps.step_order > $3 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.limit
 
 	// run
@@ -354,7 +357,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id = $3 `
+		` WHERE kanban_steps.kanban_step_id = $3 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -398,7 +402,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 AND kanban_steps.name = $4 AND kanban_steps.step_order = $5 `
+		` WHERE kanban_steps.project_id = $3 AND kanban_steps.name = $4 AND kanban_steps.step_order = $5 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -442,7 +447,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 `
+		` WHERE kanban_steps.project_id = $3 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -488,7 +494,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.name = $3 `
+		` WHERE kanban_steps.name = $3 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -534,7 +541,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order = $3 `
+		` WHERE kanban_steps.step_order = $3 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -580,7 +588,8 @@ kanban_steps.time_trackable,
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 AND kanban_steps.step_order = $4 `
+		` WHERE kanban_steps.project_id = $3 AND kanban_steps.step_order = $4 GROUP BY projects.project_id, 
+work_items.kanban_step_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

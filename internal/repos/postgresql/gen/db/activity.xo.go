@@ -223,7 +223,8 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id > $3 `
+		` WHERE activities.activity_id > $3 GROUP BY projects.project_id, 
+joined_time_entries.time_entries `
 	sqlstr += c.limit
 
 	// run
@@ -267,7 +268,8 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id > $3 `
+		` WHERE activities.project_id > $3 GROUP BY projects.project_id, 
+joined_time_entries.time_entries `
 	sqlstr += c.limit
 
 	// run
@@ -314,7 +316,8 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $3 AND activities.project_id = $4 `
+		` WHERE activities.name = $3 AND activities.project_id = $4 GROUP BY projects.project_id, 
+joined_time_entries.time_entries `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -363,7 +366,8 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $3 `
+		` WHERE activities.name = $3 GROUP BY projects.project_id, 
+joined_time_entries.time_entries `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -414,7 +418,8 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id = $3 `
+		` WHERE activities.project_id = $3 GROUP BY projects.project_id, 
+joined_time_entries.time_entries `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -465,7 +470,8 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id = $3 `
+		` WHERE activities.activity_id = $3 GROUP BY projects.project_id, 
+joined_time_entries.time_entries `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

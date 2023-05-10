@@ -174,7 +174,8 @@ left join (
 			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.user_id = $3 AND user_team.team_id = $4 `
+		` WHERE user_team.user_id = $3 AND user_team.team_id = $4 GROUP BY user_team.user_id, 
+user_team.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -237,7 +238,8 @@ left join (
 			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.team_id = $3 `
+		` WHERE user_team.team_id = $3 GROUP BY user_team.user_id, 
+user_team.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -302,7 +304,8 @@ left join (
 			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.team_id = $3 AND user_team.user_id = $4 `
+		` WHERE user_team.team_id = $3 AND user_team.user_id = $4 GROUP BY user_team.user_id, 
+user_team.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -367,7 +370,8 @@ left join (
 			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.user_id = $3 `
+		` WHERE user_team.user_id = $3 GROUP BY user_team.user_id, 
+user_team.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

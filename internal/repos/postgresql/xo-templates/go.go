@@ -2479,6 +2479,7 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 
 // sqlstr_paginated builds a cursor-paginated query string from columns.
 func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []Field) string {
+	var groupbys []string
 	switch x := v.(type) {
 	case Table:
 		var filters, fields, joins []string
@@ -2518,14 +2519,17 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			if c.Type != "foreign_key" {
 				continue
 			}
-			joinStmts, selectStmts, orderbys := createJoinStatement(tables, c, x, funcs, f.nth, n)
-			if joinStmts == "" || selectStmts == "" {
+			joinStmt, selectStmt, groupby := createJoinStatement(tables, c, x, funcs, f.nth, n)
+			if joinStmt == "" || selectStmt == "" {
 				continue
 			}
-			fmt.Printf("orderbys: %v\n", orderbys)
 
-			fields = append(fields, selectStmts)
-			joins = append(joins, joinStmts)
+			if groupby != "" {
+				groupbys = append(groupbys, groupby)
+			}
+
+			fields = append(fields, selectStmt)
+			joins = append(joins, joinStmt)
 			n++
 		}
 
@@ -2545,14 +2549,20 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			" WHERE " + strings.Join(filters, " AND "),
 		}
 
+		var groupbyStmt string
+		if len(groupbys) > 0 {
+			groupbyStmt = " GROUP BY " + strings.Join(groupbys, ", \n")
+		}
+
 		if tableHasDeletedAt {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s`, c.deletedAt)",
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s %s`, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
+				groupbyStmt,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 			)
 		} else {
-			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `")+groupbyStmt)
 		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
@@ -2749,6 +2759,16 @@ const (
 )
 
 const (
+	// TODO need to handle O2O eg user_api_keys :
+	// urepo.ByID: could not get user:  | column "user_api_keys.user_api_key_id" must appear in the GROUP BY
+	// and work_item_types.work_item_type_id
+	// work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: ERROR: column \"work_item_types.work_item_type_id\" must appear in the GROUP BY
+	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}`
+	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}`
+	O2OGroupBy = `{{.JoinTable}}.{{.JoinColumn}}`
+)
+
+const (
 	M2MJoin = `
 left join (
 	select
@@ -2782,6 +2802,7 @@ left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{
 
 // sqlstr_index builds a index fields.
 func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tables) string {
+	var groupbys []string
 	switch x := v.(type) {
 	case Index:
 		var filters, fields, joins []string
@@ -2821,14 +2842,16 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			if c.Type != "foreign_key" {
 				continue
 			}
-			joinStmts, selectStmts, orderbys := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
-			if joinStmts == "" || selectStmts == "" {
+			joinStmt, selectStmt, groupby := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
+			if joinStmt == "" || selectStmt == "" {
 				continue
 			}
-			fmt.Printf("orderbys: %v\n", orderbys)
+			if groupby != "" {
+				groupbys = append(groupbys, groupby)
+			}
 
-			fields = append(fields, selectStmts)
-			joins = append(joins, joinStmts)
+			fields = append(fields, selectStmt)
+			joins = append(joins, joinStmt)
 			n++
 		}
 		// index fields
@@ -2862,13 +2885,19 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			" WHERE " + strings.Join(filters, " AND "),
 		}
 
+		var groupbyStmt string
+		if len(groupbys) > 0 {
+			groupbyStmt = " GROUP BY " + strings.Join(groupbys, ", \n")
+		}
+
 		if tableHasDeletedAt {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s `, c.deletedAt)",
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s `, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
-				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
+				fmt.Sprintf(" AND %s.deleted_at is %%s ", x.Table.SQLName),
+				groupbyStmt,
 			)
 		} else {
-			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `")+groupbyStmt)
 		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
@@ -2904,22 +2933,21 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 // createJoinStatement returns select queries and join statements strings
 // for a given index table.
 func createJoinStatement(tables Tables, c Constraint, table Table, funcs template.FuncMap, nth func(int) string, n int) (string, string, string) {
-	var joinTpl, selectTpl, groupbyStmt string
-	var groupbys []string
-	joins := &bytes.Buffer{}
-	selects := &bytes.Buffer{}
+	var joinTpl, selectTpl, groupbyTpl string
+	join := &bytes.Buffer{}
+	selec := &bytes.Buffer{}
+	groupby := &bytes.Buffer{}
 	params := make(map[string]interface{})
-	fmt.Fprintf(joins, "-- %s join generated from %q", c.Cardinality, c.Name)
+	fmt.Fprintf(join, "-- %s join generated from %q", c.Cardinality, c.Name)
 
 	params["Nth"] = nth(n)
 	params["ClashSuffix"] = ""
-
-	// TODO add groupby for all joins
 
 	switch c.Cardinality {
 	case M2M:
 		joinTpl = M2MJoin
 		selectTpl = M2MSelect
+		groupbyTpl = M2MGroupBy
 
 		params["LookupColumn"] = c.LookupColumn
 		params["JoinTable"] = c.RefTableName
@@ -2931,8 +2959,6 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 		params["CurrentTable"] = table.SQLName
 		params["LookupTable"] = c.TableName
 		params["LookupExtraCols"] = []string{}
-
-		groupbys = append(groupbys, "")
 
 		if c.ColumnName != c.RefColumnName {
 			// differs from actual column, e.g. having member UUID in lookup instead of user_id
@@ -2961,6 +2987,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 	case M2O:
 		joinTpl = M2OJoin
 		selectTpl = M2OSelect
+		groupbyTpl = M2OGroupBy
 		if c.RefTableName == table.SQLName {
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
@@ -2970,6 +2997,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
+
 		}
 		if c.TableName == table.SQLName {
 			params["JoinColumn"] = c.RefColumnName
@@ -2981,8 +3009,10 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 				params["ClashSuffix"] = "_" + c.RefColumnName
 			}
 		}
+
 	case O2O:
 		if c.TableName == table.SQLName {
+			groupbyTpl = O2OGroupBy
 			joinTpl = O2OJoin
 			selectTpl = O2OSelect
 			params["JoinColumn"] = c.RefColumnName
@@ -3009,15 +3039,21 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 	default:
 	}
 	t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
-	if err := t.Execute(joins, params); err != nil {
+	if err := t.Execute(join, params); err != nil {
 		panic(fmt.Sprintf("could not execute join template: %s", err))
 	}
 
 	t = template.Must(template.New("").Funcs(funcs).Parse(selectTpl))
-	if err := t.Execute(selects, params); err != nil {
-		panic(fmt.Sprintf("could not execute select template: %s", err))
+	if err := t.Execute(selec, params); err != nil {
+		panic(fmt.Sprintf("could not execute selec template: %s", err))
 	}
-	return joins.String(), selects.String(), groupbyStmt
+
+	t = template.Must(template.New("").Funcs(funcs).Parse(groupbyTpl))
+	if err := t.Execute(groupby, params); err != nil {
+		panic(fmt.Sprintf("could not execute selec template: %s", err))
+	}
+
+	return join.String(), selec.String(), groupby.String()
 }
 
 // getLookupTableRegularFields gets extra columns in a lookup table that are not PK or FK
