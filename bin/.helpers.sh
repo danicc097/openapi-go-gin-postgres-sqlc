@@ -33,13 +33,15 @@ ensure_pwd_is_top_level() {
     return
   fi
 
-  if [[ "$PWD" != "$TOP_LEVEL_DIR" ]] && [[ -z "$IS_TESTING" && -z "$IGNORE_PWD" ]]; then
-    echo >&2 "
-Please run this script from the top level of the repository.
-Top level: $TOP_LEVEL_DIR
-Current directory: $PWD"
-    exit
-  fi
+  cd "$TOP_LEVEL_DIR" || true
+
+  #   if [[ "$PWD" != "$TOP_LEVEL_DIR" ]] && [[ -z "$IS_TESTING" && -z "$IGNORE_PWD" ]]; then
+  #     echo >&2 "
+  # Please run this script from the top level of the repository.
+  # Top level: $TOP_LEVEL_DIR
+  # Current directory: $PWD"
+  #     exit
+  #   fi
 }
 
 # Prompt the user for confirmation.

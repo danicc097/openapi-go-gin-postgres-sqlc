@@ -11,6 +11,7 @@ export PROC=$$
 source ".helpers.sh"
 source ".project.dependencies.sh"
 
+starting_cwd=$(pwd)
 ensure_pwd_is_top_level
 
 # log for any function output.
@@ -1881,7 +1882,7 @@ exit-cleanup() {
   if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
     backup-gen.restore #
   fi
-  cd "$TOP_LEVEL_DIR" || true
+  cd "$starting_cwd" || true
 }
 
 killgroup() {
