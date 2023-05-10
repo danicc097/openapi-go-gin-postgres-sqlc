@@ -406,10 +406,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -425,10 +427,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.created_at > $9  AND users.deleted_at is %s  ORDER BY 
@@ -530,10 +534,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -549,10 +555,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.created_at = $9  AND users.deleted_at is %s `, c.deletedAt)
@@ -657,10 +665,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -676,10 +686,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.created_at = $9  AND users.deleted_at is %s `, c.deletedAt)
@@ -782,10 +794,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -801,10 +815,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s `, c.deletedAt)
@@ -909,10 +925,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -928,10 +946,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.email = $9  AND users.deleted_at is %s `, c.deletedAt)
@@ -1034,10 +1054,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -1053,10 +1075,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.external_id = $9  AND users.deleted_at is %s `, c.deletedAt)
@@ -1159,10 +1183,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -1178,10 +1204,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.user_id = $9  AND users.deleted_at is %s `, c.deletedAt)
@@ -1284,10 +1312,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -1303,10 +1333,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.updated_at = $9  AND users.deleted_at is %s `, c.deletedAt)
@@ -1411,10 +1443,12 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2O join generated from "work_item_comments_user_id_fkey"
@@ -1430,10 +1464,12 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.username = $9  AND users.deleted_at is %s `, c.deletedAt)

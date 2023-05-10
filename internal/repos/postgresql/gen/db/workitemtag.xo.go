@@ -220,10 +220,12 @@ left join projects on projects.project_id = work_item_tags.project_id
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_work_item_tag
     	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by work_item_work_item_tag_work_item_tag_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.work_item_tag_id > $3 `
@@ -267,10 +269,12 @@ left join projects on projects.project_id = work_item_tags.project_id
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_work_item_tag
     	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by work_item_work_item_tag_work_item_tag_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.project_id > $3 `
@@ -317,10 +321,12 @@ left join projects on projects.project_id = work_item_tags.project_id
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_work_item_tag
     	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by work_item_work_item_tag_work_item_tag_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 `
@@ -369,10 +375,12 @@ left join projects on projects.project_id = work_item_tags.project_id
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_work_item_tag
     	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by work_item_work_item_tag_work_item_tag_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.name = $3 `
@@ -423,10 +431,12 @@ left join projects on projects.project_id = work_item_tags.project_id
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_work_item_tag
     	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by work_item_work_item_tag_work_item_tag_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.project_id = $3 `
@@ -477,10 +487,12 @@ left join projects on projects.project_id = work_item_tags.project_id
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_work_item_tag
     	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by work_item_work_item_tag_work_item_tag_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.work_item_tag_id = $3 `

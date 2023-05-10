@@ -375,10 +375,12 @@ left join (
 	select
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from work_item_member
     	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
+    group by
+			work_item_member_work_item_id
+			, users.user_id
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
@@ -386,13 +388,15 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+			, row(work_item_tags.*) as __work_item_tags
 		from work_item_work_item_tag
     	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by work_item_work_item_tag_work_item_id
+    group by
+			work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s  ORDER BY 
+		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s  ORDER BY
 		work_item_id DESC`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -472,10 +476,12 @@ left join (
 	select
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from work_item_member
     	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
+    group by
+			work_item_member_work_item_id
+			, users.user_id
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
@@ -483,10 +489,12 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+			, row(work_item_tags.*) as __work_item_tags
 		from work_item_work_item_tag
     	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by work_item_work_item_tag_work_item_id
+    group by
+			work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
 		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
@@ -572,10 +580,12 @@ left join (
 	select
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from work_item_member
     	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
+    group by
+			work_item_member_work_item_id
+			, users.user_id
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
@@ -583,13 +593,15 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+			, row(work_item_tags.*) as __work_item_tags
 		from work_item_work_item_tag
     	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by work_item_work_item_tag_work_item_id
+    group by
+			work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)
+		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s group by  work_items.work_item_id, demo_two_work_items.work_item_id, demo_work_items.work_item_id, joined_time_entries.time_entries, joined_work_item_comments.work_item_comments, joined_work_item_tags.__work_item_tags`, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -670,10 +682,12 @@ left join (
 	select
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from work_item_member
     	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
+    group by
+			work_item_member_work_item_id
+			, users.user_id
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
@@ -681,10 +695,12 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+			, row(work_item_tags.*) as __work_item_tags
 		from work_item_work_item_tag
     	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by work_item_work_item_tag_work_item_id
+    group by
+			work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
 		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)

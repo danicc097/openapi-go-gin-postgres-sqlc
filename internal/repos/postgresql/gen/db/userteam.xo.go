@@ -154,20 +154,24 @@ user_team.user_id,
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
 		` WHERE user_team.user_id = $3 AND user_team.team_id = $4 `
@@ -213,20 +217,24 @@ user_team.user_id,
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
 		` WHERE user_team.team_id = $3 `
@@ -274,20 +282,24 @@ user_team.user_id,
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
 		` WHERE user_team.team_id = $3 AND user_team.user_id = $4 `
@@ -335,20 +347,24 @@ user_team.user_id,
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			, row(teams.*) as __teams
 		from user_team
     	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
 		` WHERE user_team.user_id = $3 `

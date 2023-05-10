@@ -2518,13 +2518,14 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			if c.Type != "foreign_key" {
 				continue
 			}
-			joinStmts, selectStmts := createJoinStatement(tables, c, x, funcs, f.nth, n)
-			if joinStmts.String() == "" || selectStmts.String() == "" {
+			joinStmts, selectStmts, orderbys := createJoinStatement(tables, c, x, funcs, f.nth, n)
+			if joinStmts == "" || selectStmts == "" {
 				continue
 			}
+			fmt.Printf("orderbys: %v\n", orderbys)
 
-			fields = append(fields, selectStmts.String())
-			joins = append(joins, joinStmts.String())
+			fields = append(fields, selectStmts)
+			joins = append(joins, joinStmts)
 			n++
 		}
 
@@ -2755,10 +2756,12 @@ left join (
 			{{- range .LookupExtraCols }}
 			, {{$.LookupTable}}.{{.}} as {{ . -}}
 			{{- end }}
-			, array_agg({{.JoinTable}}.*) filter (where {{.JoinTable}}.* is not null) as __{{.LookupJoinTablePKAgg}}
+			, row({{.JoinTable}}.*) as __{{.LookupJoinTablePKAgg}}
 		from {{.LookupTable}}
     	join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
-    group by {{.LookupTable}}_{{.LookupColumn}}
+    group by
+			{{.LookupTable}}_{{.LookupColumn}}
+			, {{.JoinTable}}.{{.JoinTablePK}}
 			{{- range .LookupExtraCols }}
 			, {{ . -}}
 			{{- end }}
@@ -2818,13 +2821,14 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			if c.Type != "foreign_key" {
 				continue
 			}
-			joinStmts, selectStmts := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
-			if joinStmts.String() == "" || selectStmts.String() == "" {
+			joinStmts, selectStmts, orderbys := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
+			if joinStmts == "" || selectStmts == "" {
 				continue
 			}
+			fmt.Printf("orderbys: %v\n", orderbys)
 
-			fields = append(fields, selectStmts.String())
-			joins = append(joins, joinStmts.String())
+			fields = append(fields, selectStmts)
+			joins = append(joins, joinStmts)
 			n++
 		}
 		// index fields
@@ -2899,8 +2903,9 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 
 // createJoinStatement returns select queries and join statements strings
 // for a given index table.
-func createJoinStatement(tables Tables, c Constraint, table Table, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
-	var joinTpl, selectTpl string
+func createJoinStatement(tables Tables, c Constraint, table Table, funcs template.FuncMap, nth func(int) string, n int) (string, string, string) {
+	var joinTpl, selectTpl, groupbyStmt string
+	var groupbys []string
 	joins := &bytes.Buffer{}
 	selects := &bytes.Buffer{}
 	params := make(map[string]interface{})
@@ -2908,6 +2913,8 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 
 	params["Nth"] = nth(n)
 	params["ClashSuffix"] = ""
+
+	// TODO add groupby for all joins
 
 	switch c.Cardinality {
 	case M2M:
@@ -2924,6 +2931,8 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 		params["CurrentTable"] = table.SQLName
 		params["LookupTable"] = c.TableName
 		params["LookupExtraCols"] = []string{}
+
+		groupbys = append(groupbys, "")
 
 		if c.ColumnName != c.RefColumnName {
 			// differs from actual column, e.g. having member UUID in lookup instead of user_id
@@ -3008,7 +3017,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 	if err := t.Execute(selects, params); err != nil {
 		panic(fmt.Sprintf("could not execute select template: %s", err))
 	}
-	return joins, selects
+	return joins.String(), selects.String(), groupbyStmt
 }
 
 // getLookupTableRegularFields gets extra columns in a lookup table that are not PK or FK

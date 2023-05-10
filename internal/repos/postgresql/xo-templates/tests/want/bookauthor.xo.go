@@ -144,27 +144,35 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 	sqlstr := `SELECT ` +
 		`book_authors.book_id,
 book_authors.author_id,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
-(case when $2::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_author_ids.__author_ids
+		)) end) as author_ids ` +
 		`FROM public.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
+			, row(books.*) as __books
 		from book_authors
     	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
+			, row(users.*) as __author_ids
 		from book_authors
     	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
+    group by
+			book_authors_book_id
+			, users.user_id
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4 `
@@ -199,27 +207,35 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 	sqlstr := `SELECT ` +
 		`book_authors.book_id,
 book_authors.author_id,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
-(case when $2::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_author_ids.__author_ids
+		)) end) as author_ids ` +
 		`FROM public.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
+			, row(books.*) as __books
 		from book_authors
     	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
+			, row(users.*) as __author_ids
 		from book_authors
     	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
+    group by
+			book_authors_book_id
+			, users.user_id
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.book_id = $3 `
@@ -256,27 +272,35 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 	sqlstr := `SELECT ` +
 		`book_authors.book_id,
 book_authors.author_id,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
-(case when $2::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_author_ids.__author_ids
+		)) end) as author_ids ` +
 		`FROM public.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
+			, row(books.*) as __books
 		from book_authors
     	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
+			, row(users.*) as __author_ids
 		from book_authors
     	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
+    group by
+			book_authors_book_id
+			, users.user_id
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.author_id = $3 `

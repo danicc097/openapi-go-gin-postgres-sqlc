@@ -253,10 +253,12 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
@@ -314,10 +316,12 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
@@ -378,10 +382,12 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
@@ -444,10 +450,12 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
@@ -512,10 +520,12 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
@@ -580,10 +590,12 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from user_team
     	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"

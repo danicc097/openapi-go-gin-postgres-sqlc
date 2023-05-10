@@ -247,17 +247,21 @@ users.name,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews `+
 		`FROM public.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
+			, row(books.*) as __books
 		from book_authors
     	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
@@ -303,17 +307,21 @@ users.name,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews `+
 		`FROM public.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
+			, row(books.*) as __books
 		from book_authors
     	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
@@ -360,17 +368,21 @@ users.name,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews `+
 		`FROM public.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
+			, row(books.*) as __books
 		from book_authors
     	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"

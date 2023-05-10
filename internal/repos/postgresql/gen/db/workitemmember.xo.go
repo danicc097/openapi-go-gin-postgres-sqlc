@@ -220,10 +220,12 @@ work_item_member.role,
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
@@ -231,10 +233,12 @@ left join (
 	select
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from work_item_member
     	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
+    group by
+			work_item_member_work_item_id
+			, users.user_id
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
@@ -285,10 +289,12 @@ work_item_member.role,
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
@@ -296,10 +302,12 @@ left join (
 	select
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from work_item_member
     	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
+    group by
+			work_item_member_work_item_id
+			, users.user_id
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
@@ -348,10 +356,12 @@ work_item_member.role,
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
@@ -359,10 +369,12 @@ left join (
 	select
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from work_item_member
     	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
+    group by
+			work_item_member_work_item_id
+			, users.user_id
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
@@ -413,10 +425,12 @@ work_item_member.role,
 left join (
 	select
 			work_item_member.member as work_item_member_member
-			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			, row(work_items.*) as __work_items
 		from work_item_member
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
-    group by work_item_member_member
+    group by
+			work_item_member_member
+			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
@@ -424,10 +438,12 @@ left join (
 	select
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
-			, array_agg(users.*) filter (where users.* is not null) as __users
+			, row(users.*) as __users
 		from work_item_member
     	join users on users.user_id = work_item_member.member
-    group by work_item_member_work_item_id
+    group by
+			work_item_member_work_item_id
+			, users.user_id
 			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_item_member.work_item_id
 ` +
