@@ -276,6 +276,31 @@ md5_all() {
   done
 }
 
+# Block build if magic keyword is found in any file
+# Args: keyword
+search_stopship() {
+  { { {
+    stopship_keyword="$1"
+    local matches
+    matches=$(find "$(git rev-parse --show-toplevel)" \
+      -type f \
+      -not -path "$0" \
+      -not -path '**/.git/*' \
+      -not -path '**/.venv/*' \
+      -not -path '**/node_modules/*' \
+      -not -path '**/build/*' \
+      -not -path '**/*.pyc' \
+      -not -exec git check-ignore -q --no-index {} \; \
+      -exec grep --files-with-matches --regexp="$stopship_keyword" {} \;)
+    if [[ -n $matches ]]; then
+      echo "${RED}'$stopship_keyword'${OFF} found in tracked files."
+      echo "Please fix all related issues in the following files:"
+      printf "\t %s\n" $matches
+      exit 1
+    fi
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 ######################## postgres ###########################
 
 # Drop and recreate database `db`. Defaults to POSTGRES_DB.

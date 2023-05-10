@@ -986,35 +986,10 @@ x.recreate-shared-services() {
 # - Magic keyword "STOPSHIP" not found in tracked files.
 x.release() {
   { { {
-    x.search-stopship "STOPSHIP" &
-    go mod verify &
+    search_stopship "STOPSHIP" &
+    # go mod verify & # TODO go.work issues solved in go 1.21 (https://github.com/golang/go/issues/54372)
 
-    wait
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
-# Block build if magic keyword is found in any file
-# Args: keyword
-x.search-stopship() {
-  { { {
-    stopship_keyword="$1"
-    local matches
-    matches=$(find "$(git rev-parse --show-toplevel)" \
-      -type f \
-      -not -path '**/.git/*' \
-      -not -path '**/.venv/*' \
-      -not -path '**/node_modules/*' \
-      -not -path '**/build/*' \
-      -not -path '**/*.pyc' \
-      -not -path "$0" \
-      -not -exec git check-ignore -q --no-index {} \; \
-      -exec grep -i --files-with-matches --regexp="$stopship_keyword" {} \;)
-    if [[ -n $matches ]]; then
-      echo "${RED}'$stopship_keyword'${OFF} found in tracked files."
-      echo "Please fix all related issues in the following files:"
-      printf "\t %s\n" $matches
-      exit 1
-    fi
+    wait_without_error
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
