@@ -205,7 +205,7 @@ notifications.receiver,
 left join xo_tests.users on users.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users on users.user_id = notifications.sender` +
-		` WHERE notifications.notification_id > $3 GROUP BY users.user_id, users.user_id, notifications.notification_id, 
+		` WHERE notifications.notification_id > $3 GROUP BY users.user_id, users.user_id, notifications.notification_id,
 users.user_id, users.user_id, notifications.notification_id `
 	sqlstr += c.limit
 
@@ -245,7 +245,7 @@ notifications.receiver,
 left join xo_tests.users on users.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users on users.user_id = notifications.sender` +
-		` WHERE notifications.notification_id = $3 GROUP BY users.user_id, users.user_id, notifications.notification_id, 
+		` WHERE notifications.notification_id = $3 GROUP BY users.user_id, users.user_id, notifications.notification_id,
 users.user_id, users.user_id, notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -280,15 +280,15 @@ func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ..
 notifications.body,
 notifications.sender,
 notifications.receiver,
-(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and receivers.user_id is not null then row(receivers.*) end) as user_receiver,
+(case when $2::boolean = true and senders.user_id is not null then row(senders.*) end) as user_sender ` +
 		`FROM xo_tests.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join xo_tests.users on users.user_id = notifications.receiver
+left join xo_tests.users as receivers on receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join xo_tests.users on users.user_id = notifications.sender` +
-		` WHERE notifications.sender = $3 GROUP BY users.user_id, users.user_id, notifications.notification_id, 
-users.user_id, users.user_id, notifications.notification_id `
+left join xo_tests.users as senders on senders.user_id = notifications.sender` +
+		` WHERE notifications.sender = $3 GROUP BY receivers.user_id, senders.user_id, notifications.notification_id,
+notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

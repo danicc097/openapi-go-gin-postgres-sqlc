@@ -35,7 +35,7 @@ func TestM2O(t *testing.T) {
 
 	n, err := db.NotificationsBySender(ctx, testPool, userID, db.WithNotificationJoin(db.NotificationJoins{UserSender: true}))
 	assert.NoError(t, err)
-	assert.Len(t, n, 1)
+	assert.Len(t, n, 2)
 	assert.Equal(t, n[0].UserJoinSender.UserID, userID)
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{NotificationsSender: true}))
