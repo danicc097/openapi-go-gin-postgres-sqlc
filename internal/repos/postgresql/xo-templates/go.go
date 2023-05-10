@@ -2761,9 +2761,9 @@ const (
 const (
 	// TODO O2O needs joinTable primary key join eg user_api_keys.user_api_key_id when we
 	// join in user.xo.go. Will need to use tables[joinTable].PrimaryKeys
-	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}`
-	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}`
-	O2OGroupBy = `{{.JoinTable}}.{{.JoinColumn}}, {{.CurrentTable}}.{{.JoinRefColumn}}`
+	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
+	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
+	O2OGroupBy = `{{.JoinTable}}.{{.JoinColumn}}, {{.JoinTablePKGroupBys}}, {{.CurrentTablePKGroupBys}}`
 )
 
 const (
@@ -2941,6 +2941,12 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 	params["Nth"] = nth(n)
 	params["ClashSuffix"] = ""
 
+	var currentTablePKGroupBys []string
+	for _, pk := range table.PrimaryKeys {
+		currentTablePKGroupBys = append(currentTablePKGroupBys, table.SQLName+"."+pk.SQLName)
+	}
+	params["CurrentTablePKGroupBys"] = strings.Join(currentTablePKGroupBys, ", ")
+
 	switch c.Cardinality {
 	case M2M:
 		joinTpl = M2MJoin
@@ -2981,7 +2987,6 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 				params["LookupJoinTablePKAgg"] = params["JoinTable"]
 			}
 		}
-
 	case M2O:
 		joinTpl = M2OJoin
 		selectTpl = M2OSelect
@@ -3008,6 +3013,13 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			}
 		}
 
+		// joinTable := tables[params["JoinTable"].(string)]
+		// var joinTablePKGroupBys []string
+		// for _, pk := range joinTable.PrimaryKeys {
+		// 	joinTablePKGroupBys = append(joinTablePKGroupBys, params["JoinTable"].(string)+"."+pk.SQLName)
+		// }
+		// params["JoinTablePKGroupBys"] = strings.Join(joinTablePKGroupBys, ", ")
+
 	case O2O:
 		if c.TableName == table.SQLName {
 			groupbyTpl = O2OGroupBy
@@ -3020,6 +3032,13 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
+			joinTable := tables[c.RefTableName]
+			var joinTablePKGroupBys []string
+			for _, pk := range joinTable.PrimaryKeys {
+				joinTablePKGroupBys = append(joinTablePKGroupBys, c.RefTableName+"."+pk.SQLName)
+			}
+			params["JoinTablePKGroupBys"] = strings.Join(joinTablePKGroupBys, ", ")
+
 			break
 		}
 

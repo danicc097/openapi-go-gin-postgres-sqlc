@@ -435,14 +435,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.created_at > $9  AND users.deleted_at is %s  GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id  ORDER BY
+		` WHERE users.created_at > $9  AND users.deleted_at is %s  GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id  ORDER BY 
 		created_at DESC`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -570,14 +570,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id `, c.deletedAt)
+		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -708,14 +708,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id `, c.deletedAt)
+		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -844,14 +844,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id `, c.deletedAt)
+		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -982,14 +982,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.email = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id `, c.deletedAt)
+		` WHERE users.email = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1118,14 +1118,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.external_id = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id `, c.deletedAt)
+		` WHERE users.external_id = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1254,14 +1254,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.user_id = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id `, c.deletedAt)
+		` WHERE users.user_id = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1390,14 +1390,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.updated_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id `, c.deletedAt)
+		` WHERE users.updated_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1528,14 +1528,14 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.username = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications,
-joined_notifications_sender.notifications,
-joined_time_entries.time_entries,
-user_api_keys.user_id, user_api_keys.user_api_key_id,
-joined_user_notifications.user_notifications,
-users.user_id,
-joined_work_item_comments.work_item_comments,
-users.user_id `, c.deletedAt)
+		` WHERE users.username = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+joined_time_entries.time_entries, users.user_id, 
+user_api_keys.user_id, user_api_keys.user_api_key_id, users.user_id, 
+joined_user_notifications.user_notifications, users.user_id, 
+users.user_id, users.user_id, 
+joined_work_item_comments.work_item_comments, users.user_id, 
+users.user_id, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

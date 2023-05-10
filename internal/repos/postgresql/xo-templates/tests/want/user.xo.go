@@ -273,8 +273,8 @@ left join (
     book_reviews
   group by
         reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id`+
-		` WHERE users.created_at > $3  AND users.deleted_at is %s  GROUP BY users.user_id, 
-joined_book_reviews.book_reviews  ORDER BY 
+		` WHERE users.created_at > $3  AND users.deleted_at is %s  GROUP BY users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id  ORDER BY 
 		created_at DESC`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -334,8 +334,8 @@ left join (
     book_reviews
   group by
         reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id`+
-		` WHERE users.created_at = $3  AND users.deleted_at is %s   GROUP BY users.user_id, 
-joined_book_reviews.book_reviews `, c.deletedAt)
+		` WHERE users.created_at = $3  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -396,8 +396,8 @@ left join (
     book_reviews
   group by
         reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id`+
-		` WHERE users.user_id = $3  AND users.deleted_at is %s   GROUP BY users.user_id, 
-joined_book_reviews.book_reviews `, c.deletedAt)
+		` WHERE users.user_id = $3  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

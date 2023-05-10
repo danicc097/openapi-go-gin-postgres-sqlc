@@ -170,8 +170,8 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_tag_id > $3 AND work_item_work_item_tag.work_item_id > $4 GROUP BY work_item_work_item_tag.work_item_tag_id, 
-work_item_work_item_tag.work_item_id `
+		` WHERE work_item_work_item_tag.work_item_tag_id > $3 AND work_item_work_item_tag.work_item_id > $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.limit
 
 	// run
@@ -232,8 +232,8 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, 
-work_item_work_item_tag.work_item_id `
+		` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -296,8 +296,8 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, 
-work_item_work_item_tag.work_item_id `
+		` WHERE work_item_work_item_tag.work_item_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -362,8 +362,8 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_tag_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, 
-work_item_work_item_tag.work_item_id `
+		` WHERE work_item_work_item_tag.work_item_tag_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -428,8 +428,8 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, 
-work_item_work_item_tag.work_item_id `
+		` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
