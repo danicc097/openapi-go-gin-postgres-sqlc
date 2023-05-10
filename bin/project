@@ -158,7 +158,7 @@ x.setup.swagger-ui() {
 
 # Run pre-generation scripts in the internal package.
 x.gen.pregen() {
-  cache-gen
+  backup-gen
   drop-and-migrate-gen-db
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
@@ -271,7 +271,7 @@ x.gen.pregen() {
 
     pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
@@ -380,7 +380,7 @@ clean_yq_array() {
 
 # Run post-generation scripts in the internal package.
 x.gen.postgen() {
-  cache-gen
+  backup-gen
   drop-and-migrate-gen-db
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
@@ -394,12 +394,12 @@ x.gen.postgen() {
 
     postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # Generate type-safe Go code from SQL.
 x.gen.sqlc() {
-  cache-gen
+  backup-gen
   drop-and-migrate-gen-db
   { { {
     echo "Running generation"
@@ -407,12 +407,12 @@ x.gen.sqlc() {
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
     rm -f "$PG_REPO_GEN"/db/models.go # sqlc enums
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # Automatically generate CRUD and index queries with joins based on existing indexes from a Postgres schema.
 x.gen.xo() {
-  cache-gen
+  backup-gen
   drop-and-migrate-gen-db
   { { {
     if md5sum -c "$CACHE/xo.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
@@ -449,7 +449,7 @@ x.gen.xo() {
       -name "*.go")
     goimports -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # Shows current database column comments used in xo codegen
@@ -478,7 +478,7 @@ WHERE a.attisdropped = false
 
 # Generate a type-safe SQL builder.
 x.gen.jet() {
-  cache-gen
+  backup-gen
   drop-and-migrate-gen-db
   { { {
     # results may be combined with xo's *Public structs and not reinvent the wheel for jet.
@@ -496,12 +496,12 @@ x.gen.jet() {
       rm -r "./$gen_path/$GEN_POSTGRES_DB/"
     }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # Generate interface wrappers with common logic: tracing, timeout...
 x.gen.gowrap() {
-  cache-gen
+  backup-gen
   { { {
     if md5sum -c "$CACHE/gowrap.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
       echo "Skipping generation (cached). Force regen with --x-force-regen"
@@ -539,7 +539,7 @@ x.gen.gowrap() {
 
     wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # Generate Go client and server.
@@ -612,7 +612,7 @@ x.gen.proto() {
 
 # Run frontend code generation.
 x.gen.frontend() {
-  cache-gen
+  backup-gen
   { { {
     (
       frontend_config_setup
@@ -651,12 +651,12 @@ export type schemas = components['schemas']
       wait_without_error
     )
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
-  cache-gen # Modification of vars inside would be local to subshell (caused by pipeline)
+  backup-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   drop-and-migrate-gen-db
   { { {
     echo "Running code generation"
@@ -695,7 +695,7 @@ x.gen() {
     x.gen.frontend
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # Build code generation custom tools.
@@ -783,7 +783,7 @@ x.lint.sql() {
 # Run required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
 x.test.backend.setup() {
-  cache-gen # Modification of vars inside would be local to subshell (caused by pipeline)
+  backup-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
@@ -792,7 +792,7 @@ x.test.backend.setup() {
     # no need to migrate, done on every test run internally
     drop_and_recreate_db $POSTGRES_TEST_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  cache-gen.cleanup
+  backup-gen.cleanup
 }
 
 # Test backend. Accepts `go test` parameters.
@@ -1547,39 +1547,39 @@ frontend_config_setup() {
 }
 
 # saves the current gen state to allow restoring in the event of early exit
-cache-gen() {
-  test -n "$restore_cache_caller" && return
+backup-gen() {
+  test -n "$backup_gen_caller" && return
 
-  restore_cache_caller="${FUNCNAME[1]}"
+  backup_gen_caller="${FUNCNAME[1]}"
 
-  rm -rf "$CACHE_GEN"
-  mkdir -p "$CACHE_GEN"
-  mkdir -p "$CACHE_FRONTEND_GEN"
-  mkdir -p "$CACHE_PG_REPO_GEN"
-  backup_gen_files internal "$CACHE_GEN"
+  rm -rf "$GEN_BACKUP"
+  mkdir -p "$GEN_BACKUP"
+  mkdir -p "$FRONTEND_GEN_BACKUP"
+  mkdir -p "$PG_REPO_GEN_BACKUP"
+  backup_gen_files internal "$GEN_BACKUP"
 
-  cp "$SPEC" "$CACHE_GEN"
-  rsync -a --delete "$FRONTEND_GEN/" "$CACHE_FRONTEND_GEN"
-  rsync -a --delete "$PG_REPO_GEN/" "$CACHE_PG_REPO_GEN"
+  cp "$SPEC" "$GEN_BACKUP"
+  rsync -a --delete "$FRONTEND_GEN/" "$FRONTEND_GEN_BACKUP"
+  rsync -a --delete "$PG_REPO_GEN/" "$PG_REPO_GEN_BACKUP"
 
   restore_cache=1
 }
 
-cache-gen.cleanup() {
-  if [[ "$restore_cache_caller" = "${FUNCNAME[1]}" ]]; then
+backup-gen.cleanup() {
+  if [[ "$backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
     restore_cache=0
   fi
 }
 
-cache-gen.restore() {
+backup-gen.restore() {
   echo "Restoring previously generated code..."
   wait
-  mv "$CACHE_GEN/$SPEC" "$SPEC"
-  rsync -a --delete "$CACHE_PG_REPO_GEN/" "$PG_REPO_GEN/"
-  rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
-  restore_gen_files "$CACHE_GEN" internal
+  mv "$GEN_BACKUP/$SPEC" "$SPEC"
+  rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
+  rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
+  restore_gen_files "$GEN_BACKUP" internal
 
-  rm -f "$CACHE_GEN"/*.md5 # clear gen cache
+  rm -f "$GEN_BACKUP"/*.md5 # clear gen cache
 }
 
 backup_gen_files() {
@@ -1879,7 +1879,7 @@ trap 'exit-cleanup $LINENO' 0 # EXIT (0) executed on exit from the shell
 
 exit-cleanup() {
   if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
-    cache-gen.restore #
+    backup-gen.restore #
   fi
   cd "$TOP_LEVEL_DIR" || true
 }
@@ -1925,9 +1925,9 @@ readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
 # common shared file dependencies for codegen checksums
 readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.$env")
 readonly CACHE=".generate.cache"
-readonly CACHE_GEN="$CACHE/gen"
-readonly CACHE_PG_REPO_GEN="$CACHE_GEN/pgrepo/gen"
-readonly CACHE_FRONTEND_GEN="$CACHE_GEN/frontend/gen"
+readonly GEN_BACKUP="$CACHE/gen"
+readonly PG_REPO_GEN_BACKUP="$GEN_BACKUP/pgrepo/gen"
+readonly FRONTEND_GEN_BACKUP="$GEN_BACKUP/frontend/gen"
 
 readonly MAX_FNAME_LOG_LEN=13
 
@@ -1936,8 +1936,8 @@ GEN_POSTGRES_DB="gen_db"
 # determines if gen cache should be restore at program exit. 0|1
 restore_cache=0
 # stores the first executing function to track if caching gen is already running,
-# to allow for nested cache-gen and cache-cleanup inside multiple functions.
-restore_cache_caller=""
+# to allow for nested backup-gen and cache-cleanup inside multiple functions.
+backup_gen_caller=""
 
 # stores the first executing function to determine if a migration
 # is needed when running gen* functions which call each other
