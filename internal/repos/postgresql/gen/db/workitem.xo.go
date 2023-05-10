@@ -396,8 +396,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s  GROUP BY demo_two_work_items.work_item_id, 
-demo_work_items.work_item_id, 
+		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s  GROUP BY demo_two_work_items.work_item_id, work_items.work_item_id, 
+demo_work_items.work_item_id, work_items.work_item_id, 
 joined_time_entries.time_entries, 
 joined_work_item_comments.work_item_comments, 
 work_items.work_item_id, 
@@ -502,8 +502,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s   GROUP BY demo_two_work_items.work_item_id, 
-demo_work_items.work_item_id, 
+		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s   GROUP BY demo_two_work_items.work_item_id, work_items.work_item_id, 
+demo_work_items.work_item_id, work_items.work_item_id, 
 joined_time_entries.time_entries, 
 joined_work_item_comments.work_item_comments, 
 work_items.work_item_id, 
@@ -611,8 +611,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s   GROUP BY demo_two_work_items.work_item_id, 
-demo_work_items.work_item_id, 
+		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s   GROUP BY demo_two_work_items.work_item_id, work_items.work_item_id, 
+demo_work_items.work_item_id, work_items.work_item_id, 
 joined_time_entries.time_entries, 
 joined_work_item_comments.work_item_comments, 
 work_items.work_item_id, 
@@ -718,8 +718,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s   GROUP BY demo_two_work_items.work_item_id, 
-demo_work_items.work_item_id, 
+		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s   GROUP BY demo_two_work_items.work_item_id, work_items.work_item_id, 
+demo_work_items.work_item_id, work_items.work_item_id, 
 joined_time_entries.time_entries, 
 joined_work_item_comments.work_item_comments, 
 work_items.work_item_id, 

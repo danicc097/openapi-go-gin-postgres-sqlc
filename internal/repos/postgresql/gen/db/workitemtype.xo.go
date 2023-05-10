@@ -216,8 +216,8 @@ work_item_types.color,
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.work_item_type_id > $3 GROUP BY projects.project_id, 
-work_items.work_item_type_id `
+		` WHERE work_item_types.work_item_type_id > $3 GROUP BY projects.project_id, work_item_types.project_id, 
+work_items.work_item_type_id, work_item_types.work_item_type_id `
 	sqlstr += c.limit
 
 	// run
@@ -254,8 +254,8 @@ work_item_types.color,
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.project_id > $3 GROUP BY projects.project_id, 
-work_items.work_item_type_id `
+		` WHERE work_item_types.project_id > $3 GROUP BY projects.project_id, work_item_types.project_id, 
+work_items.work_item_type_id, work_item_types.work_item_type_id `
 	sqlstr += c.limit
 
 	// run
@@ -295,8 +295,8 @@ work_item_types.color,
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4 GROUP BY projects.project_id, 
-work_items.work_item_type_id `
+		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4 GROUP BY projects.project_id, work_item_types.project_id, 
+work_items.work_item_type_id, work_item_types.work_item_type_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -338,8 +338,8 @@ work_item_types.color,
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.name = $3 GROUP BY projects.project_id, 
-work_items.work_item_type_id `
+		` WHERE work_item_types.name = $3 GROUP BY projects.project_id, work_item_types.project_id, 
+work_items.work_item_type_id, work_item_types.work_item_type_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -383,8 +383,8 @@ work_item_types.color,
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.project_id = $3 GROUP BY projects.project_id, 
-work_items.work_item_type_id `
+		` WHERE work_item_types.project_id = $3 GROUP BY projects.project_id, work_item_types.project_id, 
+work_items.work_item_type_id, work_item_types.work_item_type_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -428,8 +428,8 @@ work_item_types.color,
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.work_item_type_id = $3 GROUP BY projects.project_id, 
-work_items.work_item_type_id `
+		` WHERE work_item_types.work_item_type_id = $3 GROUP BY projects.project_id, work_item_types.project_id, 
+work_items.work_item_type_id, work_item_types.work_item_type_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

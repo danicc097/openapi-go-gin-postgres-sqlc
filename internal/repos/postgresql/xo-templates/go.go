@@ -2759,13 +2759,11 @@ const (
 )
 
 const (
-	// TODO need to handle O2O eg user_api_keys :
-	// urepo.ByID: could not get user:  | column "user_api_keys.user_api_key_id" must appear in the GROUP BY
-	// and work_item_types.work_item_type_id
-	// work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: ERROR: column \"work_item_types.work_item_type_id\" must appear in the GROUP BY
+	// TODO O2O needs joinTable primary key join eg user_api_keys.user_api_key_id when we
+	// join in user.xo.go. Will need to use tables[joinTable].PrimaryKeys
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}`
 	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}`
-	O2OGroupBy = `{{.JoinTable}}.{{.JoinColumn}}`
+	O2OGroupBy = `{{.JoinTable}}.{{.JoinColumn}}, {{.CurrentTable}}.{{.JoinRefColumn}}`
 )
 
 const (
