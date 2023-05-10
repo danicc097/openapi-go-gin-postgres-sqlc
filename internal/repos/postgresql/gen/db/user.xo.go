@@ -407,8 +407,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -428,8 +429,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -542,8 +544,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -563,8 +566,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -680,8 +684,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -701,8 +706,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -816,8 +822,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -837,8 +844,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -954,8 +962,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -975,8 +984,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -1090,8 +1100,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -1111,8 +1122,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -1226,8 +1238,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -1247,8 +1260,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -1362,8 +1376,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -1383,8 +1398,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -1500,8 +1516,9 @@ left join (
 	select
 			user_team.user_id as user_team_user_id
 			, row(teams.*) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
     group by
 			user_team_user_id
 			, teams.team_id
@@ -1521,8 +1538,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id

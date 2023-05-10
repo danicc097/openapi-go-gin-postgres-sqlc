@@ -254,8 +254,9 @@ left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
     group by
 			user_team_team_id
 			, users.user_id
@@ -320,8 +321,9 @@ left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
     group by
 			user_team_team_id
 			, users.user_id
@@ -389,8 +391,9 @@ left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
     group by
 			user_team_team_id
 			, users.user_id
@@ -460,8 +463,9 @@ left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
     group by
 			user_team_team_id
 			, users.user_id
@@ -533,8 +537,9 @@ left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
     group by
 			user_team_team_id
 			, users.user_id
@@ -606,8 +611,9 @@ left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
     group by
 			user_team_team_id
 			, users.user_id

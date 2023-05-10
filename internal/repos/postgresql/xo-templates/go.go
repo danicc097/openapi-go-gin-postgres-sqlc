@@ -851,6 +851,8 @@ func convertProc(ctx context.Context, overloadMap map[string][]Proc, order []str
 // convertTable converts a xo.Table to a Table.
 func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 	var cols, pkCols, generatedCols, ignoredCols []Field
+	_, _, schema := xo.DriverDbSchema(ctx)
+
 	for _, z := range t.Columns {
 		f, err := convertField(ctx, camelExport, z)
 		if err != nil {
@@ -885,6 +887,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		Ignored:     ignoredCols,
 		Manual:      manual && t.Manual,
 		Type:        t.Type,
+		Schema:      schema,
 	}
 
 	// conversion requires Table
@@ -2775,8 +2778,9 @@ left join (
 			, {{$.LookupTable}}.{{.}} as {{ . -}}
 			{{- end }}
 			, row({{.JoinTable}}.*) as __{{.LookupJoinTablePKAgg}}
-		from {{.LookupTable}}
-    	join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
+		from
+			{{.Schema}}{{.LookupTable}}
+    join {{.Schema}}{{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
     group by
 			{{.LookupTable}}_{{.LookupColumn}}
 			, {{.JoinTable}}.{{.JoinTablePK}}
@@ -2791,11 +2795,11 @@ left join (
   {{.JoinColumn}} as {{.JoinTable}}_{{.JoinRefColumn}}
     , array_agg({{.JoinTable}}.*) as {{.JoinTable}}
   from
-    {{.JoinTable}}
+    {{.Schema}}{{.JoinTable}}
   group by
         {{.JoinColumn}}) joined_{{.JoinTable}}{{.ClashSuffix}} on joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 	O2OJoin = `
-left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
+left join {{.Schema}}{{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 )
 
 // sqlstr_index builds a index fields.
@@ -2940,12 +2944,17 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 
 	params["Nth"] = nth(n)
 	params["ClashSuffix"] = ""
+	params["Schema"] = ""
 
 	var currentTablePKGroupBys []string
 	for _, pk := range table.PrimaryKeys {
 		currentTablePKGroupBys = append(currentTablePKGroupBys, table.SQLName+"."+pk.SQLName)
 	}
 	params["CurrentTablePKGroupBys"] = strings.Join(currentTablePKGroupBys, ", ")
+
+	if table.Schema != "public" {
+		params["Schema"] = table.Schema + "."
+	}
 
 	switch c.Cardinality {
 	case M2M:
@@ -3055,17 +3064,18 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 
 	default:
 	}
-	t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
+
+	t := template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(joinTpl))
 	if err := t.Execute(join, params); err != nil {
 		panic(fmt.Sprintf("could not execute join template: %s", err))
 	}
 
-	t = template.Must(template.New("").Funcs(funcs).Parse(selectTpl))
+	t = template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(selectTpl))
 	if err := t.Execute(selec, params); err != nil {
 		panic(fmt.Sprintf("could not execute selec template: %s", err))
 	}
 
-	t = template.Must(template.New("").Funcs(funcs).Parse(groupbyTpl))
+	t = template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(groupbyTpl))
 	if err := t.Execute(groupby, params); err != nil {
 		panic(fmt.Sprintf("could not execute selec template: %s", err))
 	}
@@ -3886,6 +3896,7 @@ type Table struct {
 	Generated   []Field
 	Ignored     []Field
 	ForeignKeys []TableForeignKeys
+	Schema      string
 }
 
 type TableForeignKeys struct {

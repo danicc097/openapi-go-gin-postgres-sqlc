@@ -216,8 +216,9 @@ left join (
 	select
 			book_authors.author_id as book_authors_author_id
 			, row(books.*) as __books
-		from book_authors
-    	join books on books.book_id = book_authors.book_id
+		from
+			xo_tests.book_authors
+    join xo_tests.books on books.book_id = book_authors.book_id
     group by
 			book_authors_author_id
 			, books.book_id
@@ -229,8 +230,9 @@ left join (
 			book_authors.book_id as book_authors_book_id
 			, book_authors.pseudonym as pseudonym
 			, row(users.*) as __users
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
     group by
 			book_authors_book_id
 			, users.user_id
@@ -284,8 +286,9 @@ left join (
 	select
 			book_authors.author_id as book_authors_author_id
 			, row(books.*) as __books
-		from book_authors
-    	join books on books.book_id = book_authors.book_id
+		from
+			xo_tests.book_authors
+    join xo_tests.books on books.book_id = book_authors.book_id
     group by
 			book_authors_author_id
 			, books.book_id
@@ -297,8 +300,9 @@ left join (
 			book_authors.book_id as book_authors_book_id
 			, book_authors.pseudonym as pseudonym
 			, row(users.*) as __users
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
     group by
 			book_authors_book_id
 			, users.user_id
@@ -354,8 +358,9 @@ left join (
 	select
 			book_authors.author_id as book_authors_author_id
 			, row(books.*) as __books
-		from book_authors
-    	join books on books.book_id = book_authors.book_id
+		from
+			xo_tests.book_authors
+    join xo_tests.books on books.book_id = book_authors.book_id
     group by
 			book_authors_author_id
 			, books.book_id
@@ -367,8 +372,9 @@ left join (
 			book_authors.book_id as book_authors_book_id
 			, book_authors.pseudonym as pseudonym
 			, row(users.*) as __users
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
     group by
 			book_authors_book_id
 			, users.user_id

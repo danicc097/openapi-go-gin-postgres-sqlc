@@ -35,7 +35,7 @@ func testMain(m *testing.M) int {
 
 	logger, _ := zap.NewDevelopment()
 
-	testPool, _, err := postgresql.New(logger.Sugar())
+	testPool, _, err = postgresql.New(logger.Sugar())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
 		os.Exit(1)

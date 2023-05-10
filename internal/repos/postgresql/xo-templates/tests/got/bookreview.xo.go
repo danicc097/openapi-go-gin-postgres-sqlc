@@ -193,9 +193,9 @@ book_reviews.reviewer,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books on books.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
+left join xo_tests.users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_review_id > $3 GROUP BY books.book_id, books.book_id, book_reviews.book_review_id, 
 users.user_id, users.user_id, book_reviews.book_review_id `
 	sqlstr += c.limit
@@ -229,9 +229,9 @@ book_reviews.reviewer,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books on books.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
+left join xo_tests.users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_id > $3 GROUP BY books.book_id, books.book_id, book_reviews.book_review_id, 
 users.user_id, users.user_id, book_reviews.book_review_id `
 	sqlstr += c.limit
@@ -268,9 +268,9 @@ book_reviews.reviewer,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books on books.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
+left join xo_tests.users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_review_id = $3 GROUP BY books.book_id, books.book_id, book_reviews.book_review_id, 
 users.user_id, users.user_id, book_reviews.book_review_id `
 	sqlstr += c.orderBy
@@ -309,9 +309,9 @@ book_reviews.reviewer,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books on books.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
+left join xo_tests.users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 GROUP BY books.book_id, books.book_id, book_reviews.book_review_id, 
 users.user_id, users.user_id, book_reviews.book_review_id `
 	sqlstr += c.orderBy
@@ -350,9 +350,9 @@ book_reviews.reviewer,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books on books.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
+left join xo_tests.users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.reviewer = $3 GROUP BY books.book_id, books.book_id, book_reviews.book_review_id, 
 users.user_id, users.user_id, book_reviews.book_review_id `
 	sqlstr += c.orderBy
@@ -393,9 +393,9 @@ book_reviews.reviewer,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books on books.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
+left join xo_tests.users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_id = $3 GROUP BY books.book_id, books.book_id, book_reviews.book_review_id, 
 users.user_id, users.user_id, book_reviews.book_review_id `
 	sqlstr += c.orderBy

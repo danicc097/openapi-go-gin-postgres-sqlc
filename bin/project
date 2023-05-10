@@ -849,8 +849,7 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    # TODO should have some simple unit tests with pgx before prompting to update.
-    # - check m2m joins with extra fields
+    go test github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests
 
     if ! $test_dir/diff_check; then
       confirm "Do you want to update test snapshot with current changes?" </dev/tty >/dev/tty && {

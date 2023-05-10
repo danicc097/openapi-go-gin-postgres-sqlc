@@ -221,8 +221,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -234,8 +235,9 @@ left join (
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
 			, row(users.*) as __users
-		from work_item_member
-    	join users on users.user_id = work_item_member.member
+		from
+			work_item_member
+    join users on users.user_id = work_item_member.member
     group by
 			work_item_member_work_item_id
 			, users.user_id
@@ -291,8 +293,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -304,8 +307,9 @@ left join (
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
 			, row(users.*) as __users
-		from work_item_member
-    	join users on users.user_id = work_item_member.member
+		from
+			work_item_member
+    join users on users.user_id = work_item_member.member
     group by
 			work_item_member_work_item_id
 			, users.user_id
@@ -359,8 +363,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -372,8 +377,9 @@ left join (
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
 			, row(users.*) as __users
-		from work_item_member
-    	join users on users.user_id = work_item_member.member
+		from
+			work_item_member
+    join users on users.user_id = work_item_member.member
     group by
 			work_item_member_work_item_id
 			, users.user_id
@@ -429,8 +435,9 @@ left join (
 	select
 			work_item_member.member as work_item_member_member
 			, row(work_items.*) as __work_items
-		from work_item_member
-    	join work_items on work_items.work_item_id = work_item_member.work_item_id
+		from
+			work_item_member
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by
 			work_item_member_member
 			, work_items.work_item_id
@@ -442,8 +449,9 @@ left join (
 			work_item_member.work_item_id as work_item_member_work_item_id
 			, work_item_member.role as role
 			, row(users.*) as __users
-		from work_item_member
-    	join users on users.user_id = work_item_member.member
+		from
+			work_item_member
+    join users on users.user_id = work_item_member.member
     group by
 			work_item_member_work_item_id
 			, users.user_id

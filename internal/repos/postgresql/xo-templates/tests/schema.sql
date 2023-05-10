@@ -1,6 +1,3 @@
-create schema if not exists extensions;
-
-drop schema if exists xo_tests CASCADE;
 create schema if not exists xo_tests;
 
 create table xo_tests.users (
