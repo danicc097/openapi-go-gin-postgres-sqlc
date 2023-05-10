@@ -1,3 +1,4 @@
+drop schema if exists xo_tests cascade;
 create schema if not exists xo_tests;
 
 create table xo_tests.users (
@@ -39,16 +40,29 @@ comment on column xo_tests.book_reviews.reviewer is '"cardinality":M2O';
 
 comment on column xo_tests.book_reviews.book_id is '"cardinality":M2O';
 
+create table xo_tests.notifications (
+  notification_id serial primary key
+  , body text not null
+  , sender uuid not null
+  , receiver uuid
+  , foreign key (sender) references xo_tests.users (user_id) on delete cascade
+  , foreign key (receiver) references xo_tests.users (user_id) on delete cascade
+);
+
+comment on column xo_tests.notifications.sender is '"cardinality":M2O';
+
+comment on column xo_tests.notifications.receiver is '"cardinality":M2O';
+
 do $BODY$
 declare
   user_1_id uuid := '8bfb8359-28e0-4039-9259-3c98ada7300d';
   user_2_id uuid := '78b8db3e-9900-4ca2-9875-fd1eb59acf71';
 begin
-  insert into xo_tests.users (user_id, name , created_at)
-    values (user_1_id, 'John Doe' , current_timestamp);
+  insert into xo_tests.users (user_id , name , created_at)
+    values (user_1_id , 'John Doe' , current_timestamp);
   -- PERFORM pg_sleep(0.5); -- not working for some reason
-  insert into xo_tests.users (user_id, name , created_at)
-    values (user_2_id, 'Jane Smith' , current_timestamp + '1 h');
+  insert into xo_tests.users (user_id , name , created_at)
+    values (user_2_id , 'Jane Smith' , current_timestamp + '1 h');
 
   insert into xo_tests.books (name)
     values ('Book 1');
@@ -69,3 +83,4 @@ begin
 end;
 $BODY$
 language plpgsql;
+

@@ -826,10 +826,10 @@ x.test.frontend.watch() {
 # Run custom xo generation script tests
 x.test.xo() {
   { { {
-    POSTGRES_DB="xo_tests"
+    POSTGRES_DB="$POSTGRES_TEST_DB"
     GEN_POSTGRES_DB="$POSTGRES_DB"
 
-    drop_and_recreate_db $POSTGRES_DB
+    drop_and_recreate_db $POSTGRES_DB # FIXME wrong gen when tables with equal names in public schema exist as well
 
     echo "Running xo template tests"
 
@@ -1050,9 +1050,10 @@ x.db.psql() {
   docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $POSTGRES_DB
 }
 
-# psql session for the codegen specific database.
-x.db.psql-gen() {
-  docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $GEN_POSTGRES_DB
+# psql session for `database`.
+# Args: database
+x.db.psql-db() {
+  docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $1
 }
 
 # Show active and max number of connections for the current environment.
@@ -1724,6 +1725,8 @@ env="dev"
 # --------------------- completion and delegation --------------------
 #      `complete -C foo foo` > `source <(foo bloated_completion)`
 
+readonly MAX_COMMENT_LEN=88
+
 while IFS= read -r line; do
   [[ $line =~ ^declare\ -f\ x\. ]] || continue
   COMMANDS+=("${line##declare -f x.}")
@@ -1888,7 +1891,6 @@ readonly PG_REPO_DIR="$REPOS_DIR/postgresql"
 readonly XO_TEMPLATES_DIR="$PG_REPO_DIR/xo-templates"
 
 readonly POSTGRES_TEST_DB="postgres_test"
-readonly MAX_COMMENT_LEN=88
 readonly DUMPS_DIR="$HOME/openapi_go_gin_postgres_dumps"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
