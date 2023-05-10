@@ -210,7 +210,9 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
@@ -255,7 +257,9 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
@@ -303,7 +307,9 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
@@ -353,7 +359,9 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
@@ -405,7 +413,9 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
@@ -457,7 +467,9 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id

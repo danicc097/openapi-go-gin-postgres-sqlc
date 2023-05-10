@@ -356,9 +356,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -476,9 +480,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -599,9 +607,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -720,9 +732,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -843,9 +859,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -964,9 +984,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -1085,9 +1109,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -1206,9 +1234,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -1329,9 +1361,13 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
+(case when $8::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (

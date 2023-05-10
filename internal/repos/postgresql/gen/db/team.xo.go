@@ -233,7 +233,9 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -292,7 +294,9 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -354,7 +358,9 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -418,7 +424,9 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -484,7 +492,9 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -550,7 +560,9 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"

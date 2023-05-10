@@ -208,8 +208,13 @@ func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.U
 		`work_item_member.work_item_id,
 work_item_member.member,
 work_item_member.role,
-(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items,
-(case when $2::boolean = true then COALESCE(joined_members.__users, '{}') end) as members ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_members.__users
+		, joined_members.role
+		)) end) as members ` +
 		`FROM public.work_item_member ` +
 		`-- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
@@ -268,8 +273,13 @@ func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int
 		`work_item_member.work_item_id,
 work_item_member.member,
 work_item_member.role,
-(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items,
-(case when $2::boolean = true then COALESCE(joined_members.__users, '{}') end) as members ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_members.__users
+		, joined_members.role
+		)) end) as members ` +
 		`FROM public.work_item_member ` +
 		`-- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
@@ -326,8 +336,13 @@ func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 		`work_item_member.work_item_id,
 work_item_member.member,
 work_item_member.role,
-(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items,
-(case when $2::boolean = true then COALESCE(joined_members.__users, '{}') end) as members ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_members.__users
+		, joined_members.role
+		)) end) as members ` +
 		`FROM public.work_item_member ` +
 		`-- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
@@ -386,8 +401,13 @@ func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts 
 		`work_item_member.work_item_id,
 work_item_member.member,
 work_item_member.role,
-(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items,
-(case when $2::boolean = true then COALESCE(joined_members.__users, '{}') end) as members ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_members.__users
+		, joined_members.role
+		)) end) as members ` +
 		`FROM public.work_item_member ` +
 		`-- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (

@@ -194,46 +194,9 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 }
 
 type WorkItem_Member struct {
-	Test int                `json:"work_item_member_work_item_id" db:"work_item_member_work_item_id"`
+	User User                `json:"user" db:"users"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
-	User User                `json:"user" db:"user"`
 }
-
-/**
-
-demowiRepo.ByID: work_items/WorkItemByWorkItemID/pgx.CollectOneRow: can't scan into dest[16]: cannot scan record (OID 2249) in binary format into **[]db.WorkItem_Member
-
-SELECT work_items.work_item_id,
-work_items.title,
-work_items.description,
-work_items.work_item_type_id,
-work_items.metadata,
-work_items.team_id,
-work_items.kanban_step_id,
-work_items.closed,
-work_items.target_date,
-work_items.created_at,
-work_items.updated_at,
-work_items.deleted_at,
-(case when true = true then array_agg(joined_members.*) end) as members
-from work_items
-left join (
-  select
-  work_item_member.work_item_id as work_item_member_work_item_id
-  , work_item_member.role as role
-  , row(users.*) as user
-from work_item_member
-  join users on users.user_id = work_item_member.member
-group by work_item_member_work_item_id
-  , role
-  , users.user_id
-) as joined_members on work_item_member_work_item_id = work_items.work_item_id
-
- WHERE work_items.work_item_id = '1'
- group by  work_items.work_item_id; -- TODO hopefully we can get rid of generating joins for every single generated join table
-
- *
- */
 
 // Insert inserts the WorkItem to the database.
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
@@ -352,6 +315,199 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 	return newwi, nil
 }
 
+// WorkItemPaginatedByWorkItemID returns a cursor-paginated list of WorkItem.
+func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
+		`work_items.work_item_id,
+work_items.title,
+work_items.description,
+work_items.work_item_type_id,
+work_items.metadata,
+work_items.team_id,
+work_items.kanban_step_id,
+work_items.closed,
+work_items.target_date,
+work_items.created_at,
+work_items.updated_at,
+work_items.deleted_at,
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
+(case when $5::boolean = true then ARRAY_AGG((
+		joined_members.__users
+		, joined_members.role
+		)) end) as members,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags `+
+		`FROM public.work_items `+
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
+-- M2O join generated from "time_entries_work_item_id_fkey"
+left join (
+  select
+  work_item_id as time_entries_work_item_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
+-- M2O join generated from "work_item_comments_work_item_id_fkey"
+left join (
+  select
+  work_item_id as work_item_comments_work_item_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    work_item_comments
+  group by
+        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+-- M2M join generated from "work_item_member_member_fkey"
+left join (
+	select
+			work_item_member.work_item_id as work_item_member_work_item_id
+			, work_item_member.role as role
+			, array_agg(users.*) filter (where users.* is not null) as __users
+		from work_item_member
+    	join users on users.user_id = work_item_member.member
+    group by work_item_member_work_item_id
+			, role
+  ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+		from work_item_work_item_tag
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+`+
+		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s  ORDER BY 
+		work_item_id DESC`, c.deletedAt)
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemsByDeletedAt_WhereDeletedAtIsNotNull retrieves a row from 'public.work_items' as a WorkItem.
+//
+// Generated from index 'work_items_deleted_at_idx'.
+func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := fmt.Sprintf(`SELECT `+
+		`work_items.work_item_id,
+work_items.title,
+work_items.description,
+work_items.work_item_type_id,
+work_items.metadata,
+work_items.team_id,
+work_items.kanban_step_id,
+work_items.closed,
+work_items.target_date,
+work_items.created_at,
+work_items.updated_at,
+work_items.deleted_at,
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
+(case when $5::boolean = true then ARRAY_AGG((
+		joined_members.__users
+		, joined_members.role
+		)) end) as members,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags `+
+		`FROM public.work_items `+
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
+-- M2O join generated from "time_entries_work_item_id_fkey"
+left join (
+  select
+  work_item_id as time_entries_work_item_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
+-- M2O join generated from "work_item_comments_work_item_id_fkey"
+left join (
+  select
+  work_item_id as work_item_comments_work_item_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    work_item_comments
+  group by
+        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+-- M2M join generated from "work_item_member_member_fkey"
+left join (
+	select
+			work_item_member.work_item_id as work_item_member_work_item_id
+			, work_item_member.role as role
+			, array_agg(users.*) filter (where users.* is not null) as __users
+		from work_item_member
+    	join users on users.user_id = work_item_member.member
+    group by work_item_member_work_item_id
+			, role
+  ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+		from work_item_work_item_tag
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+`+
+		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	// logf(sqlstr, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, deletedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/Query: %w", err))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
 
 // WorkItemByWorkItemID retrieves a row from 'public.work_items' as a WorkItem.
 //
@@ -381,8 +537,13 @@ work_items.deleted_at,
 (case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_agg(joined_members.*) end) as members,
-(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
+(case when $5::boolean = true then ARRAY_AGG((
+		joined_members.__users
+		, joined_members.role
+		)) end) as members,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -408,17 +569,15 @@ left join (
         work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
-	-- TODO
 	select
-	work_item_member.work_item_id as work_item_member_work_item_id
-	, work_item_member.role as role
-	, row(users.*) as user
-from work_item_member
-	join users on users.user_id = work_item_member.member
-group by work_item_member_work_item_id
-	, role
-	, users.user_id
-) as joined_members on work_item_member_work_item_id = work_items.work_item_id
+			work_item_member.work_item_id as work_item_member_work_item_id
+			, work_item_member.role as role
+			, array_agg(users.*) filter (where users.* is not null) as __users
+		from work_item_member
+    	join users on users.user_id = work_item_member.member
+    group by work_item_member_work_item_id
+			, role
+  ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -430,7 +589,7 @@ left join (
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s  group by  work_items.work_item_id, demo_two_work_items.work_item_id, demo_work_items.work_item_id, joined_time_entries.time_entries, joined_work_item_comments.work_item_comments, joined_work_item_tags.__work_item_tags`, c.deletedAt)
+		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -444,9 +603,108 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
-	fmt.Printf("wi: %+v\n", wi)
 
 	return &wi, nil
+}
+
+// WorkItemsByTeamID retrieves a row from 'public.work_items' as a WorkItem.
+//
+// Generated from index 'work_items_team_id_idx'.
+func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := fmt.Sprintf(`SELECT `+
+		`work_items.work_item_id,
+work_items.title,
+work_items.description,
+work_items.work_item_type_id,
+work_items.metadata,
+work_items.team_id,
+work_items.kanban_step_id,
+work_items.closed,
+work_items.target_date,
+work_items.created_at,
+work_items.updated_at,
+work_items.deleted_at,
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
+(case when $5::boolean = true then ARRAY_AGG((
+		joined_members.__users
+		, joined_members.role
+		)) end) as members,
+(case when $6::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags `+
+		`FROM public.work_items `+
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
+-- M2O join generated from "time_entries_work_item_id_fkey"
+left join (
+  select
+  work_item_id as time_entries_work_item_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
+-- M2O join generated from "work_item_comments_work_item_id_fkey"
+left join (
+  select
+  work_item_id as work_item_comments_work_item_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    work_item_comments
+  group by
+        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+-- M2M join generated from "work_item_member_member_fkey"
+left join (
+	select
+			work_item_member.work_item_id as work_item_member_work_item_id
+			, work_item_member.role as role
+			, array_agg(users.*) filter (where users.* is not null) as __users
+		from work_item_member
+    	join users on users.user_id = work_item_member.member
+    group by work_item_member_work_item_id
+			, role
+  ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+		from work_item_work_item_tag
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+`+
+		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	// logf(sqlstr, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, teamID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/Query: %w", err))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // FKKanbanStep_KanbanStepID returns the KanbanStep associated with the WorkItem's (KanbanStepID).

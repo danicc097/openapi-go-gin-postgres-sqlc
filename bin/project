@@ -403,8 +403,9 @@ x.gen.sqlc() {
   drop-and-migrate-gen-db
   { { {
     echo "Running generation"
+    rm -f "$PG_REPO_GEN"/db/*.sqlc.go
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
-    rm "$PG_REPO_GEN"/db/models.go # sqlc enums
+    rm -f "$PG_REPO_GEN"/db/models.go # sqlc enums
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
 }
@@ -422,7 +423,7 @@ x.gen.xo() {
 
     echo "Running generation"
 
-    rm -rf "$PG_REPO_GEN"
+    rm -rf "$PG_REPO_GEN"/db/*.xo.go
 
     mkdir -p "$PG_REPO_GEN"/db
     xo_schema -o "$PG_REPO_GEN"/db --debug \
@@ -670,11 +671,11 @@ x.gen() {
     x.gen.gowrap &
     x.gen.proto &
     x.gen.xo &
+    x.gen.sqlc &
     x.gen.jet &
 
     wait_without_error
 
-    x.gen.sqlc # with md5 cache, can't have xo and sqlc run at the same time, so let's have xo be responsible for rm dir
     x.gen.pregen
 
     x.gen.postgen &
@@ -1577,7 +1578,7 @@ cache-gen.restore() {
   rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
   restore_gen_files "$CACHE_GEN" internal
 
-  rm "$CACHE_GEN"/*.md5 # clear gen cache
+  rm -f "$CACHE_GEN"/*.md5 # clear gen cache
 }
 
 backup_gen_files() {

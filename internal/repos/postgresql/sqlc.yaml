@@ -20,6 +20,7 @@ sql:
         emit_methods_with_db_argument: true
         disable_emit_enums: true
         disable_emit_table_structs: true
+        output_files_suffix: .sqlc
         # only necessary for stdlib, pgx automatically prepares and caches statements by default
         # emit_prepared_queries: true # mutually exclusive with emit_methods_with_db_argument
         # TODO camel when xo and sqlc using pgx v5 -> db tag to unmarshal and json tag camel

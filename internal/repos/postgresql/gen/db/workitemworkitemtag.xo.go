@@ -139,8 +139,12 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -192,8 +196,12 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -247,8 +255,12 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -304,8 +316,12 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -361,8 +377,12 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_work_item_tags.__work_item_tags
+		)) end) as work_item_tags,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_work_items.__work_items
+		)) end) as work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
