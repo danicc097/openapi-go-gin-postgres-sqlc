@@ -264,10 +264,10 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as team_ids on team_ids.team_id = teams.team_id` +
-		` WHERE teams.team_id > $5 GROUP BY project_ids.project_id, teams.team_id, 
+		` WHERE teams.team_id > $5 GROUP BY project_ids.project_id, project_ids.project_id, teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
 teams.team_id, teams.team_id, 
-team_ids.team_id, teams.team_id `
+team_ids.team_id, team_ids.work_item_id, teams.team_id `
 	sqlstr += c.limit
 
 	// run
@@ -331,10 +331,10 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as team_ids on team_ids.team_id = teams.team_id` +
-		` WHERE teams.project_id > $5 GROUP BY project_ids.project_id, teams.team_id, 
+		` WHERE teams.project_id > $5 GROUP BY project_ids.project_id, project_ids.project_id, teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
 teams.team_id, teams.team_id, 
-team_ids.team_id, teams.team_id `
+team_ids.team_id, team_ids.work_item_id, teams.team_id `
 	sqlstr += c.limit
 
 	// run
@@ -401,10 +401,10 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as team_ids on team_ids.team_id = teams.team_id` +
-		` WHERE teams.name = $5 AND teams.project_id = $6 GROUP BY project_ids.project_id, teams.team_id, 
+		` WHERE teams.name = $5 AND teams.project_id = $6 GROUP BY project_ids.project_id, project_ids.project_id, teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
 teams.team_id, teams.team_id, 
-team_ids.team_id, teams.team_id `
+team_ids.team_id, team_ids.work_item_id, teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -473,10 +473,10 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as team_ids on team_ids.team_id = teams.team_id` +
-		` WHERE teams.name = $5 GROUP BY project_ids.project_id, teams.team_id, 
+		` WHERE teams.name = $5 GROUP BY project_ids.project_id, project_ids.project_id, teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
 teams.team_id, teams.team_id, 
-team_ids.team_id, teams.team_id `
+team_ids.team_id, team_ids.work_item_id, teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -547,10 +547,10 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as team_ids on team_ids.team_id = teams.team_id` +
-		` WHERE teams.project_id = $5 GROUP BY project_ids.project_id, teams.team_id, 
+		` WHERE teams.project_id = $5 GROUP BY project_ids.project_id, project_ids.project_id, teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
 teams.team_id, teams.team_id, 
-team_ids.team_id, teams.team_id `
+team_ids.team_id, team_ids.work_item_id, teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -621,10 +621,10 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as team_ids on team_ids.team_id = teams.team_id` +
-		` WHERE teams.team_id = $5 GROUP BY project_ids.project_id, teams.team_id, 
+		` WHERE teams.team_id = $5 GROUP BY project_ids.project_id, project_ids.project_id, teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
 teams.team_id, teams.team_id, 
-team_ids.team_id, teams.team_id `
+team_ids.team_id, team_ids.work_item_id, teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -208,8 +208,8 @@ user_notifications.user_id,
 left join notifications as notification_ids on notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as user_ids on user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id > $3 GROUP BY notification_ids.notification_id, user_notifications.user_notification_id, 
-user_ids.user_id, user_notifications.user_notification_id `
+		` WHERE user_notifications.user_notification_id > $3 GROUP BY notification_ids.notification_id, notification_ids.notification_id, user_notifications.user_notification_id, 
+user_ids.user_id, user_ids.user_id, user_notifications.user_notification_id `
 	sqlstr += c.limit
 
 	// run
@@ -245,8 +245,8 @@ user_notifications.user_id,
 left join notifications as notification_ids on notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as user_ids on user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id > $3 GROUP BY notification_ids.notification_id, user_notifications.user_notification_id, 
-user_ids.user_id, user_notifications.user_notification_id `
+		` WHERE user_notifications.notification_id > $3 GROUP BY notification_ids.notification_id, notification_ids.notification_id, user_notifications.user_notification_id, 
+user_ids.user_id, user_ids.user_id, user_notifications.user_notification_id `
 	sqlstr += c.limit
 
 	// run
@@ -285,8 +285,8 @@ user_notifications.user_id,
 left join notifications as notification_ids on notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as user_ids on user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 GROUP BY notification_ids.notification_id, user_notifications.user_notification_id, 
-user_ids.user_id, user_notifications.user_notification_id `
+		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 GROUP BY notification_ids.notification_id, notification_ids.notification_id, user_notifications.user_notification_id, 
+user_ids.user_id, user_ids.user_id, user_notifications.user_notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -327,8 +327,8 @@ user_notifications.user_id,
 left join notifications as notification_ids on notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as user_ids on user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 GROUP BY notification_ids.notification_id, user_notifications.user_notification_id, 
-user_ids.user_id, user_notifications.user_notification_id `
+		` WHERE user_notifications.notification_id = $3 GROUP BY notification_ids.notification_id, notification_ids.notification_id, user_notifications.user_notification_id, 
+user_ids.user_id, user_ids.user_id, user_notifications.user_notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -371,8 +371,8 @@ user_notifications.user_id,
 left join notifications as notification_ids on notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as user_ids on user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id = $3 GROUP BY notification_ids.notification_id, user_notifications.user_notification_id, 
-user_ids.user_id, user_notifications.user_notification_id `
+		` WHERE user_notifications.user_notification_id = $3 GROUP BY notification_ids.notification_id, notification_ids.notification_id, user_notifications.user_notification_id, 
+user_ids.user_id, user_ids.user_id, user_notifications.user_notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -413,8 +413,8 @@ user_notifications.user_id,
 left join notifications as notification_ids on notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as user_ids on user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_id = $3 GROUP BY notification_ids.notification_id, user_notifications.user_notification_id, 
-user_ids.user_id, user_notifications.user_notification_id `
+		` WHERE user_notifications.user_id = $3 GROUP BY notification_ids.notification_id, notification_ids.notification_id, user_notifications.user_notification_id, 
+user_ids.user_id, user_ids.user_id, user_notifications.user_notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

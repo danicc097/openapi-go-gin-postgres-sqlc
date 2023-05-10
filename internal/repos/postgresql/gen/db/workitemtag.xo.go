@@ -229,7 +229,7 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.work_item_tag_id > $3 GROUP BY project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.work_item_tag_id > $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.limit
 
@@ -280,7 +280,7 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.project_id > $3 GROUP BY project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.project_id > $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.limit
 
@@ -334,7 +334,7 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 GROUP BY project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -390,7 +390,7 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.name = $3 GROUP BY project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.name = $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -448,7 +448,7 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.project_id = $3 GROUP BY project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.project_id = $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -506,7 +506,7 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.work_item_tag_id = $3 GROUP BY project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.work_item_tag_id = $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

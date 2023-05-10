@@ -205,8 +205,8 @@ notifications.receiver,
 left join xo_tests.users as receivers on receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users as senders on senders.user_id = notifications.sender` +
-		` WHERE notifications.notification_id > $3 GROUP BY receivers.user_id, notifications.notification_id, 
-senders.user_id, notifications.notification_id `
+		` WHERE notifications.notification_id > $3 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
+senders.user_id, senders.user_id, notifications.notification_id `
 	sqlstr += c.limit
 
 	// run
@@ -245,8 +245,8 @@ notifications.receiver,
 left join xo_tests.users as receivers on receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users as senders on senders.user_id = notifications.sender` +
-		` WHERE notifications.notification_id = $3 GROUP BY receivers.user_id, notifications.notification_id, 
-senders.user_id, notifications.notification_id `
+		` WHERE notifications.notification_id = $3 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
+senders.user_id, senders.user_id, notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -287,8 +287,8 @@ notifications.receiver,
 left join xo_tests.users as receivers on receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users as senders on senders.user_id = notifications.sender` +
-		` WHERE notifications.sender = $3 GROUP BY receivers.user_id, notifications.notification_id, 
-senders.user_id, notifications.notification_id `
+		` WHERE notifications.sender = $3 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
+senders.user_id, senders.user_id, notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

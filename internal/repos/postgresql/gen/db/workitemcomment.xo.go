@@ -233,8 +233,8 @@ work_item_comments.updated_at,
 left join users as user_ids on user_ids.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items as work_item_ids on work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY user_ids.user_id, work_item_comments.work_item_comment_id, 
-work_item_ids.work_item_id, work_item_comments.work_item_comment_id `
+		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY user_ids.user_id, user_ids.user_id, work_item_comments.work_item_comment_id, 
+work_item_ids.work_item_id, work_item_ids.work_item_id, work_item_comments.work_item_comment_id `
 	sqlstr += c.limit
 
 	// run
@@ -275,8 +275,8 @@ work_item_comments.updated_at,
 left join users as user_ids on user_ids.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items as work_item_ids on work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id = $3 GROUP BY user_ids.user_id, work_item_comments.work_item_comment_id, 
-work_item_ids.work_item_id, work_item_comments.work_item_comment_id `
+		` WHERE work_item_comments.work_item_comment_id = $3 GROUP BY user_ids.user_id, user_ids.user_id, work_item_comments.work_item_comment_id, 
+work_item_ids.work_item_id, work_item_ids.work_item_id, work_item_comments.work_item_comment_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -319,8 +319,8 @@ work_item_comments.updated_at,
 left join users as user_ids on user_ids.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items as work_item_ids on work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_id = $3 GROUP BY user_ids.user_id, work_item_comments.work_item_comment_id, 
-work_item_ids.work_item_id, work_item_comments.work_item_comment_id `
+		` WHERE work_item_comments.work_item_id = $3 GROUP BY user_ids.user_id, user_ids.user_id, work_item_comments.work_item_comment_id, 
+work_item_ids.work_item_id, work_item_ids.work_item_id, work_item_comments.work_item_comment_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

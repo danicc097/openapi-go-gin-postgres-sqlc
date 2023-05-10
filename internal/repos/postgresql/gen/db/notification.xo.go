@@ -285,8 +285,8 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id > $4 GROUP BY receivers.user_id, notifications.notification_id, 
-senders.user_id, notifications.notification_id, 
+		` WHERE notifications.notification_id > $4 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
+senders.user_id, senders.user_id, notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.limit
 
@@ -342,8 +342,8 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id = $4 GROUP BY receivers.user_id, notifications.notification_id, 
-senders.user_id, notifications.notification_id, 
+		` WHERE notifications.notification_id = $4 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
+senders.user_id, senders.user_id, notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -401,8 +401,8 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6 GROUP BY receivers.user_id, notifications.notification_id, 
-senders.user_id, notifications.notification_id, 
+		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
+senders.user_id, senders.user_id, notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

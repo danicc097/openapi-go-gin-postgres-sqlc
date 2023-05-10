@@ -273,10 +273,10 @@ left join teams as team_ids on team_ids.team_id = time_entries.team_id
 left join users as user_ids on user_ids.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items as work_item_ids on work_item_ids.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.time_entry_id > $5 GROUP BY activity_ids.activity_id, time_entries.time_entry_id, 
-team_ids.team_id, time_entries.time_entry_id, 
-user_ids.user_id, time_entries.time_entry_id, 
-work_item_ids.work_item_id, time_entries.time_entry_id `
+		` WHERE time_entries.time_entry_id > $5 GROUP BY activity_ids.activity_id, activity_ids.activity_id, time_entries.time_entry_id, 
+team_ids.team_id, team_ids.team_id, time_entries.time_entry_id, 
+user_ids.user_id, user_ids.user_id, time_entries.time_entry_id, 
+work_item_ids.work_item_id, work_item_ids.work_item_id, time_entries.time_entry_id `
 	sqlstr += c.limit
 
 	// run
@@ -325,10 +325,10 @@ left join teams as team_ids on team_ids.team_id = time_entries.team_id
 left join users as user_ids on user_ids.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items as work_item_ids on work_item_ids.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.time_entry_id = $5 GROUP BY activity_ids.activity_id, time_entries.time_entry_id, 
-team_ids.team_id, time_entries.time_entry_id, 
-user_ids.user_id, time_entries.time_entry_id, 
-work_item_ids.work_item_id, time_entries.time_entry_id `
+		` WHERE time_entries.time_entry_id = $5 GROUP BY activity_ids.activity_id, activity_ids.activity_id, time_entries.time_entry_id, 
+team_ids.team_id, team_ids.team_id, time_entries.time_entry_id, 
+user_ids.user_id, user_ids.user_id, time_entries.time_entry_id, 
+work_item_ids.work_item_id, work_item_ids.work_item_id, time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -379,10 +379,10 @@ left join teams as team_ids on team_ids.team_id = time_entries.team_id
 left join users as user_ids on user_ids.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items as work_item_ids on work_item_ids.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6 GROUP BY activity_ids.activity_id, time_entries.time_entry_id, 
-team_ids.team_id, time_entries.time_entry_id, 
-user_ids.user_id, time_entries.time_entry_id, 
-work_item_ids.work_item_id, time_entries.time_entry_id `
+		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6 GROUP BY activity_ids.activity_id, activity_ids.activity_id, time_entries.time_entry_id, 
+team_ids.team_id, team_ids.team_id, time_entries.time_entry_id, 
+user_ids.user_id, user_ids.user_id, time_entries.time_entry_id, 
+work_item_ids.work_item_id, work_item_ids.work_item_id, time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -435,10 +435,10 @@ left join teams as team_ids on team_ids.team_id = time_entries.team_id
 left join users as user_ids on user_ids.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items as work_item_ids on work_item_ids.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6 GROUP BY activity_ids.activity_id, time_entries.time_entry_id, 
-team_ids.team_id, time_entries.time_entry_id, 
-user_ids.user_id, time_entries.time_entry_id, 
-work_item_ids.work_item_id, time_entries.time_entry_id `
+		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6 GROUP BY activity_ids.activity_id, activity_ids.activity_id, time_entries.time_entry_id, 
+team_ids.team_id, team_ids.team_id, time_entries.time_entry_id, 
+user_ids.user_id, user_ids.user_id, time_entries.time_entry_id, 
+work_item_ids.work_item_id, work_item_ids.work_item_id, time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

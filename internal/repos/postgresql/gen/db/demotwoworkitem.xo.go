@@ -202,7 +202,7 @@ demo_two_work_items.custom_date_for_project_2,
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join work_items as work_item_ids on work_item_ids.work_item_id = demo_two_work_items.work_item_id` +
-		` WHERE demo_two_work_items.work_item_id > $2 GROUP BY work_item_ids.work_item_id, demo_two_work_items.work_item_id `
+		` WHERE demo_two_work_items.work_item_id > $2 GROUP BY work_item_ids.work_item_id, work_item_ids.work_item_id, demo_two_work_items.work_item_id `
 	sqlstr += c.limit
 
 	// run
@@ -236,7 +236,7 @@ demo_two_work_items.custom_date_for_project_2,
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join work_items as work_item_ids on work_item_ids.work_item_id = demo_two_work_items.work_item_id` +
-		` WHERE demo_two_work_items.work_item_id = $2 GROUP BY work_item_ids.work_item_id, demo_two_work_items.work_item_id `
+		` WHERE demo_two_work_items.work_item_id = $2 GROUP BY work_item_ids.work_item_id, work_item_ids.work_item_id, demo_two_work_items.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

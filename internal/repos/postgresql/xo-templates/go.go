@@ -2766,7 +2766,7 @@ const (
 	// join in user.xo.go. Will need to use tables[joinTable].PrimaryKeys
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
 	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
-	O2OGroupBy = `{{.JoinTableAlias}}.{{.JoinColumn}}, {{.CurrentTablePKGroupBys}}`
+	O2OGroupBy = `{{.JoinTableAlias}}.{{.JoinColumn}}, {{.JoinTablePKGroupBys}}, {{.CurrentTablePKGroupBys}}`
 )
 
 const (
@@ -3048,7 +3048,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			joinTable := tables[c.RefTableName]
 			var joinTablePKGroupBys []string
 			for _, pk := range joinTable.PrimaryKeys {
-				joinTablePKGroupBys = append(joinTablePKGroupBys, c.RefTableName+"."+pk.SQLName)
+				joinTablePKGroupBys = append(joinTablePKGroupBys, params["JoinTableAlias"].(string)+"."+pk.SQLName)
 			}
 			params["JoinTablePKGroupBys"] = strings.Join(joinTablePKGroupBys, ", ")
 
