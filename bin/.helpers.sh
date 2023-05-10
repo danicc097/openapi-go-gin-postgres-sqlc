@@ -34,18 +34,11 @@ ensure_pwd_is_top_level() {
   fi
 
   cd "$TOP_LEVEL_DIR" || true
-
-  #   if [[ "$PWD" != "$TOP_LEVEL_DIR" ]] && [[ -z "$IS_TESTING" && -z "$IGNORE_PWD" ]]; then
-  #     echo >&2 "
-  # Please run this script from the top level of the repository.
-  # Top level: $TOP_LEVEL_DIR
-  # Current directory: $PWD"
-  #     exit
-  #   fi
 }
 
 # Prompt the user for confirmation.
-# NOTE: at least VSCode terminal can mess buffers up on occassion and require a new session.
+# NOTE: at least VSCode terminal can mess buffers up on occassion and require a new session when
+# used inside a subshell with xlog/xerr.
 confirm() {
   test -n "$NO_CONFIRMATION" && return
 
