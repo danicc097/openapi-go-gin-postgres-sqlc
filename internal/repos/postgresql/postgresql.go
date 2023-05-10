@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"strings"
 	"sync"
 
 	zapadapter "github.com/jackc/pgx-zap"
@@ -51,7 +50,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		}
 	}
 
-	searchPaths := []string{"public"}
+	searchPaths := []string{"public", "xo_tests"}
 	conn, err := pgx.Connect(context.Background(), dsn.String())
 	typeNames, err := queryDatabaseTypeNames(context.Background(), conn, searchPaths...)
 	if err != nil {
@@ -106,30 +105,34 @@ func registerDataTypes(ctx context.Context, conn *pgx.Conn, typeNames []string) 
 }
 
 func queryDatabaseTypeNames(ctx context.Context, conn *pgx.Conn, searchPaths ...string) ([]string, error) {
-	query := fmt.Sprintf(`SELECT table_name
+	var typeNames []string
+	for _, sp := range searchPaths {
+		query := fmt.Sprintf(`SELECT table_name
 	FROM information_schema.tables
-	WHERE table_schema IN ('%s')`, strings.Join(searchPaths, "', '"))
-	tableTypes, err := queryTypeNames(conn, query)
-	if err != nil {
-		return []string{}, fmt.Errorf("querying table names: %w", err)
-	}
+	WHERE table_schema IN ('%s')`, sp)
+		tableTypes, err := queryTypeNames(conn, query, sp)
+		if err != nil {
+			return []string{}, fmt.Errorf("querying table names: %w", err)
+		}
 
-	query = fmt.Sprintf(`SELECT t.typname AS enum_name
+		query = fmt.Sprintf(`SELECT t.typname AS enum_name
 	FROM pg_type t
 	INNER JOIN pg_namespace n ON n.oid = t.typnamespace
-	WHERE t.typtype = 'e' AND n.nspname IN ('%s');`, strings.Join(searchPaths, "', '"))
-	enumTypes, err := queryTypeNames(conn, query)
-	if err != nil {
-		return []string{}, fmt.Errorf("querying enum names: %w", err)
+	WHERE t.typtype = 'e' AND n.nspname IN ('%s');`, sp)
+		enumTypes, err := queryTypeNames(conn, query, sp)
+		if err != nil {
+			return []string{}, fmt.Errorf("querying enum names: %w", err)
+		}
+
+		// register enumTypes first, in case they're used in tables
+		tn := append(enumTypes, tableTypes...)
+		typeNames = append(typeNames, tn...)
 	}
 
-	// register enumTypes first, in case they're used in tables
-	typeNames := append(enumTypes, tableTypes...)
-
-	return typeNames, err
+	return typeNames, nil
 }
 
-func queryTypeNames(conn *pgx.Conn, query string) ([]string, error) {
+func queryTypeNames(conn *pgx.Conn, query string, searchPath string) ([]string, error) {
 	names := []string{}
 	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
@@ -143,8 +146,8 @@ func queryTypeNames(conn *pgx.Conn, query string) ([]string, error) {
 		if err != nil {
 			return []string{}, fmt.Errorf("rows.Scan: %w", err)
 		}
-		names = append(names, enumName)
-		names = append(names, "_"+enumName) // postgres internal array type automatically created
+		names = append(names, searchPath+"."+enumName)
+		names = append(names, searchPath+"."+"_"+enumName) // postgres internal array type automatically created
 	}
 	if err = rows.Err(); err != nil {
 		return []string{}, fmt.Errorf("rows.Next: %w", err)

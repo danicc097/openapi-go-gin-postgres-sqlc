@@ -1,5 +1,6 @@
 create schema if not exists extensions;
 
+drop schema if exists xo_tests CASCADE;
 create schema if not exists xo_tests;
 
 create table xo_tests.users (
@@ -43,18 +44,14 @@ comment on column xo_tests.book_reviews.book_id is '"cardinality":M2O';
 
 do $BODY$
 declare
-  user_1_id uuid;
-  user_2_id uuid;
+  user_1_id uuid := '8bfb8359-28e0-4039-9259-3c98ada7300d';
+  user_2_id uuid := '78b8db3e-9900-4ca2-9875-fd1eb59acf71';
 begin
-  insert into xo_tests.users (name , created_at)
-    values ('John Doe' , current_timestamp)
-  returning
-    user_id into user_1_id;
+  insert into xo_tests.users (user_id, name , created_at)
+    values (user_1_id, 'John Doe' , current_timestamp);
   -- PERFORM pg_sleep(0.5); -- not working for some reason
-  insert into xo_tests.users (name , created_at)
-    values ('Jane Smith' , current_timestamp + '1 h')
-  returning
-    user_id into user_2_id;
+  insert into xo_tests.users (user_id, name , created_at)
+    values (user_2_id, 'Jane Smith' , current_timestamp + '1 h');
 
   insert into xo_tests.books (name)
     values ('Book 1');
