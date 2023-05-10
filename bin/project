@@ -841,21 +841,25 @@ x.test.xo() {
     rm -rf "$test_dir/got"
     mkdir -p "$test_dir/got"
     xo_schema -o "$test_dir/got" --debug \
-      --schema public \
+      --schema xo_tests \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" >/dev/null || err "Failed xo public schema generation"
+      --ignore "*.updated_at" >/dev/null || err "Failed xo xo_tests schema generation"
 
     files=$(find "$test_dir/got" \
       -name "*.go")
     goimports -w $files
     gofumpt -w $files
 
-    if ! $test_dir/run_tests; then
+    # TODO should have some simple unit tests with pgx before prompting to update.
+    # - check m2m joins with extra fields
+
+    if ! $test_dir/diff_check; then
       confirm "Do you want to update test snapshot with current changes?" </dev/tty >/dev/tty && {
         rm -rf "$test_dir/want"
         cp -r "$test_dir/got" "$test_dir/want"
       }
     fi
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

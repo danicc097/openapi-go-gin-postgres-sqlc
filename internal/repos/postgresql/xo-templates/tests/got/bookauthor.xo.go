@@ -13,7 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// BookAuthor represents a row from 'public.book_authors'.
+// BookAuthor represents a row from 'xo_tests.book_authors'.
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
@@ -27,7 +27,7 @@ type BookAuthor struct {
 	AuthorsJoin *[]BookAuthor_Author `json:"-" db:"authors" openapi-go:"ignore"` // M2M
 }
 
-// BookAuthorCreateParams represents insert params for 'public.book_authors'.
+// BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
 type BookAuthorCreateParams struct {
 	BookID    int       `json:"bookID" required:"true"`    // book_id
 	AuthorID  uuid.UUID `json:"authorID" required:"true"`  // author_id
@@ -45,14 +45,14 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 	return ba.Insert(ctx, db)
 }
 
-// BookAuthorUpdateParams represents update params for 'public.book_authors'
+// BookAuthorUpdateParams represents update params for 'xo_tests.book_authors'
 type BookAuthorUpdateParams struct {
 	BookID    *int       `json:"bookID" required:"true"`    // book_id
 	AuthorID  *uuid.UUID `json:"authorID" required:"true"`  // author_id
 	Pseudonym **string   `json:"pseudonym" required:"true"` // pseudonym
 }
 
-// SetUpdateParams updates public.book_authors struct fields with the specified params.
+// SetUpdateParams updates xo_tests.book_authors struct fields with the specified params.
 func (ba *BookAuthor) SetUpdateParams(params *BookAuthorUpdateParams) {
 	if params.BookID != nil {
 		ba.BookID = *params.BookID
@@ -106,7 +106,7 @@ type BookAuthor_Author struct {
 // Insert inserts the BookAuthor to the database.
 func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO public.book_authors (` +
+	sqlstr := `INSERT INTO xo_tests.book_authors (` +
 		`book_id, author_id, pseudonym` +
 		`) VALUES (` +
 		`$1, $2, $3` +
@@ -130,7 +130,7 @@ func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 // Update updates a BookAuthor in the database.
 func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.book_authors SET ` +
+	sqlstr := `UPDATE xo_tests.book_authors SET ` +
 		`pseudonym = $1 ` +
 		`WHERE book_id = $2  AND author_id = $3 ` +
 		`RETURNING * `
@@ -179,7 +179,7 @@ func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreat
 // Delete deletes the BookAuthor from the database.
 func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.book_authors ` +
+	sqlstr := `DELETE FROM xo_tests.book_authors ` +
 		`WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, ba.BookID, ba.AuthorID); err != nil {
@@ -188,7 +188,7 @@ func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// BookAuthorByBookIDAuthorID retrieves a row from 'public.book_authors' as a BookAuthor.
+// BookAuthorByBookIDAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
@@ -210,7 +210,7 @@ book_authors.pseudonym,
 		joined_author_ids.__users
 		, joined_author_ids.pseudonym
 		)) end) as author_ids ` +
-		`FROM public.book_authors ` +
+		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -256,7 +256,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 	return &ba, nil
 }
 
-// BookAuthorsByBookID retrieves a row from 'public.book_authors' as a BookAuthor.
+// BookAuthorsByBookID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
@@ -278,7 +278,7 @@ book_authors.pseudonym,
 		joined_author_ids.__users
 		, joined_author_ids.pseudonym
 		)) end) as author_ids ` +
-		`FROM public.book_authors ` +
+		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -326,7 +326,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 	return res, nil
 }
 
-// BookAuthorsByAuthorID retrieves a row from 'public.book_authors' as a BookAuthor.
+// BookAuthorsByAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
@@ -348,7 +348,7 @@ book_authors.pseudonym,
 		joined_author_ids.__users
 		, joined_author_ids.pseudonym
 		)) end) as author_ids ` +
-		`FROM public.book_authors ` +
+		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select

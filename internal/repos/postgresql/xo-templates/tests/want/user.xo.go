@@ -15,7 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// User represents a row from 'public.users'.
+// User represents a row from 'xo_tests.users'.
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
@@ -31,7 +31,7 @@ type User struct {
 	BookReviewsJoin *[]BookReview `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
 }
 
-// UserCreateParams represents insert params for 'public.users'.
+// UserCreateParams represents insert params for 'xo_tests.users'.
 type UserCreateParams struct {
 	Name string `json:"name" required:"true"` // name
 }
@@ -45,12 +45,12 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 	return u.Insert(ctx, db)
 }
 
-// UserUpdateParams represents update params for 'public.users'
+// UserUpdateParams represents update params for 'xo_tests.users'
 type UserUpdateParams struct {
 	Name *string `json:"name" required:"true"` // name
 }
 
-// SetUpdateParams updates public.users struct fields with the specified params.
+// SetUpdateParams updates xo_tests.users struct fields with the specified params.
 func (u *User) SetUpdateParams(params *UserUpdateParams) {
 	if params.Name != nil {
 		u.Name = *params.Name
@@ -126,7 +126,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO public.users (` +
+	sqlstr := `INSERT INTO xo_tests.users (` +
 		`name, deleted_at` +
 		`) VALUES (` +
 		`$1, $2` +
@@ -151,7 +151,7 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 // Update updates a User in the database.
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.users SET ` +
+	sqlstr := `UPDATE xo_tests.users SET ` +
 		`name = $1, deleted_at = $2 ` +
 		`WHERE user_id = $3 ` +
 		`RETURNING * `
@@ -198,7 +198,7 @@ func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*Us
 // Delete deletes the User from the database.
 func (u *User) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.users ` +
+	sqlstr := `DELETE FROM xo_tests.users ` +
 		`WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
@@ -210,7 +210,7 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the User from the database via 'deleted_at'.
 func (u *User) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.users ` +
+	sqlstr := `UPDATE xo_tests.users ` +
 		`SET deleted_at = NOW() ` +
 		`WHERE user_id = $1 `
 	// run
@@ -251,7 +251,7 @@ users.deleted_at,
 		joined_books.__books
 		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews `+
-		`FROM public.users `+
+		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -291,7 +291,7 @@ joined_book_reviews.book_reviews, users.user_id  ORDER BY
 	return res, nil
 }
 
-// UserByCreatedAt retrieves a row from 'public.users' as a User.
+// UserByCreatedAt retrieves a row from 'xo_tests.users' as a User.
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
@@ -312,7 +312,7 @@ users.deleted_at,
 		joined_books.__books
 		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews `+
-		`FROM public.users `+
+		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -353,7 +353,7 @@ joined_book_reviews.book_reviews, users.user_id `, c.deletedAt)
 	return &u, nil
 }
 
-// UserByUserID retrieves a row from 'public.users' as a User.
+// UserByUserID retrieves a row from 'xo_tests.users' as a User.
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
@@ -374,7 +374,7 @@ users.deleted_at,
 		joined_books.__books
 		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews `+
-		`FROM public.users `+
+		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
