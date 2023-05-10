@@ -852,8 +852,8 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    APP_ENV="$env" go test "$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests" &&
-      echo "${GREEN}✓ xo tests passing${OFF}"
+    APP_ENV="$env" go test "$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests" ||
+      err "xo tests failed"
 
     if ! $test_dir/diff_check; then
       confirm "Do you want to update test snapshot with current changes?" && {

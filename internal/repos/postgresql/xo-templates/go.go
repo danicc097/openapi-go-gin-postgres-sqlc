@@ -2758,7 +2758,7 @@ const (
 		)) end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
-	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
+	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`
 )
 
 const (
@@ -2766,7 +2766,7 @@ const (
 	// join in user.xo.go. Will need to use tables[joinTable].PrimaryKeys
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
 	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
-	O2OGroupBy = `{{.JoinTable}}.{{.JoinColumn}}, {{.JoinTablePKGroupBys}}, {{.CurrentTablePKGroupBys}}`
+	O2OGroupBy = `{{.JoinTableAlias}}.{{.JoinColumn}}, {{.CurrentTablePKGroupBys}}`
 )
 
 const (
@@ -2799,7 +2799,7 @@ left join (
   group by
         {{.JoinColumn}}) joined_{{.JoinTable}}{{.ClashSuffix}} on joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 	O2OJoin = `
-left join {{.Schema}}{{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
+left join {{.Schema}}{{.JoinTable}} as {{.JoinTableAlias}} on {{.JoinTableAlias}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 )
 
 // sqlstr_index builds a index fields.
@@ -3037,6 +3037,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			params["JoinColumn"] = c.RefColumnName
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
+			params["JoinTableAlias"] = c.ColumnName + "s"
 			params["CurrentTable"] = table.SQLName
 			// FIXME need to check joinClash after creating dummy constraints
 			// (case when $1::boolean = true and receivers.user_id is not null then row(receivers.*) end) as user_receiver,
