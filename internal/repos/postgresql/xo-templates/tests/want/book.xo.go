@@ -85,7 +85,8 @@ func WithBookJoin(joins BookJoins) BookSelectConfigOption {
 }
 
 type Book_Author struct {
-	User User `json:"user" db:"users"`
+	User      User    `json:"user" db:"users"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 
 // Insert inserts the Book to the database.
@@ -184,7 +185,8 @@ func BookPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookS
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then ARRAY_AGG((
-		joined_author_ids.__author_ids
+		joined_author_ids.__users
+		, joined_author_ids.pseudonym
 		)) end) as author_ids,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
 		`FROM public.books ` +
@@ -192,12 +194,14 @@ books.name,
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, row(users.*) as __author_ids
+			, book_authors.pseudonym as pseudonym
+			, row(users.*) as __users
 		from book_authors
     	join users on users.user_id = book_authors.author_id
     group by
 			book_authors_book_id
 			, users.user_id
+			, pseudonym
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = books.book_id
 
 -- M2O join generated from "book_reviews_book_id_fkey"
@@ -241,7 +245,8 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then ARRAY_AGG((
-		joined_author_ids.__author_ids
+		joined_author_ids.__users
+		, joined_author_ids.pseudonym
 		)) end) as author_ids,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
 		`FROM public.books ` +
@@ -249,12 +254,14 @@ books.name,
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, row(users.*) as __author_ids
+			, book_authors.pseudonym as pseudonym
+			, row(users.*) as __users
 		from book_authors
     	join users on users.user_id = book_authors.author_id
     group by
 			book_authors_book_id
 			, users.user_id
+			, pseudonym
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = books.book_id
 
 -- M2O join generated from "book_reviews_book_id_fkey"
