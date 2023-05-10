@@ -50,6 +50,8 @@ create table xo_tests.notifications (
   , foreign key (receiver) references xo_tests.users (user_id) on delete cascade
 );
 
+create index on xo_tests.notifications (sender);
+
 comment on column xo_tests.notifications.sender is '"cardinality":M2O';
 
 comment on column xo_tests.notifications.receiver is '"cardinality":M2O';
@@ -81,6 +83,13 @@ begin
     values (1 , user_1_id);
   insert into xo_tests.book_reviews (book_id , reviewer)
     values (2 , user_2_id);
+
+  insert into xo_tests.notifications (body , receiver , sender)
+    values ('body 1' , user_2_id , user_1_id);
+  insert into xo_tests.notifications (body , receiver , sender)
+    values ('body 2' , user_2_id , user_1_id);
+  insert into xo_tests.notifications (body , receiver , sender)
+    values ('body 2' , user_1_id , user_2_id);
 end;
 $BODY$
 language plpgsql;

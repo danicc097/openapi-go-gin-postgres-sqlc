@@ -264,6 +264,50 @@ users.user_id, users.user_id, notifications.notification_id `
 	return &n, nil
 }
 
+// NotificationsBySender retrieves a row from 'xo_tests.notifications' as a Notification.
+//
+// Generated from index 'notifications_sender_idx'.
+func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+	c := &NotificationSelectConfig{joins: NotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`notifications.notification_id,
+notifications.body,
+notifications.sender,
+notifications.receiver,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+		`FROM xo_tests.notifications ` +
+		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
+left join xo_tests.users on users.user_id = notifications.receiver
+-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
+left join xo_tests.users on users.user_id = notifications.sender` +
+		` WHERE notifications.sender = $3 GROUP BY users.user_id, users.user_id, notifications.notification_id, 
+users.user_id, users.user_id, notifications.notification_id `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	// logf(sqlstr, sender)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, sender)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/Query: %w", err))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // FKUser_Receiver returns the User associated with the Notification's (Receiver).
 //
 // Generated from foreign key 'notifications_receiver_fkey'.
