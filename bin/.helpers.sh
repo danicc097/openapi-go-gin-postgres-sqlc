@@ -37,8 +37,6 @@ ensure_pwd_is_top_level() {
 }
 
 # Prompt the user for confirmation.
-# NOTE: at least VSCode terminal can mess buffers up on occassion and require a new session when
-# used inside a subshell with xlog/xerr.
 confirm() {
   test -n "$NO_CONFIRMATION" && return
 
@@ -52,9 +50,9 @@ confirm() {
   # Always read input from the terminal ignoring pipelines
   exec </dev/tty
 
+  sleep 0.3 # for some reason there's a race between xlog/xerr and this prompt with VSCode terminal
   while true; do
-    # output the prompt directly to the terminal ignoring pipelines
-    echo "$prompt "
+    printf "\n%s " "$prompt"
     read -r response
     case "${response,,}" in
     [y][e][s] | [y])

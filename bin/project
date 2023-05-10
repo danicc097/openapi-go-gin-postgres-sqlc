@@ -37,8 +37,6 @@ xlog() {
 
   local _=$(printf "%*s |\n" $((max_len + 1)) "$fname")
   sed -ue "s/^/${color}$fname >${OFF} /"
-
-  # return ${PIPESTATUS[0]}
 }
 
 # log stderr for any function output.
@@ -55,8 +53,6 @@ xerr() {
 
   local _=$(printf "%*s |\n" $((max_len + 1)) "$fname")
   sed -ue "s/^/${RED}$fname >${OFF} /" >&2
-
-  # return ${PIPESTATUS[0]}
 }
 
 kill_descendants() {
