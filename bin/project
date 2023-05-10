@@ -852,10 +852,11 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    go test github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests
+    APP_ENV="$env" go test "$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests" &&
+      echo "${GREEN}✓ xo tests passing${OFF}"
 
     if ! $test_dir/diff_check; then
-      confirm "Do you want to update test snapshot with current changes?" </dev/tty >/dev/tty && {
+      confirm "Do you want to update test snapshot with current changes?" && {
         rm -rf "$test_dir/want"
         cp -r "$test_dir/got" "$test_dir/want"
       }

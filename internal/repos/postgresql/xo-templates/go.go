@@ -3038,6 +3038,9 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
 			params["CurrentTable"] = table.SQLName
+			// FIXME need to check joinClash after creating dummy constraints
+			// (case when $1::boolean = true and receivers.user_id is not null then row(receivers.*) end) as user_receiver,
+			// left join xo_tests.users as receivers on receivers.user_id = notifications.receiver
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
