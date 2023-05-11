@@ -1058,7 +1058,7 @@ cc_label:
 			// viceversa we don't care as it's a regular PK.
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
-				fmt.Printf("convertConstraints: %s.%s is a single foreign and primary key in O2O\n", constraint.RefTableName, constraint.ColumnName)
+				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", constraint.RefTableName, constraint.ColumnName)
 				cc = append(cc, Constraint{
 					Type:           constraint.Type,
 					Cardinality:    O2O,
@@ -3538,8 +3538,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 
 				if isSingleFK && isSinglePK {
-					fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", c.TableName, c.ColumnName)
-					joinName = joinPrefix + inflector.Singularize(c.TableName) + "_" + inflector.Singularize(c.ColumnName)
 				}
 
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)

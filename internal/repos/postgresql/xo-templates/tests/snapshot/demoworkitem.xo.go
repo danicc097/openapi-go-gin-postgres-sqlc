@@ -21,7 +21,7 @@ type DemoWorkItem struct {
 	WorkItemID int64 `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
 	Checked    bool  `json:"checked" db:"checked" required:"true"`         // checked
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_demo_work_item_work_item_id" openapi-go:"ignore"` // O2O (inferred)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O (inferred)
 }
 
 // DemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.

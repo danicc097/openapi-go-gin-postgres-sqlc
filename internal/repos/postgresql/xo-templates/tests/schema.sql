@@ -115,6 +115,20 @@ begin
     values ('body 2' , user_2_id , user_1_id);
   insert into xo_tests.notifications (body , receiver , sender)
     values ('body 2' , user_1_id , user_2_id);
+
+  insert into xo_tests.work_items (title)
+    values ('Work Item 1');
+  insert into xo_tests.work_items (title)
+    values ('Work Item 2');
+  insert into xo_tests.work_items (title)
+    values ('Work Item 3');
+
+  insert into xo_tests.demo_work_items (work_item_id, checked)
+    values (1, true);
+  insert into xo_tests.demo_work_items (work_item_id, checked)
+    values (2, false);
+  insert into xo_tests.demo_work_items (work_item_id, checked)
+    values (3, true);
 end;
 $BODY$
 language plpgsql;

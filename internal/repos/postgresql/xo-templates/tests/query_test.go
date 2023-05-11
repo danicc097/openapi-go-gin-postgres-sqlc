@@ -47,3 +47,21 @@ func TestM2O(t *testing.T) {
 	assert.Len(t, *u.NotificationsJoinSender, 2)
 	assert.Equal(t, n[0].UserJoinSender.UserID, userID)
 }
+
+func TestO2O_PKisFK(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	id := int64(1)
+
+	dwi, err := db.DemoWorkItemByWorkItemID(ctx, testPool, id, db.WithDemoWorkItemJoin(db.DemoWorkItemJoins{WorkItem: true}))
+	assert.NoError(t, err)
+	assert.Equal(t, dwi.WorkItemID, id)
+	assert.Equal(t, dwi.WorkItemJoin.WorkItemID, id)
+
+	wi, err := db.WorkItemByWorkItemID(ctx, testPool, id, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
+	assert.NoError(t, err)
+	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, id)
+	assert.Equal(t, wi.WorkItemID, id)
+}
