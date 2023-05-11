@@ -41,7 +41,7 @@ import {
   DbWorkItemTagCreateParams,
   DbWorkItemTypeCreateParams,
   DbWorkItemRole,
-  DbWorkItem_Member,
+  DbWorkItem_AssignedUser,
   NotificationType,
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
@@ -111,7 +111,10 @@ export const schemaDefinitions = {
     '#/definitions/DbWorkItemTypeCreateParams',
   ),
   DbWorkItemRole: info<DbWorkItemRole>('DbWorkItemRole', '#/definitions/DbWorkItemRole'),
-  DbWorkItem_Member: info<DbWorkItem_Member>('DbWorkItem_Member', '#/definitions/DbWorkItem_Member'),
+  DbWorkItem_AssignedUser: info<DbWorkItem_AssignedUser>(
+    'DbWorkItem_AssignedUser',
+    '#/definitions/DbWorkItem_AssignedUser',
+  ),
   NotificationType: info<NotificationType>('NotificationType', '#/definitions/NotificationType'),
   DemoProjectKanbanSteps: info<DemoProjectKanbanSteps>(
     'DemoProjectKanbanSteps',

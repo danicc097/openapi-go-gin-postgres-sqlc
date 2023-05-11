@@ -305,7 +305,7 @@ export interface DbWorkItemTypeCreateParams {
   name?: string
   projectID?: number
 }
-export interface DbWorkItem_Member {
+export interface DbWorkItem_AssignedUser {
   role: WorkItemRole
   user?: DbUser
 }

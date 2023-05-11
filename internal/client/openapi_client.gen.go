@@ -416,8 +416,8 @@ type DbWorkItemTypeCreateParams struct {
 	ProjectID   *int    `json:"projectID,omitempty"`
 }
 
-// DbWorkItemMember defines the model for DbWorkItem_Member.
-type DbWorkItemMember struct {
+// DbWorkItemAssignedUser defines the model for DbWorkItem_AssignedUser.
+type DbWorkItemAssignedUser struct {
 	// Role represents a database 'work_item_role'
 	Role WorkItemRole `json:"role"`
 	User *DbUser      `json:"user,omitempty"`

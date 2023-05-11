@@ -1171,7 +1171,7 @@
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DbWorkItem_Member": {
+    "DbWorkItem_AssignedUser": {
       "properties": {
         "role": {
           "$ref": "#/definitions/WorkItemRole"
@@ -1375,8 +1375,8 @@
     "DbWorkItemRole": {
       "$ref": "#/definitions/DbWorkItemRole"
     },
-    "DbWorkItem_Member": {
-      "$ref": "#/definitions/DbWorkItem_Member"
+    "DbWorkItem_AssignedUser": {
+      "$ref": "#/definitions/DbWorkItem_AssignedUser"
     },
     "NotificationType": {
       "$ref": "#/definitions/NotificationType"

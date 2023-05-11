@@ -156,7 +156,7 @@ left join (
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.user_id
+    join xo_tests.users on users.user_id = book_sellers.seller
     group by
 			book_sellers_book_id
 			, users.user_id
@@ -224,7 +224,7 @@ left join (
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.user_id
+    join xo_tests.users on users.user_id = book_sellers.seller
     group by
 			book_sellers_book_id
 			, users.user_id
@@ -294,7 +294,7 @@ left join (
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.user_id
+    join xo_tests.users on users.user_id = book_sellers.seller
     group by
 			book_sellers_book_id
 			, users.user_id

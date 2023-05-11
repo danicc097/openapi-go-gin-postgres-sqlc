@@ -211,15 +211,17 @@ create trigger notifications_fan_out
 
 create table user_team (
   team_id int not null
-  , user_id uuid not null
-  , primary key (user_id , team_id)
-  , foreign key (user_id) references users (user_id) on delete cascade
+  , member uuid not null
+  , primary key (member , team_id)
+  , foreign key (member) references users (user_id) on delete cascade
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
 
-create index on user_team (team_id , user_id);
+create index on user_team (team_id , member);
 
-comment on column user_team.user_id is '"cardinality":M2M';
+create index on user_team (member);
+
+comment on column user_team.member is '"cardinality":M2M';
 
 comment on column user_team.team_id is '"cardinality":M2M';
 
@@ -399,22 +401,22 @@ create type work_item_role as ENUM (
   , 'reviewer'
 );
 
-create table work_item_member (
+create table work_item_assigned_user (
   work_item_id bigint not null
-  , member uuid not null
+  , assigned_user uuid not null
   , role work_item_role not null
-  , primary key (work_item_id , member)
+  , primary key (work_item_id , assigned_user)
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
-  , foreign key (member) references users (user_id) on delete cascade
+  , foreign key (assigned_user) references users (user_id) on delete cascade
 );
 
-create index on work_item_member (member , work_item_id);
+create index on work_item_assigned_user (assigned_user , work_item_id);
 
-comment on column work_item_member.role is '"type":models.WorkItemRole';
+comment on column work_item_assigned_user.role is '"type":models.WorkItemRole';
 
-comment on column work_item_member.work_item_id is '"cardinality":M2M';
+comment on column work_item_assigned_user.work_item_id is '"cardinality":M2M';
 
-comment on column work_item_member.member is '"cardinality":M2M';
+comment on column work_item_assigned_user.assigned_user is '"cardinality":M2M';
 
 -- must be completely dynamic on a project basis
 create table activities (
@@ -464,8 +466,6 @@ create index on time_entries (user_id , team_id);
 
 -- show user his timelog based on what projects are selected
 create index on time_entries (work_item_id , team_id);
-
-create index on user_team (user_id);
 
 -- grpc demo
 create table movies (

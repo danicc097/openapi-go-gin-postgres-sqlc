@@ -315,7 +315,7 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID uuid.UUID, team
 
 	_, err := db.CreateUserTeam(ctx, d, &db.UserTeamCreateParams{
 		TeamID: teamID,
-		UserID: userID,
+		Member: userID,
 	})
 	if err != nil {
 		return fmt.Errorf("db.CreateUserTeam: %w", err)

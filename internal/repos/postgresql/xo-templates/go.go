@@ -3030,7 +3030,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 		params["JoinTable"] = c.RefTableName
 		params["LookupRefColumn"] = c.LookupRefColumn
 		params["JoinTablePK"] = c.RefColumnName
-		params["LookupJoinTablePK"] = c.RefColumnName
+		params["LookupJoinTablePK"] = c.ColumnName
 		params["LookupJoinTablePKAgg"] = c.RefTableName
 		params["LookupJoinTablePKSuffix"] = c.RefTableName
 		params["CurrentTable"] = table.SQLName

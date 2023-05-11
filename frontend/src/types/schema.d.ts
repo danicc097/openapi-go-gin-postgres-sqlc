@@ -390,7 +390,7 @@ export interface components {
       projectID?: number;
     };
     DbWorkItemRole: string;
-    DbWorkItem_Member: {
+    DbWorkItem_AssignedUser: {
       role: components["schemas"]["WorkItemRole"];
       user?: components["schemas"]["DbUser"];
     };

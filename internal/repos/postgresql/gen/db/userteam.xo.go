@@ -17,24 +17,24 @@ import (
 //   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
-	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
+	Member uuid.UUID `json:"member" db:"member" required:"true"`  // member
 
-	UsersJoinTeam *[]User `json:"-" db:"users_team" openapi-go:"ignore"` // M2M
-	TeamsJoinUser *[]Team `json:"-" db:"teams_user" openapi-go:"ignore"` // M2M
+	TeamsJoinMember *[]Team `json:"-" db:"teams_member" openapi-go:"ignore"` // M2M
+	MembersJoin     *[]User `json:"-" db:"members" openapi-go:"ignore"`      // M2M
 
 }
 
 // UserTeamCreateParams represents insert params for 'public.user_team'.
 type UserTeamCreateParams struct {
 	TeamID int       `json:"teamID" required:"true"` // team_id
-	UserID uuid.UUID `json:"userID" required:"true"` // user_id
+	Member uuid.UUID `json:"member" required:"true"` // member
 }
 
 // CreateUserTeam creates a new UserTeam in the database with the given params.
 func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*UserTeam, error) {
 	ut := &UserTeam{
 		TeamID: params.TeamID,
-		UserID: params.UserID,
+		Member: params.Member,
 	}
 
 	return ut.Insert(ctx, db)
@@ -43,7 +43,7 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 // UserTeamUpdateParams represents update params for 'public.user_team'
 type UserTeamUpdateParams struct {
 	TeamID *int       `json:"teamID" required:"true"` // team_id
-	UserID *uuid.UUID `json:"userID" required:"true"` // user_id
+	Member *uuid.UUID `json:"member" required:"true"` // member
 }
 
 // SetUpdateParams updates public.user_team struct fields with the specified params.
@@ -51,8 +51,8 @@ func (ut *UserTeam) SetUpdateParams(params *UserTeamUpdateParams) {
 	if params.TeamID != nil {
 		ut.TeamID = *params.TeamID
 	}
-	if params.UserID != nil {
-		ut.UserID = *params.UserID
+	if params.Member != nil {
+		ut.Member = *params.Member
 	}
 }
 
@@ -77,16 +77,16 @@ type UserTeamOrderBy = string
 const ()
 
 type UserTeamJoins struct {
-	UsersTeam bool
-	TeamsUser bool
+	TeamsMember bool
+	Members     bool
 }
 
 // WithUserTeamJoin joins with the given tables.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.joins = UserTeamJoins{
-			UsersTeam: s.joins.UsersTeam || joins.UsersTeam,
-			TeamsUser: s.joins.TeamsUser || joins.TeamsUser,
+			TeamsMember: s.joins.TeamsMember || joins.TeamsMember,
+			Members:     s.joins.Members || joins.Members,
 		}
 	}
 }
@@ -95,14 +95,14 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	// insert (manual)
 	sqlstr := `INSERT INTO public.user_team (` +
-		`team_id, user_id` +
+		`team_id, member` +
 		`) VALUES (` +
 		`$1, $2` +
 		`)` +
 		` RETURNING * `
 	// run
-	logf(sqlstr, ut.TeamID, ut.UserID)
-	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.UserID)
+	logf(sqlstr, ut.TeamID, ut.Member)
+	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.Member)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/Insert/db.Query: %w", err))
 	}
@@ -121,18 +121,18 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
 	sqlstr := `DELETE FROM public.user_team ` +
-		`WHERE team_id = $1 AND user_id = $2 `
+		`WHERE team_id = $1 AND member = $2 `
 	// run
-	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.UserID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.Member); err != nil {
 		return logerror(err)
 	}
 	return nil
 }
 
-// UserTeamByUserIDTeamID retrieves a row from 'public.user_team' as a UserTeam.
+// UserTeamsByMember retrieves a row from 'public.user_team' as a UserTeam.
 //
-// Generated from index 'user_team_pkey'.
-func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
+// Generated from index 'user_team_member_idx'.
+func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -142,56 +142,126 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 	// query
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
-user_team.user_id,
+user_team.member,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users_team.__users
-		)) filter (where joined_users_team.__users is not null), '{}') end) as users_team,
+		joined_teams_member.__teams
+		)) filter (where joined_teams_member.__teams is not null), '{}') end) as teams_member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams_user.__teams
-		)) filter (where joined_teams_user.__teams is not null), '{}') end) as teams_user ` +
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users ` +
 		`FROM public.user_team ` +
-		`-- M2M join generated from "user_team_user_id_fkey"
+		`-- M2M join generated from "user_team_team_id_fkey"
+left join (
+	select
+			user_team.member as user_team_member
+			, row(teams.*) as __teams
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
+    group by
+			user_team_member
+			, teams.team_id
+  ) as joined_teams_member on joined_teams_member.user_team_member = user_team.team_id
+
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users_team on joined_users_team.user_team_team_id = user_team.user_id
+  ) as joined_users on joined_users.user_team_team_id = user_team.member
+` +
+		` WHERE user_team.member = $3 GROUP BY user_team.team_id, user_team.team_id, user_team.member, 
+user_team.member, user_team.team_id, user_team.member `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
 
--- M2M join generated from "user_team_team_id_fkey"
+	// run
+	// logf(sqlstr, member)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TeamsMember, c.joins.Members, member)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/Query: %w", err))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// UserTeamByMemberTeamID retrieves a row from 'public.user_team' as a UserTeam.
+//
+// Generated from index 'user_team_pkey'.
+func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_team.team_id,
+user_team.member,
+(case when $1::boolean = true then COALESCE(
+		ARRAY_AGG((
+		joined_teams_member.__teams
+		)) filter (where joined_teams_member.__teams is not null), '{}') end) as teams_member,
+(case when $2::boolean = true then COALESCE(
+		ARRAY_AGG((
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users ` +
+		`FROM public.user_team ` +
+		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-			user_team.user_id as user_team_user_id
+			user_team.member as user_team_member
 			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
     group by
-			user_team_user_id
+			user_team_member
 			, teams.team_id
-  ) as joined_teams_user on joined_teams_user.user_team_user_id = user_team.team_id
+  ) as joined_teams_member on joined_teams_member.user_team_member = user_team.team_id
+
+-- M2M join generated from "user_team_member_fkey"
+left join (
+	select
+			user_team.team_id as user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.member
+    group by
+			user_team_team_id
+			, users.user_id
+  ) as joined_users on joined_users.user_team_team_id = user_team.member
 ` +
-		` WHERE user_team.user_id = $3 AND user_team.team_id = $4 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
-user_team.team_id, user_team.team_id, user_team.user_id `
+		` WHERE user_team.member = $3 AND user_team.team_id = $4 GROUP BY user_team.team_id, user_team.team_id, user_team.member, 
+user_team.member, user_team.team_id, user_team.member `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
-	// logf(sqlstr, userID, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UsersTeam, c.joins.TeamsUser, userID, teamID)
+	// logf(sqlstr, member, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TeamsMember, c.joins.Members, member, teamID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/db.Query: %w", err))
 	}
 	ut, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/pgx.CollectOneRow: %w", err))
 	}
 
 	return &ut, nil
@@ -210,67 +280,67 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 	// query
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
-user_team.user_id,
+user_team.member,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users_team.__users
-		)) filter (where joined_users_team.__users is not null), '{}') end) as users_team,
+		joined_teams_member.__teams
+		)) filter (where joined_teams_member.__teams is not null), '{}') end) as teams_member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams_user.__teams
-		)) filter (where joined_teams_user.__teams is not null), '{}') end) as teams_user ` +
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users ` +
 		`FROM public.user_team ` +
-		`-- M2M join generated from "user_team_user_id_fkey"
+		`-- M2M join generated from "user_team_team_id_fkey"
+left join (
+	select
+			user_team.member as user_team_member
+			, row(teams.*) as __teams
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
+    group by
+			user_team_member
+			, teams.team_id
+  ) as joined_teams_member on joined_teams_member.user_team_member = user_team.team_id
+
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users_team on joined_users_team.user_team_team_id = user_team.user_id
-
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.user_id as user_team_user_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_user_id
-			, teams.team_id
-  ) as joined_teams_user on joined_teams_user.user_team_user_id = user_team.team_id
+  ) as joined_users on joined_users.user_team_team_id = user_team.member
 ` +
-		` WHERE user_team.team_id = $3 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
-user_team.team_id, user_team.team_id, user_team.user_id `
+		` WHERE user_team.team_id = $3 GROUP BY user_team.team_id, user_team.team_id, user_team.member, 
+user_team.member, user_team.team_id, user_team.member `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UsersTeam, c.joins.TeamsUser, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TeamsMember, c.joins.Members, teamID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByUserIDTeamID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByUserIDTeamID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
 
-// UserTeamsByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
+// UserTeamsByTeamIDMember retrieves a row from 'public.user_team' as a UserTeam.
 //
-// Generated from index 'user_team_team_id_user_id_idx'.
-func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+// Generated from index 'user_team_team_id_member_idx'.
+func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -280,131 +350,68 @@ func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid
 	// query
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
-user_team.user_id,
+user_team.member,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users_team.__users
-		)) filter (where joined_users_team.__users is not null), '{}') end) as users_team,
+		joined_teams_member.__teams
+		)) filter (where joined_teams_member.__teams is not null), '{}') end) as teams_member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams_user.__teams
-		)) filter (where joined_teams_user.__teams is not null), '{}') end) as teams_user ` +
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users ` +
 		`FROM public.user_team ` +
-		`-- M2M join generated from "user_team_user_id_fkey"
+		`-- M2M join generated from "user_team_team_id_fkey"
+left join (
+	select
+			user_team.member as user_team_member
+			, row(teams.*) as __teams
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
+    group by
+			user_team_member
+			, teams.team_id
+  ) as joined_teams_member on joined_teams_member.user_team_member = user_team.team_id
+
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users_team on joined_users_team.user_team_team_id = user_team.user_id
-
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.user_id as user_team_user_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_user_id
-			, teams.team_id
-  ) as joined_teams_user on joined_teams_user.user_team_user_id = user_team.team_id
+  ) as joined_users on joined_users.user_team_team_id = user_team.member
 ` +
-		` WHERE user_team.team_id = $3 AND user_team.user_id = $4 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
-user_team.team_id, user_team.team_id, user_team.user_id `
+		` WHERE user_team.team_id = $3 AND user_team.member = $4 GROUP BY user_team.team_id, user_team.team_id, user_team.member, 
+user_team.member, user_team.team_id, user_team.member `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
-	// logf(sqlstr, teamID, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UsersTeam, c.joins.TeamsUser, teamID, userID)
+	// logf(sqlstr, teamID, member)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TeamsMember, c.joins.Members, teamID, member)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDUserID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDUserID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
 
-// UserTeamsByUserID retrieves a row from 'public.user_team' as a UserTeam.
+// FKUser_Member returns the User associated with the UserTeam's (Member).
 //
-// Generated from index 'user_team_user_id_idx'.
-func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	// query
-	sqlstr := `SELECT ` +
-		`user_team.team_id,
-user_team.user_id,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
-		joined_users_team.__users
-		)) filter (where joined_users_team.__users is not null), '{}') end) as users_team,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
-		joined_teams_user.__teams
-		)) filter (where joined_teams_user.__teams is not null), '{}') end) as teams_user ` +
-		`FROM public.user_team ` +
-		`-- M2M join generated from "user_team_user_id_fkey"
-left join (
-	select
-			user_team.team_id as user_team_team_id
-			, row(users.*) as __users
-		from
-			user_team
-    join users on users.user_id = user_team.user_id
-    group by
-			user_team_team_id
-			, users.user_id
-  ) as joined_users_team on joined_users_team.user_team_team_id = user_team.user_id
-
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.user_id as user_team_user_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_user_id
-			, teams.team_id
-  ) as joined_teams_user on joined_teams_user.user_team_user_id = user_team.team_id
-` +
-		` WHERE user_team.user_id = $3 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
-user_team.team_id, user_team.team_id, user_team.user_id `
-	sqlstr += c.orderBy
-	sqlstr += c.limit
-
-	// run
-	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UsersTeam, c.joins.TeamsUser, userID)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByUserID/Query: %w", err))
-	}
-	defer rows.Close()
-	// process
-
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByUserID/pgx.CollectRows: %w", err))
-	}
-	return res, nil
+// Generated from foreign key 'user_team_member_fkey'.
+func (ut *UserTeam) FKUser_Member(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, ut.Member)
 }
 
 // FKTeam_TeamID returns the Team associated with the UserTeam's (TeamID).
@@ -412,11 +419,4 @@ user_team.team_id, user_team.team_id, user_team.user_id `
 // Generated from foreign key 'user_team_team_id_fkey'.
 func (ut *UserTeam) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, ut.TeamID)
-}
-
-// FKUser_UserID returns the User associated with the UserTeam's (UserID).
-//
-// Generated from foreign key 'user_team_user_id_fkey'.
-func (ut *UserTeam) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, ut.UserID)
 }

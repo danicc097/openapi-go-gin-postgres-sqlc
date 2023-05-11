@@ -824,7 +824,7 @@ const cachedIcons: IconComponentCacheType = {
   tokenDenseVector: tokenDenseVector,
   tokenElement: tokenElement,
   tokenEnum: tokenEnum,
-  tokenEnumMember: tokenEnumMember,
+  tokenEnumAssignedUser: tokenEnumMember,
   tokenEvent: tokenEvent,
   tokenException: tokenException,
   tokenField: tokenField,
