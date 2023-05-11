@@ -27,9 +27,9 @@ type User struct {
 	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true"` // created_at
 	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at" required:"true"` // deleted_at
 
-	BooksJoinAuthor           *[]User_Book    `json:"-" db:"books_author" openapi-go:"ignore"`           // M2M
+	BooksJoinAuthor           *[]User_Book    `json:"-" db:"book_authors_books" openapi-go:"ignore"`     // M2M
 	BookReviewsJoin           *[]BookReview   `json:"-" db:"book_reviews" openapi-go:"ignore"`           // M2O
-	BooksJoinSeller           *[]Book         `json:"-" db:"books_seller" openapi-go:"ignore"`           // M2M
+	BooksJoinSeller           *[]Book         `json:"-" db:"book_sellers_books" openapi-go:"ignore"`     // M2M
 	NotificationsJoinReceiver *[]Notification `json:"-" db:"notifications_receiver" openapi-go:"ignore"` // M2O
 	NotificationsJoinSender   *[]Notification `json:"-" db:"notifications_sender" openapi-go:"ignore"`   // M2O
 	UserAPIKeyJoin            *UserAPIKey     `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`   // O2O (inferred)
@@ -270,14 +270,14 @@ users.created_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_author.__books
-		, joined_books_author.pseudonym
-		)) filter (where joined_books_author.__books is not null), '{}') end) as books_author,
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_seller.__books
-		)) filter (where joined_books_seller.__books is not null), '{}') end) as books_seller,
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $4::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $5::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $6::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
@@ -295,7 +295,7 @@ left join (
 			book_authors_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_books_author on joined_books_author.book_authors_author_id = users.user_id
+  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
@@ -317,7 +317,7 @@ left join (
     group by
 			book_sellers_seller
 			, books.book_id
-  ) as joined_books_seller on joined_books_seller.book_sellers_seller = users.user_id
+  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
 
 -- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -382,14 +382,14 @@ users.created_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_author.__books
-		, joined_books_author.pseudonym
-		)) filter (where joined_books_author.__books is not null), '{}') end) as books_author,
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_seller.__books
-		)) filter (where joined_books_seller.__books is not null), '{}') end) as books_seller,
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $4::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $5::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $6::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
@@ -407,7 +407,7 @@ left join (
 			book_authors_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_books_author on joined_books_author.book_authors_author_id = users.user_id
+  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
@@ -429,7 +429,7 @@ left join (
     group by
 			book_sellers_seller
 			, books.book_id
-  ) as joined_books_seller on joined_books_seller.book_sellers_seller = users.user_id
+  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
 
 -- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -495,14 +495,14 @@ users.created_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_author.__books
-		, joined_books_author.pseudonym
-		)) filter (where joined_books_author.__books is not null), '{}') end) as books_author,
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_seller.__books
-		)) filter (where joined_books_seller.__books is not null), '{}') end) as books_seller,
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $4::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $5::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $6::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
@@ -520,7 +520,7 @@ left join (
 			book_authors_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_books_author on joined_books_author.book_authors_author_id = users.user_id
+  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
@@ -542,7 +542,7 @@ left join (
     group by
 			book_sellers_seller
 			, books.book_id
-  ) as joined_books_seller on joined_books_seller.book_sellers_seller = users.user_id
+  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
 
 -- M2O join generated from "notifications_receiver_fkey"
 left join (

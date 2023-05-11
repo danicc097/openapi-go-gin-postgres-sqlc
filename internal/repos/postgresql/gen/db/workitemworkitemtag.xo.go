@@ -18,8 +18,8 @@ type WorkItemWorkItemTag struct {
 	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
 	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
 
-	WorkItemTagsJoin         *[]WorkItemTag `json:"-" db:"work_item_tags" openapi-go:"ignore"`           // M2M
-	WorkItemsJoinWorkItemTag *[]WorkItem    `json:"-" db:"work_items_work_item_tag" openapi-go:"ignore"` // M2M
+	WorkItemTagsJoin         *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M
+	WorkItemsJoinWorkItemTag *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M
 
 }
 
@@ -141,12 +141,12 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items_work_item_tag.__work_items
-		)) filter (where joined_work_items_work_item_tag.__work_items is not null), '{}') end) as work_items_work_item_tag ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -159,7 +159,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -172,7 +172,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items_work_item_tag on joined_work_items_work_item_tag.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_tag_id > $3 AND work_item_work_item_tag.work_item_id > $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -207,12 +207,12 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items_work_item_tag.__work_items
-		)) filter (where joined_work_items_work_item_tag.__work_items is not null), '{}') end) as work_items_work_item_tag ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -225,7 +225,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -238,7 +238,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items_work_item_tag on joined_work_items_work_item_tag.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -275,12 +275,12 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items_work_item_tag.__work_items
-		)) filter (where joined_work_items_work_item_tag.__work_items is not null), '{}') end) as work_items_work_item_tag ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -293,7 +293,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -306,7 +306,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items_work_item_tag on joined_work_items_work_item_tag.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -345,12 +345,12 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items_work_item_tag.__work_items
-		)) filter (where joined_work_items_work_item_tag.__work_items is not null), '{}') end) as work_items_work_item_tag ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -363,7 +363,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -376,7 +376,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items_work_item_tag on joined_work_items_work_item_tag.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_tag_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -415,12 +415,12 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items_work_item_tag.__work_items
-		)) filter (where joined_work_items_work_item_tag.__work_items is not null), '{}') end) as work_items_work_item_tag ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -433,7 +433,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -446,7 +446,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items_work_item_tag on joined_work_items_work_item_tag.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `

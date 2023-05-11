@@ -19,8 +19,8 @@ type BookSeller struct {
 	BookID int       `json:"bookID" db:"book_id" required:"true"` // book_id
 	Seller uuid.UUID `json:"seller" db:"seller" required:"true"`  // seller
 
-	SellersJoin     *[]User `json:"-" db:"sellers" openapi-go:"ignore"`      // M2M
-	BooksJoinSeller *[]Book `json:"-" db:"books_seller" openapi-go:"ignore"` // M2M
+	SellersJoin     *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M
+	BooksJoinSeller *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M
 }
 
 // BookSellerCreateParams represents insert params for 'xo_tests.book_sellers'.
@@ -142,12 +142,12 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_book_sellers_sellers.__users
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_seller.__books
-		)) filter (where joined_books_seller.__books is not null), '{}') end) as books_seller ` +
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
@@ -160,7 +160,7 @@ left join (
     group by
 			book_sellers_book_id
 			, users.user_id
-  ) as joined_users on joined_users.book_sellers_book_id = book_sellers.book_id
+  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
 
 -- M2M join generated from "book_sellers_book_id_fkey"
 left join (
@@ -173,7 +173,7 @@ left join (
     group by
 			book_sellers_seller
 			, books.book_id
-  ) as joined_books_seller on joined_books_seller.book_sellers_seller = book_sellers.seller
+  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
 ` +
 		` WHERE book_sellers.book_id = $3 AND book_sellers.seller = $4 GROUP BY book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
 book_sellers.seller, book_sellers.book_id, book_sellers.seller `
@@ -210,12 +210,12 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_book_sellers_sellers.__users
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_seller.__books
-		)) filter (where joined_books_seller.__books is not null), '{}') end) as books_seller ` +
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
@@ -228,7 +228,7 @@ left join (
     group by
 			book_sellers_book_id
 			, users.user_id
-  ) as joined_users on joined_users.book_sellers_book_id = book_sellers.book_id
+  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
 
 -- M2M join generated from "book_sellers_book_id_fkey"
 left join (
@@ -241,7 +241,7 @@ left join (
     group by
 			book_sellers_seller
 			, books.book_id
-  ) as joined_books_seller on joined_books_seller.book_sellers_seller = book_sellers.seller
+  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
 ` +
 		` WHERE book_sellers.book_id = $3 GROUP BY book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
 book_sellers.seller, book_sellers.book_id, book_sellers.seller `
@@ -280,12 +280,12 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_book_sellers_sellers.__users
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books_seller.__books
-		)) filter (where joined_books_seller.__books is not null), '{}') end) as books_seller ` +
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
@@ -298,7 +298,7 @@ left join (
     group by
 			book_sellers_book_id
 			, users.user_id
-  ) as joined_users on joined_users.book_sellers_book_id = book_sellers.book_id
+  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
 
 -- M2M join generated from "book_sellers_book_id_fkey"
 left join (
@@ -311,7 +311,7 @@ left join (
     group by
 			book_sellers_seller
 			, books.book_id
-  ) as joined_books_seller on joined_books_seller.book_sellers_seller = book_sellers.seller
+  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
 ` +
 		` WHERE book_sellers.seller = $3 GROUP BY book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
 book_sellers.seller, book_sellers.book_id, book_sellers.seller `

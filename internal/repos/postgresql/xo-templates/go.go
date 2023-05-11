@@ -2289,7 +2289,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				switch c.Cardinality {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
-					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
+					joinName = prefix + c.TableName + "_" + inflector.Pluralize(lookupName)
 					if c.JoinTableClash {
 						lc := strings.TrimSuffix(c.LookupColumn, "_id")
 						joinName = joinName + camelExport(lc)
@@ -3026,20 +3026,22 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 		selectTpl = M2MSelect
 		groupbyTpl = M2MGroupBy
 
+		lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+
 		params["LookupColumn"] = c.LookupColumn
 		params["JoinTable"] = c.RefTableName
 		params["LookupRefColumn"] = c.LookupRefColumn
 		params["JoinTablePK"] = c.RefColumnName
 		params["LookupJoinTablePK"] = c.ColumnName
 		params["LookupJoinTablePKAgg"] = c.RefTableName
-		params["LookupJoinTablePKSuffix"] = c.RefTableName
+		params["LookupJoinTablePKSuffix"] = c.TableName + "_" + inflector.Pluralize(lookupName)
 		params["CurrentTable"] = table.SQLName
 		params["LookupTable"] = c.TableName
 		params["LookupExtraCols"] = []string{}
 
 		if c.JoinTableClash {
-			lc := strings.TrimSuffix(c.LookupColumn, "_id")
-			params["ClashSuffix"] = "_" + lc
+			// lc := strings.TrimSuffix(c.LookupColumn, "_id")
+			// params["ClashSuffix"] = "_" + lc
 		}
 		lookupTable := tables[c.TableName]
 		m2mExtraCols := getTableRegularFields(lookupTable)
@@ -3049,7 +3051,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			// don't rename to avoid confusion:
 			params["LookupJoinTablePK"] = c.ColumnName
 			params["LookupJoinTablePKAgg"] = inflector.Pluralize(c.ColumnName)
-			params["LookupJoinTablePKSuffix"] = inflector.Pluralize(strings.TrimSuffix(c.ColumnName, "_id"))
+			// params["LookupJoinTablePKSuffix"] = inflector.Pluralize(strings.TrimSuffix(c.ColumnName, "_id"))
 
 			colNames := make([]string, len(m2mExtraCols))
 			for i, col := range m2mExtraCols {
@@ -3485,9 +3487,9 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		switch c.Cardinality {
 		case M2M:
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
-			joinName := inflector.Pluralize(lookupName)
-			goName = camelExport(singularize(lookupName))
+			joinName := c.TableName + "_" + inflector.Pluralize(lookupName)
 			typ = camelExport(singularize(c.RefTableName))
+			goName = camelExport(singularize(lookupName))
 			goName = inflector.Pluralize(goName) + "Join"
 
 			lookupTable := tables[c.TableName]
@@ -3499,7 +3501,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 			if c.JoinTableClash {
 				lc := strings.TrimSuffix(c.LookupColumn, "_id")
-				joinName = joinName + "_" + lc
+				// joinName = joinName + "_" + lc
 				goName = goName + camelExport(lc)
 			}
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
