@@ -26,8 +26,8 @@ type KanbanStep struct {
 	Color         string `json:"color" db:"color" required:"true"`                  // color
 	TimeTrackable bool   `json:"timeTrackable" db:"time_trackable" required:"true"` // time_trackable
 
-	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
+	ProjectJoin  *Project  `json:"-" db:"project_project_id" openapi-go:"ignore"`       // O2O (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_kanban_step_id" openapi-go:"ignore"` // O2O (inferred)
 
 }
 

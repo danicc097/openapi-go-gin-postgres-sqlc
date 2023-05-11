@@ -23,8 +23,8 @@ type BookReview struct {
 	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
 	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true"`           // reviewer
 
-	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O (generated from M2O)
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (generated from M2O)
+	BookJoin *Book `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O (generated from M2O)
+	UserJoin *User `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O (generated from M2O)
 }
 
 // BookReviewCreateParams represents insert params for 'xo_tests.book_reviews'.

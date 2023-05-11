@@ -24,8 +24,8 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	ProjectJoin   *Project    `json:"-" db:"project" openapi-go:"ignore"`    // O2O (generated from M2O)
-	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
+	ProjectJoin   *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O (generated from M2O)
+	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"`         // M2M
 
 }
 

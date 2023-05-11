@@ -2758,7 +2758,7 @@ const (
 		)) end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
-	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`
+	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}{{ .Alias}}_{{ singularize .JoinTableAlias}}`
 )
 
 const (
@@ -2951,6 +2951,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 		currentTablePKGroupBys = append(currentTablePKGroupBys, table.SQLName+"."+pk.SQLName)
 	}
 	params["CurrentTablePKGroupBys"] = strings.Join(currentTablePKGroupBys, ", ")
+	params["Alias"] = "" // to prevent alias name clashes
 
 	if table.Schema != "public" {
 		params["Schema"] = table.Schema + "."
@@ -3037,7 +3038,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			params["JoinColumn"] = c.RefColumnName
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
-			params["JoinTableAlias"] = c.ColumnName + "s"
+			params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
 			params["CurrentTable"] = table.SQLName
 			// FIXME need to check joinClash after creating dummy constraints
 			// (case when $1::boolean = true and receivers.user_id is not null then row(receivers.*) end) as user_receiver,
@@ -3051,6 +3052,20 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 				joinTablePKGroupBys = append(joinTablePKGroupBys, params["JoinTableAlias"].(string)+"."+pk.SQLName)
 			}
 			params["JoinTablePKGroupBys"] = strings.Join(joinTablePKGroupBys, ", ")
+
+			t := tables[c.TableName]
+			var f Field
+			for _, tf := range t.Fields {
+				if tf.SQLName == c.ColumnName {
+					f = tf
+				}
+			}
+			isSingleFK, isSinglePK := analyzeField(t, f)
+			if isSingleFK && isSinglePK {
+				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", c.TableName, c.ColumnName)
+				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
+				params["Alias"] = "_" + c.TableName
+			}
 
 			break
 		}
@@ -3281,7 +3296,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 		if skipField {
 			return "", nil
 		}
-		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
+		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it. PK is FK
 			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
@@ -3401,8 +3416,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		// sync with extratypes
 		switch c.Cardinality {
 		case M2M:
-
-			_ = tables[c.TableName]
 			// extraCols := getLookupTableRegularFields(lookupTable)
 			// fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
 
@@ -3463,10 +3476,30 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					notes = " (generated from M2O)"
 				}
 
-				joinName := inflector.Singularize(c.RefTableName)
+				// TODO handle when PK is FK:
+				// left join demo_two_work_items as work_item_ids on work_item_ids.work_item_id = work_items.work_item_id
+				// -- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
+				// left join demo_work_items as work_item_ids on work_item_ids.work_item_id = work_items.work_item_id
+				// ---> "work_item_ids" specified more than once
+
+				t := tables[c.TableName]
+				var f Field
+				for _, tf := range t.Fields {
+					if tf.SQLName == c.ColumnName {
+						f = tf
+					}
+				}
+				isSingleFK, isSinglePK := analyzeField(t, f)
+
+				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
+				joinName := joinPrefix + inflector.Singularize(c.ColumnName)
 				if c.JoinTableClash {
-					joinName = joinName + "_" + c.ColumnName
 					goName = goName + camelExport(c.ColumnName)
+				}
+
+				if isSingleFK && isSinglePK {
+					fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", c.TableName, c.ColumnName)
+					joinName = joinPrefix + inflector.Singularize(c.TableName) + "_" + inflector.Singularize(c.ColumnName)
 				}
 
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)

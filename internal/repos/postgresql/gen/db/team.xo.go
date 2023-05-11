@@ -27,10 +27,10 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
-	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
-	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
-	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
+	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O (generated from M2O)
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O
+	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`              // M2M
+	WorkItemJoin    *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O (inferred)
 
 }
 

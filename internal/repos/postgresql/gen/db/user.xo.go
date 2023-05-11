@@ -42,7 +42,7 @@ type User struct {
 	NotificationsJoinReceiver *[]Notification     `json:"-" db:"notifications_receiver" openapi-go:"ignore"` // M2O
 	NotificationsJoinSender   *[]Notification     `json:"-" db:"notifications_sender" openapi-go:"ignore"`   // M2O
 	TimeEntriesJoin           *[]TimeEntry        `json:"-" db:"time_entries" openapi-go:"ignore"`           // M2O
-	UserAPIKeyJoin            *UserAPIKey         `json:"-" db:"user_api_key" openapi-go:"ignore"`           // O2O (inferred)
+	UserAPIKeyJoin            *UserAPIKey         `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`   // O2O (inferred)
 	UserNotificationsJoin     *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"`     // M2O
 	TeamsJoin                 *[]Team             `json:"-" db:"teams" openapi-go:"ignore"`                  // M2M
 	WorkItemCommentsJoin      *[]WorkItemComment  `json:"-" db:"work_item_comments" openapi-go:"ignore"`     // M2O

@@ -30,10 +30,10 @@ type TimeEntry struct {
 	Start           time.Time `json:"start" db:"start" required:"true"`                      // start
 	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes" required:"true"` // duration_minutes
 
-	ActivityJoin *Activity `json:"-" db:"activity" openapi-go:"ignore"`  // O2O (generated from M2O)
-	TeamJoin     *Team     `json:"-" db:"team" openapi-go:"ignore"`      // O2O (generated from M2O)
-	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (generated from M2O)
+	ActivityJoin *Activity `json:"-" db:"activity_activity_id" openapi-go:"ignore"`   // O2O (generated from M2O)
+	TeamJoin     *Team     `json:"-" db:"team_team_id" openapi-go:"ignore"`           // O2O (generated from M2O)
+	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O (generated from M2O)
 
 }
 
