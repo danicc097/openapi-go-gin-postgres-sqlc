@@ -71,14 +71,14 @@ func TestM2O(t *testing.T) {
 	ctx := context.Background()
 	userID := uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")
 
-	n, err := db.NotificationsBySender(ctx, testPool, userID, db.WithNotificationJoin(db.NotificationJoins{UserSender: true}))
+	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{NotificationsSender: true, NotificationsReceiver: true}))
+	assert.NoError(t, err)
+	assert.Len(t, *u.NotificationsJoinReceiver, 1)
+	assert.Len(t, *u.NotificationsJoinSender, 2)
+
+	n, err := db.NotificationsBySender(ctx, testPool, userID, db.WithNotificationJoin(db.NotificationJoins{UserSender: true, UserReceiver: true}))
 	assert.NoError(t, err)
 	assert.Len(t, n, 2)
-	assert.Equal(t, n[0].UserJoinSender.UserID, userID)
-
-	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{NotificationsSender: true}))
-	assert.NoError(t, err)
-	assert.Len(t, *u.NotificationsJoinSender, 2)
 	assert.Equal(t, n[0].UserJoinSender.UserID, userID)
 }
 
