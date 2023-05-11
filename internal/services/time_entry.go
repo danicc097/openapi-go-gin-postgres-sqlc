@@ -48,8 +48,8 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 	}
 
 	if params.TeamID != nil {
-		teamIDs := make([]int, len(*caller.TeamsJoin))
-		for i, t := range *caller.TeamsJoin {
+		teamIDs := make([]int, len(*caller.TeamsJoinUser))
+		for i, t := range *caller.TeamsJoinUser {
 			teamIDs[i] = t.TeamID
 		}
 		if !slices.Contains(teamIDs, *params.TeamID) {

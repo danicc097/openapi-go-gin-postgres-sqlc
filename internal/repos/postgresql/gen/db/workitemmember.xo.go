@@ -25,8 +25,8 @@ type WorkItemMember struct {
 	Member     uuid.UUID           `json:"member" db:"member" required:"true"`                                     // member
 	Role       models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoin *[]WorkItemMember_WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
-	MembersJoin   *[]WorkItemMember_Member   `json:"-" db:"members" openapi-go:"ignore"`    // M2M
+	WorkItemsJoinMember *[]WorkItemMember_WorkItem `json:"-" db:"work_items_member" openapi-go:"ignore"` // M2M
+	MembersJoin         *[]WorkItemMember_Member   `json:"-" db:"members" openapi-go:"ignore"`           // M2M
 
 }
 
@@ -89,16 +89,16 @@ type WorkItemMemberOrderBy = string
 const ()
 
 type WorkItemMemberJoins struct {
-	WorkItems bool
-	Members   bool
+	WorkItemsMember bool
+	Members         bool
 }
 
 // WithWorkItemMemberJoin joins with the given tables.
 func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {
 	return func(s *WorkItemMemberSelectConfig) {
 		s.joins = WorkItemMemberJoins{
-			WorkItems: s.joins.WorkItems || joins.WorkItems,
-			Members:   s.joins.Members || joins.Members,
+			WorkItemsMember: s.joins.WorkItemsMember || joins.WorkItemsMember,
+			Members:         s.joins.Members || joins.Members,
 		}
 	}
 }
@@ -217,9 +217,9 @@ work_item_member.member,
 work_item_member.role,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		, joined_work_items.role
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items,
+		joined_work_items_member.__work_items
+		, joined_work_items_member.role
+		)) filter (where joined_work_items_member.__work_items is not null), '{}') end) as work_items_member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
@@ -239,7 +239,7 @@ left join (
 			work_item_member_member
 			, work_items.work_item_id
 			, role
-  ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
+  ) as joined_work_items_member on joined_work_items_member.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
@@ -263,7 +263,7 @@ work_item_member.work_item_id, work_item_member.work_item_id, work_item_member.m
 
 	// run
 	// logf(sqlstr, member, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, c.joins.Members, member, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsMember, c.joins.Members, member, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemMember/WorkItemMemberByMemberWorkItemID/Query: %w", err))
 	}
@@ -294,9 +294,9 @@ work_item_member.member,
 work_item_member.role,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		, joined_work_items.role
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items,
+		joined_work_items_member.__work_items
+		, joined_work_items_member.role
+		)) filter (where joined_work_items_member.__work_items is not null), '{}') end) as work_items_member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
@@ -316,7 +316,7 @@ left join (
 			work_item_member_member
 			, work_items.work_item_id
 			, role
-  ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
+  ) as joined_work_items_member on joined_work_items_member.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
@@ -340,7 +340,7 @@ work_item_member.work_item_id, work_item_member.work_item_id, work_item_member.m
 
 	// run
 	// logf(sqlstr, workItemID, member)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, c.joins.Members, workItemID, member)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsMember, c.joins.Members, workItemID, member)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_member/WorkItemMemberByWorkItemIDMember/db.Query: %w", err))
 	}
@@ -369,9 +369,9 @@ work_item_member.member,
 work_item_member.role,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		, joined_work_items.role
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items,
+		joined_work_items_member.__work_items
+		, joined_work_items_member.role
+		)) filter (where joined_work_items_member.__work_items is not null), '{}') end) as work_items_member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
@@ -391,7 +391,7 @@ left join (
 			work_item_member_member
 			, work_items.work_item_id
 			, role
-  ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
+  ) as joined_work_items_member on joined_work_items_member.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
@@ -415,7 +415,7 @@ work_item_member.work_item_id, work_item_member.work_item_id, work_item_member.m
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, c.joins.Members, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsMember, c.joins.Members, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemMember/WorkItemMemberByWorkItemIDMember/Query: %w", err))
 	}
@@ -446,9 +446,9 @@ work_item_member.member,
 work_item_member.role,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		, joined_work_items.role
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items,
+		joined_work_items_member.__work_items
+		, joined_work_items_member.role
+		)) filter (where joined_work_items_member.__work_items is not null), '{}') end) as work_items_member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
@@ -468,7 +468,7 @@ left join (
 			work_item_member_member
 			, work_items.work_item_id
 			, role
-  ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
+  ) as joined_work_items_member on joined_work_items_member.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
@@ -492,7 +492,7 @@ work_item_member.work_item_id, work_item_member.work_item_id, work_item_member.m
 
 	// run
 	// logf(sqlstr, member)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, c.joins.Members, member)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsMember, c.joins.Members, member)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemMember/WorkItemMemberByWorkItemIDMember/Query: %w", err))
 	}

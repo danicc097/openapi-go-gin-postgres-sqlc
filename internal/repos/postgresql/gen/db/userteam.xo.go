@@ -19,8 +19,8 @@ type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
 
-	UsersJoin *[]User `json:"-" db:"users" openapi-go:"ignore"` // M2M
-	TeamsJoin *[]Team `json:"-" db:"teams" openapi-go:"ignore"` // M2M
+	UsersJoinTeam *[]User `json:"-" db:"users_team" openapi-go:"ignore"` // M2M
+	TeamsJoinUser *[]Team `json:"-" db:"teams_user" openapi-go:"ignore"` // M2M
 
 }
 
@@ -77,16 +77,16 @@ type UserTeamOrderBy = string
 const ()
 
 type UserTeamJoins struct {
-	Users bool
-	Teams bool
+	UsersTeam bool
+	TeamsUser bool
 }
 
 // WithUserTeamJoin joins with the given tables.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.joins = UserTeamJoins{
-			Users: s.joins.Users || joins.Users,
-			Teams: s.joins.Teams || joins.Teams,
+			UsersTeam: s.joins.UsersTeam || joins.UsersTeam,
+			TeamsUser: s.joins.TeamsUser || joins.TeamsUser,
 		}
 	}
 }
@@ -145,12 +145,12 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 user_team.user_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_users_team.__users
+		)) filter (where joined_users_team.__users is not null), '{}') end) as users_team,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__teams
-		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
+		joined_teams_user.__teams
+		)) filter (where joined_teams_user.__teams is not null), '{}') end) as teams_user ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -163,7 +163,7 @@ left join (
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = user_team.user_id
+  ) as joined_users_team on joined_users_team.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
@@ -176,7 +176,7 @@ left join (
     group by
 			user_team_user_id
 			, teams.team_id
-  ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
+  ) as joined_teams_user on joined_teams_user.user_team_user_id = user_team.team_id
 ` +
 		` WHERE user_team.user_id = $3 AND user_team.team_id = $4 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
 user_team.team_id, user_team.team_id, user_team.user_id `
@@ -185,7 +185,7 @@ user_team.team_id, user_team.team_id, user_team.user_id `
 
 	// run
 	// logf(sqlstr, userID, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Users, c.joins.Teams, userID, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UsersTeam, c.joins.TeamsUser, userID, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/db.Query: %w", err))
 	}
@@ -213,12 +213,12 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 user_team.user_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_users_team.__users
+		)) filter (where joined_users_team.__users is not null), '{}') end) as users_team,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__teams
-		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
+		joined_teams_user.__teams
+		)) filter (where joined_teams_user.__teams is not null), '{}') end) as teams_user ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -231,7 +231,7 @@ left join (
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = user_team.user_id
+  ) as joined_users_team on joined_users_team.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
@@ -244,7 +244,7 @@ left join (
     group by
 			user_team_user_id
 			, teams.team_id
-  ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
+  ) as joined_teams_user on joined_teams_user.user_team_user_id = user_team.team_id
 ` +
 		` WHERE user_team.team_id = $3 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
 user_team.team_id, user_team.team_id, user_team.user_id `
@@ -253,7 +253,7 @@ user_team.team_id, user_team.team_id, user_team.user_id `
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Users, c.joins.Teams, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UsersTeam, c.joins.TeamsUser, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByUserIDTeamID/Query: %w", err))
 	}
@@ -283,12 +283,12 @@ func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid
 user_team.user_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_users_team.__users
+		)) filter (where joined_users_team.__users is not null), '{}') end) as users_team,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__teams
-		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
+		joined_teams_user.__teams
+		)) filter (where joined_teams_user.__teams is not null), '{}') end) as teams_user ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -301,7 +301,7 @@ left join (
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = user_team.user_id
+  ) as joined_users_team on joined_users_team.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
@@ -314,7 +314,7 @@ left join (
     group by
 			user_team_user_id
 			, teams.team_id
-  ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
+  ) as joined_teams_user on joined_teams_user.user_team_user_id = user_team.team_id
 ` +
 		` WHERE user_team.team_id = $3 AND user_team.user_id = $4 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
 user_team.team_id, user_team.team_id, user_team.user_id `
@@ -323,7 +323,7 @@ user_team.team_id, user_team.team_id, user_team.user_id `
 
 	// run
 	// logf(sqlstr, teamID, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Users, c.joins.Teams, teamID, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UsersTeam, c.joins.TeamsUser, teamID, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDUserID/Query: %w", err))
 	}
@@ -353,12 +353,12 @@ func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Use
 user_team.user_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_users_team.__users
+		)) filter (where joined_users_team.__users is not null), '{}') end) as users_team,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__teams
-		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
+		joined_teams_user.__teams
+		)) filter (where joined_teams_user.__teams is not null), '{}') end) as teams_user ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -371,7 +371,7 @@ left join (
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = user_team.user_id
+  ) as joined_users_team on joined_users_team.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
@@ -384,7 +384,7 @@ left join (
     group by
 			user_team_user_id
 			, teams.team_id
-  ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
+  ) as joined_teams_user on joined_teams_user.user_team_user_id = user_team.team_id
 ` +
 		` WHERE user_team.user_id = $3 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
 user_team.team_id, user_team.team_id, user_team.user_id `
@@ -393,7 +393,7 @@ user_team.team_id, user_team.team_id, user_team.user_id `
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Users, c.joins.Teams, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UsersTeam, c.joins.TeamsUser, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByUserID/Query: %w", err))
 	}

@@ -2346,7 +2346,6 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = pref + camelExport(inflector.Pluralize(lookupName))
 					if c.JoinTableClash {
-						fmt.Printf("M2M: %s has join table name clash \n", c.TableName+"."+c.ColumnName+":"+c.Name)
 						lc := strings.TrimSuffix(c.LookupColumn, "_id")
 						joinName = joinName + camelExport(lc)
 					}
