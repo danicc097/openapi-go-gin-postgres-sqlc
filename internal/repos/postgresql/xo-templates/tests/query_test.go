@@ -12,9 +12,7 @@ import (
 /**
  * TODO: test extensively:
  *
- *
- * - PK is FK tests like demoworkitems->workitemid
- * - vert partitioned columns -> user_api_keys inferred O2O
+ * - pagination
  */
 
 func TestM2M(t *testing.T) {
@@ -48,7 +46,7 @@ func TestM2O(t *testing.T) {
 	assert.Equal(t, n[0].UserJoinSender.UserID, userID)
 }
 
-func TestO2O_PKisFK(t *testing.T) {
+func TestO2OInferred_PKisFK(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -64,4 +62,21 @@ func TestO2O_PKisFK(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, id)
 	assert.Equal(t, wi.WorkItemID, id)
+}
+
+func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	userID := uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")
+
+	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
+	assert.NoError(t, err)
+	assert.Equal(t, u.UserAPIKeyJoin.UserID, userID)
+
+	uak, err := db.UserAPIKeyByUserID(ctx, testPool, userID, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
+	assert.NoError(t, err)
+	assert.Equal(t, uak.UserJoin.UserID, userID)
+	assert.Equal(t, uak.UserID, userID)
 }

@@ -92,6 +92,16 @@ begin
   insert into xo_tests.users (user_id , name , created_at)
     values (user_2_id , 'Jane Smith' , current_timestamp + '1 h');
 
+  insert into xo_tests.user_api_keys (user_id , api_key , expires_on)
+    values (user_1_id , 'api-key-1' , current_timestamp + '2 days');
+
+  update
+    xo_tests.users
+  set
+    api_key_id = 1
+  where
+    user_id = user_1_id;
+
   insert into xo_tests.books (name)
     values ('Book 1');
   insert into xo_tests.books (name)
@@ -123,12 +133,12 @@ begin
   insert into xo_tests.work_items (title)
     values ('Work Item 3');
 
-  insert into xo_tests.demo_work_items (work_item_id, checked)
-    values (1, true);
-  insert into xo_tests.demo_work_items (work_item_id, checked)
-    values (2, false);
-  insert into xo_tests.demo_work_items (work_item_id, checked)
-    values (3, true);
+  insert into xo_tests.demo_work_items (work_item_id , checked)
+    values (1 , true);
+  insert into xo_tests.demo_work_items (work_item_id , checked)
+    values (2 , false);
+  insert into xo_tests.demo_work_items (work_item_id , checked)
+    values (3 , true);
 end;
 $BODY$
 language plpgsql;
