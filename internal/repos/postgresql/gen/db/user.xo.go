@@ -44,7 +44,7 @@ type User struct {
 	TimeEntriesJoin           *[]TimeEntry        `json:"-" db:"time_entries" openapi-go:"ignore"`           // M2O
 	UserAPIKeyJoin            *UserAPIKey         `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`   // O2O (inferred)
 	UserNotificationsJoin     *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"`     // M2O
-	TeamsJoin                 *[]User_Team        `json:"-" db:"teams" openapi-go:"ignore"`                  // M2M
+	TeamsJoin                 *[]Team             `json:"-" db:"teams" openapi-go:"ignore"`                  // M2M
 	WorkItemCommentsJoin      *[]WorkItemComment  `json:"-" db:"work_item_comments" openapi-go:"ignore"`     // M2O
 	WorkItemsJoin             *[]User_WorkItem    `json:"-" db:"work_items" openapi-go:"ignore"`             // M2M
 
@@ -208,10 +208,6 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	}
 }
 
-type User_Team struct {
-	Team Team `json:"team" db:"teams"`
-}
-
 type User_WorkItem struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
@@ -367,8 +363,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -418,7 +414,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -511,8 +507,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -562,7 +558,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -658,8 +654,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -709,7 +705,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -803,8 +799,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -854,7 +850,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -950,8 +946,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -1001,7 +997,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -1095,8 +1091,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -1146,7 +1142,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -1240,8 +1236,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -1291,7 +1287,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -1385,8 +1381,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -1436,7 +1432,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -1532,8 +1528,8 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams,
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
@@ -1583,7 +1579,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id

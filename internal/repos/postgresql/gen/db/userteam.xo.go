@@ -19,8 +19,8 @@ type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
 
-	UsersJoin *[]UserTeam_User `json:"-" db:"users" openapi-go:"ignore"` // M2M
-	TeamsJoin *[]UserTeam_Team `json:"-" db:"teams" openapi-go:"ignore"` // M2M
+	UsersJoin *[]User `json:"-" db:"users" openapi-go:"ignore"` // M2M
+	TeamsJoin *[]Team `json:"-" db:"teams" openapi-go:"ignore"` // M2M
 
 }
 
@@ -91,14 +91,6 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	}
 }
 
-type UserTeam_User struct {
-	User User `json:"user" db:"users"`
-}
-
-type UserTeam_Team struct {
-	Team Team `json:"team" db:"teams"`
-}
-
 // Insert inserts the UserTeam to the database.
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	// insert (manual)
@@ -153,18 +145,18 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 user_team.user_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams ` +
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -177,7 +169,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -221,18 +213,18 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 user_team.user_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams ` +
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -245,7 +237,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -291,18 +283,18 @@ func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid
 user_team.user_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams ` +
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -315,7 +307,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id
@@ -361,18 +353,18 @@ func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Use
 user_team.user_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_teams.__team_ids
-		)) filter (where joined_teams.__team_ids is not null), '{}') end) as teams ` +
+		joined_teams.__teams
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -385,7 +377,7 @@ left join (
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, row(teams.*) as __team_ids
+			, row(teams.*) as __teams
 		from
 			user_team
     join teams on teams.team_id = user_team.team_id

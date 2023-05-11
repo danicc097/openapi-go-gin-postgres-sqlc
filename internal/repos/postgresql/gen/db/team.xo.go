@@ -29,7 +29,7 @@ type Team struct {
 
 	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O
-	UsersJoin       *[]Team_User `json:"-" db:"users" openapi-go:"ignore"`              // M2M
+	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`              // M2M
 	WorkItemJoin    *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O (inferred)
 
 }
@@ -128,10 +128,6 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 			WorkItem:    s.joins.WorkItem || joins.WorkItem,
 		}
 	}
-}
-
-type Team_User struct {
-	User User `json:"user" db:"users"`
 }
 
 // Insert inserts the Team to the database.
@@ -239,8 +235,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -258,7 +254,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -311,8 +307,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -330,7 +326,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -386,8 +382,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -405,7 +401,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -463,8 +459,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -482,7 +478,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -542,8 +538,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -561,7 +557,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
@@ -621,8 +617,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__user_ids
-		)) filter (where joined_users.__user_ids is not null), '{}') end) as users,
+		joined_users.__users
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -640,7 +636,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, row(users.*) as __user_ids
+			, row(users.*) as __users
 		from
 			user_team
     join users on users.user_id = user_team.user_id
