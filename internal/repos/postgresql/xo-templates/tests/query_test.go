@@ -22,7 +22,11 @@ func TestM2M(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{Books: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.BooksJoin, 1)
+	assert.Len(t, *u.BooksJoin, 0)
+
+	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
+	assert.NoError(t, err)
+	assert.Nil(t, u.BooksJoin)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{Books: true}))
 	assert.NoError(t, err)

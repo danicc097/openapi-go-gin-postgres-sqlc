@@ -107,8 +107,6 @@ begin
   insert into xo_tests.books (name)
     values ('Book 2');
 
-  insert into xo_tests.book_authors (book_id , author_id)
-    values (1 , user_1_id);
   insert into xo_tests.book_authors (book_id , author_id , pseudonym)
     values (1 , user_2_id , 'not Jane Smith');
   insert into xo_tests.book_authors (book_id , author_id)
