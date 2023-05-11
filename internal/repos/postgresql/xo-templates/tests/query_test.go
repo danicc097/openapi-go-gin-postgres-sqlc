@@ -16,9 +16,11 @@ import (
  * limits
  * order bys
  *
+ * test M2M when its just 2 FKs as combined PK, when its 1 pk and 2 fks, and 2 fks and extra info ()
+ *
  */
 
-func TestM2M(t *testing.T) {
+func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()

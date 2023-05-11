@@ -85,7 +85,7 @@ func WithBookJoin(joins BookJoins) BookSelectConfigOption {
 }
 
 type Book_Author struct {
-	User      User    `json:"user" db:"users"`
+	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 

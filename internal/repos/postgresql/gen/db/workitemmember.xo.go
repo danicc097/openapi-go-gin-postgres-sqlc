@@ -104,12 +104,12 @@ func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfi
 }
 
 type WorkItemMember_WorkItem struct {
-	WorkItem WorkItem            `json:"workItem" db:"work_items"`
+	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
 type WorkItemMember_Member struct {
-	User User                `json:"user" db:"users"`
+	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 

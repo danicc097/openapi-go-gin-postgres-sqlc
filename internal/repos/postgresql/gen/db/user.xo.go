@@ -209,7 +209,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 }
 
 type User_WorkItem struct {
-	WorkItem WorkItem            `json:"workItem" db:"work_items"`
+	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
