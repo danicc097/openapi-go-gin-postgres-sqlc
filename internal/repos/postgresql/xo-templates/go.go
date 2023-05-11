@@ -1891,13 +1891,18 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 					tag = tag + "`"
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
 				}
-				extraStructs = append(extraStructs, (fmt.Sprintf(`
-type %s struct {
-	%s %s %s
-	%s
+				joinField := originalStruct + " " + originalStruct + " " + tag
+				st := name + "_" + camelExport(lookupName)
+				lookupTableSQLName := f.schema + "." + c.TableName
+				docstring := fmt.Sprintf("// %s represents a M2M join against %q", st, lookupTableSQLName)
 
+				extraStructs = append(extraStructs, (fmt.Sprintf(`
+%s
+type %s struct {
+	%s
+	%s
 }
-	`, name+"_"+camelExport(lookupName), originalStruct, originalStruct, tag, strings.Join(lookupFields, "\n")))) // prevent name clashing
+	`, docstring, st, joinField, strings.Join(lookupFields, "\n")))) // prevent name clashing
 			}
 
 			joinName = camelExport(inflector.Pluralize(lookupName))

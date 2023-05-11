@@ -193,6 +193,7 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	}
 }
 
+// WorkItem_Member represents a M2M join against "public.work_item_member"
 type WorkItem_Member struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`

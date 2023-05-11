@@ -134,6 +134,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	}
 }
 
+// User_Book represents a M2M join against "xo_tests.book_authors"
 type User_Book struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`

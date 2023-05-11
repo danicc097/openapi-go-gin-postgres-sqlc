@@ -98,11 +98,13 @@ func WithBookAuthorJoin(joins BookAuthorJoins) BookAuthorSelectConfigOption {
 	}
 }
 
+// BookAuthor_Book represents a M2M join against "xo_tests.book_authors"
 type BookAuthor_Book struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 
+// BookAuthor_Author represents a M2M join against "xo_tests.book_authors"
 type BookAuthor_Author struct {
 	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`

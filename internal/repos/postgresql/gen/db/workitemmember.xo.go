@@ -103,11 +103,13 @@ func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfi
 	}
 }
 
+// WorkItemMember_WorkItem represents a M2M join against "public.work_item_member"
 type WorkItemMember_WorkItem struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
+// WorkItemMember_Member represents a M2M join against "public.work_item_member"
 type WorkItemMember_Member struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
