@@ -45,7 +45,7 @@ import {
   DbWorkItemTagCreateParams,
   DbWorkItemTypeCreateParams,
   DbWorkItemRole,
-  DbWorkItem_Member,
+  DbWorkItem_AssignedUser,
   NotificationType,
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
@@ -506,16 +506,16 @@ export const DbWorkItemRoleDecoder: Decoder<DbWorkItemRole> = {
     return validateJson(json, schema, DbWorkItemRoleDecoder.definitionName)
   },
 }
-export const DbWorkItem_MemberDecoder: Decoder<DbWorkItem_Member> = {
-  definitionName: 'DbWorkItem_Member',
-  schemaRef: '#/definitions/DbWorkItem_Member',
+export const DbWorkItem_AssignedUserDecoder: Decoder<DbWorkItem_AssignedUser> = {
+  definitionName: 'DbWorkItem_AssignedUser',
+  schemaRef: '#/definitions/DbWorkItem_AssignedUser',
 
-  decode(json: unknown): DbWorkItem_Member {
-    const schema = ajv.getSchema(DbWorkItem_MemberDecoder.schemaRef)
+  decode(json: unknown): DbWorkItem_AssignedUser {
+    const schema = ajv.getSchema(DbWorkItem_AssignedUserDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${DbWorkItem_MemberDecoder.definitionName} not found`)
+      throw new Error(`Schema ${DbWorkItem_AssignedUserDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, DbWorkItem_MemberDecoder.definitionName)
+    return validateJson(json, schema, DbWorkItem_AssignedUserDecoder.definitionName)
   },
 }
 export const NotificationTypeDecoder: Decoder<NotificationType> = {

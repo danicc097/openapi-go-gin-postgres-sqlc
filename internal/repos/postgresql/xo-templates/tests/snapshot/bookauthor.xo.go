@@ -23,8 +23,8 @@ type BookAuthor struct {
 	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true"`  // author_id
 	Pseudonym *string   `json:"pseudonym" db:"pseudonym" required:"true"` // pseudonym
 
-	BooksJoin   *[]BookAuthor_Book   `json:"-" db:"books" openapi-go:"ignore"`   // M2M
-	AuthorsJoin *[]BookAuthor_Author `json:"-" db:"authors" openapi-go:"ignore"` // M2M
+	BooksJoinAuthor *[]BookAuthor_Book   `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M
+	AuthorsJoin     *[]BookAuthor_Author `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M
 }
 
 // BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
@@ -84,16 +84,16 @@ func WithBookAuthorLimit(limit int) BookAuthorSelectConfigOption {
 type BookAuthorOrderBy = string
 
 type BookAuthorJoins struct {
-	Books   bool
-	Authors bool
+	BooksAuthor bool
+	Authors     bool
 }
 
 // WithBookAuthorJoin joins with the given tables.
 func WithBookAuthorJoin(joins BookAuthorJoins) BookAuthorSelectConfigOption {
 	return func(s *BookAuthorSelectConfig) {
 		s.joins = BookAuthorJoins{
-			Books:   s.joins.Books || joins.Books,
-			Authors: s.joins.Authors || joins.Authors,
+			BooksAuthor: s.joins.BooksAuthor || joins.BooksAuthor,
+			Authors:     s.joins.Authors || joins.Authors,
 		}
 	}
 }
@@ -212,14 +212,14 @@ book_authors.author_id,
 book_authors.pseudonym,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books.__books
-		, joined_books.pseudonym
-		)) filter (where joined_books.__books is not null), '{}') end) as books,
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_authors.__users
-		, joined_authors.pseudonym
-		)) filter (where joined_authors.__users is not null), '{}') end) as authors ` +
+		joined_book_authors_authors.__users
+		, joined_book_authors_authors.pseudonym
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -234,7 +234,7 @@ left join (
 			book_authors_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
+  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
@@ -249,7 +249,7 @@ left join (
 			book_authors_book_id
 			, users.user_id
 			, pseudonym
-  ) as joined_authors on joined_authors.book_authors_book_id = book_authors.book_id
+  ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
 book_authors.book_id, book_authors.book_id, book_authors.author_id `
@@ -258,7 +258,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.Authors, bookID, authorID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.Authors, bookID, authorID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/db.Query: %w", err))
 	}
@@ -287,14 +287,14 @@ book_authors.author_id,
 book_authors.pseudonym,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books.__books
-		, joined_books.pseudonym
-		)) filter (where joined_books.__books is not null), '{}') end) as books,
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_authors.__users
-		, joined_authors.pseudonym
-		)) filter (where joined_authors.__users is not null), '{}') end) as authors ` +
+		joined_book_authors_authors.__users
+		, joined_book_authors_authors.pseudonym
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -309,7 +309,7 @@ left join (
 			book_authors_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
+  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
@@ -324,7 +324,7 @@ left join (
 			book_authors_book_id
 			, users.user_id
 			, pseudonym
-  ) as joined_authors on joined_authors.book_authors_book_id = book_authors.book_id
+  ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.book_id = $3 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
 book_authors.book_id, book_authors.book_id, book_authors.author_id `
@@ -333,7 +333,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.Authors, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.Authors, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
 	}
@@ -364,14 +364,14 @@ book_authors.author_id,
 book_authors.pseudonym,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_books.__books
-		, joined_books.pseudonym
-		)) filter (where joined_books.__books is not null), '{}') end) as books,
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_authors.__users
-		, joined_authors.pseudonym
-		)) filter (where joined_authors.__users is not null), '{}') end) as authors ` +
+		joined_book_authors_authors.__users
+		, joined_book_authors_authors.pseudonym
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -386,7 +386,7 @@ left join (
 			book_authors_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
+  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
@@ -401,7 +401,7 @@ left join (
 			book_authors_book_id
 			, users.user_id
 			, pseudonym
-  ) as joined_authors on joined_authors.book_authors_book_id = book_authors.book_id
+  ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.author_id = $3 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
 book_authors.book_id, book_authors.book_id, book_authors.author_id `
@@ -410,7 +410,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.Authors, authorID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.Authors, authorID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
 	}

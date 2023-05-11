@@ -29,7 +29,7 @@ type Team struct {
 
 	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O
-	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`              // M2M
+	MembersJoin     *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M
 	WorkItemJoin    *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O (inferred)
 
 }
@@ -114,7 +114,7 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 type TeamJoins struct {
 	Project     bool
 	TimeEntries bool
-	Users       bool
+	Members     bool
 	WorkItem    bool
 }
 
@@ -124,7 +124,7 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 		s.joins = TeamJoins{
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
-			Users:       s.joins.Users || joins.Users,
+			Members:     s.joins.Members || joins.Members,
 			WorkItem:    s.joins.WorkItem || joins.WorkItem,
 		}
 	}
@@ -235,8 +235,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_user_team_members.__users
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -250,18 +250,18 @@ left join (
     time_entries
   group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
--- M2M join generated from "user_team_user_id_fkey"
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+  ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
@@ -307,8 +307,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_user_team_members.__users
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -322,18 +322,18 @@ left join (
     time_entries
   group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
--- M2M join generated from "user_team_user_id_fkey"
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+  ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
@@ -382,8 +382,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_user_team_members.__users
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -397,18 +397,18 @@ left join (
     time_entries
   group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
--- M2M join generated from "user_team_user_id_fkey"
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+  ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
@@ -425,7 +425,7 @@ _team_ids.team_id,
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
 	}
@@ -459,8 +459,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_user_team_members.__users
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -474,18 +474,18 @@ left join (
     time_entries
   group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
--- M2M join generated from "user_team_user_id_fkey"
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+  ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
@@ -502,7 +502,7 @@ _team_ids.team_id,
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
@@ -538,8 +538,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_user_team_members.__users
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -553,18 +553,18 @@ left join (
     time_entries
   group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
--- M2M join generated from "user_team_user_id_fkey"
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+  ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
@@ -581,7 +581,7 @@ _team_ids.team_id,
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
@@ -617,8 +617,8 @@ teams.updated_at,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_users.__users
-		)) filter (where joined_users.__users is not null), '{}') end) as users,
+		joined_user_team_members.__users
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -632,18 +632,18 @@ left join (
     time_entries
   group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
--- M2M join generated from "user_team_user_id_fkey"
+-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
 			, row(users.*) as __users
 		from
 			user_team
-    join users on users.user_id = user_team.user_id
+    join users on users.user_id = user_team.member
     group by
 			user_team_team_id
 			, users.user_id
-  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+  ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
@@ -660,7 +660,7 @@ _team_ids.team_id,
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))
 	}

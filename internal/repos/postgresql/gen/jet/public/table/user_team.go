@@ -18,7 +18,7 @@ type userTeamTable struct {
 
 	// Columns
 	TeamID postgres.ColumnInteger
-	UserID postgres.ColumnString
+	Member postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -60,8 +60,8 @@ func newUserTeamTable(schemaName, tableName, alias string) *UserTeamTable {
 func newUserTeamTableImpl(schemaName, tableName, alias string) userTeamTable {
 	var (
 		TeamIDColumn   = postgres.IntegerColumn("team_id")
-		UserIDColumn   = postgres.StringColumn("user_id")
-		allColumns     = postgres.ColumnList{TeamIDColumn, UserIDColumn}
+		MemberColumn   = postgres.StringColumn("member")
+		allColumns     = postgres.ColumnList{TeamIDColumn, MemberColumn}
 		mutableColumns = postgres.ColumnList{}
 	)
 
@@ -70,7 +70,7 @@ func newUserTeamTableImpl(schemaName, tableName, alias string) userTeamTable {
 
 		//Columns
 		TeamID: TeamIDColumn,
-		UserID: UserIDColumn,
+		Member: MemberColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

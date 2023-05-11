@@ -8,7 +8,7 @@
 import type { WorkItemRole } from './workItemRole'
 import type { DbUser } from './dbUser'
 
-export interface DbWorkItemMember {
+export interface DbWorkItemAssignedUser {
   role: WorkItemRole
   user?: DbUser
 }

@@ -18,8 +18,8 @@ type WorkItemWorkItemTag struct {
 	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
 	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
 
-	WorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_tags" openapi-go:"ignore"` // M2M
-	WorkItemsJoin    *[]WorkItem    `json:"-" db:"work_items" openapi-go:"ignore"`     // M2M
+	WorkItemTagsJoin         *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M
+	WorkItemsJoinWorkItemTag *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M
 
 }
 
@@ -76,16 +76,16 @@ type WorkItemWorkItemTagOrderBy = string
 const ()
 
 type WorkItemWorkItemTagJoins struct {
-	WorkItemTags bool
-	WorkItems    bool
+	WorkItemTags         bool
+	WorkItemsWorkItemTag bool
 }
 
 // WithWorkItemWorkItemTagJoin joins with the given tables.
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.joins = WorkItemWorkItemTagJoins{
-			WorkItemTags: s.joins.WorkItemTags || joins.WorkItemTags,
-			WorkItems:    s.joins.WorkItems || joins.WorkItems,
+			WorkItemTags:         s.joins.WorkItemTags || joins.WorkItemTags,
+			WorkItemsWorkItemTag: s.joins.WorkItemsWorkItemTag || joins.WorkItemsWorkItemTag,
 		}
 	}
 }
@@ -141,12 +141,12 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -159,7 +159,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -172,7 +172,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_tag_id > $3 AND work_item_work_item_tag.work_item_id > $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -207,12 +207,12 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -225,7 +225,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -238,7 +238,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -247,7 +247,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 	// logf(sqlstr, workItemID, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItems, workItemID, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemID, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/db.Query: %w", err))
 	}
@@ -275,12 +275,12 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -293,7 +293,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -306,7 +306,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -315,7 +315,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItems, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/Query: %w", err))
 	}
@@ -345,12 +345,12 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -363,7 +363,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -376,7 +376,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_tag_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -385,7 +385,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 	// logf(sqlstr, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItems, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/Query: %w", err))
 	}
@@ -415,12 +415,12 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags,
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -433,7 +433,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_id
 			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -446,7 +446,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
 		` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
@@ -455,7 +455,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 	// logf(sqlstr, workItemTagID, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItems, workItemTagID, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemTagIDWorkItemID/Query: %w", err))
 	}

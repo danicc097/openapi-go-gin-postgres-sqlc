@@ -24,8 +24,8 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	ProjectJoin   *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O (generated from M2O)
-	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"`         // M2M
+	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O (generated from M2O)
+	WorkItemsJoinWorkItemTag *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M
 
 }
 
@@ -94,16 +94,16 @@ type WorkItemTagOrderBy = string
 const ()
 
 type WorkItemTagJoins struct {
-	Project   bool
-	WorkItems bool
+	Project              bool
+	WorkItemsWorkItemTag bool
 }
 
 // WithWorkItemTagJoin joins with the given tables.
 func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
 		s.joins = WorkItemTagJoins{
-			Project:   s.joins.Project || joins.Project,
-			WorkItems: s.joins.WorkItems || joins.WorkItems,
+			Project:              s.joins.Project || joins.Project,
+			WorkItemsWorkItemTag: s.joins.WorkItemsWorkItemTag || joins.WorkItemsWorkItemTag,
 		}
 	}
 }
@@ -212,8 +212,8 @@ work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -228,7 +228,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.work_item_tag_id > $3 GROUP BY _project_ids.project_id,
       _project_ids.project_id,
@@ -266,8 +266,8 @@ work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -282,7 +282,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.project_id > $3 GROUP BY _project_ids.project_id,
       _project_ids.project_id,
@@ -323,8 +323,8 @@ work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -339,7 +339,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 GROUP BY _project_ids.project_id,
       _project_ids.project_id,
@@ -350,7 +350,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/db.Query: %w", err))
 	}
@@ -382,8 +382,8 @@ work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -398,7 +398,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.name = $3 GROUP BY _project_ids.project_id,
       _project_ids.project_id,
@@ -409,7 +409,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
 	}
@@ -443,8 +443,8 @@ work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -459,7 +459,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.project_id = $3 GROUP BY _project_ids.project_id,
       _project_ids.project_id,
@@ -470,7 +470,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
 	}
@@ -504,8 +504,8 @@ work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_items.__work_items
-		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -520,7 +520,7 @@ left join (
     group by
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.work_item_tag_id = $3 GROUP BY _project_ids.project_id,
       _project_ids.project_id,
@@ -531,7 +531,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 
 	// run
 	// logf(sqlstr, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/db.Query: %w", err))
 	}

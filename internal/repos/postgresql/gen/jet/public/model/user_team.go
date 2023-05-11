@@ -13,5 +13,5 @@ import (
 
 type UserTeam struct {
 	TeamID int32     `sql:"primary_key" db:"team_id"`
-	UserID uuid.UUID `sql:"primary_key" db:"user_id"`
+	Member uuid.UUID `sql:"primary_key" db:"member"`
 }

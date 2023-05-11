@@ -74,20 +74,20 @@ func (a *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 	}
 
 	for _, m := range params.Members {
-		err := a.AssignMember(ctx, d, &db.WorkItemMemberCreateParams{
-			Member:     m.UserID,
-			WorkItemID: demoWi.WorkItemID,
-			Role:       m.Role,
+		err := a.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
+			AssignedUser: m.UserID,
+			WorkItemID:   demoWi.WorkItemID,
+			Role:         m.Role,
 		})
 		var ierr *internal.Error
 		if err != nil {
 			if errors.As(err, &ierr); ierr.Code() != internal.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("db.CreateWorkItemWorkItemMember: %w", err)
+				return nil, fmt.Errorf("db.CreateWorkItemWorkItemAssignedUser: %w", err)
 			}
 		}
 	}
 
-	opts := db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true, Members: true, WorkItemTags: true})
+	opts := db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true, AssignedUsers: true, WorkItemTags: true})
 	wi, err := a.demowiRepo.ByID(ctx, d, demoWi.WorkItemID, opts)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
@@ -138,16 +138,16 @@ func (a *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, work
 	return wiwit.Delete(ctx, d)
 }
 
-func (a *DemoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemMemberCreateParams) error {
-	_, err := db.CreateWorkItemMember(ctx, d, params)
+func (a *DemoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
+	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
 
 	return err
 }
 
 func (a *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int64) error {
-	wiwit := &db.WorkItemMember{
-		Member:     memberID,
-		WorkItemID: workItemID,
+	wiwit := &db.WorkItemAssignedUser{
+		AssignedUser: memberID,
+		WorkItemID:   workItemID,
 	}
 
 	return wiwit.Delete(ctx, d)
