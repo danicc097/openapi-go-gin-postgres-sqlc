@@ -597,7 +597,22 @@ type Tables map[string]Table
 
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
-	constraints, err := convertConstraints(ctx, schema.Constraints, schema.Tables)
+	// emit tables
+	tcc := append(schema.Tables, schema.Views...)
+	tcc = append(tcc, schema.MatViews...)
+
+	// will need access to all tables beforehand for indexes, struct generation...
+
+	tables := make(Tables)
+	for _, tc := range tcc {
+		table, err := convertTable(ctx, tc)
+		if err != nil {
+			return err
+		}
+		tables[table.SQLName] = table
+	}
+
+	constraints, err := convertConstraints(ctx, schema.Constraints, tables)
 	if err != nil {
 		return err
 	}
@@ -641,20 +656,6 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			SortName: prefix + name,
 			Data:     procs,
 		})
-	}
-	// emit tables
-	tcc := append(schema.Tables, schema.Views...)
-	tcc = append(tcc, schema.MatViews...)
-
-	// will need access to all tables beforehand for indexes, struct generation...
-
-	tables := make(Tables)
-	for _, tc := range tcc {
-		table, err := convertTable(ctx, tc)
-		if err != nil {
-			return err
-		}
-		tables[table.SQLName] = table
 	}
 
 	// IMPORTANT: can't use map[string]*Table - it messes up k and t for some reason
@@ -939,7 +940,7 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 	}, nil
 }
 
-func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables []xo.Table) ([]Constraint, error) {
+func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables Tables) ([]Constraint, error) {
 	var cc []Constraint // will create additional dummy constraints for automatic O2O
 cc_label:
 	for _, constraint := range constraints {
@@ -1036,6 +1037,22 @@ cc_label:
 				JoinTableClash: joinTableClash,
 				IsInferredO2O:  true,
 			})
+
+			// TODO
+			t := tables[constraint.RefTableName]
+			var f Field
+			for _, tf := range t.Fields {
+				if tf.SQLName == constraint.ColumnName {
+					f = tf
+				}
+			}
+			// need to check RefTable PKs since this should get called when generating for a
+			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
+			// viceversa we don't care as it's a regular PK.
+			isSingleFK, isSinglePK := analyzeField(t, f)
+			if isSingleFK && isSinglePK {
+				fmt.Printf("convertConstraints: %s.%s is a single foreign and primary key in O2O\n", constraint.RefTableName, constraint.ColumnName)
+			}
 
 			continue
 		}
@@ -3059,7 +3076,6 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			// viceversa we don't care as it's a regular PK.
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
-				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", c.RefTableName, c.ColumnName)
 				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
 				params["Alias"] = "_" + c.RefTableName
 			}
