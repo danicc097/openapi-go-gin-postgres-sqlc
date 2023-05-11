@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// Book represents a row from 'public.books'.
+// Book represents a row from 'xo_tests.books'.
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
@@ -25,7 +25,7 @@ type Book struct {
 	BookReviewsJoin *[]BookReview  `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
 }
 
-// BookCreateParams represents insert params for 'public.books'.
+// BookCreateParams represents insert params for 'xo_tests.books'.
 type BookCreateParams struct {
 	Name string `json:"name" required:"true"` // name
 }
@@ -39,12 +39,12 @@ func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, er
 	return b.Insert(ctx, db)
 }
 
-// BookUpdateParams represents update params for 'public.books'
+// BookUpdateParams represents update params for 'xo_tests.books'
 type BookUpdateParams struct {
 	Name *string `json:"name" required:"true"` // name
 }
 
-// SetUpdateParams updates public.books struct fields with the specified params.
+// SetUpdateParams updates xo_tests.books struct fields with the specified params.
 func (b *Book) SetUpdateParams(params *BookUpdateParams) {
 	if params.Name != nil {
 		b.Name = *params.Name
@@ -85,13 +85,14 @@ func WithBookJoin(joins BookJoins) BookSelectConfigOption {
 }
 
 type Book_Author struct {
-	User User `json:"user" db:"users"`
+	User      User    `json:"user" db:"users"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 
 // Insert inserts the Book to the database.
 func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO public.books (` +
+	sqlstr := `INSERT INTO xo_tests.books (` +
 		`name` +
 		`) VALUES (` +
 		`$1` +
@@ -116,7 +117,7 @@ func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 // Update updates a Book in the database.
 func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.books SET ` +
+	sqlstr := `UPDATE xo_tests.books SET ` +
 		`name = $1 ` +
 		`WHERE book_id = $2 ` +
 		`RETURNING * `
@@ -163,7 +164,7 @@ func (b *Book) Upsert(ctx context.Context, db DB, params *BookCreateParams) (*Bo
 // Delete deletes the Book from the database.
 func (b *Book) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.books ` +
+	sqlstr := `DELETE FROM xo_tests.books ` +
 		`WHERE book_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, b.BookID); err != nil {
@@ -183,17 +184,25 @@ func BookPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookS
 	sqlstr := `SELECT ` +
 		`books.book_id,
 books.name,
-(case when $1::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids,
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_author_ids.__users
+		, joined_author_ids.pseudonym
+		)) end) as author_ids,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
-		`FROM public.books ` +
+		`FROM xo_tests.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
+			, book_authors.pseudonym as pseudonym
+			, row(users.*) as __users
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
+    group by
+			book_authors_book_id
+			, users.user_id
+			, pseudonym
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = books.book_id
 
 -- M2O join generated from "book_reviews_book_id_fkey"
@@ -202,10 +211,11 @@ left join (
   book_id as book_reviews_book_id
     , array_agg(book_reviews.*) as book_reviews
   from
-    book_reviews
+    xo_tests.book_reviews
   group by
         book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id` +
-		` WHERE books.book_id > $3 `
+		` WHERE books.book_id > $3 GROUP BY books.book_id, books.book_id, 
+joined_book_reviews.book_reviews, books.book_id `
 	sqlstr += c.limit
 
 	// run
@@ -221,7 +231,7 @@ left join (
 	return res, nil
 }
 
-// BookByBookID retrieves a row from 'public.books' as a Book.
+// BookByBookID retrieves a row from 'xo_tests.books' as a Book.
 //
 // Generated from index 'books_pkey'.
 func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) (*Book, error) {
@@ -235,17 +245,25 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 	sqlstr := `SELECT ` +
 		`books.book_id,
 books.name,
-(case when $1::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids,
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_author_ids.__users
+		, joined_author_ids.pseudonym
+		)) end) as author_ids,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
-		`FROM public.books ` +
+		`FROM xo_tests.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
+			, book_authors.pseudonym as pseudonym
+			, row(users.*) as __users
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
+    group by
+			book_authors_book_id
+			, users.user_id
+			, pseudonym
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = books.book_id
 
 -- M2O join generated from "book_reviews_book_id_fkey"
@@ -254,10 +272,11 @@ left join (
   book_id as book_reviews_book_id
     , array_agg(book_reviews.*) as book_reviews
   from
-    book_reviews
+    xo_tests.book_reviews
   group by
         book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id` +
-		` WHERE books.book_id = $3 `
+		` WHERE books.book_id = $3 GROUP BY books.book_id, books.book_id, 
+joined_book_reviews.book_reviews, books.book_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

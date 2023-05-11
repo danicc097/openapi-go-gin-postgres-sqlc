@@ -10,12 +10,12 @@ import (
 )
 
 type KanbanStep struct {
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 	ksrepo repos.KanbanStep
 }
 
 // NewKanbanStep returns a new KanbanStep service.
-func NewKanbanStep(logger *zap.Logger, ksrepo repos.KanbanStep) *KanbanStep {
+func NewKanbanStep(logger *zap.SugaredLogger, ksrepo repos.KanbanStep) *KanbanStep {
 	return &KanbanStep{
 		logger: logger,
 		ksrepo: ksrepo,

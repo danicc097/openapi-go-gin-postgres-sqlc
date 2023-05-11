@@ -6,7 +6,7 @@ import (
 )
 
 type Board struct {
-	logger           *zap.Logger
+	logger           *zap.SugaredLogger
 	projectRepo      repos.Project
 	teamRepo         repos.Team
 	workItemTagRepo  repos.WorkItemTag
@@ -15,8 +15,7 @@ type Board struct {
 }
 
 // NewBoard returns a new Board service.
-func NewBoard(logger *zap.Logger,
-	projectRepo repos.Project,
+func NewBoard(logger *zap.SugaredLogger, projectRepo repos.Project,
 	teamRepo repos.Team,
 	workItemTagRepo repos.WorkItemTag,
 	workItemTypeRepo repos.WorkItemType,

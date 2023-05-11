@@ -147,15 +147,7 @@ declare
   old_record_jsonb jsonb = to_jsonb (old);
   old_record_id uuid = audit.to_record_id (TG_RELID , pkey_cols , old_record_jsonb);
 begin
-  insert into audit.record_version (
-    record_id
-    , old_record_id
-    , op
-    , table_oid
-    , table_schema
-    , table_name
-    , record
-    , old_record)
+  insert into audit.record_version (record_id , old_record_id , op , table_oid , table_schema , table_name , record , old_record)
   select
     record_id
     , old_record_id
@@ -177,11 +169,7 @@ create or replace function audit.truncate_trigger ()
   language plpgsql
   as $$
 begin
-  insert into audit.record_version (
-    op
-    , table_oid
-    , table_schema
-    , table_name)
+  insert into audit.record_version (op , table_oid , table_schema , table_name)
   select
     TG_OP::audit.operation
     , TG_RELID

@@ -10,12 +10,12 @@ import (
 )
 
 type WorkItemTag struct {
-	logger  *zap.Logger
+	logger  *zap.SugaredLogger
 	witRepo repos.WorkItemTag
 }
 
 // NewWorkItemTag returns a new WorkItemTag service.
-func NewWorkItemTag(logger *zap.Logger, witRepo repos.WorkItemTag) *WorkItemTag {
+func NewWorkItemTag(logger *zap.SugaredLogger, witRepo repos.WorkItemTag) *WorkItemTag {
 	return &WorkItemTag{
 		logger:  logger,
 		witRepo: witRepo,

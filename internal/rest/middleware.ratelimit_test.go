@@ -19,7 +19,7 @@ func TestRateLimitMiddleware(t *testing.T) {
 	_, engine := gin.CreateTestContext(resp)
 	rl := 1
 	bl := 3
-	rlmw := newRateLimitMiddleware(logger, rate.Limit(rl), bl)
+	rlmw := newRateLimitMiddleware(logger.Sugar(), rate.Limit(rl), bl)
 
 	engine.Use(rlmw.Limit())
 	engine.GET("/", func(ctx *gin.Context) {

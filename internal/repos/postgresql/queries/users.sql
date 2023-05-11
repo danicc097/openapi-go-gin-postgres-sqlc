@@ -22,21 +22,10 @@ limit 1;
 
 -- name: RegisterNewUser :one
 -- plpgsql-language-server:disable
-insert into users (
-  username
-  , email
-  , role_rank)
-values (
-  @username
-  , @email
-  , @role_rank)
+insert into users (username , email , role_rank)
+  values (@username , @email , @role_rank)
 returning
-  user_id
-  , username
-  , email
-  , role_rank
-  , created_at
-  , updated_at;
+  user_id , username , email , role_rank , created_at , updated_at;
 
 -- name: Test :exec
 -- update

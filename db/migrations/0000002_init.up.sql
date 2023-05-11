@@ -177,36 +177,28 @@ begin
     where
       user_id = new.receiver;
       --
-      insert into user_notifications (
-        notification_id
-        , user_id)
-      values (
-        new.notification_id
-        , new.receiver);
-  when new.notification_type = 'global' then
-    update
-      users
-    set
-      has_global_notifications = true
-    where
-      role_rank >= new.receiver_rank;
-      --
-      for receiver_id in (
-        select
-          user_id
-        from
-          users
-        where
-          role_rank >= new.receiver_rank)
-        loop
-          insert into user_notifications (
-            notification_id
-            , user_id)
-          values (
-            new.notification_id
-            , receiver_id);
-          end loop;
-  end case;
+      insert into user_notifications (notification_id , user_id)
+        values (new.notification_id , new.receiver);
+        when new.notification_type = 'global' then
+          update
+            users
+          set
+            has_global_notifications = true
+          where
+            role_rank >= new.receiver_rank;
+            --
+            for receiver_id in (
+              select
+                user_id
+              from
+                users
+              where
+                role_rank >= new.receiver_rank)
+              loop
+                insert into user_notifications (notification_id , user_id)
+                  values (new.notification_id , receiver_id);
+                  end loop;
+        end case;
   -- it's after trigger so wouldn't mattern anyway
   return null;
 end
@@ -352,10 +344,6 @@ create table demo_two_work_items (
 comment on column work_items.work_item_id is '"cardinality":O2O';
 
 comment on column demo_work_items.ref is '"tags":pattern:"^[0-9]{8}$"';
-
-comment on column demo_work_items.work_item_id is '"cardinality":O2O';
-
-comment on column demo_two_work_items.work_item_id is '"cardinality":O2O';
 
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
@@ -507,169 +495,89 @@ select
 
  INIT
  */
-insert into projects (
-  name
-  , description
-  , work_items_table_name)
-values (
-  'demo'
-  , 'description for demo'
-  , 'demo_work_items');
+insert into projects (name , description , work_items_table_name)
+  values ('demo' , 'description for demo' , 'demo_work_items');
 
-insert into projects (
-  name
-  , description
-  , work_items_table_name)
-values (
-  'demo_two'
-  , 'description for demo_two'
-  , 'demo_two_work_items');
+insert into projects (name , description , work_items_table_name)
+  values ('demo_two' , 'description for demo_two' , 'demo_two_work_items');
 
-insert into kanban_steps (
-  name
-  , description
-  , project_id
-  , color
-  , step_order)
-values (
-  'Disabled'
-  , 'This column is disabled'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo') , '#aaaaaa' , 0);
+insert into kanban_steps (name , description , project_id , color , step_order)
+  values ('Disabled' , 'This column is disabled' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo') , '#aaaaaa' , 0);
 
-insert into kanban_steps (
-  name
-  , description
-  , project_id
-  , color
-  , step_order)
-values (
-  'Received'
-  , 'description for Received column'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo') , '#aaaaaa' , 1);
+insert into kanban_steps (name , description , project_id , color , step_order)
+  values ('Received' , 'description for Received column' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo') , '#aaaaaa' , 1);
 
-insert into kanban_steps (
-  name
-  , description
-  , project_id
-  , color
-  , step_order)
-values (
-  'Under review'
-  , 'description for Under review column'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo') , '#f6f343' , 2);
+insert into kanban_steps (name , description , project_id , color , step_order)
+  values ('Under review' , 'description for Under review column' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo') , '#f6f343' , 2);
 
-insert into kanban_steps (
-  name
-  , description
-  , project_id
-  , color
-  , step_order)
-values (
-  'Work in progress'
-  , 'description for Work in progress column'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo') , '#2b2444' , 3);
+insert into kanban_steps (name , description , project_id , color , step_order)
+  values ('Work in progress' , 'description for Work in progress column' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo') , '#2b2444' , 3);
 
-insert into work_item_types (
-  name
-  , description
-  , project_id
-  , color)
-values (
-  'Type 1'
-  , 'description for Type 1 work item type'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo') , '#282828');
+insert into work_item_types (name , description , project_id , color)
+  values ('Type 1' , 'description for Type 1 work item type' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo') , '#282828');
 
-insert into kanban_steps (
-  name
-  , description
-  , project_id
-  , color
-  , step_order)
-values (
-  'Received'
-  , 'description for Received column'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo_two') , '#bbbbbb' , 1);
+insert into kanban_steps (name , description , project_id , color , step_order)
+  values ('Received' , 'description for Received column' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo_two') , '#bbbbbb' , 1);
 
-insert into work_item_types (
-  name
-  , description
-  , project_id
-  , color)
-values (
-  'Type 1'
-  , 'description for Type 1 work item type'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo_two') , '#282828');
+insert into work_item_types (name , description , project_id , color)
+  values ('Type 1' , 'description for Type 1 work item type' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo_two') , '#282828');
 
-insert into work_item_types (
-  name
-  , description
-  , project_id
-  , color)
-values (
-  'Type 2'
-  , 'description for Type 2 work item type'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo_two') , '#d0f810');
+insert into work_item_types (name , description , project_id , color)
+  values ('Type 2' , 'description for Type 2 work item type' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo_two') , '#d0f810');
 
-insert into work_item_types (
-  name
-  , description
-  , project_id
-  , color)
-values (
-  'Another type'
-  , 'description for Another type work item type'
-  , (
-    select
-      project_id
-    from
-      projects
-    where
-      name = 'demo_two') , '#d0f810');
+insert into work_item_types (name , description , project_id , color)
+  values ('Another type' , 'description for Another type work item type' , (
+      select
+        project_id
+      from
+        projects
+      where
+        name = 'demo_two') , '#d0f810');

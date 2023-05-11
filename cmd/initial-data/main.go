@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -17,14 +18,13 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
 var (
-	logger, _ = zap.NewDevelopment()
-	pool      *pgxpool.Pool
+	pool *pgxpool.Pool
+	l, _ = zap.NewDevelopment()
 )
 
 func main() {
@@ -36,10 +36,11 @@ func main() {
 	flag.StringVar(&scopePolicyPath, "scopes-path", "scopes.json", "Scopes policy JSON filepath")
 	flag.Parse()
 
+	logger := l.Sugar()
+
 	if err := envvar.Load(env); err != nil {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
-
 	pool, _, err = postgresql.New(logger)
 	if err != nil {
 		log.Fatalf("postgresql.New: %s\n", err)
@@ -51,6 +52,7 @@ func main() {
 	teamRepo := postgresql.NewTeam()
 	teRepo := postgresql.NewTimeEntry()
 	demoWiRepo := postgresql.NewDemoWorkItem()
+	wiRepo := postgresql.NewWorkItem()
 	wiTagRepo := postgresql.NewWorkItemTag()
 
 	authzSvc, err := services.NewAuthorization(logger, scopePolicyPath, rolePolicyPath)
@@ -60,8 +62,8 @@ func main() {
 	authnSvc := services.NewAuthentication(logger, userSvc, pool)
 	activitySvc := services.NewActivity(logger, activityRepo)
 	teamSvc := services.NewTeam(logger, teamRepo)
-	teSvc := services.NewTimeEntry(logger, teRepo)
-	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo)
+	teSvc := services.NewTimeEntry(logger, teRepo, wiRepo)
+	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo, wiRepo)
 	wiTagSvc := services.NewWorkItemTag(logger, wiTagRepo)
 
 	ctx := context.Background()
@@ -77,9 +79,9 @@ func main() {
 	 *
 	 **/
 
-	var userIDs []uuid.UUID
+	var users []*db.User
 
-	logger.Sugar().Info("Registering users...")
+	logger.Info("Registering users...")
 	for i := 0; i < 10; i++ {
 		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
@@ -91,8 +93,8 @@ func main() {
 		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 		handleError(err)
 
-		logger.Sugar().Info("Registered ", u.Username)
-		userIDs = append(userIDs, u.UserID)
+		logger.Info("Registered ", u.Username)
+		users = append(users, u)
 	}
 	u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "manager_1",
@@ -104,8 +106,8 @@ func main() {
 	handleError(err)
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 	handleError(err)
-	logger.Sugar().Info("Registered ", u.Username)
-	userIDs = append(userIDs, u.UserID)
+	logger.Info("Registered ", u.Username)
+	users = append(users, u)
 
 	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "superadmin_1",
@@ -117,8 +119,8 @@ func main() {
 	handleError(err)
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 	handleError(err)
-	logger.Sugar().Info("Registered ", u.Username)
-	userIDs = append(userIDs, u.UserID)
+	logger.Info("Registered ", u.Username)
+	users = append(users, u)
 
 	/**
 	 *
@@ -133,9 +135,11 @@ func main() {
 	})
 	handleError(err)
 
-	for _, id := range userIDs {
-		err = userSvc.AssignTeam(ctx, pool, id, team1.TeamID)
+	for _, u := range users {
+		err = userSvc.AssignTeam(ctx, pool, u.UserID, team1.TeamID)
 		handleError(err)
+		// save up some extra calls
+		u.TeamsJoin = &[]db.Team{*team1}
 	}
 
 	/**
@@ -151,21 +155,21 @@ func main() {
 		IsProductive: true,
 	})
 	handleError(err)
-	logger.Sugar().Info("Created activity ", activity1.Name)
+	logger.Info("Created activity ", activity1.Name)
 	activity2, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Activity 2",
 		Description: "Activity 2 description",
 	})
 	handleError(err)
-	logger.Sugar().Info("Created activity ", activity2.Name)
+	logger.Info("Created activity ", activity2.Name)
 	activity3, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Activity 3",
 		Description: "Activity 3 description",
 	})
 	handleError(err)
-	logger.Sugar().Info("Created activity ", activity3.Name)
+	logger.Info("Created activity ", activity3.Name)
 
 	/**
 	 *
@@ -180,7 +184,7 @@ func main() {
 		Color:       "#be6cc4",
 	})
 	handleError(err)
-	logger.Sugar().Info("Created tag ", wiTag1.Name)
+	logger.Info("Created tag ", wiTag1.Name)
 
 	wiTag2, err := wiTagSvc.Create(ctx, pool, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
@@ -189,7 +193,7 @@ func main() {
 		Color:       "#29b8db",
 	})
 	handleError(err)
-	logger.Sugar().Info("Created tag ", wiTag2.Name)
+	logger.Info("Created tag ", wiTag2.Name)
 
 	/**
 	 *
@@ -218,12 +222,18 @@ func main() {
 		},
 		TagIDs: []int{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
 		Members: []services.Member{
-			{UserID: userIDs[0], Role: models.WorkItemRolePreparer},
-			{UserID: userIDs[1], Role: models.WorkItemRoleReviewer},
+			{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
+			{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
 		},
 	})
 	handleError(err)
-	logger.Sugar().Info("Created work item with title: ", demowi1.Title)
+	logger.Info("Created work item with title: ", demowi1.Title)
+
+	demoWiSvc.Update(ctx, pool, demowi1.WorkItemID, repos.DemoWorkItemUpdateParams{
+		Base: &db.WorkItemUpdateParams{
+			KanbanStepID: pointers.New(internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsUnderReview]),
+		},
+	})
 
 	/**
 	 *
@@ -231,25 +241,36 @@ func main() {
 	 *
 	 **/
 
-	timeEntry1, err := teSvc.Create(ctx, pool, &db.TimeEntryCreateParams{
-		WorkItemID: &demowi1.WorkItemID,
-		ActivityID: activity1.ActivityID,
-		UserID:     userIDs[0],
-		Comment:    "Doing really important stuff as part of a work item",
-		Start:      time.Now(),
+	_, err = teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+		WorkItemID:      &demowi1.WorkItemID,
+		ActivityID:      activity1.ActivityID,
+		UserID:          users[0].UserID,
+		Comment:         "Doing really important stuff as part of a work item",
+		Start:           time.Now(),
+		DurationMinutes: pointers.New(56),
 	})
 	handleError(err)
-	logger.Sugar().Info("Created time entry: ", timeEntry1.Comment)
 
-	timeEntry2, err := teSvc.Create(ctx, pool, &db.TimeEntryCreateParams{
-		ActivityID: activity2.ActivityID,
-		UserID:     userIDs[0],
-		TeamID:     &team1.TeamID,
-		Comment:    "Doing really important stuff for the team",
-		Start:      time.Now(),
+	_, err = teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+		ActivityID:      activity2.ActivityID,
+		UserID:          users[0].UserID,
+		TeamID:          &team1.TeamID,
+		Comment:         "Doing really important stuff for the team",
+		Start:           time.Now(),
+		DurationMinutes: pointers.New(26),
 	})
 	handleError(err)
-	logger.Sugar().Info("Created time entry: ", timeEntry2.Comment)
+
+	for _, u := range users {
+		_, err := teSvc.Create(ctx, pool, u, &db.TimeEntryCreateParams{
+			ActivityID: activity2.ActivityID,
+			UserID:     u.UserID,
+			TeamID:     &team1.TeamID,
+			Comment:    "Generic comment (ongoing activity)",
+			Start:      time.Now().Add(time.Duration(rand.Intn(120)) * time.Hour),
+		})
+		handleError(err)
+	}
 
 	/**
 	 *
@@ -266,6 +287,6 @@ func errAndExit(out []byte, err error) {
 
 func handleError(err error) {
 	if err != nil {
-		logger.Sugar().Fatalf("error: %s", err)
+		l.Sugar().Fatalf("error: %s", err)
 	}
 }

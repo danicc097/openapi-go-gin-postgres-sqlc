@@ -12,7 +12,7 @@ import (
 func TestAuthorization_Roles(t *testing.T) {
 	t.Parallel()
 
-	svc, err := services.NewAuthorization(zaptest.NewLogger(t), "../../scopes.json", "../../roles.json")
+	svc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("NewAuthorization: %v", err)
 	}
@@ -35,7 +35,7 @@ func TestAuthorization_Roles(t *testing.T) {
 func TestAuthorization_Scopes(t *testing.T) {
 	t.Parallel()
 
-	svc, err := services.NewAuthorization(zaptest.NewLogger(t), "../../scopes.json", "../../roles.json")
+	svc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("NewAuthorization: %v", err)
 	}

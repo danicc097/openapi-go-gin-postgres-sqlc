@@ -10,12 +10,12 @@ import (
 )
 
 type WorkItemType struct {
-	logger  *zap.Logger
+	logger  *zap.SugaredLogger
 	witRepo repos.WorkItemType
 }
 
 // NewWorkItemType returns a new WorkItemType service.
-func NewWorkItemType(logger *zap.Logger, witRepo repos.WorkItemType) *WorkItemType {
+func NewWorkItemType(logger *zap.SugaredLogger, witRepo repos.WorkItemType) *WorkItemType {
 	return &WorkItemType{
 		logger:  logger,
 		witRepo: witRepo,

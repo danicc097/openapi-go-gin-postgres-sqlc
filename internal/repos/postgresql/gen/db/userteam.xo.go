@@ -143,30 +143,41 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $2::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+			, row(teams.*) as __teams
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.user_id = $3 AND user_team.team_id = $4 `
+		` WHERE user_team.user_id = $3 AND user_team.team_id = $4 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
+user_team.team_id, user_team.team_id, user_team.user_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -198,30 +209,41 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $2::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+			, row(teams.*) as __teams
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.team_id = $3 `
+		` WHERE user_team.team_id = $3 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
+user_team.team_id, user_team.team_id, user_team.user_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -255,30 +277,41 @@ func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $2::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+			, row(teams.*) as __teams
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.team_id = $3 AND user_team.user_id = $4 `
+		` WHERE user_team.team_id = $3 AND user_team.user_id = $4 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
+user_team.team_id, user_team.team_id, user_team.user_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -312,30 +345,41 @@ func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Use
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $2::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams ` +
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_teams.__teams
+		)) end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = user_team.user_id
 
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
-		from user_team
-    	join teams on teams.team_id = user_team.team_id
-    group by user_team_user_id
+			, row(teams.*) as __teams
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
+    group by
+			user_team_user_id
+			, teams.team_id
   ) as joined_teams on joined_teams.user_team_user_id = user_team.team_id
 ` +
-		` WHERE user_team.user_id = $3 `
+		` WHERE user_team.user_id = $3 GROUP BY user_team.user_id, user_team.team_id, user_team.user_id, 
+user_team.team_id, user_team.team_id, user_team.user_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

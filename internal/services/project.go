@@ -18,14 +18,13 @@ import (
 )
 
 type Project struct {
-	logger      *zap.Logger
+	logger      *zap.SugaredLogger
 	projectRepo repos.Project
 	teamRepo    repos.Team
 }
 
 // NewProject returns a new Project service.
-func NewProject(logger *zap.Logger,
-	projectRepo repos.Project,
+func NewProject(logger *zap.SugaredLogger, projectRepo repos.Project,
 	teamRepo repos.Team,
 ) *Project {
 	return &Project{

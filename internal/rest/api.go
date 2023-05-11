@@ -15,7 +15,7 @@ import (
 // Handlers implements ServerInterface.
 type Handlers struct {
 	usvc           *services.User
-	logger         *zap.Logger
+	logger         *zap.SugaredLogger
 	pool           *pgxpool.Pool
 	movieSvcClient v1.MovieGenreClient
 	authmw         *authMiddleware
@@ -27,8 +27,7 @@ type Handlers struct {
 
 // NewHandlers returns an server implementation of an openapi specification.
 func NewHandlers(
-	logger *zap.Logger,
-	pool *pgxpool.Pool,
+	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	movieSvcClient v1.MovieGenreClient,
 	usvc *services.User,
 	authzsvc *services.Authorization,

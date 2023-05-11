@@ -13,7 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// BookReview represents a row from 'public.book_reviews'.
+// BookReview represents a row from 'xo_tests.book_reviews'.
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
@@ -23,11 +23,11 @@ type BookReview struct {
 	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
 	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true"`           // reviewer
 
-	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O (generated from M2O)
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (generated from M2O)
+	BookJoin *Book `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O (generated from M2O)
+	UserJoin *User `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O (generated from M2O)
 }
 
-// BookReviewCreateParams represents insert params for 'public.book_reviews'.
+// BookReviewCreateParams represents insert params for 'xo_tests.book_reviews'.
 type BookReviewCreateParams struct {
 	BookID   int       `json:"bookID" required:"true"`   // book_id
 	Reviewer uuid.UUID `json:"reviewer" required:"true"` // reviewer
@@ -43,13 +43,13 @@ func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams
 	return br.Insert(ctx, db)
 }
 
-// BookReviewUpdateParams represents update params for 'public.book_reviews'
+// BookReviewUpdateParams represents update params for 'xo_tests.book_reviews'
 type BookReviewUpdateParams struct {
 	BookID   *int       `json:"bookID" required:"true"`   // book_id
 	Reviewer *uuid.UUID `json:"reviewer" required:"true"` // reviewer
 }
 
-// SetUpdateParams updates public.book_reviews struct fields with the specified params.
+// SetUpdateParams updates xo_tests.book_reviews struct fields with the specified params.
 func (br *BookReview) SetUpdateParams(params *BookReviewUpdateParams) {
 	if params.BookID != nil {
 		br.BookID = *params.BookID
@@ -95,7 +95,7 @@ func WithBookReviewJoin(joins BookReviewJoins) BookReviewSelectConfigOption {
 // Insert inserts the BookReview to the database.
 func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO public.book_reviews (` +
+	sqlstr := `INSERT INTO xo_tests.book_reviews (` +
 		`book_id, reviewer` +
 		`) VALUES (` +
 		`$1, $2` +
@@ -120,7 +120,7 @@ func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 // Update updates a BookReview in the database.
 func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.book_reviews SET ` +
+	sqlstr := `UPDATE xo_tests.book_reviews SET ` +
 		`book_id = $1, reviewer = $2 ` +
 		`WHERE book_review_id = $3 ` +
 		`RETURNING * `
@@ -168,7 +168,7 @@ func (br *BookReview) Upsert(ctx context.Context, db DB, params *BookReviewCreat
 // Delete deletes the BookReview from the database.
 func (br *BookReview) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.book_reviews ` +
+	sqlstr := `DELETE FROM xo_tests.book_reviews ` +
 		`WHERE book_review_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, br.BookReviewID); err != nil {
@@ -189,14 +189,19 @@ func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID 
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
-		`FROM public.book_reviews ` +
+(case when $1::boolean = true and _book_ids.book_id is not null then row(_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _reviewers.user_id is not null then row(_reviewers.*) end) as user_reviewer ` +
+		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books as _book_ids on _book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_review_id > $3 `
+left join xo_tests.users as _reviewers on _reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_review_id > $3 GROUP BY _book_ids.book_id,
+      _book_ids.book_id,
+	book_reviews.book_review_id, 
+_reviewers.user_id,
+      _reviewers.user_id,
+	book_reviews.book_review_id `
 	sqlstr += c.limit
 
 	// run
@@ -224,14 +229,19 @@ func BookReviewPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ..
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
-		`FROM public.book_reviews ` +
+(case when $1::boolean = true and _book_ids.book_id is not null then row(_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _reviewers.user_id is not null then row(_reviewers.*) end) as user_reviewer ` +
+		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books as _book_ids on _book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_id > $3 `
+left join xo_tests.users as _reviewers on _reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_id > $3 GROUP BY _book_ids.book_id,
+      _book_ids.book_id,
+	book_reviews.book_review_id, 
+_reviewers.user_id,
+      _reviewers.user_id,
+	book_reviews.book_review_id `
 	sqlstr += c.limit
 
 	// run
@@ -247,7 +257,7 @@ left join users on users.user_id = book_reviews.reviewer` +
 	return res, nil
 }
 
-// BookReviewByBookReviewID retrieves a row from 'public.book_reviews' as a BookReview.
+// BookReviewByBookReviewID retrieves a row from 'xo_tests.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_pkey'.
 func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
@@ -262,14 +272,19 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
-		`FROM public.book_reviews ` +
+(case when $1::boolean = true and _book_ids.book_id is not null then row(_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _reviewers.user_id is not null then row(_reviewers.*) end) as user_reviewer ` +
+		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books as _book_ids on _book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_review_id = $3 `
+left join xo_tests.users as _reviewers on _reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_review_id = $3 GROUP BY _book_ids.book_id,
+      _book_ids.book_id,
+	book_reviews.book_review_id, 
+_reviewers.user_id,
+      _reviewers.user_id,
+	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -287,7 +302,7 @@ left join users on users.user_id = book_reviews.reviewer` +
 	return &br, nil
 }
 
-// BookReviewByReviewerBookID retrieves a row from 'public.book_reviews' as a BookReview.
+// BookReviewByReviewerBookID retrieves a row from 'xo_tests.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, bookID int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
@@ -302,14 +317,19 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
-		`FROM public.book_reviews ` +
+(case when $1::boolean = true and _book_ids.book_id is not null then row(_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _reviewers.user_id is not null then row(_reviewers.*) end) as user_reviewer ` +
+		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books as _book_ids on _book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 `
+left join xo_tests.users as _reviewers on _reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 GROUP BY _book_ids.book_id,
+      _book_ids.book_id,
+	book_reviews.book_review_id, 
+_reviewers.user_id,
+      _reviewers.user_id,
+	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -327,7 +347,7 @@ left join users on users.user_id = book_reviews.reviewer` +
 	return &br, nil
 }
 
-// BookReviewsByReviewer retrieves a row from 'public.book_reviews' as a BookReview.
+// BookReviewsByReviewer retrieves a row from 'xo_tests.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
@@ -342,14 +362,19 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
-		`FROM public.book_reviews ` +
+(case when $1::boolean = true and _book_ids.book_id is not null then row(_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _reviewers.user_id is not null then row(_reviewers.*) end) as user_reviewer ` +
+		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books as _book_ids on _book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.reviewer = $3 `
+left join xo_tests.users as _reviewers on _reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.reviewer = $3 GROUP BY _book_ids.book_id,
+      _book_ids.book_id,
+	book_reviews.book_review_id, 
+_reviewers.user_id,
+      _reviewers.user_id,
+	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -369,7 +394,7 @@ left join users on users.user_id = book_reviews.reviewer` +
 	return res, nil
 }
 
-// BookReviewsByBookID retrieves a row from 'public.book_reviews' as a BookReview.
+// BookReviewsByBookID retrieves a row from 'xo_tests.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
@@ -384,14 +409,19 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
-		`FROM public.book_reviews ` +
+(case when $1::boolean = true and _book_ids.book_id is not null then row(_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _reviewers.user_id is not null then row(_reviewers.*) end) as user_reviewer ` +
+		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join books on books.book_id = book_reviews.book_id
+left join xo_tests.books as _book_ids on _book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join users on users.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_id = $3 `
+left join xo_tests.users as _reviewers on _reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_id = $3 GROUP BY _book_ids.book_id,
+      _book_ids.book_id,
+	book_reviews.book_review_id, 
+_reviewers.user_id,
+      _reviewers.user_id,
+	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

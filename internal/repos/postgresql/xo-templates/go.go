@@ -597,7 +597,22 @@ type Tables map[string]Table
 
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
-	constraints, err := convertConstraints(ctx, schema.Constraints, schema.Tables)
+	// emit tables
+	tcc := append(schema.Tables, schema.Views...)
+	tcc = append(tcc, schema.MatViews...)
+
+	// will need access to all tables beforehand for indexes, struct generation...
+
+	tables := make(Tables)
+	for _, tc := range tcc {
+		table, err := convertTable(ctx, tc)
+		if err != nil {
+			return err
+		}
+		tables[table.SQLName] = table
+	}
+
+	constraints, err := convertConstraints(ctx, schema.Constraints, tables)
 	if err != nil {
 		return err
 	}
@@ -641,20 +656,6 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			SortName: prefix + name,
 			Data:     procs,
 		})
-	}
-	// emit tables
-	tcc := append(schema.Tables, schema.Views...)
-	tcc = append(tcc, schema.MatViews...)
-
-	// will need access to all tables beforehand for indexes, struct generation...
-
-	tables := make(Tables)
-	for _, tc := range tcc {
-		table, err := convertTable(ctx, tc)
-		if err != nil {
-			return err
-		}
-		tables[table.SQLName] = table
 	}
 
 	// IMPORTANT: can't use map[string]*Table - it messes up k and t for some reason
@@ -851,6 +852,8 @@ func convertProc(ctx context.Context, overloadMap map[string][]Proc, order []str
 // convertTable converts a xo.Table to a Table.
 func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 	var cols, pkCols, generatedCols, ignoredCols []Field
+	_, _, schema := xo.DriverDbSchema(ctx)
+
 	for _, z := range t.Columns {
 		f, err := convertField(ctx, camelExport, z)
 		if err != nil {
@@ -885,6 +888,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		Ignored:     ignoredCols,
 		Manual:      manual && t.Manual,
 		Type:        t.Type,
+		Schema:      schema,
 	}
 
 	// conversion requires Table
@@ -936,7 +940,7 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 	}, nil
 }
 
-func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables []xo.Table) ([]Constraint, error) {
+func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables Tables) ([]Constraint, error) {
 	var cc []Constraint // will create additional dummy constraints for automatic O2O
 cc_label:
 	for _, constraint := range constraints {
@@ -1033,6 +1037,40 @@ cc_label:
 				JoinTableClash: joinTableClash,
 				IsInferredO2O:  true,
 			})
+
+			// TODO PK is Fk gen O2O on other side
+			t := tables[constraint.TableName]
+			// fmt.Printf("%s: t.PrimaryKeys: %v\n", constraint.TableName, t.PrimaryKeys)
+			// fmt.Printf("%s: t.ForeignKeys: %v\n", constraint.TableName, t.ForeignKeys)
+			// rt := tables[constraint.RefTableName]
+			// fmt.Printf("%s (ref): rt.PrimaryKeys: %v\n", constraint.RefTableName, rt.PrimaryKeys)
+			// fmt.Printf("%s (ref): rt.ForeignKeys: %v\n", constraint.RefTableName, rt.ForeignKeys)
+			// println(".....")
+
+			var f Field
+			for _, tf := range t.PrimaryKeys {
+				if tf.SQLName == constraint.ColumnName {
+					f = tf
+				}
+			}
+			// need to check RefTable PKs since this should get called when generating for a
+			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
+			// viceversa we don't care as it's a regular PK.
+			isSingleFK, isSinglePK := analyzeField(t, f)
+			if isSingleFK && isSinglePK {
+				fmt.Printf("convertConstraints: %s.%s is a single foreign and primary key in O2O\n", constraint.RefTableName, constraint.ColumnName)
+				cc = append(cc, Constraint{
+					Type:           constraint.Type,
+					Cardinality:    O2O,
+					Name:           constraint.Name + "(O2O inferred - PK is FK)",
+					RefTableName:   constraint.RefTableName,
+					TableName:      constraint.TableName,
+					RefColumnName:  constraint.RefColumnName,
+					ColumnName:     constraint.ColumnName,
+					JoinTableClash: joinTableClash,
+					IsInferredO2O:  true,
+				})
+			}
 
 			continue
 		}
@@ -1171,10 +1209,10 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		if !found {
 			return Field{}, fmt.Errorf("invalid column comment annotation format: %s", a)
 		}
-		typ = annotation(typ)
+		typ = annotation(strings.TrimSpace(typ))
 		switch typ {
 		case cardinalityAnnot, tagsAnnot, typeAnnot, propertiesAnnot:
-			annotations[typ] = val
+			annotations[typ] = strings.TrimSpace(val)
 		default:
 			return Field{}, fmt.Errorf("invalid column comment annotation type: %s", typ)
 		}
@@ -2479,6 +2517,7 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 
 // sqlstr_paginated builds a cursor-paginated query string from columns.
 func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []Field) string {
+	var groupbys []string
 	switch x := v.(type) {
 	case Table:
 		var filters, fields, joins []string
@@ -2518,13 +2557,17 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			if c.Type != "foreign_key" {
 				continue
 			}
-			joinStmts, selectStmts := createJoinStatement(tables, c, x, funcs, f.nth, n)
-			if joinStmts.String() == "" || selectStmts.String() == "" {
+			joinStmt, selectStmt, groupby := createJoinStatement(tables, c, x, funcs, f.nth, n)
+			if joinStmt == "" || selectStmt == "" {
 				continue
 			}
 
-			fields = append(fields, selectStmts.String())
-			joins = append(joins, joinStmts.String())
+			if groupby != "" {
+				groupbys = append(groupbys, groupby)
+			}
+
+			fields = append(fields, selectStmt)
+			joins = append(joins, joinStmt)
 			n++
 		}
 
@@ -2544,14 +2587,20 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			" WHERE " + strings.Join(filters, " AND "),
 		}
 
+		var groupbyStmt string
+		if len(groupbys) > 0 {
+			groupbyStmt = " GROUP BY " + strings.Join(groupbys, ", \n")
+		}
+
 		if tableHasDeletedAt {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s`, c.deletedAt)",
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s %s`, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
+				groupbyStmt,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 			)
 		} else {
-			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `")+groupbyStmt)
 		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
@@ -2736,10 +2785,26 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 // M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
 
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}, '{}') end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
+	M2MSelect = `(case when {{.Nth}}::boolean = true then ARRAY_AGG((
+		joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}
+		{{- range .LookupExtraCols }}
+		, joined_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}
+		{{- end }}
+		)) end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
-	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
+	O2OSelect = `(case when {{.Nth}}::boolean = true and {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`
+)
+
+const (
+	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
+	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
+	O2OGroupBy = `{{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}},
+	{{- range $i, $g := .JoinTablePKGroupBys}}
+      {{if $g}}{{$g}},{{end}}
+
+  {{- end}}
+	{{.CurrentTablePKGroupBys}}`
 )
 
 const (
@@ -2750,10 +2815,13 @@ left join (
 			{{- range .LookupExtraCols }}
 			, {{$.LookupTable}}.{{.}} as {{ . -}}
 			{{- end }}
-			, array_agg({{.JoinTable}}.*) filter (where {{.JoinTable}}.* is not null) as __{{.LookupJoinTablePKAgg}}
-		from {{.LookupTable}}
-    	join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
-    group by {{.LookupTable}}_{{.LookupColumn}}
+			, row({{.JoinTable}}.*) as __{{.LookupJoinTablePKAgg}}
+		from
+			{{.Schema}}{{.LookupTable}}
+    join {{.Schema}}{{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
+    group by
+			{{.LookupTable}}_{{.LookupColumn}}
+			, {{.JoinTable}}.{{.JoinTablePK}}
 			{{- range .LookupExtraCols }}
 			, {{ . -}}
 			{{- end }}
@@ -2765,15 +2833,16 @@ left join (
   {{.JoinColumn}} as {{.JoinTable}}_{{.JoinRefColumn}}
     , array_agg({{.JoinTable}}.*) as {{.JoinTable}}
   from
-    {{.JoinTable}}
+    {{.Schema}}{{.JoinTable}}
   group by
         {{.JoinColumn}}) joined_{{.JoinTable}}{{.ClashSuffix}} on joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 	O2OJoin = `
-left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
+left join {{.Schema}}{{.JoinTable}} as {{ .Alias}}_{{.JoinTableAlias}} on {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 )
 
 // sqlstr_index builds a index fields.
 func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tables) string {
+	var groupbys []string
 	switch x := v.(type) {
 	case Index:
 		var filters, fields, joins []string
@@ -2813,13 +2882,16 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			if c.Type != "foreign_key" {
 				continue
 			}
-			joinStmts, selectStmts := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
-			if joinStmts.String() == "" || selectStmts.String() == "" {
+			joinStmt, selectStmt, groupby := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
+			if joinStmt == "" || selectStmt == "" {
 				continue
 			}
+			if groupby != "" {
+				groupbys = append(groupbys, groupby)
+			}
 
-			fields = append(fields, selectStmts.String())
-			joins = append(joins, joinStmts.String())
+			fields = append(fields, selectStmt)
+			joins = append(joins, joinStmt)
 			n++
 		}
 		// index fields
@@ -2853,13 +2925,19 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			" WHERE " + strings.Join(filters, " AND "),
 		}
 
+		var groupbyStmt string
+		if len(groupbys) > 0 {
+			groupbyStmt = " GROUP BY " + strings.Join(groupbys, ", \n")
+		}
+
 		if tableHasDeletedAt {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s `, c.deletedAt)",
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s `, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
-				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
+				fmt.Sprintf(" AND %s.deleted_at is %%s ", x.Table.SQLName),
+				groupbyStmt,
 			)
 		} else {
-			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `")+groupbyStmt)
 		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
@@ -2894,20 +2972,34 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 
 // createJoinStatement returns select queries and join statements strings
 // for a given index table.
-func createJoinStatement(tables Tables, c Constraint, table Table, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
-	var joinTpl, selectTpl string
-	joins := &bytes.Buffer{}
-	selects := &bytes.Buffer{}
+func createJoinStatement(tables Tables, c Constraint, table Table, funcs template.FuncMap, nth func(int) string, n int) (string, string, string) {
+	var joinTpl, selectTpl, groupbyTpl string
+	join := &bytes.Buffer{}
+	selec := &bytes.Buffer{}
+	groupby := &bytes.Buffer{}
 	params := make(map[string]interface{})
-	fmt.Fprintf(joins, "-- %s join generated from %q", c.Cardinality, c.Name)
+	fmt.Fprintf(join, "-- %s join generated from %q", c.Cardinality, c.Name)
 
 	params["Nth"] = nth(n)
 	params["ClashSuffix"] = ""
+	params["Schema"] = ""
+
+	var currentTablePKGroupBys []string
+	for _, pk := range table.PrimaryKeys {
+		currentTablePKGroupBys = append(currentTablePKGroupBys, table.SQLName+"."+pk.SQLName)
+	}
+	params["CurrentTablePKGroupBys"] = strings.Join(currentTablePKGroupBys, ", ")
+	params["Alias"] = "" // to prevent alias name clashes
+
+	if table.Schema != "public" {
+		params["Schema"] = table.Schema + "."
+	}
 
 	switch c.Cardinality {
 	case M2M:
 		joinTpl = M2MJoin
 		selectTpl = M2MSelect
+		groupbyTpl = M2MGroupBy
 
 		params["LookupColumn"] = c.LookupColumn
 		params["JoinTable"] = c.RefTableName
@@ -2943,10 +3035,10 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 				params["LookupJoinTablePKAgg"] = params["JoinTable"]
 			}
 		}
-
 	case M2O:
 		joinTpl = M2OJoin
 		selectTpl = M2OSelect
+		groupbyTpl = M2OGroupBy
 		if c.RefTableName == table.SQLName {
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
@@ -2956,6 +3048,7 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
+
 		}
 		if c.TableName == table.SQLName {
 			params["JoinColumn"] = c.RefColumnName
@@ -2967,17 +3060,53 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 				params["ClashSuffix"] = "_" + c.RefColumnName
 			}
 		}
+
+		// joinTable := tables[params["JoinTable"].(string)]
+		// var joinTablePKGroupBys []string
+		// for _, pk := range joinTable.PrimaryKeys {
+		// 	joinTablePKGroupBys = append(joinTablePKGroupBys, params["JoinTable"].(string)+"."+pk.SQLName)
+		// }
+		// params["JoinTablePKGroupBys"] = strings.Join(joinTablePKGroupBys, ", ")
+
 	case O2O:
 		if c.TableName == table.SQLName {
+			groupbyTpl = O2OGroupBy
 			joinTpl = O2OJoin
 			selectTpl = O2OSelect
 			params["JoinColumn"] = c.RefColumnName
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
+			params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
 			params["CurrentTable"] = table.SQLName
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
+
+			t := tables[c.RefTableName]
+			var f Field
+			for _, tf := range t.Fields {
+				if tf.SQLName == c.ColumnName {
+					f = tf
+				}
+			}
+			// need to check RefTable PKs since this should get called when generating for a
+			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
+			// viceversa we don't care as it's a regular PK.
+			isSingleFK, isSinglePK := analyzeField(t, f)
+			if isSingleFK && isSinglePK {
+				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
+				params["Alias"] = "_" + c.RefTableName
+			}
+
+			joinTable := tables[c.RefTableName]
+			var joinTablePKGroupBys []string
+			for _, pk := range joinTable.PrimaryKeys {
+				if !(isSingleFK && isSinglePK) {
+					joinTablePKGroupBys = append(joinTablePKGroupBys, "_"+params["JoinTableAlias"].(string)+"."+pk.SQLName)
+				}
+			}
+			params["JoinTablePKGroupBys"] = joinTablePKGroupBys
+
 			break
 		}
 
@@ -2994,16 +3123,23 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 
 	default:
 	}
-	t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
-	if err := t.Execute(joins, params); err != nil {
+
+	t := template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(joinTpl))
+	if err := t.Execute(join, params); err != nil {
 		panic(fmt.Sprintf("could not execute join template: %s", err))
 	}
 
-	t = template.Must(template.New("").Funcs(funcs).Parse(selectTpl))
-	if err := t.Execute(selects, params); err != nil {
-		panic(fmt.Sprintf("could not execute select template: %s", err))
+	t = template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(selectTpl))
+	if err := t.Execute(selec, params); err != nil {
+		panic(fmt.Sprintf("could not execute selec template: %s", err))
 	}
-	return joins, selects
+
+	t = template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(groupbyTpl))
+	if err := t.Execute(groupby, params); err != nil {
+		panic(fmt.Sprintf("could not execute selec template: %s", err))
+	}
+
+	return join.String(), selec.String(), groupby.String()
 }
 
 // getLookupTableRegularFields gets extra columns in a lookup table that are not PK or FK
@@ -3200,7 +3336,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 		if skipField {
 			return "", nil
 		}
-		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
+		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it. PK is FK
 			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
@@ -3320,8 +3456,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		// sync with extratypes
 		switch c.Cardinality {
 		case M2M:
-
-			_ = tables[c.TableName]
 			// extraCols := getLookupTableRegularFields(lookupTable)
 			// fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
 
@@ -3382,10 +3516,30 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					notes = " (generated from M2O)"
 				}
 
-				joinName := inflector.Singularize(c.RefTableName)
+				// TODO handle when PK is FK:
+				// left join demo_two_work_items as work_item_ids on work_item_ids.work_item_id = work_items.work_item_id
+				// -- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
+				// left join demo_work_items as work_item_ids on work_item_ids.work_item_id = work_items.work_item_id
+				// ---> "work_item_ids" specified more than once
+
+				t := tables[c.TableName]
+				var f Field
+				for _, tf := range t.Fields {
+					if tf.SQLName == c.ColumnName {
+						f = tf
+					}
+				}
+				isSingleFK, isSinglePK := analyzeField(t, f)
+
+				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
+				joinName := joinPrefix + inflector.Singularize(c.ColumnName)
 				if c.JoinTableClash {
-					joinName = joinName + "_" + c.ColumnName
 					goName = goName + camelExport(c.ColumnName)
+				}
+
+				if isSingleFK && isSinglePK {
+					fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", c.TableName, c.ColumnName)
+					joinName = joinPrefix + inflector.Singularize(c.TableName) + "_" + inflector.Singularize(c.ColumnName)
 				}
 
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
@@ -3819,6 +3973,7 @@ type Table struct {
 	Generated   []Field
 	Ignored     []Field
 	ForeignKeys []TableForeignKeys
+	Schema      string
 }
 
 type TableForeignKeys struct {

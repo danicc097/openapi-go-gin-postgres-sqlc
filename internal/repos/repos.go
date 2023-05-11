@@ -57,9 +57,15 @@ type DemoWorkItemCreateParams struct {
 	Base        db.WorkItemCreateParams     `json:"base" required:"true"`
 }
 
+// WorkItem defines the datastore/repository handling retrieving WorkItem records.
+type WorkItem interface {
+	// ByID returns a generic WorkItem by default.
+	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+}
+
 // DemoWorkItem defines the datastore/repository handling persisting DemoWorkItem records.
-// Returns a generic WorkItem with project-specific fields joined.
 type DemoWorkItem interface {
+	// ByID returns a generic WorkItem with project-specific fields joined by default.
 	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error)

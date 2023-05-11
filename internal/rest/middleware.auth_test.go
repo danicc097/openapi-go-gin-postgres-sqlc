@@ -56,14 +56,14 @@ func TestAuthorizationMiddleware_Roles(t *testing.T) {
 			logger, _ := zap.NewDevelopment()
 			_, engine := gin.CreateTestContext(resp)
 
-			authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
+			authzsvc, err := services.NewAuthorization(logger.Sugar(), "../../scopes.json", "../../roles.json")
 			if err != nil {
 				t.Fatalf("services.NewAuthorization: %v", err)
 			}
-			usvc := services.NewUser(logger, postgresql.NewUser(), postgresql.NewNotification(), authzsvc)
-			authnsvc := services.NewAuthentication(logger, usvc, testPool)
+			usvc := services.NewUser(logger.Sugar(), postgresql.NewUser(), postgresql.NewNotification(), authzsvc)
+			authnsvc := services.NewAuthentication(logger.Sugar(), usvc, testPool)
 
-			authMw := newAuthMiddleware(logger, testPool, authnsvc, authzsvc, usvc)
+			authMw := newAuthMiddleware(logger.Sugar(), testPool, authnsvc, authzsvc, usvc)
 
 			req, _ := http.NewRequest(http.MethodGet, "/", nil)
 

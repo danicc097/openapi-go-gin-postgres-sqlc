@@ -72,7 +72,7 @@ func main() {
 	}
 
 	logger, _ := zap.NewDevelopment()
-	pool, sqlpool, err := postgresql.New(logger)
+	pool, sqlpool, err := postgresql.New(logger.Sugar())
 	if err != nil {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}

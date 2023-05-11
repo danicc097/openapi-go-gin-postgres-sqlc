@@ -4,54 +4,64 @@ package got
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
-// BookAuthor represents a row from 'public.book_authors'.
+// BookAuthor represents a row from 'xo_tests.book_authors'.
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
 //   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type BookAuthor struct {
-	BookID   int       `json:"bookID" db:"book_id" required:"true"`     // book_id
-	AuthorID uuid.UUID `json:"authorID" db:"author_id" required:"true"` // author_id
+	BookID    int       `json:"bookID" db:"book_id" required:"true"`      // book_id
+	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true"`  // author_id
+	Pseudonym *string   `json:"pseudonym" db:"pseudonym" required:"true"` // pseudonym
 
 	BooksJoin   *[]Book              `json:"-" db:"books" openapi-go:"ignore"`   // M2M
 	AuthorsJoin *[]BookAuthor_Author `json:"-" db:"authors" openapi-go:"ignore"` // M2M
 }
 
-// BookAuthorCreateParams represents insert params for 'public.book_authors'.
+// BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
 type BookAuthorCreateParams struct {
-	BookID   int       `json:"bookID" required:"true"`   // book_id
-	AuthorID uuid.UUID `json:"authorID" required:"true"` // author_id
+	BookID    int       `json:"bookID" required:"true"`    // book_id
+	AuthorID  uuid.UUID `json:"authorID" required:"true"`  // author_id
+	Pseudonym *string   `json:"pseudonym" required:"true"` // pseudonym
 }
 
 // CreateBookAuthor creates a new BookAuthor in the database with the given params.
 func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
 	ba := &BookAuthor{
-		BookID:   params.BookID,
-		AuthorID: params.AuthorID,
+		BookID:    params.BookID,
+		AuthorID:  params.AuthorID,
+		Pseudonym: params.Pseudonym,
 	}
 
 	return ba.Insert(ctx, db)
 }
 
-// BookAuthorUpdateParams represents update params for 'public.book_authors'
+// BookAuthorUpdateParams represents update params for 'xo_tests.book_authors'
 type BookAuthorUpdateParams struct {
-	BookID   *int       `json:"bookID" required:"true"`   // book_id
-	AuthorID *uuid.UUID `json:"authorID" required:"true"` // author_id
+	BookID    *int       `json:"bookID" required:"true"`    // book_id
+	AuthorID  *uuid.UUID `json:"authorID" required:"true"`  // author_id
+	Pseudonym **string   `json:"pseudonym" required:"true"` // pseudonym
 }
 
-// SetUpdateParams updates public.book_authors struct fields with the specified params.
+// SetUpdateParams updates xo_tests.book_authors struct fields with the specified params.
 func (ba *BookAuthor) SetUpdateParams(params *BookAuthorUpdateParams) {
 	if params.BookID != nil {
 		ba.BookID = *params.BookID
 	}
 	if params.AuthorID != nil {
 		ba.AuthorID = *params.AuthorID
+	}
+	if params.Pseudonym != nil {
+		ba.Pseudonym = *params.Pseudonym
 	}
 }
 
@@ -89,21 +99,22 @@ func WithBookAuthorJoin(joins BookAuthorJoins) BookAuthorSelectConfigOption {
 }
 
 type BookAuthor_Author struct {
-	User User `json:"user" db:"users"`
+	User      User    `json:"user" db:"users"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 
 // Insert inserts the BookAuthor to the database.
 func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO public.book_authors (` +
-		`book_id, author_id` +
+	sqlstr := `INSERT INTO xo_tests.book_authors (` +
+		`book_id, author_id, pseudonym` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3` +
 		`)` +
 		` RETURNING * `
 	// run
-	logf(sqlstr, ba.BookID, ba.AuthorID)
-	rows, err := db.Query(ctx, sqlstr, ba.BookID, ba.AuthorID)
+	logf(sqlstr, ba.BookID, ba.AuthorID, ba.Pseudonym)
+	rows, err := db.Query(ctx, sqlstr, ba.BookID, ba.AuthorID, ba.Pseudonym)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/Insert/db.Query: %w", err))
 	}
@@ -116,12 +127,59 @@ func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 	return ba, nil
 }
 
-// ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
+// Update updates a BookAuthor in the database.
+func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
+	// update with composite primary key
+	sqlstr := `UPDATE xo_tests.book_authors SET ` +
+		`pseudonym = $1 ` +
+		`WHERE book_id = $2  AND author_id = $3 ` +
+		`RETURNING * `
+	// run
+	logf(sqlstr, ba.Pseudonym, ba.BookID, ba.AuthorID)
+
+	rows, err := db.Query(ctx, sqlstr, ba.Pseudonym, ba.BookID, ba.AuthorID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookAuthor/Update/db.Query: %w", err))
+	}
+	newba, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookAuthor])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookAuthor/Update/pgx.CollectOneRow: %w", err))
+	}
+	*ba = newba
+
+	return ba, nil
+}
+
+// Upsert upserts a BookAuthor in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
+	var err error
+
+	ba.BookID = params.BookID
+	ba.AuthorID = params.AuthorID
+	ba.Pseudonym = params.Pseudonym
+
+	ba, err = ba.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			ba, err = ba.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return ba, err
+}
 
 // Delete deletes the BookAuthor from the database.
 func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.book_authors ` +
+	sqlstr := `DELETE FROM xo_tests.book_authors ` +
 		`WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, ba.BookID, ba.AuthorID); err != nil {
@@ -130,7 +188,7 @@ func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// BookAuthorByBookIDAuthorID retrieves a row from 'public.book_authors' as a BookAuthor.
+// BookAuthorByBookIDAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
@@ -144,30 +202,45 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 	sqlstr := `SELECT ` +
 		`book_authors.book_id,
 book_authors.author_id,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
-(case when $2::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids ` +
-		`FROM public.book_authors ` +
+book_authors.pseudonym,
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_author_ids.__users
+		, joined_author_ids.pseudonym
+		)) end) as author_ids ` +
+		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
-		from book_authors
-    	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+			, row(books.*) as __books
+		from
+			xo_tests.book_authors
+    join xo_tests.books on books.book_id = book_authors.book_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
+			, book_authors.pseudonym as pseudonym
+			, row(users.*) as __users
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
+    group by
+			book_authors_book_id
+			, users.user_id
+			, pseudonym
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
 ` +
-		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4 `
+		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
+book_authors.book_id, book_authors.book_id, book_authors.author_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -185,7 +258,7 @@ left join (
 	return &ba, nil
 }
 
-// BookAuthorsByBookID retrieves a row from 'public.book_authors' as a BookAuthor.
+// BookAuthorsByBookID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
@@ -199,30 +272,45 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 	sqlstr := `SELECT ` +
 		`book_authors.book_id,
 book_authors.author_id,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
-(case when $2::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids ` +
-		`FROM public.book_authors ` +
+book_authors.pseudonym,
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_author_ids.__users
+		, joined_author_ids.pseudonym
+		)) end) as author_ids ` +
+		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
-		from book_authors
-    	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+			, row(books.*) as __books
+		from
+			xo_tests.book_authors
+    join xo_tests.books on books.book_id = book_authors.book_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
+			, book_authors.pseudonym as pseudonym
+			, row(users.*) as __users
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
+    group by
+			book_authors_book_id
+			, users.user_id
+			, pseudonym
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
 ` +
-		` WHERE book_authors.book_id = $3 `
+		` WHERE book_authors.book_id = $3 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
+book_authors.book_id, book_authors.book_id, book_authors.author_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -242,7 +330,7 @@ left join (
 	return res, nil
 }
 
-// BookAuthorsByAuthorID retrieves a row from 'public.book_authors' as a BookAuthor.
+// BookAuthorsByAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
@@ -256,30 +344,45 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 	sqlstr := `SELECT ` +
 		`book_authors.book_id,
 book_authors.author_id,
-(case when $1::boolean = true then COALESCE(joined_books.__books, '{}') end) as books,
-(case when $2::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids ` +
-		`FROM public.book_authors ` +
+book_authors.pseudonym,
+(case when $1::boolean = true then ARRAY_AGG((
+		joined_books.__books
+		)) end) as books,
+(case when $2::boolean = true then ARRAY_AGG((
+		joined_author_ids.__users
+		, joined_author_ids.pseudonym
+		)) end) as author_ids ` +
+		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
-			, array_agg(books.*) filter (where books.* is not null) as __books
-		from book_authors
-    	join books on books.book_id = book_authors.book_id
-    group by book_authors_author_id
+			, row(books.*) as __books
+		from
+			xo_tests.book_authors
+    join xo_tests.books on books.book_id = book_authors.book_id
+    group by
+			book_authors_author_id
+			, books.book_id
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
-			, array_agg(users.*) filter (where users.* is not null) as __author_ids
-		from book_authors
-    	join users on users.user_id = book_authors.author_id
-    group by book_authors_book_id
+			, book_authors.pseudonym as pseudonym
+			, row(users.*) as __users
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
+    group by
+			book_authors_book_id
+			, users.user_id
+			, pseudonym
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
 ` +
-		` WHERE book_authors.author_id = $3 `
+		` WHERE book_authors.author_id = $3 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
+book_authors.book_id, book_authors.book_id, book_authors.author_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

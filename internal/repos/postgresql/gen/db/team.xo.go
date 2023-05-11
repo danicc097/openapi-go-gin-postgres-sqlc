@@ -27,10 +27,10 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
-	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
-	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
-	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
+	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O (generated from M2O)
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O
+	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`              // M2M
+	WorkItemJoin    *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O (inferred)
 
 }
 
@@ -231,13 +231,15 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = teams.project_id
+left join projects as _project_ids on _project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -251,15 +253,25 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.team_id > $5 `
+left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
+		` WHERE teams.team_id > $5 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	teams.team_id, 
+joined_time_entries.time_entries, teams.team_id, 
+teams.team_id, teams.team_id, 
+_team_ids.team_id,
+      _team_ids.work_item_id,
+	teams.team_id `
 	sqlstr += c.limit
 
 	// run
@@ -290,13 +302,15 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = teams.project_id
+left join projects as _project_ids on _project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -310,15 +324,25 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.project_id > $5 `
+left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
+		` WHERE teams.project_id > $5 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	teams.team_id, 
+joined_time_entries.time_entries, teams.team_id, 
+teams.team_id, teams.team_id, 
+_team_ids.team_id,
+      _team_ids.work_item_id,
+	teams.team_id `
 	sqlstr += c.limit
 
 	// run
@@ -352,13 +376,15 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = teams.project_id
+left join projects as _project_ids on _project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -372,15 +398,25 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.name = $5 AND teams.project_id = $6 `
+left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
+		` WHERE teams.name = $5 AND teams.project_id = $6 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	teams.team_id, 
+joined_time_entries.time_entries, teams.team_id, 
+teams.team_id, teams.team_id, 
+_team_ids.team_id,
+      _team_ids.work_item_id,
+	teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -416,13 +452,15 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = teams.project_id
+left join projects as _project_ids on _project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -436,15 +474,25 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.name = $5 `
+left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
+		` WHERE teams.name = $5 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	teams.team_id, 
+joined_time_entries.time_entries, teams.team_id, 
+teams.team_id, teams.team_id, 
+_team_ids.team_id,
+      _team_ids.work_item_id,
+	teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -482,13 +530,15 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = teams.project_id
+left join projects as _project_ids on _project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -502,15 +552,25 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.project_id = $5 `
+left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
+		` WHERE teams.project_id = $5 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	teams.team_id, 
+joined_time_entries.time_entries, teams.team_id, 
+teams.team_id, teams.team_id, 
+_team_ids.team_id,
+      _team_ids.work_item_id,
+	teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -548,13 +608,15 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
-(case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
+(case when $3::boolean = true then ARRAY_AGG((
+		joined_users.__users
+		)) end) as users,
+(case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects on projects.project_id = teams.project_id
+left join projects as _project_ids on _project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -568,15 +630,25 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
-			, array_agg(users.*) filter (where users.* is not null) as __users
-		from user_team
-    	join users on users.user_id = user_team.user_id
-    group by user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.user_id
+    group by
+			user_team_team_id
+			, users.user_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items on work_items.team_id = teams.team_id` +
-		` WHERE teams.team_id = $5 `
+left join work_items as _team_ids on _team_ids.team_id = teams.team_id` +
+		` WHERE teams.team_id = $5 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	teams.team_id, 
+joined_time_entries.time_entries, teams.team_id, 
+teams.team_id, teams.team_id, 
+_team_ids.team_id,
+      _team_ids.work_item_id,
+	teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

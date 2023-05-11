@@ -17,7 +17,7 @@ import (
 
 // authMiddleware handles authentication and authorization middleware.
 type authMiddleware struct {
-	logger   *zap.Logger
+	logger   *zap.SugaredLogger
 	pool     *pgxpool.Pool
 	authnsvc *services.Authentication
 	authzsvc *services.Authorization
@@ -25,8 +25,7 @@ type authMiddleware struct {
 }
 
 func newAuthMiddleware(
-	logger *zap.Logger,
-	pool *pgxpool.Pool,
+	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	authnsvc *services.Authentication,
 	authzsvc *services.Authorization,
 	usersvc *services.User,

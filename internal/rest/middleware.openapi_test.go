@@ -78,7 +78,7 @@ func TestOapiRequestValidator(t *testing.T) {
 		UserData: "hi!",
 	}
 
-	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t), openapi)
+	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t).Sugar(), openapi)
 	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false
@@ -214,7 +214,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		Options: kinopenapiOpts,
 	}
 
-	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t), openapi)
+	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t).Sugar(), openapi)
 	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false

@@ -25,7 +25,7 @@ type visitor struct {
 
 // rateLimitMiddleware allows rate limiting requests.
 type rateLimitMiddleware struct {
-	logger *zap.Logger
+	logger *zap.SugaredLogger
 	// rlim is the number of events per second allowed.
 	rlim rate.Limit
 	// rlim is the number of burst allowed.
@@ -36,8 +36,7 @@ type rateLimitMiddleware struct {
 }
 
 func newRateLimitMiddleware(
-	logger *zap.Logger,
-	rlim rate.Limit,
+	logger *zap.SugaredLogger, rlim rate.Limit,
 	blim int,
 ) *rateLimitMiddleware {
 	return &rateLimitMiddleware{
@@ -61,7 +60,7 @@ func (r *rateLimitMiddleware) Limit() gin.HandlerFunc {
 				ip = "unknown"
 			}
 		}
-		r.logger.Sugar().Infof("ip: %v", ip)
+		r.logger.Infof("ip: %v", ip)
 
 		limiter := r.getVisitor(ip)
 		if !limiter.Allow() {

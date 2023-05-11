@@ -33,17 +33,10 @@ ensure_pwd_is_top_level() {
     return
   fi
 
-  if [[ "$PWD" != "$TOP_LEVEL_DIR" ]] && [[ -z "$IS_TESTING" && -z "$IGNORE_PWD" ]]; then
-    echo >&2 "
-Please run this script from the top level of the repository.
-Top level: $TOP_LEVEL_DIR
-Current directory: $PWD"
-    exit
-  fi
+  cd "$TOP_LEVEL_DIR" || true
 }
 
 # Prompt the user for confirmation.
-# NOTE: at least VSCode terminal can mess buffers up on occassion and require a new session.
 confirm() {
   test -n "$NO_CONFIRMATION" && return
 
@@ -57,9 +50,9 @@ confirm() {
   # Always read input from the terminal ignoring pipelines
   exec </dev/tty
 
+  sleep 0.3 # for some reason there's a race between xlog/xerr and this prompt with VSCode terminal
   while true; do
-    # output the prompt directly to the terminal ignoring pipelines
-    echo "$prompt "
+    printf "\n%s " "$prompt"
     read -r response
     case "${response,,}" in
     [y][e][s] | [y])
@@ -281,6 +274,31 @@ md5_all() {
       err "Invalid argument: $arg"
     fi
   done
+}
+
+# Block build if magic keyword is found in any file
+# Args: keyword
+search_stopship() {
+  { { {
+    stopship_keyword="$1"
+    local matches
+    matches=$(find "$(git rev-parse --show-toplevel)" \
+      -type f \
+      -not -path "$0" \
+      -not -path '**/.git/*' \
+      -not -path '**/.venv/*' \
+      -not -path '**/node_modules/*' \
+      -not -path '**/build/*' \
+      -not -path '**/*.pyc' \
+      -not -exec git check-ignore -q --no-index {} \; \
+      -exec grep --files-with-matches --regexp="$stopship_keyword" {} \;)
+    if [[ -n $matches ]]; then
+      echo "${RED}'$stopship_keyword'${OFF} found in tracked files."
+      echo "Please fix all related issues in the following files:"
+      printf "\t %s\n" $matches
+      exit 1
+    fi
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 ######################## postgres ###########################
