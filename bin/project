@@ -8,6 +8,9 @@
 
 export PROC=$$
 
+export POSTGRES_TRACE=${POSTGRES_TRACE:-false}
+export GIN_MODE=${GIN_MODE:-release}
+
 source ".helpers.sh"
 source ".project.dependencies.sh"
 source ".project.usage.sh"
@@ -800,8 +803,6 @@ x.test.backend() {
   { { {
     x.test.xo
 
-    export POSTGRES_TRACE=false
-    export GIN_MODE=release
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     echo "Running ${GREEN}\"APP_ENV=$env go test $* ./...\"${OFF}"

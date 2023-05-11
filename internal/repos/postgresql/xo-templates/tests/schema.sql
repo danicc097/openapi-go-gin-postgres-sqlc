@@ -92,13 +92,21 @@ begin
   insert into xo_tests.users (user_id , name , created_at)
     values (user_2_id , 'Jane Smith' , current_timestamp + '1 h');
 
+  insert into xo_tests.user_api_keys (user_id , api_key , expires_on)
+    values (user_1_id , 'api-key-1' , current_timestamp + '2 days');
+
+  update
+    xo_tests.users
+  set
+    api_key_id = 1
+  where
+    user_id = user_1_id;
+
   insert into xo_tests.books (name)
     values ('Book 1');
   insert into xo_tests.books (name)
     values ('Book 2');
 
-  insert into xo_tests.book_authors (book_id , author_id)
-    values (1 , user_1_id);
   insert into xo_tests.book_authors (book_id , author_id , pseudonym)
     values (1 , user_2_id , 'not Jane Smith');
   insert into xo_tests.book_authors (book_id , author_id)
@@ -115,6 +123,20 @@ begin
     values ('body 2' , user_2_id , user_1_id);
   insert into xo_tests.notifications (body , receiver , sender)
     values ('body 2' , user_1_id , user_2_id);
+
+  insert into xo_tests.work_items (title)
+    values ('Work Item 1');
+  insert into xo_tests.work_items (title)
+    values ('Work Item 2');
+  insert into xo_tests.work_items (title)
+    values ('Work Item 3');
+
+  insert into xo_tests.demo_work_items (work_item_id , checked)
+    values (1 , true);
+  insert into xo_tests.demo_work_items (work_item_id , checked)
+    values (2 , false);
+  insert into xo_tests.demo_work_items (work_item_id , checked)
+    values (3 , true);
 end;
 $BODY$
 language plpgsql;

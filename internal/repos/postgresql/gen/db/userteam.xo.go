@@ -143,12 +143,14 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
-(case when $2::boolean = true then ARRAY_AGG((
+		)), null) end) as users,
+(case when $2::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_teams.__teams
-		)) end) as teams ` +
+		)), null) end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -209,12 +211,14 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
-(case when $2::boolean = true then ARRAY_AGG((
+		)), null) end) as users,
+(case when $2::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_teams.__teams
-		)) end) as teams ` +
+		)), null) end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -277,12 +281,14 @@ func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
-(case when $2::boolean = true then ARRAY_AGG((
+		)), null) end) as users,
+(case when $2::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_teams.__teams
-		)) end) as teams ` +
+		)), null) end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -345,12 +351,14 @@ func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Use
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
-(case when $2::boolean = true then ARRAY_AGG((
+		)), null) end) as users,
+(case when $2::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_teams.__teams
-		)) end) as teams ` +
+		)), null) end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
