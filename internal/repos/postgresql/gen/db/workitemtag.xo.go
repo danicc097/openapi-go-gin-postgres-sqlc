@@ -209,13 +209,13 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and project_ids.project_id is not null then row(project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then ARRAY_AGG((
 		joined_work_items.__work_items
 		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as project_ids on project_ids.project_id = work_item_tags.project_id
+left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -229,7 +229,9 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.work_item_tag_id > $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.work_item_tag_id > $3 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.limit
 
@@ -260,13 +262,13 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and project_ids.project_id is not null then row(project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then ARRAY_AGG((
 		joined_work_items.__work_items
 		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as project_ids on project_ids.project_id = work_item_tags.project_id
+left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -280,7 +282,9 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.project_id > $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.project_id > $3 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.limit
 
@@ -314,13 +318,13 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and project_ids.project_id is not null then row(project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then ARRAY_AGG((
 		joined_work_items.__work_items
 		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as project_ids on project_ids.project_id = work_item_tags.project_id
+left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -334,7 +338,9 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -370,13 +376,13 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and project_ids.project_id is not null then row(project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then ARRAY_AGG((
 		joined_work_items.__work_items
 		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as project_ids on project_ids.project_id = work_item_tags.project_id
+left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -390,7 +396,9 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.name = $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.name = $3 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -428,13 +436,13 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and project_ids.project_id is not null then row(project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then ARRAY_AGG((
 		joined_work_items.__work_items
 		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as project_ids on project_ids.project_id = work_item_tags.project_id
+left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -448,7 +456,9 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.project_id = $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.project_id = $3 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -486,13 +496,13 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and project_ids.project_id is not null then row(project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then ARRAY_AGG((
 		joined_work_items.__work_items
 		)) end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as project_ids on project_ids.project_id = work_item_tags.project_id
+left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -506,7 +516,9 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.work_item_tag_id = $3 GROUP BY project_ids.project_id, project_ids.project_id, work_item_tags.work_item_tag_id, 
+		` WHERE work_item_tags.work_item_tag_id = $3 GROUP BY _project_ids.project_id,
+      _project_ids.project_id,
+	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

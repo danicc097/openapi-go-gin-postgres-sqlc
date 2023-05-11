@@ -260,23 +260,31 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and activity_ids.activity_id is not null then row(activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and team_ids.team_id is not null then row(team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and user_ids.user_id is not null then row(user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and work_item_ids.work_item_id is not null then row(work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _activity_ids.activity_id is not null then row(_activity_ids.*) end) as activity_activity_id,
+(case when $2::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as team_team_id,
+(case when $3::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_user_id,
+(case when $4::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as activity_ids on activity_ids.activity_id = time_entries.activity_id
+left join activities as _activity_ids on _activity_ids.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as team_ids on team_ids.team_id = time_entries.team_id
+left join teams as _team_ids on _team_ids.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as user_ids on user_ids.user_id = time_entries.user_id
+left join users as _user_ids on _user_ids.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as work_item_ids on work_item_ids.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.time_entry_id > $5 GROUP BY activity_ids.activity_id, activity_ids.activity_id, time_entries.time_entry_id, 
-team_ids.team_id, team_ids.team_id, time_entries.time_entry_id, 
-user_ids.user_id, user_ids.user_id, time_entries.time_entry_id, 
-work_item_ids.work_item_id, work_item_ids.work_item_id, time_entries.time_entry_id `
+left join work_items as _work_item_ids on _work_item_ids.work_item_id = time_entries.work_item_id` +
+		` WHERE time_entries.time_entry_id > $5 GROUP BY _activity_ids.activity_id,
+      _activity_ids.activity_id,
+	time_entries.time_entry_id, 
+_team_ids.team_id,
+      _team_ids.team_id,
+	time_entries.time_entry_id, 
+_user_ids.user_id,
+      _user_ids.user_id,
+	time_entries.time_entry_id, 
+_work_item_ids.work_item_id,
+      _work_item_ids.work_item_id,
+	time_entries.time_entry_id `
 	sqlstr += c.limit
 
 	// run
@@ -312,23 +320,31 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and activity_ids.activity_id is not null then row(activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and team_ids.team_id is not null then row(team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and user_ids.user_id is not null then row(user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and work_item_ids.work_item_id is not null then row(work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _activity_ids.activity_id is not null then row(_activity_ids.*) end) as activity_activity_id,
+(case when $2::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as team_team_id,
+(case when $3::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_user_id,
+(case when $4::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as activity_ids on activity_ids.activity_id = time_entries.activity_id
+left join activities as _activity_ids on _activity_ids.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as team_ids on team_ids.team_id = time_entries.team_id
+left join teams as _team_ids on _team_ids.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as user_ids on user_ids.user_id = time_entries.user_id
+left join users as _user_ids on _user_ids.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as work_item_ids on work_item_ids.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.time_entry_id = $5 GROUP BY activity_ids.activity_id, activity_ids.activity_id, time_entries.time_entry_id, 
-team_ids.team_id, team_ids.team_id, time_entries.time_entry_id, 
-user_ids.user_id, user_ids.user_id, time_entries.time_entry_id, 
-work_item_ids.work_item_id, work_item_ids.work_item_id, time_entries.time_entry_id `
+left join work_items as _work_item_ids on _work_item_ids.work_item_id = time_entries.work_item_id` +
+		` WHERE time_entries.time_entry_id = $5 GROUP BY _activity_ids.activity_id,
+      _activity_ids.activity_id,
+	time_entries.time_entry_id, 
+_team_ids.team_id,
+      _team_ids.team_id,
+	time_entries.time_entry_id, 
+_user_ids.user_id,
+      _user_ids.user_id,
+	time_entries.time_entry_id, 
+_work_item_ids.work_item_id,
+      _work_item_ids.work_item_id,
+	time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -366,23 +382,31 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and activity_ids.activity_id is not null then row(activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and team_ids.team_id is not null then row(team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and user_ids.user_id is not null then row(user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and work_item_ids.work_item_id is not null then row(work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _activity_ids.activity_id is not null then row(_activity_ids.*) end) as activity_activity_id,
+(case when $2::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as team_team_id,
+(case when $3::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_user_id,
+(case when $4::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as activity_ids on activity_ids.activity_id = time_entries.activity_id
+left join activities as _activity_ids on _activity_ids.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as team_ids on team_ids.team_id = time_entries.team_id
+left join teams as _team_ids on _team_ids.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as user_ids on user_ids.user_id = time_entries.user_id
+left join users as _user_ids on _user_ids.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as work_item_ids on work_item_ids.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6 GROUP BY activity_ids.activity_id, activity_ids.activity_id, time_entries.time_entry_id, 
-team_ids.team_id, team_ids.team_id, time_entries.time_entry_id, 
-user_ids.user_id, user_ids.user_id, time_entries.time_entry_id, 
-work_item_ids.work_item_id, work_item_ids.work_item_id, time_entries.time_entry_id `
+left join work_items as _work_item_ids on _work_item_ids.work_item_id = time_entries.work_item_id` +
+		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6 GROUP BY _activity_ids.activity_id,
+      _activity_ids.activity_id,
+	time_entries.time_entry_id, 
+_team_ids.team_id,
+      _team_ids.team_id,
+	time_entries.time_entry_id, 
+_user_ids.user_id,
+      _user_ids.user_id,
+	time_entries.time_entry_id, 
+_work_item_ids.work_item_id,
+      _work_item_ids.work_item_id,
+	time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -422,23 +446,31 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and activity_ids.activity_id is not null then row(activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and team_ids.team_id is not null then row(team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and user_ids.user_id is not null then row(user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and work_item_ids.work_item_id is not null then row(work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _activity_ids.activity_id is not null then row(_activity_ids.*) end) as activity_activity_id,
+(case when $2::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as team_team_id,
+(case when $3::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_user_id,
+(case when $4::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as activity_ids on activity_ids.activity_id = time_entries.activity_id
+left join activities as _activity_ids on _activity_ids.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as team_ids on team_ids.team_id = time_entries.team_id
+left join teams as _team_ids on _team_ids.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as user_ids on user_ids.user_id = time_entries.user_id
+left join users as _user_ids on _user_ids.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as work_item_ids on work_item_ids.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6 GROUP BY activity_ids.activity_id, activity_ids.activity_id, time_entries.time_entry_id, 
-team_ids.team_id, team_ids.team_id, time_entries.time_entry_id, 
-user_ids.user_id, user_ids.user_id, time_entries.time_entry_id, 
-work_item_ids.work_item_id, work_item_ids.work_item_id, time_entries.time_entry_id `
+left join work_items as _work_item_ids on _work_item_ids.work_item_id = time_entries.work_item_id` +
+		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6 GROUP BY _activity_ids.activity_id,
+      _activity_ids.activity_id,
+	time_entries.time_entry_id, 
+_team_ids.team_id,
+      _team_ids.team_id,
+	time_entries.time_entry_id, 
+_user_ids.user_id,
+      _user_ids.user_id,
+	time_entries.time_entry_id, 
+_work_item_ids.work_item_id,
+      _work_item_ids.work_item_id,
+	time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

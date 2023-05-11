@@ -2758,7 +2758,7 @@ const (
 		)) end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
-	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}{{ .Alias}}_{{ singularize .JoinTableAlias}}`
+	O2OSelect = `(case when {{.Nth}}::boolean = true and {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}{{ .Alias}}_{{ singularize .JoinTableAlias}}`
 )
 
 const (
@@ -2766,7 +2766,12 @@ const (
 	// join in user.xo.go. Will need to use tables[joinTable].PrimaryKeys
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
 	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
-	O2OGroupBy = `{{.JoinTableAlias}}.{{.JoinColumn}}, {{.JoinTablePKGroupBys}}, {{.CurrentTablePKGroupBys}}`
+	O2OGroupBy = `{{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}},
+	{{- range $i, $g := .JoinTablePKGroupBys}}
+      {{if $g}}{{$g}},{{end}}
+
+  {{- end}}
+	{{.CurrentTablePKGroupBys}}`
 )
 
 const (
@@ -2799,7 +2804,7 @@ left join (
   group by
         {{.JoinColumn}}) joined_{{.JoinTable}}{{.ClashSuffix}} on joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 	O2OJoin = `
-left join {{.Schema}}{{.JoinTable}} as {{.JoinTableAlias}} on {{.JoinTableAlias}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
+left join {{.Schema}}{{.JoinTable}} as {{ .Alias}}_{{.JoinTableAlias}} on {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 )
 
 // sqlstr_index builds a index fields.
@@ -3046,14 +3051,8 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
-			joinTable := tables[c.RefTableName]
-			var joinTablePKGroupBys []string
-			for _, pk := range joinTable.PrimaryKeys {
-				joinTablePKGroupBys = append(joinTablePKGroupBys, params["JoinTableAlias"].(string)+"."+pk.SQLName)
-			}
-			params["JoinTablePKGroupBys"] = strings.Join(joinTablePKGroupBys, ", ")
 
-			t := tables[c.TableName]
+			t := tables[c.RefTableName]
 			var f Field
 			for _, tf := range t.Fields {
 				if tf.SQLName == c.ColumnName {
@@ -3062,10 +3061,19 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			}
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
-				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", c.TableName, c.ColumnName)
+				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", c.RefTableName, c.ColumnName)
 				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
-				params["Alias"] = "_" + c.TableName
+				params["Alias"] = "_" + c.RefTableName
 			}
+
+			joinTable := tables[c.RefTableName]
+			var joinTablePKGroupBys []string
+			for _, pk := range joinTable.PrimaryKeys {
+				if !(isSingleFK && isSinglePK) {
+					joinTablePKGroupBys = append(joinTablePKGroupBys, "_"+params["JoinTableAlias"].(string)+"."+pk.SQLName)
+				}
+			}
+			params["JoinTablePKGroupBys"] = joinTablePKGroupBys
 
 			break
 		}

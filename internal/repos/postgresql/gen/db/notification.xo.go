@@ -268,14 +268,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and receivers.user_id is not null then row(receivers.*) end) as user_receiver,
-(case when $2::boolean = true and senders.user_id is not null then row(senders.*) end) as user_sender,
+(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as receivers on receivers.user_id = notifications.receiver
+left join users as _receivers on _receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as senders on senders.user_id = notifications.sender
+left join users as _senders on _senders.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -285,8 +285,12 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id > $4 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
-senders.user_id, senders.user_id, notifications.notification_id, 
+		` WHERE notifications.notification_id > $4 GROUP BY _receivers.user_id,
+      _receivers.user_id,
+	notifications.notification_id, 
+_senders.user_id,
+      _senders.user_id,
+	notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.limit
 
@@ -325,14 +329,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and receivers.user_id is not null then row(receivers.*) end) as user_receiver,
-(case when $2::boolean = true and senders.user_id is not null then row(senders.*) end) as user_sender,
+(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as receivers on receivers.user_id = notifications.receiver
+left join users as _receivers on _receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as senders on senders.user_id = notifications.sender
+left join users as _senders on _senders.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -342,8 +346,12 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id = $4 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
-senders.user_id, senders.user_id, notifications.notification_id, 
+		` WHERE notifications.notification_id = $4 GROUP BY _receivers.user_id,
+      _receivers.user_id,
+	notifications.notification_id, 
+_senders.user_id,
+      _senders.user_id,
+	notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -384,14 +392,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and receivers.user_id is not null then row(receivers.*) end) as user_receiver,
-(case when $2::boolean = true and senders.user_id is not null then row(senders.*) end) as user_sender,
+(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as receivers on receivers.user_id = notifications.receiver
+left join users as _receivers on _receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as senders on senders.user_id = notifications.sender
+left join users as _senders on _senders.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -401,8 +409,12 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6 GROUP BY receivers.user_id, receivers.user_id, notifications.notification_id, 
-senders.user_id, senders.user_id, notifications.notification_id, 
+		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6 GROUP BY _receivers.user_id,
+      _receivers.user_id,
+	notifications.notification_id, 
+_senders.user_id,
+      _senders.user_id,
+	notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
