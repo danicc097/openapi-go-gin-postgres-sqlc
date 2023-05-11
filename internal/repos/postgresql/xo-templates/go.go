@@ -1870,8 +1870,6 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
-			// fmt.Printf("M2M join: %s m2mExtraCols: %v\n", lookupTable.SQLName, m2mExtraCols)
-			fmt.Printf("m2mExtraCols: %v\n", m2mExtraCols)
 			if len(m2mExtraCols) > 0 {
 
 				originalStruct := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
@@ -3464,8 +3462,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		// sync with extratypes
 		switch c.Cardinality {
 		case M2M:
-			// m2mExtraCols := getTableRegularFields(lookupTable)
-			// fmt.Printf("M2M join: %s m2mExtraCols: %v\n", lookupTable.SQLName, m2mExtraCols)
 
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			goName = camelExport(singularize(lookupName))
