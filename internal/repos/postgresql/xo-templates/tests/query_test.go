@@ -10,7 +10,10 @@ import (
 )
 
 /**
- * TODO: test extensively
+ * TODO: test extensively:
+ *
+ *
+ * - PK is FK tests like demoworkitems->workitemid
  */
 
 func TestM2M(t *testing.T) {

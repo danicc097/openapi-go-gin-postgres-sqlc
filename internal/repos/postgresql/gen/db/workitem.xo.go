@@ -336,8 +336,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_ids.work_item_id is not null then row(_demo_two_work_items_work_item_ids.*) end) as demo_two_work_item_demo_two_work_items_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_demo_work_items_work_item_id,
+(case when $1::boolean = true and _demo_two_work_items_work_item_ids.work_item_id is not null then row(_demo_two_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then ARRAY_AGG((
@@ -399,13 +399,13 @@ left join (
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
 		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s  GROUP BY _demo_two_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id,
+	work_items.work_item_id, 
 _demo_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id,
-joined_time_entries.time_entries, work_items.work_item_id,
-joined_work_item_comments.work_item_comments, work_items.work_item_id,
-work_items.work_item_id, work_items.work_item_id,
-work_items.work_item_id, work_items.work_item_id  ORDER BY
+	work_items.work_item_id, 
+joined_time_entries.time_entries, work_items.work_item_id, 
+joined_work_item_comments.work_item_comments, work_items.work_item_id, 
+work_items.work_item_id, work_items.work_item_id, 
+work_items.work_item_id, work_items.work_item_id  ORDER BY 
 		work_item_id DESC`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -446,8 +446,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_ids.work_item_id is not null then row(_demo_two_work_items_work_item_ids.*) end) as demo_two_work_item_demo_two_work_items_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_demo_work_items_work_item_id,
+(case when $1::boolean = true and _demo_two_work_items_work_item_ids.work_item_id is not null then row(_demo_two_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then ARRAY_AGG((
@@ -509,12 +509,12 @@ left join (
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
 		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s   GROUP BY _demo_two_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id,
+	work_items.work_item_id, 
 _demo_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id,
-joined_time_entries.time_entries, work_items.work_item_id,
-joined_work_item_comments.work_item_comments, work_items.work_item_id,
-work_items.work_item_id, work_items.work_item_id,
+	work_items.work_item_id, 
+joined_time_entries.time_entries, work_items.work_item_id, 
+joined_work_item_comments.work_item_comments, work_items.work_item_id, 
+work_items.work_item_id, work_items.work_item_id, 
 work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -559,8 +559,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_ids.work_item_id is not null then row(_demo_two_work_items_work_item_ids.*) end) as demo_two_work_item_demo_two_work_items_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_demo_work_items_work_item_id,
+(case when $1::boolean = true and _demo_two_work_items_work_item_ids.work_item_id is not null then row(_demo_two_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then ARRAY_AGG((
@@ -622,12 +622,12 @@ left join (
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
 		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s   GROUP BY _demo_two_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id,
+	work_items.work_item_id, 
 _demo_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id,
-joined_time_entries.time_entries, work_items.work_item_id,
-joined_work_item_comments.work_item_comments, work_items.work_item_id,
-work_items.work_item_id, work_items.work_item_id,
+	work_items.work_item_id, 
+joined_time_entries.time_entries, work_items.work_item_id, 
+joined_work_item_comments.work_item_comments, work_items.work_item_id, 
+work_items.work_item_id, work_items.work_item_id, 
 work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -670,8 +670,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_ids.work_item_id is not null then row(_demo_two_work_items_work_item_ids.*) end) as demo_two_work_item_demo_two_work_items_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_demo_work_items_work_item_id,
+(case when $1::boolean = true and _demo_two_work_items_work_item_ids.work_item_id is not null then row(_demo_two_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then ARRAY_AGG((
@@ -733,12 +733,12 @@ left join (
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
 		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s   GROUP BY _demo_two_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id,
+	work_items.work_item_id, 
 _demo_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id,
-joined_time_entries.time_entries, work_items.work_item_id,
-joined_work_item_comments.work_item_comments, work_items.work_item_id,
-work_items.work_item_id, work_items.work_item_id,
+	work_items.work_item_id, 
+joined_time_entries.time_entries, work_items.work_item_id, 
+joined_work_item_comments.work_item_comments, work_items.work_item_id, 
+work_items.work_item_id, work_items.work_item_id, 
 work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

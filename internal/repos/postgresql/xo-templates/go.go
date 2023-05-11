@@ -2758,12 +2758,10 @@ const (
 		)) end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
-	O2OSelect = `(case when {{.Nth}}::boolean = true and {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}{{ .Alias}}_{{ singularize .JoinTableAlias}}`
+	O2OSelect = `(case when {{.Nth}}::boolean = true and {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`
 )
 
 const (
-	// TODO O2O needs joinTable primary key join eg user_api_keys.user_api_key_id when we
-	// join in user.xo.go. Will need to use tables[joinTable].PrimaryKeys
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
 	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
 	O2OGroupBy = `{{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}},
@@ -3045,9 +3043,6 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			params["JoinRefColumn"] = c.ColumnName
 			params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
 			params["CurrentTable"] = table.SQLName
-			// FIXME need to check joinClash after creating dummy constraints
-			// (case when $1::boolean = true and receivers.user_id is not null then row(receivers.*) end) as user_receiver,
-			// left join xo_tests.users as receivers on receivers.user_id = notifications.receiver
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.ColumnName
 			}
@@ -3059,6 +3054,9 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 					f = tf
 				}
 			}
+			// need to check RefTable PKs since this should get called when generating for a
+			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
+			// viceversa we don't care as it's a regular PK.
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
 				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", c.RefTableName, c.ColumnName)
