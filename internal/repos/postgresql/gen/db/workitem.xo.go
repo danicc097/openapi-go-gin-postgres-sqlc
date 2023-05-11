@@ -34,12 +34,12 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoTwoWorkItemJoin  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"` // O2O (inferred)
-	DemoWorkItemJoin     *DemoWorkItem      `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`     // O2O (inferred)
-	TimeEntriesJoin      *[]TimeEntry       `json:"-" db:"time_entries" openapi-go:"ignore"`                    // M2O
-	WorkItemCommentsJoin *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"`              // M2O
-	MembersJoin          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`                         // M2M
-	WorkItemTagsJoin     *[]WorkItemTag     `json:"-" db:"work_item_tags" openapi-go:"ignore"`                  // M2M
+	DemoTwoWorkItemJoin  *DemoTwoWorkItem        `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"` // O2O (inferred)
+	DemoWorkItemJoin     *DemoWorkItem           `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`     // O2O (inferred)
+	TimeEntriesJoin      *[]TimeEntry            `json:"-" db:"time_entries" openapi-go:"ignore"`                    // M2O
+	WorkItemCommentsJoin *[]WorkItemComment      `json:"-" db:"work_item_comments" openapi-go:"ignore"`              // M2O
+	MembersJoin          *[]WorkItem_Member      `json:"-" db:"members" openapi-go:"ignore"`                         // M2M
+	WorkItemTagsJoin     *[]WorkItem_WorkItemTag `json:"-" db:"work_item_tags" openapi-go:"ignore"`                  // M2M
 
 }
 
@@ -198,6 +198,10 @@ type WorkItem_Member struct {
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
+type WorkItem_WorkItemTag struct {
+	WorkItemTag WorkItemTag `json:"workItemTag" db:"work_item_tags"`
+}
+
 // Insert inserts the WorkItem to the database.
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	// insert (primary key generated and returned by database)
@@ -340,15 +344,15 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_remove(
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members,
-(case when $6::boolean = true then array_remove(
+		)) filter (where joined_members.__users is not null), '{}') end) as members,
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)), null) end) as work_item_tags `+
+		joined_work_item_tags.__work_item_tag_ids
+		)) filter (where joined_work_item_tags.__work_item_tag_ids is not null), '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
 left join demo_two_work_items as _demo_two_work_items_work_item_ids on _demo_two_work_items_work_item_ids.work_item_id = work_items.work_item_id
@@ -391,7 +395,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, row(work_item_tags.*) as __work_item_tags
+			, row(work_item_tags.*) as __work_item_tag_ids
 		from
 			work_item_work_item_tag
     join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
@@ -452,15 +456,15 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_remove(
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members,
-(case when $6::boolean = true then array_remove(
+		)) filter (where joined_members.__users is not null), '{}') end) as members,
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)), null) end) as work_item_tags `+
+		joined_work_item_tags.__work_item_tag_ids
+		)) filter (where joined_work_item_tags.__work_item_tag_ids is not null), '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
 left join demo_two_work_items as _demo_two_work_items_work_item_ids on _demo_two_work_items_work_item_ids.work_item_id = work_items.work_item_id
@@ -503,7 +507,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, row(work_item_tags.*) as __work_item_tags
+			, row(work_item_tags.*) as __work_item_tag_ids
 		from
 			work_item_work_item_tag
     join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
@@ -567,15 +571,15 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_remove(
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members,
-(case when $6::boolean = true then array_remove(
+		)) filter (where joined_members.__users is not null), '{}') end) as members,
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)), null) end) as work_item_tags `+
+		joined_work_item_tags.__work_item_tag_ids
+		)) filter (where joined_work_item_tags.__work_item_tag_ids is not null), '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
 left join demo_two_work_items as _demo_two_work_items_work_item_ids on _demo_two_work_items_work_item_ids.work_item_id = work_items.work_item_id
@@ -618,7 +622,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, row(work_item_tags.*) as __work_item_tags
+			, row(work_item_tags.*) as __work_item_tag_ids
 		from
 			work_item_work_item_tag
     join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
@@ -680,15 +684,15 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_remove(
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members,
-(case when $6::boolean = true then array_remove(
+		)) filter (where joined_members.__users is not null), '{}') end) as members,
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_work_item_tags.__work_item_tags
-		)), null) end) as work_item_tags `+
+		joined_work_item_tags.__work_item_tag_ids
+		)) filter (where joined_work_item_tags.__work_item_tag_ids is not null), '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
 left join demo_two_work_items as _demo_two_work_items_work_item_ids on _demo_two_work_items_work_item_ids.work_item_id = work_items.work_item_id
@@ -731,7 +735,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, row(work_item_tags.*) as __work_item_tags
+			, row(work_item_tags.*) as __work_item_tag_ids
 		from
 			work_item_work_item_tag
     join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id

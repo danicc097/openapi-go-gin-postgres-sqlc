@@ -1872,35 +1872,35 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 			extraCols := getLookupTableRegularFields(lookupTable)
 			// fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
 
-			if c.ColumnName != c.RefColumnName {
-				// differs from actual column, e.g. having member UUID in lookup instead of user_id
+			// if c.ColumnName != c.RefColumnName {
+			// differs from actual column, e.g. having member UUID in lookup instead of user_id
 
-				originalStruct := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
-				tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(originalStruct), inflector.Pluralize(strings.TrimSuffix(c.RefColumnName, "_id")))
+			originalStruct := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
+			tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(originalStruct), inflector.Pluralize(strings.TrimSuffix(c.RefColumnName, "_id")))
 
-				// create custom struct for each join with lookup table that has extra fields
-				var lookupFields []string
-				for _, col := range extraCols {
-					tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"", camel(col.GoName), col.SQLName)
-					properties := extractPropertiesAnnotation(col.Annotations[propertiesAnnot])
-					isPrivate := contains(properties, privateFieldProperty)
-					if !isPrivate {
-						tag = tag + ` required:"true"`
-					}
-					if col.OpenAPISchema != "" {
-						tag = tag + ` ref:"#/components/schemas/` + col.OpenAPISchema + `"`
-					}
-					tag = tag + "`"
-					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
+			// create custom struct for each join with lookup table that has extra fields
+			var lookupFields []string
+			for _, col := range extraCols {
+				tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"", camel(col.GoName), col.SQLName)
+				properties := extractPropertiesAnnotation(col.Annotations[propertiesAnnot])
+				isPrivate := contains(properties, privateFieldProperty)
+				if !isPrivate {
+					tag = tag + ` required:"true"`
 				}
-				extraStructs = append(extraStructs, (fmt.Sprintf(`
+				if col.OpenAPISchema != "" {
+					tag = tag + ` ref:"#/components/schemas/` + col.OpenAPISchema + `"`
+				}
+				tag = tag + "`"
+				lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
+			}
+			extraStructs = append(extraStructs, (fmt.Sprintf(`
 type %s struct {
 	%s %s %s
 	%s
 
 }
 	`, name+"_"+camelExport(lookupName), originalStruct, originalStruct, tag, strings.Join(lookupFields, "\n")))) // prevent name clashing
-			}
+			// }
 
 			joinName = camelExport(inflector.Pluralize(lookupName))
 
@@ -2785,13 +2785,27 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 // M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
 
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then array_remove(
+	/*
+		remove null joins in M2M:
+		(case when $1::boolean = true then COALESCE(array_remove(
+			ARRAY_AGG((joined_books.__books, joined_books.pseudonym)), ROW(NULL::record, NULL::text)
+		), '{}') END) AS books,
+		(case when $1::boolean = true then COALESCE(
+		ARRAY_AGG((joined_books.__books, joined_books.pseudonym)) filter (where joined_books.__books is not null), '{}') END) AS books,
+
+		FIXME: if LookupExtraCols for M2M is zero, then skip creating struct as it was before, instead of e.g.:
+		type User_Team struct {
+			Team Team `json:"team" db:"teams"`
+		}
+
+	*/
+	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}
 		{{- range .LookupExtraCols }}
 		, joined_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}
 		{{- end }}
-		)), null) end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
+		)) filter (where joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}} is not null), '{}') end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
 	O2OSelect = `(case when {{.Nth}}::boolean = true and {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`
@@ -3013,29 +3027,29 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 		params["LookupTable"] = c.TableName
 		params["LookupExtraCols"] = []string{}
 
-		if c.ColumnName != c.RefColumnName {
-			// differs from actual column, e.g. having member UUID in lookup instead of user_id
-			// we are not changing lookup name, i.e. we're using the pk name, e.g. user_id instead of something like member, leader, sender...
-			// don't rename to avoid confusion:
-			params["LookupJoinTablePK"] = c.ColumnName
-			params["LookupJoinTablePKAgg"] = inflector.Pluralize(c.ColumnName)
-			params["LookupJoinTablePKSuffix"] = inflector.Pluralize(c.ColumnName)
+		// if c.ColumnName != c.RefColumnName {
+		// differs from actual column, e.g. having member UUID in lookup instead of user_id
+		// we are not changing lookup name, i.e. we're using the pk name, e.g. user_id instead of something like member, leader, sender...
+		// don't rename to avoid confusion:
+		params["LookupJoinTablePK"] = c.ColumnName
+		params["LookupJoinTablePKAgg"] = inflector.Pluralize(c.ColumnName)
+		params["LookupJoinTablePKSuffix"] = inflector.Pluralize(strings.TrimSuffix(c.ColumnName, "_id"))
 
-			lookupTable := tables[c.TableName]
-			extraCols := getLookupTableRegularFields(lookupTable)
+		lookupTable := tables[c.TableName]
+		extraCols := getLookupTableRegularFields(lookupTable)
 
-			colNames := make([]string, len(extraCols))
-			for i, col := range extraCols {
-				colNames[i] = col.SQLName
-			}
-			params["LookupExtraCols"] = colNames
-
-			if len(extraCols) > 0 {
-				// in this case we will create an extra struct that holds the joined table + these extra fields.
-				// need to change agg name to avoid confusion
-				params["LookupJoinTablePKAgg"] = params["JoinTable"]
-			}
+		colNames := make([]string, len(extraCols))
+		for i, col := range extraCols {
+			colNames[i] = col.SQLName
 		}
+		params["LookupExtraCols"] = colNames
+
+		if len(extraCols) > 0 {
+			// in this case we will create an extra struct that holds the joined table + these extra fields.
+			// need to change agg name to avoid confusion
+			params["LookupJoinTablePKAgg"] = params["JoinTable"]
+		}
+		// }
 	case M2O:
 		joinTpl = M2OJoin
 		selectTpl = M2OSelect
@@ -3465,11 +3479,11 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			typ = camelExport(singularize(c.RefTableName))
 			goName = inflector.Pluralize(goName) + "Join"
 
-			if c.ColumnName != c.RefColumnName {
-				// differs from actual column, e.g. having member UUID in lookup instead of user_id
-				// prevent name clashing
-				typ = camelExport(singularize(t.SQLName)) + "_" + camelExport(singularize(lookupName))
-			}
+			// if c.ColumnName != c.RefColumnName {
+			// differs from actual column, e.g. having member UUID in lookup instead of user_id
+			// prevent name clashing
+			typ = camelExport(singularize(t.SQLName)) + "_" + camelExport(singularize(lookupName))
+			// }
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, c.Cardinality))

@@ -27,7 +27,7 @@ type User struct {
 	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true"` // created_at
 	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at" required:"true"` // deleted_at
 
-	BooksJoin                 *[]Book         `json:"-" db:"books" openapi-go:"ignore"`                  // M2M
+	BooksJoin                 *[]User_Book    `json:"-" db:"books" openapi-go:"ignore"`                  // M2M
 	BookReviewsJoin           *[]BookReview   `json:"-" db:"book_reviews" openapi-go:"ignore"`           // M2O
 	NotificationsJoinReceiver *[]Notification `json:"-" db:"notifications_receiver" openapi-go:"ignore"` // M2O
 	NotificationsJoinSender   *[]Notification `json:"-" db:"notifications_sender" openapi-go:"ignore"`   // M2O
@@ -132,6 +132,11 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
 		}
 	}
+}
+
+type User_Book struct {
+	Book      Book    `json:"book" db:"books"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 
 // Insert inserts the User to the database.
@@ -259,10 +264,11 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_books.__books
-		)), null) end) as books,
+		, joined_books.pseudonym
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
@@ -272,6 +278,7 @@ users.deleted_at,
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
+			, book_authors.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors
@@ -279,6 +286,7 @@ left join (
     group by
 			book_authors_author_id
 			, books.book_id
+			, pseudonym
   ) as joined_books on joined_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
@@ -350,10 +358,11 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_books.__books
-		)), null) end) as books,
+		, joined_books.pseudonym
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
@@ -363,6 +372,7 @@ users.deleted_at,
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
+			, book_authors.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors
@@ -370,6 +380,7 @@ left join (
     group by
 			book_authors_author_id
 			, books.book_id
+			, pseudonym
   ) as joined_books on joined_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
@@ -442,10 +453,11 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_books.__books
-		)), null) end) as books,
+		, joined_books.pseudonym
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
@@ -455,6 +467,7 @@ users.deleted_at,
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
+			, book_authors.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors
@@ -462,6 +475,7 @@ left join (
     group by
 			book_authors_author_id
 			, books.book_id
+			, pseudonym
   ) as joined_books on joined_books.book_authors_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"

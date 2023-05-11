@@ -184,11 +184,11 @@ func BookPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookS
 	sqlstr := `SELECT ` +
 		`books.book_id,
 books.name,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_author_ids.__users
-		, joined_author_ids.pseudonym
-		)), null) end) as author_ids,
+		joined_authors.__users
+		, joined_authors.pseudonym
+		)) filter (where joined_authors.__users is not null), '{}') end) as authors,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
 		`FROM xo_tests.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
@@ -204,7 +204,7 @@ left join (
 			book_authors_book_id
 			, users.user_id
 			, pseudonym
-  ) as joined_author_ids on joined_author_ids.book_authors_book_id = books.book_id
+  ) as joined_authors on joined_authors.book_authors_book_id = books.book_id
 
 -- M2O join generated from "book_reviews_book_id_fkey"
 left join (
@@ -246,11 +246,11 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 	sqlstr := `SELECT ` +
 		`books.book_id,
 books.name,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_author_ids.__users
-		, joined_author_ids.pseudonym
-		)), null) end) as author_ids,
+		joined_authors.__users
+		, joined_authors.pseudonym
+		)) filter (where joined_authors.__users is not null), '{}') end) as authors,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
 		`FROM xo_tests.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
@@ -266,7 +266,7 @@ left join (
 			book_authors_book_id
 			, users.user_id
 			, pseudonym
-  ) as joined_author_ids on joined_author_ids.book_authors_book_id = books.book_id
+  ) as joined_authors on joined_authors.book_authors_book_id = books.book_id
 
 -- M2O join generated from "book_reviews_book_id_fkey"
 left join (
