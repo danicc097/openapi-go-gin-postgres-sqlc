@@ -54,10 +54,10 @@ create table xo_tests.book_sellers (
   , foreign key (seller) references xo_tests.users (user_id) on delete cascade
   , foreign key (book_id) references xo_tests.books (book_id) on delete cascade
 );
+
 comment on column xo_tests.book_sellers.seller is '"cardinality":M2M';
 
 comment on column xo_tests.book_sellers.book_id is '"cardinality":M2M';
-
 
 create table xo_tests.book_reviews (
   book_review_id serial primary key

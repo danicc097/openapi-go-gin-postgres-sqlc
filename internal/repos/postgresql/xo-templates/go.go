@@ -988,6 +988,7 @@ cc_label:
 				}
 			}
 		outer:
+			// TODO might need dual M2O-M2M and O2M-O2O checks with reversed ref checks
 			switch card {
 			case M2M:
 				if c.ColumnName == constraint.ColumnName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2M {
@@ -1871,7 +1872,10 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 		case M2M:
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			joinName = camelExport(inflector.Pluralize(lookupName))
-
+			if c.JoinTableClash {
+				lc := strings.TrimSuffix(c.LookupColumn, "_id")
+				joinName = joinName + camelExport(lc)
+			}
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
@@ -2286,6 +2290,10 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
+					if c.JoinTableClash {
+						lc := strings.TrimSuffix(c.LookupColumn, "_id")
+						joinName = joinName + camelExport(lc)
+					}
 				case M2O:
 					if c.RefTableName == x.SQLName {
 						joinName = prefix + camelExport(c.TableName)
@@ -2337,10 +2345,11 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = pref + camelExport(inflector.Pluralize(lookupName))
-					// if c.JoinTableClash {
-					// 	fmt.Printf("M2M: %s has join table name clash \n", c.TableName+"."+c.ColumnName+":"+c.Name)
-					// 	joinName = joinName + camelExport(c.ColumnName)
-					// }
+					if c.JoinTableClash {
+						fmt.Printf("M2M: %s has join table name clash \n", c.TableName+"."+c.ColumnName+":"+c.Name)
+						lc := strings.TrimSuffix(c.LookupColumn, "_id")
+						joinName = joinName + camelExport(lc)
+					}
 				case M2O:
 					if c.RefTableName == x.Table.SQLName {
 						joinName = pref + camelExport(c.TableName)
@@ -3029,6 +3038,10 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 		params["LookupTable"] = c.TableName
 		params["LookupExtraCols"] = []string{}
 
+		if c.JoinTableClash {
+			lc := strings.TrimSuffix(c.LookupColumn, "_id")
+			params["ClashSuffix"] = "_" + lc
+		}
 		lookupTable := tables[c.TableName]
 		m2mExtraCols := getTableRegularFields(lookupTable)
 
@@ -3468,12 +3481,12 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		if c.Type != "foreign_key" {
 			continue
 		}
-		var notes string
+		var notes, joinName string
 		// sync with extratypes
 		switch c.Cardinality {
 		case M2M:
-
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+			joinName := inflector.Pluralize(lookupName)
 			goName = camelExport(singularize(lookupName))
 			typ = camelExport(singularize(c.RefTableName))
 			goName = inflector.Pluralize(goName) + "Join"
@@ -3485,10 +3498,14 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				typ = camelExport(singularize(t.SQLName)) + "_" + camelExport(singularize(lookupName))
 			}
 
-			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, c.Cardinality))
+			if c.JoinTableClash {
+				lc := strings.TrimSuffix(c.LookupColumn, "_id")
+				joinName = joinName + "_" + lc
+				goName = goName + camelExport(lc)
+			}
+			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case M2O:
-			var joinName string
 			if c.RefTableName == t.SQLName {
 				goName = camelExport(singularize(c.TableName))
 				typ = goName
@@ -3530,12 +3547,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				if c.IsGeneratedO2OFromM2O {
 					notes = " (generated from M2O)"
 				}
-
-				// TODO handle when PK is FK:
-				// left join demo_two_work_items as work_item_ids on work_item_ids.work_item_id = work_items.work_item_id
-				// -- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
-				// left join demo_work_items as work_item_ids on work_item_ids.work_item_id = work_items.work_item_id
-				// ---> "work_item_ids" specified more than once
 
 				t := tables[c.TableName]
 				var f Field
