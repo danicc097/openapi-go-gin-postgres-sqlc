@@ -857,8 +857,8 @@ x.test.xo() {
 
     if ! $test_dir/diff_check; then
       confirm "Do you want to update test snapshot with current changes?" </dev/tty >/dev/tty && { # must redirect inside xlog pipeline
-        rm -rf "$test_dir/want"
-        cp -r "$test_dir/got" "$test_dir/want"
+        rm -rf "$test_dir/snapshot"
+        cp -r "$test_dir/got" "$test_dir/snapshot"
       }
     fi
 

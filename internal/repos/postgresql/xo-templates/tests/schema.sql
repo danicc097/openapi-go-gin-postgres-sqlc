@@ -2,13 +2,29 @@ drop schema if exists xo_tests cascade;
 
 create schema if not exists xo_tests;
 
+create table xo_tests.user_api_keys (
+  user_api_key_id serial primary key
+  , api_key text not null unique
+  , expires_on timestamp with time zone not null
+);
+
 create table xo_tests.users (
   user_id uuid default gen_random_uuid () primary key
   , name text not null
+    , api_key_id int
+  , foreign key (api_key_id) references xo_tests.user_api_keys (user_api_key_id) on delete cascade
+
   , created_at timestamp with time zone default current_timestamp not null unique
-  , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
 );
+
+alter table xo_tests.user_api_keys
+  add column user_id uuid not null unique;
+
+alter table xo_tests.user_api_keys
+  add foreign key (user_id) references xo_tests.users (user_id) on delete cascade;
+
+comment on column xo_tests.user_api_keys.user_api_key_id is '"properties":private';
 
 create table xo_tests.books (
   book_id serial primary key
@@ -55,6 +71,18 @@ create index on xo_tests.notifications (sender);
 comment on column xo_tests.notifications.sender is '"cardinality":M2O';
 
 comment on column xo_tests.notifications.receiver is '"cardinality":M2O';
+
+create table xo_tests.work_items (
+  work_item_id bigserial primary key
+  , title text
+);
+
+create table xo_tests.demo_work_items (
+  work_item_id bigint primary key references xo_tests.work_items (work_item_id) on delete cascade
+  , checked boolean not null default false
+);
+
+-- comment on column xo_tests.demo_work_items.work_item_id is '"cardinality":O2O';
 
 do $BODY$
 declare

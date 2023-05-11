@@ -23,25 +23,28 @@ import (
 type User struct {
 	UserID    uuid.UUID  `json:"userID" db:"user_id" required:"true"`       // user_id
 	Name      string     `json:"name" db:"name" required:"true"`            // name
+	APIKeyID  *int       `json:"apiKeyID" db:"api_key_id" required:"true"`  // api_key_id
 	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true"` // created_at
-	UpdatedAt time.Time  `json:"updatedAt" db:"updated_at" required:"true"` // updated_at
 	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at" required:"true"` // deleted_at
 
 	BooksJoin                 *[]Book         `json:"-" db:"books" openapi-go:"ignore"`                  // M2M
 	BookReviewsJoin           *[]BookReview   `json:"-" db:"book_reviews" openapi-go:"ignore"`           // M2O
 	NotificationsJoinReceiver *[]Notification `json:"-" db:"notifications_receiver" openapi-go:"ignore"` // M2O
 	NotificationsJoinSender   *[]Notification `json:"-" db:"notifications_sender" openapi-go:"ignore"`   // M2O
+	UserAPIKeyJoin            *UserAPIKey     `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`   // O2O (inferred)
 }
 
 // UserCreateParams represents insert params for 'xo_tests.users'.
 type UserCreateParams struct {
-	Name string `json:"name" required:"true"` // name
+	Name     string `json:"name" required:"true"`     // name
+	APIKeyID *int   `json:"apiKeyID" required:"true"` // api_key_id
 }
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
 	u := &User{
-		Name: params.Name,
+		Name:     params.Name,
+		APIKeyID: params.APIKeyID,
 	}
 
 	return u.Insert(ctx, db)
@@ -49,13 +52,17 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'xo_tests.users'
 type UserUpdateParams struct {
-	Name *string `json:"name" required:"true"` // name
+	Name     *string `json:"name" required:"true"`     // name
+	APIKeyID **int   `json:"apiKeyID" required:"true"` // api_key_id
 }
 
 // SetUpdateParams updates xo_tests.users struct fields with the specified params.
 func (u *User) SetUpdateParams(params *UserUpdateParams) {
 	if params.Name != nil {
 		u.Name = *params.Name
+	}
+	if params.APIKeyID != nil {
+		u.APIKeyID = *params.APIKeyID
 	}
 }
 
@@ -90,10 +97,6 @@ const (
 	UserCreatedAtDescNullsLast  UserOrderBy = " created_at DESC NULLS LAST "
 	UserCreatedAtAscNullsFirst  UserOrderBy = " created_at ASC NULLS FIRST "
 	UserCreatedAtAscNullsLast   UserOrderBy = " created_at ASC NULLS LAST "
-	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
-	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
-	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
-	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
 	UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
 	UserDeletedAtDescNullsLast  UserOrderBy = " deleted_at DESC NULLS LAST "
 	UserDeletedAtAscNullsFirst  UserOrderBy = " deleted_at ASC NULLS FIRST "
@@ -115,6 +118,7 @@ type UserJoins struct {
 	BookReviews           bool
 	NotificationsReceiver bool
 	NotificationsSender   bool
+	UserAPIKey            bool
 }
 
 // WithUserJoin joins with the given tables.
@@ -125,6 +129,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 			BookReviews:           s.joins.BookReviews || joins.BookReviews,
 			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
+			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
 		}
 	}
 }
@@ -133,14 +138,14 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.users (` +
-		`name, deleted_at` +
+		`name, api_key_id, deleted_at` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, u.Name, u.DeletedAt)
+	logf(sqlstr, u.Name, u.APIKeyID, u.DeletedAt)
 
-	rows, err := db.Query(ctx, sqlstr, u.Name, u.DeletedAt)
+	rows, err := db.Query(ctx, sqlstr, u.Name, u.APIKeyID, u.DeletedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", err))
 	}
@@ -158,13 +163,13 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.users SET ` +
-		`name = $1, deleted_at = $2 ` +
-		`WHERE user_id = $3 ` +
+		`name = $1, api_key_id = $2, deleted_at = $3 ` +
+		`WHERE user_id = $4 ` +
 		`RETURNING * `
 	// run
-	logf(sqlstr, u.Name, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	logf(sqlstr, u.Name, u.APIKeyID, u.CreatedAt, u.DeletedAt, u.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, u.Name, u.DeletedAt, u.UserID)
+	rows, err := db.Query(ctx, sqlstr, u.Name, u.APIKeyID, u.DeletedAt, u.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", err))
 	}
@@ -183,6 +188,7 @@ func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*Us
 	var err error
 
 	u.Name = params.Name
+	u.APIKeyID = params.APIKeyID
 
 	u, err = u.Insert(ctx, db)
 	if err != nil {
@@ -250,15 +256,16 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, o
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
+users.api_key_id,
 users.created_at,
-users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then ARRAY_AGG((
 		joined_books.__books
 		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender `+
+(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $5::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -299,11 +306,16 @@ left join (
   from
     xo_tests.notifications
   group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id`+
-		` WHERE users.created_at > $5  AND users.deleted_at is %s  GROUP BY users.user_id, users.user_id, 
+        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
+left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
+		` WHERE users.created_at > $6  AND users.deleted_at is %s  GROUP BY users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id  ORDER BY 
+joined_notifications_sender.notifications, users.user_id, 
+_user_ids.user_id,
+      _user_ids.user_api_key_id,
+	users.user_id  ORDER BY 
 		created_at DESC`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -334,15 +346,16 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
+users.api_key_id,
 users.created_at,
-users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then ARRAY_AGG((
 		joined_books.__books
 		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender `+
+(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $5::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -383,17 +396,22 @@ left join (
   from
     xo_tests.notifications
   group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id`+
-		` WHERE users.created_at = $5  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
+        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
+left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
+		` WHERE users.created_at = $6  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id `, c.deletedAt)
+joined_notifications_sender.notifications, users.user_id, 
+_user_ids.user_id,
+      _user_ids.user_api_key_id,
+	users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.BookReviews, c.joins.NotificationsReceiver, c.joins.NotificationsSender, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.BookReviews, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -419,15 +437,16 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
+users.api_key_id,
 users.created_at,
-users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then ARRAY_AGG((
 		joined_books.__books
 		)) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender `+
+(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $5::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -468,17 +487,22 @@ left join (
   from
     xo_tests.notifications
   group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id`+
-		` WHERE users.user_id = $5  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
+        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
+left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
+		` WHERE users.user_id = $6  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id `, c.deletedAt)
+joined_notifications_sender.notifications, users.user_id, 
+_user_ids.user_id,
+      _user_ids.user_api_key_id,
+	users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.BookReviews, c.joins.NotificationsReceiver, c.joins.NotificationsSender, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.BookReviews, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
@@ -488,4 +512,11 @@ joined_notifications_sender.notifications, users.user_id `, c.deletedAt)
 	}
 
 	return &u, nil
+}
+
+// FKUserAPIKey_APIKeyID returns the UserAPIKey associated with the User's (APIKeyID).
+//
+// Generated from foreign key 'users_api_key_id_fkey'.
+func (u *User) FKUserAPIKey_APIKeyID(ctx context.Context, db DB) (*UserAPIKey, error) {
+	return UserAPIKeyByUserAPIKeyID(ctx, db, *u.APIKeyID)
 }

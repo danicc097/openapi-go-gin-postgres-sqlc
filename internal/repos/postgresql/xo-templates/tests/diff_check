@@ -7,15 +7,15 @@ CWD="$(dirname -- "$0")"
 echo
 echo "Testing for file discrepancies..."
 
-for want_file in "$CWD"/want/*; do
-  got_file="$CWD/got/${want_file##*/want/}"
+for snapshot_file in "$CWD"/snapshot/*; do
+  got_file="$CWD/got/${snapshot_file##*/snapshot/}"
   if [[ ! -f "$got_file" ]]; then
     echo "ERROR: $got_file does not exist" >&2
     exit_code=1
   fi
 
-  if ! diff -u --color=always "$want_file" "$got_file" >&2; then
-    echo "ERROR: $want_file and $got_file differ." >&2
+  if ! diff -u --color=always "$snapshot_file" "$got_file" >&2; then
+    echo "ERROR: $snapshot_file and $got_file differ." >&2
     exit_code=1
   fi
 done

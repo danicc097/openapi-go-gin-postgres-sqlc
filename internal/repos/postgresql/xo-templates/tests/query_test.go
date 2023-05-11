@@ -14,6 +14,7 @@ import (
  *
  *
  * - PK is FK tests like demoworkitems->workitemid
+ * - vert partitioned columns -> user_api_keys inferred O2O
  */
 
 func TestM2M(t *testing.T) {
