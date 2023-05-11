@@ -259,9 +259,10 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_books.__books
-		)) end) as books,
+		)), null) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
@@ -309,13 +310,13 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
-		` WHERE users.created_at > $6  AND users.deleted_at is %s  GROUP BY users.user_id, users.user_id,
-joined_book_reviews.book_reviews, users.user_id,
-joined_notifications_receiver.notifications, users.user_id,
-joined_notifications_sender.notifications, users.user_id,
+		` WHERE users.created_at > $6  AND users.deleted_at is %s  GROUP BY users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
 _user_ids.user_id,
       _user_ids.user_api_key_id,
-	users.user_id  ORDER BY
+	users.user_id  ORDER BY 
 		created_at DESC`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -349,9 +350,10 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_books.__books
-		)) end) as books,
+		)), null) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
@@ -399,10 +401,10 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
-		` WHERE users.created_at = $6  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id,
-joined_book_reviews.book_reviews, users.user_id,
-joined_notifications_receiver.notifications, users.user_id,
-joined_notifications_sender.notifications, users.user_id,
+		` WHERE users.created_at = $6  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
 _user_ids.user_id,
       _user_ids.user_api_key_id,
 	users.user_id `, c.deletedAt)
@@ -440,12 +442,10 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true and joined_books.__books is not null then ARRAY_AGG((
-	joined_books.__books
-		))
-		when $1::boolean = true and joined_books.__books is null then array[]::record[]
-		end
-		) as books,
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
+		joined_books.__books
+		)), null) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
@@ -493,10 +493,10 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
-		` WHERE users.user_id = $6  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id,
-joined_book_reviews.book_reviews, users.user_id,
-joined_notifications_receiver.notifications, users.user_id,
-joined_notifications_sender.notifications, users.user_id, joined_books.__books,
+		` WHERE users.user_id = $6  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
 _user_ids.user_id,
       _user_ids.user_api_key_id,
 	users.user_id `, c.deletedAt)

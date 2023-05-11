@@ -259,9 +259,10 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_books.__books
-		)) end) as books,
+		)), null) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
@@ -349,9 +350,10 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_books.__books
-		)) end) as books,
+		)), null) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
@@ -440,9 +442,10 @@ users.name,
 users.api_key_id,
 users.created_at,
 users.deleted_at,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_books.__books
-		)) end) as books,
+		)), null) end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,

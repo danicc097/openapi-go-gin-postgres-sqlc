@@ -233,9 +233,10 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then ARRAY_AGG((
+(case when $3::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
+		)), null) end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -304,9 +305,10 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then ARRAY_AGG((
+(case when $3::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
+		)), null) end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -378,9 +380,10 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then ARRAY_AGG((
+(case when $3::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
+		)), null) end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -454,9 +457,10 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then ARRAY_AGG((
+(case when $3::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
+		)), null) end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -532,9 +536,10 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then ARRAY_AGG((
+(case when $3::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
+		)), null) end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
@@ -610,9 +615,10 @@ teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $3::boolean = true then ARRAY_AGG((
+(case when $3::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_users.__users
-		)) end) as users,
+		)), null) end) as users,
 (case when $4::boolean = true and _team_ids.team_id is not null then row(_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"

@@ -203,13 +203,15 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_books.__books
-		)) end) as books,
-(case when $2::boolean = true then ARRAY_AGG((
+		)), null) end) as books,
+(case when $2::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_author_ids.__users
 		, joined_author_ids.pseudonym
-		)) end) as author_ids ` +
+		)), null) end) as author_ids ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -273,13 +275,15 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_books.__books
-		)) end) as books,
-(case when $2::boolean = true then ARRAY_AGG((
+		)), null) end) as books,
+(case when $2::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_author_ids.__users
 		, joined_author_ids.pseudonym
-		)) end) as author_ids ` +
+		)), null) end) as author_ids ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -345,13 +349,15 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_books.__books
-		)) end) as books,
-(case when $2::boolean = true then ARRAY_AGG((
+		)), null) end) as books,
+(case when $2::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_author_ids.__users
 		, joined_author_ids.pseudonym
-		)) end) as author_ids ` +
+		)), null) end) as author_ids ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (

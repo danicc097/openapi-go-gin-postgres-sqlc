@@ -2785,12 +2785,13 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 // M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
 
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then ARRAY_AGG((
+	M2MSelect = `(case when {{.Nth}}::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}
 		{{- range .LookupExtraCols }}
 		, joined_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}
 		{{- end }}
-		)) end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
+		)), null) end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
 	O2OSelect = `(case when {{.Nth}}::boolean = true and {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`

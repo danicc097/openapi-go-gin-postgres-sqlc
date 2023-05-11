@@ -184,10 +184,11 @@ func BookPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookS
 	sqlstr := `SELECT ` +
 		`books.book_id,
 books.name,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_author_ids.__users
 		, joined_author_ids.pseudonym
-		)) end) as author_ids,
+		)), null) end) as author_ids,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
 		`FROM xo_tests.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
@@ -245,10 +246,11 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 	sqlstr := `SELECT ` +
 		`books.book_id,
 books.name,
-(case when $1::boolean = true then ARRAY_AGG((
+(case when $1::boolean = true then array_remove(
+		ARRAY_AGG((
 		joined_author_ids.__users
 		, joined_author_ids.pseudonym
-		)) end) as author_ids,
+		)), null) end) as author_ids,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
 		`FROM xo_tests.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
