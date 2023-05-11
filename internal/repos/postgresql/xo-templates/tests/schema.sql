@@ -11,9 +11,8 @@ create table xo_tests.user_api_keys (
 create table xo_tests.users (
   user_id uuid default gen_random_uuid () primary key
   , name text not null
-    , api_key_id int
+  , api_key_id int
   , foreign key (api_key_id) references xo_tests.user_api_keys (user_api_key_id) on delete cascade
-
   , created_at timestamp with time zone default current_timestamp not null unique
   , deleted_at timestamp with time zone
 );
@@ -82,8 +81,16 @@ create table xo_tests.demo_work_items (
   , checked boolean not null default false
 );
 
--- comment on column xo_tests.demo_work_items.work_item_id is '"cardinality":O2O';
-
+-- FIXME: inferred O2O generates only on one side .
+-- need to check if PK is FK, if so generate both sides.
+-- i.e. when creating dummy constraints, check is PK is FK,
+-- if so generate O2O for the other table.
+-- when the comment is added, we correctly get:
+--  type DemoWorkItem struct {
+-- +
+-- +       WorkItemJoin *WorkItem `json:"-" ... // O2O
+--  }
+-- comment on column xo_tests.demo_work_items.work_item_id IS '"cardinality":O2O';
 do $BODY$
 declare
   user_1_id uuid := '8bfb8359-28e0-4039-9259-3c98ada7300d';
