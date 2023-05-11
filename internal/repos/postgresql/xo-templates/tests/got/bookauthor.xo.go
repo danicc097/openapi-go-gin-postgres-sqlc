@@ -23,7 +23,7 @@ type BookAuthor struct {
 	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true"`  // author_id
 	Pseudonym *string   `json:"pseudonym" db:"pseudonym" required:"true"` // pseudonym
 
-	BooksJoin   *[]Book              `json:"-" db:"books" openapi-go:"ignore"`   // M2M
+	BooksJoin   *[]BookAuthor_Book   `json:"-" db:"books" openapi-go:"ignore"`   // M2M
 	AuthorsJoin *[]BookAuthor_Author `json:"-" db:"authors" openapi-go:"ignore"` // M2M
 }
 
@@ -98,8 +98,15 @@ func WithBookAuthorJoin(joins BookAuthorJoins) BookAuthorSelectConfigOption {
 	}
 }
 
+// BookAuthor_Book represents a M2M join against "xo_tests.book_authors"
+type BookAuthor_Book struct {
+	Book      Book    `json:"book" db:"books" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
+}
+
+// BookAuthor_Author represents a M2M join against "xo_tests.book_authors"
 type BookAuthor_Author struct {
-	User      User    `json:"user" db:"users"`
+	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 
@@ -203,20 +210,22 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_books.__books
-		)), null) end) as books,
-(case when $2::boolean = true then array_remove(
+		, joined_books.pseudonym
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_author_ids.__users
-		, joined_author_ids.pseudonym
-		)), null) end) as author_ids ` +
+		joined_authors.__users
+		, joined_authors.pseudonym
+		)) filter (where joined_authors.__users is not null), '{}') end) as authors ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
+			, book_authors.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors
@@ -224,6 +233,7 @@ left join (
     group by
 			book_authors_author_id
 			, books.book_id
+			, pseudonym
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
@@ -239,7 +249,7 @@ left join (
 			book_authors_book_id
 			, users.user_id
 			, pseudonym
-  ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
+  ) as joined_authors on joined_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
 book_authors.book_id, book_authors.book_id, book_authors.author_id `
@@ -275,20 +285,22 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_books.__books
-		)), null) end) as books,
-(case when $2::boolean = true then array_remove(
+		, joined_books.pseudonym
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_author_ids.__users
-		, joined_author_ids.pseudonym
-		)), null) end) as author_ids ` +
+		joined_authors.__users
+		, joined_authors.pseudonym
+		)) filter (where joined_authors.__users is not null), '{}') end) as authors ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
+			, book_authors.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors
@@ -296,6 +308,7 @@ left join (
     group by
 			book_authors_author_id
 			, books.book_id
+			, pseudonym
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
@@ -311,7 +324,7 @@ left join (
 			book_authors_book_id
 			, users.user_id
 			, pseudonym
-  ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
+  ) as joined_authors on joined_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.book_id = $3 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
 book_authors.book_id, book_authors.book_id, book_authors.author_id `
@@ -349,20 +362,22 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_books.__books
-		)), null) end) as books,
-(case when $2::boolean = true then array_remove(
+		, joined_books.pseudonym
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
-		joined_author_ids.__users
-		, joined_author_ids.pseudonym
-		)), null) end) as author_ids ` +
+		joined_authors.__users
+		, joined_authors.pseudonym
+		)) filter (where joined_authors.__users is not null), '{}') end) as authors ` +
 		`FROM xo_tests.book_authors ` +
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 			book_authors.author_id as book_authors_author_id
+			, book_authors.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors
@@ -370,6 +385,7 @@ left join (
     group by
 			book_authors_author_id
 			, books.book_id
+			, pseudonym
   ) as joined_books on joined_books.book_authors_author_id = book_authors.author_id
 
 -- M2M join generated from "book_authors_author_id_fkey"
@@ -385,7 +401,7 @@ left join (
 			book_authors_book_id
 			, users.user_id
 			, pseudonym
-  ) as joined_author_ids on joined_author_ids.book_authors_book_id = book_authors.book_id
+  ) as joined_authors on joined_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.author_id = $3 GROUP BY book_authors.author_id, book_authors.book_id, book_authors.author_id, 
 book_authors.book_id, book_authors.book_id, book_authors.author_id `

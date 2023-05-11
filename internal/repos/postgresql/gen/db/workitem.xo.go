@@ -193,8 +193,9 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	}
 }
 
+// WorkItem_Member represents a M2M join against "public.work_item_member"
 type WorkItem_Member struct {
-	User User                `json:"user" db:"users"`
+	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
@@ -340,15 +341,15 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_remove(
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members,
-(case when $6::boolean = true then array_remove(
+		)) filter (where joined_members.__users is not null), '{}') end) as members,
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_item_tags.__work_item_tags
-		)), null) end) as work_item_tags `+
+		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
 left join demo_two_work_items as _demo_two_work_items_work_item_ids on _demo_two_work_items_work_item_ids.work_item_id = work_items.work_item_id
@@ -452,15 +453,15 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_remove(
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members,
-(case when $6::boolean = true then array_remove(
+		)) filter (where joined_members.__users is not null), '{}') end) as members,
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_item_tags.__work_item_tags
-		)), null) end) as work_item_tags `+
+		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
 left join demo_two_work_items as _demo_two_work_items_work_item_ids on _demo_two_work_items_work_item_ids.work_item_id = work_items.work_item_id
@@ -567,15 +568,15 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_remove(
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members,
-(case when $6::boolean = true then array_remove(
+		)) filter (where joined_members.__users is not null), '{}') end) as members,
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_item_tags.__work_item_tags
-		)), null) end) as work_item_tags `+
+		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
 left join demo_two_work_items as _demo_two_work_items_work_item_ids on _demo_two_work_items_work_item_ids.work_item_id = work_items.work_item_id
@@ -680,15 +681,15 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $5::boolean = true then array_remove(
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members,
-(case when $6::boolean = true then array_remove(
+		)) filter (where joined_members.__users is not null), '{}') end) as members,
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_item_tags.__work_item_tags
-		)), null) end) as work_item_tags `+
+		)) filter (where joined_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
 left join demo_two_work_items as _demo_two_work_items_work_item_ids on _demo_two_work_items_work_item_ids.work_item_id = work_items.work_item_id

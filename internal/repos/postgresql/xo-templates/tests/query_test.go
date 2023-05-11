@@ -13,9 +13,14 @@ import (
  * TODO: test extensively:
  *
  * - pagination
+ * limits
+ * order bys
+ *
+ * test M2M when its just 2 FKs as combined PK, when its 1 pk and 2 fks, and 2 fks and extra info ()
+ *
  */
 
-func TestM2M(t *testing.T) {
+func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -31,6 +36,11 @@ func TestM2M(t *testing.T) {
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{Books: true}))
 	assert.NoError(t, err)
 	assert.Len(t, *u.BooksJoin, 2)
+	for _, b := range *u.BooksJoin {
+		if b.Book.BookID == 1 {
+			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
+		}
+	}
 }
 
 func TestM2O(t *testing.T) {

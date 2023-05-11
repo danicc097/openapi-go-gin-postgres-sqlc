@@ -143,14 +143,14 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_users.__users
-		)), null) end) as users,
-(case when $2::boolean = true then array_remove(
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams ` +
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -211,14 +211,14 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_users.__users
-		)), null) end) as users,
-(case when $2::boolean = true then array_remove(
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams ` +
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -281,14 +281,14 @@ func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_users.__users
-		)), null) end) as users,
-(case when $2::boolean = true then array_remove(
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams ` +
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (
@@ -351,14 +351,14 @@ func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Use
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
 user_team.user_id,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_users.__users
-		)), null) end) as users,
-(case when $2::boolean = true then array_remove(
+		)) filter (where joined_users.__users is not null), '{}') end) as users,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams ` +
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams ` +
 		`FROM public.user_team ` +
 		`-- M2M join generated from "user_team_user_id_fkey"
 left join (

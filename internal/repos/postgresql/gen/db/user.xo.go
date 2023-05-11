@@ -46,7 +46,7 @@ type User struct {
 	UserNotificationsJoin     *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"`     // M2O
 	TeamsJoin                 *[]Team             `json:"-" db:"teams" openapi-go:"ignore"`                  // M2M
 	WorkItemCommentsJoin      *[]WorkItemComment  `json:"-" db:"work_item_comments" openapi-go:"ignore"`     // M2O
-	WorkItemsJoin             *[]WorkItem         `json:"-" db:"work_items" openapi-go:"ignore"`             // M2M
+	WorkItemsJoin             *[]User_WorkItem    `json:"-" db:"work_items" openapi-go:"ignore"`             // M2M
 
 }
 
@@ -208,6 +208,12 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	}
 }
 
+// User_WorkItem represents a M2M join against "public.work_item_member"
+type User_WorkItem struct {
+	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
+	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
+}
+
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// insert (primary key generated and returned by database)
@@ -356,15 +362,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -430,6 +437,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -437,6 +445,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.created_at > $9  AND users.deleted_at is %s  GROUP BY joined_notifications_receiver.notifications, users.user_id, 
@@ -497,15 +506,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -571,6 +581,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -578,6 +589,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
@@ -641,15 +653,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -715,6 +728,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -722,6 +736,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
@@ -783,15 +798,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -857,6 +873,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -864,6 +881,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
@@ -927,15 +945,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -1001,6 +1020,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -1008,6 +1028,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.email = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
@@ -1069,15 +1090,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -1143,6 +1165,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -1150,6 +1173,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.external_id = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
@@ -1211,15 +1235,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -1285,6 +1310,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -1292,6 +1318,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.user_id = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
@@ -1353,15 +1380,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -1427,6 +1455,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -1434,6 +1463,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.updated_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
@@ -1497,15 +1527,16 @@ users.deleted_at,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then array_remove(
+(case when $6::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_teams.__teams
-		)), null) end) as teams,
+		)) filter (where joined_teams.__teams is not null), '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then array_remove(
+(case when $8::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items `+
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items `+
 		`FROM public.users `+
 		`-- M2O join generated from "notifications_receiver_fkey"
 left join (
@@ -1571,6 +1602,7 @@ left join (
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -1578,6 +1610,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.username = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 

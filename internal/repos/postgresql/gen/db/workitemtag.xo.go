@@ -210,10 +210,10 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true then array_remove(
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items ` +
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -264,10 +264,10 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true then array_remove(
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items ` +
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -321,10 +321,10 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true then array_remove(
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items ` +
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -380,10 +380,10 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true then array_remove(
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items ` +
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -441,10 +441,10 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true then array_remove(
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items ` +
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id
@@ -502,10 +502,10 @@ work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _project_ids.project_id is not null then row(_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true then array_remove(
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items ` +
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _project_ids on _project_ids.project_id = work_item_tags.project_id

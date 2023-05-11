@@ -25,8 +25,8 @@ type WorkItemMember struct {
 	Member     uuid.UUID           `json:"member" db:"member" required:"true"`                                     // member
 	Role       models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoin *[]WorkItem              `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
-	MembersJoin   *[]WorkItemMember_Member `json:"-" db:"members" openapi-go:"ignore"`    // M2M
+	WorkItemsJoin *[]WorkItemMember_WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
+	MembersJoin   *[]WorkItemMember_Member   `json:"-" db:"members" openapi-go:"ignore"`    // M2M
 
 }
 
@@ -103,8 +103,15 @@ func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfi
 	}
 }
 
+// WorkItemMember_WorkItem represents a M2M join against "public.work_item_member"
+type WorkItemMember_WorkItem struct {
+	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
+	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
+}
+
+// WorkItemMember_Member represents a M2M join against "public.work_item_member"
 type WorkItemMember_Member struct {
-	User User                `json:"user" db:"users"`
+	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
@@ -208,20 +215,22 @@ func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.U
 		`work_item_member.work_item_id,
 work_item_member.member,
 work_item_member.role,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items,
-(case when $2::boolean = true then array_remove(
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members ` +
+		)) filter (where joined_members.__users is not null), '{}') end) as members ` +
 		`FROM public.work_item_member ` +
 		`-- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -229,6 +238,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
@@ -282,20 +292,22 @@ func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int
 		`work_item_member.work_item_id,
 work_item_member.member,
 work_item_member.role,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items,
-(case when $2::boolean = true then array_remove(
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members ` +
+		)) filter (where joined_members.__users is not null), '{}') end) as members ` +
 		`FROM public.work_item_member ` +
 		`-- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -303,6 +315,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
@@ -354,20 +367,22 @@ func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 		`work_item_member.work_item_id,
 work_item_member.member,
 work_item_member.role,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items,
-(case when $2::boolean = true then array_remove(
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members ` +
+		)) filter (where joined_members.__users is not null), '{}') end) as members ` +
 		`FROM public.work_item_member ` +
 		`-- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -375,6 +390,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
@@ -428,20 +444,22 @@ func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts 
 		`work_item_member.work_item_id,
 work_item_member.member,
 work_item_member.role,
-(case when $1::boolean = true then array_remove(
+(case when $1::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_work_items.__work_items
-		)), null) end) as work_items,
-(case when $2::boolean = true then array_remove(
+		, joined_work_items.role
+		)) filter (where joined_work_items.__work_items is not null), '{}') end) as work_items,
+(case when $2::boolean = true then COALESCE(
 		ARRAY_AGG((
 		joined_members.__users
 		, joined_members.role
-		)), null) end) as members ` +
+		)) filter (where joined_members.__users is not null), '{}') end) as members ` +
 		`FROM public.work_item_member ` +
 		`-- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 			work_item_member.member as work_item_member_member
+			, work_item_member.role as role
 			, row(work_items.*) as __work_items
 		from
 			work_item_member
@@ -449,6 +467,7 @@ left join (
     group by
 			work_item_member_member
 			, work_items.work_item_id
+			, role
   ) as joined_work_items on joined_work_items.work_item_member_member = work_item_member.member
 
 -- M2M join generated from "work_item_member_member_fkey"
