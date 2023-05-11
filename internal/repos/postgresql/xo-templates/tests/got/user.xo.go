@@ -29,6 +29,7 @@ type User struct {
 
 	BooksJoin                 *[]User_Book    `json:"-" db:"books" openapi-go:"ignore"`                  // M2M
 	BookReviewsJoin           *[]BookReview   `json:"-" db:"book_reviews" openapi-go:"ignore"`           // M2O
+	BooksJoin                 *[]Book         `json:"-" db:"books" openapi-go:"ignore"`                  // M2M
 	NotificationsJoinReceiver *[]Notification `json:"-" db:"notifications_receiver" openapi-go:"ignore"` // M2O
 	NotificationsJoinSender   *[]Notification `json:"-" db:"notifications_sender" openapi-go:"ignore"`   // M2O
 	UserAPIKeyJoin            *UserAPIKey     `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`   // O2O (inferred)
@@ -116,6 +117,7 @@ func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 type UserJoins struct {
 	Books                 bool
 	BookReviews           bool
+	Books                 bool
 	NotificationsReceiver bool
 	NotificationsSender   bool
 	UserAPIKey            bool
@@ -127,6 +129,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 		s.joins = UserJoins{
 			Books:                 s.joins.Books || joins.Books,
 			BookReviews:           s.joins.BookReviews || joins.BookReviews,
+			Books:                 s.joins.Books || joins.Books,
 			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
@@ -271,9 +274,13 @@ users.deleted_at,
 		, joined_books.pseudonym
 		)) filter (where joined_books.__books is not null), '{}') end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $5::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
+(case when $3::boolean = true then COALESCE(
+		ARRAY_AGG((
+		joined_books.__books
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
+(case when $4::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
+(case when $5::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $6::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -299,6 +306,19 @@ left join (
     xo_tests.book_reviews
   group by
         reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+-- M2M join generated from "book_sellers_book_id_fkey"
+left join (
+	select
+			book_sellers.seller as book_sellers_seller
+			, row(books.*) as __books
+		from
+			xo_tests.book_sellers
+    join xo_tests.books on books.book_id = book_sellers.book_id
+    group by
+			book_sellers_seller
+			, books.book_id
+  ) as joined_books on joined_books.book_sellers_seller = users.user_id
+
 -- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
@@ -319,8 +339,9 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
-		` WHERE users.created_at > $6  AND users.deleted_at is %s  GROUP BY users.user_id, users.user_id, 
+		` WHERE users.created_at > $7  AND users.deleted_at is %s  GROUP BY users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 _user_ids.user_id,
@@ -365,9 +386,13 @@ users.deleted_at,
 		, joined_books.pseudonym
 		)) filter (where joined_books.__books is not null), '{}') end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $5::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
+(case when $3::boolean = true then COALESCE(
+		ARRAY_AGG((
+		joined_books.__books
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
+(case when $4::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
+(case when $5::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $6::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -393,6 +418,19 @@ left join (
     xo_tests.book_reviews
   group by
         reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+-- M2M join generated from "book_sellers_book_id_fkey"
+left join (
+	select
+			book_sellers.seller as book_sellers_seller
+			, row(books.*) as __books
+		from
+			xo_tests.book_sellers
+    join xo_tests.books on books.book_id = book_sellers.book_id
+    group by
+			book_sellers_seller
+			, books.book_id
+  ) as joined_books on joined_books.book_sellers_seller = users.user_id
+
 -- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
@@ -413,8 +451,9 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
-		` WHERE users.created_at = $6  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
+		` WHERE users.created_at = $7  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 _user_ids.user_id,
@@ -425,7 +464,7 @@ _user_ids.user_id,
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.BookReviews, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.BookReviews, c.joins.Books, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -460,9 +499,13 @@ users.deleted_at,
 		, joined_books.pseudonym
 		)) filter (where joined_books.__books is not null), '{}') end) as books,
 (case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $3::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $4::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $5::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
+(case when $3::boolean = true then COALESCE(
+		ARRAY_AGG((
+		joined_books.__books
+		)) filter (where joined_books.__books is not null), '{}') end) as books,
+(case when $4::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
+(case when $5::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $6::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_api_key_user_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -488,6 +531,19 @@ left join (
     xo_tests.book_reviews
   group by
         reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+-- M2M join generated from "book_sellers_book_id_fkey"
+left join (
+	select
+			book_sellers.seller as book_sellers_seller
+			, row(books.*) as __books
+		from
+			xo_tests.book_sellers
+    join xo_tests.books on books.book_id = book_sellers.book_id
+    group by
+			book_sellers_seller
+			, books.book_id
+  ) as joined_books on joined_books.book_sellers_seller = users.user_id
+
 -- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
@@ -508,8 +564,9 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.user_api_keys as _user_ids on _user_ids.user_id = users.user_id`+
-		` WHERE users.user_id = $6  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
+		` WHERE users.user_id = $7  AND users.deleted_at is %s   GROUP BY users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 _user_ids.user_id,
@@ -520,7 +577,7 @@ _user_ids.user_id,
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.BookReviews, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Books, c.joins.BookReviews, c.joins.Books, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}

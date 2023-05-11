@@ -1017,6 +1017,7 @@ cc_label:
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
 					seenConstraint.ColumnName == constraint.ColumnName &&
+					seenConstraint.RefColumnName == constraint.RefColumnName &&
 					seenConstraint.Type == constraint.Type &&
 					/* card check to generate joins with vertically partitioned tables.
 					 */
@@ -1080,6 +1081,7 @@ cc_label:
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
 					seenConstraint.ColumnName == constraint.ColumnName &&
+					seenConstraint.RefColumnName == constraint.RefColumnName &&
 					seenConstraint.Type == constraint.Type &&
 					seenConstraint.Cardinality == card {
 					continue cc_label
@@ -1106,6 +1108,7 @@ cc_label:
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
 					seenConstraint.ColumnName == constraint.ColumnName &&
+					seenConstraint.RefColumnName == constraint.RefColumnName &&
 					seenConstraint.Type == constraint.Type && seenConstraint.Cardinality == card {
 					continue cc_label
 				}
@@ -1867,6 +1870,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 		switch c.Cardinality {
 		case M2M:
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+			joinName = camelExport(inflector.Pluralize(lookupName))
 
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
@@ -1904,9 +1908,6 @@ type %s struct {
 }
 	`, docstring, st, joinField, strings.Join(lookupFields, "\n")))) // prevent name clashing
 			}
-
-			joinName = camelExport(inflector.Pluralize(lookupName))
-
 		case M2O:
 			if c.RefTableName == sqlname {
 				joinName = camelExport(c.TableName)
@@ -2336,6 +2337,10 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = pref + camelExport(inflector.Pluralize(lookupName))
+					// if c.JoinTableClash {
+					// 	fmt.Printf("M2M: %s has join table name clash \n", c.TableName+"."+c.ColumnName+":"+c.Name)
+					// 	joinName = joinName + camelExport(c.ColumnName)
+					// }
 				case M2O:
 					if c.RefTableName == x.Table.SQLName {
 						joinName = pref + camelExport(c.TableName)

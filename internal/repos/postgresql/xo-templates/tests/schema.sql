@@ -47,6 +47,18 @@ comment on column xo_tests.book_authors.author_id is '"cardinality":M2M';
 
 comment on column xo_tests.book_authors.book_id is '"cardinality":M2M';
 
+create table xo_tests.book_sellers (
+  book_id int not null
+  , seller uuid not null
+  , primary key (book_id , seller)
+  , foreign key (seller) references xo_tests.users (user_id) on delete cascade
+  , foreign key (book_id) references xo_tests.books (book_id) on delete cascade
+);
+comment on column xo_tests.book_sellers.seller is '"cardinality":M2M';
+
+comment on column xo_tests.book_sellers.book_id is '"cardinality":M2M';
+
+
 create table xo_tests.book_reviews (
   book_review_id serial primary key
   , book_id int not null
@@ -89,12 +101,15 @@ do $BODY$
 declare
   user_1_id uuid := '8bfb8359-28e0-4039-9259-3c98ada7300d';
   user_2_id uuid := '78b8db3e-9900-4ca2-9875-fd1eb59acf71';
+  seller_id uuid := '8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a';
 begin
-  insert into xo_tests.users (user_id , name , created_at)
-    values (user_1_id , 'John Doe' , current_timestamp);
   -- PERFORM pg_sleep(0.5); -- not working for some reason
   insert into xo_tests.users (user_id , name , created_at)
-    values (user_2_id , 'Jane Smith' , current_timestamp + '1 h');
+    values (user_1_id , 'John Doe' , current_timestamp);
+  insert into xo_tests.users (user_id , name , created_at)
+    values (user_2_id , 'Jane Smith' , current_timestamp + '-1 h');
+  insert into xo_tests.users (user_id , name , created_at)
+    values (seller_id , 'Seller 1' , current_timestamp + '-2 h');
 
   insert into xo_tests.user_api_keys (user_id , api_key , expires_on)
     values (user_1_id , 'api-key-1' , current_timestamp + '2 days');
@@ -115,6 +130,9 @@ begin
     values (1 , user_2_id , 'not Jane Smith');
   insert into xo_tests.book_authors (book_id , author_id)
     values (2 , user_2_id);
+
+  insert into xo_tests.book_sellers (book_id , seller)
+    values (1 , seller_id);
 
   insert into xo_tests.book_reviews (book_id , reviewer)
     values (1 , user_1_id);

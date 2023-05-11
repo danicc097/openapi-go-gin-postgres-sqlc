@@ -21,8 +21,9 @@ type Book struct {
 	BookID int    `json:"bookID" db:"book_id" required:"true"` // book_id
 	Name   string `json:"name" db:"name" required:"true"`      // name
 
-	AuthorsJoin     *[]Book_Author `json:"-" db:"authors" openapi-go:"ignore"`      // M2M
-	BookReviewsJoin *[]BookReview  `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
+	AuthorsJoin     *[]Book_Author `json:"-" db:"authors" openapi-go:"ignore"`             // M2M
+	BookReviewsJoin *[]BookReview  `json:"-" db:"book_reviews" openapi-go:"ignore"`        // M2O
+	BookSellerJoin  *BookSeller    `json:"-" db:"book_seller_book_id" openapi-go:"ignore"` // O2O (inferred)
 }
 
 // BookCreateParams represents insert params for 'xo_tests.books'.
@@ -72,6 +73,7 @@ type BookOrderBy = string
 type BookJoins struct {
 	Authors     bool
 	BookReviews bool
+	BookSeller  bool
 }
 
 // WithBookJoin joins with the given tables.
@@ -80,6 +82,7 @@ func WithBookJoin(joins BookJoins) BookSelectConfigOption {
 		s.joins = BookJoins{
 			Authors:     s.joins.Authors || joins.Authors,
 			BookReviews: s.joins.BookReviews || joins.BookReviews,
+			BookSeller:  s.joins.BookSeller || joins.BookSeller,
 		}
 	}
 }
@@ -190,7 +193,8 @@ books.name,
 		joined_authors.__users
 		, joined_authors.pseudonym
 		)) filter (where joined_authors.__users is not null), '{}') end) as authors,
-(case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
+(case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
+(case when $3::boolean = true and _book_ids.book_id is not null then row(_book_ids.*) end) as book_seller_book_id ` +
 		`FROM xo_tests.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
@@ -215,9 +219,15 @@ left join (
   from
     xo_tests.book_reviews
   group by
-        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id` +
-		` WHERE books.book_id > $3 GROUP BY books.book_id, books.book_id, 
-joined_book_reviews.book_reviews, books.book_id `
+        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
+-- O2O join generated from "book_sellers_book_id_fkey(O2O inferred)"
+left join xo_tests.book_sellers as _book_ids on _book_ids.book_id = books.book_id` +
+		` WHERE books.book_id > $4 GROUP BY books.book_id, books.book_id, 
+joined_book_reviews.book_reviews, books.book_id, 
+_book_ids.book_id,
+      _book_ids.book_id,
+      _book_ids.seller,
+	books.book_id `
 	sqlstr += c.limit
 
 	// run
@@ -252,7 +262,8 @@ books.name,
 		joined_authors.__users
 		, joined_authors.pseudonym
 		)) filter (where joined_authors.__users is not null), '{}') end) as authors,
-(case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
+(case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
+(case when $3::boolean = true and _book_ids.book_id is not null then row(_book_ids.*) end) as book_seller_book_id ` +
 		`FROM xo_tests.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
@@ -277,15 +288,21 @@ left join (
   from
     xo_tests.book_reviews
   group by
-        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id` +
-		` WHERE books.book_id = $3 GROUP BY books.book_id, books.book_id, 
-joined_book_reviews.book_reviews, books.book_id `
+        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
+-- O2O join generated from "book_sellers_book_id_fkey(O2O inferred)"
+left join xo_tests.book_sellers as _book_ids on _book_ids.book_id = books.book_id` +
+		` WHERE books.book_id = $4 GROUP BY books.book_id, books.book_id, 
+joined_book_reviews.book_reviews, books.book_id, 
+_book_ids.book_id,
+      _book_ids.book_id,
+      _book_ids.seller,
+	books.book_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Authors, c.joins.BookReviews, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Authors, c.joins.BookReviews, c.joins.BookSeller, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", err))
 	}

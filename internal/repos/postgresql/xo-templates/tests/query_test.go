@@ -18,7 +18,10 @@ import (
  *
  * test M2M when its just 2 FKs as combined PK, when its 1 pk and 2 fks, and 2 fks and extra info ()
  *
- */
+	also test join table name clash for O2O constraint too:
+	name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
+	at the same time
+*/
 
 func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	t.Parallel()
@@ -30,6 +33,29 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	assert.Len(t, *u.BooksJoin, 0)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
+	assert.NoError(t, err)
+	assert.Nil(t, u.BooksJoin)
+
+	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{Books: true}))
+	assert.NoError(t, err)
+	assert.Len(t, *u.BooksJoin, 2)
+	for _, b := range *u.BooksJoin {
+		if b.Book.BookID == 1 {
+			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
+		}
+	}
+}
+
+func TestM2M_TwoFKs(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a"), db.WithUserJoin(db.UserJoins{Books: true}))
+	assert.NoError(t, err)
+	assert.Len(t, *u.BooksJoin, 0)
+
+	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a"))
 	assert.NoError(t, err)
 	assert.Nil(t, u.BooksJoin)
 
