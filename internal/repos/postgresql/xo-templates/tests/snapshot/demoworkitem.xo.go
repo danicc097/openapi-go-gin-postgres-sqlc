@@ -20,6 +20,8 @@ import (
 type DemoWorkItem struct {
 	WorkItemID int64 `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
 	Checked    bool  `json:"checked" db:"checked" required:"true"`         // checked
+
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_demo_work_item_work_item_id" openapi-go:"ignore"` // O2O (inferred)
 }
 
 // DemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.
@@ -68,12 +70,16 @@ func WithDemoWorkItemLimit(limit int) DemoWorkItemSelectConfigOption {
 
 type DemoWorkItemOrderBy = string
 
-type DemoWorkItemJoins struct{}
+type DemoWorkItemJoins struct {
+	WorkItem bool
+}
 
 // WithDemoWorkItemJoin joins with the given tables.
 func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
-		s.joins = DemoWorkItemJoins{}
+		s.joins = DemoWorkItemJoins{
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 
@@ -171,10 +177,14 @@ func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID in
 
 	sqlstr := `SELECT ` +
 		`demo_work_items.work_item_id,
-demo_work_items.checked ` +
+demo_work_items.checked,
+(case when $1::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM xo_tests.demo_work_items ` +
-		`` +
-		` WHERE demo_work_items.work_item_id > $1 `
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join xo_tests.work_items as _work_item_ids on _work_item_ids.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.work_item_id > $2 GROUP BY _work_item_ids.work_item_id,
+      _work_item_ids.work_item_id,
+	demo_work_items.work_item_id `
 	sqlstr += c.limit
 
 	// run
@@ -203,16 +213,20 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 	// query
 	sqlstr := `SELECT ` +
 		`demo_work_items.work_item_id,
-demo_work_items.checked ` +
+demo_work_items.checked,
+(case when $1::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM xo_tests.demo_work_items ` +
-		`` +
-		` WHERE demo_work_items.work_item_id = $1 `
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join xo_tests.work_items as _work_item_ids on _work_item_ids.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.work_item_id = $2 GROUP BY _work_item_ids.work_item_id,
+      _work_item_ids.work_item_id,
+	demo_work_items.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", err))
 	}

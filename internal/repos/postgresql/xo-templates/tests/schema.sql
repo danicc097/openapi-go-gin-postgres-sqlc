@@ -81,16 +81,6 @@ create table xo_tests.demo_work_items (
   , checked boolean not null default false
 );
 
--- FIXME: inferred O2O generates only on one side .
--- need to check if PK is FK, if so generate both sides.
--- i.e. when creating dummy constraints, check is PK is FK,
--- if so generate O2O for the other table.
--- when the comment is added, we correctly get:
---  type DemoWorkItem struct {
--- +
--- +       WorkItemJoin *WorkItem `json:"-" ... // O2O
---  }
--- comment on column xo_tests.demo_work_items.work_item_id IS '"cardinality":O2O';
 do $BODY$
 declare
   user_1_id uuid := '8bfb8359-28e0-4039-9259-3c98ada7300d';

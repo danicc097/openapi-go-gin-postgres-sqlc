@@ -345,10 +345,6 @@ comment on column work_items.work_item_id is '"cardinality":O2O';
 
 comment on column demo_work_items.ref is '"tags":pattern:"^[0-9]{8}$"';
 
-comment on column demo_work_items.work_item_id is '"cardinality":O2O';
-
-comment on column demo_two_work_items.work_item_id is '"cardinality":O2O';
-
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
 where (deleted_at is not null);

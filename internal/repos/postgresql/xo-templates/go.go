@@ -1038,10 +1038,17 @@ cc_label:
 				IsInferredO2O:  true,
 			})
 
-			// TODO
-			t := tables[constraint.RefTableName]
+			// TODO PK is Fk gen O2O on other side
+			t := tables[constraint.TableName]
+			// fmt.Printf("%s: t.PrimaryKeys: %v\n", constraint.TableName, t.PrimaryKeys)
+			// fmt.Printf("%s: t.ForeignKeys: %v\n", constraint.TableName, t.ForeignKeys)
+			// rt := tables[constraint.RefTableName]
+			// fmt.Printf("%s (ref): rt.PrimaryKeys: %v\n", constraint.RefTableName, rt.PrimaryKeys)
+			// fmt.Printf("%s (ref): rt.ForeignKeys: %v\n", constraint.RefTableName, rt.ForeignKeys)
+			// println(".....")
+
 			var f Field
-			for _, tf := range t.Fields {
+			for _, tf := range t.PrimaryKeys {
 				if tf.SQLName == constraint.ColumnName {
 					f = tf
 				}
@@ -1052,6 +1059,17 @@ cc_label:
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
 				fmt.Printf("convertConstraints: %s.%s is a single foreign and primary key in O2O\n", constraint.RefTableName, constraint.ColumnName)
+				cc = append(cc, Constraint{
+					Type:           constraint.Type,
+					Cardinality:    O2O,
+					Name:           constraint.Name + "(O2O inferred - PK is FK)",
+					RefTableName:   constraint.RefTableName,
+					TableName:      constraint.TableName,
+					RefColumnName:  constraint.RefColumnName,
+					ColumnName:     constraint.ColumnName,
+					JoinTableClash: joinTableClash,
+					IsInferredO2O:  true,
+				})
 			}
 
 			continue
