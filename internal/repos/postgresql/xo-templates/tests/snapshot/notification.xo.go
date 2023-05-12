@@ -24,8 +24,8 @@ type Notification struct {
 	Sender         uuid.UUID  `json:"sender" db:"sender" required:"true"`                  // sender
 	Receiver       *uuid.UUID `json:"receiver" db:"receiver" required:"true"`              // receiver
 
-	UserJoinReceiver *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O (generated from M2O)
-	UserJoinSender   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O (generated from M2O)
+	UserJoinReceiver *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
+	UserJoinSender   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
 }
 
 // NotificationCreateParams represents insert params for 'xo_tests.notifications'.
@@ -85,8 +85,8 @@ func WithNotificationLimit(limit int) NotificationSelectConfigOption {
 type NotificationOrderBy = string
 
 type NotificationJoins struct {
-	UserReceiver bool
-	UserSender   bool
+	UserReceiver bool // O2O users
+	UserSender   bool // O2O users
 }
 
 // WithNotificationJoin joins with the given tables.

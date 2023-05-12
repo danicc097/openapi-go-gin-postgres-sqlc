@@ -30,16 +30,16 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{BooksAuthor: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.BooksJoinAuthor, 0)
+	assert.Len(t, *u.UserBooksJoinBA, 0)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
 	assert.NoError(t, err)
-	assert.Nil(t, u.BooksJoinAuthor)
+	assert.Nil(t, u.UserBooksJoinBA)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksAuthor: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.BooksJoinAuthor, 2)
-	for _, b := range *u.BooksJoinAuthor {
+	assert.Len(t, *u.UserBooksJoinBA, 2)
+	for _, b := range *u.UserBooksJoinBA {
 		if b.Book.BookID == 1 {
 			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
 		}
@@ -51,18 +51,18 @@ func TestM2M_SurrogatePK(t *testing.T) {
 
 	ctx := context.Background()
 
-	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{BookSurrs: true}))
+	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.BookSurrsJoin, 0)
+	assert.Len(t, *u.UserBooksJoinBASK, 0)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
 	assert.NoError(t, err)
-	assert.Nil(t, u.BookSurrsJoin)
+	assert.Nil(t, u.UserBooksJoinBASK)
 
-	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BookSurrs: true}))
+	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.BookSurrsJoin, 2)
-	for _, b := range *u.BookSurrsJoin {
+	assert.Len(t, *u.UserBooksJoinBASK, 2)
+	for _, b := range *u.UserBooksJoinBASK {
 		if b.Book.BookID == 1 {
 			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
 		}
@@ -76,16 +76,16 @@ func TestM2M_TwoFKs(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksSeller: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.BooksJoinSeller, 0)
+	assert.Len(t, *u.UserBooksJoin, 0)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"))
 	assert.NoError(t, err)
-	assert.Nil(t, u.BooksJoinSeller)
+	assert.Nil(t, u.UserBooksJoin)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a"), db.WithUserJoin(db.UserJoins{BooksSeller: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.BooksJoinSeller, 1)
-	assert.Equal(t, (*u.BooksJoinSeller)[0].BookID, 1)
+	assert.Len(t, *u.UserBooksJoin, 1)
+	assert.Equal(t, (*u.UserBooksJoin)[0].BookID, 1)
 }
 
 func TestM2O(t *testing.T) {

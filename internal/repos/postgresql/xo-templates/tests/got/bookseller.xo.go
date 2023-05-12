@@ -19,8 +19,8 @@ type BookSeller struct {
 	BookID int       `json:"bookID" db:"book_id" required:"true"` // book_id
 	Seller uuid.UUID `json:"seller" db:"seller" required:"true"`  // seller
 
-	SellersJoin     *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M
-	BooksJoinSeller *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M
+	BookSellersJoin *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
+	SellerBooksJoin *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
 }
 
 // BookSellerCreateParams represents insert params for 'xo_tests.book_sellers'.
@@ -74,8 +74,8 @@ func WithBookSellerLimit(limit int) BookSellerSelectConfigOption {
 type BookSellerOrderBy = string
 
 type BookSellerJoins struct {
-	Sellers     bool
-	BooksSeller bool
+	Sellers     bool // M2M book_sellers
+	BooksSeller bool // M2M book_sellers
 }
 
 // WithBookSellerJoin joins with the given tables.

@@ -49,17 +49,17 @@ comment on column xo_tests.book_authors.book_id is '"cardinality":M2M';
 
 create table xo_tests.book_authors_surrogate_key (
   book_authors_surrogate_key_id serial primary key
-  , book_surr_id int not null
-  , author_surr_id uuid not null
+  , book_id int not null
+  , author_id uuid not null
   , pseudonym text
-  , unique (book_surr_id , author_surr_id)
-  , foreign key (author_surr_id) references xo_tests.users (user_id) on delete cascade
-  , foreign key (book_surr_id) references xo_tests.books (book_id) on delete cascade
+  , unique (book_id , author_id)
+  , foreign key (author_id) references xo_tests.users (user_id) on delete cascade
+  , foreign key (book_id) references xo_tests.books (book_id) on delete cascade
 );
 
-comment on column xo_tests.book_authors_surrogate_key.author_surr_id is '"cardinality":M2M';
+comment on column xo_tests.book_authors_surrogate_key.author_id is '"cardinality":M2M';
 
-comment on column xo_tests.book_authors_surrogate_key.book_surr_id is '"cardinality":M2M';
+comment on column xo_tests.book_authors_surrogate_key.book_id is '"cardinality":M2M';
 
 create table xo_tests.book_sellers (
   book_id int not null
@@ -144,9 +144,9 @@ begin
     values (1 , user_2_id , 'not Jane Smith');
   insert into xo_tests.book_authors (book_id , author_id)
     values (2 , user_2_id);
-  insert into xo_tests.book_authors_surrogate_key (book_surr_id , author_surr_id , pseudonym)
+  insert into xo_tests.book_authors_surrogate_key (book_id , author_id , pseudonym)
     values (1 , user_2_id , 'not Jane Smith');
-  insert into xo_tests.book_authors_surrogate_key (book_surr_id , author_surr_id)
+  insert into xo_tests.book_authors_surrogate_key (book_id , author_id)
     values (2 , user_2_id);
 
   insert into xo_tests.book_sellers (book_id , seller)

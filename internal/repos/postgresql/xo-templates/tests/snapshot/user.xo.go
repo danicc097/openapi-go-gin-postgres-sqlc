@@ -27,13 +27,13 @@ type User struct {
 	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true"` // created_at
 	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at" required:"true"` // deleted_at
 
-	BooksJoinAuthor           *[]User_Book     `json:"-" db:"book_authors_books" openapi-go:"ignore"`                    // M2M
-	BookSurrsJoin             *[]User_BookSurr `json:"-" db:"book_authors_surrogate_key_book_surrs" openapi-go:"ignore"` // M2M
-	BookReviewsJoin           *[]BookReview    `json:"-" db:"book_reviews" openapi-go:"ignore"`                          // M2O
-	BooksJoinSeller           *[]Book          `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                    // M2M
-	NotificationsJoinReceiver *[]Notification  `json:"-" db:"notifications_receiver" openapi-go:"ignore"`                // M2O
-	NotificationsJoinSender   *[]Notification  `json:"-" db:"notifications_sender" openapi-go:"ignore"`                  // M2O
-	UserAPIKeyJoin            *UserAPIKey      `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`                  // O2O (inferred)
+	UserBooksJoinBA           *[]Book__BA_User   `json:"-" db:"book_authors_books" openapi-go:"ignore"`               // M2M book_authors
+	UserBooksJoinBASK         *[]Book__BASK_User `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	BookReviewsJoin           *[]BookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                     // M2O users
+	UserBooksJoin             *[]Book            `json:"-" db:"book_sellers_books" openapi-go:"ignore"`               // M2M book_sellers
+	NotificationsJoinReceiver *[]Notification    `json:"-" db:"notifications_receiver" openapi-go:"ignore"`           // M2O users
+	NotificationsJoinSender   *[]Notification    `json:"-" db:"notifications_sender" openapi-go:"ignore"`             // M2O users
+	UserAPIKeyJoin            *UserAPIKey        `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`             // O2O user_api_keys (inferred)
 }
 
 // UserCreateParams represents insert params for 'xo_tests.users'.
@@ -116,13 +116,13 @@ func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 }
 
 type UserJoins struct {
-	BooksAuthor           bool
-	BookSurrs             bool
-	BookReviews           bool
-	BooksSeller           bool
-	NotificationsReceiver bool
-	NotificationsSender   bool
-	UserAPIKey            bool
+	BooksAuthor           bool // M2M book_authors
+	BooksAuthorBooks      bool // M2M book_authors_surrogate_key
+	BookReviews           bool // M2O users
+	BooksSeller           bool // M2M book_sellers
+	NotificationsReceiver bool // M2O users
+	NotificationsSender   bool // M2O users
+	UserAPIKey            bool // O2O user_api_keys
 }
 
 // WithUserJoin joins with the given tables.
@@ -130,7 +130,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.joins = UserJoins{
 			BooksAuthor:           s.joins.BooksAuthor || joins.BooksAuthor,
-			BookSurrs:             s.joins.BookSurrs || joins.BookSurrs,
+			BooksAuthorBooks:      s.joins.BooksAuthorBooks || joins.BooksAuthorBooks,
 			BookReviews:           s.joins.BookReviews || joins.BookReviews,
 			BooksSeller:           s.joins.BooksSeller || joins.BooksSeller,
 			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
@@ -140,14 +140,14 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	}
 }
 
-// User_Book represents a M2M join against "xo_tests.book_authors"
-type User_Book struct {
+// Book__BA_User represents a M2M join against "xo_tests.book_authors"
+type Book__BA_User struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 
-// User_BookSurr represents a M2M join against "xo_tests.book_authors_surrogate_key"
-type User_BookSurr struct {
+// Book__BASK_User represents a M2M join against "xo_tests.book_authors_surrogate_key"
+type Book__BASK_User struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
@@ -284,9 +284,9 @@ users.deleted_at,
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_book_surrs.__books
-		, joined_book_authors_surrogate_key_book_surrs.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
+		joined_book_authors_surrogate_key_books.__books
+		, joined_book_authors_surrogate_key_books.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -311,20 +311,20 @@ left join (
 			, pseudonym
   ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
 
--- M2M join generated from "book_authors_surrogate_key_book_surr_id_fkey"
+-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
-			book_authors_surrogate_key.author_surr_id as book_authors_surrogate_key_author_surr_id
+			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
-    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_surr_id
+    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
     group by
-			book_authors_surrogate_key_author_surr_id
+			book_authors_surrogate_key_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_book_authors_surrogate_key_book_surrs on joined_book_authors_surrogate_key_book_surrs.book_authors_surrogate_key_author_surr_id = users.user_id
+  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
@@ -417,9 +417,9 @@ users.deleted_at,
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_book_surrs.__books
-		, joined_book_authors_surrogate_key_book_surrs.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
+		joined_book_authors_surrogate_key_books.__books
+		, joined_book_authors_surrogate_key_books.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -444,20 +444,20 @@ left join (
 			, pseudonym
   ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
 
--- M2M join generated from "book_authors_surrogate_key_book_surr_id_fkey"
+-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
-			book_authors_surrogate_key.author_surr_id as book_authors_surrogate_key_author_surr_id
+			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
-    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_surr_id
+    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
     group by
-			book_authors_surrogate_key_author_surr_id
+			book_authors_surrogate_key_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_book_authors_surrogate_key_book_surrs on joined_book_authors_surrogate_key_book_surrs.book_authors_surrogate_key_author_surr_id = users.user_id
+  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
@@ -515,7 +515,7 @@ _user_api_keys_user_ids.user_id,
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BookSurrs, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -551,9 +551,9 @@ users.deleted_at,
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_book_surrs.__books
-		, joined_book_authors_surrogate_key_book_surrs.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
+		joined_book_authors_surrogate_key_books.__books
+		, joined_book_authors_surrogate_key_books.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -578,20 +578,20 @@ left join (
 			, pseudonym
   ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
 
--- M2M join generated from "book_authors_surrogate_key_book_surr_id_fkey"
+-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
-			book_authors_surrogate_key.author_surr_id as book_authors_surrogate_key_author_surr_id
+			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
-    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_surr_id
+    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
     group by
-			book_authors_surrogate_key_author_surr_id
+			book_authors_surrogate_key_author_id
 			, books.book_id
 			, pseudonym
-  ) as joined_book_authors_surrogate_key_book_surrs on joined_book_authors_surrogate_key_book_surrs.book_authors_surrogate_key_author_surr_id = users.user_id
+  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
 
 -- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
@@ -649,7 +649,7 @@ _user_api_keys_user_ids.user_id,
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BookSurrs, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}

@@ -26,7 +26,7 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
-	UserJoin *User `json:"-" db:"user_user_api_key_id" openapi-go:"ignore"` // O2O (inferred)
+	UserJoin *User `json:"-" db:"user_user_api_key_id" openapi-go:"ignore"` // O2O users (inferred)
 }
 
 // UserAPIKeyCreateParams represents insert params for 'xo_tests.user_api_keys'.
@@ -103,7 +103,7 @@ func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOpti
 }
 
 type UserAPIKeyJoins struct {
-	User bool
+	User bool // O2O users
 }
 
 // WithUserAPIKeyJoin joins with the given tables.

@@ -21,7 +21,7 @@ type WorkItem struct {
 	WorkItemID int64   `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
 	Title      *string `json:"title" db:"title" required:"true"`             // title
 
-	DemoWorkItemJoin *DemoWorkItem `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"` // O2O (inferred)
+	DemoWorkItemJoin *DemoWorkItem `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"` // O2O demo_work_items (inferred)
 }
 
 // WorkItemCreateParams represents insert params for 'xo_tests.work_items'.
@@ -69,7 +69,7 @@ func WithWorkItemLimit(limit int) WorkItemSelectConfigOption {
 type WorkItemOrderBy = string
 
 type WorkItemJoins struct {
-	DemoWorkItem bool
+	DemoWorkItem bool // O2O demo_work_items
 }
 
 // WithWorkItemJoin joins with the given tables.

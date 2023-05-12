@@ -23,8 +23,8 @@ type BookAuthor struct {
 	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true"`  // author_id
 	Pseudonym *string   `json:"pseudonym" db:"pseudonym" required:"true"` // pseudonym
 
-	BooksJoinAuthor *[]BookAuthor_Book   `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M
-	AuthorsJoin     *[]BookAuthor_Author `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M
+	AuthorBooksJoinBA *[]Book__BA_BookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
+	BookAuthorsJoinBA *[]User__BA_BookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
 }
 
 // BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
@@ -84,8 +84,8 @@ func WithBookAuthorLimit(limit int) BookAuthorSelectConfigOption {
 type BookAuthorOrderBy = string
 
 type BookAuthorJoins struct {
-	BooksAuthor bool
-	Authors     bool
+	BooksAuthor bool // M2M book_authors
+	AuthorsBook bool // M2M book_authors
 }
 
 // WithBookAuthorJoin joins with the given tables.
@@ -93,19 +93,19 @@ func WithBookAuthorJoin(joins BookAuthorJoins) BookAuthorSelectConfigOption {
 	return func(s *BookAuthorSelectConfig) {
 		s.joins = BookAuthorJoins{
 			BooksAuthor: s.joins.BooksAuthor || joins.BooksAuthor,
-			Authors:     s.joins.Authors || joins.Authors,
+			AuthorsBook: s.joins.AuthorsBook || joins.AuthorsBook,
 		}
 	}
 }
 
-// BookAuthor_Book represents a M2M join against "xo_tests.book_authors"
-type BookAuthor_Book struct {
+// Book__BA_BookAuthor represents a M2M join against "xo_tests.book_authors"
+type Book__BA_BookAuthor struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
 
-// BookAuthor_Author represents a M2M join against "xo_tests.book_authors"
-type BookAuthor_Author struct {
+// User__BA_BookAuthor represents a M2M join against "xo_tests.book_authors"
+type User__BA_BookAuthor struct {
 	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
 }
@@ -258,7 +258,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.Authors, bookID, authorID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/db.Query: %w", err))
 	}
@@ -333,7 +333,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.Authors, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
 	}
@@ -410,7 +410,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.Authors, authorID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, authorID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
 	}
