@@ -1015,6 +1015,7 @@ cc_label:
 			}
 		outer:
 			// TODO need dual M2O-M2M and O2M-O2O checks with reversed ref checks. else generated O2Os from M2Os might clash and we wont know
+			// TODO proper pre or postprocessing to simply generated names (remove suffix if not really needed, etc.)
 			switch card {
 			case M2M:
 				if c.ColumnName == constraint.ColumnName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2M {
@@ -1066,7 +1067,6 @@ cc_label:
 				IsInferredO2O:  true,
 			})
 
-			// TODO PK is Fk gen O2O on other side
 			t := tables[constraint.TableName]
 			// fmt.Printf("%s: t.PrimaryKeys: %v\n", constraint.TableName, t.PrimaryKeys)
 			// fmt.Printf("%s: t.ForeignKeys: %v\n", constraint.TableName, t.ForeignKeys)

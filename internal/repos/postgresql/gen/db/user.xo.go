@@ -39,14 +39,14 @@ type User struct {
 	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
 	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
-	NotificationsJoinReceiver     *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
-	NotificationsJoinSender       *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
-	TimeEntriesJoin               *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
-	UserAPIKeyJoin                *UserAPIKey            `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O user_api_keys (inferred)
-	UserNotificationsJoin         *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
-	MemberTeamsJoin               *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
+	ReceiverNotificationsJoin     *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
+	SenderNotificationsJoin       *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
+	UserTimeEntriesJoin           *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
+	UserAPIKeyUserJoin            *UserAPIKey            `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O user_api_keys (inferred)
+	UserUserNotificationsJoin     *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
+	MemberTeamsJoinUT             *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
 	AssignedUserWorkItemsJoinWIAU *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemCommentsJoin          *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
+	UserWorkItemCommentsJoin      *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
 
 }
 

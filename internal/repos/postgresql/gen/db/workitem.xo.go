@@ -34,12 +34,12 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoTwoWorkItemJoin           *DemoTwoWorkItem       `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O demo_two_work_items (inferred)
-	DemoWorkItemJoin              *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	TimeEntriesJoin               *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O work_items
-	WorkItemAssignedUsersJoinWIAU *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemCommentsJoin          *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
-	WorkItemWorkItemTagsJoin      *[]WorkItemTag         `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	DemoTwoWorkItemWorkItemJoin  *DemoTwoWorkItem       `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O demo_two_work_items (inferred)
+	DemoWorkItemWorkItemJoin     *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	WorkItemTimeEntriesJoin      *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O work_items
+	WorkItemAssignedUsersJoin    *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemWorkItemCommentsJoin *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
+	WorkItemWorkItemTagsJoin     *[]WorkItemTag         `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
 
 }
 

@@ -29,11 +29,11 @@ type Project struct {
 	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true"`                                              // created_at
 	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true"`                                              // updated_at
 
-	ActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O projects
-	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O projects
-	TeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // M2O projects
-	WorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // M2O projects
-	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O projects
+	ProjectActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O projects
+	ProjectKanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O projects
+	ProjectTeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // M2O projects
+	ProjectWorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // M2O projects
+	ProjectWorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O projects
 
 }
 
