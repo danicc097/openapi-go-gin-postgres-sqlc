@@ -3538,7 +3538,11 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			joinName := c.TableName + "_" + inflector.Pluralize(lookupName)
 			typ = camelExport(singularize(c.RefTableName))
-			goName = camelExport(strings.TrimSuffix(c.LookupRefColumn, "_id")) + inflector.Pluralize(camelExport(lookupName)) + "Join"
+			m2mJoinName := inflector.Singularize(camelExport(strings.TrimSuffix(c.LookupColumn, "_id")))
+			m2mName := camelExport(inflector.Pluralize(strings.TrimSuffix(c.ColumnName, "_id")))
+			// e.g. joining books.book_id , users.user_id via publication_author.author_id/publication_id
+			// we get PublicationAuthorsJoin on books and AuthorPublicationsJoin on users which is more descriptive
+			goName = m2mJoinName + m2mName + "Join"
 
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)

@@ -27,10 +27,10 @@ type User struct {
 	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true"` // created_at
 	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at" required:"true"` // deleted_at
 
-	UserBooksJoinBA           *[]Book__BA_User   `json:"-" db:"book_authors_books" openapi-go:"ignore"`               // M2M book_authors
-	UserBooksJoinBASK         *[]Book__BASK_User `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	AuthorBooksJoinBA         *[]Book__BA_User   `json:"-" db:"book_authors_books" openapi-go:"ignore"`               // M2M book_authors
+	AuthorBooksJoinBASK       *[]Book__BASK_User `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 	BookReviewsJoin           *[]BookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                     // M2O users
-	UserBooksJoin             *[]Book            `json:"-" db:"book_sellers_books" openapi-go:"ignore"`               // M2M book_sellers
+	SellerBooksJoin           *[]Book            `json:"-" db:"book_sellers_books" openapi-go:"ignore"`               // M2M book_sellers
 	NotificationsJoinReceiver *[]Notification    `json:"-" db:"notifications_receiver" openapi-go:"ignore"`           // M2O users
 	NotificationsJoinSender   *[]Notification    `json:"-" db:"notifications_sender" openapi-go:"ignore"`             // M2O users
 	UserAPIKeyJoin            *UserAPIKey        `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`             // O2O user_api_keys (inferred)
