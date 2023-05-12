@@ -173,9 +173,9 @@ func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 type WorkItemJoins struct {
 	DemoTwoWorkItem  bool // O2O demo_two_work_items
 	DemoWorkItem     bool // O2O demo_work_items
-	TimeEntries      bool // M2O work_items
+	TimeEntries      bool // M2O time_entries
 	AssignedUsers    bool // M2M work_item_assigned_user
-	WorkItemComments bool // M2O work_items
+	WorkItemComments bool // M2O work_item_comments
 	WorkItemTags     bool // M2M work_item_work_item_tag
 }
 

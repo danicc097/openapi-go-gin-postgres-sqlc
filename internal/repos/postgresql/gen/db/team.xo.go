@@ -113,7 +113,7 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 
 type TeamJoins struct {
 	Project     bool // O2O projects
-	TimeEntries bool // M2O teams
+	TimeEntries bool // M2O time_entries
 	Members     bool // M2M user_team
 	WorkItem    bool // O2O work_items
 }

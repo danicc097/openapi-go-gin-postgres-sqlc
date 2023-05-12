@@ -121,11 +121,11 @@ func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 }
 
 type ProjectJoins struct {
-	Activities    bool // M2O projects
-	KanbanSteps   bool // M2O projects
-	Teams         bool // M2O projects
-	WorkItemTags  bool // M2O projects
-	WorkItemTypes bool // M2O projects
+	Activities    bool // M2O activities
+	KanbanSteps   bool // M2O kanban_steps
+	Teams         bool // M2O teams
+	WorkItemTags  bool // M2O work_item_tags
+	WorkItemTypes bool // M2O work_item_types
 }
 
 // WithProjectJoin joins with the given tables.

@@ -118,10 +118,10 @@ func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 type UserJoins struct {
 	BooksAuthor           bool // M2M book_authors
 	BooksAuthorBooks      bool // M2M book_authors_surrogate_key
-	BookReviews           bool // M2O users
+	BookReviews           bool // M2O book_reviews
 	BooksSeller           bool // M2M book_sellers
-	NotificationsReceiver bool // M2O users
-	NotificationsSender   bool // M2O users
+	NotificationsReceiver bool // M2O notifications
+	NotificationsSender   bool // M2O notifications
 	UserAPIKey            bool // O2O user_api_keys
 }
 

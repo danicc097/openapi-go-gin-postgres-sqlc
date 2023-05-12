@@ -95,7 +95,7 @@ const ()
 
 type ActivityJoins struct {
 	Project     bool // O2O projects
-	TimeEntries bool // M2O activities
+	TimeEntries bool // M2O time_entries
 }
 
 // WithActivityJoin joins with the given tables.

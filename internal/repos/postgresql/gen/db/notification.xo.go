@@ -144,7 +144,7 @@ func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConf
 type NotificationJoins struct {
 	UserReceiver      bool // O2O users
 	UserSender        bool // O2O users
-	UserNotifications bool // M2O notifications
+	UserNotifications bool // M2O user_notifications
 }
 
 // WithNotificationJoin joins with the given tables.

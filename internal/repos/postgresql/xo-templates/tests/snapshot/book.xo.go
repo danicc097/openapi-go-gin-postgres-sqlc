@@ -74,7 +74,7 @@ type BookOrderBy = string
 type BookJoins struct {
 	AuthorsBook      bool // M2M book_authors
 	AuthorsBookUsers bool // M2M book_authors_surrogate_key
-	BookReviews      bool // M2O books
+	BookReviews      bool // M2O book_reviews
 	Sellers          bool // M2M book_sellers
 }
 

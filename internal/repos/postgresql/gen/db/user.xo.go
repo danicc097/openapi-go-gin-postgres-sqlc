@@ -182,14 +182,14 @@ func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 }
 
 type UserJoins struct {
-	NotificationsReceiver bool // M2O users
-	NotificationsSender   bool // M2O users
-	TimeEntries           bool // M2O users
+	NotificationsReceiver bool // M2O notifications
+	NotificationsSender   bool // M2O notifications
+	TimeEntries           bool // M2O time_entries
 	UserAPIKey            bool // O2O user_api_keys
-	UserNotifications     bool // M2O users
+	UserNotifications     bool // M2O user_notifications
 	TeamsMember           bool // M2M user_team
 	WorkItemsAssignedUser bool // M2M work_item_assigned_user
-	WorkItemComments      bool // M2O users
+	WorkItemComments      bool // M2O work_item_comments
 }
 
 // WithUserJoin joins with the given tables.

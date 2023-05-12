@@ -1951,14 +1951,14 @@ type %s struct {
 			}
 		case M2O:
 			if c.RefTableName == sqlname {
-				notes += string(c.Cardinality) + " " + c.RefTableName
+				notes += string(c.Cardinality) + " " + c.TableName
 				joinName = camelExport(c.TableName)
 				if c.JoinTableClash {
 					joinName = joinName + camelExport(c.ColumnName)
 				}
 			}
 			if c.TableName == sqlname {
-				notes += string(c.Cardinality) + " " + c.TableName
+				notes += string(c.Cardinality) + " " + c.RefTableName
 				joinName = camelExport(c.RefTableName)
 				if c.JoinTableClash {
 					joinName = joinName + camelExport(c.RefColumnName)
