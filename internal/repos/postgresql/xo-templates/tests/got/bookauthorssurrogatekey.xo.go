@@ -24,8 +24,8 @@ type BookAuthorsSurrogateKey struct {
 	AuthorID                  uuid.UUID `json:"authorID" db:"author_id" required:"true"`                                      // author_id
 	Pseudonym                 *string   `json:"pseudonym" db:"pseudonym" required:"true"`                                     // pseudonym
 
-	AuthorBooksJoinBASK *[]Book__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	BookAuthorsJoinBASK *[]User__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	AuthorBooksJoin *[]Book__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	BookAuthorsJoin *[]User__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 }
 
 // BookAuthorsSurrogateKeyCreateParams represents insert params for 'xo_tests.book_authors_surrogate_key'.

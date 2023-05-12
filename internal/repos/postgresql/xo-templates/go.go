@@ -3527,6 +3527,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 	if !ok {
 		return "", nil
 	}
+	var structFields []string
 	for _, c := range cc {
 		if c.Type != "foreign_key" {
 			continue
@@ -3551,7 +3552,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				typ = typ + "__" + toAcronym(c.TableName) + "_" + camelExport(singularize(t.SQLName))
 			}
 
-			if c.JoinTableClash {
+			if !structFieldIsUnique(structFields, goName) {
 				goName = goName + toAcronym(c.TableName)
 			}
 
@@ -3567,6 +3568,8 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				joinName = inflector.Pluralize(c.TableName)
 				if c.JoinTableClash {
 					joinName = joinName + "_" + c.ColumnName
+				}
+				if !structFieldIsUnique(structFields, goName) {
 					goName = goName + toAcronym(c.ColumnName)
 				}
 			}
@@ -3580,6 +3583,8 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				joinName = inflector.Pluralize(c.RefTableName)
 				if c.JoinTableClash {
 					joinName = joinName + "_" + c.RefColumnName
+				}
+				if !structFieldIsUnique(structFields, goName) {
 					goName = goName + toAcronym(c.RefColumnName)
 				}
 			}
@@ -3618,7 +3623,8 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
 				joinName := joinPrefix + inflector.Singularize(c.ColumnName)
-				if c.JoinTableClash {
+
+				if !structFieldIsUnique(structFields, goName) {
 					goName = goName + toAcronym(c.ColumnName)
 				}
 
@@ -3636,9 +3642,20 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		default:
 			continue
 		}
+		structFields = append(structFields, goName)
 	}
 
 	return buf.String(), nil
+}
+
+func structFieldIsUnique(structFields []string, goName string) bool {
+	clash := false
+	for _, sf := range structFields {
+		if goName == sf {
+			clash = true
+		}
+	}
+	return !clash
 }
 
 // short generates a safe Go identifier for typ. typ is first checked

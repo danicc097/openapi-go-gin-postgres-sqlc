@@ -21,7 +21,7 @@ type Book struct {
 	BookID int    `json:"bookID" db:"book_id" required:"true"` // book_id
 	Name   string `json:"name" db:"name" required:"true"`      // name
 
-	BookAuthorsJoinBA   *[]User__BA_Book   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
+	BookAuthorsJoin     *[]User__BA_Book   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
 	BookAuthorsJoinBASK *[]User__BASK_Book `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 	BookBookReviewsJoin *[]BookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O books
 	BookSellersJoin     *[]User            `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"`               // M2M book_sellers

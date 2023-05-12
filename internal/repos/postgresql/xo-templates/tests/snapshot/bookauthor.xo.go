@@ -23,8 +23,8 @@ type BookAuthor struct {
 	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true"`  // author_id
 	Pseudonym *string   `json:"pseudonym" db:"pseudonym" required:"true"` // pseudonym
 
-	AuthorBooksJoinBA *[]Book__BA_BookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
-	BookAuthorsJoinBA *[]User__BA_BookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
+	AuthorBooksJoin *[]Book__BA_BookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
+	BookAuthorsJoin *[]User__BA_BookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
 }
 
 // BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.

@@ -19,8 +19,8 @@ type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	Member uuid.UUID `json:"member" db:"member" required:"true"`  // member
 
-	MemberTeamsJoinUT *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
-	TeamMembersJoin   *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
+	MemberTeamsJoin *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
+	TeamMembersJoin *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
 
 }
 
