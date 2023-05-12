@@ -6,6 +6,11 @@ drop schema if exists xo_tests cascade;
 
 create schema if not exists xo_tests;
 
+create table xo_tests.dummy_join (
+  dummy_join_id serial primary key
+  , name text
+);
+
 create table xo_tests.user_api_keys (
   user_api_key_id serial primary key
   , api_key text not null unique
@@ -115,6 +120,8 @@ create table xo_tests.pag_element (
   paginated_element_id uuid default gen_random_uuid () primary key
   , name text not null
   , created_at timestamp with time zone default current_timestamp not null unique
+  , dummy int -- FIXME not inferring
+  , foreign key (dummy) references xo_tests.dummy_join (dummy_join_id) on delete cascade
 );
 
 do $BODY$

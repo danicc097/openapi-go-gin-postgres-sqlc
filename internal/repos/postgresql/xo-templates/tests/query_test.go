@@ -27,7 +27,7 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 
 	ctx := context.Background()
 
-	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add((24+1)*time.Hour), db.WithPagElementLimit(1))
+	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add((24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
 	assert.NoError(t, err)
 	assert.Len(t, ee, 1)
 	assert.Equal(t, ee[0].Name, "element +2 days")
