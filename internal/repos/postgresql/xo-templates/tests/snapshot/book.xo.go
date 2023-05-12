@@ -198,18 +198,18 @@ func BookPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookS
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
 		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_author_surrs.__users
 		, joined_book_authors_surrogate_key_author_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_author_surrs.__users is not null), '{}') end) as book_authors_surrogate_key_author_surrs,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
 		`FROM xo_tests.books ` +
@@ -299,18 +299,18 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
 		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_author_surrs.__users
 		, joined_book_authors_surrogate_key_author_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_author_surrs.__users is not null), '{}') end) as book_authors_surrogate_key_author_surrs,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
 		`FROM xo_tests.books ` +

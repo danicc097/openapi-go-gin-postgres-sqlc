@@ -363,11 +363,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
@@ -507,11 +507,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
@@ -654,11 +654,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
@@ -799,11 +799,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
@@ -946,11 +946,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
@@ -1091,11 +1091,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
@@ -1236,11 +1236,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
@@ -1381,11 +1381,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
@@ -1528,11 +1528,11 @@ users.deleted_at,
 (case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $7::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,

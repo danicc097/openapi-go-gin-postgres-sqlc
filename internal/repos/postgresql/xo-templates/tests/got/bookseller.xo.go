@@ -141,11 +141,11 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +
@@ -209,11 +209,11 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +
@@ -279,11 +279,11 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +

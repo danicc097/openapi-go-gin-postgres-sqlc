@@ -211,7 +211,7 @@ work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
@@ -265,7 +265,7 @@ work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
@@ -322,7 +322,7 @@ work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
@@ -381,7 +381,7 @@ work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
@@ -442,7 +442,7 @@ work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
@@ -503,7 +503,7 @@ work_item_tags.description,
 work_item_tags.color,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +

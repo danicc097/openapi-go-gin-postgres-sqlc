@@ -278,18 +278,18 @@ users.api_key_id,
 users.created_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_books.__books
 		, joined_book_authors_books.pseudonym
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_book_surrs.__books
 		, joined_book_authors_surrogate_key_book_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
@@ -411,18 +411,18 @@ users.api_key_id,
 users.created_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_books.__books
 		, joined_book_authors_books.pseudonym
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_book_surrs.__books
 		, joined_book_authors_surrogate_key_book_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
@@ -545,18 +545,18 @@ users.api_key_id,
 users.created_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_books.__books
 		, joined_book_authors_books.pseudonym
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_book_surrs.__books
 		, joined_book_authors_surrogate_key_book_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,

@@ -211,12 +211,12 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 book_authors.author_id,
 book_authors.pseudonym,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_books.__books
 		, joined_book_authors_books.pseudonym
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
 		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
@@ -286,12 +286,12 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 book_authors.author_id,
 book_authors.pseudonym,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_books.__books
 		, joined_book_authors_books.pseudonym
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
 		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
@@ -363,12 +363,12 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 book_authors.author_id,
 book_authors.pseudonym,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_books.__books
 		, joined_book_authors_books.pseudonym
 		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
 		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +

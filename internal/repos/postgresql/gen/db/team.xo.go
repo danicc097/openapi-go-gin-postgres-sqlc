@@ -234,7 +234,7 @@ teams.updated_at,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
@@ -306,7 +306,7 @@ teams.updated_at,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
@@ -381,7 +381,7 @@ teams.updated_at,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
@@ -458,7 +458,7 @@ teams.updated_at,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
@@ -537,7 +537,7 @@ teams.updated_at,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
@@ -616,7 +616,7 @@ teams.updated_at,
 (case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
 (case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +

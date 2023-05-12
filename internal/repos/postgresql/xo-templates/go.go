@@ -2801,16 +2801,8 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 // M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
 
 const (
-	/*
-		remove null joins in M2M:
-		(case when $1::boolean = true then COALESCE(array_remove(
-			ARRAY_AGG((joined_books.__books, joined_books.pseudonym)), ROW(NULL::record, NULL::text)
-		), '{}') END) AS books,
-		(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((joined_books.__books, joined_books.pseudonym)) filter (where joined_books.__books is not null), '{}') END) AS books,
-	*/
 	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}
 		{{- range .LookupExtraCols }}
 		, joined_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}

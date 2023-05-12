@@ -211,12 +211,12 @@ book_authors_surrogate_key.book_surr_id,
 book_authors_surrogate_key.author_surr_id,
 book_authors_surrogate_key.pseudonym,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_book_surrs.__books
 		, joined_book_authors_surrogate_key_book_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_author_surrs.__users
 		, joined_book_authors_surrogate_key_author_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_author_surrs.__users is not null), '{}') end) as book_authors_surrogate_key_author_surrs ` +
@@ -285,12 +285,12 @@ book_authors_surrogate_key.book_surr_id,
 book_authors_surrogate_key.author_surr_id,
 book_authors_surrogate_key.pseudonym,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_book_surrs.__books
 		, joined_book_authors_surrogate_key_book_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_author_surrs.__users
 		, joined_book_authors_surrogate_key_author_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_author_surrs.__users is not null), '{}') end) as book_authors_surrogate_key_author_surrs ` +
@@ -361,12 +361,12 @@ book_authors_surrogate_key.book_surr_id,
 book_authors_surrogate_key.author_surr_id,
 book_authors_surrogate_key.pseudonym,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_book_surrs.__books
 		, joined_book_authors_surrogate_key_book_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_author_surrs.__users
 		, joined_book_authors_surrogate_key_author_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_author_surrs.__users is not null), '{}') end) as book_authors_surrogate_key_author_surrs ` +
@@ -439,12 +439,12 @@ book_authors_surrogate_key.book_surr_id,
 book_authors_surrogate_key.author_surr_id,
 book_authors_surrogate_key.pseudonym,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_book_surrs.__books
 		, joined_book_authors_surrogate_key_book_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_author_surrs.__users
 		, joined_book_authors_surrogate_key_author_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_author_surrs.__users is not null), '{}') end) as book_authors_surrogate_key_author_surrs ` +
@@ -517,12 +517,12 @@ book_authors_surrogate_key.book_surr_id,
 book_authors_surrogate_key.author_surr_id,
 book_authors_surrogate_key.pseudonym,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_book_surrs.__books
 		, joined_book_authors_surrogate_key_book_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_book_surrs.__books is not null), '{}') end) as book_authors_surrogate_key_book_surrs,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_author_surrs.__users
 		, joined_book_authors_surrogate_key_author_surrs.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_author_surrs.__users is not null), '{}') end) as book_authors_surrogate_key_author_surrs ` +
