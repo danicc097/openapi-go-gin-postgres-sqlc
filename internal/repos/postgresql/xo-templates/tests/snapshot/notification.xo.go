@@ -24,8 +24,8 @@ type Notification struct {
 	Sender         uuid.UUID  `json:"sender" db:"sender" required:"true"`                  // sender
 	Receiver       *uuid.UUID `json:"receiver" db:"receiver" required:"true"`              // receiver
 
-	UserJoinReceiver *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O (generated from M2O)
-	UserJoinSender   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O (generated from M2O)
+	UserReceiverJoin *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
+	UserSenderJoin   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
 }
 
 // NotificationCreateParams represents insert params for 'xo_tests.notifications'.
@@ -85,8 +85,8 @@ func WithNotificationLimit(limit int) NotificationSelectConfigOption {
 type NotificationOrderBy = string
 
 type NotificationJoins struct {
-	UserReceiver bool
-	UserSender   bool
+	UserReceiver bool // O2O users
+	UserSender   bool // O2O users
 }
 
 // WithNotificationJoin joins with the given tables.
@@ -198,18 +198,18 @@ func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificat
 notifications.body,
 notifications.sender,
 notifications.receiver,
-(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender ` +
+(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender ` +
 		`FROM xo_tests.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join xo_tests.users as _receivers on _receivers.user_id = notifications.receiver
+left join xo_tests.users as _users_receivers on _users_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join xo_tests.users as _senders on _senders.user_id = notifications.sender` +
-		` WHERE notifications.notification_id > $3 GROUP BY _receivers.user_id,
-      _receivers.user_id,
+left join xo_tests.users as _users_senders on _users_senders.user_id = notifications.sender` +
+		` WHERE notifications.notification_id > $3 GROUP BY _users_receivers.user_id,
+      _users_receivers.user_id,
 	notifications.notification_id, 
-_senders.user_id,
-      _senders.user_id,
+_users_senders.user_id,
+      _users_senders.user_id,
 	notifications.notification_id `
 	sqlstr += c.limit
 
@@ -242,18 +242,18 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 notifications.body,
 notifications.sender,
 notifications.receiver,
-(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender ` +
+(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender ` +
 		`FROM xo_tests.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join xo_tests.users as _receivers on _receivers.user_id = notifications.receiver
+left join xo_tests.users as _users_receivers on _users_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join xo_tests.users as _senders on _senders.user_id = notifications.sender` +
-		` WHERE notifications.notification_id = $3 GROUP BY _receivers.user_id,
-      _receivers.user_id,
+left join xo_tests.users as _users_senders on _users_senders.user_id = notifications.sender` +
+		` WHERE notifications.notification_id = $3 GROUP BY _users_receivers.user_id,
+      _users_receivers.user_id,
 	notifications.notification_id, 
-_senders.user_id,
-      _senders.user_id,
+_users_senders.user_id,
+      _users_senders.user_id,
 	notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -288,18 +288,18 @@ func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ..
 notifications.body,
 notifications.sender,
 notifications.receiver,
-(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender ` +
+(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender ` +
 		`FROM xo_tests.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join xo_tests.users as _receivers on _receivers.user_id = notifications.receiver
+left join xo_tests.users as _users_receivers on _users_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join xo_tests.users as _senders on _senders.user_id = notifications.sender` +
-		` WHERE notifications.sender = $3 GROUP BY _receivers.user_id,
-      _receivers.user_id,
+left join xo_tests.users as _users_senders on _users_senders.user_id = notifications.sender` +
+		` WHERE notifications.sender = $3 GROUP BY _users_receivers.user_id,
+      _users_receivers.user_id,
 	notifications.notification_id, 
-_senders.user_id,
-      _senders.user_id,
+_users_senders.user_id,
+      _users_senders.user_id,
 	notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

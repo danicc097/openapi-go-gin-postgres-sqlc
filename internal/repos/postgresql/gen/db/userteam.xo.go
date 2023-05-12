@@ -19,8 +19,8 @@ type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	Member uuid.UUID `json:"member" db:"member" required:"true"`  // member
 
-	TeamsJoinMember *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M
-	MembersJoin     *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M
+	MemberTeamsJoin *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
+	TeamMembersJoin *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
 
 }
 
@@ -77,8 +77,8 @@ type UserTeamOrderBy = string
 const ()
 
 type UserTeamJoins struct {
-	TeamsMember bool
-	Members     bool
+	TeamsMember bool // M2M user_team
+	Members     bool // M2M user_team
 }
 
 // WithUserTeamJoin joins with the given tables.
@@ -144,11 +144,11 @@ func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...Use
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
 		`FROM public.user_team ` +
@@ -214,11 +214,11 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
 		`FROM public.user_team ` +
@@ -282,11 +282,11 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
 		`FROM public.user_team ` +
@@ -352,11 +352,11 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
 		`FROM public.user_team ` +

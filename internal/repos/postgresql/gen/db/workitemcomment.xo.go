@@ -28,8 +28,8 @@ type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
 	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
-	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O (generated from M2O)
+	UserUserJoin         *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
+	WorkItemWorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
 
 }
 
@@ -111,8 +111,8 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 }
 
 type WorkItemCommentJoins struct {
-	User     bool
-	WorkItem bool
+	User     bool // O2O users
+	WorkItem bool // O2O work_items
 }
 
 // WithWorkItemCommentJoin joins with the given tables.
@@ -226,18 +226,18 @@ work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
-(case when $1::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id,
+(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.work_item_comments ` +
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _user_ids on _user_ids.user_id = work_item_comments.user_id
+left join users as _users_user_ids on _users_user_ids.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_ids on _work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY _user_ids.user_id,
-      _user_ids.user_id,
+left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY _users_user_ids.user_id,
+      _users_user_ids.user_id,
 	work_item_comments.work_item_comment_id, 
-_work_item_ids.work_item_id,
-      _work_item_ids.work_item_id,
+_work_items_work_item_ids.work_item_id,
+      _work_items_work_item_ids.work_item_id,
 	work_item_comments.work_item_comment_id `
 	sqlstr += c.limit
 
@@ -272,18 +272,18 @@ work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
-(case when $1::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id,
+(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.work_item_comments ` +
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _user_ids on _user_ids.user_id = work_item_comments.user_id
+left join users as _users_user_ids on _users_user_ids.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_ids on _work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id = $3 GROUP BY _user_ids.user_id,
-      _user_ids.user_id,
+left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_comment_id = $3 GROUP BY _users_user_ids.user_id,
+      _users_user_ids.user_id,
 	work_item_comments.work_item_comment_id, 
-_work_item_ids.work_item_id,
-      _work_item_ids.work_item_id,
+_work_items_work_item_ids.work_item_id,
+      _work_items_work_item_ids.work_item_id,
 	work_item_comments.work_item_comment_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -320,18 +320,18 @@ work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
-(case when $1::boolean = true and _user_ids.user_id is not null then row(_user_ids.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id,
+(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.work_item_comments ` +
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _user_ids on _user_ids.user_id = work_item_comments.user_id
+left join users as _users_user_ids on _users_user_ids.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_ids on _work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_id = $3 GROUP BY _user_ids.user_id,
-      _user_ids.user_id,
+left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_id = $3 GROUP BY _users_user_ids.user_id,
+      _users_user_ids.user_id,
 	work_item_comments.work_item_comment_id, 
-_work_item_ids.work_item_id,
-      _work_item_ids.work_item_id,
+_work_items_work_item_ids.work_item_id,
+      _work_items_work_item_ids.work_item_id,
 	work_item_comments.work_item_comment_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

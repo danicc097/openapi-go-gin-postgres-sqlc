@@ -101,6 +101,32 @@ func IsLower(s string) bool {
 	return true
 }
 
+func toAcronym(input string) string {
+	acronym := ""
+
+	// Check if input is in snake_case or camelCase/PascalCase
+	if strings.Contains(input, "_") {
+		// Snake_case input
+		words := strings.Split(input, "_")
+		for _, word := range words {
+			if len(word) > 0 {
+				acronym += string(word[0])
+			}
+		}
+	} else {
+		// CamelCase or PascalCase input
+		var prev rune
+		for _, char := range input {
+			if unicode.IsUpper(char) && !unicode.IsUpper(prev) {
+				acronym += string(char)
+			}
+			prev = char
+		}
+	}
+
+	return strings.ToUpper(acronym)
+}
+
 // Init registers the template.
 func Init(ctx context.Context, f func(xo.TemplateType)) error {
 	knownTypes := map[string]bool{
@@ -988,7 +1014,8 @@ cc_label:
 				}
 			}
 		outer:
-			// TODO might need dual M2O-M2M and O2M-O2O checks with reversed ref checks
+			// TODO need dual M2O-M2M and O2M-O2O checks with reversed ref checks. else generated O2Os from M2Os might clash and we wont know
+			// TODO proper pre or postprocessing to simply generated names (remove suffix if not really needed, etc.)
 			switch card {
 			case M2M:
 				if c.ColumnName == constraint.ColumnName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2M {
@@ -1040,7 +1067,6 @@ cc_label:
 				IsInferredO2O:  true,
 			})
 
-			// TODO PK is Fk gen O2O on other side
 			t := tables[constraint.TableName]
 			// fmt.Printf("%s: t.PrimaryKeys: %v\n", constraint.TableName, t.PrimaryKeys)
 			// fmt.Printf("%s: t.ForeignKeys: %v\n", constraint.TableName, t.ForeignKeys)
@@ -1071,6 +1097,7 @@ cc_label:
 					ColumnName:     constraint.ColumnName,
 					JoinTableClash: joinTableClash,
 					IsInferredO2O:  true,
+					RefPKisFK:      true,
 				})
 			}
 
@@ -1139,6 +1166,13 @@ cc_label:
 			JoinTableClash: joinTableClash,
 		})
 	}
+
+	// check for name future struct field name and type clashes just once here at startup
+	// for _, t := range tables {
+	// 	t.SQLName
+	// 	for _, constraint := range constraints {
+	// 		}
+	// }
 
 	return cc, nil
 }
@@ -1743,7 +1777,7 @@ func (f *Funcs) initial_opts(v any) string {
 }
 
 // funcfn builds a type definition.
-func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint, t Table, tables Tables) string {
+func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constraint, t Table, tables Tables) string {
 	if len(constraints) > 0 {
 		// always run
 		f.loadConstraints(constraints, sqlname)
@@ -1800,7 +1834,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 	type %[1]sSelectConfig struct {
 		limit       string
 		orderBy     string
-		joins  %[1]sJoins`, name))
+		joins  %[1]sJoins`, tGoName))
 	if tableHasDeletedAt {
 		buf.WriteString(`
 			deletedAt   string`)
@@ -1817,7 +1851,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 				s.limit = fmt.Sprintf(" limit %%d ", limit)
 			}
 		}
-	}`, name))
+	}`, tGoName))
 
 	if tableHasDeletedAt {
 		buf.WriteString(fmt.Sprintf(`
@@ -1826,11 +1860,11 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 		return func(s *%[1]sSelectConfig) {
 			s.deletedAt = " not null "
 		}
-	}`, name))
+	}`, tGoName))
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-	type %[1]sOrderBy = string`, name))
+	type %[1]sOrderBy = string`, tGoName))
 
 	buf.WriteString(`
 	const (
@@ -1838,7 +1872,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 	for _, ob := range orderbys {
 		for _, opt := range orderByOpts {
 			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = " %s %s "
-			`, name, ob.GoName, opt[0], name, ob.SQLName, opt[1]))
+			`, tGoName, ob.GoName, opt[0], tGoName, ob.SQLName, opt[1]))
 		}
 	}
 	buf.WriteString(")\n")
@@ -1854,12 +1888,12 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 		}
 	}
 }
-	`, name))
+	`, tGoName))
 	}
 
 	var extraStructs []string
 
-	buf.WriteString(fmt.Sprintf("type %sJoins struct {\n", name))
+	buf.WriteString(fmt.Sprintf("type %sJoins struct {\n", tGoName))
 
 	var joinNames []string
 
@@ -1868,18 +1902,20 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 			continue
 		}
 		var joinName string
+		notes := "// "
 		switch c.Cardinality {
 		case M2M:
+			notes += string(c.Cardinality) + " " + c.TableName
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			joinName = camelExport(inflector.Pluralize(lookupName))
 			if c.JoinTableClash {
 				lc := strings.TrimSuffix(c.LookupColumn, "_id")
 				joinName = joinName + camelExport(lc)
 			}
+
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
-
 				originalStruct := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
 				tag := fmt.Sprintf("`json:\"%s\" db:\"%s\" required:\"true\"`", camel(originalStruct), inflector.Pluralize(strings.TrimSuffix(c.RefColumnName, "_id")))
 
@@ -1900,7 +1936,8 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
 				}
 				joinField := originalStruct + " " + originalStruct + " " + tag
-				st := name + "_" + camelExport(lookupName)
+				typ := camelExport(singularize(c.RefTableName))           // same typ as in struct
+				st := typ + "__" + toAcronym(c.TableName) + "_" + tGoName // unique suffixes
 				lookupTableSQLName := f.schema + "." + c.TableName
 				docstring := fmt.Sprintf("// %s represents a M2M join against %q", st, lookupTableSQLName)
 
@@ -1914,18 +1951,21 @@ type %s struct {
 			}
 		case M2O:
 			if c.RefTableName == sqlname {
+				notes += string(c.Cardinality) + " " + c.TableName
 				joinName = camelExport(c.TableName)
 				if c.JoinTableClash {
 					joinName = joinName + camelExport(c.ColumnName)
 				}
 			}
 			if c.TableName == sqlname {
+				notes += string(c.Cardinality) + " " + c.RefTableName
 				joinName = camelExport(c.RefTableName)
 				if c.JoinTableClash {
 					joinName = joinName + camelExport(c.RefColumnName)
 				}
 			}
 		case O2O:
+			notes += string(c.Cardinality) + " " + c.RefTableName
 			if c.TableName == sqlname {
 				joinName = camelExport(singularize(c.RefTableName))
 				if c.JoinTableClash {
@@ -1941,8 +1981,13 @@ type %s struct {
 		if joinName == "" {
 			continue
 		}
+		for _, name := range joinNames {
+			if name == joinName {
+				joinName = joinName + camelExport(c.RefTableName)
+			}
+		}
 		joinNames = append(joinNames, joinName)
-		buf.WriteString(fmt.Sprintf("%s bool\n", joinName))
+		buf.WriteString(fmt.Sprintf("%s bool %s\n", joinName, notes))
 	}
 	buf.WriteString("}\n")
 
@@ -1952,7 +1997,7 @@ type %s struct {
 func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		s.joins = %[1]sJoins{
-	`, name))
+	`, tGoName))
 
 	for _, j := range joinNames {
 		buf.WriteString(fmt.Sprintf("\t\t%[1]s:  s.joins.%[1]s || joins.%[1]s,\n", j))
@@ -2323,6 +2368,11 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				if joinName == "" {
 					continue
 				}
+				for _, name := range names {
+					if name == joinName {
+						joinName = joinName + camelExport(c.RefTableName)
+					}
+				}
 				names = append(names, joinName)
 			}
 		case []Field:
@@ -2377,6 +2427,11 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				}
 				if joinName == "" {
 					continue
+				}
+				for _, name := range names {
+					if name == joinName {
+						joinName = joinName + camelExport(c.RefTableName)
+					}
 				}
 				names = append(names, joinName)
 			}
@@ -2801,16 +2856,8 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 // M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
 
 const (
-	/*
-		remove null joins in M2M:
-		(case when $1::boolean = true then COALESCE(array_remove(
-			ARRAY_AGG((joined_books.__books, joined_books.pseudonym)), ROW(NULL::record, NULL::text)
-		), '{}') END) AS books,
-		(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((joined_books.__books, joined_books.pseudonym)) filter (where joined_books.__books is not null), '{}') END) AS books,
-	*/
 	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}
 		{{- range .LookupExtraCols }}
 		, joined_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}
@@ -2833,6 +2880,7 @@ const (
 )
 
 const (
+	// need group by in all
 	M2MJoin = `
 left join (
 	select
@@ -3122,17 +3170,18 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			// need to check RefTable PKs since this should get called when generating for a
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
+			params["Alias"] = "_" + c.RefTableName
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
 				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
-				params["Alias"] = "_" + c.RefTableName
 			}
 
 			joinTable := tables[c.RefTableName]
 			var joinTablePKGroupBys []string
 			for _, pk := range joinTable.PrimaryKeys {
 				if !(isSingleFK && isSinglePK) {
-					joinTablePKGroupBys = append(joinTablePKGroupBys, "_"+params["JoinTableAlias"].(string)+"."+pk.SQLName)
+					gb := params["Alias"].(string) + "_" + params["JoinTableAlias"].(string) + "." + pk.SQLName
+					joinTablePKGroupBys = append(joinTablePKGroupBys, gb)
 				}
 			}
 			params["JoinTablePKGroupBys"] = joinTablePKGroupBys
@@ -3478,6 +3527,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 	if !ok {
 		return "", nil
 	}
+	var structFields []string
 	for _, c := range cc {
 		if c.Type != "foreign_key" {
 			continue
@@ -3486,46 +3536,56 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		// sync with extratypes
 		switch c.Cardinality {
 		case M2M:
+			notes += " " + c.TableName
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			joinName := c.TableName + "_" + inflector.Pluralize(lookupName)
 			typ = camelExport(singularize(c.RefTableName))
-			goName = camelExport(singularize(lookupName))
-			goName = inflector.Pluralize(goName) + "Join"
+			m2mJoinName := inflector.Singularize(camelExport(strings.TrimSuffix(c.LookupColumn, "_id")))
+			m2mName := camelExport(inflector.Pluralize(strings.TrimSuffix(c.ColumnName, "_id")))
+			// e.g. joining books.book_id , users.user_id via publication_author.author_id/publication_id
+			// we get PublicationAuthorsJoin on books and AuthorPublicationsJoin on users which is more descriptive
+			goName = m2mJoinName + m2mName + "Join"
 
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
-				// prevent name clashing
-				typ = camelExport(singularize(t.SQLName)) + "_" + camelExport(singularize(lookupName))
+				typ = typ + "__" + toAcronym(c.TableName) + "_" + camelExport(singularize(t.SQLName))
 			}
 
-			if c.JoinTableClash {
-				lc := strings.TrimSuffix(c.LookupColumn, "_id")
-				// joinName = joinName + "_" + lc
-				goName = goName + camelExport(lc)
+			if !structFieldIsUnique(structFields, goName) {
+				goName = goName + toAcronym(c.TableName)
 			}
+
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case M2O:
 			if c.RefTableName == t.SQLName {
+				notes += " " + c.RefTableName
 				goName = camelExport(singularize(c.TableName))
 				typ = goName
-				goName = inflector.Pluralize(goName) + "Join"
+				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
+				goName = descName + inflector.Pluralize(goName) + "Join"
 				joinName = inflector.Pluralize(c.TableName)
 				if c.JoinTableClash {
 					joinName = joinName + "_" + c.ColumnName
-					goName = goName + camelExport(c.ColumnName)
+				}
+				if !structFieldIsUnique(structFields, goName) {
+					goName = goName + toAcronym(c.ColumnName)
 				}
 			}
 
 			if c.TableName == t.SQLName {
+				notes += " " + c.TableName
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
-				goName = inflector.Pluralize(goName) + "Join"
+				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
+				goName = descName + inflector.Pluralize(goName) + "Join"
 				joinName = inflector.Pluralize(c.RefTableName)
 				if c.JoinTableClash {
 					joinName = joinName + "_" + c.RefColumnName
-					goName = goName + camelExport(c.RefColumnName)
+				}
+				if !structFieldIsUnique(structFields, goName) {
+					goName = goName + toAcronym(c.RefColumnName)
 				}
 			}
 
@@ -3539,14 +3599,15 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			if c.TableName == t.SQLName {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
-				goName = goName + "Join"
+				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
+				goName = goName + descName + "Join"
 
+				notes += " " + c.RefTableName
 				if c.IsInferredO2O {
-					notes = " (inferred)"
+					notes += " (inferred)"
 				}
-
 				if c.IsGeneratedO2OFromM2O {
-					notes = " (generated from M2O)"
+					notes += " (generated from M2O)"
 				}
 
 				t := tables[c.TableName]
@@ -3557,14 +3618,14 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					}
 				}
 				isSingleFK, isSinglePK := analyzeField(t, f)
-
+				if isSingleFK && isSinglePK || c.RefPKisFK {
+					goName = camelExport(singularize(c.RefTableName)) + "Join" // duplicate names since its the same..
+				}
 				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
 				joinName := joinPrefix + inflector.Singularize(c.ColumnName)
-				if c.JoinTableClash {
-					goName = goName + camelExport(c.ColumnName)
-				}
 
-				if isSingleFK && isSinglePK {
+				if !structFieldIsUnique(structFields, goName) {
+					goName = goName + toAcronym(c.ColumnName)
 				}
 
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
@@ -3581,9 +3642,20 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		default:
 			continue
 		}
+		structFields = append(structFields, goName)
 	}
 
 	return buf.String(), nil
+}
+
+func structFieldIsUnique(structFields []string, goName string) bool {
+	clash := false
+	for _, sf := range structFields {
+		if goName == sf {
+			clash = true
+		}
+	}
+	return !clash
 }
 
 // short generates a safe Go identifier for typ. typ is first checked
@@ -4047,6 +4119,8 @@ type Constraint struct {
 	JoinTableClash        bool   // Whether other constraints join against the same table
 	IsInferredO2O         bool   // Whether this constraint has been generated from a foreign key
 	IsGeneratedO2OFromM2O bool
+	JoinStructFieldClash  bool // Whether 2 or more constraints of the same table have the same struct field name (and hence type as well)
+	RefPKisFK             bool
 }
 
 // Field is a field template.

@@ -32,9 +32,9 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O (generated from M2O)
-	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O (generated from M2O)
-	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
+	UserReceiverJoin                  *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
+	UserSenderJoin                    *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O users (generated from M2O)
+	NotificationUserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O notifications
 
 }
 
@@ -142,9 +142,9 @@ func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConf
 }
 
 type NotificationJoins struct {
-	UserReceiver      bool
-	UserSender        bool
-	UserNotifications bool
+	UserReceiver      bool // O2O users
+	UserSender        bool // O2O users
+	UserNotifications bool // M2O user_notifications
 }
 
 // WithNotificationJoin joins with the given tables.
@@ -268,14 +268,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender,
+(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _receivers on _receivers.user_id = notifications.receiver
+left join users as _users_receivers on _users_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _senders on _senders.user_id = notifications.sender
+left join users as _users_senders on _users_senders.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -285,11 +285,11 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id > $4 GROUP BY _receivers.user_id,
-      _receivers.user_id,
+		` WHERE notifications.notification_id > $4 GROUP BY _users_receivers.user_id,
+      _users_receivers.user_id,
 	notifications.notification_id, 
-_senders.user_id,
-      _senders.user_id,
+_users_senders.user_id,
+      _users_senders.user_id,
 	notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.limit
@@ -329,14 +329,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender,
+(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _receivers on _receivers.user_id = notifications.receiver
+left join users as _users_receivers on _users_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _senders on _senders.user_id = notifications.sender
+left join users as _users_senders on _users_senders.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -346,11 +346,11 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id = $4 GROUP BY _receivers.user_id,
-      _receivers.user_id,
+		` WHERE notifications.notification_id = $4 GROUP BY _users_receivers.user_id,
+      _users_receivers.user_id,
 	notifications.notification_id, 
-_senders.user_id,
-      _senders.user_id,
+_users_senders.user_id,
+      _users_senders.user_id,
 	notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.orderBy
@@ -392,14 +392,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and _receivers.user_id is not null then row(_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _senders.user_id is not null then row(_senders.*) end) as user_sender,
+(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _receivers on _receivers.user_id = notifications.receiver
+left join users as _users_receivers on _users_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _senders on _senders.user_id = notifications.sender
+left join users as _users_senders on _users_senders.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -409,11 +409,11 @@ left join (
     user_notifications
   group by
         notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6 GROUP BY _receivers.user_id,
-      _receivers.user_id,
+		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6 GROUP BY _users_receivers.user_id,
+      _users_receivers.user_id,
 	notifications.notification_id, 
-_senders.user_id,
-      _senders.user_id,
+_users_senders.user_id,
+      _users_senders.user_id,
 	notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id `
 	sqlstr += c.orderBy

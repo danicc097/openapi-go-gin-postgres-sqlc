@@ -34,12 +34,12 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoTwoWorkItemJoin  *DemoTwoWorkItem         `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O (inferred)
-	DemoWorkItemJoin     *DemoWorkItem            `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O (inferred)
-	TimeEntriesJoin      *[]TimeEntry             `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O
-	AssignedUsersJoin    *[]WorkItem_AssignedUser `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M
-	WorkItemCommentsJoin *[]WorkItemComment       `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O
-	WorkItemTagsJoin     *[]WorkItemTag           `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M
+	DemoTwoWorkItemWorkItemJoin  *DemoTwoWorkItem       `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O demo_two_work_items (inferred)
+	DemoWorkItemWorkItemJoin     *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	WorkItemTimeEntriesJoin      *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O work_items
+	WorkItemAssignedUsersJoin    *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemWorkItemCommentsJoin *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
+	WorkItemWorkItemTagsJoin     *[]WorkItemTag         `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
 
 }
 
@@ -171,12 +171,12 @@ func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 }
 
 type WorkItemJoins struct {
-	DemoTwoWorkItem  bool
-	DemoWorkItem     bool
-	TimeEntries      bool
-	AssignedUsers    bool
-	WorkItemComments bool
-	WorkItemTags     bool
+	DemoTwoWorkItem  bool // O2O demo_two_work_items
+	DemoWorkItem     bool // O2O demo_work_items
+	TimeEntries      bool // M2O time_entries
+	AssignedUsers    bool // M2M work_item_assigned_user
+	WorkItemComments bool // M2O work_item_comments
+	WorkItemTags     bool // M2M work_item_work_item_tag
 }
 
 // WithWorkItemJoin joins with the given tables.
@@ -193,8 +193,8 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	}
 }
 
-// WorkItem_AssignedUser represents a M2M join against "public.work_item_assigned_user"
-type WorkItem_AssignedUser struct {
+// User__WIAU_WorkItem represents a M2M join against "public.work_item_assigned_user"
+type User__WIAU_WorkItem struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
@@ -341,13 +341,13 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+
@@ -453,13 +453,13 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+
@@ -568,13 +568,13 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+
@@ -681,13 +681,13 @@ work_items.deleted_at,
 (case when $2::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+

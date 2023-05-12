@@ -139,7 +139,7 @@ func main() {
 		err = userSvc.AssignTeam(ctx, pool, u.UserID, team1.TeamID)
 		handleError(err)
 		// save up some extra calls
-		u.TeamsJoinMember = &[]db.Team{*team1}
+		u.MemberTeamsJoin = &[]db.Team{*team1}
 	}
 
 	/**

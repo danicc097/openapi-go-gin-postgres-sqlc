@@ -6,6 +6,8 @@ drop table if exists activities cascade;
 
 drop table if exists work_item_member cascade;
 
+drop table if exists work_item_assigned_user cascade;
+
 drop table if exists tasks cascade;
 
 drop table if exists work_item_fields cascade;

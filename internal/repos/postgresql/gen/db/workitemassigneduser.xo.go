@@ -25,8 +25,8 @@ type WorkItemAssignedUser struct {
 	AssignedUser uuid.UUID           `json:"assignedUser" db:"assigned_user" required:"true"`                        // assigned_user
 	Role         models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoinAssignedUser *[]WorkItemAssignedUser_WorkItem     `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M
-	AssignedUsersJoin         *[]WorkItemAssignedUser_AssignedUser `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M
+	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_WorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
+	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
 
@@ -89,8 +89,8 @@ type WorkItemAssignedUserOrderBy = string
 const ()
 
 type WorkItemAssignedUserJoins struct {
-	WorkItemsAssignedUser bool
-	AssignedUsers         bool
+	WorkItemsAssignedUser bool // M2M work_item_assigned_user
+	AssignedUsers         bool // M2M work_item_assigned_user
 }
 
 // WithWorkItemAssignedUserJoin joins with the given tables.
@@ -103,14 +103,14 @@ func WithWorkItemAssignedUserJoin(joins WorkItemAssignedUserJoins) WorkItemAssig
 	}
 }
 
-// WorkItemAssignedUser_WorkItem represents a M2M join against "public.work_item_assigned_user"
-type WorkItemAssignedUser_WorkItem struct {
+// WorkItem__WIAU_WorkItemAssignedUser represents a M2M join against "public.work_item_assigned_user"
+type WorkItem__WIAU_WorkItemAssignedUser struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
-// WorkItemAssignedUser_AssignedUser represents a M2M join against "public.work_item_assigned_user"
-type WorkItemAssignedUser_AssignedUser struct {
+// User__WIAU_WorkItemAssignedUser represents a M2M join against "public.work_item_assigned_user"
+type User__WIAU_WorkItemAssignedUser struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
@@ -216,12 +216,12 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
@@ -293,12 +293,12 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
@@ -368,12 +368,12 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
@@ -445,12 +445,12 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +

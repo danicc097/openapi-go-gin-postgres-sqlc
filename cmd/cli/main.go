@@ -115,13 +115,13 @@ func main() {
 
 	fmt.Printf("user: %+v\n", user)
 	// test correct queries
-	key := user.UserAPIKeyJoin.APIKey
+	key := user.UserAPIKeyUserJoin.APIKey
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
 	}
 	fmt.Printf("found user from its api key u: %+v\n", uak)
-	fmt.Printf("found user from its api key u (UserJoin): %+v\n", uak.UserJoin)
+	fmt.Printf("found user from its api key u (UserUserAPIKeyJoin): %+v\n", uak.UserUserAPIKeyJoin)
 
 	os.Exit(1)
 

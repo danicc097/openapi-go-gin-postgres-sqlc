@@ -18,8 +18,8 @@ type WorkItemWorkItemTag struct {
 	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
 	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
 
-	WorkItemTagsJoin         *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M
-	WorkItemsJoinWorkItemTag *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M
+	WorkItemWorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	WorkItemTagWorkItemsJoin *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M work_item_work_item_tag
 
 }
 
@@ -76,8 +76,8 @@ type WorkItemWorkItemTagOrderBy = string
 const ()
 
 type WorkItemWorkItemTagJoins struct {
-	WorkItemTags         bool
-	WorkItemsWorkItemTag bool
+	WorkItemTags         bool // M2M work_item_work_item_tag
+	WorkItemsWorkItemTag bool // M2M work_item_work_item_tag
 }
 
 // WithWorkItemWorkItemTagJoin joins with the given tables.
@@ -140,11 +140,11 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
@@ -206,11 +206,11 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
@@ -274,11 +274,11 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
@@ -344,11 +344,11 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +
@@ -414,11 +414,11 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 		`work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_work_item_tag ` +

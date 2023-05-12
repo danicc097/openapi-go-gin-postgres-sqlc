@@ -19,8 +19,8 @@ type BookSeller struct {
 	BookID int       `json:"bookID" db:"book_id" required:"true"` // book_id
 	Seller uuid.UUID `json:"seller" db:"seller" required:"true"`  // seller
 
-	SellersJoin     *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M
-	BooksJoinSeller *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M
+	BookSellersJoin *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
+	SellerBooksJoin *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
 }
 
 // BookSellerCreateParams represents insert params for 'xo_tests.book_sellers'.
@@ -74,8 +74,8 @@ func WithBookSellerLimit(limit int) BookSellerSelectConfigOption {
 type BookSellerOrderBy = string
 
 type BookSellerJoins struct {
-	Sellers     bool
-	BooksSeller bool
+	Sellers     bool // M2M book_sellers
+	BooksSeller bool // M2M book_sellers
 }
 
 // WithBookSellerJoin joins with the given tables.
@@ -141,11 +141,11 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +
@@ -209,11 +209,11 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +
@@ -279,11 +279,11 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
-		ARRAY_AGG((
+		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
 		`FROM xo_tests.book_sellers ` +
