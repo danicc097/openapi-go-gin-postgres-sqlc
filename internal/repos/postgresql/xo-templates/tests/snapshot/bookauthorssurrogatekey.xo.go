@@ -257,7 +257,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/db.Query: %w", err))
 	}

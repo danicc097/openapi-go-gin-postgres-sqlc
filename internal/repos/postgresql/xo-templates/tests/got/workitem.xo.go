@@ -186,7 +186,7 @@ left join xo_tests.demo_work_items as _demo_work_items_work_item_ids on _demo_wo
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", err))
 	}

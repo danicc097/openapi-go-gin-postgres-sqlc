@@ -273,7 +273,7 @@ books.book_id, books.book_id `
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/db.Query: %w", err))
 	}

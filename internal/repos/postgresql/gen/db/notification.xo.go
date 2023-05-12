@@ -296,7 +296,7 @@ joined_user_notifications.user_notifications, notifications.notification_id `
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, notificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, c.joins.UserNotifications, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/db.Query: %w", err))
 	}

@@ -226,7 +226,7 @@ left join users as _users_user_api_key_ids on _users_user_api_key_ids.api_key_id
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, userAPIKeyID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/db.Query: %w", err))
 	}

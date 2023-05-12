@@ -206,7 +206,7 @@ _users_reviewers.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, bookReviewID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookReviewID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/db.Query: %w", err))
 	}
@@ -246,7 +246,7 @@ _users_reviewers.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/db.Query: %w", err))
 	}

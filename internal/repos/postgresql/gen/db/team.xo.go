@@ -277,7 +277,7 @@ _work_items_team_ids.team_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
 	}
@@ -349,7 +349,7 @@ _work_items_team_ids.team_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
 	}

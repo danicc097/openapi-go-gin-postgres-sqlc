@@ -382,7 +382,7 @@ _user_api_keys_user_ids.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
 	}

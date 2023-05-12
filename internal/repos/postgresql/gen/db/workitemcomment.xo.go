@@ -243,7 +243,7 @@ _work_items_work_item_ids.work_item_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/db.Query: %w", err))
 	}

@@ -236,7 +236,7 @@ left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.w
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/db.Query: %w", err))
 	}

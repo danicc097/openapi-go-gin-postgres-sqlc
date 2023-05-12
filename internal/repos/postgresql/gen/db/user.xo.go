@@ -463,7 +463,7 @@ joined_work_item_comments.work_item_comments, users.user_id  ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
 	}

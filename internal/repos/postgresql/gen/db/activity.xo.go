@@ -231,7 +231,7 @@ joined_time_entries.time_entries, activities.activity_id `
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, activityID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, activityID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
 	}
@@ -278,7 +278,7 @@ joined_time_entries.time_entries, activities.activity_id `
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
 	}

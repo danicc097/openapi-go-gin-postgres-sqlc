@@ -304,7 +304,7 @@ joined_work_item_types.work_item_types, projects.project_id `
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Paginated/db.Query: %w", err))
 	}

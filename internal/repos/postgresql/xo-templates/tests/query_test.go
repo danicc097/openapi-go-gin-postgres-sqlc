@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"testing"
+	"time"
 
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests/got"
 	"github.com/google/uuid"
@@ -22,6 +23,16 @@ import (
 	name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
 	at the same time
 */
+
+func TestCursorPagination_Timestamp(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	uu, err := db.UserPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-1*time.Hour), db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
+	assert.NoError(t, err)
+	assert.Equal(t, uu[0].UserID, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
+}
 
 func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	t.Parallel()

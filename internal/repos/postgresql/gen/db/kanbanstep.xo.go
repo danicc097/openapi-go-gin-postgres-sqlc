@@ -244,7 +244,7 @@ _work_items_kanban_step_ids.kanban_step_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, kanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, kanbanStepID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
 	}
@@ -288,7 +288,7 @@ _work_items_kanban_step_ids.kanban_step_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
 	}
@@ -332,7 +332,7 @@ _work_items_kanban_step_ids.kanban_step_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
 	}

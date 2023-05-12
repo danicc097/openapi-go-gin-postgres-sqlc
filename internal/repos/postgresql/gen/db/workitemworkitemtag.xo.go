@@ -180,7 +180,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemTagID, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/db.Query: %w", err))
 	}

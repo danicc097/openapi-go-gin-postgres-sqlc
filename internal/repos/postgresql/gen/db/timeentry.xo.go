@@ -289,7 +289,7 @@ _work_items_work_item_ids.work_item_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, timeEntryID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Activity, c.joins.Team, c.joins.User, c.joins.WorkItem, timeEntryID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/db.Query: %w", err))
 	}

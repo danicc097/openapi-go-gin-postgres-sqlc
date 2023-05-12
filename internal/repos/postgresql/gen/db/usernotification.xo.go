@@ -218,7 +218,7 @@ _users_user_ids.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, userNotificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, userNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
 	}
@@ -259,7 +259,7 @@ _users_user_ids.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, notificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
 	}

@@ -414,7 +414,7 @@ work_items.work_item_id, work_items.work_item_id  ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", err))
 	}

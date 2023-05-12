@@ -238,7 +238,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
 	}
@@ -292,7 +292,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
 	}

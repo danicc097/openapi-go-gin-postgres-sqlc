@@ -2207,23 +2207,9 @@ func (f *Funcs) db_update(name string, v interface{}) string {
 }
 
 // db_paginated generates a db.<name>Context(ctx, sqlstr, params)
-// query for cursor pagination
-// TODO only needs to add fn args as params as is, e.g. createdAt time.Time, ... then just append those.
-// deleted_at from opts remains.
-// orderby desc is the default
-func (f *Funcs) db_paginated(name string, v interface{}, columns []Field) string {
-	var p []string
-	prefix := ""
-	p = append(p, f.names(prefix, columns))
-	var params []string
-	for _, paramStr := range p {
-		// f.names will join but with pascal case
-		pp := strings.Split(paramStr, ", ")
-		for _, p := range pp {
-			params = append(params, camel(p))
-		}
-	}
-	return f.db(name, strings.Join(params, ", "))
+// query for cursor pagination by the given columns
+func (f *Funcs) db_paginated(name string, t Table, columns []Field) string {
+	return f.db(name, CursorPagination{Table: t, Fields: columns})
 }
 
 // db_named generates a db.<name>Context(ctx, sql.Named(name, res)...)
@@ -2307,6 +2293,11 @@ func (f *Funcs) logf_update(v interface{}) string {
 	return fmt.Sprintf("logf(%s)", strings.Join(p, ", "))
 }
 
+type CursorPagination struct {
+	Table  Table
+	Fields []Field
+}
+
 // names generates a list of names.
 func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 	var names []string
@@ -2385,7 +2376,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			}
 		case Index:
 			// first thing will always be boolean parameters for joins
-			pref := "c.joins."
+			prefix := "c.joins."
 			for _, c := range f.tableConstraints[x.Table.SQLName] {
 				if c.Type != "foreign_key" {
 					continue
@@ -2394,27 +2385,79 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				switch c.Cardinality {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
-					joinName = pref + camelExport(inflector.Pluralize(lookupName))
+					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
 					if c.JoinTableClash {
 						lc := strings.TrimSuffix(c.LookupColumn, "_id")
 						joinName = joinName + camelExport(lc)
 					}
 				case M2O:
 					if c.RefTableName == x.Table.SQLName {
-						joinName = pref + camelExport(c.TableName)
+						joinName = prefix + camelExport(c.TableName)
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.ColumnName)
 						}
 					}
 					if c.TableName == x.SQLName {
-						joinName = pref + camelExport(c.RefTableName)
+						joinName = prefix + camelExport(c.RefTableName)
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.RefColumnName)
 						}
 					}
 				case O2O:
 					if c.TableName == x.Table.SQLName {
-						joinName = pref + camelExport(singularize(c.RefTableName))
+						joinName = prefix + camelExport(singularize(c.RefTableName))
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.ColumnName)
+						}
+					}
+					// dummy created automatically to avoid this duplication
+					// if c.RefTableName == x.Table.SQLName {
+					// 	joinName = pref + camelExport(singularize(c.TableName))
+					// }
+				default:
+				}
+				if joinName == "" {
+					continue
+				}
+				for _, name := range names {
+					if name == joinName {
+						joinName = joinName + camelExport(c.RefTableName)
+					}
+				}
+				names = append(names, joinName)
+			}
+			names = append(names, f.params(x.Fields, false))
+		case CursorPagination:
+			prefix := "c.joins."
+			for _, c := range f.tableConstraints[x.Table.SQLName] {
+				if c.Type != "foreign_key" {
+					continue
+				}
+				var joinName string
+				switch c.Cardinality {
+				case M2M:
+					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
+					if c.JoinTableClash {
+						lc := strings.TrimSuffix(c.LookupColumn, "_id")
+						joinName = joinName + camelExport(lc)
+					}
+				case M2O:
+					if c.RefTableName == x.Table.SQLName {
+						joinName = prefix + camelExport(c.TableName)
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.ColumnName)
+						}
+					}
+					if c.TableName == x.Table.SQLName {
+						joinName = prefix + camelExport(c.RefTableName)
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.RefColumnName)
+						}
+					}
+				case O2O:
+					if c.TableName == x.Table.SQLName {
+						joinName = prefix + camelExport(singularize(c.RefTableName))
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.ColumnName)
 						}
@@ -2543,11 +2586,13 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 	return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 }
 
-func validCursorField(f Field) bool {
-	return f.Type == "time.Time" || f.Type == "int" || f.Type == "int64"
+// check pk can be straightforwardly used as cursor
+func pkIsValidCursor(pk Field) bool {
+	return pk.Type == "time.Time" || pk.Type == "int" || pk.Type == "int64"
 }
 
-// cursor_columns returns a list of possible combinations of columns for cursor pagination.
+// cursor_columns returns a list of possible combinations of columns for cursor pagination
+// (pk, unique field, ...).
 func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tables) [][]Field {
 	var cursorCols [][]Field
 	var tableConstraints []Constraint
@@ -2561,7 +2606,7 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 	existingCursors := make(map[string]bool)
 	pkAreValidCursor := true
 	for _, pk := range table.PrimaryKeys {
-		if !validCursorField(pk) {
+		if !pkIsValidCursor(pk) {
 			pkAreValidCursor = false
 		}
 	}
@@ -2572,7 +2617,7 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 	for _, z := range table.Fields {
 		for _, c := range tableConstraints {
 			if c.Type == "unique" && c.ColumnName == z.SQLName {
-				if validCursorField(z) {
+				if pkIsValidCursor(z) {
 					if existingCursors[z.SQLName] {
 						continue
 					}
