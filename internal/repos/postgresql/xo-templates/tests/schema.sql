@@ -111,6 +111,12 @@ create table xo_tests.demo_work_items (
   , checked boolean not null default false
 );
 
+create table xo_tests.pag_element (
+  paginated_element_id uuid default gen_random_uuid () primary key
+  , name text not null
+  , created_at timestamp with time zone default current_timestamp not null unique
+);
+
 do $BODY$
 declare
   user_1_id uuid := '8bfb8359-28e0-4039-9259-3c98ada7300d';
@@ -177,6 +183,15 @@ begin
     values (2 , false);
   insert into xo_tests.demo_work_items (work_item_id , checked)
     values (3 , true);
+
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element +1 day' , current_timestamp + '1 day');
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element +2 days' , current_timestamp + '2 days');
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element +3 days' , current_timestamp + '3 days');
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element +4 days' , current_timestamp + '4 days');
 end;
 $BODY$
 language plpgsql;

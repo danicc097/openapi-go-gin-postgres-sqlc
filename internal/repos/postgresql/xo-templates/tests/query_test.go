@@ -13,8 +13,6 @@ import (
 /**
  * TODO: test extensively:
  *
- * - pagination (also missing join field names in .Query())
- * limits
  * order bys
  *
  * test M2M when its 1 pk and 2 fks, and with extra info ()
@@ -29,9 +27,16 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 
 	ctx := context.Background()
 
-	uu, err := db.UserPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-1*time.Hour), db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
+	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add((24+1)*time.Hour), db.WithPagElementLimit(1))
 	assert.NoError(t, err)
-	assert.Equal(t, uu[0].UserID, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
+	assert.Len(t, ee, 1)
+	assert.Equal(t, ee[0].Name, "element +2 days")
+
+	ee, err = db.PagElementPaginatedByCreatedAt(ctx, testPool, ee[0].CreatedAt, db.WithPagElementLimit(2))
+	assert.NoError(t, err)
+	assert.Len(t, ee, 2)
+	assert.Equal(t, ee[0].Name, "element +3 days")
+	assert.Equal(t, ee[1].Name, "element +4 days")
 }
 
 func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
