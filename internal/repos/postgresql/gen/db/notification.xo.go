@@ -32,9 +32,9 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O (generated from M2O)
-	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O (generated from M2O)
-	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
+	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
+	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O users (generated from M2O)
+	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O notifications
 
 }
 
@@ -142,9 +142,9 @@ func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConf
 }
 
 type NotificationJoins struct {
-	UserReceiver      bool
-	UserSender        bool
-	UserNotifications bool
+	UserReceiver      bool // O2O users
+	UserSender        bool // O2O users
+	UserNotifications bool // M2O notifications
 }
 
 // WithNotificationJoin joins with the given tables.

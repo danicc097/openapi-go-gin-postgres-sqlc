@@ -24,8 +24,8 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O (generated from M2O)
-	WorkItemsJoinWorkItemTag *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M
+	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
+	WorkItemTagWorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
 
 }
 
@@ -94,8 +94,8 @@ type WorkItemTagOrderBy = string
 const ()
 
 type WorkItemTagJoins struct {
-	Project              bool
-	WorkItemsWorkItemTag bool
+	Project              bool // O2O projects
+	WorkItemsWorkItemTag bool // M2M work_item_work_item_tag
 }
 
 // WithWorkItemTagJoin joins with the given tables.

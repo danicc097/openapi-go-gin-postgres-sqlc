@@ -19,8 +19,8 @@ type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	Member uuid.UUID `json:"member" db:"member" required:"true"`  // member
 
-	TeamsJoinMember *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M
-	MembersJoin     *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M
+	MemberTeamsJoin *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
+	TeamMembersJoin *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
 
 }
 
@@ -77,8 +77,8 @@ type UserTeamOrderBy = string
 const ()
 
 type UserTeamJoins struct {
-	TeamsMember bool
-	Members     bool
+	TeamsMember bool // M2M user_team
+	Members     bool // M2M user_team
 }
 
 // WithUserTeamJoin joins with the given tables.

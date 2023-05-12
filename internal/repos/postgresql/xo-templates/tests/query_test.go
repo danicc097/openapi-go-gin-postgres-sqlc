@@ -76,16 +76,16 @@ func TestM2M_TwoFKs(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksSeller: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.SellerBooksJoin, 0)
+	assert.Len(t, *u.SellerBooksJoinBS, 0)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"))
 	assert.NoError(t, err)
-	assert.Nil(t, u.SellerBooksJoin)
+	assert.Nil(t, u.SellerBooksJoinBS)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a"), db.WithUserJoin(db.UserJoins{BooksSeller: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.SellerBooksJoin, 1)
-	assert.Equal(t, (*u.SellerBooksJoin)[0].BookID, 1)
+	assert.Len(t, *u.SellerBooksJoinBS, 1)
+	assert.Equal(t, (*u.SellerBooksJoinBS)[0].BookID, 1)
 }
 
 func TestM2O(t *testing.T) {
@@ -96,13 +96,13 @@ func TestM2O(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{NotificationsSender: true, NotificationsReceiver: true}))
 	assert.NoError(t, err)
-	assert.Len(t, *u.NotificationsJoinReceiver, 1)
-	assert.Len(t, *u.NotificationsJoinSender, 2)
+	assert.Len(t, *u.ReceiverNotificationsJoin, 1)
+	assert.Len(t, *u.SenderNotificationsJoin, 2)
 
 	n, err := db.NotificationsBySender(ctx, testPool, userID, db.WithNotificationJoin(db.NotificationJoins{UserSender: true, UserReceiver: true}))
 	assert.NoError(t, err)
 	assert.Len(t, n, 2)
-	assert.Equal(t, n[0].UserJoinSender.UserID, userID)
+	assert.Equal(t, n[0].UserSenderJoin.UserID, userID)
 }
 
 func TestO2OInferred_PKisFK(t *testing.T) {
@@ -119,7 +119,7 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 
 	wi, err := db.WorkItemByWorkItemID(ctx, testPool, workitemID, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, workitemID)
+	assert.Equal(t, wi.DemoWorkItemWorkItemJoin.WorkItemID, workitemID)
 	assert.Equal(t, wi.WorkItemID, workitemID)
 }
 
@@ -132,10 +132,10 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, u.UserAPIKeyJoin.UserID, userID)
+	assert.Equal(t, u.UserAPIKeyUserJoin.UserID, userID)
 
 	uak, err := db.UserAPIKeyByUserID(ctx, testPool, userID, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, uak.UserJoin.UserID, userID)
+	assert.Equal(t, uak.UserUserAPIKeyJoin.UserID, userID)
 	assert.Equal(t, uak.UserID, userID)
 }

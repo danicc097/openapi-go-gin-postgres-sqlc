@@ -24,8 +24,8 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	ProjectJoin  *Project  `json:"-" db:"project_project_id" openapi-go:"ignore"`          // O2O (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_type_id" openapi-go:"ignore"` // O2O (inferred)
+	ProjectJoin  *Project  `json:"-" db:"project_project_id" openapi-go:"ignore"`          // O2O projects (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_type_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
 }
 
@@ -94,8 +94,8 @@ type WorkItemTypeOrderBy = string
 const ()
 
 type WorkItemTypeJoins struct {
-	Project  bool
-	WorkItem bool
+	Project  bool // O2O projects
+	WorkItem bool // O2O work_items
 }
 
 // WithWorkItemTypeJoin joins with the given tables.

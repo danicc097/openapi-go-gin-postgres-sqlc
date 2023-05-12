@@ -39,14 +39,14 @@ type User struct {
 	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
 	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
-	NotificationsJoinReceiver *[]Notification     `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O
-	NotificationsJoinSender   *[]Notification     `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O
-	TimeEntriesJoin           *[]TimeEntry        `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O
-	UserAPIKeyJoin            *UserAPIKey         `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O (inferred)
-	UserNotificationsJoin     *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O
-	TeamsJoinMember           *[]Team             `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M
-	WorkItemsJoinAssignedUser *[]User_WorkItem    `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M
-	WorkItemCommentsJoin      *[]WorkItemComment  `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O
+	NotificationsJoinReceiver     *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
+	NotificationsJoinSender       *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
+	TimeEntriesJoin               *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
+	UserAPIKeyJoin                *UserAPIKey            `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O user_api_keys (inferred)
+	UserNotificationsJoin         *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
+	MemberTeamsJoin               *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
+	AssignedUserWorkItemsJoinWIAU *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemCommentsJoin          *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
 
 }
 
@@ -182,14 +182,14 @@ func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 }
 
 type UserJoins struct {
-	NotificationsReceiver bool
-	NotificationsSender   bool
-	TimeEntries           bool
-	UserAPIKey            bool
-	UserNotifications     bool
-	TeamsMember           bool
-	WorkItemsAssignedUser bool
-	WorkItemComments      bool
+	NotificationsReceiver bool // M2O users
+	NotificationsSender   bool // M2O users
+	TimeEntries           bool // M2O users
+	UserAPIKey            bool // O2O user_api_keys
+	UserNotifications     bool // M2O users
+	TeamsMember           bool // M2M user_team
+	WorkItemsAssignedUser bool // M2M work_item_assigned_user
+	WorkItemComments      bool // M2O users
 }
 
 // WithUserJoin joins with the given tables.
@@ -208,8 +208,8 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	}
 }
 
-// User_WorkItem represents a M2M join against "public.work_item_assigned_user"
-type User_WorkItem struct {
+// WorkItem__WIAU_User represents a M2M join against "public.work_item_assigned_user"
+type WorkItem__WIAU_User struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }

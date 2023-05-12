@@ -18,8 +18,8 @@ type WorkItemWorkItemTag struct {
 	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
 	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
 
-	WorkItemTagsJoin         *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M
-	WorkItemsJoinWorkItemTag *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M
+	WorkItemWorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	WorkItemTagWorkItemsJoin *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M work_item_work_item_tag
 
 }
 
@@ -76,8 +76,8 @@ type WorkItemWorkItemTagOrderBy = string
 const ()
 
 type WorkItemWorkItemTagJoins struct {
-	WorkItemTags         bool
-	WorkItemsWorkItemTag bool
+	WorkItemTags         bool // M2M work_item_work_item_tag
+	WorkItemsWorkItemTag bool // M2M work_item_work_item_tag
 }
 
 // WithWorkItemWorkItemTagJoin joins with the given tables.

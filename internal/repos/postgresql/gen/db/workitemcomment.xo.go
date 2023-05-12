@@ -28,8 +28,8 @@ type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
 	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
-	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O (generated from M2O)
+	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
 
 }
 
@@ -111,8 +111,8 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 }
 
 type WorkItemCommentJoins struct {
-	User     bool
-	WorkItem bool
+	User     bool // O2O users
+	WorkItem bool // O2O work_items
 }
 
 // WithWorkItemCommentJoin joins with the given tables.

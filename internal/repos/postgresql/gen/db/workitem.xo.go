@@ -34,12 +34,12 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoTwoWorkItemJoin  *DemoTwoWorkItem         `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O (inferred)
-	DemoWorkItemJoin     *DemoWorkItem            `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O (inferred)
-	TimeEntriesJoin      *[]TimeEntry             `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O
-	AssignedUsersJoin    *[]WorkItem_AssignedUser `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M
-	WorkItemCommentsJoin *[]WorkItemComment       `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O
-	WorkItemTagsJoin     *[]WorkItemTag           `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M
+	DemoTwoWorkItemJoin           *DemoTwoWorkItem       `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O demo_two_work_items (inferred)
+	DemoWorkItemJoin              *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	TimeEntriesJoin               *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O work_items
+	WorkItemAssignedUsersJoinWIAU *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemCommentsJoin          *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
+	WorkItemWorkItemTagsJoin      *[]WorkItemTag         `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
 
 }
 
@@ -171,12 +171,12 @@ func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 }
 
 type WorkItemJoins struct {
-	DemoTwoWorkItem  bool
-	DemoWorkItem     bool
-	TimeEntries      bool
-	AssignedUsers    bool
-	WorkItemComments bool
-	WorkItemTags     bool
+	DemoTwoWorkItem  bool // O2O demo_two_work_items
+	DemoWorkItem     bool // O2O demo_work_items
+	TimeEntries      bool // M2O work_items
+	AssignedUsers    bool // M2M work_item_assigned_user
+	WorkItemComments bool // M2O work_items
+	WorkItemTags     bool // M2M work_item_work_item_tag
 }
 
 // WithWorkItemJoin joins with the given tables.
@@ -193,8 +193,8 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	}
 }
 
-// WorkItem_AssignedUser represents a M2M join against "public.work_item_assigned_user"
-type WorkItem_AssignedUser struct {
+// User__WIAU_WorkItem represents a M2M join against "public.work_item_assigned_user"
+type User__WIAU_WorkItem struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }

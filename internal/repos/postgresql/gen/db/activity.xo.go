@@ -24,8 +24,8 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O (generated from M2O)
-	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O
+	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O activities
 
 }
 
@@ -94,8 +94,8 @@ type ActivityOrderBy = string
 const ()
 
 type ActivityJoins struct {
-	Project     bool
-	TimeEntries bool
+	Project     bool // O2O projects
+	TimeEntries bool // M2O activities
 }
 
 // WithActivityJoin joins with the given tables.

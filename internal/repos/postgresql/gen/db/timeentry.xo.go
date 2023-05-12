@@ -30,10 +30,10 @@ type TimeEntry struct {
 	Start           time.Time `json:"start" db:"start" required:"true"`                      // start
 	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes" required:"true"` // duration_minutes
 
-	ActivityJoin *Activity `json:"-" db:"activity_activity_id" openapi-go:"ignore"`   // O2O (generated from M2O)
-	TeamJoin     *Team     `json:"-" db:"team_team_id" openapi-go:"ignore"`           // O2O (generated from M2O)
-	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O (generated from M2O)
+	ActivityJoin *Activity `json:"-" db:"activity_activity_id" openapi-go:"ignore"`   // O2O activities (generated from M2O)
+	TeamJoin     *Team     `json:"-" db:"team_team_id" openapi-go:"ignore"`           // O2O teams (generated from M2O)
+	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
 
 }
 
@@ -135,10 +135,10 @@ func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 }
 
 type TimeEntryJoins struct {
-	Activity bool
-	Team     bool
-	User     bool
-	WorkItem bool
+	Activity bool // O2O activities
+	Team     bool // O2O teams
+	User     bool // O2O users
+	WorkItem bool // O2O work_items
 }
 
 // WithTimeEntryJoin joins with the given tables.

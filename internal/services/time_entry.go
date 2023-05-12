@@ -65,11 +65,11 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 
 		// FIXME xo joins scanning when join table has extra fields
 		// ::: should be fixed now
-		fmt.Printf("wi.AssignedUsersJoin: %v\n", wi.AssignedUsersJoin)
+		fmt.Printf("wi.WorkItemAssignedUsersJoinWIAU: %v\n", wi.WorkItemAssignedUsersJoinWIAU)
 		fmt.Printf("wi.TimeEntriesJoin: %v\n", wi.TimeEntriesJoin)
 
-		memberIDs := make([]uuid.UUID, len(*wi.AssignedUsersJoin))
-		for i, m := range *wi.AssignedUsersJoin {
+		memberIDs := make([]uuid.UUID, len(*wi.WorkItemAssignedUsersJoinWIAU))
+		for i, m := range *wi.WorkItemAssignedUsersJoinWIAU {
 			memberIDs[i] = m.User.UserID
 		}
 		if !slices.Contains(memberIDs, caller.UserID) {

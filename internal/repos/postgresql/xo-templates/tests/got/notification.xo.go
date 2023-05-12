@@ -24,8 +24,8 @@ type Notification struct {
 	Sender         uuid.UUID  `json:"sender" db:"sender" required:"true"`                  // sender
 	Receiver       *uuid.UUID `json:"receiver" db:"receiver" required:"true"`              // receiver
 
-	UserJoinReceiver *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
-	UserJoinSender   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
+	UserReceiverJoin *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
+	UserSenderJoin   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
 }
 
 // NotificationCreateParams represents insert params for 'xo_tests.notifications'.

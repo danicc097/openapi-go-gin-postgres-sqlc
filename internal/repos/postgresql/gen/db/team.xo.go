@@ -27,10 +27,10 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O (generated from M2O)
-	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O
-	MembersJoin     *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M
-	WorkItemJoin    *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O (inferred)
+	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
+	TeamMembersJoin *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M user_team
+	WorkItemJoin    *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O work_items (inferred)
 
 }
 
@@ -112,10 +112,10 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 }
 
 type TeamJoins struct {
-	Project     bool
-	TimeEntries bool
-	Members     bool
-	WorkItem    bool
+	Project     bool // O2O projects
+	TimeEntries bool // M2O teams
+	Members     bool // M2M user_team
+	WorkItem    bool // O2O work_items
 }
 
 // WithTeamJoin joins with the given tables.

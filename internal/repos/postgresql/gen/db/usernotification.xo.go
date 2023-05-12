@@ -24,8 +24,8 @@ type UserNotification struct {
 	Read               bool      `json:"read" db:"read" required:"true"`                               // read
 	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
-	NotificationJoin *Notification `json:"-" db:"notification_notification_id" openapi-go:"ignore"` // O2O (generated from M2O)
-	UserJoin         *User         `json:"-" db:"user_user_id" openapi-go:"ignore"`                 // O2O (generated from M2O)
+	NotificationJoin *Notification `json:"-" db:"notification_notification_id" openapi-go:"ignore"` // O2O notifications (generated from M2O)
+	UserJoin         *User         `json:"-" db:"user_user_id" openapi-go:"ignore"`                 // O2O users (generated from M2O)
 
 }
 
@@ -88,8 +88,8 @@ type UserNotificationOrderBy = string
 const ()
 
 type UserNotificationJoins struct {
-	Notification bool
-	User         bool
+	Notification bool // O2O notifications
+	User         bool // O2O users
 }
 
 // WithUserNotificationJoin joins with the given tables.

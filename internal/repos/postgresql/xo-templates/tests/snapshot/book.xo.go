@@ -23,7 +23,7 @@ type Book struct {
 
 	BookAuthorsJoinBA   *[]User__BA_Book   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
 	BookAuthorsJoinBASK *[]User__BASK_Book `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
-	BookReviewsJoin     *[]BookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O books
+	BookBookReviewsJoin *[]BookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O books
 	BookSellersJoin     *[]User            `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"`               // M2M book_sellers
 }
 

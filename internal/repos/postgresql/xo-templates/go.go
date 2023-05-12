@@ -1014,7 +1014,7 @@ cc_label:
 				}
 			}
 		outer:
-			// TODO might need dual M2O-M2M and O2M-O2O checks with reversed ref checks
+			// TODO need dual M2O-M2M and O2M-O2O checks with reversed ref checks. else generated O2Os from M2Os might clash and we wont know
 			switch card {
 			case M2M:
 				if c.ColumnName == constraint.ColumnName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2M {
@@ -1097,6 +1097,7 @@ cc_label:
 					ColumnName:     constraint.ColumnName,
 					JoinTableClash: joinTableClash,
 					IsInferredO2O:  true,
+					RefPKisFK:      true,
 				})
 			}
 
@@ -3547,8 +3548,11 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
-				goName = goName + toAcronym(c.TableName)
 				typ = typ + "__" + toAcronym(c.TableName) + "_" + camelExport(singularize(t.SQLName))
+			}
+
+			if c.JoinTableClash {
+				goName = goName + toAcronym(c.TableName)
 			}
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
@@ -3558,11 +3562,12 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				notes += " " + c.RefTableName
 				goName = camelExport(singularize(c.TableName))
 				typ = goName
-				goName = inflector.Pluralize(goName) + "Join"
+				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
+				goName = descName + inflector.Pluralize(goName) + "Join"
 				joinName = inflector.Pluralize(c.TableName)
 				if c.JoinTableClash {
 					joinName = joinName + "_" + c.ColumnName
-					goName = goName + camelExport(c.ColumnName)
+					goName = goName + toAcronym(c.ColumnName)
 				}
 			}
 
@@ -3570,11 +3575,12 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				notes += " " + c.TableName
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
-				goName = inflector.Pluralize(goName) + "Join"
+				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
+				goName = descName + inflector.Pluralize(goName) + "Join"
 				joinName = inflector.Pluralize(c.RefTableName)
 				if c.JoinTableClash {
 					joinName = joinName + "_" + c.RefColumnName
-					goName = goName + camelExport(c.RefColumnName)
+					goName = goName + toAcronym(c.RefColumnName)
 				}
 			}
 
@@ -3588,7 +3594,8 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			if c.TableName == t.SQLName {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
-				goName = goName + "Join"
+				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
+				goName = goName + descName + "Join"
 
 				notes += " " + c.RefTableName
 				if c.IsInferredO2O {
@@ -3606,14 +3613,13 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					}
 				}
 				isSingleFK, isSinglePK := analyzeField(t, f)
-
+				if isSingleFK && isSinglePK || c.RefPKisFK {
+					goName = camelExport(singularize(c.RefTableName)) + "Join" // duplicate names since its the same..
+				}
 				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
 				joinName := joinPrefix + inflector.Singularize(c.ColumnName)
 				if c.JoinTableClash {
-					goName = goName + camelExport(c.ColumnName)
-				}
-
-				if isSingleFK && isSinglePK {
+					goName = goName + toAcronym(c.ColumnName)
 				}
 
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
@@ -4097,6 +4103,7 @@ type Constraint struct {
 	IsInferredO2O         bool   // Whether this constraint has been generated from a foreign key
 	IsGeneratedO2OFromM2O bool
 	JoinStructFieldClash  bool // Whether 2 or more constraints of the same table have the same struct field name (and hence type as well)
+	RefPKisFK             bool
 }
 
 // Field is a field template.

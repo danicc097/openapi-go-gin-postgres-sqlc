@@ -19,8 +19,8 @@ type BookSeller struct {
 	BookID int       `json:"bookID" db:"book_id" required:"true"` // book_id
 	Seller uuid.UUID `json:"seller" db:"seller" required:"true"`  // seller
 
-	BookSellersJoin *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
-	SellerBooksJoin *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
+	BookSellersJoin   *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
+	SellerBooksJoinBS *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
 }
 
 // BookSellerCreateParams represents insert params for 'xo_tests.book_sellers'.
