@@ -16,7 +16,7 @@ import (
  * limits
  * order bys
  *
- * test M2M when its just 2 FKs as combined PK, when its 1 pk and 2 fks, and 2 fks and extra info ()
+ * test M2M when its 1 pk and 2 fks, and with extra info ()
  *
 	also test join table name clash for O2O constraint too:
 	name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
@@ -40,6 +40,29 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, *u.BooksJoinAuthor, 2)
 	for _, b := range *u.BooksJoinAuthor {
+		if b.Book.BookID == 1 {
+			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
+		}
+	}
+}
+
+func TestM2M_SurrogatePK(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{BookSurrs: true}))
+	assert.NoError(t, err)
+	assert.Len(t, *u.BookSurrsJoin, 0)
+
+	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
+	assert.NoError(t, err)
+	assert.Nil(t, u.BookSurrsJoin)
+
+	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BookSurrs: true}))
+	assert.NoError(t, err)
+	assert.Len(t, *u.BookSurrsJoin, 2)
+	for _, b := range *u.BookSurrsJoin {
 		if b.Book.BookID == 1 {
 			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
 		}
@@ -87,17 +110,17 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 
 	ctx := context.Background()
 
-	id := int64(1)
+	workitemID := int64(1)
 
-	dwi, err := db.DemoWorkItemByWorkItemID(ctx, testPool, id, db.WithDemoWorkItemJoin(db.DemoWorkItemJoins{WorkItem: true}))
+	dwi, err := db.DemoWorkItemByWorkItemID(ctx, testPool, workitemID, db.WithDemoWorkItemJoin(db.DemoWorkItemJoins{WorkItem: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, dwi.WorkItemID, id)
-	assert.Equal(t, dwi.WorkItemJoin.WorkItemID, id)
+	assert.Equal(t, dwi.WorkItemID, workitemID)
+	assert.Equal(t, dwi.WorkItemJoin.WorkItemID, workitemID)
 
-	wi, err := db.WorkItemByWorkItemID(ctx, testPool, id, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
+	wi, err := db.WorkItemByWorkItemID(ctx, testPool, workitemID, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, id)
-	assert.Equal(t, wi.WorkItemID, id)
+	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, workitemID)
+	assert.Equal(t, wi.WorkItemID, workitemID)
 }
 
 func TestO2OInferred_VerticallyPartitioned(t *testing.T) {

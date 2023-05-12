@@ -198,12 +198,12 @@ func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 	sqlstr := `SELECT ` +
 		`demo_two_work_items.work_item_id,
 demo_two_work_items.custom_date_for_project_2,
-(case when $1::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join work_items as _work_item_ids on _work_item_ids.work_item_id = demo_two_work_items.work_item_id` +
-		` WHERE demo_two_work_items.work_item_id > $2 GROUP BY _work_item_ids.work_item_id,
-      _work_item_ids.work_item_id,
+left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = demo_two_work_items.work_item_id` +
+		` WHERE demo_two_work_items.work_item_id > $2 GROUP BY _work_items_work_item_ids.work_item_id,
+      _work_items_work_item_ids.work_item_id,
 	demo_two_work_items.work_item_id `
 	sqlstr += c.limit
 
@@ -234,12 +234,12 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 	sqlstr := `SELECT ` +
 		`demo_two_work_items.work_item_id,
 demo_two_work_items.custom_date_for_project_2,
-(case when $1::boolean = true and _work_item_ids.work_item_id is not null then row(_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join work_items as _work_item_ids on _work_item_ids.work_item_id = demo_two_work_items.work_item_id` +
-		` WHERE demo_two_work_items.work_item_id = $2 GROUP BY _work_item_ids.work_item_id,
-      _work_item_ids.work_item_id,
+left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = demo_two_work_items.work_item_id` +
+		` WHERE demo_two_work_items.work_item_id = $2 GROUP BY _work_items_work_item_ids.work_item_id,
+      _work_items_work_item_ids.work_item_id,
 	demo_two_work_items.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

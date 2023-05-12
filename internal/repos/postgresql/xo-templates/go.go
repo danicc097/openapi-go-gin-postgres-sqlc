@@ -2833,6 +2833,7 @@ const (
 )
 
 const (
+	// need group by in all
 	M2MJoin = `
 left join (
 	select
@@ -3122,17 +3123,18 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			// need to check RefTable PKs since this should get called when generating for a
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
+			params["Alias"] = "_" + c.RefTableName
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
 				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
-				params["Alias"] = "_" + c.RefTableName
 			}
 
 			joinTable := tables[c.RefTableName]
 			var joinTablePKGroupBys []string
 			for _, pk := range joinTable.PrimaryKeys {
 				if !(isSingleFK && isSinglePK) {
-					joinTablePKGroupBys = append(joinTablePKGroupBys, "_"+params["JoinTableAlias"].(string)+"."+pk.SQLName)
+					gb := params["Alias"].(string) + "_" + params["JoinTableAlias"].(string) + "." + pk.SQLName
+					joinTablePKGroupBys = append(joinTablePKGroupBys, gb)
 				}
 			}
 			params["JoinTablePKGroupBys"] = joinTablePKGroupBys
