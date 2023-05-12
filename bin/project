@@ -833,7 +833,7 @@ x.test.xo() {
     POSTGRES_DB="$POSTGRES_TEST_DB"
     GEN_POSTGRES_DB="$POSTGRES_DB"
 
-    drop_and_recreate_db $POSTGRES_DB # FIXME wrong gen when tables with equal names in public schema exist as well
+    drop_and_recreate_db $POSTGRES_DB # FIXME wrong xo gen when tables with equal names in public schema exist as well
 
     echo "Running xo template tests"
 
