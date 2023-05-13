@@ -118,7 +118,7 @@ func TestM2O(t *testing.T) {
 	n, err := db.NotificationsBySender(ctx, testPool, userID, db.WithNotificationJoin(db.NotificationJoins{UserSender: true, UserReceiver: true}))
 	assert.NoError(t, err)
 	assert.Len(t, n, 2)
-	assert.Equal(t, n[0].UserSenderJoin.UserID, userID)
+	assert.Equal(t, n[0].SenderJoin.UserID, userID)
 }
 
 func TestO2OInferred_PKisFK(t *testing.T) {
@@ -135,10 +135,11 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 
 	wi, err := db.WorkItemByWorkItemID(ctx, testPool, workitemID, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, wi.DemoWorkItemWorkItemJoin.WorkItemID, workitemID)
+	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, workitemID)
 	assert.Equal(t, wi.WorkItemID, workitemID)
 }
 
+// TODO join should be simply UserAPIKeyJoin *UserAPIKey since it's O2O there's no possible clash
 func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 	t.Parallel()
 
@@ -148,10 +149,10 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, u.UserAPIKeyUserJoin.UserID, userID)
+	assert.Equal(t, u.UserAPIKeyJoin.UserID, userID)
 
 	uak, err := db.UserAPIKeyByUserID(ctx, testPool, userID, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, uak.UserUserAPIKeyJoin.UserID, userID)
+	assert.Equal(t, uak.UserJoin.UserID, userID)
 	assert.Equal(t, uak.UserID, userID)
 }

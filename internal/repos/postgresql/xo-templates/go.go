@@ -3645,7 +3645,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
 				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
-				goName = goName + descName + "Join"
+				goName = descName + "Join" // o2o does not need orig goName. it's obvious from join + will never clash
 
 				notes += " " + c.RefTableName
 				if c.IsInferredO2O {
@@ -3655,7 +3655,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					notes += " (generated from M2O)"
 				}
 
-				t := tables[c.TableName]
+				t := tables[c.RefTableName]
 				var f Field
 				for _, tf := range t.Fields {
 					if tf.SQLName == c.ColumnName {
@@ -3664,7 +3664,8 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 				isSingleFK, isSinglePK := analyzeField(t, f)
 				if isSingleFK && isSinglePK || c.RefPKisFK {
-					goName = camelExport(singularize(c.RefTableName)) + "Join" // duplicate names since its the same..
+					// use original ref name
+					goName = camelExport(singularize(c.RefTableName)) + "Join"
 				}
 				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
 				joinName := joinPrefix + inflector.Singularize(c.ColumnName)

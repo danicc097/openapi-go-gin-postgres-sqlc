@@ -33,7 +33,7 @@ type User struct {
 	SellerBooksJoin           *[]Book            `json:"-" db:"book_sellers_books" openapi-go:"ignore"`               // M2M book_sellers
 	ReceiverNotificationsJoin *[]Notification    `json:"-" db:"notifications_receiver" openapi-go:"ignore"`           // M2O users
 	SenderNotificationsJoin   *[]Notification    `json:"-" db:"notifications_sender" openapi-go:"ignore"`             // M2O users
-	UserAPIKeyUserJoin        *UserAPIKey        `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`             // O2O user_api_keys (inferred)
+	UserJoin                  *UserAPIKey        `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`             // O2O user_api_keys (inferred)
 }
 
 // UserCreateParams represents insert params for 'xo_tests.users'.
