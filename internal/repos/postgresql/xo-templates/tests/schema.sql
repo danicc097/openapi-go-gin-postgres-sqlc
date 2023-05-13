@@ -194,13 +194,13 @@ begin
     values (3 , true);
 
   insert into xo_tests.pag_element (name , created_at)
-    values ('element +1 day' , current_timestamp + '1 day');
+    values ('element -1 day' , current_timestamp + '-1 day');
   insert into xo_tests.pag_element (name , created_at)
-    values ('element +2 days' , current_timestamp + '2 days');
+    values ('element -2 days' , current_timestamp + '-2 days');
   insert into xo_tests.pag_element (name , created_at)
-    values ('element +3 days' , current_timestamp + '3 days');
+    values ('element -3 days' , current_timestamp + '-3 days');
   insert into xo_tests.pag_element (name , created_at)
-    values ('element +4 days' , current_timestamp + '4 days');
+    values ('element -4 days' , current_timestamp + '-4 days');
 end;
 $BODY$
 language plpgsql;
