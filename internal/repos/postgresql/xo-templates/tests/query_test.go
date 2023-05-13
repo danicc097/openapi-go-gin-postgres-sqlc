@@ -27,31 +27,6 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 
 	ctx := context.Background()
 
-	// TODO generate DESC and ASC versions by default
-	// PagElementPaginatedByCreatedAt --> PagElementPaginatedByCreatedAt[ORDER]
-	// need default order by <field1 [ORDER]>, <field2 [ORDER]>... added
-	// > or < simple switch based on [ORDER]
-	// dont append opts orderby to sqlstr
-	// FIXME fix all groupbys (unrelated), include all fields already selected from main table always. see custom pagelement.xo.go
-	// 	`SELECT ` +
-	// 	`pag_element.paginated_element_id,
-	// pag_element.name,
-	// pag_element.created_at,
-	// pag_element.dummy,
-	// (case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
-	// 	`FROM xo_tests.pag_element ` +
-	// 	`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-	// left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
-	// 	` WHERE pag_element.created_at < $2 GROUP BY
-	// 	pag_element.paginated_element_id,
-	// 	pag_element.name,
-	// 	pag_element.created_at,
-	// 	pag_element.dummy,
-	// 	_dummy_join_dummies.dummy_join_id
-
-	// 	order by pag_element.created_at desc `
-	//
-
 	ee, err := db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
 	assert.NoError(t, err)
 	assert.Len(t, ee, 1)

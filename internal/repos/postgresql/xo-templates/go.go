@@ -3236,32 +3236,32 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			groupbyTpl = O2OGroupBy
 			joinTpl = O2OJoin
 			selectTpl = O2OSelect
-			params["JoinColumn"] = c.ColumnName
-			params["JoinTable"] = c.TableName
-			params["JoinRefColumn"] = c.RefColumnName
-			params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
+			params["JoinColumn"] = c.RefColumnName
+			params["JoinTable"] = c.RefTableName
+			params["JoinRefColumn"] = c.ColumnName
+			params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
 			params["CurrentTable"] = table.SQLName
 			if c.JoinTableClash {
-				params["ClashSuffix"] = "_" + c.RefColumnName
+				params["ClashSuffix"] = "_" + c.ColumnName
 			}
 
-			t := tables[c.TableName]
+			t := tables[c.RefTableName]
 			var field Field
 			for _, tf := range t.Fields {
-				if tf.SQLName == c.RefColumnName {
+				if tf.SQLName == c.ColumnName {
 					field = tf
 				}
 			}
 			// need to check RefTable PKs since this should get called when generating for a
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
-			params["Alias"] = "_" + c.TableName
+			params["Alias"] = "_" + c.RefTableName
 			isSingleFK, isSinglePK := analyzeField(t, field)
 			if isSingleFK && isSinglePK {
-				params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
+				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
 			}
 
-			joinTable := tables[c.TableName]
+			joinTable := tables[c.RefTableName]
 			var joinTablePKGroupBys []string
 			for _, pk := range joinTable.PrimaryKeys {
 				if !(isSingleFK && isSinglePK) {
@@ -3714,7 +3714,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					goName = camelExport(singularize(c.TableName)) + "Join"
 				}
 				joinPrefix := inflector.Singularize(c.TableName) + "_"
-				joinName := joinPrefix + inflector.Singularize(c.ColumnName)
+				joinName := joinPrefix + inflector.Singularize(c.RefColumnName)
 
 				if !structFieldIsUnique(structFields, goName) {
 					goName = goName + toAcronym(c.ColumnName)

@@ -26,7 +26,7 @@ type PagElement struct {
 	CreatedAt          time.Time `json:"createdAt" db:"created_at" required:"true"`                    // created_at
 	Dummy              *int      `json:"dummy" db:"dummy" required:"true"`                             // dummy
 
-	DummyJoinJoin *DummyJoin `json:"-" db:"dummy_join_dummy_join_id" openapi-go:"ignore"` // O2O dummy_join (inferred)
+	DummyJoinJoin *DummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
 }
 
 // PagElementCreateParams represents insert params for 'xo_tests.pag_element'.
@@ -207,17 +207,17 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 pag_element.name,
 pag_element.created_at,
 pag_element.dummy,
-(case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
+(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.pag_element ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
+left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = pag_element.dummy_join_id` +
 		` WHERE pag_element.created_at > $2 GROUP BY 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
 	pag_element.paginated_element_id,
-_dummy_join_dummies.dummy_join_id,
-      _dummy_join_dummies.dummy_join_id,
+_pag_element_dummy_join_ids.dummy,
+      _pag_element_dummy_join_ids.paginated_element_id,
 	pag_element.paginated_element_id ORDER BY 
 		created_at Asc `
 	sqlstr += c.limit
@@ -248,17 +248,17 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 pag_element.name,
 pag_element.created_at,
 pag_element.dummy,
-(case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
+(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.pag_element ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
+left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = pag_element.dummy_join_id` +
 		` WHERE pag_element.created_at < $2 GROUP BY 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
 	pag_element.paginated_element_id,
-_dummy_join_dummies.dummy_join_id,
-      _dummy_join_dummies.dummy_join_id,
+_pag_element_dummy_join_ids.dummy,
+      _pag_element_dummy_join_ids.paginated_element_id,
 	pag_element.paginated_element_id ORDER BY 
 		created_at Desc `
 	sqlstr += c.limit
@@ -292,17 +292,17 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 pag_element.name,
 pag_element.created_at,
 pag_element.dummy,
-(case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
+(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.pag_element ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
+left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = pag_element.dummy_join_id` +
 		` WHERE pag_element.created_at = $2 GROUP BY 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
 	pag_element.paginated_element_id,
-_dummy_join_dummies.dummy_join_id,
-      _dummy_join_dummies.dummy_join_id,
+_pag_element_dummy_join_ids.dummy,
+      _pag_element_dummy_join_ids.paginated_element_id,
 	pag_element.paginated_element_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -337,17 +337,17 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 pag_element.name,
 pag_element.created_at,
 pag_element.dummy,
-(case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
+(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.pag_element ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
+left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = pag_element.dummy_join_id` +
 		` WHERE pag_element.paginated_element_id = $2 GROUP BY 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
 	pag_element.paginated_element_id,
-_dummy_join_dummies.dummy_join_id,
-      _dummy_join_dummies.dummy_join_id,
+_pag_element_dummy_join_ids.dummy,
+      _pag_element_dummy_join_ids.paginated_element_id,
 	pag_element.paginated_element_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
