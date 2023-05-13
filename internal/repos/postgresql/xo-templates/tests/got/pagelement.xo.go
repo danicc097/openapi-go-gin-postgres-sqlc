@@ -25,6 +25,8 @@ type PagElement struct {
 	Name               string    `json:"name" db:"name" required:"true"`                               // name
 	CreatedAt          time.Time `json:"createdAt" db:"created_at" required:"true"`                    // created_at
 	Dummy              *int      `json:"dummy" db:"dummy" required:"true"`                             // dummy
+
+	DummyJoinJoin *DummyJoin `json:"-" db:"dummy_join_dummy_join_id" openapi-go:"ignore"` // O2O dummy_join (inferred)
 }
 
 // PagElementCreateParams represents insert params for 'xo_tests.pag_element'.
@@ -94,12 +96,16 @@ func WithPagElementOrderBy(rows ...PagElementOrderBy) PagElementSelectConfigOpti
 	}
 }
 
-type PagElementJoins struct{}
+type PagElementJoins struct {
+	DummyJoin bool // O2O pag_element
+}
 
 // WithPagElementJoin joins with the given tables.
 func WithPagElementJoin(joins PagElementJoins) PagElementSelectConfigOption {
 	return func(s *PagElementSelectConfig) {
-		s.joins = PagElementJoins{}
+		s.joins = PagElementJoins{
+			DummyJoin: s.joins.DummyJoin || joins.DummyJoin,
+		}
 	}
 }
 
@@ -200,15 +206,19 @@ func PagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.T
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
+pag_element.dummy,
+(case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
 		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.created_at > $1 `
+		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
+left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
+		` WHERE pag_element.created_at > $2 GROUP BY _dummy_join_dummies.dummy_join_id,
+      _dummy_join_dummies.dummy_join_id,
+	pag_element.paginated_element_id `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/db.Query: %w", err))
 	}
@@ -234,16 +244,20 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
+pag_element.dummy,
+(case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
 		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.created_at = $1 `
+		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
+left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
+		` WHERE pag_element.created_at = $2 GROUP BY _dummy_join_dummies.dummy_join_id,
+      _dummy_join_dummies.dummy_join_id,
+	pag_element.paginated_element_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", err))
 	}
@@ -270,16 +284,20 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
+pag_element.dummy,
+(case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
 		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.paginated_element_id = $1 `
+		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
+left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
+		` WHERE pag_element.paginated_element_id = $2 GROUP BY _dummy_join_dummies.dummy_join_id,
+      _dummy_join_dummies.dummy_join_id,
+	pag_element.paginated_element_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, paginatedElementID)
-	rows, err := db.Query(ctx, sqlstr, paginatedElementID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, paginatedElementID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", err))
 	}

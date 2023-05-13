@@ -78,8 +78,8 @@ func WithBookReviewLimit(limit int) BookReviewSelectConfigOption {
 type BookReviewOrderBy = string
 
 type BookReviewJoins struct {
-	Book bool // O2O books
-	User bool // O2O users
+	Book bool // O2O book_reviews
+	User bool // O2O book_reviews
 }
 
 // WithBookReviewJoin joins with the given tables.
@@ -190,17 +190,17 @@ func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID 
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $2::boolean = true and _users_user_ids.reviewer is not null then row(_users_user_ids.*) end) as user_user_id ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
+left join xo_tests.users as _users_user_ids on _users_user_ids.reviewer = book_reviews.user_id` +
 		` WHERE book_reviews.book_review_id > $3 GROUP BY _books_book_ids.book_id,
       _books_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+_users_user_ids.reviewer,
+      _users_user_ids.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.limit
 
@@ -230,17 +230,17 @@ func BookReviewPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ..
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $2::boolean = true and _users_user_ids.reviewer is not null then row(_users_user_ids.*) end) as user_user_id ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
+left join xo_tests.users as _users_user_ids on _users_user_ids.reviewer = book_reviews.user_id` +
 		` WHERE book_reviews.book_id > $3 GROUP BY _books_book_ids.book_id,
       _books_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+_users_user_ids.reviewer,
+      _users_user_ids.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.limit
 
@@ -273,17 +273,17 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $2::boolean = true and _users_user_ids.reviewer is not null then row(_users_user_ids.*) end) as user_user_id ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
+left join xo_tests.users as _users_user_ids on _users_user_ids.reviewer = book_reviews.user_id` +
 		` WHERE book_reviews.book_review_id = $3 GROUP BY _books_book_ids.book_id,
       _books_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+_users_user_ids.reviewer,
+      _users_user_ids.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -318,17 +318,17 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $2::boolean = true and _users_user_ids.reviewer is not null then row(_users_user_ids.*) end) as user_user_id ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
+left join xo_tests.users as _users_user_ids on _users_user_ids.reviewer = book_reviews.user_id` +
 		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 GROUP BY _books_book_ids.book_id,
       _books_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+_users_user_ids.reviewer,
+      _users_user_ids.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -363,17 +363,17 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $2::boolean = true and _users_user_ids.reviewer is not null then row(_users_user_ids.*) end) as user_user_id ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
+left join xo_tests.users as _users_user_ids on _users_user_ids.reviewer = book_reviews.user_id` +
 		` WHERE book_reviews.reviewer = $3 GROUP BY _books_book_ids.book_id,
       _books_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+_users_user_ids.reviewer,
+      _users_user_ids.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -410,17 +410,17 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $2::boolean = true and _users_user_ids.reviewer is not null then row(_users_user_ids.*) end) as user_user_id ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
+left join xo_tests.users as _users_user_ids on _users_user_ids.reviewer = book_reviews.user_id` +
 		` WHERE book_reviews.book_id = $3 GROUP BY _books_book_ids.book_id,
       _books_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+_users_user_ids.reviewer,
+      _users_user_ids.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

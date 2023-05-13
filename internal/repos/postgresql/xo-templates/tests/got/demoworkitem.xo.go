@@ -71,7 +71,7 @@ func WithDemoWorkItemLimit(limit int) DemoWorkItemSelectConfigOption {
 type DemoWorkItemOrderBy = string
 
 type DemoWorkItemJoins struct {
-	WorkItem bool // O2O work_items
+	WorkItem bool // O2O demo_work_items
 }
 
 // WithDemoWorkItemJoin joins with the given tables.
@@ -180,7 +180,7 @@ func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID in
 demo_work_items.checked,
 (case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM xo_tests.demo_work_items ` +
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
 left join xo_tests.work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = demo_work_items.work_item_id` +
 		` WHERE demo_work_items.work_item_id > $2 GROUP BY _work_items_work_item_ids.work_item_id,
       _work_items_work_item_ids.work_item_id,
@@ -216,7 +216,7 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 demo_work_items.checked,
 (case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
 		`FROM xo_tests.demo_work_items ` +
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
 left join xo_tests.work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = demo_work_items.work_item_id` +
 		` WHERE demo_work_items.work_item_id = $2 GROUP BY _work_items_work_item_ids.work_item_id,
       _work_items_work_item_ids.work_item_id,

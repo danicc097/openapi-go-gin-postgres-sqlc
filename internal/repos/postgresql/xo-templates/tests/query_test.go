@@ -30,13 +30,13 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add((24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
 	assert.NoError(t, err)
 	assert.Len(t, ee, 1)
-	assert.Equal(t, ee[0].Name, "element +2 days")
+	assert.Equal(t, "element +2 days", ee[0].Name)
 
 	ee, err = db.PagElementPaginatedByCreatedAt(ctx, testPool, ee[0].CreatedAt, db.WithPagElementLimit(2))
 	assert.NoError(t, err)
 	assert.Len(t, ee, 2)
-	assert.Equal(t, ee[0].Name, "element +3 days")
-	assert.Equal(t, ee[1].Name, "element +4 days")
+	assert.Equal(t, "element +3 days", ee[0].Name)
+	assert.Equal(t, "element +4 days", ee[1].Name)
 }
 
 func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
@@ -57,7 +57,7 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	assert.Len(t, *u.AuthorBooksJoin, 2)
 	for _, b := range *u.AuthorBooksJoin {
 		if b.Book.BookID == 1 {
-			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
+			assert.Equal(t, "not Jane Smith", *b.Pseudonym)
 		}
 	}
 }
@@ -140,6 +140,7 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 }
 
 // TODO join should be simply UserAPIKeyJoin *UserAPIKey since it's O2O there's no possible clash
+// it should detect vert partit. or alt. have "properties":vpartitioned on column
 func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 	t.Parallel()
 

@@ -1146,8 +1146,8 @@ cc_label:
 				Type:                  constraint.Type,
 				Cardinality:           O2O,
 				Name:                  constraint.Name + " (Generated from M2O)",
-				TableName:             constraint.TableName,
-				RefTableName:          constraint.RefTableName,
+				TableName:             constraint.RefTableName,
+				RefTableName:          constraint.TableName,
 				ColumnName:            constraint.ColumnName,
 				RefColumnName:         constraint.RefColumnName,
 				JoinTableClash:        joinTableClash,
@@ -1966,8 +1966,8 @@ type %s struct {
 			}
 		case O2O:
 			notes += string(c.Cardinality) + " " + c.RefTableName
-			if c.TableName == sqlname {
-				joinName = camelExport(singularize(c.RefTableName))
+			if c.RefTableName == sqlname {
+				joinName = camelExport(singularize(c.TableName))
 				if c.JoinTableClash {
 					joinName = joinName + camelExport(c.ColumnName)
 				}
@@ -2344,8 +2344,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 						}
 					}
 				case O2O:
-					if c.TableName == x.SQLName {
-						joinName = prefix + camelExport(singularize(c.RefTableName))
+					if c.RefTableName == x.SQLName {
+						joinName = prefix + camelExport(singularize(c.TableName))
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.ColumnName)
 						}
@@ -2404,8 +2404,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 						}
 					}
 				case O2O:
-					if c.TableName == x.Table.SQLName {
-						joinName = prefix + camelExport(singularize(c.RefTableName))
+					if c.RefTableName == x.Table.SQLName {
+						joinName = prefix + camelExport(singularize(c.TableName))
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.ColumnName)
 						}
@@ -2456,8 +2456,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 						}
 					}
 				case O2O:
-					if c.TableName == x.Table.SQLName {
-						joinName = prefix + camelExport(singularize(c.RefTableName))
+					if c.RefTableName == x.Table.SQLName {
+						joinName = prefix + camelExport(singularize(c.TableName))
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.ColumnName)
 						}
@@ -3192,36 +3192,36 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 		// params["JoinTablePKGroupBys"] = strings.Join(joinTablePKGroupBys, ", ")
 
 	case O2O:
-		if c.TableName == table.SQLName {
+		if c.RefTableName == table.SQLName {
 			groupbyTpl = O2OGroupBy
 			joinTpl = O2OJoin
 			selectTpl = O2OSelect
-			params["JoinColumn"] = c.RefColumnName
-			params["JoinTable"] = c.RefTableName
-			params["JoinRefColumn"] = c.ColumnName
-			params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
+			params["JoinColumn"] = c.ColumnName
+			params["JoinTable"] = c.TableName
+			params["JoinRefColumn"] = c.RefColumnName
+			params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
 			params["CurrentTable"] = table.SQLName
 			if c.JoinTableClash {
-				params["ClashSuffix"] = "_" + c.ColumnName
+				params["ClashSuffix"] = "_" + c.RefColumnName
 			}
 
-			t := tables[c.RefTableName]
+			t := tables[c.TableName]
 			var f Field
 			for _, tf := range t.Fields {
-				if tf.SQLName == c.ColumnName {
+				if tf.SQLName == c.RefColumnName {
 					f = tf
 				}
 			}
 			// need to check RefTable PKs since this should get called when generating for a
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
-			params["Alias"] = "_" + c.RefTableName
+			params["Alias"] = "_" + c.TableName
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
-				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
+				params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
 			}
 
-			joinTable := tables[c.RefTableName]
+			joinTable := tables[c.TableName]
 			var joinTablePKGroupBys []string
 			for _, pk := range joinTable.PrimaryKeys {
 				if !(isSingleFK && isSinglePK) {
@@ -3641,21 +3641,22 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case O2O:
-			if c.TableName == t.SQLName {
-				goName = camelExport(singularize(c.RefTableName))
+			if c.RefTableName == t.SQLName {
+				goName = camelExport(singularize(c.TableName))
 				typ = goName
 				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
 				goName = descName + "Join" // o2o does not need orig goName. it's obvious from join + will never clash
 
-				notes += " " + c.RefTableName
+				notes += " " + c.TableName
 				if c.IsInferredO2O {
 					notes += " (inferred)"
+					fmt.Printf("c: %+v\n", c)
 				}
 				if c.IsGeneratedO2OFromM2O {
 					notes += " (generated from M2O)"
 				}
 
-				t := tables[c.RefTableName]
+				t := tables[c.TableName]
 				var f Field
 				for _, tf := range t.Fields {
 					if tf.SQLName == c.ColumnName {
@@ -3664,10 +3665,9 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 				isSingleFK, isSinglePK := analyzeField(t, f)
 				if isSingleFK && isSinglePK || c.RefPKisFK {
-					// use original ref name
-					goName = camelExport(singularize(c.RefTableName)) + "Join"
+					goName = camelExport(singularize(c.TableName)) + "Join"
 				}
-				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
+				joinPrefix := inflector.Singularize(c.TableName) + "_"
 				joinName := joinPrefix + inflector.Singularize(c.ColumnName)
 
 				if !structFieldIsUnique(structFields, goName) {
