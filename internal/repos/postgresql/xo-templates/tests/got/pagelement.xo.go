@@ -194,8 +194,8 @@ func (pe *PagElement) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// PagElementPaginatedByCreatedAt returns a cursor-paginated list of PagElement.
-func PagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
+// PagElementPaginatedByCreatedAtAsc returns a cursor-paginated list of PagElement in Asc order.
+func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
 	c := &PagElementSelectConfig{joins: PagElementJoins{}}
 
 	for _, o := range opts {
@@ -211,20 +211,67 @@ pag_element.dummy,
 		`FROM xo_tests.pag_element ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
 left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
-		` WHERE pag_element.created_at > $2 GROUP BY _dummy_join_dummies.dummy_join_id,
+		` WHERE pag_element.created_at > $2 GROUP BY 
+	pag_element.created_at,
+	pag_element.dummy,
+	pag_element.name,
+	pag_element.paginated_element_id,
+_dummy_join_dummies.dummy_join_id,
       _dummy_join_dummies.dummy_join_id,
-	pag_element.paginated_element_id `
+	pag_element.paginated_element_id ORDER BY 
+		created_at Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, createdAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[PagElement])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// PagElementPaginatedByCreatedAtDesc returns a cursor-paginated list of PagElement in Desc order.
+func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
+	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`pag_element.paginated_element_id,
+pag_element.name,
+pag_element.created_at,
+pag_element.dummy,
+(case when $1::boolean = true and _dummy_join_dummies.dummy_join_id is not null then row(_dummy_join_dummies.*) end) as dummy_join_dummy ` +
+		`FROM xo_tests.pag_element ` +
+		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
+left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
+		` WHERE pag_element.created_at < $2 GROUP BY 
+	pag_element.created_at,
+	pag_element.dummy,
+	pag_element.name,
+	pag_element.paginated_element_id,
+_dummy_join_dummies.dummy_join_id,
+      _dummy_join_dummies.dummy_join_id,
+	pag_element.paginated_element_id ORDER BY 
+		created_at Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, createdAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[PagElement])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -249,7 +296,12 @@ pag_element.dummy,
 		`FROM xo_tests.pag_element ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
 left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
-		` WHERE pag_element.created_at = $2 GROUP BY _dummy_join_dummies.dummy_join_id,
+		` WHERE pag_element.created_at = $2 GROUP BY 
+	pag_element.created_at,
+	pag_element.dummy,
+	pag_element.name,
+	pag_element.paginated_element_id,
+_dummy_join_dummies.dummy_join_id,
       _dummy_join_dummies.dummy_join_id,
 	pag_element.paginated_element_id `
 	sqlstr += c.orderBy
@@ -289,7 +341,12 @@ pag_element.dummy,
 		`FROM xo_tests.pag_element ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
 left join xo_tests.dummy_join as _dummy_join_dummies on _dummy_join_dummies.dummy_join_id = pag_element.dummy` +
-		` WHERE pag_element.paginated_element_id = $2 GROUP BY _dummy_join_dummies.dummy_join_id,
+		` WHERE pag_element.paginated_element_id = $2 GROUP BY 
+	pag_element.created_at,
+	pag_element.dummy,
+	pag_element.name,
+	pag_element.paginated_element_id,
+_dummy_join_dummies.dummy_join_id,
       _dummy_join_dummies.dummy_join_id,
 	pag_element.paginated_element_id `
 	sqlstr += c.orderBy

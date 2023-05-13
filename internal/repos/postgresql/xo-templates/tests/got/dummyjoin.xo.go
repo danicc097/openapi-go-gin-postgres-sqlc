@@ -159,8 +159,8 @@ func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// DummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of DummyJoin.
-func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+// DummyJoinPaginatedByDummyJoinIDAsc returns a cursor-paginated list of DummyJoin in Asc order.
+func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
 
 	for _, o := range opts {
@@ -172,18 +172,49 @@ func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID int
 dummy_join.name ` +
 		`FROM xo_tests.dummy_join ` +
 		`` +
-		` WHERE dummy_join.dummy_join_id > $1 `
+		` WHERE dummy_join.dummy_join_id > $1 ORDER BY 
+		dummy_join_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, dummyJoinID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// DummyJoinPaginatedByDummyJoinIDDesc returns a cursor-paginated list of DummyJoin in Desc order.
+func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`dummy_join.dummy_join_id,
+dummy_join.name ` +
+		`FROM xo_tests.dummy_join ` +
+		`` +
+		` WHERE dummy_join.dummy_join_id < $1 ORDER BY 
+		dummy_join_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, dummyJoinID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

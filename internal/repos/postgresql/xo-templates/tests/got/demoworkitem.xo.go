@@ -167,8 +167,8 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// DemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoWorkItem.
-func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+// DemoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoWorkItem in Asc order.
+func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}}
 
 	for _, o := range opts {
@@ -182,20 +182,61 @@ demo_work_items.checked,
 		`FROM xo_tests.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
 left join xo_tests.work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id > $2 GROUP BY _work_items_work_item_ids.work_item_id,
+		` WHERE demo_work_items.work_item_id > $2 GROUP BY 
+	demo_work_items.checked,
+	demo_work_items.work_item_id,
+_work_items_work_item_ids.work_item_id,
       _work_items_work_item_ids.work_item_id,
-	demo_work_items.work_item_id `
+	demo_work_items.work_item_id ORDER BY 
+		work_item_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// DemoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoWorkItem in Desc order.
+func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`demo_work_items.work_item_id,
+demo_work_items.checked,
+(case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
+		`FROM xo_tests.demo_work_items ` +
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
+left join xo_tests.work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.work_item_id < $2 GROUP BY 
+	demo_work_items.checked,
+	demo_work_items.work_item_id,
+_work_items_work_item_ids.work_item_id,
+      _work_items_work_item_ids.work_item_id,
+	demo_work_items.work_item_id ORDER BY 
+		work_item_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -218,7 +259,10 @@ demo_work_items.checked,
 		`FROM xo_tests.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
 left join xo_tests.work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id = $2 GROUP BY _work_items_work_item_ids.work_item_id,
+		` WHERE demo_work_items.work_item_id = $2 GROUP BY 
+	demo_work_items.checked,
+	demo_work_items.work_item_id,
+_work_items_work_item_ids.work_item_id,
       _work_items_work_item_ids.work_item_id,
 	demo_work_items.work_item_id `
 	sqlstr += c.orderBy

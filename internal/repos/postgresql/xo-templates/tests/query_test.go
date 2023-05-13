@@ -52,12 +52,12 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 	// 	order by pag_element.created_at desc `
 	//
 
-	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
+	ee, err := db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
 	assert.NoError(t, err)
 	assert.Len(t, ee, 1)
 	assert.Equal(t, ee[0].Name, "element -2 days")
 
-	ee, err = db.PagElementPaginatedByCreatedAt(ctx, testPool, ee[0].CreatedAt, db.WithPagElementLimit(2))
+	ee, err = db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, ee[0].CreatedAt, db.WithPagElementLimit(2))
 	assert.NoError(t, err)
 	assert.Len(t, ee, 2)
 	assert.Equal(t, ee[0].Name, "element -3 days")
@@ -175,10 +175,10 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, u.UserJoin.UserID, userID)
+	assert.Equal(t, u.UserAPIKeyJoin.UserID, userID)
 
 	uak, err := db.UserAPIKeyByUserID(ctx, testPool, userID, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, uak.UserAPIKeyJoin.UserID, userID)
+	assert.Equal(t, uak.UserJoin.UserID, userID)
 	assert.Equal(t, uak.UserID, userID)
 }

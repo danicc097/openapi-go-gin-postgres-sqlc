@@ -165,8 +165,8 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemPaginatedByWorkItemID returns a cursor-paginated list of WorkItem.
-func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+// WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
+func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
 
 	for _, o := range opts {
@@ -180,19 +180,59 @@ work_items.title,
 		`FROM xo_tests.work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_ids on _demo_work_items_work_item_ids.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id > $2 GROUP BY _demo_work_items_work_item_ids.work_item_id,
-	work_items.work_item_id `
+		` WHERE work_items.work_item_id > $2 GROUP BY 
+	work_items.title,
+	work_items.work_item_id,
+_demo_work_items_work_item_ids.work_item_id,
+	work_items.work_item_id ORDER BY 
+		work_item_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
+func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_items.work_item_id,
+work_items.title,
+(case when $1::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as demo_work_item_work_item_id ` +
+		`FROM xo_tests.work_items ` +
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join xo_tests.demo_work_items as _demo_work_items_work_item_ids on _demo_work_items_work_item_ids.work_item_id = work_items.work_item_id` +
+		` WHERE work_items.work_item_id < $2 GROUP BY 
+	work_items.title,
+	work_items.work_item_id,
+_demo_work_items_work_item_ids.work_item_id,
+	work_items.work_item_id ORDER BY 
+		work_item_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -215,7 +255,10 @@ work_items.title,
 		`FROM xo_tests.work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_ids on _demo_work_items_work_item_ids.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id = $2 GROUP BY _demo_work_items_work_item_ids.work_item_id,
+		` WHERE work_items.work_item_id = $2 GROUP BY 
+	work_items.title,
+	work_items.work_item_id,
+_demo_work_items_work_item_ids.work_item_id,
 	work_items.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

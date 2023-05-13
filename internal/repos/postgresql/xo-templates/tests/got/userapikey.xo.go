@@ -201,8 +201,8 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// UserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of UserAPIKey.
-func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+// UserAPIKeyPaginatedByUserAPIKeyIDAsc returns a cursor-paginated list of UserAPIKey in Asc order.
+func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}}
 
 	for _, o := range opts {
@@ -218,20 +218,67 @@ user_api_keys.user_id,
 		`FROM xo_tests.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.users as _users_user_ids on _users_user_ids.user_id = user_api_keys.user_id` +
-		` WHERE user_api_keys.user_api_key_id > $2 GROUP BY _users_user_ids.user_id,
+		` WHERE user_api_keys.user_api_key_id > $2 GROUP BY 
+	user_api_keys.api_key,
+	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
+	user_api_keys.user_id,
+_users_user_ids.user_id,
       _users_user_ids.user_id,
-	user_api_keys.user_api_key_id `
+	user_api_keys.user_api_key_id ORDER BY 
+		user_api_key_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// UserAPIKeyPaginatedByUserAPIKeyIDDesc returns a cursor-paginated list of UserAPIKey in Desc order.
+func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`user_api_keys.user_api_key_id,
+user_api_keys.api_key,
+user_api_keys.expires_on,
+user_api_keys.user_id,
+(case when $1::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id ` +
+		`FROM xo_tests.user_api_keys ` +
+		`-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
+left join xo_tests.users as _users_user_ids on _users_user_ids.user_id = user_api_keys.user_id` +
+		` WHERE user_api_keys.user_api_key_id < $2 GROUP BY 
+	user_api_keys.api_key,
+	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
+	user_api_keys.user_id,
+_users_user_ids.user_id,
+      _users_user_ids.user_id,
+	user_api_keys.user_api_key_id ORDER BY 
+		user_api_key_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -256,7 +303,12 @@ user_api_keys.user_id,
 		`FROM xo_tests.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.users as _users_user_ids on _users_user_ids.user_id = user_api_keys.user_id` +
-		` WHERE user_api_keys.api_key = $2 GROUP BY _users_user_ids.user_id,
+		` WHERE user_api_keys.api_key = $2 GROUP BY 
+	user_api_keys.api_key,
+	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
+	user_api_keys.user_id,
+_users_user_ids.user_id,
       _users_user_ids.user_id,
 	user_api_keys.user_api_key_id `
 	sqlstr += c.orderBy
@@ -296,7 +348,12 @@ user_api_keys.user_id,
 		`FROM xo_tests.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.users as _users_user_ids on _users_user_ids.user_id = user_api_keys.user_id` +
-		` WHERE user_api_keys.user_api_key_id = $2 GROUP BY _users_user_ids.user_id,
+		` WHERE user_api_keys.user_api_key_id = $2 GROUP BY 
+	user_api_keys.api_key,
+	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
+	user_api_keys.user_id,
+_users_user_ids.user_id,
       _users_user_ids.user_id,
 	user_api_keys.user_api_key_id `
 	sqlstr += c.orderBy
@@ -336,7 +393,12 @@ user_api_keys.user_id,
 		`FROM xo_tests.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join xo_tests.users as _users_user_ids on _users_user_ids.user_id = user_api_keys.user_id` +
-		` WHERE user_api_keys.user_id = $2 GROUP BY _users_user_ids.user_id,
+		` WHERE user_api_keys.user_id = $2 GROUP BY 
+	user_api_keys.api_key,
+	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
+	user_api_keys.user_id,
+_users_user_ids.user_id,
       _users_user_ids.user_id,
 	user_api_keys.user_api_key_id `
 	sqlstr += c.orderBy

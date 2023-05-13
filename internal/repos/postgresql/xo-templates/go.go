@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -125,6 +126,23 @@ func toAcronym(input string) string {
 	}
 
 	return strings.ToUpper(acronym)
+}
+
+func uniqueSort(slice []string) []string {
+	uniqueMap := make(map[string]bool)
+
+	for _, item := range slice {
+		uniqueMap[item] = true
+	}
+
+	uniqueSlice := make([]string, 0, len(uniqueMap))
+	for item := range uniqueMap {
+		uniqueSlice = append(uniqueSlice, item)
+	}
+
+	sort.Strings(uniqueSlice)
+
+	return uniqueSlice
 }
 
 // Init registers the template.
@@ -1473,6 +1491,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"func_name_context_suffixed": f.func_name_context_suffixed,
 		"recv_context_suffixed":      f.recv_context_suffixed,
 		// helpers
+		"combine_values":   combine_values,
 		"fields_to_goname": fields_to_goname,
 		"check_name":       checkName,
 		"eval":             eval,
@@ -1498,6 +1517,10 @@ func (f *Funcs) lower_first(str string) string {
 	b.WriteString(string(str[i-1:]))
 
 	return b.String()
+}
+
+func combine_values(values ...string) []string {
+	return values
 }
 
 func (f *Funcs) firstfn() bool {
@@ -2632,7 +2655,7 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 }
 
 // sqlstr_paginated builds a cursor-paginated query string from columns.
-func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []Field) string {
+func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []Field, order string) string {
 	var groupbys []string
 	switch x := v.(type) {
 	case Table:
@@ -2673,7 +2696,7 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			if c.Type != "foreign_key" {
 				continue
 			}
-			joinStmt, selectStmt, groupby := createJoinStatement(tables, c, x, funcs, f.nth, n)
+			joinStmt, selectStmt, groupby := f.createJoinStatement(tables, c, x, funcs, n)
 			if joinStmt == "" || selectStmt == "" {
 				continue
 			}
@@ -2690,8 +2713,13 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 		var orderbys []string
 
 		for _, c := range columns {
-			filters = append(filters, fmt.Sprintf("%s.%s > %s", x.SQLName, c.SQLName, f.nth(n)))
-			orderbys = append(orderbys, c.SQLName+" DESC") // TODO loop indexes and if one has specific order generate another query
+			operator := "<"
+			if strings.ToLower(order) == "asc" {
+				operator = ">"
+			}
+			filters = append(filters, fmt.Sprintf("%s.%s %s %s", x.SQLName, c.SQLName, operator, f.nth(n)))
+			// TODO generate paginated for indexes as well.
+			orderbys = append(orderbys, c.SQLName+" "+order)
 			n++
 		}
 
@@ -2716,7 +2744,7 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 			)
 		} else {
-			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `")+groupbyStmt)
+			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `")+groupbyStmt+" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"))
 		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
@@ -2914,10 +2942,14 @@ const (
 )
 
 const (
+	BaseGroupBy = `{{range $mg := .MainGroupBys}}
+	{{if $mg}}{{$mg}},{{end}}
+
+{{- end}}`
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
 	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
 	O2OGroupBy = `{{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}},
-	{{- range $i, $g := .JoinTablePKGroupBys}}
+	{{- range $g := .JoinTablePKGroupBys}}
       {{if $g}}{{$g}},{{end}}
 
   {{- end}}
@@ -3000,7 +3032,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			if c.Type != "foreign_key" {
 				continue
 			}
-			joinStmt, selectStmt, groupby := createJoinStatement(tables, c, x.Table, funcs, f.nth, n)
+			joinStmt, selectStmt, groupby := f.createJoinStatement(tables, c, x.Table, funcs, n)
 			if joinStmt == "" || selectStmt == "" {
 				continue
 			}
@@ -3090,15 +3122,16 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 
 // createJoinStatement returns select queries and join statements strings
 // for a given index table.
-func createJoinStatement(tables Tables, c Constraint, table Table, funcs template.FuncMap, nth func(int) string, n int) (string, string, string) {
+func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, funcs template.FuncMap, n int) (string, string, string) {
 	var joinTpl, selectTpl, groupbyTpl string
 	join := &bytes.Buffer{}
 	selec := &bytes.Buffer{}
+	basegroupby := &bytes.Buffer{}
 	groupby := &bytes.Buffer{}
 	params := make(map[string]interface{})
 	fmt.Fprintf(join, "-- %s join generated from %q", c.Cardinality, c.Name)
 
-	params["Nth"] = nth(n)
+	params["Nth"] = f.nth(n)
 	params["ClashSuffix"] = ""
 	params["Schema"] = ""
 
@@ -3112,6 +3145,13 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 	if table.Schema != "public" {
 		params["Schema"] = table.Schema + "."
 	}
+
+	// all fields already selected in main table need to appear
+	var mainGroupBys []string
+	for _, z := range table.Fields {
+		mainGroupBys = append(mainGroupBys, table.SQLName+"."+f.colname(z))
+	}
+	params["MainGroupBys"] = uniqueSort(mainGroupBys)
 
 	switch c.Cardinality {
 	case M2M:
@@ -3206,17 +3246,17 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 			}
 
 			t := tables[c.TableName]
-			var f Field
+			var field Field
 			for _, tf := range t.Fields {
 				if tf.SQLName == c.RefColumnName {
-					f = tf
+					field = tf
 				}
 			}
 			// need to check RefTable PKs since this should get called when generating for a
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
 			params["Alias"] = "_" + c.TableName
-			isSingleFK, isSinglePK := analyzeField(t, f)
+			isSingleFK, isSinglePK := analyzeField(t, field)
 			if isSingleFK && isSinglePK {
 				params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
 			}
@@ -3229,7 +3269,8 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 					joinTablePKGroupBys = append(joinTablePKGroupBys, gb)
 				}
 			}
-			params["JoinTablePKGroupBys"] = joinTablePKGroupBys
+
+			params["JoinTablePKGroupBys"] = uniqueSort(joinTablePKGroupBys)
 
 			break
 		}
@@ -3260,10 +3301,15 @@ func createJoinStatement(tables Tables, c Constraint, table Table, funcs templat
 
 	t = template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(groupbyTpl))
 	if err := t.Execute(groupby, params); err != nil {
-		panic(fmt.Sprintf("could not execute selec template: %s", err))
+		panic(fmt.Sprintf("could not execute groupby template: %s", err))
 	}
 
-	return join.String(), selec.String(), groupby.String()
+	t = template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(BaseGroupBy))
+	if err := t.Execute(basegroupby, params); err != nil {
+		panic(fmt.Sprintf("could not execute base group by template: %s", err))
+	}
+
+	return join.String(), selec.String(), basegroupby.String() + "\n" + groupby.String()
 }
 
 // getTableRegularFields gets extra columns in a lookup table that are not PK or FK
