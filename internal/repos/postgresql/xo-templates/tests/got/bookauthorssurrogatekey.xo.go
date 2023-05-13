@@ -102,13 +102,13 @@ func WithBookAuthorsSurrogateKeyJoin(joins BookAuthorsSurrogateKeyJoins) BookAut
 // Book__BASK_BookAuthorsSurrogateKey represents a M2M join against "xo_tests.book_authors_surrogate_key"
 type Book__BASK_BookAuthorsSurrogateKey struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // User__BASK_BookAuthorsSurrogateKey represents a M2M join against "xo_tests.book_authors_surrogate_key"
 type User__BASK_BookAuthorsSurrogateKey struct {
 	User      User    `json:"user" db:"users" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // Insert inserts the BookAuthorsSurrogateKey to the database.

@@ -196,7 +196,7 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 // User__WIAU_WorkItem represents a M2M join against "public.work_item_assigned_user"
 type User__WIAU_WorkItem struct {
 	User User                `json:"user" db:"users" required:"true"`
-	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
+	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // Insert inserts the WorkItem to the database.

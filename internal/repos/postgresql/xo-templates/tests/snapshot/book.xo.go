@@ -93,13 +93,13 @@ func WithBookJoin(joins BookJoins) BookSelectConfigOption {
 // User__BA_Book represents a M2M join against "xo_tests.book_authors"
 type User__BA_Book struct {
 	User      User    `json:"user" db:"users" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // User__BASK_Book represents a M2M join against "xo_tests.book_authors_surrogate_key"
 type User__BASK_Book struct {
 	User      User    `json:"user" db:"users" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // Insert inserts the Book to the database.

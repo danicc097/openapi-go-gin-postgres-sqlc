@@ -106,13 +106,13 @@ func WithWorkItemAssignedUserJoin(joins WorkItemAssignedUserJoins) WorkItemAssig
 // WorkItem__WIAU_WorkItemAssignedUser represents a M2M join against "public.work_item_assigned_user"
 type WorkItem__WIAU_WorkItemAssignedUser struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
-	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
+	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // User__WIAU_WorkItemAssignedUser represents a M2M join against "public.work_item_assigned_user"
 type User__WIAU_WorkItemAssignedUser struct {
 	User User                `json:"user" db:"users" required:"true"`
-	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
+	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // Insert inserts the WorkItemAssignedUser to the database.

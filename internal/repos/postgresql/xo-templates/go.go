@@ -1932,7 +1932,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 					if col.OpenAPISchema != "" {
 						tag = tag + ` ref:"#/components/schemas/` + col.OpenAPISchema + `"`
 					}
-					tag = tag + "`"
+					tag = tag + " " + col.ExtraTags + "`"
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
 				}
 				joinField := originalStruct + " " + originalStruct + " " + tag

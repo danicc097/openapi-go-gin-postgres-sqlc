@@ -100,6 +100,8 @@ create table xo_tests.notifications (
   , foreign key (receiver) references xo_tests.users (user_id) on delete cascade
 );
 
+comment on column xo_tests.notifications.body is '"tags":pattern:"^[A-Za-z0-9]*$" && "properties":private';
+
 create index on xo_tests.notifications (sender);
 
 comment on column xo_tests.notifications.sender is '"cardinality":M2O';

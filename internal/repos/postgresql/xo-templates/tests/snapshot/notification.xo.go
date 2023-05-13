@@ -20,7 +20,7 @@ import (
 //   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Notification struct {
 	NotificationID int        `json:"notificationID" db:"notification_id" required:"true"` // notification_id
-	Body           string     `json:"body" db:"body" required:"true"`                      // body
+	Body           string     `json:"-" db:"body" pattern:"^[A-Za-z0-9]*$"`                // body
 	Sender         uuid.UUID  `json:"sender" db:"sender" required:"true"`                  // sender
 	Receiver       *uuid.UUID `json:"receiver" db:"receiver" required:"true"`              // receiver
 
@@ -30,9 +30,9 @@ type Notification struct {
 
 // NotificationCreateParams represents insert params for 'xo_tests.notifications'.
 type NotificationCreateParams struct {
-	Body     string     `json:"body" required:"true"`     // body
-	Sender   uuid.UUID  `json:"sender" required:"true"`   // sender
-	Receiver *uuid.UUID `json:"receiver" required:"true"` // receiver
+	Body     string     `json:"-" pattern:"^[A-Za-z0-9]*$"` // body
+	Sender   uuid.UUID  `json:"sender" required:"true"`     // sender
+	Receiver *uuid.UUID `json:"receiver" required:"true"`   // receiver
 }
 
 // CreateNotification creates a new Notification in the database with the given params.
@@ -48,9 +48,9 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 
 // NotificationUpdateParams represents update params for 'xo_tests.notifications'
 type NotificationUpdateParams struct {
-	Body     *string     `json:"body" required:"true"`     // body
-	Sender   *uuid.UUID  `json:"sender" required:"true"`   // sender
-	Receiver **uuid.UUID `json:"receiver" required:"true"` // receiver
+	Body     *string     `json:"-" pattern:"^[A-Za-z0-9]*$"` // body
+	Sender   *uuid.UUID  `json:"sender" required:"true"`     // sender
+	Receiver **uuid.UUID `json:"receiver" required:"true"`   // receiver
 }
 
 // SetUpdateParams updates xo_tests.notifications struct fields with the specified params.
