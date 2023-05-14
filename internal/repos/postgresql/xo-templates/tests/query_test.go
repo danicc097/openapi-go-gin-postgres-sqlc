@@ -25,9 +25,31 @@ import (
 	e.g. workitems paginated by created at while filtering TeamID is X
 	filters []string and just append those, while warning for obvious sql injection risks
 	this way we could have any filtering logic, `team_id in {team1, team2}`, etc.
+
+
+	FIXME: wait for AfterConnect hook to run completely before returning db in postgresql.New() for pgx registering types,
+	else we get messages like `cannot scan unknown type (OID 2268498) in text format into **[]got.Notification`
+	simple boolean flag should suffice
 */
 
 func TestCursorPagination_Timestamp(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	ee, err := db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
+	assert.NoError(t, err)
+	assert.Len(t, ee, 1)
+	assert.Equal(t, ee[0].Name, "element -2 days")
+
+	ee, err = db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, ee[0].CreatedAt, db.WithPagElementLimit(2))
+	assert.NoError(t, err)
+	assert.Len(t, ee, 2)
+	assert.Equal(t, ee[0].Name, "element -3 days")
+	assert.Equal(t, ee[1].Name, "element -4 days")
+}
+
+func Test_Filters(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()

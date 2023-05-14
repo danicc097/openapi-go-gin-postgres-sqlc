@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -73,6 +74,7 @@ type UserSelectConfig struct {
 	orderBy   string
 	joins     UserJoins
 	deletedAt string
+	filters map[string]any
 }
 type UserSelectConfigOption func(*UserSelectConfig)
 
@@ -92,6 +94,11 @@ func WithDeletedUserOnly() UserSelectConfigOption {
 	}
 }
 
+func WithUserFilters(filters map[string]any) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.filters = filters
+	}
+}
 type UserOrderBy = string
 
 const (
@@ -263,9 +270,18 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
+
 // UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
 func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string]any)}
+
+	paramStart := 6
+	nth := func ()  string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	nth()
 
 	for _, o := range opts {
 		o(c)
@@ -368,20 +384,20 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at > $8  AND users.deleted_at is %s  GROUP BY users.user_id, 
-users.name, 
-users.api_key_id, 
-users.created_at, 
-users.deleted_at, 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
+		` WHERE users.created_at > $8  AND users.deleted_at is %s  GROUP BY users.user_id,
+users.name,
+users.api_key_id,
+users.created_at,
+users.deleted_at,
+users.user_id, users.user_id,
+users.user_id, users.user_id,
+joined_book_reviews.book_reviews, users.user_id,
+users.user_id, users.user_id,
+joined_notifications_receiver.notifications, users.user_id,
+joined_notifications_sender.notifications, users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id  ORDER BY 
+	users.user_id  ORDER BY
 		created_at Asc`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -503,20 +519,20 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at < $8  AND users.deleted_at is %s  GROUP BY users.user_id, 
-users.name, 
-users.api_key_id, 
-users.created_at, 
-users.deleted_at, 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
+		` WHERE users.created_at < $8  AND users.deleted_at is %s  GROUP BY users.user_id,
+users.name,
+users.api_key_id,
+users.created_at,
+users.deleted_at,
+users.user_id, users.user_id,
+users.user_id, users.user_id,
+joined_book_reviews.book_reviews, users.user_id,
+users.user_id, users.user_id,
+joined_notifications_receiver.notifications, users.user_id,
+joined_notifications_sender.notifications, users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id  ORDER BY 
+	users.user_id  ORDER BY
 		created_at Desc`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -641,13 +657,13 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at = $8  AND users.deleted_at is %s   GROUP BY 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
+		` WHERE users.created_at = $8  AND users.deleted_at is %s   GROUP BY
+users.user_id, users.user_id,
+users.user_id, users.user_id,
+joined_book_reviews.book_reviews, users.user_id,
+users.user_id, users.user_id,
+joined_notifications_receiver.notifications, users.user_id,
+joined_notifications_sender.notifications, users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)
@@ -776,13 +792,13 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.name = $8  AND users.deleted_at is %s   GROUP BY 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
+		` WHERE users.name = $8  AND users.deleted_at is %s   GROUP BY
+users.user_id, users.user_id,
+users.user_id, users.user_id,
+joined_book_reviews.book_reviews, users.user_id,
+users.user_id, users.user_id,
+joined_notifications_receiver.notifications, users.user_id,
+joined_notifications_sender.notifications, users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)
@@ -911,13 +927,13 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.user_id = $8  AND users.deleted_at is %s   GROUP BY 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
+		` WHERE users.user_id = $8  AND users.deleted_at is %s   GROUP BY
+users.user_id, users.user_id,
+users.user_id, users.user_id,
+joined_book_reviews.book_reviews, users.user_id,
+users.user_id, users.user_id,
+joined_notifications_receiver.notifications, users.user_id,
+joined_notifications_sender.notifications, users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)
