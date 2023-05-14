@@ -203,10 +203,10 @@ pag_element.created_at,
 pag_element.dummy ` +
 		`FROM xo_tests.pag_element ` +
 		`` +
-		` WHERE pag_element.created_at > $1 GROUP BY pag_element.paginated_element_id, 
-pag_element.name, 
-pag_element.created_at, 
-pag_element.dummy ORDER BY 
+		` WHERE pag_element.created_at > $1 GROUP BY pag_element.paginated_element_id,
+pag_element.name,
+pag_element.created_at,
+pag_element.dummy ORDER BY
 		created_at Asc `
 	sqlstr += c.limit
 
@@ -238,16 +238,20 @@ pag_element.created_at,
 pag_element.dummy ` +
 		`FROM xo_tests.pag_element ` +
 		`` +
-		` WHERE pag_element.created_at < $1 GROUP BY pag_element.paginated_element_id, 
-pag_element.name, 
-pag_element.created_at, 
-pag_element.dummy ORDER BY 
+		` WHERE pag_element.created_at < $1 and pag_element.name not in (SELECT unnest($2::text[])) GROUP BY pag_element.paginated_element_id,
+pag_element.name,
+pag_element.created_at,
+pag_element.dummy ORDER BY
 		created_at Desc `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	// parameter type based on simple type switch: ::text[], int[], etc
+	// and use nth
+	// we could use generics to restrict map values until more are supported
+	//    ^ we cannot. we will pass the map as is so we can't use them
+	rows, err := db.Query(ctx, sqlstr, createdAt, []string{"element -2 days????"})
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", err))
 	}
