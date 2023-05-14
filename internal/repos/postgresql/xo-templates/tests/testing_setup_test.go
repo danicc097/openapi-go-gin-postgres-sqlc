@@ -35,12 +35,12 @@ func testMain(m *testing.M) int {
 
 	logger, _ := zap.NewDevelopment()
 
-	testPool, _, err = postgresql.New(logger.Sugar())
+	_testPool, _, err := postgresql.New(logger.Sugar())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Couldn't create _testPool: %s\n", err)
 		os.Exit(1)
 	}
-	defer testPool.Close()
+	defer _testPool.Close()
 
 	schema, err := os.ReadFile("schema.sql")
 	if err != nil {
@@ -48,11 +48,21 @@ func testMain(m *testing.M) int {
 		return 1
 	}
 
-	_, err = testPool.Exec(context.Background(), string(schema))
+	_, err = _testPool.Exec(context.Background(), string(schema))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't read schema.sql: %s\n", err)
 		return 1
 	}
+
+	// refresh pgxpool types now that schema.sql is loaded.
+	// maybe a postgresl.New postgresql.WithSchemas(schemas...) executed in order is worth it
+	// to avoid this if it's in demand
+	testPool, _, err = postgresql.New(logger.Sugar())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
+		return 1
+	}
+	defer testPool.Close()
 
 	return m.Run()
 }

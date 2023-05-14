@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"sync"
+	"time"
 
 	zapadapter "github.com/jackc/pgx-zap"
 	"github.com/jackc/pgx/v5"
@@ -57,6 +58,8 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not query database types")
 	}
 
+	afterConnectRun := false
+
 	// called after a connection is established, but before it is added to the pool.
 	// Will run once.
 	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
@@ -67,6 +70,8 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		if err != nil {
 			return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not register data types")
 		}
+
+		afterConnectRun = true
 
 		return nil
 	}
@@ -83,6 +88,10 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 	sqlPool, err := sql.Open("pgx", pgxPool.Config().ConnString())
 	if err != nil {
 		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "sql.Open")
+	}
+
+	for !afterConnectRun {
+		time.Sleep(200 * time.Millisecond)
 	}
 
 	return pgxPool, sqlPool, nil
