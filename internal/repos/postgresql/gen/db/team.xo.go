@@ -265,39 +265,17 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.team_id > $5 GROUP BY 
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
+		` WHERE teams.team_id > $5 GROUP BY teams.team_id, 
+teams.project_id, 
+teams.name, 
+teams.description, 
+teams.created_at, 
+teams.updated_at, 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 teams.team_id, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id ORDER BY 
@@ -366,39 +344,17 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.project_id > $5 GROUP BY 
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
+		` WHERE teams.project_id > $5 GROUP BY teams.team_id, 
+teams.project_id, 
+teams.name, 
+teams.description, 
+teams.created_at, 
+teams.updated_at, 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 teams.team_id, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id ORDER BY 
@@ -467,39 +423,17 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.team_id < $5 GROUP BY 
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
+		` WHERE teams.team_id < $5 GROUP BY teams.team_id, 
+teams.project_id, 
+teams.name, 
+teams.description, 
+teams.created_at, 
+teams.updated_at, 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 teams.team_id, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id ORDER BY 
@@ -568,39 +502,17 @@ left join (
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.project_id < $5 GROUP BY 
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
+		` WHERE teams.project_id < $5 GROUP BY teams.team_id, 
+teams.project_id, 
+teams.name, 
+teams.description, 
+teams.created_at, 
+teams.updated_at, 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 teams.team_id, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id ORDER BY 
@@ -673,38 +585,11 @@ left join (
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
 		` WHERE teams.name = $5 AND teams.project_id = $6 GROUP BY 
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 teams.team_id, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id `
@@ -778,38 +663,11 @@ left join (
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
 		` WHERE teams.name = $5 GROUP BY 
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 teams.team_id, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id `
@@ -885,38 +743,11 @@ left join (
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
 		` WHERE teams.project_id = $5 GROUP BY 
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 teams.team_id, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id `
@@ -992,38 +823,11 @@ left join (
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
 		` WHERE teams.team_id = $5 GROUP BY 
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 teams.team_id, teams.team_id, 
-
-	teams.created_at,
-	teams.description,
-	teams.name,
-	teams.project_id,
-	teams.team_id,
-	teams.updated_at,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id `

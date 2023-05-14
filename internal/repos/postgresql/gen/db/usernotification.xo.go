@@ -208,19 +208,13 @@ user_notifications.user_id,
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id > $3 GROUP BY 
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
+		` WHERE user_notifications.user_notification_id > $3 GROUP BY user_notifications.user_notification_id, 
+user_notifications.notification_id, 
+user_notifications.read, 
+user_notifications.user_id, 
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
-
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id ORDER BY 
@@ -260,19 +254,13 @@ user_notifications.user_id,
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id > $3 GROUP BY 
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
+		` WHERE user_notifications.notification_id > $3 GROUP BY user_notifications.user_notification_id, 
+user_notifications.notification_id, 
+user_notifications.read, 
+user_notifications.user_id, 
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
-
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id ORDER BY 
@@ -312,19 +300,13 @@ user_notifications.user_id,
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id < $3 GROUP BY 
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
+		` WHERE user_notifications.user_notification_id < $3 GROUP BY user_notifications.user_notification_id, 
+user_notifications.notification_id, 
+user_notifications.read, 
+user_notifications.user_id, 
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
-
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id ORDER BY 
@@ -364,19 +346,13 @@ user_notifications.user_id,
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id < $3 GROUP BY 
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
+		` WHERE user_notifications.notification_id < $3 GROUP BY user_notifications.user_notification_id, 
+user_notifications.notification_id, 
+user_notifications.read, 
+user_notifications.user_id, 
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
-
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id ORDER BY 
@@ -420,18 +396,9 @@ left join notifications as _user_notifications_notification_id on _user_notifica
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
 		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 GROUP BY 
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
-
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id `
@@ -476,18 +443,9 @@ left join notifications as _user_notifications_notification_id on _user_notifica
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
 		` WHERE user_notifications.notification_id = $3 GROUP BY 
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
-
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id `
@@ -534,18 +492,9 @@ left join notifications as _user_notifications_notification_id on _user_notifica
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
 		` WHERE user_notifications.user_notification_id = $3 GROUP BY 
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
-
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id `
@@ -590,18 +539,9 @@ left join notifications as _user_notifications_notification_id on _user_notifica
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
 		` WHERE user_notifications.user_id = $3 GROUP BY 
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
-
-	user_notifications.notification_id,
-	user_notifications.read,
-	user_notifications.user_id,
-	user_notifications.user_notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id `

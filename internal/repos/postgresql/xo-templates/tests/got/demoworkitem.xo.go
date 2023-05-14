@@ -182,9 +182,8 @@ demo_work_items.checked,
 		`FROM xo_tests.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id > $2 GROUP BY 
-	demo_work_items.checked,
-	demo_work_items.work_item_id,
+		` WHERE demo_work_items.work_item_id > $2 GROUP BY demo_work_items.work_item_id, 
+demo_work_items.checked, 
 _work_items_work_item_id.work_item_id,
       _work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id ORDER BY 
@@ -219,9 +218,8 @@ demo_work_items.checked,
 		`FROM xo_tests.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id < $2 GROUP BY 
-	demo_work_items.checked,
-	demo_work_items.work_item_id,
+		` WHERE demo_work_items.work_item_id < $2 GROUP BY demo_work_items.work_item_id, 
+demo_work_items.checked, 
 _work_items_work_item_id.work_item_id,
       _work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id ORDER BY 
@@ -260,8 +258,6 @@ demo_work_items.checked,
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id` +
 		` WHERE demo_work_items.work_item_id = $2 GROUP BY 
-	demo_work_items.checked,
-	demo_work_items.work_item_id,
 _work_items_work_item_id.work_item_id,
       _work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id `

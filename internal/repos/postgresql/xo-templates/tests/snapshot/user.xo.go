@@ -368,54 +368,17 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at > $8  AND users.deleted_at is %s  GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
+		` WHERE users.created_at > $8  AND users.deleted_at is %s  GROUP BY users.user_id, 
+users.name, 
+users.api_key_id, 
+users.created_at, 
+users.deleted_at, 
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id  ORDER BY 
@@ -540,54 +503,17 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at < $8  AND users.deleted_at is %s  GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
+		` WHERE users.created_at < $8  AND users.deleted_at is %s  GROUP BY users.user_id, 
+users.name, 
+users.api_key_id, 
+users.created_at, 
+users.deleted_at, 
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id  ORDER BY 
@@ -716,53 +642,12 @@ left join (
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
 		` WHERE users.created_at = $8  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)
@@ -892,53 +777,12 @@ left join (
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
 		` WHERE users.name = $8  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)
@@ -1068,53 +912,12 @@ left join (
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
 		` WHERE users.user_id = $8  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)

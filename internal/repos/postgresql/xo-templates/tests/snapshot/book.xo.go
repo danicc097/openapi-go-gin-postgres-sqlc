@@ -265,21 +265,11 @@ left join (
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
 ` +
-		` WHERE books.book_id > $5 GROUP BY 
-	books.book_id,
-	books.name,
+		` WHERE books.book_id > $5 GROUP BY books.book_id, 
+books.name, 
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 joined_book_reviews.book_reviews, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id ORDER BY 
 		book_id Asc `
 	sqlstr += c.limit
@@ -376,21 +366,11 @@ left join (
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
 ` +
-		` WHERE books.book_id < $5 GROUP BY 
-	books.book_id,
-	books.name,
+		` WHERE books.book_id < $5 GROUP BY books.book_id, 
+books.name, 
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 joined_book_reviews.book_reviews, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id ORDER BY 
 		book_id Desc `
 	sqlstr += c.limit
@@ -491,20 +471,9 @@ left join (
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
 ` +
 		` WHERE books.book_id = $5 GROUP BY 
-	books.book_id,
-	books.name,
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 joined_book_reviews.book_reviews, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

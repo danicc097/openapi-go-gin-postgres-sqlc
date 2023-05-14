@@ -205,19 +205,13 @@ notifications.receiver,
 left join xo_tests.users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users as _notifications_sender on _notifications_sender.user_id = notifications.sender` +
-		` WHERE notifications.notification_id > $3 GROUP BY 
-	notifications.body,
-	notifications.notification_id,
-	notifications.receiver,
-	notifications.sender,
+		` WHERE notifications.notification_id > $3 GROUP BY notifications.notification_id, 
+notifications.body, 
+notifications.sender, 
+notifications.receiver, 
 _notifications_receiver.user_id,
       _notifications_receiver.user_id,
 	notifications.notification_id, 
-
-	notifications.body,
-	notifications.notification_id,
-	notifications.receiver,
-	notifications.sender,
 _notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id ORDER BY 
@@ -257,19 +251,13 @@ notifications.receiver,
 left join xo_tests.users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users as _notifications_sender on _notifications_sender.user_id = notifications.sender` +
-		` WHERE notifications.notification_id < $3 GROUP BY 
-	notifications.body,
-	notifications.notification_id,
-	notifications.receiver,
-	notifications.sender,
+		` WHERE notifications.notification_id < $3 GROUP BY notifications.notification_id, 
+notifications.body, 
+notifications.sender, 
+notifications.receiver, 
 _notifications_receiver.user_id,
       _notifications_receiver.user_id,
 	notifications.notification_id, 
-
-	notifications.body,
-	notifications.notification_id,
-	notifications.receiver,
-	notifications.sender,
 _notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id ORDER BY 
@@ -313,18 +301,9 @@ left join xo_tests.users as _notifications_receiver on _notifications_receiver.u
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users as _notifications_sender on _notifications_sender.user_id = notifications.sender` +
 		` WHERE notifications.notification_id = $3 GROUP BY 
-	notifications.body,
-	notifications.notification_id,
-	notifications.receiver,
-	notifications.sender,
 _notifications_receiver.user_id,
       _notifications_receiver.user_id,
 	notifications.notification_id, 
-
-	notifications.body,
-	notifications.notification_id,
-	notifications.receiver,
-	notifications.sender,
 _notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id `
@@ -369,18 +348,9 @@ left join xo_tests.users as _notifications_receiver on _notifications_receiver.u
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users as _notifications_sender on _notifications_sender.user_id = notifications.sender` +
 		` WHERE notifications.sender = $3 GROUP BY 
-	notifications.body,
-	notifications.notification_id,
-	notifications.receiver,
-	notifications.sender,
 _notifications_receiver.user_id,
       _notifications_receiver.user_id,
 	notifications.notification_id, 
-
-	notifications.body,
-	notifications.notification_id,
-	notifications.receiver,
-	notifications.sender,
 _notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id `

@@ -176,12 +176,7 @@ left join (
   ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
 ` +
 		` WHERE book_sellers.book_id = $3 AND book_sellers.seller = $4 GROUP BY 
-	book_sellers.book_id,
-	book_sellers.seller,
 book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-
-	book_sellers.book_id,
-	book_sellers.seller,
 book_sellers.seller, book_sellers.book_id, book_sellers.seller `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -250,12 +245,7 @@ left join (
   ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
 ` +
 		` WHERE book_sellers.book_id = $3 GROUP BY 
-	book_sellers.book_id,
-	book_sellers.seller,
 book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-
-	book_sellers.book_id,
-	book_sellers.seller,
 book_sellers.seller, book_sellers.book_id, book_sellers.seller `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -326,12 +316,7 @@ left join (
   ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
 ` +
 		` WHERE book_sellers.seller = $3 GROUP BY 
-	book_sellers.book_id,
-	book_sellers.seller,
 book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-
-	book_sellers.book_id,
-	book_sellers.seller,
 book_sellers.seller, book_sellers.book_id, book_sellers.seller `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

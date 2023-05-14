@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -40,6 +41,18 @@ func testMain(m *testing.M) int {
 		os.Exit(1)
 	}
 	defer testPool.Close()
+
+	schema, err := os.ReadFile("schema.sql")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't read schema.sql: %s\n", err)
+		return 1
+	}
+
+	_, err = testPool.Exec(context.Background(), string(schema))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't read schema.sql: %s\n", err)
+		return 1
+	}
 
 	return m.Run()
 }

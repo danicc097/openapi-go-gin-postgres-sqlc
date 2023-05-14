@@ -182,7 +182,8 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 schema_migrations.dirty ` +
 		`FROM public.schema_migrations ` +
 		`` +
-		` WHERE schema_migrations.version > $1 ORDER BY 
+		` WHERE schema_migrations.version > $1 GROUP BY schema_migrations.version, 
+schema_migrations.dirty ORDER BY 
 		version Asc `
 	sqlstr += c.limit
 
@@ -212,7 +213,8 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 schema_migrations.dirty ` +
 		`FROM public.schema_migrations ` +
 		`` +
-		` WHERE schema_migrations.version < $1 ORDER BY 
+		` WHERE schema_migrations.version < $1 GROUP BY schema_migrations.version, 
+schema_migrations.dirty ORDER BY 
 		version Desc `
 	sqlstr += c.limit
 

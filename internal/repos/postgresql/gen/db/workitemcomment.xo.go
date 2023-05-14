@@ -233,23 +233,15 @@ work_item_comments.updated_at,
 left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY 
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
+		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY work_item_comments.work_item_comment_id, 
+work_item_comments.work_item_id, 
+work_item_comments.user_id, 
+work_item_comments.message, 
+work_item_comments.created_at, 
+work_item_comments.updated_at, 
 _work_item_comments_user_id.user_id,
       _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
-
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
 _work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id ORDER BY 
@@ -291,23 +283,15 @@ work_item_comments.updated_at,
 left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id < $3 GROUP BY 
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
+		` WHERE work_item_comments.work_item_comment_id < $3 GROUP BY work_item_comments.work_item_comment_id, 
+work_item_comments.work_item_id, 
+work_item_comments.user_id, 
+work_item_comments.message, 
+work_item_comments.created_at, 
+work_item_comments.updated_at, 
 _work_item_comments_user_id.user_id,
       _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
-
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
 _work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id ORDER BY 
@@ -353,22 +337,9 @@ left join users as _work_item_comments_user_id on _work_item_comments_user_id.us
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
 		` WHERE work_item_comments.work_item_comment_id = $3 GROUP BY 
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
 _work_item_comments_user_id.user_id,
       _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
-
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
 _work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id `
@@ -415,22 +386,9 @@ left join users as _work_item_comments_user_id on _work_item_comments_user_id.us
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
 		` WHERE work_item_comments.work_item_id = $3 GROUP BY 
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
 _work_item_comments_user_id.user_id,
       _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
-
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
 _work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id `

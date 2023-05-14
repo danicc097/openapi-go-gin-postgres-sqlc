@@ -180,9 +180,8 @@ dummy_join.name,
 		`FROM xo_tests.dummy_join ` +
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
 left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id > $2 GROUP BY 
-	dummy_join.dummy_join_id,
-	dummy_join.name,
+		` WHERE dummy_join.dummy_join_id > $2 GROUP BY dummy_join.dummy_join_id, 
+dummy_join.name, 
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id ORDER BY 
@@ -217,9 +216,8 @@ dummy_join.name,
 		`FROM xo_tests.dummy_join ` +
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
 left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id < $2 GROUP BY 
-	dummy_join.dummy_join_id,
-	dummy_join.name,
+		` WHERE dummy_join.dummy_join_id < $2 GROUP BY dummy_join.dummy_join_id, 
+dummy_join.name, 
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id ORDER BY 
@@ -258,8 +256,6 @@ dummy_join.name,
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
 left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
 		` WHERE dummy_join.dummy_join_id = $2 GROUP BY 
-	dummy_join.dummy_join_id,
-	dummy_join.name,
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id `

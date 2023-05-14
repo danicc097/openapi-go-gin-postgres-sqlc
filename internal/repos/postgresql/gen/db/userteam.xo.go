@@ -179,12 +179,7 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
 ` +
 		` WHERE user_team.member = $3 GROUP BY 
-	user_team.member,
-	user_team.team_id,
 user_team.team_id, user_team.team_id, user_team.member, 
-
-	user_team.member,
-	user_team.team_id,
 user_team.member, user_team.team_id, user_team.member `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -255,12 +250,7 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
 ` +
 		` WHERE user_team.member = $3 AND user_team.team_id = $4 GROUP BY 
-	user_team.member,
-	user_team.team_id,
 user_team.team_id, user_team.team_id, user_team.member, 
-
-	user_team.member,
-	user_team.team_id,
 user_team.member, user_team.team_id, user_team.member `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -329,12 +319,7 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
 ` +
 		` WHERE user_team.team_id = $3 GROUP BY 
-	user_team.member,
-	user_team.team_id,
 user_team.team_id, user_team.team_id, user_team.member, 
-
-	user_team.member,
-	user_team.team_id,
 user_team.member, user_team.team_id, user_team.member `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -405,12 +390,7 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
 ` +
 		` WHERE user_team.team_id = $3 AND user_team.member = $4 GROUP BY 
-	user_team.member,
-	user_team.team_id,
 user_team.team_id, user_team.team_id, user_team.member, 
-
-	user_team.member,
-	user_team.team_id,
 user_team.member, user_team.team_id, user_team.member `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

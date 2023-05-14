@@ -202,9 +202,8 @@ demo_two_work_items.custom_date_for_project_2,
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_two_work_items.work_item_id` +
-		` WHERE demo_two_work_items.work_item_id > $2 GROUP BY 
-	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id,
+		` WHERE demo_two_work_items.work_item_id > $2 GROUP BY demo_two_work_items.work_item_id, 
+demo_two_work_items.custom_date_for_project_2, 
 _work_items_work_item_id.work_item_id,
       _work_items_work_item_id.work_item_id,
 	demo_two_work_items.work_item_id ORDER BY 
@@ -239,9 +238,8 @@ demo_two_work_items.custom_date_for_project_2,
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_two_work_items.work_item_id` +
-		` WHERE demo_two_work_items.work_item_id < $2 GROUP BY 
-	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id,
+		` WHERE demo_two_work_items.work_item_id < $2 GROUP BY demo_two_work_items.work_item_id, 
+demo_two_work_items.custom_date_for_project_2, 
 _work_items_work_item_id.work_item_id,
       _work_items_work_item_id.work_item_id,
 	demo_two_work_items.work_item_id ORDER BY 
@@ -280,8 +278,6 @@ demo_two_work_items.custom_date_for_project_2,
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_two_work_items.work_item_id` +
 		` WHERE demo_two_work_items.work_item_id = $2 GROUP BY 
-	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id,
 _work_items_work_item_id.work_item_id,
       _work_items_work_item_id.work_item_id,
 	demo_two_work_items.work_item_id `

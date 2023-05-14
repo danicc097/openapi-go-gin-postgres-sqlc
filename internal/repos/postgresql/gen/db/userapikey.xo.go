@@ -219,11 +219,10 @@ user_api_keys.user_id,
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_api_key_id > $2 GROUP BY 
-	user_api_keys.api_key,
-	user_api_keys.expires_on,
-	user_api_keys.user_api_key_id,
-	user_api_keys.user_id,
+		` WHERE user_api_keys.user_api_key_id > $2 GROUP BY user_api_keys.user_api_key_id, 
+user_api_keys.api_key, 
+user_api_keys.expires_on, 
+user_api_keys.user_id, 
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
 	user_api_keys.user_api_key_id ORDER BY 
@@ -260,11 +259,10 @@ user_api_keys.user_id,
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_api_key_id < $2 GROUP BY 
-	user_api_keys.api_key,
-	user_api_keys.expires_on,
-	user_api_keys.user_api_key_id,
-	user_api_keys.user_id,
+		` WHERE user_api_keys.user_api_key_id < $2 GROUP BY user_api_keys.user_api_key_id, 
+user_api_keys.api_key, 
+user_api_keys.expires_on, 
+user_api_keys.user_id, 
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
 	user_api_keys.user_api_key_id ORDER BY 
@@ -305,10 +303,6 @@ user_api_keys.user_id,
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.api_key = $2 GROUP BY 
-	user_api_keys.api_key,
-	user_api_keys.expires_on,
-	user_api_keys.user_api_key_id,
-	user_api_keys.user_id,
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
 	user_api_keys.user_api_key_id `
@@ -350,10 +344,6 @@ user_api_keys.user_id,
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.user_api_key_id = $2 GROUP BY 
-	user_api_keys.api_key,
-	user_api_keys.expires_on,
-	user_api_keys.user_api_key_id,
-	user_api_keys.user_id,
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
 	user_api_keys.user_api_key_id `
@@ -395,10 +385,6 @@ user_api_keys.user_id,
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.user_id = $2 GROUP BY 
-	user_api_keys.api_key,
-	user_api_keys.expires_on,
-	user_api_keys.user_api_key_id,
-	user_api_keys.user_id,
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
 	user_api_keys.user_api_key_id `

@@ -257,14 +257,7 @@ left join (
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
 ` +
 		` WHERE work_item_assigned_user.assigned_user = $3 AND work_item_assigned_user.work_item_id = $4 GROUP BY 
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
 work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -342,14 +335,7 @@ left join (
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
 ` +
 		` WHERE work_item_assigned_user.work_item_id = $3 AND work_item_assigned_user.assigned_user = $4 GROUP BY 
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
 work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -425,14 +411,7 @@ left join (
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
 ` +
 		` WHERE work_item_assigned_user.work_item_id = $3 GROUP BY 
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
 work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -510,14 +489,7 @@ left join (
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
 ` +
 		` WHERE work_item_assigned_user.assigned_user = $3 GROUP BY 
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
 work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

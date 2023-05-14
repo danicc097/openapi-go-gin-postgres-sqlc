@@ -223,21 +223,14 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id > $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+		` WHERE activities.activity_id > $3 GROUP BY activities.activity_id, 
+activities.project_id, 
+activities.name, 
+activities.description, 
+activities.is_productive, 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
 		activity_id Asc `
 	sqlstr += c.limit
@@ -283,21 +276,14 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id > $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+		` WHERE activities.project_id > $3 GROUP BY activities.activity_id, 
+activities.project_id, 
+activities.name, 
+activities.description, 
+activities.is_productive, 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
 		project_id Asc `
 	sqlstr += c.limit
@@ -343,21 +329,14 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id < $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+		` WHERE activities.activity_id < $3 GROUP BY activities.activity_id, 
+activities.project_id, 
+activities.name, 
+activities.description, 
+activities.is_productive, 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
 		activity_id Desc `
 	sqlstr += c.limit
@@ -403,21 +382,14 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id < $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+		` WHERE activities.project_id < $3 GROUP BY activities.activity_id, 
+activities.project_id, 
+activities.name, 
+activities.description, 
+activities.is_productive, 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
 		project_id Desc `
 	sqlstr += c.limit
@@ -467,20 +439,9 @@ left join (
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activities.name = $3 AND activities.project_id = $4 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -531,20 +492,9 @@ left join (
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activities.name = $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -597,20 +547,9 @@ left join (
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activities.project_id = $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -663,20 +602,9 @@ left join (
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activities.activity_id = $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

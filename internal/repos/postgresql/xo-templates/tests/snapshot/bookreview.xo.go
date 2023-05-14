@@ -196,17 +196,12 @@ book_reviews.reviewer,
 left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_review_id > $3 GROUP BY 
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
+		` WHERE book_reviews.book_review_id > $3 GROUP BY book_reviews.book_review_id, 
+book_reviews.book_id, 
+book_reviews.reviewer, 
 _book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id, 
-
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id ORDER BY 
@@ -245,17 +240,12 @@ book_reviews.reviewer,
 left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_id > $3 GROUP BY 
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
+		` WHERE book_reviews.book_id > $3 GROUP BY book_reviews.book_review_id, 
+book_reviews.book_id, 
+book_reviews.reviewer, 
 _book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id, 
-
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id ORDER BY 
@@ -294,17 +284,12 @@ book_reviews.reviewer,
 left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_review_id < $3 GROUP BY 
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
+		` WHERE book_reviews.book_review_id < $3 GROUP BY book_reviews.book_review_id, 
+book_reviews.book_id, 
+book_reviews.reviewer, 
 _book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id, 
-
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id ORDER BY 
@@ -343,17 +328,12 @@ book_reviews.reviewer,
 left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_id < $3 GROUP BY 
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
+		` WHERE book_reviews.book_id < $3 GROUP BY book_reviews.book_review_id, 
+book_reviews.book_id, 
+book_reviews.reviewer, 
 _book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id, 
-
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id ORDER BY 
@@ -396,16 +376,9 @@ left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_review_id = $3 GROUP BY 
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id, 
-
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id `
@@ -449,16 +422,9 @@ left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 GROUP BY 
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id, 
-
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id `
@@ -502,16 +468,9 @@ left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.reviewer = $3 GROUP BY 
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id, 
-
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id `
@@ -557,16 +516,9 @@ left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_id = $3 GROUP BY 
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id, 
-
-	book_reviews.book_id,
-	book_reviews.book_review_id,
-	book_reviews.reviewer,
 _book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id `

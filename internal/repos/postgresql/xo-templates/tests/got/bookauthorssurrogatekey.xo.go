@@ -251,17 +251,11 @@ left join (
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
+		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $3 GROUP BY book_authors_surrogate_key.book_authors_surrogate_key_id, 
+book_authors_surrogate_key.book_id, 
+book_authors_surrogate_key.author_id, 
+book_authors_surrogate_key.pseudonym, 
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id ORDER BY 
 		book_authors_surrogate_key_id Asc `
 	sqlstr += c.limit
@@ -333,17 +327,11 @@ left join (
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
+		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $3 GROUP BY book_authors_surrogate_key.book_authors_surrogate_key_id, 
+book_authors_surrogate_key.book_id, 
+book_authors_surrogate_key.author_id, 
+book_authors_surrogate_key.pseudonym, 
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id ORDER BY 
 		book_authors_surrogate_key_id Desc `
 	sqlstr += c.limit
@@ -419,16 +407,7 @@ left join (
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
 		` WHERE book_authors_surrogate_key.book_id = $3 AND book_authors_surrogate_key.author_id = $4 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -505,16 +484,7 @@ left join (
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
 		` WHERE book_authors_surrogate_key.book_id = $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -593,16 +563,7 @@ left join (
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
 		` WHERE book_authors_surrogate_key.author_id = $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -681,16 +642,7 @@ left join (
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
 		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -2691,6 +2691,9 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			"singularize": singularize,
 		}
 
+		// all fields already selected in main table need to appear
+		groupbys = append(groupbys, mainGroupByFields(x, f, funcs)...)
+
 		var n int
 		for _, c := range tableConstraints {
 			if c.Type != "foreign_key" {
@@ -2748,6 +2751,14 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
+}
+
+func mainGroupByFields(x Table, f *Funcs, funcs template.FuncMap) []string {
+	var mainGroupBys []string
+	for _, z := range x.Fields {
+		mainGroupBys = append(mainGroupBys, x.SQLName+"."+f.colname(z))
+	}
+	return mainGroupBys
 }
 
 // sqlstr_insert_base builds an INSERT query
@@ -2942,10 +2953,6 @@ const (
 )
 
 const (
-	BaseGroupBy = `{{range $mg := .MainGroupBys}}
-	{{if $mg}}{{$mg}},{{end}}
-
-{{- end}}`
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
 	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
 	O2OGroupBy = `{{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}},
@@ -3077,7 +3084,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 
 		var groupbyStmt string
 		if len(groupbys) > 0 {
-			groupbyStmt = " GROUP BY " + strings.Join(groupbys, ", \n")
+			groupbyStmt = " GROUP BY \n" + strings.Join(groupbys, ", \n")
 		}
 
 		if tableHasDeletedAt {
@@ -3126,7 +3133,6 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 	var joinTpl, selectTpl, groupbyTpl string
 	join := &bytes.Buffer{}
 	selec := &bytes.Buffer{}
-	basegroupby := &bytes.Buffer{}
 	groupby := &bytes.Buffer{}
 	params := make(map[string]interface{})
 	fmt.Fprintf(join, "-- %s join generated from %q", c.Cardinality, c.Name)
@@ -3145,13 +3151,6 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 	if table.Schema != "public" {
 		params["Schema"] = table.Schema + "."
 	}
-
-	// all fields already selected in main table need to appear
-	var mainGroupBys []string
-	for _, z := range table.Fields {
-		mainGroupBys = append(mainGroupBys, table.SQLName+"."+f.colname(z))
-	}
-	params["MainGroupBys"] = uniqueSort(mainGroupBys)
 
 	switch c.Cardinality {
 	case M2M:
@@ -3305,12 +3304,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 		panic(fmt.Sprintf("could not execute groupby template: %s", err))
 	}
 
-	t = template.Must(template.New("").Option("missingkey=zero").Funcs(funcs).Parse(BaseGroupBy))
-	if err := t.Execute(basegroupby, params); err != nil {
-		panic(fmt.Sprintf("could not execute base group by template: %s", err))
-	}
-
-	return join.String(), selec.String(), basegroupby.String() + "\n" + groupby.String()
+	return join.String(), selec.String(), groupby.String()
 }
 
 // getTableRegularFields gets extra columns in a lookup table that are not PK or FK

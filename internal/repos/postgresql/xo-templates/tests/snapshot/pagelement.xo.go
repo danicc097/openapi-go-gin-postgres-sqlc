@@ -203,7 +203,10 @@ pag_element.created_at,
 pag_element.dummy ` +
 		`FROM xo_tests.pag_element ` +
 		`` +
-		` WHERE pag_element.created_at > $1 ORDER BY 
+		` WHERE pag_element.created_at > $1 GROUP BY pag_element.paginated_element_id, 
+pag_element.name, 
+pag_element.created_at, 
+pag_element.dummy ORDER BY 
 		created_at Asc `
 	sqlstr += c.limit
 
@@ -235,7 +238,10 @@ pag_element.created_at,
 pag_element.dummy ` +
 		`FROM xo_tests.pag_element ` +
 		`` +
-		` WHERE pag_element.created_at < $1 ORDER BY 
+		` WHERE pag_element.created_at < $1 GROUP BY pag_element.paginated_element_id, 
+pag_element.name, 
+pag_element.created_at, 
+pag_element.dummy ORDER BY 
 		created_at Desc `
 	sqlstr += c.limit
 

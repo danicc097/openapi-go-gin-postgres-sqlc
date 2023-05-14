@@ -180,9 +180,8 @@ work_items.title,
 		`FROM xo_tests.work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id > $2 GROUP BY 
-	work_items.title,
-	work_items.work_item_id,
+		` WHERE work_items.work_item_id > $2 GROUP BY work_items.work_item_id, 
+work_items.title, 
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id ORDER BY 
 		work_item_id Asc `
@@ -216,9 +215,8 @@ work_items.title,
 		`FROM xo_tests.work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id < $2 GROUP BY 
-	work_items.title,
-	work_items.work_item_id,
+		` WHERE work_items.work_item_id < $2 GROUP BY work_items.work_item_id, 
+work_items.title, 
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id ORDER BY 
 		work_item_id Desc `
@@ -256,8 +254,6 @@ work_items.title,
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
 		` WHERE work_items.work_item_id = $2 GROUP BY 
-	work_items.title,
-	work_items.work_item_id,
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id `
 	sqlstr += c.orderBy

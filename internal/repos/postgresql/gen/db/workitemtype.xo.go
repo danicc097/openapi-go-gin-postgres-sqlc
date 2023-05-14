@@ -216,21 +216,14 @@ work_item_types.color,
 left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
 left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.work_item_type_id > $3 GROUP BY 
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
+		` WHERE work_item_types.work_item_type_id > $3 GROUP BY work_item_types.work_item_type_id, 
+work_item_types.project_id, 
+work_item_types.name, 
+work_item_types.description, 
+work_item_types.color, 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
-
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_work_item_type_id.work_item_type_id,
       _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
@@ -271,21 +264,14 @@ work_item_types.color,
 left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
 left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.project_id > $3 GROUP BY 
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
+		` WHERE work_item_types.project_id > $3 GROUP BY work_item_types.work_item_type_id, 
+work_item_types.project_id, 
+work_item_types.name, 
+work_item_types.description, 
+work_item_types.color, 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
-
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_work_item_type_id.work_item_type_id,
       _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
@@ -326,21 +312,14 @@ work_item_types.color,
 left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
 left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.work_item_type_id < $3 GROUP BY 
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
+		` WHERE work_item_types.work_item_type_id < $3 GROUP BY work_item_types.work_item_type_id, 
+work_item_types.project_id, 
+work_item_types.name, 
+work_item_types.description, 
+work_item_types.color, 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
-
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_work_item_type_id.work_item_type_id,
       _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
@@ -381,21 +360,14 @@ work_item_types.color,
 left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
 left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.project_id < $3 GROUP BY 
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
+		` WHERE work_item_types.project_id < $3 GROUP BY work_item_types.work_item_type_id, 
+work_item_types.project_id, 
+work_item_types.name, 
+work_item_types.description, 
+work_item_types.color, 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
-
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_work_item_type_id.work_item_type_id,
       _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
@@ -440,20 +412,9 @@ left join projects as _work_item_types_project_id on _work_item_types_project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
 left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4 GROUP BY 
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
-
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_work_item_type_id.work_item_type_id,
       _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `
@@ -499,20 +460,9 @@ left join projects as _work_item_types_project_id on _work_item_types_project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
 left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.name = $3 GROUP BY 
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
-
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_work_item_type_id.work_item_type_id,
       _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `
@@ -560,20 +510,9 @@ left join projects as _work_item_types_project_id on _work_item_types_project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
 left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.project_id = $3 GROUP BY 
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
-
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_work_item_type_id.work_item_type_id,
       _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `
@@ -621,20 +560,9 @@ left join projects as _work_item_types_project_id on _work_item_types_project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
 left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.work_item_type_id = $3 GROUP BY 
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
-
-	work_item_types.color,
-	work_item_types.description,
-	work_item_types.name,
-	work_item_types.project_id,
-	work_item_types.work_item_type_id,
 _work_item_types_work_item_type_id.work_item_type_id,
       _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `

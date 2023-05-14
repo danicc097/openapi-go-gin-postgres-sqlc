@@ -252,14 +252,7 @@ left join (
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4 GROUP BY 
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
 book_authors.book_id, book_authors.book_id, book_authors.author_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -335,14 +328,7 @@ left join (
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.book_id = $3 GROUP BY 
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
 book_authors.book_id, book_authors.book_id, book_authors.author_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -420,14 +406,7 @@ left join (
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
 ` +
 		` WHERE book_authors.author_id = $3 GROUP BY 
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
 book_authors.book_id, book_authors.book_id, book_authors.author_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

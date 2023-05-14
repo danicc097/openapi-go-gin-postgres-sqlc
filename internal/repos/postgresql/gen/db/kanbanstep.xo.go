@@ -234,25 +234,16 @@ kanban_steps.time_trackable,
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id > $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
+		` WHERE kanban_steps.kanban_step_id > $3 GROUP BY kanban_steps.kanban_step_id, 
+kanban_steps.project_id, 
+kanban_steps.step_order, 
+kanban_steps.name, 
+kanban_steps.description, 
+kanban_steps.color, 
+kanban_steps.time_trackable, 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
@@ -295,25 +286,16 @@ kanban_steps.time_trackable,
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id > $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
+		` WHERE kanban_steps.project_id > $3 GROUP BY kanban_steps.kanban_step_id, 
+kanban_steps.project_id, 
+kanban_steps.step_order, 
+kanban_steps.name, 
+kanban_steps.description, 
+kanban_steps.color, 
+kanban_steps.time_trackable, 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
@@ -356,25 +338,16 @@ kanban_steps.time_trackable,
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order > $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
+		` WHERE kanban_steps.step_order > $3 GROUP BY kanban_steps.kanban_step_id, 
+kanban_steps.project_id, 
+kanban_steps.step_order, 
+kanban_steps.name, 
+kanban_steps.description, 
+kanban_steps.color, 
+kanban_steps.time_trackable, 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
@@ -417,25 +390,16 @@ kanban_steps.time_trackable,
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id < $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
+		` WHERE kanban_steps.kanban_step_id < $3 GROUP BY kanban_steps.kanban_step_id, 
+kanban_steps.project_id, 
+kanban_steps.step_order, 
+kanban_steps.name, 
+kanban_steps.description, 
+kanban_steps.color, 
+kanban_steps.time_trackable, 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
@@ -478,25 +442,16 @@ kanban_steps.time_trackable,
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id < $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
+		` WHERE kanban_steps.project_id < $3 GROUP BY kanban_steps.kanban_step_id, 
+kanban_steps.project_id, 
+kanban_steps.step_order, 
+kanban_steps.name, 
+kanban_steps.description, 
+kanban_steps.color, 
+kanban_steps.time_trackable, 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
@@ -539,25 +494,16 @@ kanban_steps.time_trackable,
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order < $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
+		` WHERE kanban_steps.step_order < $3 GROUP BY kanban_steps.kanban_step_id, 
+kanban_steps.project_id, 
+kanban_steps.step_order, 
+kanban_steps.name, 
+kanban_steps.description, 
+kanban_steps.color, 
+kanban_steps.time_trackable, 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
@@ -604,24 +550,9 @@ left join projects as _kanban_steps_project_id on _kanban_steps_project_id.proje
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.kanban_step_id = $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id `
@@ -669,24 +600,9 @@ left join projects as _kanban_steps_project_id on _kanban_steps_project_id.proje
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 AND kanban_steps.name = $4 AND kanban_steps.step_order = $5 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id `
@@ -734,24 +650,9 @@ left join projects as _kanban_steps_project_id on _kanban_steps_project_id.proje
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id `
@@ -801,24 +702,9 @@ left join projects as _kanban_steps_project_id on _kanban_steps_project_id.proje
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.name = $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id `
@@ -868,24 +754,9 @@ left join projects as _kanban_steps_project_id on _kanban_steps_project_id.proje
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.step_order = $3 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id `
@@ -935,24 +806,9 @@ left join projects as _kanban_steps_project_id on _kanban_steps_project_id.proje
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 AND kanban_steps.step_order = $4 GROUP BY 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
-
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id `

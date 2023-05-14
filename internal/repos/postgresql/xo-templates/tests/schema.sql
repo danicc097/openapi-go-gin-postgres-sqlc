@@ -2,6 +2,7 @@ create schema if not exists extensions;
 
 create extension if not exists pg_stat_statements schema extensions;
 
+-- ensure up to date
 drop schema if exists xo_tests cascade;
 
 create schema if not exists xo_tests;

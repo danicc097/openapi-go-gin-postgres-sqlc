@@ -194,7 +194,10 @@ movies.year,
 movies.synopsis ` +
 		`FROM public.movies ` +
 		`` +
-		` WHERE movies.movie_id > $1 ORDER BY 
+		` WHERE movies.movie_id > $1 GROUP BY movies.movie_id, 
+movies.title, 
+movies.year, 
+movies.synopsis ORDER BY 
 		movie_id Asc `
 	sqlstr += c.limit
 
@@ -226,7 +229,10 @@ movies.year,
 movies.synopsis ` +
 		`FROM public.movies ` +
 		`` +
-		` WHERE movies.movie_id < $1 ORDER BY 
+		` WHERE movies.movie_id < $1 GROUP BY movies.movie_id, 
+movies.title, 
+movies.year, 
+movies.synopsis ORDER BY 
 		movie_id Desc `
 	sqlstr += c.limit
 
