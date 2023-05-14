@@ -160,3 +160,47 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 	assert.Equal(t, uak.UserJoin.UserID, userID)
 	assert.Equal(t, uak.UserID, userID)
 }
+
+func TestCRUD_UniqueIndex(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	u1, err := db.CreateUser(ctx, testPool, &db.UserCreateParams{Name: "test_user_1"})
+	assert.NoError(t, err)
+	assert.Equal(t, "test_user_1", u1.Name)
+	u2, err := db.CreateUser(ctx, testPool, &db.UserCreateParams{Name: "test_user_2"})
+	assert.NoError(t, err)
+
+	u1.Name = "test_user_1_update"
+	u1, err = u1.Update(ctx, testPool)
+	assert.NoError(t, err)
+	assert.Equal(t, "test_user_1_update", u1.Name)
+
+	// test hard delete
+	err = u1.Delete(ctx, testPool)
+	assert.NoError(t, err)
+
+	_, err = db.UserByName(ctx, testPool, u1.Name)
+	assert.ErrorContains(t, err, errNoRows)
+
+	// test soft delete and restore
+	err = u2.SoftDelete(ctx, testPool)
+	assert.NoError(t, err)
+	assert.NotNil(t, u2.DeletedAt)
+
+	_, err = db.UserByName(ctx, testPool, u2.Name) // default deleted_at null
+	assert.ErrorContains(t, err, errNoRows)
+
+	deletedUser, err := db.UserByName(ctx, testPool, u2.Name, db.WithDeletedUserOnly())
+	assert.NoError(t, err)
+	assert.Equal(t, u2.Name, deletedUser.Name)
+	assert.NotNil(t, deletedUser.DeletedAt)
+
+	restoredUser, err := deletedUser.Restore(ctx, testPool)
+	assert.NoError(t, err)
+	assert.Nil(t, restoredUser.DeletedAt)
+	assert.Equal(t, u2.Name, deletedUser.Name)
+
+	// TODO test same things with nonunique index too
+}

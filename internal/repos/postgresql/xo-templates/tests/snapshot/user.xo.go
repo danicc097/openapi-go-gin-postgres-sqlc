@@ -783,6 +783,182 @@ _users_user_id.user_id,
 	return &u, nil
 }
 
+// UserByName retrieves a row from 'xo_tests.users' as a User.
+//
+// Generated from index 'users_name_key'.
+func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := fmt.Sprintf(`SELECT `+
+		`users.user_id,
+users.name,
+users.api_key_id,
+users.created_at,
+users.deleted_at,
+(case when $1::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
+(case when $2::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_books.__books
+		, joined_book_authors_surrogate_key_books.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
+(case when $4::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
+(case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
+(case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $7::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id `+
+		`FROM xo_tests.users `+
+		`-- M2M join generated from "book_authors_book_id_fkey"
+left join (
+	select
+			book_authors.author_id as book_authors_author_id
+			, book_authors.pseudonym as pseudonym
+			, row(books.*) as __books
+		from
+			xo_tests.book_authors
+    join xo_tests.books on books.book_id = book_authors.book_id
+    group by
+			book_authors_author_id
+			, books.book_id
+			, pseudonym
+  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
+
+-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+left join (
+	select
+			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
+			, book_authors_surrogate_key.pseudonym as pseudonym
+			, row(books.*) as __books
+		from
+			xo_tests.book_authors_surrogate_key
+    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
+    group by
+			book_authors_surrogate_key_author_id
+			, books.book_id
+			, pseudonym
+  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
+
+-- M2O join generated from "book_reviews_reviewer_fkey"
+left join (
+  select
+  reviewer as book_reviews_user_id
+    , array_agg(book_reviews.*) as book_reviews
+  from
+    xo_tests.book_reviews
+  group by
+        reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+-- M2M join generated from "book_sellers_book_id_fkey"
+left join (
+	select
+			book_sellers.seller as book_sellers_seller
+			, row(books.*) as __books
+		from
+			xo_tests.book_sellers
+    join xo_tests.books on books.book_id = book_sellers.book_id
+    group by
+			book_sellers_seller
+			, books.book_id
+  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
+
+-- M2O join generated from "notifications_receiver_fkey"
+left join (
+  select
+  receiver as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    xo_tests.notifications
+  group by
+        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+-- M2O join generated from "notifications_sender_fkey"
+left join (
+  select
+  sender as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    xo_tests.notifications
+  group by
+        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
+		` WHERE users.name = $8  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.name,
+	users.user_id,
+users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.name,
+	users.user_id,
+users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.name,
+	users.user_id,
+joined_book_reviews.book_reviews, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.name,
+	users.user_id,
+users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.name,
+	users.user_id,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.name,
+	users.user_id,
+joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.name,
+	users.user_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
+	users.user_id `, c.deletedAt)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	// logf(sqlstr, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, name)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByName/db.Query: %w", err))
+	}
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByName/pgx.CollectOneRow: %w", err))
+	}
+
+	return &u, nil
+}
+
 // UserByUserID retrieves a row from 'xo_tests.users' as a User.
 //
 // Generated from index 'users_pkey'.
