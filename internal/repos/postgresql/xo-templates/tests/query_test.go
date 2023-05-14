@@ -20,6 +20,11 @@ import (
 	also test join table name clash for O2O constraint too:
 	name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
 	at the same time
+
+	TODO xo maybe should allow custom untyped filters for paginated queries.
+	e.g. workitems paginated by created at while filtering TeamID is X
+	filters []string and just append those, while warning for obvious sql injection risks
+	this way we could have any filtering logic, `team_id in {team1, team2}`, etc.
 */
 
 func TestCursorPagination_Timestamp(t *testing.T) {
@@ -139,8 +144,6 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 	assert.Equal(t, wi.WorkItemID, workitemID)
 }
 
-// TODO join should be simply UserAPIKeyJoin *UserAPIKey since it's O2O there's no possible clash
-// it should detect vert partit. or alt. have "properties":vpartitioned on column
 func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 	t.Parallel()
 

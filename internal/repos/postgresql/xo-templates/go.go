@@ -3692,6 +3692,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				typ = camelExport(singularize(c.RefTableName))
 				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
 				// detect vertically partitioned tables.
+				// TODO should be APIKeyID  *int --> APIKeyJoin *UserAPIKey, else we can have clashes
 				for _, pk := range t.PrimaryKeys {
 					if pk.SQLName == c.ColumnName {
 						descName = camelExport(inflector.Singularize(c.RefTableName))
