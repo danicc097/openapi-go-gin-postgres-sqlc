@@ -337,8 +337,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
+(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -351,10 +351,10 @@ work_items.deleted_at,
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_two_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey (inferred)"
+left join demo_two_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join demo_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -414,8 +414,8 @@ left join (
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -430,8 +430,8 @@ _work_items_work_item_ids.work_item_id,
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -526,8 +526,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
+(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -540,10 +540,10 @@ work_items.deleted_at,
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_two_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey (inferred)"
+left join demo_two_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join demo_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -603,8 +603,8 @@ left join (
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -619,8 +619,8 @@ _work_items_work_item_ids.work_item_id,
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -718,8 +718,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
+(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -732,10 +732,10 @@ work_items.deleted_at,
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_two_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey (inferred)"
+left join demo_two_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join demo_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -795,8 +795,8 @@ left join (
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -811,8 +811,8 @@ _work_items_work_item_ids.work_item_id,
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -913,8 +913,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
+(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -927,10 +927,10 @@ work_items.deleted_at,
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_two_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey (inferred)"
+left join demo_two_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join demo_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -990,8 +990,8 @@ left join (
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -1006,8 +1006,8 @@ _work_items_work_item_ids.work_item_id,
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -1106,8 +1106,8 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as demo_work_item_work_item_id,
+(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
+(case when $2::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -1120,10 +1120,10 @@ work_items.deleted_at,
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_two_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred)"
-left join demo_work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_items.work_item_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey (inferred)"
+left join demo_two_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join demo_work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -1183,8 +1183,8 @@ left join (
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,
@@ -1199,8 +1199,8 @@ _work_items_work_item_ids.work_item_id,
 	work_items.updated_at,
 	work_items.work_item_id,
 	work_items.work_item_type_id,
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+_work_items_work_item_id.work_item_id,
+      _work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 
 	work_items.closed,

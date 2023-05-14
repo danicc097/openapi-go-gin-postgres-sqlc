@@ -1076,7 +1076,7 @@ cc_label:
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
 				Cardinality:    O2O,
-				Name:           constraint.Name + "(O2O inferred)",
+				Name:           constraint.Name + " (inferred)",
 				RefTableName:   constraint.TableName,
 				TableName:      constraint.RefTableName,
 				RefColumnName:  constraint.ColumnName,
@@ -3113,7 +3113,6 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 				}
 			}
 		} else if c.Cardinality == O2O && (c.TableName == table || c.RefTableName == table) {
-			fmt.Printf("O2O c: %+v\n", c)
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		} else if c.RefTableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
@@ -3240,7 +3239,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			params["JoinColumn"] = c.RefColumnName
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
-			params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
+			params["JoinTableAlias"] = c.ColumnName
 			params["CurrentTable"] = c.TableName
 			if c.JoinTableClash {
 				params["ClashSuffix"] = "_" + c.RefColumnName
@@ -3258,8 +3257,8 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			// viceversa we don't care as it's a regular PK.
 			params["Alias"] = "_" + c.TableName
 			isSingleFK, isSinglePK := analyzeField(t, field)
-			if isSingleFK && isSinglePK {
-				params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
+			if isSingleFK && isSinglePK || c.RefPKisFK {
+				params["JoinTableAlias"] = c.ColumnName
 			}
 
 			joinTable := tables[c.RefTableName]
@@ -3689,15 +3688,19 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case O2O:
 			if c.TableName == t.SQLName {
-				goName = camelExport(singularize(c.RefTableName))
-				typ = goName
+				typ = camelExport(singularize(c.RefTableName))
 				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
+				// detect vertically partitioned tables.
+				for _, pk := range t.PrimaryKeys {
+					if pk.SQLName == c.ColumnName {
+						descName = camelExport(inflector.Singularize(c.RefTableName))
+					}
+				}
 				goName = descName + "Join" // o2o does not need orig goName. it's obvious from join + will never clash
 
 				notes += " " + c.RefTableName
 				if c.IsInferredO2O {
 					notes += " (inferred)"
-					fmt.Printf("O2O cccccccc: %+v\n", c)
 				}
 				if c.IsGeneratedO2OFromM2O {
 					notes += " (generated from M2O)"

@@ -49,7 +49,7 @@ func TestDemoWorkItem_Update(t *testing.T) {
 			want: func() *db.WorkItem {
 				u := *demoWorkItem
 				u.Description = "new description"
-				u.DemoWorkItemWorkItemJoin.Line = "new line"
+				u.DemoWorkItemJoin.Line = "new line"
 
 				return &u
 			}(),

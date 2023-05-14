@@ -260,19 +260,19 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_ids.activity_id is not null then row(_time_entries_activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_ids.team_id is not null then row(_time_entries_team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_ids.user_id is not null then row(_time_entries_user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_ids.work_item_id is not null then row(_time_entries_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
+(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
+(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
+(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_ids on _time_entries_activity_ids.activity_id = time_entries.activity_id
+left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_ids on _time_entries_team_ids.team_id = time_entries.team_id
+left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_ids on _time_entries_user_ids.user_id = time_entries.user_id
+left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_ids on _time_entries_work_item_ids.work_item_id = time_entries.work_item_id` +
+left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.time_entry_id > $5 GROUP BY 
 	time_entries.activity_id,
 	time_entries.comment,
@@ -282,8 +282,8 @@ left join work_items as _time_entries_work_item_ids on _time_entries_work_item_i
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_activity_ids.activity_id,
-      _time_entries_activity_ids.activity_id,
+_time_entries_activity_id.activity_id,
+      _time_entries_activity_id.activity_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -294,8 +294,8 @@ _time_entries_activity_ids.activity_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_team_ids.team_id,
-      _time_entries_team_ids.team_id,
+_time_entries_team_id.team_id,
+      _time_entries_team_id.team_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -306,8 +306,8 @@ _time_entries_team_ids.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_user_ids.user_id,
-      _time_entries_user_ids.user_id,
+_time_entries_user_id.user_id,
+      _time_entries_user_id.user_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -318,8 +318,8 @@ _time_entries_user_ids.user_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_work_item_ids.work_item_id,
-      _time_entries_work_item_ids.work_item_id,
+_time_entries_work_item_id.work_item_id,
+      _time_entries_work_item_id.work_item_id,
 	time_entries.time_entry_id ORDER BY 
 		time_entry_id Asc `
 	sqlstr += c.limit
@@ -354,19 +354,19 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_ids.activity_id is not null then row(_time_entries_activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_ids.team_id is not null then row(_time_entries_team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_ids.user_id is not null then row(_time_entries_user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_ids.work_item_id is not null then row(_time_entries_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
+(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
+(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
+(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_ids on _time_entries_activity_ids.activity_id = time_entries.activity_id
+left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_ids on _time_entries_team_ids.team_id = time_entries.team_id
+left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_ids on _time_entries_user_ids.user_id = time_entries.user_id
+left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_ids on _time_entries_work_item_ids.work_item_id = time_entries.work_item_id` +
+left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.time_entry_id < $5 GROUP BY 
 	time_entries.activity_id,
 	time_entries.comment,
@@ -376,8 +376,8 @@ left join work_items as _time_entries_work_item_ids on _time_entries_work_item_i
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_activity_ids.activity_id,
-      _time_entries_activity_ids.activity_id,
+_time_entries_activity_id.activity_id,
+      _time_entries_activity_id.activity_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -388,8 +388,8 @@ _time_entries_activity_ids.activity_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_team_ids.team_id,
-      _time_entries_team_ids.team_id,
+_time_entries_team_id.team_id,
+      _time_entries_team_id.team_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -400,8 +400,8 @@ _time_entries_team_ids.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_user_ids.user_id,
-      _time_entries_user_ids.user_id,
+_time_entries_user_id.user_id,
+      _time_entries_user_id.user_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -412,8 +412,8 @@ _time_entries_user_ids.user_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_work_item_ids.work_item_id,
-      _time_entries_work_item_ids.work_item_id,
+_time_entries_work_item_id.work_item_id,
+      _time_entries_work_item_id.work_item_id,
 	time_entries.time_entry_id ORDER BY 
 		time_entry_id Desc `
 	sqlstr += c.limit
@@ -451,19 +451,19 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_ids.activity_id is not null then row(_time_entries_activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_ids.team_id is not null then row(_time_entries_team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_ids.user_id is not null then row(_time_entries_user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_ids.work_item_id is not null then row(_time_entries_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
+(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
+(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
+(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_ids on _time_entries_activity_ids.activity_id = time_entries.activity_id
+left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_ids on _time_entries_team_ids.team_id = time_entries.team_id
+left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_ids on _time_entries_user_ids.user_id = time_entries.user_id
+left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_ids on _time_entries_work_item_ids.work_item_id = time_entries.work_item_id` +
+left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.time_entry_id = $5 GROUP BY 
 	time_entries.activity_id,
 	time_entries.comment,
@@ -473,8 +473,8 @@ left join work_items as _time_entries_work_item_ids on _time_entries_work_item_i
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_activity_ids.activity_id,
-      _time_entries_activity_ids.activity_id,
+_time_entries_activity_id.activity_id,
+      _time_entries_activity_id.activity_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -485,8 +485,8 @@ _time_entries_activity_ids.activity_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_team_ids.team_id,
-      _time_entries_team_ids.team_id,
+_time_entries_team_id.team_id,
+      _time_entries_team_id.team_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -497,8 +497,8 @@ _time_entries_team_ids.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_user_ids.user_id,
-      _time_entries_user_ids.user_id,
+_time_entries_user_id.user_id,
+      _time_entries_user_id.user_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -509,8 +509,8 @@ _time_entries_user_ids.user_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_work_item_ids.work_item_id,
-      _time_entries_work_item_ids.work_item_id,
+_time_entries_work_item_id.work_item_id,
+      _time_entries_work_item_id.work_item_id,
 	time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -549,19 +549,19 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_ids.activity_id is not null then row(_time_entries_activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_ids.team_id is not null then row(_time_entries_team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_ids.user_id is not null then row(_time_entries_user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_ids.work_item_id is not null then row(_time_entries_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
+(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
+(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
+(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_ids on _time_entries_activity_ids.activity_id = time_entries.activity_id
+left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_ids on _time_entries_team_ids.team_id = time_entries.team_id
+left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_ids on _time_entries_user_ids.user_id = time_entries.user_id
+left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_ids on _time_entries_work_item_ids.work_item_id = time_entries.work_item_id` +
+left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6 GROUP BY 
 	time_entries.activity_id,
 	time_entries.comment,
@@ -571,8 +571,8 @@ left join work_items as _time_entries_work_item_ids on _time_entries_work_item_i
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_activity_ids.activity_id,
-      _time_entries_activity_ids.activity_id,
+_time_entries_activity_id.activity_id,
+      _time_entries_activity_id.activity_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -583,8 +583,8 @@ _time_entries_activity_ids.activity_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_team_ids.team_id,
-      _time_entries_team_ids.team_id,
+_time_entries_team_id.team_id,
+      _time_entries_team_id.team_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -595,8 +595,8 @@ _time_entries_team_ids.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_user_ids.user_id,
-      _time_entries_user_ids.user_id,
+_time_entries_user_id.user_id,
+      _time_entries_user_id.user_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -607,8 +607,8 @@ _time_entries_user_ids.user_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_work_item_ids.work_item_id,
-      _time_entries_work_item_ids.work_item_id,
+_time_entries_work_item_id.work_item_id,
+      _time_entries_work_item_id.work_item_id,
 	time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -649,19 +649,19 @@ time_entries.user_id,
 time_entries.comment,
 time_entries.start,
 time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_ids.activity_id is not null then row(_time_entries_activity_ids.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_ids.team_id is not null then row(_time_entries_team_ids.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_ids.user_id is not null then row(_time_entries_user_ids.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_ids.work_item_id is not null then row(_time_entries_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
+(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
+(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
+(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM public.time_entries ` +
 		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_ids on _time_entries_activity_ids.activity_id = time_entries.activity_id
+left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
 -- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_ids on _time_entries_team_ids.team_id = time_entries.team_id
+left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
 -- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_ids on _time_entries_user_ids.user_id = time_entries.user_id
+left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
 -- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_ids on _time_entries_work_item_ids.work_item_id = time_entries.work_item_id` +
+left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6 GROUP BY 
 	time_entries.activity_id,
 	time_entries.comment,
@@ -671,8 +671,8 @@ left join work_items as _time_entries_work_item_ids on _time_entries_work_item_i
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_activity_ids.activity_id,
-      _time_entries_activity_ids.activity_id,
+_time_entries_activity_id.activity_id,
+      _time_entries_activity_id.activity_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -683,8 +683,8 @@ _time_entries_activity_ids.activity_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_team_ids.team_id,
-      _time_entries_team_ids.team_id,
+_time_entries_team_id.team_id,
+      _time_entries_team_id.team_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -695,8 +695,8 @@ _time_entries_team_ids.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_user_ids.user_id,
-      _time_entries_user_ids.user_id,
+_time_entries_user_id.user_id,
+      _time_entries_user_id.user_id,
 	time_entries.time_entry_id, 
 
 	time_entries.activity_id,
@@ -707,8 +707,8 @@ _time_entries_user_ids.user_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
 	time_entries.work_item_id,
-_time_entries_work_item_ids.work_item_id,
-      _time_entries_work_item_ids.work_item_id,
+_time_entries_work_item_id.work_item_id,
+      _time_entries_work_item_id.work_item_id,
 	time_entries.time_entry_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

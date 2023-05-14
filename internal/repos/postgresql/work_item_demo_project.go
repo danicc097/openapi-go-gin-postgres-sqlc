@@ -39,7 +39,7 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
 	}
 
-	workItem.DemoWorkItemWorkItemJoin = demoWorkItem
+	workItem.DemoWorkItemJoin = demoWorkItem
 
 	return workItem, nil
 }
@@ -49,7 +49,7 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItem by id: %w", parseErrorDetail(err))
 	}
-	demoWorkItem := workItem.DemoWorkItemWorkItemJoin
+	demoWorkItem := workItem.DemoWorkItemJoin
 
 	if params.Base != nil {
 		workItem.SetUpdateParams(params.Base)
@@ -68,7 +68,7 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 		return nil, fmt.Errorf("could not update demoWorkItem: %w", parseErrorDetail(err))
 	}
 
-	workItem.DemoWorkItemWorkItemJoin = demoWorkItem
+	workItem.DemoWorkItemJoin = demoWorkItem
 
 	return workItem, err
 }

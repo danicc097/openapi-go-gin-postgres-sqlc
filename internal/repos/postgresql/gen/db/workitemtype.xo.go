@@ -24,8 +24,8 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	ProjectJoin      *Project  `json:"-" db:"project_project_id" openapi-go:"ignore"`          // O2O projects (generated from M2O)
-	WorkItemTypeJoin *WorkItem `json:"-" db:"work_item_work_item_type_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	ProjectJoin  *Project  `json:"-" db:"project_project_id" openapi-go:"ignore"`          // O2O projects (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_type_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
 }
 
@@ -209,21 +209,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_ids.project_id is not null then row(_work_item_types_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_ids.work_item_type_id is not null then row(_work_item_types_work_item_type_ids.*) end) as work_item_work_item_type_id ` +
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
+(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_ids on _work_item_types_project_ids.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items as _work_item_types_work_item_type_ids on _work_item_types_work_item_type_ids.work_item_type_id = work_item_types.work_item_type_id` +
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.work_item_type_id > $3 GROUP BY 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_project_ids.project_id,
-      _work_item_types_project_ids.project_id,
+_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
 
 	work_item_types.color,
@@ -231,8 +231,8 @@ _work_item_types_project_ids.project_id,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_work_item_type_ids.work_item_type_id,
-      _work_item_types_work_item_type_ids.work_item_id,
+_work_item_types_work_item_type_id.work_item_type_id,
+      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
 		work_item_type_id Asc `
 	sqlstr += c.limit
@@ -264,21 +264,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_ids.project_id is not null then row(_work_item_types_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_ids.work_item_type_id is not null then row(_work_item_types_work_item_type_ids.*) end) as work_item_work_item_type_id ` +
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
+(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_ids on _work_item_types_project_ids.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items as _work_item_types_work_item_type_ids on _work_item_types_work_item_type_ids.work_item_type_id = work_item_types.work_item_type_id` +
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.project_id > $3 GROUP BY 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_project_ids.project_id,
-      _work_item_types_project_ids.project_id,
+_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
 
 	work_item_types.color,
@@ -286,8 +286,8 @@ _work_item_types_project_ids.project_id,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_work_item_type_ids.work_item_type_id,
-      _work_item_types_work_item_type_ids.work_item_id,
+_work_item_types_work_item_type_id.work_item_type_id,
+      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
 		project_id Asc `
 	sqlstr += c.limit
@@ -319,21 +319,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_ids.project_id is not null then row(_work_item_types_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_ids.work_item_type_id is not null then row(_work_item_types_work_item_type_ids.*) end) as work_item_work_item_type_id ` +
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
+(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_ids on _work_item_types_project_ids.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items as _work_item_types_work_item_type_ids on _work_item_types_work_item_type_ids.work_item_type_id = work_item_types.work_item_type_id` +
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.work_item_type_id < $3 GROUP BY 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_project_ids.project_id,
-      _work_item_types_project_ids.project_id,
+_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
 
 	work_item_types.color,
@@ -341,8 +341,8 @@ _work_item_types_project_ids.project_id,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_work_item_type_ids.work_item_type_id,
-      _work_item_types_work_item_type_ids.work_item_id,
+_work_item_types_work_item_type_id.work_item_type_id,
+      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
 		work_item_type_id Desc `
 	sqlstr += c.limit
@@ -374,21 +374,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_ids.project_id is not null then row(_work_item_types_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_ids.work_item_type_id is not null then row(_work_item_types_work_item_type_ids.*) end) as work_item_work_item_type_id ` +
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
+(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_ids on _work_item_types_project_ids.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items as _work_item_types_work_item_type_ids on _work_item_types_work_item_type_ids.work_item_type_id = work_item_types.work_item_type_id` +
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.project_id < $3 GROUP BY 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_project_ids.project_id,
-      _work_item_types_project_ids.project_id,
+_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
 
 	work_item_types.color,
@@ -396,8 +396,8 @@ _work_item_types_project_ids.project_id,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_work_item_type_ids.work_item_type_id,
-      _work_item_types_work_item_type_ids.work_item_id,
+_work_item_types_work_item_type_id.work_item_type_id,
+      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
 		project_id Desc `
 	sqlstr += c.limit
@@ -432,21 +432,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_ids.project_id is not null then row(_work_item_types_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_ids.work_item_type_id is not null then row(_work_item_types_work_item_type_ids.*) end) as work_item_work_item_type_id ` +
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
+(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_ids on _work_item_types_project_ids.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items as _work_item_types_work_item_type_ids on _work_item_types_work_item_type_ids.work_item_type_id = work_item_types.work_item_type_id` +
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4 GROUP BY 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_project_ids.project_id,
-      _work_item_types_project_ids.project_id,
+_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
 
 	work_item_types.color,
@@ -454,8 +454,8 @@ _work_item_types_project_ids.project_id,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_work_item_type_ids.work_item_type_id,
-      _work_item_types_work_item_type_ids.work_item_id,
+_work_item_types_work_item_type_id.work_item_type_id,
+      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -491,21 +491,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_ids.project_id is not null then row(_work_item_types_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_ids.work_item_type_id is not null then row(_work_item_types_work_item_type_ids.*) end) as work_item_work_item_type_id ` +
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
+(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_ids on _work_item_types_project_ids.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items as _work_item_types_work_item_type_ids on _work_item_types_work_item_type_ids.work_item_type_id = work_item_types.work_item_type_id` +
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.name = $3 GROUP BY 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_project_ids.project_id,
-      _work_item_types_project_ids.project_id,
+_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
 
 	work_item_types.color,
@@ -513,8 +513,8 @@ _work_item_types_project_ids.project_id,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_work_item_type_ids.work_item_type_id,
-      _work_item_types_work_item_type_ids.work_item_id,
+_work_item_types_work_item_type_id.work_item_type_id,
+      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -552,21 +552,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_ids.project_id is not null then row(_work_item_types_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_ids.work_item_type_id is not null then row(_work_item_types_work_item_type_ids.*) end) as work_item_work_item_type_id ` +
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
+(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_ids on _work_item_types_project_ids.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items as _work_item_types_work_item_type_ids on _work_item_types_work_item_type_ids.work_item_type_id = work_item_types.work_item_type_id` +
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.project_id = $3 GROUP BY 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_project_ids.project_id,
-      _work_item_types_project_ids.project_id,
+_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
 
 	work_item_types.color,
@@ -574,8 +574,8 @@ _work_item_types_project_ids.project_id,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_work_item_type_ids.work_item_type_id,
-      _work_item_types_work_item_type_ids.work_item_id,
+_work_item_types_work_item_type_id.work_item_type_id,
+      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -613,21 +613,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_ids.project_id is not null then row(_work_item_types_project_ids.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_ids.work_item_type_id is not null then row(_work_item_types_work_item_type_ids.*) end) as work_item_work_item_type_id ` +
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
+(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_ids on _work_item_types_project_ids.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
-left join work_items as _work_item_types_work_item_type_ids on _work_item_types_work_item_type_ids.work_item_type_id = work_item_types.work_item_type_id` +
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.work_item_type_id = $3 GROUP BY 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_project_ids.project_id,
-      _work_item_types_project_ids.project_id,
+_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id, 
 
 	work_item_types.color,
@@ -635,8 +635,8 @@ _work_item_types_project_ids.project_id,
 	work_item_types.name,
 	work_item_types.project_id,
 	work_item_types.work_item_type_id,
-_work_item_types_work_item_type_ids.work_item_type_id,
-      _work_item_types_work_item_type_ids.work_item_id,
+_work_item_types_work_item_type_id.work_item_type_id,
+      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

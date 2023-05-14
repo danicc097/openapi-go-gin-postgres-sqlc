@@ -268,14 +268,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and _notifications_receivers.user_id is not null then row(_notifications_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _notifications_senders.user_id is not null then row(_notifications_senders.*) end) as user_sender,
+(case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
+(case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _notifications_receivers on _notifications_receivers.user_id = notifications.receiver
+left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _notifications_senders on _notifications_senders.user_id = notifications.sender
+left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -296,8 +296,8 @@ left join (
 	notifications.receiver_rank,
 	notifications.sender,
 	notifications.title,
-_notifications_receivers.user_id,
-      _notifications_receivers.user_id,
+_notifications_receiver.user_id,
+      _notifications_receiver.user_id,
 	notifications.notification_id, 
 
 	notifications.body,
@@ -310,8 +310,8 @@ _notifications_receivers.user_id,
 	notifications.receiver_rank,
 	notifications.sender,
 	notifications.title,
-_notifications_senders.user_id,
-      _notifications_senders.user_id,
+_notifications_sender.user_id,
+      _notifications_sender.user_id,
 	notifications.notification_id, 
 
 	notifications.body,
@@ -360,14 +360,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and _notifications_receivers.user_id is not null then row(_notifications_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _notifications_senders.user_id is not null then row(_notifications_senders.*) end) as user_sender,
+(case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
+(case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _notifications_receivers on _notifications_receivers.user_id = notifications.receiver
+left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _notifications_senders on _notifications_senders.user_id = notifications.sender
+left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -388,8 +388,8 @@ left join (
 	notifications.receiver_rank,
 	notifications.sender,
 	notifications.title,
-_notifications_receivers.user_id,
-      _notifications_receivers.user_id,
+_notifications_receiver.user_id,
+      _notifications_receiver.user_id,
 	notifications.notification_id, 
 
 	notifications.body,
@@ -402,8 +402,8 @@ _notifications_receivers.user_id,
 	notifications.receiver_rank,
 	notifications.sender,
 	notifications.title,
-_notifications_senders.user_id,
-      _notifications_senders.user_id,
+_notifications_sender.user_id,
+      _notifications_sender.user_id,
 	notifications.notification_id, 
 
 	notifications.body,
@@ -455,14 +455,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and _notifications_receivers.user_id is not null then row(_notifications_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _notifications_senders.user_id is not null then row(_notifications_senders.*) end) as user_sender,
+(case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
+(case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _notifications_receivers on _notifications_receivers.user_id = notifications.receiver
+left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _notifications_senders on _notifications_senders.user_id = notifications.sender
+left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -483,8 +483,8 @@ left join (
 	notifications.receiver_rank,
 	notifications.sender,
 	notifications.title,
-_notifications_receivers.user_id,
-      _notifications_receivers.user_id,
+_notifications_receiver.user_id,
+      _notifications_receiver.user_id,
 	notifications.notification_id, 
 
 	notifications.body,
@@ -497,8 +497,8 @@ _notifications_receivers.user_id,
 	notifications.receiver_rank,
 	notifications.sender,
 	notifications.title,
-_notifications_senders.user_id,
-      _notifications_senders.user_id,
+_notifications_sender.user_id,
+      _notifications_sender.user_id,
 	notifications.notification_id, 
 
 	notifications.body,
@@ -551,14 +551,14 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and _notifications_receivers.user_id is not null then row(_notifications_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _notifications_senders.user_id is not null then row(_notifications_senders.*) end) as user_sender,
+(case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
+(case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _notifications_receivers on _notifications_receivers.user_id = notifications.receiver
+left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _notifications_senders on _notifications_senders.user_id = notifications.sender
+left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
   select
@@ -579,8 +579,8 @@ left join (
 	notifications.receiver_rank,
 	notifications.sender,
 	notifications.title,
-_notifications_receivers.user_id,
-      _notifications_receivers.user_id,
+_notifications_receiver.user_id,
+      _notifications_receiver.user_id,
 	notifications.notification_id, 
 
 	notifications.body,
@@ -593,8 +593,8 @@ _notifications_receivers.user_id,
 	notifications.receiver_rank,
 	notifications.sender,
 	notifications.title,
-_notifications_senders.user_id,
-      _notifications_senders.user_id,
+_notifications_sender.user_id,
+      _notifications_sender.user_id,
 	notifications.notification_id, 
 
 	notifications.body,

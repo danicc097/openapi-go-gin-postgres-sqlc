@@ -21,7 +21,7 @@ type DummyJoin struct {
 	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true"` // dummy_join_id
 	Name        *string `json:"name" db:"name" required:"true"`                 // name
 
-	DummyJoinJoin *PagElement `json:"-" db:"pag_element_dummy_join_id" openapi-go:"ignore"` // O2O pag_element (inferred)
+	PagElementJoin *PagElement `json:"-" db:"pag_element_dummy_join_id" openapi-go:"ignore"` // O2O pag_element (inferred)
 }
 
 // DummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
@@ -176,15 +176,15 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 	sqlstr := `SELECT ` +
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.dummy_join ` +
-		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
 		` WHERE dummy_join.dummy_join_id > $2 GROUP BY 
 	dummy_join.dummy_join_id,
 	dummy_join.name,
-_dummy_join_dummy_join_ids.dummy,
-      _dummy_join_dummy_join_ids.paginated_element_id,
+_dummy_join_dummy_join_id.dummy,
+      _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id ORDER BY 
 		dummy_join_id Asc `
 	sqlstr += c.limit
@@ -213,15 +213,15 @@ func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID
 	sqlstr := `SELECT ` +
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.dummy_join ` +
-		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
 		` WHERE dummy_join.dummy_join_id < $2 GROUP BY 
 	dummy_join.dummy_join_id,
 	dummy_join.name,
-_dummy_join_dummy_join_ids.dummy,
-      _dummy_join_dummy_join_ids.paginated_element_id,
+_dummy_join_dummy_join_id.dummy,
+      _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id ORDER BY 
 		dummy_join_id Desc `
 	sqlstr += c.limit
@@ -253,15 +253,15 @@ func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ..
 	sqlstr := `SELECT ` +
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.dummy_join ` +
-		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
 		` WHERE dummy_join.dummy_join_id = $2 GROUP BY 
 	dummy_join.dummy_join_id,
 	dummy_join.name,
-_dummy_join_dummy_join_ids.dummy,
-      _dummy_join_dummy_join_ids.paginated_element_id,
+_dummy_join_dummy_join_id.dummy,
+      _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

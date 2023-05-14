@@ -209,14 +209,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_id.project_id is not null then row(_work_item_tags_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -236,8 +236,8 @@ left join (
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id,
-_work_item_tags_project_ids.project_id,
-      _work_item_tags_project_ids.project_id,
+_work_item_tags_project_id.project_id,
+      _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 
 	work_item_tags.color,
@@ -276,14 +276,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_id.project_id is not null then row(_work_item_tags_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -303,8 +303,8 @@ left join (
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id,
-_work_item_tags_project_ids.project_id,
-      _work_item_tags_project_ids.project_id,
+_work_item_tags_project_id.project_id,
+      _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 
 	work_item_tags.color,
@@ -343,14 +343,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_id.project_id is not null then row(_work_item_tags_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -370,8 +370,8 @@ left join (
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id,
-_work_item_tags_project_ids.project_id,
-      _work_item_tags_project_ids.project_id,
+_work_item_tags_project_id.project_id,
+      _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 
 	work_item_tags.color,
@@ -410,14 +410,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_id.project_id is not null then row(_work_item_tags_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -437,8 +437,8 @@ left join (
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id,
-_work_item_tags_project_ids.project_id,
-      _work_item_tags_project_ids.project_id,
+_work_item_tags_project_id.project_id,
+      _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 
 	work_item_tags.color,
@@ -480,14 +480,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_id.project_id is not null then row(_work_item_tags_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -507,8 +507,8 @@ left join (
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id,
-_work_item_tags_project_ids.project_id,
-      _work_item_tags_project_ids.project_id,
+_work_item_tags_project_id.project_id,
+      _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 
 	work_item_tags.color,
@@ -551,14 +551,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_id.project_id is not null then row(_work_item_tags_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -578,8 +578,8 @@ left join (
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id,
-_work_item_tags_project_ids.project_id,
-      _work_item_tags_project_ids.project_id,
+_work_item_tags_project_id.project_id,
+      _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 
 	work_item_tags.color,
@@ -624,14 +624,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_id.project_id is not null then row(_work_item_tags_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -651,8 +651,8 @@ left join (
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id,
-_work_item_tags_project_ids.project_id,
-      _work_item_tags_project_ids.project_id,
+_work_item_tags_project_id.project_id,
+      _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 
 	work_item_tags.color,
@@ -697,14 +697,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_id.project_id is not null then row(_work_item_tags_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -724,8 +724,8 @@ left join (
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id,
-_work_item_tags_project_ids.project_id,
-      _work_item_tags_project_ids.project_id,
+_work_item_tags_project_id.project_id,
+      _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 
 	work_item_tags.color,

@@ -178,14 +178,14 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 	sqlstr := `SELECT ` +
 		`demo_work_items.work_item_id,
 demo_work_items.checked,
-(case when $1::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM xo_tests.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join xo_tests.work_items as _demo_work_items_work_item_ids on _demo_work_items_work_item_ids.work_item_id = demo_work_items.work_item_id` +
+left join xo_tests.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id` +
 		` WHERE demo_work_items.work_item_id > $2 GROUP BY 
 	demo_work_items.checked,
 	demo_work_items.work_item_id,
-_demo_work_items_work_item_ids.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id ORDER BY 
 		work_item_id Asc `
 	sqlstr += c.limit
@@ -214,14 +214,14 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 	sqlstr := `SELECT ` +
 		`demo_work_items.work_item_id,
 demo_work_items.checked,
-(case when $1::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM xo_tests.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join xo_tests.work_items as _demo_work_items_work_item_ids on _demo_work_items_work_item_ids.work_item_id = demo_work_items.work_item_id` +
+left join xo_tests.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id` +
 		` WHERE demo_work_items.work_item_id < $2 GROUP BY 
 	demo_work_items.checked,
 	demo_work_items.work_item_id,
-_demo_work_items_work_item_ids.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id ORDER BY 
 		work_item_id Desc `
 	sqlstr += c.limit
@@ -253,14 +253,14 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 	sqlstr := `SELECT ` +
 		`demo_work_items.work_item_id,
 demo_work_items.checked,
-(case when $1::boolean = true and _demo_work_items_work_item_ids.work_item_id is not null then row(_demo_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM xo_tests.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join xo_tests.work_items as _demo_work_items_work_item_ids on _demo_work_items_work_item_ids.work_item_id = demo_work_items.work_item_id` +
+left join xo_tests.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id` +
 		` WHERE demo_work_items.work_item_id = $2 GROUP BY 
 	demo_work_items.checked,
 	demo_work_items.work_item_id,
-_demo_work_items_work_item_ids.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

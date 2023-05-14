@@ -209,11 +209,11 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true and _activities_project_ids.project_id is not null then row(_activities_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_ids on _activities_project_ids.project_id = activities.project_id
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
@@ -229,8 +229,8 @@ left join (
 	activities.is_productive,
 	activities.name,
 	activities.project_id,
-_activities_project_ids.project_id,
-      _activities_project_ids.project_id,
+_activities_project_id.project_id,
+      _activities_project_id.project_id,
 	activities.activity_id, 
 
 	activities.activity_id,
@@ -269,11 +269,11 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true and _activities_project_ids.project_id is not null then row(_activities_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_ids on _activities_project_ids.project_id = activities.project_id
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
@@ -289,8 +289,8 @@ left join (
 	activities.is_productive,
 	activities.name,
 	activities.project_id,
-_activities_project_ids.project_id,
-      _activities_project_ids.project_id,
+_activities_project_id.project_id,
+      _activities_project_id.project_id,
 	activities.activity_id, 
 
 	activities.activity_id,
@@ -329,11 +329,11 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true and _activities_project_ids.project_id is not null then row(_activities_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_ids on _activities_project_ids.project_id = activities.project_id
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
@@ -349,8 +349,8 @@ left join (
 	activities.is_productive,
 	activities.name,
 	activities.project_id,
-_activities_project_ids.project_id,
-      _activities_project_ids.project_id,
+_activities_project_id.project_id,
+      _activities_project_id.project_id,
 	activities.activity_id, 
 
 	activities.activity_id,
@@ -389,11 +389,11 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true and _activities_project_ids.project_id is not null then row(_activities_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_ids on _activities_project_ids.project_id = activities.project_id
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
@@ -409,8 +409,8 @@ left join (
 	activities.is_productive,
 	activities.name,
 	activities.project_id,
-_activities_project_ids.project_id,
-      _activities_project_ids.project_id,
+_activities_project_id.project_id,
+      _activities_project_id.project_id,
 	activities.activity_id, 
 
 	activities.activity_id,
@@ -452,11 +452,11 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true and _activities_project_ids.project_id is not null then row(_activities_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_ids on _activities_project_ids.project_id = activities.project_id
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
@@ -472,8 +472,8 @@ left join (
 	activities.is_productive,
 	activities.name,
 	activities.project_id,
-_activities_project_ids.project_id,
-      _activities_project_ids.project_id,
+_activities_project_id.project_id,
+      _activities_project_id.project_id,
 	activities.activity_id, 
 
 	activities.activity_id,
@@ -516,11 +516,11 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true and _activities_project_ids.project_id is not null then row(_activities_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_ids on _activities_project_ids.project_id = activities.project_id
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
@@ -536,8 +536,8 @@ left join (
 	activities.is_productive,
 	activities.name,
 	activities.project_id,
-_activities_project_ids.project_id,
-      _activities_project_ids.project_id,
+_activities_project_id.project_id,
+      _activities_project_id.project_id,
 	activities.activity_id, 
 
 	activities.activity_id,
@@ -582,11 +582,11 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true and _activities_project_ids.project_id is not null then row(_activities_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_ids on _activities_project_ids.project_id = activities.project_id
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
@@ -602,8 +602,8 @@ left join (
 	activities.is_productive,
 	activities.name,
 	activities.project_id,
-_activities_project_ids.project_id,
-      _activities_project_ids.project_id,
+_activities_project_id.project_id,
+      _activities_project_id.project_id,
 	activities.activity_id, 
 
 	activities.activity_id,
@@ -648,11 +648,11 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true and _activities_project_ids.project_id is not null then row(_activities_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_ids on _activities_project_ids.project_id = activities.project_id
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
@@ -668,8 +668,8 @@ left join (
 	activities.is_productive,
 	activities.name,
 	activities.project_id,
-_activities_project_ids.project_id,
-      _activities_project_ids.project_id,
+_activities_project_id.project_id,
+      _activities_project_id.project_id,
 	activities.activity_id, 
 
 	activities.activity_id,

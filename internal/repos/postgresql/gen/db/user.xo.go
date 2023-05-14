@@ -42,7 +42,7 @@ type User struct {
 	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	UserTimeEntriesJoin       *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
-	UserJoin                  *UserAPIKey            `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O user_api_keys (inferred)
+	UserAPIKeyJoin            *UserAPIKey            `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O user_api_keys (inferred)
 	UserUserNotificationsJoin *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
 	MemberTeamsJoin           *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -360,7 +360,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -400,8 +400,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -515,8 +515,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -629,7 +629,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -669,8 +669,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -784,8 +784,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -901,7 +901,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -941,8 +941,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1056,8 +1056,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -1176,7 +1176,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -1216,8 +1216,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1331,8 +1331,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -1449,7 +1449,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -1489,8 +1489,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1604,8 +1604,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -1724,7 +1724,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -1764,8 +1764,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1879,8 +1879,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -1997,7 +1997,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -2037,8 +2037,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -2152,8 +2152,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -2270,7 +2270,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -2310,8 +2310,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -2425,8 +2425,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -2543,7 +2543,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -2583,8 +2583,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -2698,8 +2698,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
@@ -2818,7 +2818,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -2858,8 +2858,8 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -2973,8 +2973,8 @@ joined_time_entries.time_entries, users.user_id,
 	users.updated_at,
 	users.user_id,
 	users.username,
-_users_user_ids.user_id,
-      _users_user_ids.user_api_key_id,
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
 	users.user_id, 
 
 	users.api_key_id,
