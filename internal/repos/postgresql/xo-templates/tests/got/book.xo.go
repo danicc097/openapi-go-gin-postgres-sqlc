@@ -93,13 +93,13 @@ func WithBookJoin(joins BookJoins) BookSelectConfigOption {
 // User__BA_Book represents a M2M join against "xo_tests.book_authors"
 type User__BA_Book struct {
 	User      User    `json:"user" db:"users" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // User__BASK_Book represents a M2M join against "xo_tests.book_authors_surrogate_key"
 type User__BASK_Book struct {
 	User      User    `json:"user" db:"users" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // Insert inserts the Book to the database.
@@ -186,8 +186,8 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// BookPaginatedByBookID returns a cursor-paginated list of Book.
-func BookPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
+// BookPaginatedByBookIDAsc returns a cursor-paginated list of Book in Asc order.
+func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}}
 
 	for _, o := range opts {
@@ -265,21 +265,145 @@ left join (
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
 ` +
-		` WHERE books.book_id > $5 GROUP BY books.book_id, books.book_id, 
+		` WHERE books.book_id > $5 GROUP BY 
+	books.book_id,
+	books.name,
 books.book_id, books.book_id, 
+
+	books.book_id,
+	books.name,
+books.book_id, books.book_id, 
+
+	books.book_id,
+	books.name,
 joined_book_reviews.book_reviews, books.book_id, 
-books.book_id, books.book_id `
+
+	books.book_id,
+	books.name,
+books.book_id, books.book_id ORDER BY 
+		book_id Asc `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Book])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// BookPaginatedByBookIDDesc returns a cursor-paginated list of Book in Desc order.
+func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
+	c := &BookSelectConfig{joins: BookJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`books.book_id,
+books.name,
+(case when $1::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_authors.__users
+		, joined_book_authors_authors.pseudonym
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors,
+(case when $2::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_authors.__users
+		, joined_book_authors_surrogate_key_authors.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors,
+(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
+(case when $4::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_sellers_sellers.__users
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
+		`FROM xo_tests.books ` +
+		`-- M2M join generated from "book_authors_author_id_fkey"
+left join (
+	select
+			book_authors.book_id as book_authors_book_id
+			, book_authors.pseudonym as pseudonym
+			, row(users.*) as __users
+		from
+			xo_tests.book_authors
+    join xo_tests.users on users.user_id = book_authors.author_id
+    group by
+			book_authors_book_id
+			, users.user_id
+			, pseudonym
+  ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = books.book_id
+
+-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
+left join (
+	select
+			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
+			, book_authors_surrogate_key.pseudonym as pseudonym
+			, row(users.*) as __users
+		from
+			xo_tests.book_authors_surrogate_key
+    join xo_tests.users on users.user_id = book_authors_surrogate_key.author_id
+    group by
+			book_authors_surrogate_key_book_id
+			, users.user_id
+			, pseudonym
+  ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
+
+-- M2O join generated from "book_reviews_book_id_fkey"
+left join (
+  select
+  book_id as book_reviews_book_id
+    , array_agg(book_reviews.*) as book_reviews
+  from
+    xo_tests.book_reviews
+  group by
+        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
+-- M2M join generated from "book_sellers_seller_fkey"
+left join (
+	select
+			book_sellers.book_id as book_sellers_book_id
+			, row(users.*) as __users
+		from
+			xo_tests.book_sellers
+    join xo_tests.users on users.user_id = book_sellers.seller
+    group by
+			book_sellers_book_id
+			, users.user_id
+  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
+` +
+		` WHERE books.book_id < $5 GROUP BY 
+	books.book_id,
+	books.name,
+books.book_id, books.book_id, 
+
+	books.book_id,
+	books.name,
+books.book_id, books.book_id, 
+
+	books.book_id,
+	books.name,
+joined_book_reviews.book_reviews, books.book_id, 
+
+	books.book_id,
+	books.name,
+books.book_id, books.book_id ORDER BY 
+		book_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Book])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -366,9 +490,21 @@ left join (
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
 ` +
-		` WHERE books.book_id = $5 GROUP BY books.book_id, books.book_id, 
+		` WHERE books.book_id = $5 GROUP BY 
+	books.book_id,
+	books.name,
 books.book_id, books.book_id, 
+
+	books.book_id,
+	books.name,
+books.book_id, books.book_id, 
+
+	books.book_id,
+	books.name,
 joined_book_reviews.book_reviews, books.book_id, 
+
+	books.book_id,
+	books.name,
 books.book_id, books.book_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

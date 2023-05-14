@@ -128,8 +128,8 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID returns a cursor-paginated list of WorkItemWorkItemTag.
-func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+// WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc returns a cursor-paginated list of WorkItemWorkItemTag in Asc order.
+func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -174,19 +174,98 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_tag_id > $3 AND work_item_work_item_tag.work_item_id > $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
+		` WHERE work_item_work_item_tag.work_item_tag_id > $3 AND work_item_work_item_tag.work_item_id > $4 GROUP BY 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id ORDER BY 
+		work_item_tag_id Asc ,
+		work_item_id Asc `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemTagID, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc returns a cursor-paginated list of WorkItemWorkItemTag in Desc order.
+func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
+(case when $2::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
+		`FROM public.work_item_work_item_tag ` +
+		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, row(work_item_tags.*) as __work_item_tags
+		from
+			work_item_work_item_tag
+    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    group by
+			work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id
+  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, row(work_items.*) as __work_items
+		from
+			work_item_work_item_tag
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+` +
+		` WHERE work_item_work_item_tag.work_item_tag_id < $3 AND work_item_work_item_tag.work_item_id < $4 GROUP BY 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id ORDER BY 
+		work_item_tag_id Desc ,
+		work_item_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -240,7 +319,13 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+		` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4 GROUP BY 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -308,7 +393,13 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+		` WHERE work_item_work_item_tag.work_item_id = $3 GROUP BY 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -378,7 +469,13 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_tag_id = $3 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+		` WHERE work_item_work_item_tag.work_item_tag_id = $3 GROUP BY 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -448,7 +545,13 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 ` +
-		` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4 GROUP BY work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+		` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4 GROUP BY 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
+
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id,
 work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

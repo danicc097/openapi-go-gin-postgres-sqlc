@@ -28,8 +28,8 @@ type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
 	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
-	UserUserJoin         *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
-	WorkItemWorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
+	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
 
 }
 
@@ -211,8 +211,8 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemCommentPaginatedByWorkItemCommentID returns a cursor-paginated list of WorkItemComment.
-func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+// WorkItemCommentPaginatedByWorkItemCommentIDAsc returns a cursor-paginated list of WorkItemComment in Asc order.
+func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
 
 	for _, o := range opts {
@@ -226,30 +226,103 @@ work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
-(case when $1::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id,
-(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
+(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM public.work_item_comments ` +
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = work_item_comments.user_id
+left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY _users_user_ids.user_id,
-      _users_user_ids.user_id,
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY 
+	work_item_comments.created_at,
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+_work_item_comments_user_id.user_id,
+      _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
-	work_item_comments.work_item_comment_id `
+
+	work_item_comments.created_at,
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+_work_item_comments_work_item_id.work_item_id,
+      _work_item_comments_work_item_id.work_item_id,
+	work_item_comments.work_item_comment_id ORDER BY 
+		work_item_comment_id Asc `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemCommentID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemCommentPaginatedByWorkItemCommentIDDesc returns a cursor-paginated list of WorkItemComment in Desc order.
+func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_item_comments.work_item_comment_id,
+work_item_comments.work_item_id,
+work_item_comments.user_id,
+work_item_comments.message,
+work_item_comments.created_at,
+work_item_comments.updated_at,
+(case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
+(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id ` +
+		`FROM public.work_item_comments ` +
+		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
+left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
+-- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_comment_id < $3 GROUP BY 
+	work_item_comments.created_at,
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+_work_item_comments_user_id.user_id,
+      _work_item_comments_user_id.user_id,
+	work_item_comments.work_item_comment_id, 
+
+	work_item_comments.created_at,
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+_work_item_comments_work_item_id.work_item_id,
+      _work_item_comments_work_item_id.work_item_id,
+	work_item_comments.work_item_comment_id ORDER BY 
+		work_item_comment_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemCommentID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -272,18 +345,32 @@ work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
-(case when $1::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id,
-(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
+(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM public.work_item_comments ` +
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = work_item_comments.user_id
+left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id = $3 GROUP BY _users_user_ids.user_id,
-      _users_user_ids.user_id,
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_comment_id = $3 GROUP BY 
+	work_item_comments.created_at,
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+_work_item_comments_user_id.user_id,
+      _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+
+	work_item_comments.created_at,
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+_work_item_comments_work_item_id.work_item_id,
+      _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -320,18 +407,32 @@ work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
-(case when $1::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id,
-(case when $2::boolean = true and _work_items_work_item_ids.work_item_id is not null then row(_work_items_work_item_ids.*) end) as work_item_work_item_id ` +
+(case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
+(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id ` +
 		`FROM public.work_item_comments ` +
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = work_item_comments.user_id
+left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_items_work_item_ids on _work_items_work_item_ids.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_id = $3 GROUP BY _users_user_ids.user_id,
-      _users_user_ids.user_id,
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_id = $3 GROUP BY 
+	work_item_comments.created_at,
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+_work_item_comments_user_id.user_id,
+      _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
-_work_items_work_item_ids.work_item_id,
-      _work_items_work_item_ids.work_item_id,
+
+	work_item_comments.created_at,
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+_work_item_comments_work_item_id.work_item_id,
+      _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -6,6 +6,11 @@ drop schema if exists xo_tests cascade;
 
 create schema if not exists xo_tests;
 
+create table xo_tests.dummy_join (
+  dummy_join_id serial primary key
+  , name text
+);
+
 create table xo_tests.user_api_keys (
   user_api_key_id serial primary key
   , api_key text not null unique
@@ -95,6 +100,8 @@ create table xo_tests.notifications (
   , foreign key (receiver) references xo_tests.users (user_id) on delete cascade
 );
 
+comment on column xo_tests.notifications.body is '"tags":pattern:"^[A-Za-z0-9]*$" && "properties":private';
+
 create index on xo_tests.notifications (sender);
 
 comment on column xo_tests.notifications.sender is '"cardinality":M2O';
@@ -109,6 +116,14 @@ create table xo_tests.work_items (
 create table xo_tests.demo_work_items (
   work_item_id bigint primary key references xo_tests.work_items (work_item_id) on delete cascade
   , checked boolean not null default false
+);
+
+create table xo_tests.pag_element (
+  paginated_element_id uuid default gen_random_uuid () primary key
+  , name text not null
+  , created_at timestamp with time zone default current_timestamp not null unique
+  , dummy int -- FIXME not inferring
+  , foreign key (dummy) references xo_tests.dummy_join (dummy_join_id) on delete cascade
 );
 
 do $BODY$
@@ -177,6 +192,15 @@ begin
     values (2 , false);
   insert into xo_tests.demo_work_items (work_item_id , checked)
     values (3 , true);
+
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element -1 day' , current_timestamp + '-1 day');
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element -2 days' , current_timestamp + '-2 days');
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element -3 days' , current_timestamp + '-3 days');
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element -4 days' , current_timestamp + '-4 days');
 end;
 $BODY$
 language plpgsql;

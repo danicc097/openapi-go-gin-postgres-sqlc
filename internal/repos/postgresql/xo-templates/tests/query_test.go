@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"testing"
+	"time"
 
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests/got"
 	"github.com/google/uuid"
@@ -12,8 +13,6 @@ import (
 /**
  * TODO: test extensively:
  *
- * - pagination (also missing join field names in .Query())
- * limits
  * order bys
  *
  * test M2M when its 1 pk and 2 fks, and with extra info ()
@@ -21,7 +20,29 @@ import (
 	also test join table name clash for O2O constraint too:
 	name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
 	at the same time
+
+	TODO xo maybe should allow custom untyped filters for paginated queries.
+	e.g. workitems paginated by created at while filtering TeamID is X
+	filters []string and just append those, while warning for obvious sql injection risks
+	this way we could have any filtering logic, `team_id in {team1, team2}`, etc.
 */
+
+func TestCursorPagination_Timestamp(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	ee, err := db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
+	assert.NoError(t, err)
+	assert.Len(t, ee, 1)
+	assert.Equal(t, ee[0].Name, "element -2 days")
+
+	ee, err = db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, ee[0].CreatedAt, db.WithPagElementLimit(2))
+	assert.NoError(t, err)
+	assert.Len(t, ee, 2)
+	assert.Equal(t, ee[0].Name, "element -3 days")
+	assert.Equal(t, ee[1].Name, "element -4 days")
+}
 
 func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	t.Parallel()
@@ -41,7 +62,7 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	assert.Len(t, *u.AuthorBooksJoin, 2)
 	for _, b := range *u.AuthorBooksJoin {
 		if b.Book.BookID == 1 {
-			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
+			assert.Equal(t, "not Jane Smith", *b.Pseudonym)
 		}
 	}
 }
@@ -102,7 +123,7 @@ func TestM2O(t *testing.T) {
 	n, err := db.NotificationsBySender(ctx, testPool, userID, db.WithNotificationJoin(db.NotificationJoins{UserSender: true, UserReceiver: true}))
 	assert.NoError(t, err)
 	assert.Len(t, n, 2)
-	assert.Equal(t, n[0].UserSenderJoin.UserID, userID)
+	assert.Equal(t, n[0].SenderJoin.UserID, userID)
 }
 
 func TestO2OInferred_PKisFK(t *testing.T) {
@@ -119,7 +140,7 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 
 	wi, err := db.WorkItemByWorkItemID(ctx, testPool, workitemID, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, wi.DemoWorkItemWorkItemJoin.WorkItemID, workitemID)
+	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, workitemID)
 	assert.Equal(t, wi.WorkItemID, workitemID)
 }
 
@@ -132,10 +153,10 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, u.UserAPIKeyUserJoin.UserID, userID)
+	assert.Equal(t, u.UserAPIKeyJoin.UserID, userID)
 
 	uak, err := db.UserAPIKeyByUserID(ctx, testPool, userID, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, uak.UserUserAPIKeyJoin.UserID, userID)
+	assert.Equal(t, uak.UserJoin.UserID, userID)
 	assert.Equal(t, uak.UserID, userID)
 }

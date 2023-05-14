@@ -179,8 +179,8 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// MoviePaginatedByMovieID returns a cursor-paginated list of Movie.
-func MoviePaginatedByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
+// MoviePaginatedByMovieIDAsc returns a cursor-paginated list of Movie in Asc order.
+func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
 	c := &MovieSelectConfig{joins: MovieJoins{}}
 
 	for _, o := range opts {
@@ -194,18 +194,51 @@ movies.year,
 movies.synopsis ` +
 		`FROM public.movies ` +
 		`` +
-		` WHERE movies.movie_id > $1 `
+		` WHERE movies.movie_id > $1 ORDER BY 
+		movie_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, movieID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// MoviePaginatedByMovieIDDesc returns a cursor-paginated list of Movie in Desc order.
+func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
+	c := &MovieSelectConfig{joins: MovieJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`movies.movie_id,
+movies.title,
+movies.year,
+movies.synopsis ` +
+		`FROM public.movies ` +
+		`` +
+		` WHERE movies.movie_id < $1 ORDER BY 
+		movie_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, movieID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Movie])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

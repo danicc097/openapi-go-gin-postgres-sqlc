@@ -396,31 +396,33 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 {{ end }}
 
-{{ range cursor_columns $t $constraints $tables }}
-{{ $suffix := print "PaginatedBy" (fields_to_goname . "") }}
-// {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
-{{ func_context $t $suffix . }} {
+{{ range $order := combine_values "Asc" "Desc" }}
+{{ range $cursor := cursor_columns $t $constraints $tables }}
+{{ $suffix := print "PaginatedBy" (fields_to_goname $cursor "") $order }}
+// {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }} in {{ $order }} order.
+{{ func_context $t $suffix $cursor }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	{{ sqlstr_paginated $t $constraints $tables . }}
+	{{ sqlstr_paginated $t $constraints $tables $cursor $order }}
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := {{ db_paginated "Query" $t . }}
+	rows, err := {{ db_paginated "Query" $t $cursor }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
+{{ end }}
 {{ end }}
 
 {{ end }}
