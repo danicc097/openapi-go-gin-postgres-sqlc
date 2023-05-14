@@ -24,8 +24,8 @@ type UserNotification struct {
 	Read               bool      `json:"read" db:"read" required:"true"`                               // read
 	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
-	NotificationNotificationJoin *Notification `json:"-" db:"notification_notification_id" openapi-go:"ignore"` // O2O notifications (generated from M2O)
-	UserUserJoin                 *User         `json:"-" db:"user_user_id" openapi-go:"ignore"`                 // O2O users (generated from M2O)
+	NotificationJoin *Notification `json:"-" db:"notification_notification_id" openapi-go:"ignore"` // O2O notifications (generated from M2O)
+	UserJoin         *User         `json:"-" db:"user_user_id" openapi-go:"ignore"`                 // O2O users (generated from M2O)
 
 }
 
@@ -188,8 +188,8 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// UserNotificationPaginatedByUserNotificationID returns a cursor-paginated list of UserNotification.
-func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+// UserNotificationPaginatedByUserNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
+func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
@@ -201,36 +201,47 @@ func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, u
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and _notifications_notification_ids.notification_id is not null then row(_notifications_notification_ids.*) end) as notification_notification_id,
-(case when $2::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id ` +
+(case when $1::boolean = true and _user_notifications_notification_ids.notification_id is not null then row(_user_notifications_notification_ids.*) end) as notification_notification_id,
+(case when $2::boolean = true and _user_notifications_user_ids.user_id is not null then row(_user_notifications_user_ids.*) end) as user_user_id ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
-left join notifications as _notifications_notification_ids on _notifications_notification_ids.notification_id = user_notifications.notification_id
+left join notifications as _user_notifications_notification_ids on _user_notifications_notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id > $3 GROUP BY _notifications_notification_ids.notification_id,
-      _notifications_notification_ids.notification_id,
+left join users as _user_notifications_user_ids on _user_notifications_user_ids.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_notification_id > $3 GROUP BY 
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_notification_ids.notification_id,
+      _user_notifications_notification_ids.notification_id,
 	user_notifications.user_notification_id, 
-_users_user_ids.user_id,
-      _users_user_ids.user_id,
-	user_notifications.user_notification_id `
+
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_user_ids.user_id,
+      _user_notifications_user_ids.user_id,
+	user_notifications.user_notification_id ORDER BY 
+		user_notification_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, userNotificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
 
-// UserNotificationPaginatedByNotificationID returns a cursor-paginated list of UserNotification.
-func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+// UserNotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
+func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
@@ -242,30 +253,145 @@ func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notif
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and _notifications_notification_ids.notification_id is not null then row(_notifications_notification_ids.*) end) as notification_notification_id,
-(case when $2::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id ` +
+(case when $1::boolean = true and _user_notifications_notification_ids.notification_id is not null then row(_user_notifications_notification_ids.*) end) as notification_notification_id,
+(case when $2::boolean = true and _user_notifications_user_ids.user_id is not null then row(_user_notifications_user_ids.*) end) as user_user_id ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
-left join notifications as _notifications_notification_ids on _notifications_notification_ids.notification_id = user_notifications.notification_id
+left join notifications as _user_notifications_notification_ids on _user_notifications_notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id > $3 GROUP BY _notifications_notification_ids.notification_id,
-      _notifications_notification_ids.notification_id,
+left join users as _user_notifications_user_ids on _user_notifications_user_ids.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id > $3 GROUP BY 
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_notification_ids.notification_id,
+      _user_notifications_notification_ids.notification_id,
 	user_notifications.user_notification_id, 
-_users_user_ids.user_id,
-      _users_user_ids.user_id,
-	user_notifications.user_notification_id `
+
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_user_ids.user_id,
+      _user_notifications_user_ids.user_id,
+	user_notifications.user_notification_id ORDER BY 
+		notification_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, notificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// UserNotificationPaginatedByUserNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
+func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true and _user_notifications_notification_ids.notification_id is not null then row(_user_notifications_notification_ids.*) end) as notification_notification_id,
+(case when $2::boolean = true and _user_notifications_user_ids.user_id is not null then row(_user_notifications_user_ids.*) end) as user_user_id ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+left join notifications as _user_notifications_notification_ids on _user_notifications_notification_ids.notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
+left join users as _user_notifications_user_ids on _user_notifications_user_ids.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_notification_id < $3 GROUP BY 
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_notification_ids.notification_id,
+      _user_notifications_notification_ids.notification_id,
+	user_notifications.user_notification_id, 
+
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_user_ids.user_id,
+      _user_notifications_user_ids.user_id,
+	user_notifications.user_notification_id ORDER BY 
+		user_notification_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, userNotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// UserNotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
+func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true and _user_notifications_notification_ids.notification_id is not null then row(_user_notifications_notification_ids.*) end) as notification_notification_id,
+(case when $2::boolean = true and _user_notifications_user_ids.user_id is not null then row(_user_notifications_user_ids.*) end) as user_user_id ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+left join notifications as _user_notifications_notification_ids on _user_notifications_notification_ids.notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
+left join users as _user_notifications_user_ids on _user_notifications_user_ids.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id < $3 GROUP BY 
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_notification_ids.notification_id,
+      _user_notifications_notification_ids.notification_id,
+	user_notifications.user_notification_id, 
+
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_user_ids.user_id,
+      _user_notifications_user_ids.user_id,
+	user_notifications.user_notification_id ORDER BY 
+		notification_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, notificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -286,18 +412,28 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and _notifications_notification_ids.notification_id is not null then row(_notifications_notification_ids.*) end) as notification_notification_id,
-(case when $2::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id ` +
+(case when $1::boolean = true and _user_notifications_notification_ids.notification_id is not null then row(_user_notifications_notification_ids.*) end) as notification_notification_id,
+(case when $2::boolean = true and _user_notifications_user_ids.user_id is not null then row(_user_notifications_user_ids.*) end) as user_user_id ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
-left join notifications as _notifications_notification_ids on _notifications_notification_ids.notification_id = user_notifications.notification_id
+left join notifications as _user_notifications_notification_ids on _user_notifications_notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 GROUP BY _notifications_notification_ids.notification_id,
-      _notifications_notification_ids.notification_id,
+left join users as _user_notifications_user_ids on _user_notifications_user_ids.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 GROUP BY 
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_notification_ids.notification_id,
+      _user_notifications_notification_ids.notification_id,
 	user_notifications.user_notification_id, 
-_users_user_ids.user_id,
-      _users_user_ids.user_id,
+
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_user_ids.user_id,
+      _user_notifications_user_ids.user_id,
 	user_notifications.user_notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -332,18 +468,28 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and _notifications_notification_ids.notification_id is not null then row(_notifications_notification_ids.*) end) as notification_notification_id,
-(case when $2::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id ` +
+(case when $1::boolean = true and _user_notifications_notification_ids.notification_id is not null then row(_user_notifications_notification_ids.*) end) as notification_notification_id,
+(case when $2::boolean = true and _user_notifications_user_ids.user_id is not null then row(_user_notifications_user_ids.*) end) as user_user_id ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
-left join notifications as _notifications_notification_ids on _notifications_notification_ids.notification_id = user_notifications.notification_id
+left join notifications as _user_notifications_notification_ids on _user_notifications_notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 GROUP BY _notifications_notification_ids.notification_id,
-      _notifications_notification_ids.notification_id,
+left join users as _user_notifications_user_ids on _user_notifications_user_ids.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id = $3 GROUP BY 
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_notification_ids.notification_id,
+      _user_notifications_notification_ids.notification_id,
 	user_notifications.user_notification_id, 
-_users_user_ids.user_id,
-      _users_user_ids.user_id,
+
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_user_ids.user_id,
+      _user_notifications_user_ids.user_id,
 	user_notifications.user_notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -380,18 +526,28 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and _notifications_notification_ids.notification_id is not null then row(_notifications_notification_ids.*) end) as notification_notification_id,
-(case when $2::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id ` +
+(case when $1::boolean = true and _user_notifications_notification_ids.notification_id is not null then row(_user_notifications_notification_ids.*) end) as notification_notification_id,
+(case when $2::boolean = true and _user_notifications_user_ids.user_id is not null then row(_user_notifications_user_ids.*) end) as user_user_id ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
-left join notifications as _notifications_notification_ids on _notifications_notification_ids.notification_id = user_notifications.notification_id
+left join notifications as _user_notifications_notification_ids on _user_notifications_notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id = $3 GROUP BY _notifications_notification_ids.notification_id,
-      _notifications_notification_ids.notification_id,
+left join users as _user_notifications_user_ids on _user_notifications_user_ids.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_notification_id = $3 GROUP BY 
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_notification_ids.notification_id,
+      _user_notifications_notification_ids.notification_id,
 	user_notifications.user_notification_id, 
-_users_user_ids.user_id,
-      _users_user_ids.user_id,
+
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_user_ids.user_id,
+      _user_notifications_user_ids.user_id,
 	user_notifications.user_notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -426,18 +582,28 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and _notifications_notification_ids.notification_id is not null then row(_notifications_notification_ids.*) end) as notification_notification_id,
-(case when $2::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_user_id ` +
+(case when $1::boolean = true and _user_notifications_notification_ids.notification_id is not null then row(_user_notifications_notification_ids.*) end) as notification_notification_id,
+(case when $2::boolean = true and _user_notifications_user_ids.user_id is not null then row(_user_notifications_user_ids.*) end) as user_user_id ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
-left join notifications as _notifications_notification_ids on _notifications_notification_ids.notification_id = user_notifications.notification_id
+left join notifications as _user_notifications_notification_ids on _user_notifications_notification_ids.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _users_user_ids on _users_user_ids.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_id = $3 GROUP BY _notifications_notification_ids.notification_id,
-      _notifications_notification_ids.notification_id,
+left join users as _user_notifications_user_ids on _user_notifications_user_ids.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_id = $3 GROUP BY 
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_notification_ids.notification_id,
+      _user_notifications_notification_ids.notification_id,
 	user_notifications.user_notification_id, 
-_users_user_ids.user_id,
-      _users_user_ids.user_id,
+
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id,
+	user_notifications.user_notification_id,
+_user_notifications_user_ids.user_id,
+      _user_notifications_user_ids.user_id,
 	user_notifications.user_notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

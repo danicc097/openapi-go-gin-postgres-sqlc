@@ -24,7 +24,7 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	ProjectProjectJoin       *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
+	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
 	WorkItemTagWorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
 
 }
@@ -195,8 +195,8 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemTagPaginatedByWorkItemTagID returns a cursor-paginated list of WorkItemTag.
-func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+// WorkItemTagPaginatedByWorkItemTagIDAsc returns a cursor-paginated list of WorkItemTag in Asc order.
+func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -209,14 +209,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -230,27 +230,40 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.work_item_tag_id > $3 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+		` WHERE work_item_tags.work_item_tag_id > $3 GROUP BY 
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+_work_item_tags_project_ids.project_id,
+      _work_item_tags_project_ids.project_id,
 	work_item_tags.work_item_tag_id, 
-work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
+
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY 
+		work_item_tag_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, workItemTagID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
 
-// WorkItemTagPaginatedByProjectID returns a cursor-paginated list of WorkItemTag.
-func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+// WorkItemTagPaginatedByProjectIDAsc returns a cursor-paginated list of WorkItemTag in Asc order.
+func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -263,14 +276,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -284,21 +297,168 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.project_id > $3 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+		` WHERE work_item_tags.project_id > $3 GROUP BY 
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+_work_item_tags_project_ids.project_id,
+      _work_item_tags_project_ids.project_id,
 	work_item_tags.work_item_tag_id, 
-work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
+
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY 
+		project_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, projectID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemTagPaginatedByWorkItemTagIDDesc returns a cursor-paginated list of WorkItemTag in Desc order.
+func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.project_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color,
+(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $2::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
+		`FROM public.work_item_tags ` +
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
+left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, row(work_items.*) as __work_items
+		from
+			work_item_work_item_tag
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+` +
+		` WHERE work_item_tags.work_item_tag_id < $3 GROUP BY 
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+_work_item_tags_project_ids.project_id,
+      _work_item_tags_project_ids.project_id,
+	work_item_tags.work_item_tag_id, 
+
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY 
+		work_item_tag_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, workItemTagID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemTagPaginatedByProjectIDDesc returns a cursor-paginated list of WorkItemTag in Desc order.
+func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.project_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color,
+(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
+(case when $2::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
+		`FROM public.work_item_tags ` +
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
+left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, row(work_items.*) as __work_items
+		from
+			work_item_work_item_tag
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by
+			work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id
+  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+` +
+		` WHERE work_item_tags.project_id < $3 GROUP BY 
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+_work_item_tags_project_ids.project_id,
+      _work_item_tags_project_ids.project_id,
+	work_item_tags.work_item_tag_id, 
+
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY 
+		project_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItemsWorkItemTag, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -320,14 +480,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -341,9 +501,21 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 GROUP BY 
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+_work_item_tags_project_ids.project_id,
+      _work_item_tags_project_ids.project_id,
 	work_item_tags.work_item_tag_id, 
+
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -379,14 +551,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -400,9 +572,21 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.name = $3 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+		` WHERE work_item_tags.name = $3 GROUP BY 
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+_work_item_tags_project_ids.project_id,
+      _work_item_tags_project_ids.project_id,
 	work_item_tags.work_item_tag_id, 
+
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -440,14 +624,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -461,9 +645,21 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.project_id = $3 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+		` WHERE work_item_tags.project_id = $3 GROUP BY 
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+_work_item_tags_project_ids.project_id,
+      _work_item_tags_project_ids.project_id,
 	work_item_tags.work_item_tag_id, 
+
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -501,14 +697,14 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _work_item_tags_project_ids.project_id is not null then row(_work_item_tags_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = work_item_tags.project_id
+left join projects as _work_item_tags_project_ids on _work_item_tags_project_ids.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
@@ -522,9 +718,21 @@ left join (
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.work_item_tag_id = $3 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+		` WHERE work_item_tags.work_item_tag_id = $3 GROUP BY 
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
+_work_item_tags_project_ids.project_id,
+      _work_item_tags_project_ids.project_id,
 	work_item_tags.work_item_tag_id, 
+
+	work_item_tags.color,
+	work_item_tags.description,
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id,
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

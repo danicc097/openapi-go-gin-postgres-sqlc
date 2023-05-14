@@ -23,8 +23,8 @@ type BookReview struct {
 	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
 	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true"`           // reviewer
 
-	BookBookJoin     *Book `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
-	UserReviewerJoin *User `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
+	BookJoin     *Book `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
+	ReviewerJoin *User `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
 }
 
 // BookReviewCreateParams represents insert params for 'xo_tests.book_reviews'.
@@ -177,8 +177,8 @@ func (br *BookReview) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// BookReviewPaginatedByBookReviewID returns a cursor-paginated list of BookReview.
-func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+// BookReviewPaginatedByBookReviewIDAsc returns a cursor-paginated list of BookReview in Asc order.
+func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
 
 	for _, o := range opts {
@@ -189,36 +189,45 @@ func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID 
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $1::boolean = true and _book_reviews_book_ids.book_id is not null then row(_book_reviews_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _book_reviews_reviewers.user_id is not null then row(_book_reviews_reviewers.*) end) as user_reviewer ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
+left join xo_tests.books as _book_reviews_book_ids on _book_reviews_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_review_id > $3 GROUP BY _books_book_ids.book_id,
-      _books_book_ids.book_id,
+left join xo_tests.users as _book_reviews_reviewers on _book_reviews_reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_review_id > $3 GROUP BY 
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_book_ids.book_id,
+      _book_reviews_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
-	book_reviews.book_review_id `
+
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_reviewers.user_id,
+      _book_reviews_reviewers.user_id,
+	book_reviews.book_review_id ORDER BY 
+		book_review_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookReviewID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
 
-// BookReviewPaginatedByBookID returns a cursor-paginated list of BookReview.
-func BookReviewPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+// BookReviewPaginatedByBookIDAsc returns a cursor-paginated list of BookReview in Asc order.
+func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
 
 	for _, o := range opts {
@@ -229,30 +238,137 @@ func BookReviewPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ..
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $1::boolean = true and _book_reviews_book_ids.book_id is not null then row(_book_reviews_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _book_reviews_reviewers.user_id is not null then row(_book_reviews_reviewers.*) end) as user_reviewer ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
+left join xo_tests.books as _book_reviews_book_ids on _book_reviews_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_id > $3 GROUP BY _books_book_ids.book_id,
-      _books_book_ids.book_id,
+left join xo_tests.users as _book_reviews_reviewers on _book_reviews_reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_id > $3 GROUP BY 
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_book_ids.book_id,
+      _book_reviews_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
-	book_reviews.book_review_id `
+
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_reviewers.user_id,
+      _book_reviews_reviewers.user_id,
+	book_reviews.book_review_id ORDER BY 
+		book_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// BookReviewPaginatedByBookReviewIDDesc returns a cursor-paginated list of BookReview in Desc order.
+func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`book_reviews.book_review_id,
+book_reviews.book_id,
+book_reviews.reviewer,
+(case when $1::boolean = true and _book_reviews_book_ids.book_id is not null then row(_book_reviews_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _book_reviews_reviewers.user_id is not null then row(_book_reviews_reviewers.*) end) as user_reviewer ` +
+		`FROM xo_tests.book_reviews ` +
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
+left join xo_tests.books as _book_reviews_book_ids on _book_reviews_book_ids.book_id = book_reviews.book_id
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
+left join xo_tests.users as _book_reviews_reviewers on _book_reviews_reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_review_id < $3 GROUP BY 
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_book_ids.book_id,
+      _book_reviews_book_ids.book_id,
+	book_reviews.book_review_id, 
+
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_reviewers.user_id,
+      _book_reviews_reviewers.user_id,
+	book_reviews.book_review_id ORDER BY 
+		book_review_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookReviewID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// BookReviewPaginatedByBookIDDesc returns a cursor-paginated list of BookReview in Desc order.
+func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`book_reviews.book_review_id,
+book_reviews.book_id,
+book_reviews.reviewer,
+(case when $1::boolean = true and _book_reviews_book_ids.book_id is not null then row(_book_reviews_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _book_reviews_reviewers.user_id is not null then row(_book_reviews_reviewers.*) end) as user_reviewer ` +
+		`FROM xo_tests.book_reviews ` +
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
+left join xo_tests.books as _book_reviews_book_ids on _book_reviews_book_ids.book_id = book_reviews.book_id
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
+left join xo_tests.users as _book_reviews_reviewers on _book_reviews_reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_id < $3 GROUP BY 
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_book_ids.book_id,
+      _book_reviews_book_ids.book_id,
+	book_reviews.book_review_id, 
+
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_reviewers.user_id,
+      _book_reviews_reviewers.user_id,
+	book_reviews.book_review_id ORDER BY 
+		book_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -272,18 +388,26 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $1::boolean = true and _book_reviews_book_ids.book_id is not null then row(_book_reviews_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _book_reviews_reviewers.user_id is not null then row(_book_reviews_reviewers.*) end) as user_reviewer ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
+left join xo_tests.books as _book_reviews_book_ids on _book_reviews_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_review_id = $3 GROUP BY _books_book_ids.book_id,
-      _books_book_ids.book_id,
+left join xo_tests.users as _book_reviews_reviewers on _book_reviews_reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_review_id = $3 GROUP BY 
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_book_ids.book_id,
+      _book_reviews_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_reviewers.user_id,
+      _book_reviews_reviewers.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -317,18 +441,26 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $1::boolean = true and _book_reviews_book_ids.book_id is not null then row(_book_reviews_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _book_reviews_reviewers.user_id is not null then row(_book_reviews_reviewers.*) end) as user_reviewer ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
+left join xo_tests.books as _book_reviews_book_ids on _book_reviews_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 GROUP BY _books_book_ids.book_id,
-      _books_book_ids.book_id,
+left join xo_tests.users as _book_reviews_reviewers on _book_reviews_reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 GROUP BY 
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_book_ids.book_id,
+      _book_reviews_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_reviewers.user_id,
+      _book_reviews_reviewers.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -362,18 +494,26 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $1::boolean = true and _book_reviews_book_ids.book_id is not null then row(_book_reviews_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _book_reviews_reviewers.user_id is not null then row(_book_reviews_reviewers.*) end) as user_reviewer ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
+left join xo_tests.books as _book_reviews_book_ids on _book_reviews_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.reviewer = $3 GROUP BY _books_book_ids.book_id,
-      _books_book_ids.book_id,
+left join xo_tests.users as _book_reviews_reviewers on _book_reviews_reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.reviewer = $3 GROUP BY 
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_book_ids.book_id,
+      _book_reviews_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_reviewers.user_id,
+      _book_reviews_reviewers.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -409,18 +549,26 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 		`book_reviews.book_review_id,
 book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and _books_book_ids.book_id is not null then row(_books_book_ids.*) end) as book_book_id,
-(case when $2::boolean = true and _users_reviewers.user_id is not null then row(_users_reviewers.*) end) as user_reviewer ` +
+(case when $1::boolean = true and _book_reviews_book_ids.book_id is not null then row(_book_reviews_book_ids.*) end) as book_book_id,
+(case when $2::boolean = true and _book_reviews_reviewers.user_id is not null then row(_book_reviews_reviewers.*) end) as user_reviewer ` +
 		`FROM xo_tests.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _books_book_ids on _books_book_ids.book_id = book_reviews.book_id
+left join xo_tests.books as _book_reviews_book_ids on _book_reviews_book_ids.book_id = book_reviews.book_id
 -- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _users_reviewers on _users_reviewers.user_id = book_reviews.reviewer` +
-		` WHERE book_reviews.book_id = $3 GROUP BY _books_book_ids.book_id,
-      _books_book_ids.book_id,
+left join xo_tests.users as _book_reviews_reviewers on _book_reviews_reviewers.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_id = $3 GROUP BY 
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_book_ids.book_id,
+      _book_reviews_book_ids.book_id,
 	book_reviews.book_review_id, 
-_users_reviewers.user_id,
-      _users_reviewers.user_id,
+
+	book_reviews.book_id,
+	book_reviews.book_review_id,
+	book_reviews.reviewer,
+_book_reviews_reviewers.user_id,
+      _book_reviews_reviewers.user_id,
 	book_reviews.book_review_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

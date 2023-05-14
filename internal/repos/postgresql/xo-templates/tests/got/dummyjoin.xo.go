@@ -20,6 +20,8 @@ import (
 type DummyJoin struct {
 	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true"` // dummy_join_id
 	Name        *string `json:"name" db:"name" required:"true"`                 // name
+
+	DummyJoinJoin *PagElement `json:"-" db:"pag_element_dummy_join_id" openapi-go:"ignore"` // O2O pag_element (inferred)
 }
 
 // DummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
@@ -66,12 +68,16 @@ func WithDummyJoinLimit(limit int) DummyJoinSelectConfigOption {
 
 type DummyJoinOrderBy = string
 
-type DummyJoinJoins struct{}
+type DummyJoinJoins struct {
+	PagElement bool // O2O pag_element
+}
 
 // WithDummyJoinJoin joins with the given tables.
 func WithDummyJoinJoin(joins DummyJoinJoins) DummyJoinSelectConfigOption {
 	return func(s *DummyJoinSelectConfig) {
-		s.joins = DummyJoinJoins{}
+		s.joins = DummyJoinJoins{
+			PagElement: s.joins.PagElement || joins.PagElement,
+		}
 	}
 }
 
@@ -169,16 +175,23 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 
 	sqlstr := `SELECT ` +
 		`dummy_join.dummy_join_id,
-dummy_join.name ` +
+dummy_join.name,
+(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.dummy_join ` +
-		`` +
-		` WHERE dummy_join.dummy_join_id > $1 ORDER BY 
+		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
+left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		` WHERE dummy_join.dummy_join_id > $2 GROUP BY 
+	dummy_join.dummy_join_id,
+	dummy_join.name,
+_dummy_join_dummy_join_ids.dummy,
+      _dummy_join_dummy_join_ids.paginated_element_id,
+	dummy_join.dummy_join_id ORDER BY 
 		dummy_join_id Asc `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/db.Query: %w", err))
 	}
@@ -199,16 +212,23 @@ func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID
 
 	sqlstr := `SELECT ` +
 		`dummy_join.dummy_join_id,
-dummy_join.name ` +
+dummy_join.name,
+(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.dummy_join ` +
-		`` +
-		` WHERE dummy_join.dummy_join_id < $1 ORDER BY 
+		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
+left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		` WHERE dummy_join.dummy_join_id < $2 GROUP BY 
+	dummy_join.dummy_join_id,
+	dummy_join.name,
+_dummy_join_dummy_join_ids.dummy,
+      _dummy_join_dummy_join_ids.paginated_element_id,
+	dummy_join.dummy_join_id ORDER BY 
 		dummy_join_id Desc `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/db.Query: %w", err))
 	}
@@ -232,16 +252,23 @@ func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ..
 	// query
 	sqlstr := `SELECT ` +
 		`dummy_join.dummy_join_id,
-dummy_join.name ` +
+dummy_join.name,
+(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.dummy_join ` +
-		`` +
-		` WHERE dummy_join.dummy_join_id = $1 `
+		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
+left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		` WHERE dummy_join.dummy_join_id = $2 GROUP BY 
+	dummy_join.dummy_join_id,
+	dummy_join.name,
+_dummy_join_dummy_join_ids.dummy,
+      _dummy_join_dummy_join_ids.paginated_element_id,
+	dummy_join.dummy_join_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, dummyJoinID)
-	rows, err := db.Query(ctx, sqlstr, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/db.Query: %w", err))
 	}

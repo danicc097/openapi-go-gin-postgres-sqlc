@@ -197,8 +197,8 @@ func (bask *BookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID returns a cursor-paginated list of BookAuthorsSurrogateKey.
-func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
+// BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc returns a cursor-paginated list of BookAuthorsSurrogateKey in Asc order.
+func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
 	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
 
 	for _, o := range opts {
@@ -251,19 +251,112 @@ left join (
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $3 GROUP BY book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
+		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $3 GROUP BY 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
+book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
+book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id ORDER BY 
+		book_authors_surrogate_key_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc returns a cursor-paginated list of BookAuthorsSurrogateKey in Desc order.
+func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`book_authors_surrogate_key.book_authors_surrogate_key_id,
+book_authors_surrogate_key.book_id,
+book_authors_surrogate_key.author_id,
+book_authors_surrogate_key.pseudonym,
+(case when $1::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_books.__books
+		, joined_book_authors_surrogate_key_books.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+(case when $2::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_authors.__users
+		, joined_book_authors_surrogate_key_authors.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors ` +
+		`FROM xo_tests.book_authors_surrogate_key ` +
+		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+left join (
+	select
+			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
+			, book_authors_surrogate_key.pseudonym as pseudonym
+			, row(books.*) as __books
+		from
+			xo_tests.book_authors_surrogate_key
+    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
+    group by
+			book_authors_surrogate_key_author_id
+			, books.book_id
+			, pseudonym
+  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = book_authors_surrogate_key.author_id
+
+-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
+left join (
+	select
+			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
+			, book_authors_surrogate_key.pseudonym as pseudonym
+			, row(users.*) as __users
+		from
+			xo_tests.book_authors_surrogate_key
+    join xo_tests.users on users.user_id = book_authors_surrogate_key.author_id
+    group by
+			book_authors_surrogate_key_book_id
+			, users.user_id
+			, pseudonym
+  ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
+` +
+		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $3 GROUP BY 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
+book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
+book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id ORDER BY 
+		book_authors_surrogate_key_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -325,7 +418,17 @@ left join (
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
-		` WHERE book_authors_surrogate_key.book_id = $3 AND book_authors_surrogate_key.author_id = $4 GROUP BY book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+		` WHERE book_authors_surrogate_key.book_id = $3 AND book_authors_surrogate_key.author_id = $4 GROUP BY 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
+book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -401,7 +504,17 @@ left join (
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
-		` WHERE book_authors_surrogate_key.book_id = $3 GROUP BY book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+		` WHERE book_authors_surrogate_key.book_id = $3 GROUP BY 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
+book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -479,7 +592,17 @@ left join (
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
-		` WHERE book_authors_surrogate_key.author_id = $3 GROUP BY book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+		` WHERE book_authors_surrogate_key.author_id = $3 GROUP BY 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
+book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -557,7 +680,17 @@ left join (
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 ` +
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $3 GROUP BY book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $3 GROUP BY 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
+book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
+
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

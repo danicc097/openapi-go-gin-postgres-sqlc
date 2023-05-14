@@ -27,10 +27,10 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	ProjectProjectJoin  *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
+	ProjectJoin         *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 	TeamTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
 	TeamMembersJoin     *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M user_team
-	WorkItemTeamJoin    *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O work_items (inferred)
+	TeamJoin            *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O work_items (inferred)
 
 }
 
@@ -216,8 +216,8 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// TeamPaginatedByTeamID returns a cursor-paginated list of Team.
-func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+// TeamPaginatedByTeamIDAsc returns a cursor-paginated list of Team in Asc order.
+func TeamPaginatedByTeamIDAsc(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
@@ -231,16 +231,16 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _teams_project_ids.project_id is not null then row(_teams_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
+(case when $4::boolean = true and _teams_team_ids.team_id is not null then row(_teams_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = teams.project_id
+left join projects as _teams_project_ids on _teams_project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -264,32 +264,61 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items as _work_items_team_ids on _work_items_team_ids.team_id = teams.team_id` +
-		` WHERE teams.team_id > $5 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+left join work_items as _teams_team_ids on _teams_team_ids.team_id = teams.team_id` +
+		` WHERE teams.team_id > $5 GROUP BY 
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_project_ids.project_id,
+      _teams_project_ids.project_id,
 	teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 teams.team_id, teams.team_id, 
-_work_items_team_ids.team_id,
-      _work_items_team_ids.work_item_id,
-	teams.team_id `
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_team_ids.team_id,
+      _teams_team_ids.work_item_id,
+	teams.team_id ORDER BY 
+		team_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Team/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Team/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Team/Paginated/Asc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
 
-// TeamPaginatedByProjectID returns a cursor-paginated list of Team.
-func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+// TeamPaginatedByProjectIDAsc returns a cursor-paginated list of Team in Asc order.
+func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
@@ -303,16 +332,16 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _teams_project_ids.project_id is not null then row(_teams_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
+(case when $4::boolean = true and _teams_team_ids.team_id is not null then row(_teams_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = teams.project_id
+left join projects as _teams_project_ids on _teams_project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -336,26 +365,257 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items as _work_items_team_ids on _work_items_team_ids.team_id = teams.team_id` +
-		` WHERE teams.project_id > $5 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+left join work_items as _teams_team_ids on _teams_team_ids.team_id = teams.team_id` +
+		` WHERE teams.project_id > $5 GROUP BY 
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_project_ids.project_id,
+      _teams_project_ids.project_id,
 	teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 teams.team_id, teams.team_id, 
-_work_items_team_ids.team_id,
-      _work_items_team_ids.work_item_id,
-	teams.team_id `
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_team_ids.team_id,
+      _teams_team_ids.work_item_id,
+	teams.team_id ORDER BY 
+		project_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Team/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Team/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Team/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// TeamPaginatedByTeamIDDesc returns a cursor-paginated list of Team in Desc order.
+func TeamPaginatedByTeamIDDesc(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.created_at,
+teams.updated_at,
+(case when $1::boolean = true and _teams_project_ids.project_id is not null then row(_teams_project_ids.*) end) as project_project_id,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_user_team_members.__users
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
+(case when $4::boolean = true and _teams_team_ids.team_id is not null then row(_teams_team_ids.*) end) as work_item_team_id ` +
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+left join projects as _teams_project_ids on _teams_project_ids.project_id = teams.project_id
+-- M2O join generated from "time_entries_team_id_fkey"
+left join (
+  select
+  team_id as time_entries_team_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_member_fkey"
+left join (
+	select
+			user_team.team_id as user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.member
+    group by
+			user_team_team_id
+			, users.user_id
+  ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
+
+-- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
+left join work_items as _teams_team_ids on _teams_team_ids.team_id = teams.team_id` +
+		` WHERE teams.team_id < $5 GROUP BY 
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_project_ids.project_id,
+      _teams_project_ids.project_id,
+	teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+joined_time_entries.time_entries, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+teams.team_id, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_team_ids.team_id,
+      _teams_team_ids.work_item_id,
+	teams.team_id ORDER BY 
+		team_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Team/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Team/Paginated/Desc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// TeamPaginatedByProjectIDDesc returns a cursor-paginated list of Team in Desc order.
+func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.created_at,
+teams.updated_at,
+(case when $1::boolean = true and _teams_project_ids.project_id is not null then row(_teams_project_ids.*) end) as project_project_id,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_user_team_members.__users
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
+(case when $4::boolean = true and _teams_team_ids.team_id is not null then row(_teams_team_ids.*) end) as work_item_team_id ` +
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+left join projects as _teams_project_ids on _teams_project_ids.project_id = teams.project_id
+-- M2O join generated from "time_entries_team_id_fkey"
+left join (
+  select
+  team_id as time_entries_team_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_member_fkey"
+left join (
+	select
+			user_team.team_id as user_team_team_id
+			, row(users.*) as __users
+		from
+			user_team
+    join users on users.user_id = user_team.member
+    group by
+			user_team_team_id
+			, users.user_id
+  ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
+
+-- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
+left join work_items as _teams_team_ids on _teams_team_ids.team_id = teams.team_id` +
+		` WHERE teams.project_id < $5 GROUP BY 
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_project_ids.project_id,
+      _teams_project_ids.project_id,
+	teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+joined_time_entries.time_entries, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+teams.team_id, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_team_ids.team_id,
+      _teams_team_ids.work_item_id,
+	teams.team_id ORDER BY 
+		project_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Team/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Team/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -378,16 +638,16 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _teams_project_ids.project_id is not null then row(_teams_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
+(case when $4::boolean = true and _teams_team_ids.team_id is not null then row(_teams_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = teams.project_id
+left join projects as _teams_project_ids on _teams_project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -411,14 +671,42 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items as _work_items_team_ids on _work_items_team_ids.team_id = teams.team_id` +
-		` WHERE teams.name = $5 AND teams.project_id = $6 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+left join work_items as _teams_team_ids on _teams_team_ids.team_id = teams.team_id` +
+		` WHERE teams.name = $5 AND teams.project_id = $6 GROUP BY 
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_project_ids.project_id,
+      _teams_project_ids.project_id,
 	teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 teams.team_id, teams.team_id, 
-_work_items_team_ids.team_id,
-      _work_items_team_ids.work_item_id,
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_team_ids.team_id,
+      _teams_team_ids.work_item_id,
 	teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -455,16 +743,16 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _teams_project_ids.project_id is not null then row(_teams_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
+(case when $4::boolean = true and _teams_team_ids.team_id is not null then row(_teams_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = teams.project_id
+left join projects as _teams_project_ids on _teams_project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -488,14 +776,42 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items as _work_items_team_ids on _work_items_team_ids.team_id = teams.team_id` +
-		` WHERE teams.name = $5 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+left join work_items as _teams_team_ids on _teams_team_ids.team_id = teams.team_id` +
+		` WHERE teams.name = $5 GROUP BY 
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_project_ids.project_id,
+      _teams_project_ids.project_id,
 	teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 teams.team_id, teams.team_id, 
-_work_items_team_ids.team_id,
-      _work_items_team_ids.work_item_id,
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_team_ids.team_id,
+      _teams_team_ids.work_item_id,
 	teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -534,16 +850,16 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _teams_project_ids.project_id is not null then row(_teams_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
+(case when $4::boolean = true and _teams_team_ids.team_id is not null then row(_teams_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = teams.project_id
+left join projects as _teams_project_ids on _teams_project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -567,14 +883,42 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items as _work_items_team_ids on _work_items_team_ids.team_id = teams.team_id` +
-		` WHERE teams.project_id = $5 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+left join work_items as _teams_team_ids on _teams_team_ids.team_id = teams.team_id` +
+		` WHERE teams.project_id = $5 GROUP BY 
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_project_ids.project_id,
+      _teams_project_ids.project_id,
 	teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 teams.team_id, teams.team_id, 
-_work_items_team_ids.team_id,
-      _work_items_team_ids.work_item_id,
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_team_ids.team_id,
+      _teams_team_ids.work_item_id,
 	teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -613,16 +957,16 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true and _projects_project_ids.project_id is not null then row(_projects_project_ids.*) end) as project_project_id,
+(case when $1::boolean = true and _teams_project_ids.project_id is not null then row(_teams_project_ids.*) end) as project_project_id,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _work_items_team_ids.team_id is not null then row(_work_items_team_ids.*) end) as work_item_team_id ` +
+(case when $4::boolean = true and _teams_team_ids.team_id is not null then row(_teams_team_ids.*) end) as work_item_team_id ` +
 		`FROM public.teams ` +
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
-left join projects as _projects_project_ids on _projects_project_ids.project_id = teams.project_id
+left join projects as _teams_project_ids on _teams_project_ids.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
   select
@@ -646,14 +990,42 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
-left join work_items as _work_items_team_ids on _work_items_team_ids.team_id = teams.team_id` +
-		` WHERE teams.team_id = $5 GROUP BY _projects_project_ids.project_id,
-      _projects_project_ids.project_id,
+left join work_items as _teams_team_ids on _teams_team_ids.team_id = teams.team_id` +
+		` WHERE teams.team_id = $5 GROUP BY 
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_project_ids.project_id,
+      _teams_project_ids.project_id,
 	teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 joined_time_entries.time_entries, teams.team_id, 
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
 teams.team_id, teams.team_id, 
-_work_items_team_ids.team_id,
-      _work_items_team_ids.work_item_id,
+
+	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
+	teams.updated_at,
+_teams_team_ids.team_id,
+      _teams_team_ids.work_item_id,
 	teams.team_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -24,8 +24,8 @@ type Notification struct {
 	Sender         uuid.UUID  `json:"sender" db:"sender" required:"true"`                  // sender
 	Receiver       *uuid.UUID `json:"receiver" db:"receiver" required:"true"`              // receiver
 
-	UserReceiverJoin *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
-	UserSenderJoin   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
+	ReceiverJoin *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
+	SenderJoin   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
 }
 
 // NotificationCreateParams represents insert params for 'xo_tests.notifications'.
@@ -185,8 +185,8 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// NotificationPaginatedByNotificationID returns a cursor-paginated list of Notification.
-func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+// NotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of Notification in Asc order.
+func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}}
 
 	for _, o := range opts {
@@ -198,30 +198,93 @@ func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificat
 notifications.body,
 notifications.sender,
 notifications.receiver,
-(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender ` +
+(case when $1::boolean = true and _notifications_receivers.user_id is not null then row(_notifications_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _notifications_senders.user_id is not null then row(_notifications_senders.*) end) as user_sender ` +
 		`FROM xo_tests.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join xo_tests.users as _users_receivers on _users_receivers.user_id = notifications.receiver
+left join xo_tests.users as _notifications_receivers on _notifications_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join xo_tests.users as _users_senders on _users_senders.user_id = notifications.sender` +
-		` WHERE notifications.notification_id > $3 GROUP BY _users_receivers.user_id,
-      _users_receivers.user_id,
+left join xo_tests.users as _notifications_senders on _notifications_senders.user_id = notifications.sender` +
+		` WHERE notifications.notification_id > $3 GROUP BY 
+	notifications.body,
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender,
+_notifications_receivers.user_id,
+      _notifications_receivers.user_id,
 	notifications.notification_id, 
-_users_senders.user_id,
-      _users_senders.user_id,
-	notifications.notification_id `
+
+	notifications.body,
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender,
+_notifications_senders.user_id,
+      _notifications_senders.user_id,
+	notifications.notification_id ORDER BY 
+		notification_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, notificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// NotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of Notification in Desc order.
+func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+	c := &NotificationSelectConfig{joins: NotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`notifications.notification_id,
+notifications.body,
+notifications.sender,
+notifications.receiver,
+(case when $1::boolean = true and _notifications_receivers.user_id is not null then row(_notifications_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _notifications_senders.user_id is not null then row(_notifications_senders.*) end) as user_sender ` +
+		`FROM xo_tests.notifications ` +
+		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
+left join xo_tests.users as _notifications_receivers on _notifications_receivers.user_id = notifications.receiver
+-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
+left join xo_tests.users as _notifications_senders on _notifications_senders.user_id = notifications.sender` +
+		` WHERE notifications.notification_id < $3 GROUP BY 
+	notifications.body,
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender,
+_notifications_receivers.user_id,
+      _notifications_receivers.user_id,
+	notifications.notification_id, 
+
+	notifications.body,
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender,
+_notifications_senders.user_id,
+      _notifications_senders.user_id,
+	notifications.notification_id ORDER BY 
+		notification_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, notificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -242,18 +305,28 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 notifications.body,
 notifications.sender,
 notifications.receiver,
-(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender ` +
+(case when $1::boolean = true and _notifications_receivers.user_id is not null then row(_notifications_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _notifications_senders.user_id is not null then row(_notifications_senders.*) end) as user_sender ` +
 		`FROM xo_tests.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join xo_tests.users as _users_receivers on _users_receivers.user_id = notifications.receiver
+left join xo_tests.users as _notifications_receivers on _notifications_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join xo_tests.users as _users_senders on _users_senders.user_id = notifications.sender` +
-		` WHERE notifications.notification_id = $3 GROUP BY _users_receivers.user_id,
-      _users_receivers.user_id,
+left join xo_tests.users as _notifications_senders on _notifications_senders.user_id = notifications.sender` +
+		` WHERE notifications.notification_id = $3 GROUP BY 
+	notifications.body,
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender,
+_notifications_receivers.user_id,
+      _notifications_receivers.user_id,
 	notifications.notification_id, 
-_users_senders.user_id,
-      _users_senders.user_id,
+
+	notifications.body,
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender,
+_notifications_senders.user_id,
+      _notifications_senders.user_id,
 	notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -288,18 +361,28 @@ func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ..
 notifications.body,
 notifications.sender,
 notifications.receiver,
-(case when $1::boolean = true and _users_receivers.user_id is not null then row(_users_receivers.*) end) as user_receiver,
-(case when $2::boolean = true and _users_senders.user_id is not null then row(_users_senders.*) end) as user_sender ` +
+(case when $1::boolean = true and _notifications_receivers.user_id is not null then row(_notifications_receivers.*) end) as user_receiver,
+(case when $2::boolean = true and _notifications_senders.user_id is not null then row(_notifications_senders.*) end) as user_sender ` +
 		`FROM xo_tests.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join xo_tests.users as _users_receivers on _users_receivers.user_id = notifications.receiver
+left join xo_tests.users as _notifications_receivers on _notifications_receivers.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join xo_tests.users as _users_senders on _users_senders.user_id = notifications.sender` +
-		` WHERE notifications.sender = $3 GROUP BY _users_receivers.user_id,
-      _users_receivers.user_id,
+left join xo_tests.users as _notifications_senders on _notifications_senders.user_id = notifications.sender` +
+		` WHERE notifications.sender = $3 GROUP BY 
+	notifications.body,
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender,
+_notifications_receivers.user_id,
+      _notifications_receivers.user_id,
 	notifications.notification_id, 
-_users_senders.user_id,
-      _users_senders.user_id,
+
+	notifications.body,
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender,
+_notifications_senders.user_id,
+      _notifications_senders.user_id,
 	notifications.notification_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

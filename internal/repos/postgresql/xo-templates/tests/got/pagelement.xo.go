@@ -25,8 +25,6 @@ type PagElement struct {
 	Name               string    `json:"name" db:"name" required:"true"`                               // name
 	CreatedAt          time.Time `json:"createdAt" db:"created_at" required:"true"`                    // created_at
 	Dummy              *int      `json:"dummy" db:"dummy" required:"true"`                             // dummy
-
-	DummyJoinJoin *DummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
 }
 
 // PagElementCreateParams represents insert params for 'xo_tests.pag_element'.
@@ -96,16 +94,12 @@ func WithPagElementOrderBy(rows ...PagElementOrderBy) PagElementSelectConfigOpti
 	}
 }
 
-type PagElementJoins struct {
-	DummyJoin bool // O2O pag_element
-}
+type PagElementJoins struct{}
 
 // WithPagElementJoin joins with the given tables.
 func WithPagElementJoin(joins PagElementJoins) PagElementSelectConfigOption {
 	return func(s *PagElementSelectConfig) {
-		s.joins = PagElementJoins{
-			DummyJoin: s.joins.DummyJoin || joins.DummyJoin,
-		}
+		s.joins = PagElementJoins{}
 	}
 }
 
@@ -206,25 +200,16 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy,
-(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+pag_element.dummy ` +
 		`FROM xo_tests.pag_element ` +
-		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = pag_element.dummy_join_id` +
-		` WHERE pag_element.created_at > $2 GROUP BY 
-	pag_element.created_at,
-	pag_element.dummy,
-	pag_element.name,
-	pag_element.paginated_element_id,
-_pag_element_dummy_join_ids.dummy,
-      _pag_element_dummy_join_ids.paginated_element_id,
-	pag_element.paginated_element_id ORDER BY 
+		`` +
+		` WHERE pag_element.created_at > $1 ORDER BY 
 		created_at Asc `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, createdAt)
+	rows, err := db.Query(ctx, sqlstr, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/db.Query: %w", err))
 	}
@@ -247,25 +232,16 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy,
-(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+pag_element.dummy ` +
 		`FROM xo_tests.pag_element ` +
-		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = pag_element.dummy_join_id` +
-		` WHERE pag_element.created_at < $2 GROUP BY 
-	pag_element.created_at,
-	pag_element.dummy,
-	pag_element.name,
-	pag_element.paginated_element_id,
-_pag_element_dummy_join_ids.dummy,
-      _pag_element_dummy_join_ids.paginated_element_id,
-	pag_element.paginated_element_id ORDER BY 
+		`` +
+		` WHERE pag_element.created_at < $1 ORDER BY 
 		created_at Desc `
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, createdAt)
+	rows, err := db.Query(ctx, sqlstr, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", err))
 	}
@@ -291,25 +267,16 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy,
-(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+pag_element.dummy ` +
 		`FROM xo_tests.pag_element ` +
-		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = pag_element.dummy_join_id` +
-		` WHERE pag_element.created_at = $2 GROUP BY 
-	pag_element.created_at,
-	pag_element.dummy,
-	pag_element.name,
-	pag_element.paginated_element_id,
-_pag_element_dummy_join_ids.dummy,
-      _pag_element_dummy_join_ids.paginated_element_id,
-	pag_element.paginated_element_id `
+		`` +
+		` WHERE pag_element.created_at = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, createdAt)
+	rows, err := db.Query(ctx, sqlstr, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", err))
 	}
@@ -336,25 +303,16 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy,
-(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+pag_element.dummy ` +
 		`FROM xo_tests.pag_element ` +
-		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = pag_element.dummy_join_id` +
-		` WHERE pag_element.paginated_element_id = $2 GROUP BY 
-	pag_element.created_at,
-	pag_element.dummy,
-	pag_element.name,
-	pag_element.paginated_element_id,
-_pag_element_dummy_join_ids.dummy,
-      _pag_element_dummy_join_ids.paginated_element_id,
-	pag_element.paginated_element_id `
+		`` +
+		` WHERE pag_element.paginated_element_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, paginatedElementID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DummyJoin, paginatedElementID)
+	rows, err := db.Query(ctx, sqlstr, paginatedElementID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", err))
 	}

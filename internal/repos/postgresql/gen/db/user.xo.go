@@ -42,7 +42,7 @@ type User struct {
 	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	UserTimeEntriesJoin       *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
-	UserAPIKeyUserJoin        *UserAPIKey            `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O user_api_keys (inferred)
+	UserJoin                  *UserAPIKey            `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O user_api_keys (inferred)
 	UserUserNotificationsJoin *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
 	MemberTeamsJoin           *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -333,8 +333,8 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
-// UserPaginatedByCreatedAt returns a cursor-paginated list of User.
-func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
+// UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
+func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
 
 	for _, o := range opts {
@@ -360,7 +360,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -401,7 +401,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -448,28 +448,425 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at > $9  AND users.deleted_at is %s  GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.created_at > $9  AND users.deleted_at is %s  GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
-		created_at DESC`, c.deletedAt)
+		created_at Asc`, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("User/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// UserPaginatedByCreatedAtDesc returns a cursor-paginated list of User in Desc order.
+func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.api_key_id,
+users.scopes,
+users.role_rank,
+users.has_personal_notifications,
+users.has_global_notifications,
+users.created_at,
+users.updated_at,
+users.deleted_at,
+(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
+(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
+(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $6::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_user_team_teams.__teams
+		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $7::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
+(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
+		`FROM public.users `+
+		`-- M2O join generated from "notifications_receiver_fkey"
+left join (
+  select
+  receiver as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    notifications
+  group by
+        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+-- M2O join generated from "notifications_sender_fkey"
+left join (
+  select
+  sender as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    notifications
+  group by
+        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+-- M2O join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as time_entries_user_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
+-- M2O join generated from "user_notifications_user_id_fkey"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
+-- M2M join generated from "user_team_team_id_fkey"
+left join (
+	select
+			user_team.member as user_team_member
+			, row(teams.*) as __teams
+		from
+			user_team
+    join teams on teams.team_id = user_team.team_id
+    group by
+			user_team_member
+			, teams.team_id
+  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
+
+-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+			, work_item_assigned_user.role as role
+			, row(work_items.*) as __work_items
+		from
+			work_item_assigned_user
+    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+    group by
+			work_item_assigned_user_assigned_user
+			, work_items.work_item_id
+			, role
+  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+
+-- M2O join generated from "work_item_comments_user_id_fkey"
+left join (
+  select
+  user_id as work_item_comments_user_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    work_item_comments
+  group by
+        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
+		` WHERE users.created_at < $9  AND users.deleted_at is %s  GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_time_entries.time_entries, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
+	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
+		created_at Desc`, c.deletedAt)
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("User/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -504,7 +901,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -545,7 +942,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -592,15 +989,143 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -651,7 +1176,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -692,7 +1217,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -739,15 +1264,143 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -796,7 +1449,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -837,7 +1490,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -884,15 +1537,143 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -943,7 +1724,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -984,7 +1765,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1031,15 +1812,143 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.email = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.email = $9  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1088,7 +1997,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -1129,7 +2038,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1176,15 +2085,143 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.external_id = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.external_id = $9  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1233,7 +2270,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -1274,7 +2311,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1321,15 +2358,143 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.user_id = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.user_id = $9  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1378,7 +2543,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -1419,7 +2584,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1466,15 +2631,143 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.updated_at = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.updated_at = $9  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1525,7 +2818,7 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _user_api_keys_user_ids.user_id is not null then row(_user_api_keys_user_ids.*) end) as user_api_key_user_id,
+(case when $4::boolean = true and _users_user_ids.user_id is not null then row(_users_user_ids.*) end) as user_api_key_user_id,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
@@ -1566,7 +2859,7 @@ left join (
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
-left join user_api_keys as _user_api_keys_user_ids on _user_api_keys_user_ids.user_id = users.user_id
+left join user_api_keys as _users_user_ids on _users_user_ids.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1613,15 +2906,143 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.username = $9  AND users.deleted_at is %s   GROUP BY joined_notifications_receiver.notifications, users.user_id, 
+		` WHERE users.username = $9  AND users.deleted_at is %s   GROUP BY 
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+joined_notifications_receiver.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_notifications_sender.notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_time_entries.time_entries, users.user_id, 
-_user_api_keys_user_ids.user_id,
-      _user_api_keys_user_ids.user_api_key_id,
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
+_users_user_ids.user_id,
+      _users_user_ids.user_api_key_id,
 	users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 users.user_id, users.user_id, 
+
+	users.api_key_id,
+	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
+	users.updated_at,
+	users.user_id,
+	users.username,
 joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

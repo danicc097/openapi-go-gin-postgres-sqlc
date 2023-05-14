@@ -21,7 +21,7 @@ type DummyJoin struct {
 	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true"` // dummy_join_id
 	Name        *string `json:"name" db:"name" required:"true"`                 // name
 
-	PagElementDummyJoinJoin *PagElement `json:"-" db:"pag_element_dummy_join_id" openapi-go:"ignore"` // O2O pag_element (inferred)
+	DummyJoinJoin *PagElement `json:"-" db:"pag_element_dummy_join_id" openapi-go:"ignore"` // O2O pag_element (inferred)
 }
 
 // DummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
@@ -165,8 +165,8 @@ func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// DummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of DummyJoin.
-func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+// DummyJoinPaginatedByDummyJoinIDAsc returns a cursor-paginated list of DummyJoin in Asc order.
+func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
 
 	for _, o := range opts {
@@ -176,24 +176,65 @@ func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID int
 	sqlstr := `SELECT ` +
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.dummy_join ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id > $2 GROUP BY _pag_element_dummy_join_ids.dummy,
-      _pag_element_dummy_join_ids.paginated_element_id,
-	dummy_join.dummy_join_id `
+left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		` WHERE dummy_join.dummy_join_id > $2 GROUP BY 
+	dummy_join.dummy_join_id,
+	dummy_join.name,
+_dummy_join_dummy_join_ids.dummy,
+      _dummy_join_dummy_join_ids.paginated_element_id,
+	dummy_join.dummy_join_id ORDER BY 
+		dummy_join_id Asc `
 	sqlstr += c.limit
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/db.Query: %w", err))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// DummyJoinPaginatedByDummyJoinIDDesc returns a cursor-paginated list of DummyJoin in Desc order.
+func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`dummy_join.dummy_join_id,
+dummy_join.name,
+(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+		`FROM xo_tests.dummy_join ` +
+		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
+left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		` WHERE dummy_join.dummy_join_id < $2 GROUP BY 
+	dummy_join.dummy_join_id,
+	dummy_join.name,
+_dummy_join_dummy_join_ids.dummy,
+      _dummy_join_dummy_join_ids.paginated_element_id,
+	dummy_join.dummy_join_id ORDER BY 
+		dummy_join_id Desc `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -212,12 +253,15 @@ func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ..
 	sqlstr := `SELECT ` +
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _pag_element_dummy_join_ids.dummy is not null then row(_pag_element_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_ids.dummy is not null then row(_dummy_join_dummy_join_ids.*) end) as pag_element_dummy_join_id ` +
 		`FROM xo_tests.dummy_join ` +
 		`-- O2O join generated from "pag_element_dummy_fkey(O2O inferred)"
-left join xo_tests.pag_element as _pag_element_dummy_join_ids on _pag_element_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id = $2 GROUP BY _pag_element_dummy_join_ids.dummy,
-      _pag_element_dummy_join_ids.paginated_element_id,
+left join xo_tests.pag_element as _dummy_join_dummy_join_ids on _dummy_join_dummy_join_ids.dummy = dummy_join.dummy_join_id` +
+		` WHERE dummy_join.dummy_join_id = $2 GROUP BY 
+	dummy_join.dummy_join_id,
+	dummy_join.name,
+_dummy_join_dummy_join_ids.dummy,
+      _dummy_join_dummy_join_ids.paginated_element_id,
 	dummy_join.dummy_join_id `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

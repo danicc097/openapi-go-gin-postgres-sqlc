@@ -1164,8 +1164,8 @@ cc_label:
 				Type:                  constraint.Type,
 				Cardinality:           O2O,
 				Name:                  constraint.Name + " (Generated from M2O)",
-				TableName:             constraint.RefTableName,
-				RefTableName:          constraint.TableName,
+				TableName:             constraint.TableName,
+				RefTableName:          constraint.RefTableName,
 				ColumnName:            constraint.ColumnName,
 				RefColumnName:         constraint.RefColumnName,
 				JoinTableClash:        joinTableClash,
@@ -1989,8 +1989,8 @@ type %s struct {
 			}
 		case O2O:
 			notes += string(c.Cardinality) + " " + c.RefTableName
-			if c.RefTableName == sqlname {
-				joinName = camelExport(singularize(c.TableName))
+			if c.TableName == sqlname {
+				joinName = camelExport(singularize(c.RefTableName))
 				if c.JoinTableClash {
 					joinName = joinName + camelExport(c.ColumnName)
 				}
@@ -2367,8 +2367,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 						}
 					}
 				case O2O:
-					if c.RefTableName == x.SQLName {
-						joinName = prefix + camelExport(singularize(c.TableName))
+					if c.TableName == x.SQLName {
+						joinName = prefix + camelExport(singularize(c.RefTableName))
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.ColumnName)
 						}
@@ -2427,8 +2427,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 						}
 					}
 				case O2O:
-					if c.RefTableName == x.Table.SQLName {
-						joinName = prefix + camelExport(singularize(c.TableName))
+					if c.TableName == x.Table.SQLName {
+						joinName = prefix + camelExport(singularize(c.RefTableName))
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.ColumnName)
 						}
@@ -2479,8 +2479,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 						}
 					}
 				case O2O:
-					if c.RefTableName == x.Table.SQLName {
-						joinName = prefix + camelExport(singularize(c.TableName))
+					if c.TableName == x.Table.SQLName {
+						joinName = prefix + camelExport(singularize(c.RefTableName))
 						if c.JoinTableClash {
 							joinName = joinName + camelExport(c.ColumnName)
 						}
@@ -3113,6 +3113,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 				}
 			}
 		} else if c.Cardinality == O2O && (c.TableName == table || c.RefTableName == table) {
+			fmt.Printf("O2O c: %+v\n", c)
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		} else if c.RefTableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
@@ -3232,7 +3233,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 		// params["JoinTablePKGroupBys"] = strings.Join(joinTablePKGroupBys, ", ")
 
 	case O2O:
-		if c.RefTableName == table.SQLName {
+		if c.TableName == table.SQLName {
 			groupbyTpl = O2OGroupBy
 			joinTpl = O2OJoin
 			selectTpl = O2OSelect
@@ -3240,25 +3241,25 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
 			params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
-			params["CurrentTable"] = table.SQLName
+			params["CurrentTable"] = c.TableName
 			if c.JoinTableClash {
-				params["ClashSuffix"] = "_" + c.ColumnName
+				params["ClashSuffix"] = "_" + c.RefColumnName
 			}
 
-			t := tables[c.RefTableName]
+			t := tables[c.TableName]
 			var field Field
 			for _, tf := range t.Fields {
-				if tf.SQLName == c.ColumnName {
+				if tf.SQLName == c.RefColumnName {
 					field = tf
 				}
 			}
 			// need to check RefTable PKs since this should get called when generating for a
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
-			params["Alias"] = "_" + c.RefTableName
+			params["Alias"] = "_" + c.TableName
 			isSingleFK, isSinglePK := analyzeField(t, field)
 			if isSingleFK && isSinglePK {
-				params["JoinTableAlias"] = inflector.Pluralize(c.RefColumnName)
+				params["JoinTableAlias"] = inflector.Pluralize(c.ColumnName)
 			}
 
 			joinTable := tables[c.RefTableName]
@@ -3687,22 +3688,22 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case O2O:
-			if c.RefTableName == t.SQLName {
-				goName = camelExport(singularize(c.TableName))
+			if c.TableName == t.SQLName {
+				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
 				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
 				goName = descName + "Join" // o2o does not need orig goName. it's obvious from join + will never clash
 
-				notes += " " + c.TableName
+				notes += " " + c.RefTableName
 				if c.IsInferredO2O {
 					notes += " (inferred)"
-					fmt.Printf("c: %+v\n", c)
+					fmt.Printf("O2O cccccccc: %+v\n", c)
 				}
 				if c.IsGeneratedO2OFromM2O {
 					notes += " (generated from M2O)"
 				}
 
-				t := tables[c.TableName]
+				t := tables[c.RefTableName]
 				var f Field
 				for _, tf := range t.Fields {
 					if tf.SQLName == c.ColumnName {
@@ -3711,10 +3712,10 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 				isSingleFK, isSinglePK := analyzeField(t, f)
 				if isSingleFK && isSinglePK || c.RefPKisFK {
-					goName = camelExport(singularize(c.TableName)) + "Join"
+					goName = camelExport(singularize(c.RefTableName)) + "Join"
 				}
-				joinPrefix := inflector.Singularize(c.TableName) + "_"
-				joinName := joinPrefix + inflector.Singularize(c.RefColumnName)
+				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
+				joinName := joinPrefix + inflector.Singularize(c.ColumnName)
 
 				if !structFieldIsUnique(structFields, goName) {
 					goName = goName + toAcronym(c.ColumnName)
