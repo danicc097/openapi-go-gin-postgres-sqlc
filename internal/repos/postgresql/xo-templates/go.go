@@ -3245,7 +3245,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 				params["ClashSuffix"] = "_" + c.RefColumnName
 			}
 
-			t := tables[c.TableName]
+			t := tables[c.RefTableName]
 			var field Field
 			for _, tf := range t.Fields {
 				if tf.SQLName == c.RefColumnName {
@@ -3258,6 +3258,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			params["Alias"] = "_" + c.TableName
 			isSingleFK, isSinglePK := analyzeField(t, field)
 			if isSingleFK && isSinglePK || c.RefPKisFK {
+				params["Alias"] = "_" + c.RefTableName
 				params["JoinTableAlias"] = c.ColumnName
 			}
 
