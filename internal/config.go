@@ -37,7 +37,7 @@ type PostgresConfig struct {
 }
 
 type RedisConfig struct {
-	DB   string `env:"REDIS_DB"`
+	DB   int    `env:"REDIS_DB"`
 	Host string `env:"REDIS_HOST"`
 }
 

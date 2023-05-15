@@ -249,8 +249,6 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "envvar.Load")
 	}
 
-	conf := envvar.New()
-
 	cfg := internal.Config()
 
 	var logger *zap.Logger
@@ -273,7 +271,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "postgresql.New")
 	}
 
-	rdb, err := redis.New(conf)
+	rdb, err := redis.New()
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "redis.New")
 	}
