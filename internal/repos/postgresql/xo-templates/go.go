@@ -1077,15 +1077,15 @@ cc_label:
 				Type:           constraint.Type,
 				Cardinality:    O2O,
 				Name:           constraint.Name + " (inferred)",
-				RefTableName:   constraint.TableName,
-				TableName:      constraint.RefTableName,
-				RefColumnName:  constraint.ColumnName,
-				ColumnName:     constraint.RefColumnName,
+				RefTableName:   constraint.RefTableName,
+				TableName:      constraint.TableName,
+				RefColumnName:  constraint.RefColumnName,
+				ColumnName:     constraint.ColumnName,
 				JoinTableClash: joinTableClash,
 				IsInferredO2O:  true,
 			})
 
-			t := tables[constraint.TableName]
+			t := tables[constraint.RefTableName]
 			// fmt.Printf("%s: t.PrimaryKeys: %v\n", constraint.TableName, t.PrimaryKeys)
 			// fmt.Printf("%s: t.ForeignKeys: %v\n", constraint.TableName, t.ForeignKeys)
 			// rt := tables[constraint.RefTableName]
@@ -1095,7 +1095,7 @@ cc_label:
 
 			var f Field
 			for _, tf := range t.PrimaryKeys {
-				if tf.SQLName == constraint.ColumnName {
+				if tf.SQLName == constraint.RefColumnName {
 					f = tf
 				}
 			}
@@ -1104,15 +1104,15 @@ cc_label:
 			// viceversa we don't care as it's a regular PK.
 			isSingleFK, isSinglePK := analyzeField(t, f)
 			if isSingleFK && isSinglePK {
-				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", constraint.RefTableName, constraint.ColumnName)
+				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", constraint.TableName, constraint.RefColumnName)
 				cc = append(cc, Constraint{
 					Type:           constraint.Type,
 					Cardinality:    O2O,
 					Name:           constraint.Name + "(O2O inferred - PK is FK)",
-					RefTableName:   constraint.RefTableName,
-					TableName:      constraint.TableName,
-					RefColumnName:  constraint.RefColumnName,
-					ColumnName:     constraint.ColumnName,
+					RefTableName:   constraint.TableName,
+					TableName:      constraint.RefTableName,
+					RefColumnName:  constraint.ColumnName,
+					ColumnName:     constraint.RefColumnName,
 					JoinTableClash: joinTableClash,
 					IsInferredO2O:  true,
 					RefPKisFK:      true,
