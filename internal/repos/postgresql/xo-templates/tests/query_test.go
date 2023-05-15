@@ -189,7 +189,7 @@ func TestCustomFilters(t *testing.T) {
 	ctx := context.Background()
 
 	uu, err := db.UserPaginatedByCreatedAtAsc(ctx, testPool, time.Now().Add(-999*time.Hour),
-		db.WithUserJoin(db.UserJoins{UserAPIKey: true}),
+		db.WithUserJoin(db.UserJoins{UserAPIKey: true, BooksAuthor: true}),
 		db.WithUserFilters(map[string][]any{
 			"xo_tests.users.name = any ($i)":       {[]string{"Jane Smith"}}, // unique
 			"NOT (xo_tests.users.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
@@ -198,6 +198,8 @@ func TestCustomFilters(t *testing.T) {
 		}))
 	assert.NoError(t, err)
 	assert.Len(t, uu, 1)
+	assert.NotNil(t, uu[0].AuthorBooksJoin)
+	assert.Len(t, *uu[0].AuthorBooksJoin, 2)
 }
 
 func TestCRUD_UniqueIndex(t *testing.T) {
