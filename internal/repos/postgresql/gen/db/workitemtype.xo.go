@@ -109,13 +109,15 @@ func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOptio
 	}
 }
 
-// WithWorkItemTypeFilters adds the given filters, which may be parameterized.
+// WithWorkItemTypeFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
 // Example:
 //
 //	filters := map[string][]any{
 //		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
-//		`col.created_at > $i AND
-//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
 //	}
 func WithWorkItemTypeFilters(filters map[string][]any) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {

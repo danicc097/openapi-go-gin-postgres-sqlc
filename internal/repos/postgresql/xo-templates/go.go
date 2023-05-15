@@ -2038,11 +2038,13 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-// With%[1]sFilters adds the given filters, which may be parameterized.
+// With%[1]sFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
 // Example:
 //filters := map[string][]any{
 //	"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
-//	`+"`col.created_at > $i AND \n//	col.created_at < $i`"+`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	`+"`(col.created_at > $i OR \n//	col.is_closed = $i)`"+`: {time.Now().Add(-24 * time.Hour), true},
 //}`, tGoName))
 	buf.WriteString(fmt.Sprintf(`
 func With%[1]sFilters(filters map[string][]any) %[1]sSelectConfigOption {
