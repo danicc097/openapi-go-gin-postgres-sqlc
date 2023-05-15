@@ -77,7 +77,7 @@ func validCardinality(c cardinality) bool {
 	return true
 }
 
-func formatJSON(obj interface{}) string {
+func formatJSON(obj any) string {
 	bytes, _ := json.MarshalIndent(obj, "  ", "  ")
 	return string(bytes)
 }
@@ -547,8 +547,8 @@ func emitQuery(ctx context.Context, query xo.Query, emit func(xo.Template)) erro
 			SortType: query.Type,
 			SortName: query.Name,
 			Data: struct {
-				Table       interface{}
-				Constraints interface{}
+				Table       any
+				Constraints any
 			}{Table: table, Constraints: []Constraint{}},
 		})
 	}
@@ -718,9 +718,9 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			SortType: table.Type,
 			SortName: table.GoName,
 			Data: struct {
-				Table       interface{}
-				Constraints interface{}
-				Tables      interface{}
+				Table       any
+				Constraints any
+				Tables      any
 			}{Table: table, Constraints: constraints, Tables: tables},
 		})
 
@@ -739,9 +739,9 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				SortType: table.Type,
 				SortName: index.SQLName,
 				Data: struct {
-					Index       interface{}
-					Constraints interface{}
-					Tables      interface{}
+					Index       any
+					Constraints any
+					Tables      any
 				}{Index: index, Constraints: constraints, Tables: tables},
 			})
 			emittedIndexes = append(emittedIndexes, extractIndexIdentifier(index))
@@ -777,9 +777,9 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 						SortType: table.Type,
 						SortName: index.SQLName,
 						Data: struct {
-							Index       interface{}
-							Constraints interface{}
-							Tables      interface{}
+							Index       any
+							Constraints any
+							Tables      any
 						}{Index: index, Constraints: constraints, Tables: tables},
 					})
 					emittedIndexes = append(emittedIndexes, idxIdentifier)
@@ -1490,6 +1490,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"cursor_columns":             f.cursor_columns,
 		"func_name_context_suffixed": f.func_name_context_suffixed,
 		"recv_context_suffixed":      f.recv_context_suffixed,
+		"last_nth":                   f.last_nth,
 		// helpers
 		"combine_values":   combine_values,
 		"fields_to_goname": fields_to_goname,
@@ -1498,6 +1499,68 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"add":              add,
 		"not_updatable":    notUpdatable,
 	}
+}
+
+func (f *Funcs) last_nth(v any, constraints any, tables Tables, ff ...any) string {
+	var extraFields []Field
+	for _, field := range ff {
+		switch x := field.(type) {
+		case []Field:
+			extraFields = append(extraFields, x...)
+		case Field:
+			extraFields = append(extraFields, x)
+		default:
+			return fmt.Sprintf("[[ UNSUPPORTED TYPE extraFields: %T ]]", x)
+		}
+	}
+
+	switch x := v.(type) {
+	case Index:
+		tableName := x.Table.SQLName
+		t := x.Table
+		return lastNth(constraints, f, tableName, tables, t, append(x.Fields, extraFields...))
+	case Table:
+		tableName := x.SQLName
+		t := x
+		return lastNth(constraints, f, tableName, tables, t, append(t.Fields, extraFields...))
+	default:
+		return fmt.Sprintf("[[ UNSUPPORTED TYPE last_nth: %T ]]", v)
+	}
+	// return fmt.Sprintf("[[ UNSUPPORTED TYPES last_nth: %T - %T - %s ]]", v, w, typ)
+}
+
+func lastNth(constraints any, f *Funcs, tableName string, tables Tables, t Table, fields []Field) string {
+	var n int
+	var tableConstraints []Constraint
+	switch cc := constraints.(type) {
+	case []Constraint:
+		if tc, ok := f.tableConstraints[tableName]; ok {
+			tableConstraints = tc
+		} else {
+			if len(cc) > 0 {
+				f.loadConstraints(cc, tableName)
+			}
+		}
+		for _, c := range tableConstraints {
+			if c.Type != "foreign_key" {
+				continue
+			}
+			funcs := template.FuncMap{
+				"singularize": singularize,
+			}
+			joinStmt, selectStmt, _ := f.createJoinStatement(tables, c, t, funcs, n)
+			if joinStmt == "" || selectStmt == "" {
+				continue
+			}
+			n++
+		}
+	}
+
+	for range fields {
+		n++
+	}
+
+	return strconv.Itoa(n)
 }
 
 func (f *Funcs) lower_first(str string) string {
@@ -1614,7 +1677,7 @@ func (f *Funcs) injectfn() string {
 }
 
 // func_name_none builds a func name.
-func (f *Funcs) func_name_none(v interface{}) string {
+func (f *Funcs) func_name_none(v any) string {
 	switch x := v.(type) {
 	case string:
 		return x
@@ -1647,7 +1710,7 @@ func (f *Funcs) has_deleted_at(t Table) bool {
 }
 
 // func_name_context generates a name for the func.
-func (f *Funcs) func_name_context(v interface{}, suffix string) string {
+func (f *Funcs) func_name_context(v any, suffix string) string {
 	switch x := v.(type) {
 	case string:
 		return x + suffix
@@ -1693,7 +1756,7 @@ func (f *Funcs) func_name_context(v interface{}, suffix string) string {
 }
 
 // funcfn builds a func definition.
-func (f *Funcs) funcfn(name string, context bool, v interface{}, columns []Field) string {
+func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string {
 	var params, returns []string
 	if context {
 		params = append(params, "ctx context.Context")
@@ -2066,7 +2129,7 @@ func With%[1]sFilters(filters map[string][]any) %[1]sSelectConfigOption {
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
-func (f *Funcs) func_context(v interface{}, suffix string, columns any) string {
+func (f *Funcs) func_context(v any, suffix string, columns any) string {
 	var cc []Field
 	switch x := columns.(type) {
 	case []Field:
@@ -2078,7 +2141,7 @@ func (f *Funcs) func_context(v interface{}, suffix string, columns any) string {
 }
 
 // func_none genarates a func signature for v without context.
-func (f *Funcs) func_none(v interface{}, columns any) string {
+func (f *Funcs) func_none(v any, columns any) string {
 	var cc []Field
 	switch x := columns.(type) {
 	case []Field:
@@ -2090,7 +2153,7 @@ func (f *Funcs) func_none(v interface{}, columns any) string {
 }
 
 // recv builds a receiver func definition.
-func (f *Funcs) recv(name string, context bool, t Table, v interface{}) string {
+func (f *Funcs) recv(name string, context bool, t Table, v any) string {
 	short := f.short(t)
 	var p, r []string
 	// determine params and return type
@@ -2130,18 +2193,18 @@ func fields_to_goname(fields []Field, sep string) string {
 }
 
 // cant explode in template
-func (f *Funcs) func_name_context_suffixed(typ interface{}, suffixes string) string {
+func (f *Funcs) func_name_context_suffixed(typ any, suffixes string) string {
 	return f.func_name_context(typ, suffixes)
 }
 
 // cant explode in template
-func (f *Funcs) recv_context_suffixed(typ interface{}, v interface{}, suffixes string) string {
+func (f *Funcs) recv_context_suffixed(typ any, v any, suffixes string) string {
 	return f.recv_context(typ, v, suffixes)
 }
 
 // recv_context builds a receiver func definition with context determined by
 // the context mode.
-func (f *Funcs) recv_context(typ interface{}, v interface{}, suffixes string) string {
+func (f *Funcs) recv_context(typ any, v any, suffixes string) string {
 	switch x := typ.(type) {
 	case Table:
 		return f.recv(f.func_name_context(v, suffixes), f.contextfn(), x, v)
@@ -2150,7 +2213,7 @@ func (f *Funcs) recv_context(typ interface{}, v interface{}, suffixes string) st
 }
 
 // recv_none builds a receiver func definition without context.
-func (f *Funcs) recv_none(typ interface{}, v interface{}) string {
+func (f *Funcs) recv_none(typ any, v any) string {
 	switch x := typ.(type) {
 	case Table:
 		return f.recv(f.func_name_none(v), false, x, v)
@@ -2158,7 +2221,7 @@ func (f *Funcs) recv_none(typ interface{}, v interface{}) string {
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 5: %T ]]", typ)
 }
 
-func (f *Funcs) foreign_key_context(v interface{}) string {
+func (f *Funcs) foreign_key_context(v any) string {
 	var name string
 	var p []string
 	if f.contextfn() {
@@ -2175,7 +2238,7 @@ func (f *Funcs) foreign_key_context(v interface{}) string {
 	return fmt.Sprintf("%s(%s)", name, strings.Join(p, ", "))
 }
 
-func (f *Funcs) foreign_key_none(v interface{}) string {
+func (f *Funcs) foreign_key_none(v any) string {
 	var name string
 	var p []string
 	switch x := v.(type) {
@@ -2189,9 +2252,9 @@ func (f *Funcs) foreign_key_none(v interface{}) string {
 }
 
 // db generates a db.<name>Context(ctx, sqlstr, ...)
-func (f *Funcs) db(name string, v ...interface{}) string {
+func (f *Funcs) db(name string, v ...any) string {
 	// params
-	var p []interface{}
+	var p []any
 	// for sqlc compatibility always use context
 	// if f.contextfn() {
 	p = append(p, "ctx")
@@ -2204,11 +2267,11 @@ func (f *Funcs) db(name string, v ...interface{}) string {
 // Similar to db
 //
 // Will skip the specific parameters based on the type provided.
-func (f *Funcs) db_prefix(name string, includeGenerated bool, includeIgnored bool, vs ...interface{}) string {
+func (f *Funcs) db_prefix(name string, includeGenerated bool, includeIgnored bool, vs ...any) string {
 	var prefix string
-	var params []interface{}
+	var params []any
 	for i, v := range vs {
-		var ignore []interface{}
+		var ignore []any
 		switch x := v.(type) {
 		case string:
 			params = append(params, x)
@@ -2234,8 +2297,8 @@ func (f *Funcs) db_prefix(name string, includeGenerated bool, includeIgnored boo
 
 // db_update generates a db.<name>Context(ctx, sqlstr, regularparams,
 // primaryparams)
-func (f *Funcs) db_update(name string, v interface{}) string {
-	var ignore []interface{}
+func (f *Funcs) db_update(name string, v any) string {
+	var ignore []any
 	var p []string
 	switch x := v.(type) {
 	case Table:
@@ -2263,7 +2326,7 @@ func (f *Funcs) db_paginated(name string, t Table, columns []Field) string {
 }
 
 // db_named generates a db.<name>Context(ctx, sql.Named(name, res)...)
-func (f *Funcs) db_named(name string, v interface{}) string {
+func (f *Funcs) db_named(name string, v any) string {
 	var p []string
 	switch x := v.(type) {
 	case Proc:
@@ -2287,7 +2350,7 @@ func (f *Funcs) named(name, value string, out bool) string {
 	return fmt.Sprintf("sql.Named(%q, %s)", name, value)
 }
 
-func (f *Funcs) logf_pkeys(v interface{}) string {
+func (f *Funcs) logf_pkeys(v any) string {
 	p := []string{"sqlstr"}
 	switch x := v.(type) {
 	case Table:
@@ -2296,8 +2359,8 @@ func (f *Funcs) logf_pkeys(v interface{}) string {
 	return fmt.Sprintf("logf(%s)", strings.Join(p, ", "))
 }
 
-func (f *Funcs) logf(v interface{}, ignore ...interface{}) string {
-	var ignoreNames []interface{}
+func (f *Funcs) logf(v any, ignore ...any) string {
+	var ignoreNames []any
 	p := []string{"sqlstr"}
 	// build ignore list
 	for i, x := range ignore {
@@ -2324,8 +2387,8 @@ func (f *Funcs) logf(v interface{}, ignore ...interface{}) string {
 	return fmt.Sprintf("logf(%s)", strings.Join(p, ", "))
 }
 
-func (f *Funcs) logf_update(v interface{}) string {
-	var ignore []interface{}
+func (f *Funcs) logf_update(v any) string {
+	var ignore []any
 	p := []string{"sqlstr"}
 	switch x := v.(type) {
 	case Table:
@@ -2349,7 +2412,7 @@ type CursorPagination struct {
 }
 
 // names generates a list of names.
-func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
+func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 	var names []string
 	for i, v := range z {
 		switch x := v.(type) {
@@ -2538,17 +2601,17 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 
 // names generates a list of names (excluding certain ones such as interpolated
 // names).
-func (f *Funcs) names(prefix string, z ...interface{}) string {
+func (f *Funcs) names(prefix string, z ...any) string {
 	return f.namesfn(false, prefix, z...)
 }
 
 // names_all generates a list of all names.
-func (f *Funcs) names_all(prefix string, z ...interface{}) string {
+func (f *Funcs) names_all(prefix string, z ...any) string {
 	return f.namesfn(true, prefix, z...)
 }
 
 // names_ignore generates a list of all names, ignoring fields that match the value in ignore.
-func (f *Funcs) names_ignore(prefix string, v interface{}, ignore ...interface{}) string {
+func (f *Funcs) names_ignore(prefix string, v any, ignore ...any) string {
 	m := make(map[string]bool)
 	for _, v := range ignore {
 		switch x := v.(type) {
@@ -2583,7 +2646,7 @@ func (f *Funcs) names_ignore(prefix string, v interface{}, ignore ...interface{}
 
 // querystr generates a querystr for the specified query and any accompanying
 // comments.
-func (f *Funcs) querystr(v interface{}) string {
+func (f *Funcs) querystr(v any) string {
 	var interpolate bool
 	var query, comments []string
 	switch x := v.(type) {
@@ -2613,7 +2676,7 @@ func (f *Funcs) querystr(v interface{}) string {
 
 var stripRE = regexp.MustCompile(`\s+\+\s+` + "``")
 
-func (f *Funcs) sqlstr(typ string, v interface{}) string {
+func (f *Funcs) sqlstr(typ string, v any) string {
 	var lines []string
 	switch typ {
 	case "soft_delete":
@@ -2682,7 +2745,7 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 }
 
 // sqlstr_paginated builds a cursor-paginated query string from columns.
-func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables Tables, columns []Field, order string) string {
+func (f *Funcs) sqlstr_paginated(v any, constraints any, tables Tables, columns []Field, order string) string {
 	var groupbys []string
 	switch x := v.(type) {
 	case Table:
@@ -2791,7 +2854,7 @@ func mainGroupByFields(x Table, f *Funcs, funcs template.FuncMap) []string {
 
 // sqlstr_insert_base builds an INSERT query
 // If not all, sequence columns are skipped.
-func (f *Funcs) sqlstr_insert_base(all bool, v interface{}) []string {
+func (f *Funcs) sqlstr_insert_base(all bool, v any) []string {
 	switch x := v.(type) {
 	case Table:
 		// build names and values
@@ -2816,13 +2879,13 @@ func (f *Funcs) sqlstr_insert_base(all bool, v interface{}) []string {
 }
 
 // sqlstr_insert_manual builds an INSERT query that inserts all fields.
-func (f *Funcs) sqlstr_insert_manual(v interface{}) []string {
+func (f *Funcs) sqlstr_insert_manual(v any) []string {
 	return append(f.sqlstr_insert_base(true, v), " RETURNING *")
 }
 
 // sqlstr_insert builds an INSERT query, skipping the sequence field with
 // applicable RETURNING clause for generated primary key fields.
-func (f *Funcs) sqlstr_insert(v interface{}) []string {
+func (f *Funcs) sqlstr_insert(v any) []string {
 	switch x := v.(type) {
 	case Table:
 		var generatedFields []string
@@ -2853,7 +2916,7 @@ func (f *Funcs) sqlstr_insert(v interface{}) []string {
 //
 // Similarly, when prefix is empty, the table's name is added after UPDATE,
 // otherwise it is omitted.
-func (f *Funcs) sqlstr_update_base(prefix string, v interface{}) (int, []string) {
+func (f *Funcs) sqlstr_update_base(prefix string, v any) (int, []string) {
 	switch x := v.(type) {
 	case Table:
 		// build names and values
@@ -2884,7 +2947,7 @@ func (f *Funcs) sqlstr_update_base(prefix string, v interface{}) (int, []string)
 
 // sqlstr_update builds an UPDATE query, using primary key fields as the WHERE
 // clause.
-func (f *Funcs) sqlstr_update(v interface{}) []string {
+func (f *Funcs) sqlstr_update(v any) []string {
 	// build pkey vals
 	switch x := v.(type) {
 	case Table:
@@ -2899,7 +2962,7 @@ func (f *Funcs) sqlstr_update(v interface{}) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 20: %T ]]", v)}
 }
 
-func (f *Funcs) sqlstr_upsert(v interface{}) []string {
+func (f *Funcs) sqlstr_upsert(v any) []string {
 	switch x := v.(type) {
 	case Table:
 		// build insert
@@ -2915,7 +2978,7 @@ func (f *Funcs) sqlstr_upsert(v interface{}) []string {
 // sqlstr_upsert_postgres_sqlite builds an uspert query for postgres and sqlite
 //
 // INSERT (..) VALUES (..) ON CONFLICT DO UPDATE SET ...
-func (f *Funcs) sqlstr_upsert_postgres_sqlite(v interface{}) []string {
+func (f *Funcs) sqlstr_upsert_postgres_sqlite(v any) []string {
 	switch x := v.(type) {
 	case Table:
 		// add conflict and update
@@ -2931,7 +2994,7 @@ func (f *Funcs) sqlstr_upsert_postgres_sqlite(v interface{}) []string {
 }
 
 // sqlstr_delete builds a DELETE query for the primary keys.
-func (f *Funcs) sqlstr_delete(v interface{}) []string {
+func (f *Funcs) sqlstr_delete(v any) []string {
 	switch x := v.(type) {
 	case Table:
 		// names and values
@@ -2948,7 +3011,7 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 }
 
 // sqlstr_soft_delete builds a soft DELETE query for the primary keys.
-func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
+func (f *Funcs) sqlstr_soft_delete(v any) []string {
 	switch x := v.(type) {
 	case Table:
 		// names and values
@@ -3026,7 +3089,7 @@ left join {{.Schema}}{{.JoinTable}} as {{ .Alias}}_{{.JoinTableAlias}} on {{ .Al
 )
 
 // sqlstr_index builds a index fields.
-func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tables) string {
+func (f *Funcs) sqlstr_index(v any, constraints any, tables Tables) string {
 	var groupbys []string
 	switch x := v.(type) {
 	case Index:
@@ -3163,7 +3226,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 	join := &bytes.Buffer{}
 	selec := &bytes.Buffer{}
 	groupby := &bytes.Buffer{}
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	fmt.Fprintf(join, "-- %s join generated from %q", c.Cardinality, c.Name)
 
 	params["Nth"] = f.nth(n)
@@ -3359,7 +3422,7 @@ func getTableRegularFields(t Table) []Field {
 }
 
 // sqlstr_proc builds a stored procedure call.
-func (f *Funcs) sqlstr_proc(v interface{}) []string {
+func (f *Funcs) sqlstr_proc(v any) []string {
 	switch x := v.(type) {
 	case Proc:
 		if x.Type == "function" {
@@ -3386,7 +3449,7 @@ func (f *Funcs) sqlstr_proc(v interface{}) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 27: %T ]]", v)}
 }
 
-func (f *Funcs) sqlstr_func(v interface{}) []string {
+func (f *Funcs) sqlstr_func(v any) []string {
 	switch x := v.(type) {
 	case Proc:
 		var format string
@@ -3469,7 +3532,7 @@ func (f *Funcs) param(field Field, addType bool) string {
 }
 
 // zero generates a zero list.
-func (f *Funcs) zero(z ...interface{}) string {
+func (f *Funcs) zero(z ...any) string {
 	var zeroes []string
 	for i, v := range z {
 		switch x := v.(type) {
@@ -3793,7 +3856,7 @@ func structFieldIsUnique(structFields []string, goName string) bool {
 //
 // Generated shorts that have conflicts with any scopeConflicts member will
 // have nameConflictSuffix appended.
-func (f *Funcs) short(v interface{}) string {
+func (f *Funcs) short(v any) string {
 	var n string
 	switch x := v.(type) {
 	case string:
@@ -3846,7 +3909,7 @@ func escfn(s string) string {
 }
 
 // eval evalutates a template s against v.
-func eval(v interface{}, s string) (string, error) {
+func eval(v any, s string) (string, error) {
 	tpl, err := template.New(fmt.Sprintf("[EVAL %q]", s)).Parse(s)
 	if err != nil {
 		return "", err
