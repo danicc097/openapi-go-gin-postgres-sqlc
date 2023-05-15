@@ -91,6 +91,7 @@ type KanbanStepSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   KanbanStepJoins
+	filters map[string][]any
 }
 type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
 
@@ -119,6 +120,20 @@ func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 			Project:  s.joins.Project || joins.Project,
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
+	}
+}
+
+// WithKanbanStepFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithKanbanStepFilters(filters map[string][]any) KanbanStepSelectConfigOption {
+	return func(s *KanbanStepSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -213,7 +228,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 
 // KanbanStepPaginatedByKanbanStepIDAsc returns a cursor-paginated list of KanbanStep in Asc order.
 func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -265,7 +280,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 
 // KanbanStepPaginatedByProjectIDAsc returns a cursor-paginated list of KanbanStep in Asc order.
 func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -317,7 +332,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 
 // KanbanStepPaginatedByStepOrderAsc returns a cursor-paginated list of KanbanStep in Asc order.
 func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -369,7 +384,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 
 // KanbanStepPaginatedByKanbanStepIDDesc returns a cursor-paginated list of KanbanStep in Desc order.
 func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -421,7 +436,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 
 // KanbanStepPaginatedByProjectIDDesc returns a cursor-paginated list of KanbanStep in Desc order.
 func KanbanStepPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -473,7 +488,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 
 // KanbanStepPaginatedByStepOrderDesc returns a cursor-paginated list of KanbanStep in Desc order.
 func KanbanStepPaginatedByStepOrderDesc(ctx context.Context, db DB, stepOrder int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -527,7 +542,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 //
 // Generated from index 'kanban_steps_pkey'.
 func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -577,7 +592,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
 func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID int, name string, stepOrder int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -627,7 +642,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
 func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -679,7 +694,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
 func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -731,7 +746,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
 func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -783,7 +798,7 @@ _kanban_steps_kanban_step_id.kanban_step_id,
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
 func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, stepOrder int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

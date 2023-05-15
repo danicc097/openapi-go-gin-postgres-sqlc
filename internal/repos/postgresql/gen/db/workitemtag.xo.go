@@ -77,6 +77,7 @@ type WorkItemTagSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   WorkItemTagJoins
+	filters map[string][]any
 }
 type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
 
@@ -105,6 +106,20 @@ func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 			Project:              s.joins.Project || joins.Project,
 			WorkItemsWorkItemTag: s.joins.WorkItemsWorkItemTag || joins.WorkItemsWorkItemTag,
 		}
+	}
+}
+
+// WithWorkItemTagFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithWorkItemTagFilters(filters map[string][]any) WorkItemTagSelectConfigOption {
+	return func(s *WorkItemTagSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -197,7 +212,7 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 
 // WorkItemTagPaginatedByWorkItemTagIDAsc returns a cursor-paginated list of WorkItemTag in Asc order.
 func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -257,7 +272,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY
 
 // WorkItemTagPaginatedByProjectIDAsc returns a cursor-paginated list of WorkItemTag in Asc order.
 func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -317,7 +332,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY
 
 // WorkItemTagPaginatedByWorkItemTagIDDesc returns a cursor-paginated list of WorkItemTag in Desc order.
 func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -377,7 +392,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY
 
 // WorkItemTagPaginatedByProjectIDDesc returns a cursor-paginated list of WorkItemTag in Desc order.
 func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -439,7 +454,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -499,7 +514,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -561,7 +576,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -623,7 +638,7 @@ work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
 //
 // Generated from index 'work_item_tags_pkey'.
 func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

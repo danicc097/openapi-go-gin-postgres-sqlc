@@ -71,6 +71,7 @@ type UserNotificationSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   UserNotificationJoins
+	filters map[string][]any
 }
 type UserNotificationSelectConfigOption func(*UserNotificationSelectConfig)
 
@@ -99,6 +100,20 @@ func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelec
 			Notification: s.joins.Notification || joins.Notification,
 			User:         s.joins.User || joins.User,
 		}
+	}
+}
+
+// WithUserNotificationFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithUserNotificationFilters(filters map[string][]any) UserNotificationSelectConfigOption {
+	return func(s *UserNotificationSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -190,7 +205,7 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 
 // UserNotificationPaginatedByUserNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
 func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -236,7 +251,7 @@ _user_notifications_user_id.user_id,
 
 // UserNotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
 func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -282,7 +297,7 @@ _user_notifications_user_id.user_id,
 
 // UserNotificationPaginatedByUserNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
 func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -328,7 +343,7 @@ _user_notifications_user_id.user_id,
 
 // UserNotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
 func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -376,7 +391,7 @@ _user_notifications_user_id.user_id,
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
 func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID int, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -423,7 +438,7 @@ _user_notifications_user_id.user_id,
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
 func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -472,7 +487,7 @@ _user_notifications_user_id.user_id,
 //
 // Generated from index 'user_notifications_pkey'.
 func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -519,7 +534,7 @@ _user_notifications_user_id.user_id,
 //
 // Generated from index 'user_notifications_user_id_idx'.
 func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

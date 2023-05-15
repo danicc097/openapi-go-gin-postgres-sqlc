@@ -63,6 +63,7 @@ type PagElementSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   PagElementJoins
+	filters map[string][]any
 }
 type PagElementSelectConfigOption func(*PagElementSelectConfig)
 
@@ -100,6 +101,20 @@ type PagElementJoins struct{}
 func WithPagElementJoin(joins PagElementJoins) PagElementSelectConfigOption {
 	return func(s *PagElementSelectConfig) {
 		s.joins = PagElementJoins{}
+	}
+}
+
+// WithPagElementFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithPagElementFilters(filters map[string][]any) PagElementSelectConfigOption {
+	return func(s *PagElementSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -190,7 +205,7 @@ func (pe *PagElement) Delete(ctx context.Context, db DB) error {
 
 // PagElementPaginatedByCreatedAtAsc returns a cursor-paginated list of PagElement in Asc order.
 func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -225,7 +240,7 @@ pag_element.dummy ORDER BY
 
 // PagElementPaginatedByCreatedAtDesc returns a cursor-paginated list of PagElement in Desc order.
 func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -262,7 +277,7 @@ pag_element.dummy ORDER BY
 //
 // Generated from index 'pag_element_created_at_key'.
 func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) (*PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -298,7 +313,7 @@ pag_element.dummy ` +
 //
 // Generated from index 'pag_element_pkey'.
 func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElementID uuid.UUID, opts ...PagElementSelectConfigOption) (*PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

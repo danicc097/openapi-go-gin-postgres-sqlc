@@ -70,6 +70,7 @@ type BookAuthorsSurrogateKeySelectConfig struct {
 	limit   string
 	orderBy string
 	joins   BookAuthorsSurrogateKeyJoins
+	filters map[string][]any
 }
 type BookAuthorsSurrogateKeySelectConfigOption func(*BookAuthorsSurrogateKeySelectConfig)
 
@@ -109,6 +110,20 @@ type Book__BASK_BookAuthorsSurrogateKey struct {
 type User__BASK_BookAuthorsSurrogateKey struct {
 	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithBookAuthorsSurrogateKeyFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithBookAuthorsSurrogateKeyFilters(filters map[string][]any) BookAuthorsSurrogateKeySelectConfigOption {
+	return func(s *BookAuthorsSurrogateKeySelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the BookAuthorsSurrogateKey to the database.
@@ -199,7 +214,7 @@ func (bask *BookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
 
 // BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc returns a cursor-paginated list of BookAuthorsSurrogateKey in Asc order.
 func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -275,7 +290,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 // BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc returns a cursor-paginated list of BookAuthorsSurrogateKey in Desc order.
 func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -353,7 +368,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorsSurrogateKeySelectConfigOption) (*BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -430,7 +445,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -509,7 +524,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -588,7 +603,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 //
 // Generated from index 'book_authors_surrogate_key_pkey'.
 func BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) (*BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

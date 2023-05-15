@@ -59,6 +59,7 @@ type BookSellerSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   BookSellerJoins
+	filters map[string][]any
 }
 type BookSellerSelectConfigOption func(*BookSellerSelectConfig)
 
@@ -85,6 +86,20 @@ func WithBookSellerJoin(joins BookSellerJoins) BookSellerSelectConfigOption {
 			Sellers:     s.joins.Sellers || joins.Sellers,
 			BooksSeller: s.joins.BooksSeller || joins.BooksSeller,
 		}
+	}
+}
+
+// WithBookSellerFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithBookSellerFilters(filters map[string][]any) BookSellerSelectConfigOption {
+	return func(s *BookSellerSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -130,7 +145,7 @@ func (bs *BookSeller) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'book_sellers_pkey'.
 func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uuid.UUID, opts ...BookSellerSelectConfigOption) (*BookSeller, error) {
-	c := &BookSellerSelectConfig{joins: BookSellerJoins{}}
+	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -199,7 +214,7 @@ book_sellers.seller, book_sellers.book_id, book_sellers.seller `
 //
 // Generated from index 'book_sellers_pkey'.
 func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
-	c := &BookSellerSelectConfig{joins: BookSellerJoins{}}
+	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -270,7 +285,7 @@ book_sellers.seller, book_sellers.book_id, book_sellers.seller `
 //
 // Generated from index 'book_sellers_pkey'.
 func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
-	c := &BookSellerSelectConfig{joins: BookSellerJoins{}}
+	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

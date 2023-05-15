@@ -77,6 +77,7 @@ type ActivitySelectConfig struct {
 	limit   string
 	orderBy string
 	joins   ActivityJoins
+	filters map[string][]any
 }
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
 
@@ -105,6 +106,20 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
 		}
+	}
+}
+
+// WithActivityFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithActivityFilters(filters map[string][]any) ActivitySelectConfigOption {
+	return func(s *ActivitySelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -197,7 +212,7 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 
 // ActivityPaginatedByActivityIDAsc returns a cursor-paginated list of Activity in Asc order.
 func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -250,7 +265,7 @@ joined_time_entries.time_entries, activities.activity_id ORDER BY
 
 // ActivityPaginatedByProjectIDAsc returns a cursor-paginated list of Activity in Asc order.
 func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -303,7 +318,7 @@ joined_time_entries.time_entries, activities.activity_id ORDER BY
 
 // ActivityPaginatedByActivityIDDesc returns a cursor-paginated list of Activity in Desc order.
 func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -356,7 +371,7 @@ joined_time_entries.time_entries, activities.activity_id ORDER BY
 
 // ActivityPaginatedByProjectIDDesc returns a cursor-paginated list of Activity in Desc order.
 func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -411,7 +426,7 @@ joined_time_entries.time_entries, activities.activity_id ORDER BY
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -464,7 +479,7 @@ joined_time_entries.time_entries, activities.activity_id `
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -519,7 +534,7 @@ joined_time_entries.time_entries, activities.activity_id `
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -574,7 +589,7 @@ joined_time_entries.time_entries, activities.activity_id `
 //
 // Generated from index 'activities_pkey'.
 func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

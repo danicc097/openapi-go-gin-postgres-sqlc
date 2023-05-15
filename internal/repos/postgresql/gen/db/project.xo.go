@@ -85,6 +85,7 @@ type ProjectSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   ProjectJoins
+	filters map[string][]any
 }
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
 
@@ -138,6 +139,20 @@ func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 			WorkItemTags:  s.joins.WorkItemTags || joins.WorkItemTags,
 			WorkItemTypes: s.joins.WorkItemTypes || joins.WorkItemTypes,
 		}
+	}
+}
+
+// WithProjectFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithProjectFilters(filters map[string][]any) ProjectSelectConfigOption {
+	return func(s *ProjectSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -230,7 +245,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 
 // ProjectPaginatedByProjectIDAsc returns a cursor-paginated list of Project in Asc order.
 func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -325,7 +340,7 @@ joined_work_item_types.work_item_types, projects.project_id ORDER BY
 
 // ProjectPaginatedByProjectIDDesc returns a cursor-paginated list of Project in Desc order.
 func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -422,7 +437,7 @@ joined_work_item_types.work_item_types, projects.project_id ORDER BY
 //
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -515,7 +530,7 @@ joined_work_item_types.work_item_types, projects.project_id `
 //
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -608,7 +623,7 @@ joined_work_item_types.work_item_types, projects.project_id `
 //
 // Generated from index 'projects_work_items_table_name_key'.
 func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName string, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

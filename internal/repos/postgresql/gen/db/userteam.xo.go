@@ -60,6 +60,7 @@ type UserTeamSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   UserTeamJoins
+	filters map[string][]any
 }
 type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 
@@ -88,6 +89,20 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 			TeamsMember: s.joins.TeamsMember || joins.TeamsMember,
 			Members:     s.joins.Members || joins.Members,
 		}
+	}
+}
+
+// WithUserTeamFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithUserTeamFilters(filters map[string][]any) UserTeamSelectConfigOption {
+	return func(s *UserTeamSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -133,7 +148,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'user_team_member_idx'.
 func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -204,7 +219,7 @@ user_team.member, user_team.team_id, user_team.member `
 //
 // Generated from index 'user_team_pkey'.
 func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -273,7 +288,7 @@ user_team.member, user_team.team_id, user_team.member `
 //
 // Generated from index 'user_team_pkey'.
 func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -344,7 +359,7 @@ user_team.member, user_team.team_id, user_team.member `
 //
 // Generated from index 'user_team_team_id_member_idx'.
 func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

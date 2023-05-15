@@ -134,6 +134,7 @@ type UserSelectConfig struct {
 	limit     string
 	orderBy   string
 	joins     UserJoins
+	filters   map[string][]any
 	deletedAt string
 }
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -212,6 +213,20 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 type WorkItem__WIAU_User struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+}
+
+// WithUserFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the User to the database.
@@ -335,7 +350,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
 func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -491,7 +506,7 @@ joined_work_item_comments.work_item_comments, users.user_id  ORDER BY
 
 // UserPaginatedByCreatedAtDesc returns a cursor-paginated list of User in Desc order.
 func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -649,7 +664,7 @@ joined_work_item_comments.work_item_comments, users.user_id  ORDER BY
 //
 // Generated from index 'users_created_at_idx'.
 func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -797,7 +812,7 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -943,7 +958,7 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1091,7 +1106,7 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1237,7 +1252,7 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_external_id_key'.
 func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1383,7 +1398,7 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1529,7 +1544,7 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1677,7 +1692,7 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

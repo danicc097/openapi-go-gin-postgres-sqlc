@@ -59,6 +59,7 @@ type SchemaMigrationSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   SchemaMigrationJoins
+	filters map[string][]any
 }
 type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 
@@ -82,6 +83,20 @@ type SchemaMigrationJoins struct {
 func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
 		s.joins = SchemaMigrationJoins{}
+	}
+}
+
+// WithSchemaMigrationFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithSchemaMigrationFilters(filters map[string][]any) SchemaMigrationSelectConfigOption {
+	return func(s *SchemaMigrationSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -171,7 +186,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 
 // SchemaMigrationPaginatedByVersionAsc returns a cursor-paginated list of SchemaMigration in Asc order.
 func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -202,7 +217,7 @@ schema_migrations.dirty ORDER BY
 
 // SchemaMigrationPaginatedByVersionDesc returns a cursor-paginated list of SchemaMigration in Desc order.
 func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -235,7 +250,7 @@ schema_migrations.dirty ORDER BY
 //
 // Generated from index 'schema_migrations_pkey'.
 func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

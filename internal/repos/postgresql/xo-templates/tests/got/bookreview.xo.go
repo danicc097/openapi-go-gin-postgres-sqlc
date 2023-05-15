@@ -63,6 +63,7 @@ type BookReviewSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   BookReviewJoins
+	filters map[string][]any
 }
 type BookReviewSelectConfigOption func(*BookReviewSelectConfig)
 
@@ -89,6 +90,20 @@ func WithBookReviewJoin(joins BookReviewJoins) BookReviewSelectConfigOption {
 			Book: s.joins.Book || joins.Book,
 			User: s.joins.User || joins.User,
 		}
+	}
+}
+
+// WithBookReviewFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithBookReviewFilters(filters map[string][]any) BookReviewSelectConfigOption {
+	return func(s *BookReviewSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -179,7 +194,7 @@ func (br *BookReview) Delete(ctx context.Context, db DB) error {
 
 // BookReviewPaginatedByBookReviewIDAsc returns a cursor-paginated list of BookReview in Asc order.
 func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
-	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -223,7 +238,7 @@ _book_reviews_reviewer.user_id,
 
 // BookReviewPaginatedByBookIDAsc returns a cursor-paginated list of BookReview in Asc order.
 func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
-	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -267,7 +282,7 @@ _book_reviews_reviewer.user_id,
 
 // BookReviewPaginatedByBookReviewIDDesc returns a cursor-paginated list of BookReview in Desc order.
 func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
-	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -311,7 +326,7 @@ _book_reviews_reviewer.user_id,
 
 // BookReviewPaginatedByBookIDDesc returns a cursor-paginated list of BookReview in Desc order.
 func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
-	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -357,7 +372,7 @@ _book_reviews_reviewer.user_id,
 //
 // Generated from index 'book_reviews_pkey'.
 func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
-	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -403,7 +418,7 @@ _book_reviews_reviewer.user_id,
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, bookID int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
-	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -449,7 +464,7 @@ _book_reviews_reviewer.user_id,
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
-	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -497,7 +512,7 @@ _book_reviews_reviewer.user_id,
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
-	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -73,8 +72,8 @@ type UserSelectConfig struct {
 	limit     string
 	orderBy   string
 	joins     UserJoins
+	filters   map[string][]any
 	deletedAt string
-	filters map[string]any
 }
 type UserSelectConfigOption func(*UserSelectConfig)
 
@@ -94,11 +93,6 @@ func WithDeletedUserOnly() UserSelectConfigOption {
 	}
 }
 
-func WithUserFilters(filters map[string]any) UserSelectConfigOption {
-	return func(s *UserSelectConfig) {
-		s.filters = filters
-	}
-}
 type UserOrderBy = string
 
 const (
@@ -157,6 +151,20 @@ type Book__BA_User struct {
 type Book__BASK_User struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithUserFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the User to the database.
@@ -270,18 +278,9 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
-
 // UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
 func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string]any)}
-
-	paramStart := 6
-	nth := func ()  string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	nth()
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -384,20 +383,20 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at > $8  AND users.deleted_at is %s  GROUP BY users.user_id,
-users.name,
-users.api_key_id,
-users.created_at,
-users.deleted_at,
-users.user_id, users.user_id,
-users.user_id, users.user_id,
-joined_book_reviews.book_reviews, users.user_id,
-users.user_id, users.user_id,
-joined_notifications_receiver.notifications, users.user_id,
-joined_notifications_sender.notifications, users.user_id,
+		` WHERE users.created_at > $8  AND users.deleted_at is %s  GROUP BY users.user_id, 
+users.name, 
+users.api_key_id, 
+users.created_at, 
+users.deleted_at, 
+users.user_id, users.user_id, 
+users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id  ORDER BY
+	users.user_id  ORDER BY 
 		created_at Asc`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -416,7 +415,7 @@ _users_user_id.user_id,
 
 // UserPaginatedByCreatedAtDesc returns a cursor-paginated list of User in Desc order.
 func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -519,20 +518,20 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at < $8  AND users.deleted_at is %s  GROUP BY users.user_id,
-users.name,
-users.api_key_id,
-users.created_at,
-users.deleted_at,
-users.user_id, users.user_id,
-users.user_id, users.user_id,
-joined_book_reviews.book_reviews, users.user_id,
-users.user_id, users.user_id,
-joined_notifications_receiver.notifications, users.user_id,
-joined_notifications_sender.notifications, users.user_id,
+		` WHERE users.created_at < $8  AND users.deleted_at is %s  GROUP BY users.user_id, 
+users.name, 
+users.api_key_id, 
+users.created_at, 
+users.deleted_at, 
+users.user_id, users.user_id, 
+users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id  ORDER BY
+	users.user_id  ORDER BY 
 		created_at Desc`, c.deletedAt)
 	sqlstr += c.limit
 
@@ -553,7 +552,7 @@ _users_user_id.user_id,
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -657,13 +656,13 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at = $8  AND users.deleted_at is %s   GROUP BY
-users.user_id, users.user_id,
-users.user_id, users.user_id,
-joined_book_reviews.book_reviews, users.user_id,
-users.user_id, users.user_id,
-joined_notifications_receiver.notifications, users.user_id,
-joined_notifications_sender.notifications, users.user_id,
+		` WHERE users.created_at = $8  AND users.deleted_at is %s   GROUP BY 
+users.user_id, users.user_id, 
+users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)
@@ -688,7 +687,7 @@ _users_user_id.user_id,
 //
 // Generated from index 'users_name_key'.
 func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -792,13 +791,13 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.name = $8  AND users.deleted_at is %s   GROUP BY
-users.user_id, users.user_id,
-users.user_id, users.user_id,
-joined_book_reviews.book_reviews, users.user_id,
-users.user_id, users.user_id,
-joined_notifications_receiver.notifications, users.user_id,
-joined_notifications_sender.notifications, users.user_id,
+		` WHERE users.name = $8  AND users.deleted_at is %s   GROUP BY 
+users.user_id, users.user_id, 
+users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)
@@ -823,7 +822,7 @@ _users_user_id.user_id,
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -927,13 +926,13 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.user_id = $8  AND users.deleted_at is %s   GROUP BY
-users.user_id, users.user_id,
-users.user_id, users.user_id,
-joined_book_reviews.book_reviews, users.user_id,
-users.user_id, users.user_id,
-joined_notifications_receiver.notifications, users.user_id,
-joined_notifications_sender.notifications, users.user_id,
+		` WHERE users.user_id = $8  AND users.deleted_at is %s   GROUP BY 
+users.user_id, users.user_id, 
+users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id `, c.deletedAt)

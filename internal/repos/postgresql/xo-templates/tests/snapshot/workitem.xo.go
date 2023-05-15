@@ -54,6 +54,7 @@ type WorkItemSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   WorkItemJoins
+	filters map[string][]any
 }
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 
@@ -78,6 +79,20 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 		s.joins = WorkItemJoins{
 			DemoWorkItem: s.joins.DemoWorkItem || joins.DemoWorkItem,
 		}
+	}
+}
+
+// WithWorkItemFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -167,7 +182,7 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 
 // WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
 func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -202,7 +217,7 @@ _demo_work_items_work_item_id.work_item_id,
 
 // WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
 func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -239,7 +254,7 @@ _demo_work_items_work_item_id.work_item_id,
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

@@ -57,6 +57,7 @@ type BookSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   BookJoins
+	filters map[string][]any
 }
 type BookSelectConfigOption func(*BookSelectConfig)
 
@@ -100,6 +101,20 @@ type User__BA_Book struct {
 type User__BASK_Book struct {
 	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithBookFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithBookFilters(filters map[string][]any) BookSelectConfigOption {
+	return func(s *BookSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the Book to the database.
@@ -188,7 +203,7 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 
 // BookPaginatedByBookIDAsc returns a cursor-paginated list of Book in Asc order.
 func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
-	c := &BookSelectConfig{joins: BookJoins{}}
+	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -289,7 +304,7 @@ books.book_id, books.book_id ORDER BY
 
 // BookPaginatedByBookIDDesc returns a cursor-paginated list of Book in Desc order.
 func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
-	c := &BookSelectConfig{joins: BookJoins{}}
+	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -392,7 +407,7 @@ books.book_id, books.book_id ORDER BY
 //
 // Generated from index 'books_pkey'.
 func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) (*Book, error) {
-	c := &BookSelectConfig{joins: BookJoins{}}
+	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

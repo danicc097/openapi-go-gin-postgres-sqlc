@@ -69,6 +69,7 @@ type BookAuthorSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   BookAuthorJoins
+	filters map[string][]any
 }
 type BookAuthorSelectConfigOption func(*BookAuthorSelectConfig)
 
@@ -108,6 +109,20 @@ type Book__BA_BookAuthor struct {
 type User__BA_BookAuthor struct {
 	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithBookAuthorFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithBookAuthorFilters(filters map[string][]any) BookAuthorSelectConfigOption {
+	return func(s *BookAuthorSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the BookAuthor to the database.
@@ -199,7 +214,7 @@ func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
-	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}}
+	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -275,7 +290,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
-	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}}
+	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -353,7 +368,7 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
-	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}}
+	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

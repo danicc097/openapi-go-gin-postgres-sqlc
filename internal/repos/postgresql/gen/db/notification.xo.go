@@ -110,6 +110,7 @@ type NotificationSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   NotificationJoins
+	filters map[string][]any
 }
 type NotificationSelectConfigOption func(*NotificationSelectConfig)
 
@@ -155,6 +156,20 @@ func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOptio
 			UserSender:        s.joins.UserSender || joins.UserSender,
 			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
 		}
+	}
+}
+
+// WithNotificationFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithNotificationFilters(filters map[string][]any) NotificationSelectConfigOption {
+	return func(s *NotificationSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -251,7 +266,7 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 
 // NotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of Notification in Asc order.
 func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}}
+	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -320,7 +335,7 @@ joined_user_notifications.user_notifications, notifications.notification_id ORDE
 
 // NotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of Notification in Desc order.
 func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}}
+	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -391,7 +406,7 @@ joined_user_notifications.user_notifications, notifications.notification_id ORDE
 //
 // Generated from index 'notifications_pkey'.
 func NotificationByNotificationID(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) (*Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}}
+	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -455,7 +470,7 @@ joined_user_notifications.user_notifications, notifications.notification_id `
 //
 // Generated from index 'notifications_receiver_rank_notification_type_created_at_idx'.
 func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, db DB, receiverRank *int16, notificationType NotificationType, createdAt time.Time, opts ...NotificationSelectConfigOption) ([]Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}}
+	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

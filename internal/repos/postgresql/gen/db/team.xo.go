@@ -76,6 +76,7 @@ type TeamSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   TeamJoins
+	filters map[string][]any
 }
 type TeamSelectConfigOption func(*TeamSelectConfig)
 
@@ -127,6 +128,20 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 			Members:     s.joins.Members || joins.Members,
 			WorkItem:    s.joins.WorkItem || joins.WorkItem,
 		}
+	}
+}
+
+// WithTeamFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithTeamFilters(filters map[string][]any) TeamSelectConfigOption {
+	return func(s *TeamSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -218,7 +233,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 
 // TeamPaginatedByTeamIDAsc returns a cursor-paginated list of Team in Asc order.
 func TeamPaginatedByTeamIDAsc(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -297,7 +312,7 @@ _teams_team_id.team_id,
 
 // TeamPaginatedByProjectIDAsc returns a cursor-paginated list of Team in Asc order.
 func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -376,7 +391,7 @@ _teams_team_id.team_id,
 
 // TeamPaginatedByTeamIDDesc returns a cursor-paginated list of Team in Desc order.
 func TeamPaginatedByTeamIDDesc(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -455,7 +470,7 @@ _teams_team_id.team_id,
 
 // TeamPaginatedByProjectIDDesc returns a cursor-paginated list of Team in Desc order.
 func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -536,7 +551,7 @@ _teams_team_id.team_id,
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -614,7 +629,7 @@ _teams_team_id.team_id,
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -694,7 +709,7 @@ _teams_team_id.team_id,
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -774,7 +789,7 @@ _teams_team_id.team_id,
 //
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

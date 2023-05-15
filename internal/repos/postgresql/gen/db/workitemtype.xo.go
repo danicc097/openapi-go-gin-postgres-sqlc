@@ -77,6 +77,7 @@ type WorkItemTypeSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   WorkItemTypeJoins
+	filters map[string][]any
 }
 type WorkItemTypeSelectConfigOption func(*WorkItemTypeSelectConfig)
 
@@ -105,6 +106,20 @@ func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOptio
 			Project:  s.joins.Project || joins.Project,
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
+	}
+}
+
+// WithWorkItemTypeFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithWorkItemTypeFilters(filters map[string][]any) WorkItemTypeSelectConfigOption {
+	return func(s *WorkItemTypeSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -197,7 +212,7 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 
 // WorkItemTypePaginatedByWorkItemTypeIDAsc returns a cursor-paginated list of WorkItemType in Asc order.
 func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -245,7 +260,7 @@ _work_item_types_work_item_type_id.work_item_type_id,
 
 // WorkItemTypePaginatedByProjectIDAsc returns a cursor-paginated list of WorkItemType in Asc order.
 func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -293,7 +308,7 @@ _work_item_types_work_item_type_id.work_item_type_id,
 
 // WorkItemTypePaginatedByWorkItemTypeIDDesc returns a cursor-paginated list of WorkItemType in Desc order.
 func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -341,7 +356,7 @@ _work_item_types_work_item_type_id.work_item_type_id,
 
 // WorkItemTypePaginatedByProjectIDDesc returns a cursor-paginated list of WorkItemType in Desc order.
 func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -391,7 +406,7 @@ _work_item_types_work_item_type_id.work_item_type_id,
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -439,7 +454,7 @@ _work_item_types_work_item_type_id.work_item_type_id,
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -489,7 +504,7 @@ _work_item_types_work_item_type_id.work_item_type_id,
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -539,7 +554,7 @@ _work_item_types_work_item_type_id.work_item_type_id,
 //
 // Generated from index 'work_item_types_pkey'.
 func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

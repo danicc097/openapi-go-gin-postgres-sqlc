@@ -75,6 +75,7 @@ type WorkItemCommentSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   WorkItemCommentJoins
+	filters map[string][]any
 }
 type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
 
@@ -122,6 +123,20 @@ func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectCo
 			User:     s.joins.User || joins.User,
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
+	}
+}
+
+// WithWorkItemCommentFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithWorkItemCommentFilters(filters map[string][]any) WorkItemCommentSelectConfigOption {
+	return func(s *WorkItemCommentSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -213,7 +228,7 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 
 // WorkItemCommentPaginatedByWorkItemCommentIDAsc returns a cursor-paginated list of WorkItemComment in Asc order.
 func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -263,7 +278,7 @@ _work_item_comments_work_item_id.work_item_id,
 
 // WorkItemCommentPaginatedByWorkItemCommentIDDesc returns a cursor-paginated list of WorkItemComment in Desc order.
 func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -315,7 +330,7 @@ _work_item_comments_work_item_id.work_item_id,
 //
 // Generated from index 'work_item_comments_pkey'.
 func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -364,7 +379,7 @@ _work_item_comments_work_item_id.work_item_id,
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
 func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

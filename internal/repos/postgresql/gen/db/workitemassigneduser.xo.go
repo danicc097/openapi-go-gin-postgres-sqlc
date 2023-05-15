@@ -72,6 +72,7 @@ type WorkItemAssignedUserSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   WorkItemAssignedUserJoins
+	filters map[string][]any
 }
 type WorkItemAssignedUserSelectConfigOption func(*WorkItemAssignedUserSelectConfig)
 
@@ -113,6 +114,20 @@ type WorkItem__WIAU_WorkItemAssignedUser struct {
 type User__WIAU_WorkItemAssignedUser struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+}
+
+// WithWorkItemAssignedUserFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithWorkItemAssignedUserFilters(filters map[string][]any) WorkItemAssignedUserSelectConfigOption {
+	return func(s *WorkItemAssignedUserSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the WorkItemAssignedUser to the database.
@@ -204,7 +219,7 @@ func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
 func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser uuid.UUID, workItemID int64, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -282,7 +297,7 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID int64, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -358,7 +373,7 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -436,7 +451,7 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

@@ -67,6 +67,7 @@ type MovieSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   MovieJoins
+	filters map[string][]any
 }
 type MovieSelectConfigOption func(*MovieSelectConfig)
 
@@ -90,6 +91,20 @@ type MovieJoins struct {
 func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
 		s.joins = MovieJoins{}
+	}
+}
+
+// WithMovieFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithMovieFilters(filters map[string][]any) MovieSelectConfigOption {
+	return func(s *MovieSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -181,7 +196,7 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 
 // MoviePaginatedByMovieIDAsc returns a cursor-paginated list of Movie in Asc order.
 func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
-	c := &MovieSelectConfig{joins: MovieJoins{}}
+	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -216,7 +231,7 @@ movies.synopsis ORDER BY
 
 // MoviePaginatedByMovieIDDesc returns a cursor-paginated list of Movie in Desc order.
 func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
-	c := &MovieSelectConfig{joins: MovieJoins{}}
+	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -253,7 +268,7 @@ movies.synopsis ORDER BY
 //
 // Generated from index 'movies_pkey'.
 func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
-	c := &MovieSelectConfig{joins: MovieJoins{}}
+	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

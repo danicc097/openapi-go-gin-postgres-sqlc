@@ -59,6 +59,7 @@ type DemoTwoWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   DemoTwoWorkItemJoins
+	filters map[string][]any
 }
 type DemoTwoWorkItemSelectConfigOption func(*DemoTwoWorkItemSelectConfig)
 
@@ -100,6 +101,20 @@ func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectCo
 		s.joins = DemoTwoWorkItemJoins{
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
+	}
+}
+
+// WithDemoTwoWorkItemFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithDemoTwoWorkItemFilters(filters map[string][]any) DemoTwoWorkItemSelectConfigOption {
+	return func(s *DemoTwoWorkItemSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -189,7 +204,7 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // DemoTwoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoTwoWorkItem in Asc order.
 func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
-	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}}
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -225,7 +240,7 @@ _work_items_work_item_id.work_item_id,
 
 // DemoTwoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoTwoWorkItem in Desc order.
 func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
-	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}}
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -263,7 +278,7 @@ _work_items_work_item_id.work_item_id,
 //
 // Generated from index 'demo_two_work_items_pkey'.
 func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
-	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}}
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

@@ -72,6 +72,7 @@ type UserSelectConfig struct {
 	limit     string
 	orderBy   string
 	joins     UserJoins
+	filters   map[string][]any
 	deletedAt string
 }
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -150,6 +151,20 @@ type Book__BA_User struct {
 type Book__BASK_User struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithUserFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the User to the database.
@@ -265,7 +280,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
 func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -400,7 +415,7 @@ _users_user_id.user_id,
 
 // UserPaginatedByCreatedAtDesc returns a cursor-paginated list of User in Desc order.
 func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -537,7 +552,7 @@ _users_user_id.user_id,
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -672,7 +687,7 @@ _users_user_id.user_id,
 //
 // Generated from index 'users_name_key'.
 func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -807,7 +822,7 @@ _users_user_id.user_id,
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

@@ -1763,8 +1763,9 @@ func (f *Funcs) initial_opts(v any) string {
 		if tableHasDeletedAt {
 			buf.WriteString(`deletedAt: " null ",`)
 		}
-		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},
-}`, x.GoName))
+		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},`, x.GoName))
+		buf.WriteString(`filters: make(map[string][]any),
+}`)
 	case Index:
 		for _, field := range x.Table.Fields { // table fields, not index fields
 			if field.SQLName == "deleted_at" {
@@ -1790,8 +1791,9 @@ func (f *Funcs) initial_opts(v any) string {
 			buf.WriteString(`deletedAt: " null ",`)
 		}
 
-		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},
-  }`, x.Table.GoName))
+		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},`, x.Table.GoName))
+		buf.WriteString(`filters: make(map[string][]any),
+}`)
 	default:
 		return ""
 	}
@@ -1857,7 +1859,8 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 	type %[1]sSelectConfig struct {
 		limit       string
 		orderBy     string
-		joins  %[1]sJoins`, tGoName))
+		joins       %[1]sJoins
+		filters     map[string][]any`, tGoName))
 	if tableHasDeletedAt {
 		buf.WriteString(`
 			deletedAt   string`)
@@ -2033,6 +2036,28 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	for _, stt := range extraStructs {
 		buf.WriteString(stt)
 	}
+
+	buf.WriteString(fmt.Sprintf(`
+// With%[1]sFilters adds the given filters, which may be parameterized.
+// Example:
+//filters := map[string][]any{
+//	"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//	`+"`col.created_at > $i AND \n//	col.created_at < $i`"+`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//}`, tGoName))
+	buf.WriteString(fmt.Sprintf(`
+func With%[1]sFilters(filters map[string][]any) %[1]sSelectConfigOption {
+	return func(s *%[1]sSelectConfig) {
+		s.filters = filters
+	}
+}
+	`, tGoName))
+
+	// TODO :
+	// paramStart := 6 // TODO save last nth per query in paginated and index queries
+	// nth := func ()  string {
+	// 	paramStart++
+	// 	return strconv.Itoa(paramStart)
+	// }
 
 	return buf.String()
 }

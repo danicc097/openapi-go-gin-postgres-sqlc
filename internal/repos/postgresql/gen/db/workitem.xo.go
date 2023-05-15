@@ -115,6 +115,7 @@ type WorkItemSelectConfig struct {
 	limit     string
 	orderBy   string
 	joins     WorkItemJoins
+	filters   map[string][]any
 	deletedAt string
 }
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
@@ -197,6 +198,20 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 type User__WIAU_WorkItem struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+}
+
+// WithWorkItemFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the WorkItem to the database.
@@ -318,7 +333,7 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 
 // WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
 func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -439,7 +454,7 @@ work_items.work_item_id, work_items.work_item_id  ORDER BY
 
 // WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
 func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -562,7 +577,7 @@ work_items.work_item_id, work_items.work_item_id  ORDER BY
 //
 // Generated from index 'work_items_deleted_at_idx'.
 func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -678,7 +693,7 @@ work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -792,7 +807,7 @@ work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
 //
 // Generated from index 'work_items_team_id_idx'.
 func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

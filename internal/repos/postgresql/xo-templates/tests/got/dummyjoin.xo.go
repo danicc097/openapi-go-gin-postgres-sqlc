@@ -54,6 +54,7 @@ type DummyJoinSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   DummyJoinJoins
+	filters map[string][]any
 }
 type DummyJoinSelectConfigOption func(*DummyJoinSelectConfig)
 
@@ -78,6 +79,20 @@ func WithDummyJoinJoin(joins DummyJoinJoins) DummyJoinSelectConfigOption {
 		s.joins = DummyJoinJoins{
 			PagElement: s.joins.PagElement || joins.PagElement,
 		}
+	}
+}
+
+// WithDummyJoinFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithDummyJoinFilters(filters map[string][]any) DummyJoinSelectConfigOption {
+	return func(s *DummyJoinSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -167,7 +182,7 @@ func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 
 // DummyJoinPaginatedByDummyJoinIDAsc returns a cursor-paginated list of DummyJoin in Asc order.
 func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
+	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -203,7 +218,7 @@ _dummy_join_dummy_join_id.dummy,
 
 // DummyJoinPaginatedByDummyJoinIDDesc returns a cursor-paginated list of DummyJoin in Desc order.
 func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
+	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -241,7 +256,7 @@ _dummy_join_dummy_join_id.dummy,
 //
 // Generated from index 'dummy_join_pkey'.
 func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) (*DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
+	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)

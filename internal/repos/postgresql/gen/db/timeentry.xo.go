@@ -103,6 +103,7 @@ type TimeEntrySelectConfig struct {
 	limit   string
 	orderBy string
 	joins   TimeEntryJoins
+	filters map[string][]any
 }
 type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
 
@@ -150,6 +151,20 @@ func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 			User:     s.joins.User || joins.User,
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
+	}
+}
+
+// WithTimeEntryFilters adds the given filters, which may be parameterized.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`col.created_at > $i AND
+//		col.created_at < $i`: {time.Now().Add(-24 * time.Hour), time.Now().Add(24 * time.Hour)},
+//	}
+func WithTimeEntryFilters(filters map[string][]any) TimeEntrySelectConfigOption {
+	return func(s *TimeEntrySelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -245,7 +260,7 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 
 // TimeEntryPaginatedByTimeEntryIDAsc returns a cursor-paginated list of TimeEntry in Asc order.
 func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -311,7 +326,7 @@ _time_entries_work_item_id.work_item_id,
 
 // TimeEntryPaginatedByTimeEntryIDDesc returns a cursor-paginated list of TimeEntry in Desc order.
 func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -379,7 +394,7 @@ _time_entries_work_item_id.work_item_id,
 //
 // Generated from index 'time_entries_pkey'.
 func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -442,7 +457,7 @@ _time_entries_work_item_id.work_item_id,
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
 func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -507,7 +522,7 @@ _time_entries_work_item_id.work_item_id,
 //
 // Generated from index 'time_entries_work_item_id_team_id_idx'.
 func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
