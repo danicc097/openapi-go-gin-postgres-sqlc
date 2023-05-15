@@ -244,6 +244,8 @@ github.com/jackc/pgproto3/v2
 # github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a
 ## explicit; go 1.14
 github.com/jackc/pgservicefile
+# github.com/jackc/pgx v3.6.2+incompatible
+## explicit
 # github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
 ## explicit; go 1.17
 github.com/jackc/pgx-zap
@@ -523,7 +525,7 @@ go.uber.org/zap/zaptest
 # golang.org/x/arch v0.3.0
 ## explicit; go 1.17
 golang.org/x/arch/x86/x86asm
-# golang.org/x/crypto v0.8.0
+# golang.org/x/crypto v0.9.0
 ## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
@@ -539,7 +541,7 @@ golang.org/x/exp/slices
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.9.0
+# golang.org/x/net v0.10.0
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
