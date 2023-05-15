@@ -181,6 +181,9 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uak.UserJoin.UserID, userID)
 	assert.Equal(t, uak.UserID, userID)
+
+	_, err = db.UserPaginatedByCreatedAtAsc(ctx, testPool, time.Now().Add(-999*time.Hour), db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
+	assert.NoError(t, err)
 }
 
 func TestCRUD_UniqueIndex(t *testing.T) {
