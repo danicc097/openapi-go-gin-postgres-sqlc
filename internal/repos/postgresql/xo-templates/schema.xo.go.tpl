@@ -126,8 +126,6 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 		filters = " AND "+strings.Join(filterClauses, " AND ")+" "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	{{ sqlstr_index $i $constraints $tables }}
 	sqlstr += c.orderBy
@@ -454,8 +452,6 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 		filters = " AND "+strings.Join(filterClauses, " AND ")+" "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	{{ sqlstr_paginated $t $constraints $tables $cursor_fields $order }}
 	sqlstr += c.limit

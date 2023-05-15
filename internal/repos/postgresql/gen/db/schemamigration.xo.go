@@ -218,9 +218,6 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
 schema_migrations.dirty `+
@@ -274,9 +271,6 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
@@ -333,9 +327,6 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,

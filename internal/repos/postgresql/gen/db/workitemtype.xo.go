@@ -244,9 +244,6 @@ func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workIt
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
@@ -317,9 +314,6 @@ func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID i
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
@@ -392,9 +386,6 @@ func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workI
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
@@ -465,9 +456,6 @@ func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID 
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
@@ -542,9 +530,6 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
@@ -614,9 +599,6 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
@@ -690,9 +672,6 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ..
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
@@ -764,9 +743,6 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,

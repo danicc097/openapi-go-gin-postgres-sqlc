@@ -177,9 +177,6 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
 book_sellers.seller,
@@ -270,9 +267,6 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
@@ -366,9 +360,6 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,

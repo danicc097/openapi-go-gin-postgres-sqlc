@@ -237,9 +237,6 @@ func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
@@ -308,9 +305,6 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
@@ -381,9 +375,6 @@ func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db D
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
@@ -452,9 +443,6 @@ func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, n
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
@@ -527,9 +515,6 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
@@ -598,9 +583,6 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
@@ -673,9 +655,6 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
-
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
@@ -744,9 +723,6 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
-
-	fmt.Printf("filters: %v\n", filters)
-	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
