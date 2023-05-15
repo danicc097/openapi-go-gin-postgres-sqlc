@@ -31,7 +31,6 @@ type Team struct {
 	ProjectJoin         *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 	TeamTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
 	TeamMembersJoin     *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M user_team
-	WorkItemJoin        *WorkItem    `json:"-" db:"work_item_team_id" openapi-go:"ignore"`  // O2O work_items (inferred)
 
 }
 
@@ -117,7 +116,6 @@ type TeamJoins struct {
 	Project     bool // O2O projects
 	TimeEntries bool // M2O time_entries
 	Members     bool // M2M user_team
-	WorkItem    bool // O2O work_items
 }
 
 // WithTeamJoin joins with the given tables.
@@ -127,7 +125,6 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
 			Members:     s.joins.Members || joins.Members,
-			WorkItem:    s.joins.WorkItem || joins.WorkItem,
 		}
 	}
 }
@@ -242,7 +239,7 @@ func TeamPaginatedByTeamIDAsc(ctx context.Context, db DB, teamID int, opts ...Te
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 4
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -276,8 +273,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -302,10 +298,8 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
-
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
-		` WHERE teams.team_id > $5`+
+`+
+		` WHERE teams.team_id > $4`+
 		` %s  GROUP BY teams.team_id, 
 teams.project_id, 
 teams.name, 
@@ -316,16 +310,13 @@ _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
-teams.team_id, teams.team_id, 
-_teams_team_id.team_id,
-      _teams_team_id.work_item_id,
-	teams.team_id ORDER BY 
+teams.team_id, teams.team_id ORDER BY 
 		team_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/Asc/db.Query: %w", err))
 	}
@@ -344,7 +335,7 @@ func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 4
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -378,8 +369,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -404,10 +394,8 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
-
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
-		` WHERE teams.project_id > $5`+
+`+
+		` WHERE teams.project_id > $4`+
 		` %s  GROUP BY teams.team_id, 
 teams.project_id, 
 teams.name, 
@@ -418,16 +406,13 @@ _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
-teams.team_id, teams.team_id, 
-_teams_team_id.team_id,
-      _teams_team_id.work_item_id,
-	teams.team_id ORDER BY 
+teams.team_id, teams.team_id ORDER BY 
 		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/Asc/db.Query: %w", err))
 	}
@@ -446,7 +431,7 @@ func TeamPaginatedByTeamIDDesc(ctx context.Context, db DB, teamID int, opts ...T
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 4
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -480,8 +465,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -506,10 +490,8 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
-
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
-		` WHERE teams.team_id < $5`+
+`+
+		` WHERE teams.team_id < $4`+
 		` %s  GROUP BY teams.team_id, 
 teams.project_id, 
 teams.name, 
@@ -520,16 +502,13 @@ _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
-teams.team_id, teams.team_id, 
-_teams_team_id.team_id,
-      _teams_team_id.work_item_id,
-	teams.team_id ORDER BY 
+teams.team_id, teams.team_id ORDER BY 
 		team_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/Desc/db.Query: %w", err))
 	}
@@ -548,7 +527,7 @@ func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opt
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 4
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -582,8 +561,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -608,10 +586,8 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
-
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
-		` WHERE teams.project_id < $5`+
+`+
+		` WHERE teams.project_id < $4`+
 		` %s  GROUP BY teams.team_id, 
 teams.project_id, 
 teams.name, 
@@ -622,16 +598,13 @@ _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
-teams.team_id, teams.team_id, 
-_teams_team_id.team_id,
-      _teams_team_id.work_item_id,
-	teams.team_id ORDER BY 
+teams.team_id, teams.team_id ORDER BY 
 		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/Desc/db.Query: %w", err))
 	}
@@ -652,7 +625,7 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 5
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -686,8 +659,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -712,25 +684,20 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
-
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
-		` WHERE teams.name = $5 AND teams.project_id = $6`+
+`+
+		` WHERE teams.name = $4 AND teams.project_id = $5`+
 		` %s  GROUP BY 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
-teams.team_id, teams.team_id, 
-_teams_team_id.team_id,
-      _teams_team_id.work_item_id,
-	teams.team_id `, filters)
+teams.team_id, teams.team_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, name, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, name, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
 	}
@@ -752,7 +719,7 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 4
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -786,8 +753,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -812,25 +778,20 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
-
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
-		` WHERE teams.name = $5`+
+`+
+		` WHERE teams.name = $4`+
 		` %s  GROUP BY 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
-teams.team_id, teams.team_id, 
-_teams_team_id.team_id,
-      _teams_team_id.work_item_id,
-	teams.team_id `, filters)
+teams.team_id, teams.team_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, name}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
@@ -854,7 +815,7 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSel
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 4
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -888,8 +849,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -914,25 +874,20 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
-
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
-		` WHERE teams.project_id = $5`+
+`+
+		` WHERE teams.project_id = $4`+
 		` %s  GROUP BY 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
-teams.team_id, teams.team_id, 
-_teams_team_id.team_id,
-      _teams_team_id.work_item_id,
-	teams.team_id `, filters)
+teams.team_id, teams.team_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
@@ -956,7 +911,7 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 4
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -990,8 +945,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -1016,25 +970,20 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
-
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
-		` WHERE teams.team_id = $5`+
+`+
+		` WHERE teams.team_id = $4`+
 		` %s  GROUP BY 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
 joined_time_entries.time_entries, teams.team_id, 
-teams.team_id, teams.team_id, 
-_teams_team_id.team_id,
-      _teams_team_id.work_item_id,
-	teams.team_id `, filters)
+teams.team_id, teams.team_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))
 	}

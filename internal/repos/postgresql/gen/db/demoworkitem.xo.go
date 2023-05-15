@@ -265,18 +265,18 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as work_item_work_item_id `+
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id `+
 		`FROM public.demo_work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
 		` WHERE demo_work_items.work_item_id > $2`+
 		` %s  GROUP BY demo_work_items.work_item_id, 
 demo_work_items.ref, 
 demo_work_items.line, 
 demo_work_items.last_message_at, 
 demo_work_items.reopened, 
-_work_items_work_item_id.work_item_id,
-      _work_items_work_item_id.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id ORDER BY 
 		work_item_id Asc `, filters)
 	sqlstr += c.limit
@@ -330,18 +330,18 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as work_item_work_item_id `+
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id `+
 		`FROM public.demo_work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
 		` WHERE demo_work_items.work_item_id < $2`+
 		` %s  GROUP BY demo_work_items.work_item_id, 
 demo_work_items.ref, 
 demo_work_items.line, 
 demo_work_items.last_message_at, 
 demo_work_items.reopened, 
-_work_items_work_item_id.work_item_id,
-      _work_items_work_item_id.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id ORDER BY 
 		work_item_id Desc `, filters)
 	sqlstr += c.limit
@@ -397,14 +397,14 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as work_item_work_item_id `+
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id `+
 		`FROM public.demo_work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
 		` WHERE demo_work_items.work_item_id = $2`+
 		` %s  GROUP BY 
-_work_items_work_item_id.work_item_id,
-      _work_items_work_item_id.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -461,14 +461,14 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as work_item_work_item_id `+
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id `+
 		`FROM public.demo_work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
 		` WHERE demo_work_items.ref = $2 AND demo_work_items.line = $3`+
 		` %s  GROUP BY 
-_work_items_work_item_id.work_item_id,
-      _work_items_work_item_id.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -43,9 +43,9 @@ type User struct {
 	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	UserTimeEntriesJoin       *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
-	UserAPIKeyJoin            *UserAPIKey            `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`               // O2O user_api_keys (inferred)
 	UserUserNotificationsJoin *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
 	MemberTeamsJoin           *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
+	APIKeyJoin                *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
 	UserWorkItemCommentsJoin  *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
 
@@ -187,9 +187,9 @@ type UserJoins struct {
 	NotificationsReceiver bool // M2O notifications
 	NotificationsSender   bool // M2O notifications
 	TimeEntries           bool // M2O time_entries
-	UserAPIKey            bool // O2O user_api_keys
 	UserNotifications     bool // M2O user_notifications
 	TeamsMember           bool // M2M user_team
+	UserAPIKey            bool // O2O user_api_keys
 	WorkItemsAssignedUser bool // M2M work_item_assigned_user
 	WorkItemComments      bool // M2O work_item_comments
 }
@@ -201,9 +201,9 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			TimeEntries:           s.joins.TimeEntries || joins.TimeEntries,
-			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
 			UserNotifications:     s.joins.UserNotifications || joins.UserNotifications,
 			TeamsMember:           s.joins.TeamsMember || joins.TeamsMember,
+			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
 			WorkItemsAssignedUser: s.joins.WorkItemsAssignedUser || joins.WorkItemsAssignedUser,
 			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
 		}
@@ -400,12 +400,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -440,8 +440,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -464,6 +462,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -507,11 +507,11 @@ users.deleted_at,
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
 		created_at Asc`, filters, c.deletedAt)
@@ -519,7 +519,7 @@ joined_work_item_comments.work_item_comments, users.user_id  ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
@@ -579,12 +579,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -619,8 +619,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -643,6 +641,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -686,11 +686,11 @@ users.deleted_at,
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
 		created_at Desc`, filters, c.deletedAt)
@@ -698,7 +698,7 @@ joined_work_item_comments.work_item_comments, users.user_id  ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
 	}
@@ -760,12 +760,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -800,8 +800,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -824,6 +822,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -853,11 +853,11 @@ left join (
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
@@ -865,7 +865,7 @@ joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deleted
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByCreatedAt/Query: %w", err))
 	}
@@ -930,12 +930,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -970,8 +970,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -994,6 +992,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -1023,11 +1023,11 @@ left join (
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
@@ -1035,7 +1035,7 @@ joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deleted
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -1098,12 +1098,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -1138,8 +1138,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1162,6 +1160,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -1191,11 +1191,11 @@ left join (
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
@@ -1203,7 +1203,7 @@ joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deleted
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, deletedAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, deletedAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByDeletedAt/Query: %w", err))
 	}
@@ -1268,12 +1268,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -1308,8 +1308,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1332,6 +1330,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -1361,11 +1361,11 @@ left join (
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
@@ -1373,7 +1373,7 @@ joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deleted
 
 	// run
 	// logf(sqlstr, email)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, email}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, email}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
 	}
@@ -1436,12 +1436,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -1476,8 +1476,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1500,6 +1498,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -1529,11 +1529,11 @@ left join (
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
@@ -1541,7 +1541,7 @@ joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deleted
 
 	// run
 	// logf(sqlstr, externalID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, externalID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, externalID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
 	}
@@ -1604,12 +1604,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -1644,8 +1644,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1668,6 +1666,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -1697,11 +1697,11 @@ left join (
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
@@ -1709,7 +1709,7 @@ joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deleted
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, userID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, userID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
@@ -1772,12 +1772,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -1812,8 +1812,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -1836,6 +1834,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -1865,11 +1865,11 @@ left join (
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
@@ -1877,7 +1877,7 @@ joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deleted
 
 	// run
 	// logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, updatedAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, updatedAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/Query: %w", err))
 	}
@@ -1942,12 +1942,12 @@ users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id,
-(case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $6::boolean = true then COALESCE(
+(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
+(case when $5::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
 		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
 (case when $7::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
@@ -1982,8 +1982,6 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
@@ -2006,6 +2004,8 @@ left join (
 			, teams.team_id
   ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
 
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -2035,11 +2035,11 @@ left join (
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
-	users.user_id, 
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
@@ -2047,7 +2047,7 @@ joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deleted
 
 	// run
 	// logf(sqlstr, username)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, username}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, username}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))
 	}
