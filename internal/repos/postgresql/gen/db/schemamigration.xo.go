@@ -192,14 +192,17 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
-schema_migrations.dirty ` +
-		`FROM public.schema_migrations ` +
-		`` +
-		` WHERE schema_migrations.version > $1 GROUP BY schema_migrations.version, 
+schema_migrations.dirty `+
+		`FROM public.schema_migrations `+
+		``+
+		` WHERE schema_migrations.version > $1`+
+		` %s  GROUP BY schema_migrations.version, 
 schema_migrations.dirty ORDER BY 
-		version Asc `
+		version Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -223,14 +226,17 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
-schema_migrations.dirty ` +
-		`FROM public.schema_migrations ` +
-		`` +
-		` WHERE schema_migrations.version < $1 GROUP BY schema_migrations.version, 
+schema_migrations.dirty `+
+		`FROM public.schema_migrations `+
+		``+
+		` WHERE schema_migrations.version < $1`+
+		` %s  GROUP BY schema_migrations.version, 
 schema_migrations.dirty ORDER BY 
-		version Desc `
+		version Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -256,13 +262,15 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
-schema_migrations.dirty ` +
-		`FROM public.schema_migrations ` +
-		`` +
-		` WHERE schema_migrations.version = $1 `
+schema_migrations.dirty `+
+		`FROM public.schema_migrations `+
+		``+
+		` WHERE schema_migrations.version = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

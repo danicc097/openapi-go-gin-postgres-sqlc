@@ -188,18 +188,21 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
-(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id ` +
-		`FROM xo_tests.work_items ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
+		`FROM xo_tests.work_items `+
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
-left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id > $2 GROUP BY work_items.work_item_id, 
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id > $2`+
+		` %s  GROUP BY work_items.work_item_id, 
 work_items.title, 
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id ORDER BY 
-		work_item_id Asc `
+		work_item_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -223,18 +226,21 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
-(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id ` +
-		`FROM xo_tests.work_items ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
+		`FROM xo_tests.work_items `+
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
-left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id < $2 GROUP BY work_items.work_item_id, 
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id < $2`+
+		` %s  GROUP BY work_items.work_item_id, 
 work_items.title, 
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id ORDER BY 
-		work_item_id Desc `
+		work_item_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -260,17 +266,19 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
-(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id ` +
-		`FROM xo_tests.work_items ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
+		`FROM xo_tests.work_items `+
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
-left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id = $2 GROUP BY 
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id = $2`+
+		` %s  GROUP BY 
 _demo_work_items_work_item_id.work_item_id,
-	work_items.work_item_id `
+	work_items.work_item_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

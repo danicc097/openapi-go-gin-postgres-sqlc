@@ -234,7 +234,9 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
 work_item_comments.work_item_id,
 work_item_comments.user_id,
@@ -242,13 +244,14 @@ work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
 (case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id ` +
-		`FROM public.work_item_comments ` +
+(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id `+
+		`FROM public.work_item_comments `+
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
 left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id > $3 GROUP BY work_item_comments.work_item_comment_id, 
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id`+
+		` WHERE work_item_comments.work_item_comment_id > $3`+
+		` %s  GROUP BY work_item_comments.work_item_comment_id, 
 work_item_comments.work_item_id, 
 work_item_comments.user_id, 
 work_item_comments.message, 
@@ -260,7 +263,7 @@ _work_item_comments_user_id.user_id,
 _work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id ORDER BY 
-		work_item_comment_id Asc `
+		work_item_comment_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -284,7 +287,9 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
 work_item_comments.work_item_id,
 work_item_comments.user_id,
@@ -292,13 +297,14 @@ work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
 (case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id ` +
-		`FROM public.work_item_comments ` +
+(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id `+
+		`FROM public.work_item_comments `+
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
 left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id < $3 GROUP BY work_item_comments.work_item_comment_id, 
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id`+
+		` WHERE work_item_comments.work_item_comment_id < $3`+
+		` %s  GROUP BY work_item_comments.work_item_comment_id, 
 work_item_comments.work_item_id, 
 work_item_comments.user_id, 
 work_item_comments.message, 
@@ -310,7 +316,7 @@ _work_item_comments_user_id.user_id,
 _work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id ORDER BY 
-		work_item_comment_id Desc `
+		work_item_comment_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -336,8 +342,9 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
 work_item_comments.work_item_id,
 work_item_comments.user_id,
@@ -345,19 +352,20 @@ work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
 (case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id ` +
-		`FROM public.work_item_comments ` +
+(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id `+
+		`FROM public.work_item_comments `+
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
 left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_comment_id = $3 GROUP BY 
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id`+
+		` WHERE work_item_comments.work_item_comment_id = $3`+
+		` %s  GROUP BY 
 _work_item_comments_user_id.user_id,
       _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
 _work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
-	work_item_comments.work_item_comment_id `
+	work_item_comments.work_item_comment_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -385,8 +393,9 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
 work_item_comments.work_item_id,
 work_item_comments.user_id,
@@ -394,19 +403,20 @@ work_item_comments.message,
 work_item_comments.created_at,
 work_item_comments.updated_at,
 (case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id ` +
-		`FROM public.work_item_comments ` +
+(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id `+
+		`FROM public.work_item_comments `+
 		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
 left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 -- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id` +
-		` WHERE work_item_comments.work_item_id = $3 GROUP BY 
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id`+
+		` WHERE work_item_comments.work_item_id = $3`+
+		` %s  GROUP BY 
 _work_item_comments_user_id.user_id,
       _work_item_comments_user_id.user_id,
 	work_item_comments.work_item_comment_id, 
 _work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
-	work_item_comments.work_item_comment_id `
+	work_item_comments.work_item_comment_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

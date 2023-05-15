@@ -234,7 +234,9 @@ func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStep
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -243,13 +245,14 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id > $3 GROUP BY kanban_steps.kanban_step_id, 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.kanban_step_id > $3`+
+		` %s  GROUP BY kanban_steps.kanban_step_id, 
 kanban_steps.project_id, 
 kanban_steps.step_order, 
 kanban_steps.name, 
@@ -262,7 +265,7 @@ _kanban_steps_project_id.project_id,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
-		kanban_step_id Asc `
+		kanban_step_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -286,7 +289,9 @@ func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -295,13 +300,14 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id > $3 GROUP BY kanban_steps.kanban_step_id, 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.project_id > $3`+
+		` %s  GROUP BY kanban_steps.kanban_step_id, 
 kanban_steps.project_id, 
 kanban_steps.step_order, 
 kanban_steps.name, 
@@ -314,7 +320,7 @@ _kanban_steps_project_id.project_id,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
-		project_id Asc `
+		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -338,7 +344,9 @@ func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -347,13 +355,14 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order > $3 GROUP BY kanban_steps.kanban_step_id, 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.step_order > $3`+
+		` %s  GROUP BY kanban_steps.kanban_step_id, 
 kanban_steps.project_id, 
 kanban_steps.step_order, 
 kanban_steps.name, 
@@ -366,7 +375,7 @@ _kanban_steps_project_id.project_id,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
-		step_order Asc `
+		step_order Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -390,7 +399,9 @@ func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanSte
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -399,13 +410,14 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id < $3 GROUP BY kanban_steps.kanban_step_id, 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.kanban_step_id < $3`+
+		` %s  GROUP BY kanban_steps.kanban_step_id, 
 kanban_steps.project_id, 
 kanban_steps.step_order, 
 kanban_steps.name, 
@@ -418,7 +430,7 @@ _kanban_steps_project_id.project_id,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
-		kanban_step_id Desc `
+		kanban_step_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -442,7 +454,9 @@ func KanbanStepPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID in
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -451,13 +465,14 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id < $3 GROUP BY kanban_steps.kanban_step_id, 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.project_id < $3`+
+		` %s  GROUP BY kanban_steps.kanban_step_id, 
 kanban_steps.project_id, 
 kanban_steps.step_order, 
 kanban_steps.name, 
@@ -470,7 +485,7 @@ _kanban_steps_project_id.project_id,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
-		project_id Desc `
+		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -494,7 +509,9 @@ func KanbanStepPaginatedByStepOrderDesc(ctx context.Context, db DB, stepOrder in
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -503,13 +520,14 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order < $3 GROUP BY kanban_steps.kanban_step_id, 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.step_order < $3`+
+		` %s  GROUP BY kanban_steps.kanban_step_id, 
 kanban_steps.project_id, 
 kanban_steps.step_order, 
 kanban_steps.name, 
@@ -522,7 +540,7 @@ _kanban_steps_project_id.project_id,
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
 	kanban_steps.kanban_step_id ORDER BY 
-		step_order Desc `
+		step_order Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -548,8 +566,9 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -558,19 +577,20 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.kanban_step_id = $3 GROUP BY 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.kanban_step_id = $3`+
+		` %s  GROUP BY 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
-	kanban_steps.kanban_step_id `
+	kanban_steps.kanban_step_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -598,8 +618,9 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID in
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -608,19 +629,20 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 AND kanban_steps.name = $4 AND kanban_steps.step_order = $5 GROUP BY 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.project_id = $3 AND kanban_steps.name = $4 AND kanban_steps.step_order = $5`+
+		` %s  GROUP BY 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
-	kanban_steps.kanban_step_id `
+	kanban_steps.kanban_step_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -648,8 +670,9 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...K
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -658,19 +681,20 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 GROUP BY 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.project_id = $3`+
+		` %s  GROUP BY 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
-	kanban_steps.kanban_step_id `
+	kanban_steps.kanban_step_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -700,8 +724,9 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -710,19 +735,20 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.name = $3 GROUP BY 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.name = $3`+
+		` %s  GROUP BY 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
-	kanban_steps.kanban_step_id `
+	kanban_steps.kanban_step_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -752,8 +778,9 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -762,19 +789,20 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.step_order = $3 GROUP BY 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.step_order = $3`+
+		` %s  GROUP BY 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
-	kanban_steps.kanban_step_id `
+	kanban_steps.kanban_step_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -804,8 +832,9 @@ func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, s
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`kanban_steps.kanban_step_id,
 kanban_steps.project_id,
 kanban_steps.step_order,
@@ -814,19 +843,20 @@ kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
 (case when $1::boolean = true and _kanban_steps_project_id.project_id is not null then row(_kanban_steps_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id ` +
-		`FROM public.kanban_steps ` +
+(case when $2::boolean = true and _kanban_steps_kanban_step_id.kanban_step_id is not null then row(_kanban_steps_kanban_step_id.*) end) as work_item_kanban_step_id `+
+		`FROM public.kanban_steps `+
 		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id` +
-		` WHERE kanban_steps.project_id = $3 AND kanban_steps.step_order = $4 GROUP BY 
+left join work_items as _kanban_steps_kanban_step_id on _kanban_steps_kanban_step_id.kanban_step_id = kanban_steps.kanban_step_id`+
+		` WHERE kanban_steps.project_id = $3 AND kanban_steps.step_order = $4`+
+		` %s  GROUP BY 
 _kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id, 
 _kanban_steps_kanban_step_id.kanban_step_id,
       _kanban_steps_kanban_step_id.work_item_id,
-	kanban_steps.kanban_step_id `
+	kanban_steps.kanban_step_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

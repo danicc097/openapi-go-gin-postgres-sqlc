@@ -220,8 +220,9 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
@@ -234,8 +235,8 @@ book_authors.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
-		`FROM xo_tests.book_authors ` +
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors `+
+		`FROM xo_tests.book_authors `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -265,10 +266,11 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
-` +
-		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4 GROUP BY 
+`+
+		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4`+
+		` %s  GROUP BY 
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-book_authors.book_id, book_authors.book_id, book_authors.author_id `
+book_authors.book_id, book_authors.book_id, book_authors.author_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -296,8 +298,9 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
@@ -310,8 +313,8 @@ book_authors.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
-		`FROM xo_tests.book_authors ` +
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors `+
+		`FROM xo_tests.book_authors `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -341,10 +344,11 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
-` +
-		` WHERE book_authors.book_id = $3 GROUP BY 
+`+
+		` WHERE book_authors.book_id = $3`+
+		` %s  GROUP BY 
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-book_authors.book_id, book_authors.book_id, book_authors.author_id `
+book_authors.book_id, book_authors.book_id, book_authors.author_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -374,8 +378,9 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
@@ -388,8 +393,8 @@ book_authors.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
-		`FROM xo_tests.book_authors ` +
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors `+
+		`FROM xo_tests.book_authors `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -419,10 +424,11 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
-` +
-		` WHERE book_authors.author_id = $3 GROUP BY 
+`+
+		` WHERE book_authors.author_id = $3`+
+		` %s  GROUP BY 
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-book_authors.book_id, book_authors.book_id, book_authors.author_id `
+book_authors.book_id, book_authors.book_id, book_authors.author_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

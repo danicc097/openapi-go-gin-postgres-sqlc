@@ -286,6 +286,8 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		o(c)
 	}
 
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
@@ -383,7 +385,8 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at > $8  AND users.deleted_at is %s  GROUP BY users.user_id, 
+		` WHERE users.created_at > $8`+
+		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.name, 
 users.api_key_id, 
 users.created_at, 
@@ -397,7 +400,7 @@ joined_notifications_sender.notifications, users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id  ORDER BY 
-		created_at Asc`, c.deletedAt)
+		created_at Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
@@ -421,6 +424,8 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 		o(c)
 	}
 
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
@@ -518,7 +523,8 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at < $8  AND users.deleted_at is %s  GROUP BY users.user_id, 
+		` WHERE users.created_at < $8`+
+		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.name, 
 users.api_key_id, 
 users.created_at, 
@@ -532,7 +538,7 @@ joined_notifications_sender.notifications, users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id  ORDER BY 
-		created_at Desc`, c.deletedAt)
+		created_at Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
@@ -558,7 +564,8 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
@@ -656,7 +663,8 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at = $8  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.created_at = $8`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
@@ -665,7 +673,7 @@ joined_notifications_receiver.notifications, users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id `, c.deletedAt)
+	users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -693,7 +701,8 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
@@ -791,7 +800,8 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.name = $8  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.name = $8`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
@@ -800,7 +810,7 @@ joined_notifications_receiver.notifications, users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id `, c.deletedAt)
+	users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -828,7 +838,8 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
@@ -926,7 +937,8 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.user_id = $8  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.user_id = $8`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
 joined_book_reviews.book_reviews, users.user_id, 
@@ -935,7 +947,7 @@ joined_notifications_receiver.notifications, users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id `, c.deletedAt)
+	users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -188,19 +188,22 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
-		`FROM xo_tests.dummy_join ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id `+
+		`FROM xo_tests.dummy_join `+
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id > $2 GROUP BY dummy_join.dummy_join_id, 
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id`+
+		` WHERE dummy_join.dummy_join_id > $2`+
+		` %s  GROUP BY dummy_join.dummy_join_id, 
 dummy_join.name, 
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id ORDER BY 
-		dummy_join_id Asc `
+		dummy_join_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -224,19 +227,22 @@ func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
-		`FROM xo_tests.dummy_join ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id `+
+		`FROM xo_tests.dummy_join `+
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id < $2 GROUP BY dummy_join.dummy_join_id, 
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id`+
+		` WHERE dummy_join.dummy_join_id < $2`+
+		` %s  GROUP BY dummy_join.dummy_join_id, 
 dummy_join.name, 
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id ORDER BY 
-		dummy_join_id Desc `
+		dummy_join_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -262,18 +268,20 @@ func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ..
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
-		`FROM xo_tests.dummy_join ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id `+
+		`FROM xo_tests.dummy_join `+
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id = $2 GROUP BY 
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id`+
+		` WHERE dummy_join.dummy_join_id = $2`+
+		` %s  GROUP BY 
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
-	dummy_join.dummy_join_id `
+	dummy_join.dummy_join_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -239,7 +239,9 @@ func TeamPaginatedByTeamIDAsc(ctx context.Context, db DB, teamID int, opts ...Te
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
 teams.project_id,
 teams.name,
@@ -252,8 +254,8 @@ teams.updated_at,
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id ` +
-		`FROM public.teams ` +
+(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
@@ -279,8 +281,9 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.team_id > $5 GROUP BY teams.team_id, 
+left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
+		` WHERE teams.team_id > $5`+
+		` %s  GROUP BY teams.team_id, 
 teams.project_id, 
 teams.name, 
 teams.description, 
@@ -294,7 +297,7 @@ teams.team_id, teams.team_id,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id ORDER BY 
-		team_id Asc `
+		team_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -318,7 +321,9 @@ func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
 teams.project_id,
 teams.name,
@@ -331,8 +336,8 @@ teams.updated_at,
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id ` +
-		`FROM public.teams ` +
+(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
@@ -358,8 +363,9 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.project_id > $5 GROUP BY teams.team_id, 
+left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
+		` WHERE teams.project_id > $5`+
+		` %s  GROUP BY teams.team_id, 
 teams.project_id, 
 teams.name, 
 teams.description, 
@@ -373,7 +379,7 @@ teams.team_id, teams.team_id,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id ORDER BY 
-		project_id Asc `
+		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -397,7 +403,9 @@ func TeamPaginatedByTeamIDDesc(ctx context.Context, db DB, teamID int, opts ...T
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
 teams.project_id,
 teams.name,
@@ -410,8 +418,8 @@ teams.updated_at,
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id ` +
-		`FROM public.teams ` +
+(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
@@ -437,8 +445,9 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.team_id < $5 GROUP BY teams.team_id, 
+left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
+		` WHERE teams.team_id < $5`+
+		` %s  GROUP BY teams.team_id, 
 teams.project_id, 
 teams.name, 
 teams.description, 
@@ -452,7 +461,7 @@ teams.team_id, teams.team_id,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id ORDER BY 
-		team_id Desc `
+		team_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -476,7 +485,9 @@ func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opt
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
 teams.project_id,
 teams.name,
@@ -489,8 +500,8 @@ teams.updated_at,
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id ` +
-		`FROM public.teams ` +
+(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
@@ -516,8 +527,9 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.project_id < $5 GROUP BY teams.team_id, 
+left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
+		` WHERE teams.project_id < $5`+
+		` %s  GROUP BY teams.team_id, 
 teams.project_id, 
 teams.name, 
 teams.description, 
@@ -531,7 +543,7 @@ teams.team_id, teams.team_id,
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
 	teams.team_id ORDER BY 
-		project_id Desc `
+		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -557,8 +569,9 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
 teams.project_id,
 teams.name,
@@ -571,8 +584,8 @@ teams.updated_at,
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id ` +
-		`FROM public.teams ` +
+(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
@@ -598,8 +611,9 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.name = $5 AND teams.project_id = $6 GROUP BY 
+left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
+		` WHERE teams.name = $5 AND teams.project_id = $6`+
+		` %s  GROUP BY 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
@@ -607,7 +621,7 @@ joined_time_entries.time_entries, teams.team_id,
 teams.team_id, teams.team_id, 
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
-	teams.team_id `
+	teams.team_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -635,8 +649,9 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
 teams.project_id,
 teams.name,
@@ -649,8 +664,8 @@ teams.updated_at,
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id ` +
-		`FROM public.teams ` +
+(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
@@ -676,8 +691,9 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.name = $5 GROUP BY 
+left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
+		` WHERE teams.name = $5`+
+		` %s  GROUP BY 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
@@ -685,7 +701,7 @@ joined_time_entries.time_entries, teams.team_id,
 teams.team_id, teams.team_id, 
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
-	teams.team_id `
+	teams.team_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -715,8 +731,9 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSel
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
 teams.project_id,
 teams.name,
@@ -729,8 +746,8 @@ teams.updated_at,
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id ` +
-		`FROM public.teams ` +
+(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
@@ -756,8 +773,9 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.project_id = $5 GROUP BY 
+left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
+		` WHERE teams.project_id = $5`+
+		` %s  GROUP BY 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
@@ -765,7 +783,7 @@ joined_time_entries.time_entries, teams.team_id,
 teams.team_id, teams.team_id, 
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
-	teams.team_id `
+	teams.team_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -795,8 +813,9 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
 teams.project_id,
 teams.name,
@@ -809,8 +828,8 @@ teams.updated_at,
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members,
-(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id ` +
-		`FROM public.teams ` +
+(case when $4::boolean = true and _teams_team_id.team_id is not null then row(_teams_team_id.*) end) as work_item_team_id `+
+		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
@@ -836,8 +855,9 @@ left join (
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 
 -- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id` +
-		` WHERE teams.team_id = $5 GROUP BY 
+left join work_items as _teams_team_id on _teams_team_id.team_id = teams.team_id`+
+		` WHERE teams.team_id = $5`+
+		` %s  GROUP BY 
 _teams_project_id.project_id,
       _teams_project_id.project_id,
 	teams.team_id, 
@@ -845,7 +865,7 @@ joined_time_entries.time_entries, teams.team_id,
 teams.team_id, teams.team_id, 
 _teams_team_id.team_id,
       _teams_team_id.work_item_id,
-	teams.team_id `
+	teams.team_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

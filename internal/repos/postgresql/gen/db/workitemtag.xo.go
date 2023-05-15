@@ -218,7 +218,9 @@ func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItem
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
@@ -228,8 +230,8 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
-		`FROM public.work_item_tags ` +
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
@@ -244,8 +246,9 @@ left join (
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-` +
-		` WHERE work_item_tags.work_item_tag_id > $3 GROUP BY work_item_tags.work_item_tag_id, 
+`+
+		` WHERE work_item_tags.work_item_tag_id > $3`+
+		` %s  GROUP BY work_item_tags.work_item_tag_id, 
 work_item_tags.project_id, 
 work_item_tags.name, 
 work_item_tags.description, 
@@ -254,7 +257,7 @@ _work_item_tags_project_id.project_id,
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY 
-		work_item_tag_id Asc `
+		work_item_tag_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -278,7 +281,9 @@ func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID in
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
@@ -288,8 +293,8 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
-		`FROM public.work_item_tags ` +
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
@@ -304,8 +309,9 @@ left join (
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-` +
-		` WHERE work_item_tags.project_id > $3 GROUP BY work_item_tags.work_item_tag_id, 
+`+
+		` WHERE work_item_tags.project_id > $3`+
+		` %s  GROUP BY work_item_tags.work_item_tag_id, 
 work_item_tags.project_id, 
 work_item_tags.name, 
 work_item_tags.description, 
@@ -314,7 +320,7 @@ _work_item_tags_project_id.project_id,
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY 
-		project_id Asc `
+		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -338,7 +344,9 @@ func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workIte
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
@@ -348,8 +356,8 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
-		`FROM public.work_item_tags ` +
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
@@ -364,8 +372,9 @@ left join (
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-` +
-		` WHERE work_item_tags.work_item_tag_id < $3 GROUP BY work_item_tags.work_item_tag_id, 
+`+
+		` WHERE work_item_tags.work_item_tag_id < $3`+
+		` %s  GROUP BY work_item_tags.work_item_tag_id, 
 work_item_tags.project_id, 
 work_item_tags.name, 
 work_item_tags.description, 
@@ -374,7 +383,7 @@ _work_item_tags_project_id.project_id,
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY 
-		work_item_tag_id Desc `
+		work_item_tag_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -398,7 +407,9 @@ func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID i
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
@@ -408,8 +419,8 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
-		`FROM public.work_item_tags ` +
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
@@ -424,8 +435,9 @@ left join (
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-` +
-		` WHERE work_item_tags.project_id < $3 GROUP BY work_item_tags.work_item_tag_id, 
+`+
+		` WHERE work_item_tags.project_id < $3`+
+		` %s  GROUP BY work_item_tags.work_item_tag_id, 
 work_item_tags.project_id, 
 work_item_tags.name, 
 work_item_tags.description, 
@@ -434,7 +446,7 @@ _work_item_tags_project_id.project_id,
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
 work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id ORDER BY 
-		project_id Desc `
+		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -460,8 +472,9 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
@@ -471,8 +484,8 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
-		`FROM public.work_item_tags ` +
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
@@ -487,12 +500,13 @@ left join (
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-` +
-		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 GROUP BY 
+`+
+		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4`+
+		` %s  GROUP BY 
 _work_item_tags_project_id.project_id,
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
-work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
+work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -520,8 +534,9 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
@@ -531,8 +546,8 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
-		`FROM public.work_item_tags ` +
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
@@ -547,12 +562,13 @@ left join (
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-` +
-		` WHERE work_item_tags.name = $3 GROUP BY 
+`+
+		` WHERE work_item_tags.name = $3`+
+		` %s  GROUP BY 
 _work_item_tags_project_id.project_id,
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
-work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
+work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -582,8 +598,9 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
@@ -593,8 +610,8 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
-		`FROM public.work_item_tags ` +
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
@@ -609,12 +626,13 @@ left join (
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-` +
-		` WHERE work_item_tags.project_id = $3 GROUP BY 
+`+
+		` WHERE work_item_tags.project_id = $3`+
+		` %s  GROUP BY 
 _work_item_tags_project_id.project_id,
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
-work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
+work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -644,8 +662,9 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
@@ -655,8 +674,8 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items ` +
-		`FROM public.work_item_tags ` +
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
@@ -671,12 +690,13 @@ left join (
 			work_item_work_item_tag_work_item_tag_id
 			, work_items.work_item_id
   ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
-` +
-		` WHERE work_item_tags.work_item_tag_id = $3 GROUP BY 
+`+
+		` WHERE work_item_tags.work_item_tag_id = $3`+
+		` %s  GROUP BY 
 _work_item_tags_project_id.project_id,
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id, 
-work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `
+work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

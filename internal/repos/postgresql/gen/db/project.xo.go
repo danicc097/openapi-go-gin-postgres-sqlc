@@ -251,7 +251,9 @@ func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, o
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -263,8 +265,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -309,8 +311,9 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id > $6 GROUP BY projects.project_id, 
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.project_id > $6`+
+		` %s  GROUP BY projects.project_id, 
 projects.name, 
 projects.description, 
 projects.work_items_table_name, 
@@ -322,7 +325,7 @@ joined_kanban_steps.kanban_steps, projects.project_id,
 joined_teams.teams, projects.project_id, 
 joined_work_item_tags.work_item_tags, projects.project_id, 
 joined_work_item_types.work_item_types, projects.project_id ORDER BY 
-		project_id Asc `
+		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -346,7 +349,9 @@ func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, 
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -358,8 +363,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -404,8 +409,9 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id < $6 GROUP BY projects.project_id, 
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.project_id < $6`+
+		` %s  GROUP BY projects.project_id, 
 projects.name, 
 projects.description, 
 projects.work_items_table_name, 
@@ -417,7 +423,7 @@ joined_kanban_steps.kanban_steps, projects.project_id,
 joined_teams.teams, projects.project_id, 
 joined_work_item_tags.work_item_tags, projects.project_id, 
 joined_work_item_types.work_item_types, projects.project_id ORDER BY 
-		project_id Desc `
+		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -443,8 +449,9 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -456,8 +463,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -502,13 +509,14 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.name = $6 GROUP BY 
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.name = $6`+
+		` %s  GROUP BY 
 joined_activities.activities, projects.project_id, 
 joined_kanban_steps.kanban_steps, projects.project_id, 
 joined_teams.teams, projects.project_id, 
 joined_work_item_tags.work_item_tags, projects.project_id, 
-joined_work_item_types.work_item_types, projects.project_id `
+joined_work_item_types.work_item_types, projects.project_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -536,8 +544,9 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -549,8 +558,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -595,13 +604,14 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id = $6 GROUP BY 
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.project_id = $6`+
+		` %s  GROUP BY 
 joined_activities.activities, projects.project_id, 
 joined_kanban_steps.kanban_steps, projects.project_id, 
 joined_teams.teams, projects.project_id, 
 joined_work_item_tags.work_item_tags, projects.project_id, 
-joined_work_item_types.work_item_types, projects.project_id `
+joined_work_item_types.work_item_types, projects.project_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -629,8 +639,9 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -642,8 +653,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -688,13 +699,14 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.work_items_table_name = $6 GROUP BY 
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.work_items_table_name = $6`+
+		` %s  GROUP BY 
 joined_activities.activities, projects.project_id, 
 joined_kanban_steps.kanban_steps, projects.project_id, 
 joined_teams.teams, projects.project_id, 
 joined_work_item_tags.work_item_tags, projects.project_id, 
-joined_work_item_types.work_item_types, projects.project_id `
+joined_work_item_types.work_item_types, projects.project_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

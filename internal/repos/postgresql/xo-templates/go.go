@@ -2757,6 +2757,7 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 			"FROM " + f.schemafn(x.SQLName) + " ",
 			strings.Join(joins, "\n"),
 			" WHERE " + strings.Join(filters, " AND "),
+			" %s ",
 		}
 
 		var groupbyStmt string
@@ -2765,14 +2766,14 @@ func (f *Funcs) sqlstr_paginated(v interface{}, constraints interface{}, tables 
 		}
 
 		if tableHasDeletedAt {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s %s`, c.deletedAt)",
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s %s`, filters, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
 				groupbyStmt,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 			)
 		} else {
-			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `")+groupbyStmt+" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"))
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s `, filters)", strings.Join(lines, "` +\n\t `")+groupbyStmt+" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"))
 		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
@@ -3105,6 +3106,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
 			strings.Join(joins, "\n"),
 			" WHERE " + strings.Join(filters, " AND "),
+			" %s ",
 		}
 
 		var groupbyStmt string
@@ -3113,13 +3115,13 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 		}
 
 		if tableHasDeletedAt {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s `, c.deletedAt)",
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s`, filters, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s ", x.Table.SQLName),
 				groupbyStmt,
 			)
 		} else {
-			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `")+groupbyStmt)
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s `, filters)", strings.Join(lines, "` +\n\t `")+groupbyStmt)
 		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)

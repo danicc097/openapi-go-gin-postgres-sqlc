@@ -211,19 +211,22 @@ func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and _user_notifications_notification_id.notification_id is not null then row(_user_notifications_notification_id.*) end) as notification_notification_id,
-(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id ` +
-		`FROM public.user_notifications ` +
+(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id `+
+		`FROM public.user_notifications `+
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id > $3 GROUP BY user_notifications.user_notification_id, 
+left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id`+
+		` WHERE user_notifications.user_notification_id > $3`+
+		` %s  GROUP BY user_notifications.user_notification_id, 
 user_notifications.notification_id, 
 user_notifications.read, 
 user_notifications.user_id, 
@@ -233,7 +236,7 @@ _user_notifications_notification_id.notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id ORDER BY 
-		user_notification_id Asc `
+		user_notification_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -257,19 +260,22 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and _user_notifications_notification_id.notification_id is not null then row(_user_notifications_notification_id.*) end) as notification_notification_id,
-(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id ` +
-		`FROM public.user_notifications ` +
+(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id `+
+		`FROM public.user_notifications `+
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id > $3 GROUP BY user_notifications.user_notification_id, 
+left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id`+
+		` WHERE user_notifications.notification_id > $3`+
+		` %s  GROUP BY user_notifications.user_notification_id, 
 user_notifications.notification_id, 
 user_notifications.read, 
 user_notifications.user_id, 
@@ -279,7 +285,7 @@ _user_notifications_notification_id.notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id ORDER BY 
-		notification_id Asc `
+		notification_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -303,19 +309,22 @@ func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db D
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and _user_notifications_notification_id.notification_id is not null then row(_user_notifications_notification_id.*) end) as notification_notification_id,
-(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id ` +
-		`FROM public.user_notifications ` +
+(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id `+
+		`FROM public.user_notifications `+
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id < $3 GROUP BY user_notifications.user_notification_id, 
+left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id`+
+		` WHERE user_notifications.user_notification_id < $3`+
+		` %s  GROUP BY user_notifications.user_notification_id, 
 user_notifications.notification_id, 
 user_notifications.read, 
 user_notifications.user_id, 
@@ -325,7 +334,7 @@ _user_notifications_notification_id.notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id ORDER BY 
-		user_notification_id Desc `
+		user_notification_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -349,19 +358,22 @@ func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, n
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and _user_notifications_notification_id.notification_id is not null then row(_user_notifications_notification_id.*) end) as notification_notification_id,
-(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id ` +
-		`FROM public.user_notifications ` +
+(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id `+
+		`FROM public.user_notifications `+
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id < $3 GROUP BY user_notifications.user_notification_id, 
+left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id`+
+		` WHERE user_notifications.notification_id < $3`+
+		` %s  GROUP BY user_notifications.user_notification_id, 
 user_notifications.notification_id, 
 user_notifications.read, 
 user_notifications.user_id, 
@@ -371,7 +383,7 @@ _user_notifications_notification_id.notification_id,
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id ORDER BY 
-		notification_id Desc `
+		notification_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -397,26 +409,28 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and _user_notifications_notification_id.notification_id is not null then row(_user_notifications_notification_id.*) end) as notification_notification_id,
-(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id ` +
-		`FROM public.user_notifications ` +
+(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id `+
+		`FROM public.user_notifications `+
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 GROUP BY 
+left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id`+
+		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4`+
+		` %s  GROUP BY 
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
-	user_notifications.user_notification_id `
+	user_notifications.user_notification_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -444,26 +458,28 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and _user_notifications_notification_id.notification_id is not null then row(_user_notifications_notification_id.*) end) as notification_notification_id,
-(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id ` +
-		`FROM public.user_notifications ` +
+(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id `+
+		`FROM public.user_notifications `+
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 GROUP BY 
+left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id`+
+		` WHERE user_notifications.notification_id = $3`+
+		` %s  GROUP BY 
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
-	user_notifications.user_notification_id `
+	user_notifications.user_notification_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -493,26 +509,28 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and _user_notifications_notification_id.notification_id is not null then row(_user_notifications_notification_id.*) end) as notification_notification_id,
-(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id ` +
-		`FROM public.user_notifications ` +
+(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id `+
+		`FROM public.user_notifications `+
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id = $3 GROUP BY 
+left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id`+
+		` WHERE user_notifications.user_notification_id = $3`+
+		` %s  GROUP BY 
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
-	user_notifications.user_notification_id `
+	user_notifications.user_notification_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -540,26 +558,28 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
 (case when $1::boolean = true and _user_notifications_notification_id.notification_id is not null then row(_user_notifications_notification_id.*) end) as notification_notification_id,
-(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id ` +
-		`FROM public.user_notifications ` +
+(case when $2::boolean = true and _user_notifications_user_id.user_id is not null then row(_user_notifications_user_id.*) end) as user_user_id `+
+		`FROM public.user_notifications `+
 		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications as _user_notifications_notification_id on _user_notifications_notification_id.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
-left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_id = $3 GROUP BY 
+left join users as _user_notifications_user_id on _user_notifications_user_id.user_id = user_notifications.user_id`+
+		` WHERE user_notifications.user_id = $3`+
+		` %s  GROUP BY 
 _user_notifications_notification_id.notification_id,
       _user_notifications_notification_id.notification_id,
 	user_notifications.user_notification_id, 
 _user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
-	user_notifications.user_notification_id `
+	user_notifications.user_notification_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

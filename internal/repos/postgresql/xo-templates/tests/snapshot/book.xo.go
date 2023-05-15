@@ -209,7 +209,9 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(
@@ -226,8 +228,8 @@ books.name,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
-		`FROM xo_tests.books ` +
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
@@ -279,14 +281,15 @@ left join (
 			book_sellers_book_id
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-` +
-		` WHERE books.book_id > $5 GROUP BY books.book_id, 
+`+
+		` WHERE books.book_id > $5`+
+		` %s  GROUP BY books.book_id, 
 books.name, 
 books.book_id, books.book_id, 
 books.book_id, books.book_id, 
 joined_book_reviews.book_reviews, books.book_id, 
 books.book_id, books.book_id ORDER BY 
-		book_id Asc `
+		book_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -310,7 +313,9 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(
@@ -327,8 +332,8 @@ books.name,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
-		`FROM xo_tests.books ` +
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
@@ -380,14 +385,15 @@ left join (
 			book_sellers_book_id
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-` +
-		` WHERE books.book_id < $5 GROUP BY books.book_id, 
+`+
+		` WHERE books.book_id < $5`+
+		` %s  GROUP BY books.book_id, 
 books.name, 
 books.book_id, books.book_id, 
 books.book_id, books.book_id, 
 joined_book_reviews.book_reviews, books.book_id, 
 books.book_id, books.book_id ORDER BY 
-		book_id Desc `
+		book_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -413,8 +419,9 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(
@@ -431,8 +438,8 @@ books.name,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
-		`FROM xo_tests.books ` +
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
@@ -484,12 +491,13 @@ left join (
 			book_sellers_book_id
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-` +
-		` WHERE books.book_id = $5 GROUP BY 
+`+
+		` WHERE books.book_id = $5`+
+		` %s  GROUP BY 
 books.book_id, books.book_id, 
 books.book_id, books.book_id, 
 joined_book_reviews.book_reviews, books.book_id, 
-books.book_id, books.book_id `
+books.book_id, books.book_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

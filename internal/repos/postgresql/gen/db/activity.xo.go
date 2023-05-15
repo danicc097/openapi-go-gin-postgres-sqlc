@@ -218,15 +218,17 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -237,8 +239,9 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id > $3 GROUP BY activities.activity_id, 
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.activity_id > $3`+
+		` %s  GROUP BY activities.activity_id, 
 activities.project_id, 
 activities.name, 
 activities.description, 
@@ -247,7 +250,7 @@ _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		activity_id Asc `
+		activity_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -271,15 +274,17 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -290,8 +295,9 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id > $3 GROUP BY activities.activity_id, 
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.project_id > $3`+
+		` %s  GROUP BY activities.activity_id, 
 activities.project_id, 
 activities.name, 
 activities.description, 
@@ -300,7 +306,7 @@ _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		project_id Asc `
+		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -324,15 +330,17 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -343,8 +351,9 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id < $3 GROUP BY activities.activity_id, 
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.activity_id < $3`+
+		` %s  GROUP BY activities.activity_id, 
 activities.project_id, 
 activities.name, 
 activities.description, 
@@ -353,7 +362,7 @@ _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		activity_id Desc `
+		activity_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -377,15 +386,17 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -396,8 +407,9 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id < $3 GROUP BY activities.activity_id, 
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.project_id < $3`+
+		` %s  GROUP BY activities.activity_id, 
 activities.project_id, 
 activities.name, 
 activities.description, 
@@ -406,7 +418,7 @@ _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		project_id Desc `
+		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -432,16 +444,17 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -452,12 +465,13 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $3 AND activities.project_id = $4 GROUP BY 
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.name = $3 AND activities.project_id = $4`+
+		` %s  GROUP BY 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id `
+joined_time_entries.time_entries, activities.activity_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -485,16 +499,17 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -505,12 +520,13 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $3 GROUP BY 
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.name = $3`+
+		` %s  GROUP BY 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id `
+joined_time_entries.time_entries, activities.activity_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -540,16 +556,17 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -560,12 +577,13 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id = $3 GROUP BY 
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.project_id = $3`+
+		` %s  GROUP BY 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id `
+joined_time_entries.time_entries, activities.activity_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -595,16 +613,17 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -615,12 +634,13 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id = $3 GROUP BY 
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.activity_id = $3`+
+		` %s  GROUP BY 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id `
+joined_time_entries.time_entries, activities.activity_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

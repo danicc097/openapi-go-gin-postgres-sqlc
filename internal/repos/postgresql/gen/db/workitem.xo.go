@@ -339,6 +339,8 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 		o(c)
 	}
 
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -416,7 +418,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
+		` WHERE work_items.work_item_id > $7`+
+		` %s   AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
 work_items.title, 
 work_items.description, 
 work_items.work_item_type_id, 
@@ -436,7 +439,7 @@ joined_time_entries.time_entries, work_items.work_item_id,
 work_items.work_item_id, work_items.work_item_id, 
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
 work_items.work_item_id, work_items.work_item_id  ORDER BY 
-		work_item_id Asc`, c.deletedAt)
+		work_item_id Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
@@ -460,6 +463,8 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 		o(c)
 	}
 
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -537,7 +542,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id < $7  AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
+		` WHERE work_items.work_item_id < $7`+
+		` %s   AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
 work_items.title, 
 work_items.description, 
 work_items.work_item_type_id, 
@@ -557,7 +563,7 @@ joined_time_entries.time_entries, work_items.work_item_id,
 work_items.work_item_id, work_items.work_item_id, 
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
 work_items.work_item_id, work_items.work_item_id  ORDER BY 
-		work_item_id Desc`, c.deletedAt)
+		work_item_id Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
@@ -583,7 +589,8 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -661,7 +668,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s   GROUP BY 
+		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)`+
+		` %s   AND work_items.deleted_at is %s   GROUP BY 
 _demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 _demo_work_items_work_item_id.work_item_id,
@@ -669,7 +677,7 @@ _demo_work_items_work_item_id.work_item_id,
 joined_time_entries.time_entries, work_items.work_item_id, 
 work_items.work_item_id, work_items.work_item_id, 
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
+work_items.work_item_id, work_items.work_item_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -699,7 +707,8 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -777,7 +786,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s   GROUP BY 
+		` WHERE work_items.work_item_id = $7`+
+		` %s   AND work_items.deleted_at is %s   GROUP BY 
 _demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 _demo_work_items_work_item_id.work_item_id,
@@ -785,7 +795,7 @@ _demo_work_items_work_item_id.work_item_id,
 joined_time_entries.time_entries, work_items.work_item_id, 
 work_items.work_item_id, work_items.work_item_id, 
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
+work_items.work_item_id, work_items.work_item_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -813,7 +823,8 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemS
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -891,7 +902,8 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s   GROUP BY 
+		` WHERE work_items.team_id = $7`+
+		` %s   AND work_items.deleted_at is %s   GROUP BY 
 _demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
 _demo_work_items_work_item_id.work_item_id,
@@ -899,7 +911,7 @@ _demo_work_items_work_item_id.work_item_id,
 joined_time_entries.time_entries, work_items.work_item_id, 
 work_items.work_item_id, work_items.work_item_id, 
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
+work_items.work_item_id, work_items.work_item_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

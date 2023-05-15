@@ -211,18 +211,21 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
-		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.created_at > $1 GROUP BY pag_element.paginated_element_id, 
+pag_element.dummy `+
+		`FROM xo_tests.pag_element `+
+		``+
+		` WHERE pag_element.created_at > $1`+
+		` %s  GROUP BY pag_element.paginated_element_id, 
 pag_element.name, 
 pag_element.created_at, 
 pag_element.dummy ORDER BY 
-		created_at Asc `
+		created_at Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -246,18 +249,21 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
-		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.created_at < $1 GROUP BY pag_element.paginated_element_id, 
+pag_element.dummy `+
+		`FROM xo_tests.pag_element `+
+		``+
+		` WHERE pag_element.created_at < $1`+
+		` %s  GROUP BY pag_element.paginated_element_id, 
 pag_element.name, 
 pag_element.created_at, 
 pag_element.dummy ORDER BY 
-		created_at Desc `
+		created_at Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -283,15 +289,17 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
-		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.created_at = $1 `
+pag_element.dummy `+
+		`FROM xo_tests.pag_element `+
+		``+
+		` WHERE pag_element.created_at = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -319,15 +327,17 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
-		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.paginated_element_id = $1 `
+pag_element.dummy `+
+		`FROM xo_tests.pag_element `+
+		``+
+		` WHERE pag_element.paginated_element_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -154,8 +154,9 @@ func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...Use
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
@@ -165,8 +166,8 @@ user_team.member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
-		`FROM public.user_team ` +
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
@@ -192,10 +193,11 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
-` +
-		` WHERE user_team.member = $3 GROUP BY 
+`+
+		` WHERE user_team.member = $3`+
+		` %s  GROUP BY 
 user_team.team_id, user_team.team_id, user_team.member, 
-user_team.member, user_team.team_id, user_team.member `
+user_team.member, user_team.team_id, user_team.member `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -225,8 +227,9 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
@@ -236,8 +239,8 @@ user_team.member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
-		`FROM public.user_team ` +
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
@@ -263,10 +266,11 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
-` +
-		` WHERE user_team.member = $3 AND user_team.team_id = $4 GROUP BY 
+`+
+		` WHERE user_team.member = $3 AND user_team.team_id = $4`+
+		` %s  GROUP BY 
 user_team.team_id, user_team.team_id, user_team.member, 
-user_team.member, user_team.team_id, user_team.member `
+user_team.member, user_team.team_id, user_team.member `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -294,8 +298,9 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
@@ -305,8 +310,8 @@ user_team.member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
-		`FROM public.user_team ` +
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
@@ -332,10 +337,11 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
-` +
-		` WHERE user_team.team_id = $3 GROUP BY 
+`+
+		` WHERE user_team.team_id = $3`+
+		` %s  GROUP BY 
 user_team.team_id, user_team.team_id, user_team.member, 
-user_team.member, user_team.team_id, user_team.member `
+user_team.member, user_team.team_id, user_team.member `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -365,8 +371,9 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
@@ -376,8 +383,8 @@ user_team.member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
-		`FROM public.user_team ` +
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
@@ -403,10 +410,11 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
-` +
-		` WHERE user_team.team_id = $3 AND user_team.member = $4 GROUP BY 
+`+
+		` WHERE user_team.team_id = $3 AND user_team.member = $4`+
+		` %s  GROUP BY 
 user_team.team_id, user_team.team_id, user_team.member, 
-user_team.member, user_team.team_id, user_team.member `
+user_team.member, user_team.team_id, user_team.member `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

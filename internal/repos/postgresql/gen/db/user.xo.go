@@ -356,6 +356,8 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		o(c)
 	}
 
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -463,7 +465,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at > $9  AND users.deleted_at is %s  GROUP BY users.user_id, 
+		` WHERE users.created_at > $9`+
+		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.username, 
 users.email, 
 users.first_name, 
@@ -488,7 +491,7 @@ joined_user_notifications.user_notifications, users.user_id,
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
-		created_at Asc`, c.deletedAt)
+		created_at Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
@@ -512,6 +515,8 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 		o(c)
 	}
 
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -619,7 +624,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at < $9  AND users.deleted_at is %s  GROUP BY users.user_id, 
+		` WHERE users.created_at < $9`+
+		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.username, 
 users.email, 
 users.first_name, 
@@ -644,7 +650,7 @@ joined_user_notifications.user_notifications, users.user_id,
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
 joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
-		created_at Desc`, c.deletedAt)
+		created_at Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
@@ -670,7 +676,8 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...U
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -778,7 +785,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.created_at = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
@@ -788,7 +796,7 @@ _users_user_id.user_id,
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -818,7 +826,8 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -926,7 +935,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.created_at = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
@@ -936,7 +946,7 @@ _users_user_id.user_id,
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -964,7 +974,8 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1072,7 +1083,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
@@ -1082,7 +1094,7 @@ _users_user_id.user_id,
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1112,7 +1124,8 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1220,7 +1233,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.email = $9  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.email = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
@@ -1230,7 +1244,7 @@ _users_user_id.user_id,
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1258,7 +1272,8 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1366,7 +1381,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.external_id = $9  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.external_id = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
@@ -1376,7 +1392,7 @@ _users_user_id.user_id,
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1404,7 +1420,8 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1512,7 +1529,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.user_id = $9  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.user_id = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
@@ -1522,7 +1540,7 @@ _users_user_id.user_id,
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1550,7 +1568,8 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1658,7 +1677,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.updated_at = $9  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.updated_at = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
@@ -1668,7 +1688,7 @@ _users_user_id.user_id,
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1698,7 +1718,8 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		o(c)
 	}
 
-	// query
+	filters := ""
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1806,7 +1827,8 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.username = $9  AND users.deleted_at is %s   GROUP BY 
+		` WHERE users.username = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
 joined_time_entries.time_entries, users.user_id, 
@@ -1816,7 +1838,7 @@ _users_user_id.user_id,
 joined_user_notifications.user_notifications, users.user_id, 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

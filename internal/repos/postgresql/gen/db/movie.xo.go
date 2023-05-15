@@ -202,18 +202,21 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ..
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis ` +
-		`FROM public.movies ` +
-		`` +
-		` WHERE movies.movie_id > $1 GROUP BY movies.movie_id, 
+movies.synopsis `+
+		`FROM public.movies `+
+		``+
+		` WHERE movies.movie_id > $1`+
+		` %s  GROUP BY movies.movie_id, 
 movies.title, 
 movies.year, 
 movies.synopsis ORDER BY 
-		movie_id Asc `
+		movie_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -237,18 +240,21 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts .
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis ` +
-		`FROM public.movies ` +
-		`` +
-		` WHERE movies.movie_id < $1 GROUP BY movies.movie_id, 
+movies.synopsis `+
+		`FROM public.movies `+
+		``+
+		` WHERE movies.movie_id < $1`+
+		` %s  GROUP BY movies.movie_id, 
 movies.title, 
 movies.year, 
 movies.synopsis ORDER BY 
-		movie_id Desc `
+		movie_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -274,15 +280,17 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis ` +
-		`FROM public.movies ` +
-		`` +
-		` WHERE movies.movie_id = $1 `
+movies.synopsis `+
+		`FROM public.movies `+
+		``+
+		` WHERE movies.movie_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

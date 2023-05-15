@@ -104,7 +104,8 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 		o(c)
 	}
 
-	// query
+  filters := ""
+
 	{{ sqlstr_index $i $constraints $tables }}
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -406,6 +407,8 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	for _, o := range opts {
 		o(c)
 	}
+
+  filters := ""
 
 	{{ sqlstr_paginated $t $constraints $tables $cursor $order }}
 	sqlstr += c.limit

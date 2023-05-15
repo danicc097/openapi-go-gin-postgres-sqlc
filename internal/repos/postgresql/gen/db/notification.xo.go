@@ -272,7 +272,9 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
 notifications.receiver_rank,
 notifications.title,
@@ -285,8 +287,8 @@ notifications.receiver,
 notifications.notification_type,
 (case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
 (case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
-(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-		`FROM public.notifications ` +
+(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications `+
+		`FROM public.notifications `+
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
@@ -299,8 +301,9 @@ left join (
   from
     user_notifications
   group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id > $4 GROUP BY notifications.notification_id, 
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id`+
+		` WHERE notifications.notification_id > $4`+
+		` %s  GROUP BY notifications.notification_id, 
 notifications.receiver_rank, 
 notifications.title, 
 notifications.body, 
@@ -317,7 +320,7 @@ _notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id ORDER BY 
-		notification_id Asc `
+		notification_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -341,7 +344,9 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
 notifications.receiver_rank,
 notifications.title,
@@ -354,8 +359,8 @@ notifications.receiver,
 notifications.notification_type,
 (case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
 (case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
-(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-		`FROM public.notifications ` +
+(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications `+
+		`FROM public.notifications `+
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
@@ -368,8 +373,9 @@ left join (
   from
     user_notifications
   group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id < $4 GROUP BY notifications.notification_id, 
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id`+
+		` WHERE notifications.notification_id < $4`+
+		` %s  GROUP BY notifications.notification_id, 
 notifications.receiver_rank, 
 notifications.title, 
 notifications.body, 
@@ -386,7 +392,7 @@ _notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id, 
 joined_user_notifications.user_notifications, notifications.notification_id ORDER BY 
-		notification_id Desc `
+		notification_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -412,8 +418,9 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
 notifications.receiver_rank,
 notifications.title,
@@ -426,8 +433,8 @@ notifications.receiver,
 notifications.notification_type,
 (case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
 (case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
-(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-		`FROM public.notifications ` +
+(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications `+
+		`FROM public.notifications `+
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
@@ -440,15 +447,16 @@ left join (
   from
     user_notifications
   group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id = $4 GROUP BY 
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id`+
+		` WHERE notifications.notification_id = $4`+
+		` %s  GROUP BY 
 _notifications_receiver.user_id,
       _notifications_receiver.user_id,
 	notifications.notification_id, 
 _notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id, 
-joined_user_notifications.user_notifications, notifications.notification_id `
+joined_user_notifications.user_notifications, notifications.notification_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -476,8 +484,9 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
 notifications.receiver_rank,
 notifications.title,
@@ -490,8 +499,8 @@ notifications.receiver,
 notifications.notification_type,
 (case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
 (case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
-(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-		`FROM public.notifications ` +
+(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications `+
+		`FROM public.notifications `+
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 -- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
@@ -504,15 +513,16 @@ left join (
   from
     user_notifications
   group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id` +
-		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6 GROUP BY 
+        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id`+
+		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6`+
+		` %s  GROUP BY 
 _notifications_receiver.user_id,
       _notifications_receiver.user_id,
 	notifications.notification_id, 
 _notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id, 
-joined_user_notifications.user_notifications, notifications.notification_id `
+joined_user_notifications.user_notifications, notifications.notification_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

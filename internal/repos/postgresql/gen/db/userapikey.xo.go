@@ -225,23 +225,26 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id ` +
-		`FROM public.user_api_keys ` +
+(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id `+
+		`FROM public.user_api_keys `+
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_api_key_id > $2 GROUP BY user_api_keys.user_api_key_id, 
+left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id`+
+		` WHERE user_api_keys.user_api_key_id > $2`+
+		` %s  GROUP BY user_api_keys.user_api_key_id, 
 user_api_keys.api_key, 
 user_api_keys.expires_on, 
 user_api_keys.user_id, 
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
 	user_api_keys.user_api_key_id ORDER BY 
-		user_api_key_id Asc `
+		user_api_key_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -265,23 +268,26 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id ` +
-		`FROM public.user_api_keys ` +
+(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id `+
+		`FROM public.user_api_keys `+
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_api_key_id < $2 GROUP BY user_api_keys.user_api_key_id, 
+left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id`+
+		` WHERE user_api_keys.user_api_key_id < $2`+
+		` %s  GROUP BY user_api_keys.user_api_key_id, 
 user_api_keys.api_key, 
 user_api_keys.expires_on, 
 user_api_keys.user_id, 
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
 	user_api_keys.user_api_key_id ORDER BY 
-		user_api_key_id Desc `
+		user_api_key_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
@@ -307,20 +313,22 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id ` +
-		`FROM public.user_api_keys ` +
+(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id `+
+		`FROM public.user_api_keys `+
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.api_key = $2 GROUP BY 
+left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id`+
+		` WHERE user_api_keys.api_key = $2`+
+		` %s  GROUP BY 
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
-	user_api_keys.user_api_key_id `
+	user_api_keys.user_api_key_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -348,20 +356,22 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id ` +
-		`FROM public.user_api_keys ` +
+(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id `+
+		`FROM public.user_api_keys `+
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_api_key_id = $2 GROUP BY 
+left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id`+
+		` WHERE user_api_keys.user_api_key_id = $2`+
+		` %s  GROUP BY 
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
-	user_api_keys.user_api_key_id `
+	user_api_keys.user_api_key_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -389,20 +399,22 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id ` +
-		`FROM public.user_api_keys ` +
+(case when $1::boolean = true and _user_api_keys_user_api_key_id.api_key_id is not null then row(_user_api_keys_user_api_key_id.*) end) as user_user_api_key_id `+
+		`FROM public.user_api_keys `+
 		`-- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_id = $2 GROUP BY 
+left join users as _user_api_keys_user_api_key_id on _user_api_keys_user_api_key_id.api_key_id = user_api_keys.user_api_key_id`+
+		` WHERE user_api_keys.user_id = $2`+
+		` %s  GROUP BY 
 _user_api_keys_user_api_key_id.api_key_id,
       _user_api_keys_user_api_key_id.user_id,
-	user_api_keys.user_api_key_id `
+	user_api_keys.user_api_key_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

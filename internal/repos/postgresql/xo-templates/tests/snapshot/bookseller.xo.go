@@ -151,8 +151,9 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
@@ -162,8 +163,8 @@ book_sellers.seller,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
-		`FROM xo_tests.book_sellers ` +
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books `+
+		`FROM xo_tests.book_sellers `+
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
@@ -189,10 +190,11 @@ left join (
 			book_sellers_seller
 			, books.book_id
   ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
-` +
-		` WHERE book_sellers.book_id = $3 AND book_sellers.seller = $4 GROUP BY 
+`+
+		` WHERE book_sellers.book_id = $3 AND book_sellers.seller = $4`+
+		` %s  GROUP BY 
 book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-book_sellers.seller, book_sellers.book_id, book_sellers.seller `
+book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -220,8 +222,9 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
@@ -231,8 +234,8 @@ book_sellers.seller,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
-		`FROM xo_tests.book_sellers ` +
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books `+
+		`FROM xo_tests.book_sellers `+
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
@@ -258,10 +261,11 @@ left join (
 			book_sellers_seller
 			, books.book_id
   ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
-` +
-		` WHERE book_sellers.book_id = $3 GROUP BY 
+`+
+		` WHERE book_sellers.book_id = $3`+
+		` %s  GROUP BY 
 book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-book_sellers.seller, book_sellers.book_id, book_sellers.seller `
+book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -291,8 +295,9 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
 book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
@@ -302,8 +307,8 @@ book_sellers.seller,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books ` +
-		`FROM xo_tests.book_sellers ` +
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books `+
+		`FROM xo_tests.book_sellers `+
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
@@ -329,10 +334,11 @@ left join (
 			book_sellers_seller
 			, books.book_id
   ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
-` +
-		` WHERE book_sellers.seller = $3 GROUP BY 
+`+
+		` WHERE book_sellers.seller = $3`+
+		` %s  GROUP BY 
 book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-book_sellers.seller, book_sellers.book_id, book_sellers.seller `
+book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

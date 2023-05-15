@@ -225,8 +225,9 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
@@ -239,8 +240,8 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
-		`FROM public.work_item_assigned_user ` +
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -270,10 +271,11 @@ left join (
 			, users.user_id
 			, role
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-` +
-		` WHERE work_item_assigned_user.assigned_user = $3 AND work_item_assigned_user.work_item_id = $4 GROUP BY 
+`+
+		` WHERE work_item_assigned_user.assigned_user = $3 AND work_item_assigned_user.work_item_id = $4`+
+		` %s  GROUP BY 
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
+work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -303,8 +305,9 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
@@ -317,8 +320,8 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
-		`FROM public.work_item_assigned_user ` +
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -348,10 +351,11 @@ left join (
 			, users.user_id
 			, role
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-` +
-		` WHERE work_item_assigned_user.work_item_id = $3 AND work_item_assigned_user.assigned_user = $4 GROUP BY 
+`+
+		` WHERE work_item_assigned_user.work_item_id = $3 AND work_item_assigned_user.assigned_user = $4`+
+		` %s  GROUP BY 
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
+work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -379,8 +383,9 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
@@ -393,8 +398,8 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
-		`FROM public.work_item_assigned_user ` +
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -424,10 +429,11 @@ left join (
 			, users.user_id
 			, role
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-` +
-		` WHERE work_item_assigned_user.work_item_id = $3 GROUP BY 
+`+
+		` WHERE work_item_assigned_user.work_item_id = $3`+
+		` %s  GROUP BY 
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
+work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -457,8 +463,9 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	filters := ""
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
@@ -471,8 +478,8 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
-		`FROM public.work_item_assigned_user ` +
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -502,10 +509,11 @@ left join (
 			, users.user_id
 			, role
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-` +
-		` WHERE work_item_assigned_user.assigned_user = $3 GROUP BY 
+`+
+		` WHERE work_item_assigned_user.assigned_user = $3`+
+		` %s  GROUP BY 
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
+work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
