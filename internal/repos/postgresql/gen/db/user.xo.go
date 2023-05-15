@@ -83,7 +83,7 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 	return u.Insert(ctx, db)
 }
 
-// UserUpdateParams represents update params for 'public.users'
+// UserUpdateParams represents update params for 'public.users'.
 type UserUpdateParams struct {
 	Username                 *string        `json:"username" required:"true"`                                 // username
 	Email                    *string        `json:"email" required:"true"`                                    // email
@@ -156,7 +156,7 @@ func WithDeletedUserOnly() UserSelectConfigOption {
 	}
 }
 
-type UserOrderBy = string
+type UserOrderBy string
 
 const (
 	UserCreatedAtDescNullsFirst UserOrderBy = " created_at DESC NULLS FIRST "
@@ -177,8 +177,12 @@ const (
 func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

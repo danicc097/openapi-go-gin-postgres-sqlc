@@ -52,7 +52,7 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 	return t.Insert(ctx, db)
 }
 
-// TeamUpdateParams represents update params for 'public.teams'
+// TeamUpdateParams represents update params for 'public.teams'.
 type TeamUpdateParams struct {
 	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
 	Name        *string `json:"name" required:"true"`        // name
@@ -89,7 +89,7 @@ func WithTeamLimit(limit int) TeamSelectConfigOption {
 	}
 }
 
-type TeamOrderBy = string
+type TeamOrderBy string
 
 const (
 	TeamCreatedAtDescNullsFirst TeamOrderBy = " created_at DESC NULLS FIRST "
@@ -106,8 +106,12 @@ const (
 func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

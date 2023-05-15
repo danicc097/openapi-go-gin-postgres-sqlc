@@ -56,7 +56,7 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 	return ks.Insert(ctx, db)
 }
 
-// KanbanStepUpdateParams represents update params for 'public.kanban_steps'
+// KanbanStepUpdateParams represents update params for 'public.kanban_steps'.
 type KanbanStepUpdateParams struct {
 	ProjectID     *int    `json:"projectID" required:"true"`     // project_id
 	StepOrder     *int    `json:"stepOrder" required:"true"`     // step_order
@@ -105,7 +105,7 @@ func WithKanbanStepLimit(limit int) KanbanStepSelectConfigOption {
 	}
 }
 
-type KanbanStepOrderBy = string
+type KanbanStepOrderBy string
 
 const ()
 

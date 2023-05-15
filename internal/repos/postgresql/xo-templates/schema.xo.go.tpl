@@ -251,7 +251,7 @@ func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}Cr
 }
 
 
-// {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'
+// {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}UpdateParams struct {
 {{ range $t.Fields -}}
 	{{ field . "UpdateParams" $t -}}

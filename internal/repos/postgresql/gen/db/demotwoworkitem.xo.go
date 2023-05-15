@@ -44,7 +44,7 @@ func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCr
 	return dtwi.Insert(ctx, db)
 }
 
-// DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'
+// DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemUpdateParams struct {
 	CustomDateForProject2 **time.Time `json:"customDateForProject2" required:"true"` // custom_date_for_project_2
 }
@@ -73,7 +73,7 @@ func WithDemoTwoWorkItemLimit(limit int) DemoTwoWorkItemSelectConfigOption {
 	}
 }
 
-type DemoTwoWorkItemOrderBy = string
+type DemoTwoWorkItemOrderBy string
 
 const (
 	DemoTwoWorkItemCustomDateForProject2DescNullsFirst DemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS FIRST "
@@ -86,8 +86,12 @@ const (
 func WithDemoTwoWorkItemOrderBy(rows ...DemoTwoWorkItemOrderBy) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

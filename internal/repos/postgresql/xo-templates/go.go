@@ -1898,26 +1898,6 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 
 	var buf strings.Builder
 
-	/**
-		 *
-		 * TODO:
-		 *
-	func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
-		return func(s *WorkItemSelectConfig) {
-			if len(rows) == 0 {
-				s.orderBy = ""
-			} else {
-				var orderBy []string
-				for _, r := range rows {
-					orderBy = append(orderBy, string(r))
-				}
-				s.orderBy = " order by " + strings.Join(orderBy, ", ")
-			}
-		}
-	}
-
-	*/
-
 	buf.WriteString(fmt.Sprintf(`
 	type %[1]sSelectConfig struct {
 		limit       string
@@ -1953,7 +1933,7 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-	type %[1]sOrderBy = string`, tGoName))
+	type %[1]sOrderBy string`, tGoName))
 
 	buf.WriteString(`
 	const (
@@ -1972,8 +1952,12 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

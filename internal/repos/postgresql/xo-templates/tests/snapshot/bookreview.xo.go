@@ -45,7 +45,7 @@ func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams
 	return br.Insert(ctx, db)
 }
 
-// BookReviewUpdateParams represents update params for 'xo_tests.book_reviews'
+// BookReviewUpdateParams represents update params for 'xo_tests.book_reviews'.
 type BookReviewUpdateParams struct {
 	BookID   *int       `json:"bookID" required:"true"`   // book_id
 	Reviewer *uuid.UUID `json:"reviewer" required:"true"` // reviewer
@@ -78,7 +78,7 @@ func WithBookReviewLimit(limit int) BookReviewSelectConfigOption {
 	}
 }
 
-type BookReviewOrderBy = string
+type BookReviewOrderBy string
 
 type BookReviewJoins struct {
 	Book bool // O2O books

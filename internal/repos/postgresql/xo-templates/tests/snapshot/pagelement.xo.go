@@ -46,7 +46,7 @@ func CreatePagElement(ctx context.Context, db DB, params *PagElementCreateParams
 	return pe.Insert(ctx, db)
 }
 
-// PagElementUpdateParams represents update params for 'xo_tests.pag_element'
+// PagElementUpdateParams represents update params for 'xo_tests.pag_element'.
 type PagElementUpdateParams struct {
 	Name  *string `json:"name" required:"true"`  // name
 	Dummy **int   `json:"dummy" required:"true"` // dummy
@@ -79,7 +79,7 @@ func WithPagElementLimit(limit int) PagElementSelectConfigOption {
 	}
 }
 
-type PagElementOrderBy = string
+type PagElementOrderBy string
 
 const (
 	PagElementCreatedAtDescNullsFirst PagElementOrderBy = " created_at DESC NULLS FIRST "
@@ -92,8 +92,12 @@ const (
 func WithPagElementOrderBy(rows ...PagElementOrderBy) PagElementSelectConfigOption {
 	return func(s *PagElementSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

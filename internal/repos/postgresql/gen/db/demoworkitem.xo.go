@@ -53,7 +53,7 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 	return dwi.Insert(ctx, db)
 }
 
-// DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'
+// DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'.
 type DemoWorkItemUpdateParams struct {
 	Ref           *string    `json:"ref" required:"true" pattern:"^[0-9]{8}$"` // ref
 	Line          *string    `json:"line" required:"true"`                     // line
@@ -94,7 +94,7 @@ func WithDemoWorkItemLimit(limit int) DemoWorkItemSelectConfigOption {
 	}
 }
 
-type DemoWorkItemOrderBy = string
+type DemoWorkItemOrderBy string
 
 const (
 	DemoWorkItemLastMessageAtDescNullsFirst DemoWorkItemOrderBy = " last_message_at DESC NULLS FIRST "
@@ -107,8 +107,12 @@ const (
 func WithDemoWorkItemOrderBy(rows ...DemoWorkItemOrderBy) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

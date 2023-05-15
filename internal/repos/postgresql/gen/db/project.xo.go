@@ -58,7 +58,7 @@ func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Pr
 	return p.Insert(ctx, db)
 }
 
-// ProjectUpdateParams represents update params for 'public.projects'
+// ProjectUpdateParams represents update params for 'public.projects'.
 type ProjectUpdateParams struct {
 	Name               *models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
 	Description        *string               `json:"description" required:"true"`                                          // description
@@ -99,7 +99,7 @@ func WithProjectLimit(limit int) ProjectSelectConfigOption {
 	}
 }
 
-type ProjectOrderBy = string
+type ProjectOrderBy string
 
 const (
 	ProjectCreatedAtDescNullsFirst ProjectOrderBy = " created_at DESC NULLS FIRST "
@@ -116,8 +116,12 @@ const (
 func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

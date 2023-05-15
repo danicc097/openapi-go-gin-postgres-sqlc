@@ -45,7 +45,7 @@ func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie,
 	return m.Insert(ctx, db)
 }
 
-// MovieUpdateParams represents update params for 'public.movies'
+// MovieUpdateParams represents update params for 'public.movies'.
 type MovieUpdateParams struct {
 	Title    *string `json:"title" required:"true"`    // title
 	Year     *int    `json:"year" required:"true"`     // year
@@ -82,7 +82,7 @@ func WithMovieLimit(limit int) MovieSelectConfigOption {
 	}
 }
 
-type MovieOrderBy = string
+type MovieOrderBy string
 
 const ()
 

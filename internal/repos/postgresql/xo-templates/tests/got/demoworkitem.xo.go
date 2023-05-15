@@ -42,7 +42,7 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 	return dwi.Insert(ctx, db)
 }
 
-// DemoWorkItemUpdateParams represents update params for 'xo_tests.demo_work_items'
+// DemoWorkItemUpdateParams represents update params for 'xo_tests.demo_work_items'.
 type DemoWorkItemUpdateParams struct {
 	Checked *bool `json:"checked" required:"true"` // checked
 }
@@ -71,7 +71,7 @@ func WithDemoWorkItemLimit(limit int) DemoWorkItemSelectConfigOption {
 	}
 }
 
-type DemoWorkItemOrderBy = string
+type DemoWorkItemOrderBy string
 
 type DemoWorkItemJoins struct {
 	WorkItem bool // O2O work_items

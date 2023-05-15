@@ -50,7 +50,7 @@ func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreatePa
 	return wit.Insert(ctx, db)
 }
 
-// WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
+// WorkItemTypeUpdateParams represents update params for 'public.work_item_types'.
 type WorkItemTypeUpdateParams struct {
 	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
 	Name        *string `json:"name" required:"true"`        // name
@@ -91,7 +91,7 @@ func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
 	}
 }
 
-type WorkItemTypeOrderBy = string
+type WorkItemTypeOrderBy string
 
 const ()
 

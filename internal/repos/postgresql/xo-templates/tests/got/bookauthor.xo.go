@@ -47,7 +47,7 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 	return ba.Insert(ctx, db)
 }
 
-// BookAuthorUpdateParams represents update params for 'xo_tests.book_authors'
+// BookAuthorUpdateParams represents update params for 'xo_tests.book_authors'.
 type BookAuthorUpdateParams struct {
 	BookID    *int       `json:"bookID" required:"true"`    // book_id
 	AuthorID  *uuid.UUID `json:"authorID" required:"true"`  // author_id
@@ -84,7 +84,7 @@ func WithBookAuthorLimit(limit int) BookAuthorSelectConfigOption {
 	}
 }
 
-type BookAuthorOrderBy = string
+type BookAuthorOrderBy string
 
 type BookAuthorJoins struct {
 	BooksAuthor bool // M2M book_authors

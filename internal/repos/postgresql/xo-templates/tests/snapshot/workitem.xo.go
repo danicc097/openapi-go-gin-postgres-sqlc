@@ -40,7 +40,7 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 	return wi.Insert(ctx, db)
 }
 
-// WorkItemUpdateParams represents update params for 'xo_tests.work_items'
+// WorkItemUpdateParams represents update params for 'xo_tests.work_items'.
 type WorkItemUpdateParams struct {
 	Title **string `json:"title" required:"true"` // title
 }
@@ -69,7 +69,7 @@ func WithWorkItemLimit(limit int) WorkItemSelectConfigOption {
 	}
 }
 
-type WorkItemOrderBy = string
+type WorkItemOrderBy string
 
 type WorkItemJoins struct {
 	DemoWorkItem bool // O2O demo_work_items

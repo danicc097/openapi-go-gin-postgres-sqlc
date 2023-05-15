@@ -42,7 +42,7 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 	return ut.Insert(ctx, db)
 }
 
-// UserTeamUpdateParams represents update params for 'public.user_team'
+// UserTeamUpdateParams represents update params for 'public.user_team'.
 type UserTeamUpdateParams struct {
 	TeamID *int       `json:"teamID" required:"true"` // team_id
 	Member *uuid.UUID `json:"member" required:"true"` // member
@@ -75,7 +75,7 @@ func WithUserTeamLimit(limit int) UserTeamSelectConfigOption {
 	}
 }
 
-type UserTeamOrderBy = string
+type UserTeamOrderBy string
 
 const ()
 

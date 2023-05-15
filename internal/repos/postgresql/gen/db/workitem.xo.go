@@ -75,7 +75,7 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 	return wi.Insert(ctx, db)
 }
 
-// WorkItemUpdateParams represents update params for 'public.work_items'
+// WorkItemUpdateParams represents update params for 'public.work_items'.
 type WorkItemUpdateParams struct {
 	Title          *string     `json:"title" required:"true"`          // title
 	Description    *string     `json:"description" required:"true"`    // description
@@ -140,7 +140,7 @@ func WithDeletedWorkItemOnly() WorkItemSelectConfigOption {
 	}
 }
 
-type WorkItemOrderBy = string
+type WorkItemOrderBy string
 
 const (
 	WorkItemClosedDescNullsFirst     WorkItemOrderBy = " closed DESC NULLS FIRST "
@@ -169,8 +169,12 @@ const (
 func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

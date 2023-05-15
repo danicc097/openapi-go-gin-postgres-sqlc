@@ -64,7 +64,7 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 	return te.Insert(ctx, db)
 }
 
-// TimeEntryUpdateParams represents update params for 'public.time_entries'
+// TimeEntryUpdateParams represents update params for 'public.time_entries'.
 type TimeEntryUpdateParams struct {
 	WorkItemID      **int64    `json:"workItemID" required:"true"`      // work_item_id
 	ActivityID      *int       `json:"activityID" required:"true"`      // activity_id
@@ -117,7 +117,7 @@ func WithTimeEntryLimit(limit int) TimeEntrySelectConfigOption {
 	}
 }
 
-type TimeEntryOrderBy = string
+type TimeEntryOrderBy string
 
 const (
 	TimeEntryStartDescNullsFirst TimeEntryOrderBy = " start DESC NULLS FIRST "
@@ -130,8 +130,12 @@ const (
 func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

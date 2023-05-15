@@ -38,7 +38,7 @@ func CreateDummyJoin(ctx context.Context, db DB, params *DummyJoinCreateParams) 
 	return dj.Insert(ctx, db)
 }
 
-// DummyJoinUpdateParams represents update params for 'xo_tests.dummy_join'
+// DummyJoinUpdateParams represents update params for 'xo_tests.dummy_join'.
 type DummyJoinUpdateParams struct {
 	Name **string `json:"name" required:"true"` // name
 }
@@ -67,7 +67,7 @@ func WithDummyJoinLimit(limit int) DummyJoinSelectConfigOption {
 	}
 }
 
-type DummyJoinOrderBy = string
+type DummyJoinOrderBy string
 
 type DummyJoinJoins struct{}
 

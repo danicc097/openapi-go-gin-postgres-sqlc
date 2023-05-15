@@ -49,7 +49,7 @@ func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams
 	return uak.Insert(ctx, db)
 }
 
-// UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'
+// UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'.
 type UserAPIKeyUpdateParams struct {
 	APIKey    *string    `json:"apiKey" required:"true"`    // api_key
 	ExpiresOn *time.Time `json:"expiresOn" required:"true"` // expires_on
@@ -86,7 +86,7 @@ func WithUserAPIKeyLimit(limit int) UserAPIKeySelectConfigOption {
 	}
 }
 
-type UserAPIKeyOrderBy = string
+type UserAPIKeyOrderBy string
 
 const (
 	UserAPIKeyExpiresOnDescNullsFirst UserAPIKeyOrderBy = " expires_on DESC NULLS FIRST "
@@ -99,8 +99,12 @@ const (
 func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }
