@@ -42,7 +42,7 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 	return dwi.Insert(ctx, db)
 }
 
-// DemoWorkItemUpdateParams represents update params for 'xo_tests.demo_work_items'
+// DemoWorkItemUpdateParams represents update params for 'xo_tests.demo_work_items'.
 type DemoWorkItemUpdateParams struct {
 	Checked *bool `json:"checked" required:"true"` // checked
 }
@@ -71,7 +71,7 @@ func WithDemoWorkItemLimit(limit int) DemoWorkItemSelectConfigOption {
 	}
 }
 
-type DemoWorkItemOrderBy = string
+type DemoWorkItemOrderBy string
 
 type DemoWorkItemJoins struct {
 	WorkItem bool // O2O work_items
@@ -219,15 +219,15 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_work_items.work_item_id,
 demo_work_items.checked,
-(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as work_item_work_item_id `+
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id `+
 		`FROM xo_tests.demo_work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join xo_tests.work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join xo_tests.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
 		` WHERE demo_work_items.work_item_id > $2`+
 		` %s  GROUP BY demo_work_items.work_item_id, 
 demo_work_items.checked, 
-_work_items_work_item_id.work_item_id,
-      _work_items_work_item_id.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id ORDER BY 
 		work_item_id Asc `, filters)
 	sqlstr += c.limit
@@ -278,15 +278,15 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_work_items.work_item_id,
 demo_work_items.checked,
-(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as work_item_work_item_id `+
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id `+
 		`FROM xo_tests.demo_work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join xo_tests.work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join xo_tests.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
 		` WHERE demo_work_items.work_item_id < $2`+
 		` %s  GROUP BY demo_work_items.work_item_id, 
 demo_work_items.checked, 
-_work_items_work_item_id.work_item_id,
-      _work_items_work_item_id.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id ORDER BY 
 		work_item_id Desc `, filters)
 	sqlstr += c.limit
@@ -339,14 +339,14 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_work_items.work_item_id,
 demo_work_items.checked,
-(case when $1::boolean = true and _work_items_work_item_id.work_item_id is not null then row(_work_items_work_item_id.*) end) as work_item_work_item_id `+
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id `+
 		`FROM xo_tests.demo_work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join xo_tests.work_items as _work_items_work_item_id on _work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join xo_tests.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id`+
 		` WHERE demo_work_items.work_item_id = $2`+
 		` %s  GROUP BY 
-_work_items_work_item_id.work_item_id,
-      _work_items_work_item_id.work_item_id,
+_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

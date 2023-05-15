@@ -51,7 +51,7 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 	return wit.Insert(ctx, db)
 }
 
-// WorkItemTagUpdateParams represents update params for 'public.work_item_tags'
+// WorkItemTagUpdateParams represents update params for 'public.work_item_tags'.
 type WorkItemTagUpdateParams struct {
 	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
 	Name        *string `json:"name" required:"true"`        // name
@@ -92,7 +92,7 @@ func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 	}
 }
 
-type WorkItemTagOrderBy = string
+type WorkItemTagOrderBy string
 
 const ()
 

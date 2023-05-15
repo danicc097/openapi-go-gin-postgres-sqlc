@@ -41,7 +41,7 @@ func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCr
 	return sm.Insert(ctx, db)
 }
 
-// SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'
+// SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'.
 type SchemaMigrationUpdateParams struct {
 	Version *int64 `json:"version" required:"true"` // version
 	Dirty   *bool  `json:"dirty" required:"true"`   // dirty
@@ -74,7 +74,7 @@ func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
 	}
 }
 
-type SchemaMigrationOrderBy = string
+type SchemaMigrationOrderBy string
 
 const ()
 

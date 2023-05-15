@@ -67,7 +67,7 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 	return n.Insert(ctx, db)
 }
 
-// NotificationUpdateParams represents update params for 'public.notifications'
+// NotificationUpdateParams represents update params for 'public.notifications'.
 type NotificationUpdateParams struct {
 	ReceiverRank     **int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
 	Title            *string           `json:"title" required:"true"`                                                        // title
@@ -124,7 +124,7 @@ func WithNotificationLimit(limit int) NotificationSelectConfigOption {
 	}
 }
 
-type NotificationOrderBy = string
+type NotificationOrderBy string
 
 const (
 	NotificationCreatedAtDescNullsFirst NotificationOrderBy = " created_at DESC NULLS FIRST "
@@ -137,8 +137,12 @@ const (
 func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

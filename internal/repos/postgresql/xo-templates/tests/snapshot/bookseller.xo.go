@@ -41,7 +41,7 @@ func CreateBookSeller(ctx context.Context, db DB, params *BookSellerCreateParams
 	return bs.Insert(ctx, db)
 }
 
-// BookSellerUpdateParams represents update params for 'xo_tests.book_sellers'
+// BookSellerUpdateParams represents update params for 'xo_tests.book_sellers'.
 type BookSellerUpdateParams struct {
 	BookID *int       `json:"bookID" required:"true"` // book_id
 	Seller *uuid.UUID `json:"seller" required:"true"` // seller
@@ -74,7 +74,7 @@ func WithBookSellerLimit(limit int) BookSellerSelectConfigOption {
 	}
 }
 
-type BookSellerOrderBy = string
+type BookSellerOrderBy string
 
 type BookSellerJoins struct {
 	Sellers     bool // M2M book_sellers

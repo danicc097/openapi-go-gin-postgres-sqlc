@@ -26,8 +26,7 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	ProjectJoin  *Project  `json:"-" db:"project_project_id" openapi-go:"ignore"`          // O2O projects (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_type_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	ProjectJoin *Project `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 
 }
 
@@ -51,7 +50,7 @@ func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreatePa
 	return wit.Insert(ctx, db)
 }
 
-// WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
+// WorkItemTypeUpdateParams represents update params for 'public.work_item_types'.
 type WorkItemTypeUpdateParams struct {
 	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
 	Name        *string `json:"name" required:"true"`        // name
@@ -92,21 +91,19 @@ func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
 	}
 }
 
-type WorkItemTypeOrderBy = string
+type WorkItemTypeOrderBy string
 
 const ()
 
 type WorkItemTypeJoins struct {
-	Project  bool // O2O projects
-	WorkItem bool // O2O work_items
+	Project bool // O2O projects
 }
 
 // WithWorkItemTypeJoin joins with the given tables.
 func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
 		s.joins = WorkItemTypeJoins{
-			Project:  s.joins.Project || joins.Project,
-			WorkItem: s.joins.WorkItem || joins.WorkItem,
+			Project: s.joins.Project || joins.Project,
 		}
 	}
 }
@@ -222,7 +219,7 @@ func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workIt
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -250,14 +247,11 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id `+
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
 		`FROM public.work_item_types `+
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id`+
-		` WHERE work_item_types.work_item_type_id > $3`+
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
+		` WHERE work_item_types.work_item_type_id > $2`+
 		` %s  GROUP BY work_item_types.work_item_type_id, 
 work_item_types.project_id, 
 work_item_types.name, 
@@ -265,16 +259,13 @@ work_item_types.description,
 work_item_types.color, 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id, 
-_work_item_types_work_item_type_id.work_item_type_id,
-      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
 		work_item_type_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.WorkItem, workItemTypeID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, workItemTypeID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/Asc/db.Query: %w", err))
 	}
@@ -293,7 +284,7 @@ func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID i
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -321,14 +312,11 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id `+
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
 		`FROM public.work_item_types `+
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id`+
-		` WHERE work_item_types.project_id > $3`+
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
+		` WHERE work_item_types.project_id > $2`+
 		` %s  GROUP BY work_item_types.work_item_type_id, 
 work_item_types.project_id, 
 work_item_types.name, 
@@ -336,16 +324,13 @@ work_item_types.description,
 work_item_types.color, 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id, 
-_work_item_types_work_item_type_id.work_item_type_id,
-      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
 		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.WorkItem, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/Asc/db.Query: %w", err))
 	}
@@ -364,7 +349,7 @@ func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workI
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -392,14 +377,11 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id `+
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
 		`FROM public.work_item_types `+
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id`+
-		` WHERE work_item_types.work_item_type_id < $3`+
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
+		` WHERE work_item_types.work_item_type_id < $2`+
 		` %s  GROUP BY work_item_types.work_item_type_id, 
 work_item_types.project_id, 
 work_item_types.name, 
@@ -407,16 +389,13 @@ work_item_types.description,
 work_item_types.color, 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id, 
-_work_item_types_work_item_type_id.work_item_type_id,
-      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
 		work_item_type_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.WorkItem, workItemTypeID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, workItemTypeID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/Desc/db.Query: %w", err))
 	}
@@ -435,7 +414,7 @@ func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID 
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -463,14 +442,11 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id `+
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
 		`FROM public.work_item_types `+
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id`+
-		` WHERE work_item_types.project_id < $3`+
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
+		` WHERE work_item_types.project_id < $2`+
 		` %s  GROUP BY work_item_types.work_item_type_id, 
 work_item_types.project_id, 
 work_item_types.name, 
@@ -478,16 +454,13 @@ work_item_types.description,
 work_item_types.color, 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id, 
-_work_item_types_work_item_type_id.work_item_type_id,
-      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id ORDER BY 
 		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.WorkItem, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/Desc/db.Query: %w", err))
 	}
@@ -508,7 +481,7 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -536,27 +509,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id `+
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
 		`FROM public.work_item_types `+
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id`+
-		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4`+
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
+		` WHERE work_item_types.name = $2 AND work_item_types.project_id = $3`+
 		` %s  GROUP BY 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id, 
-_work_item_types_work_item_type_id.work_item_type_id,
-      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.WorkItem, name, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, name, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", err))
 	}
@@ -578,7 +545,7 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -606,27 +573,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id `+
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
 		`FROM public.work_item_types `+
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id`+
-		` WHERE work_item_types.name = $3`+
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
+		` WHERE work_item_types.name = $2`+
 		` %s  GROUP BY 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id, 
-_work_item_types_work_item_type_id.work_item_type_id,
-      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.WorkItem, name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, name}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", err))
 	}
@@ -650,7 +611,7 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ..
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -678,27 +639,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id `+
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
 		`FROM public.work_item_types `+
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id`+
-		` WHERE work_item_types.project_id = $3`+
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
+		` WHERE work_item_types.project_id = $2`+
 		` %s  GROUP BY 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id, 
-_work_item_types_work_item_type_id.work_item_type_id,
-      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.WorkItem, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", err))
 	}
@@ -722,7 +677,7 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -750,27 +705,21 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id,
-(case when $2::boolean = true and _work_item_types_work_item_type_id.work_item_type_id is not null then row(_work_item_types_work_item_type_id.*) end) as work_item_work_item_type_id `+
+(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
 		`FROM public.work_item_types `+
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_items as _work_item_types_work_item_type_id on _work_item_types_work_item_type_id.work_item_type_id = work_item_types.work_item_type_id`+
-		` WHERE work_item_types.work_item_type_id = $3`+
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
+		` WHERE work_item_types.work_item_type_id = $2`+
 		` %s  GROUP BY 
 _work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id, 
-_work_item_types_work_item_type_id.work_item_type_id,
-      _work_item_types_work_item_type_id.work_item_id,
 	work_item_types.work_item_type_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTypeID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.WorkItem, workItemTypeID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, workItemTypeID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", err))
 	}

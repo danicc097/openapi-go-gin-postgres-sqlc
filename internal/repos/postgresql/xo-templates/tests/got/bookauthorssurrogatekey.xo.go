@@ -48,7 +48,7 @@ func CreateBookAuthorsSurrogateKey(ctx context.Context, db DB, params *BookAutho
 	return bask.Insert(ctx, db)
 }
 
-// BookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'
+// BookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'.
 type BookAuthorsSurrogateKeyUpdateParams struct {
 	BookID    *int       `json:"bookID" required:"true"`    // book_id
 	AuthorID  *uuid.UUID `json:"authorID" required:"true"`  // author_id
@@ -85,7 +85,7 @@ func WithBookAuthorsSurrogateKeyLimit(limit int) BookAuthorsSurrogateKeySelectCo
 	}
 }
 
-type BookAuthorsSurrogateKeyOrderBy = string
+type BookAuthorsSurrogateKeyOrderBy string
 
 type BookAuthorsSurrogateKeyJoins struct {
 	BooksAuthor bool // M2M book_authors_surrogate_key

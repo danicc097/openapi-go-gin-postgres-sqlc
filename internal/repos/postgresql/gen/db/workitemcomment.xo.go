@@ -52,7 +52,7 @@ func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCr
 	return wic.Insert(ctx, db)
 }
 
-// WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
+// WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'.
 type WorkItemCommentUpdateParams struct {
 	WorkItemID *int64     `json:"workItemID" required:"true"` // work_item_id
 	UserID     *uuid.UUID `json:"userID" required:"true"`     // user_id
@@ -89,7 +89,7 @@ func WithWorkItemCommentLimit(limit int) WorkItemCommentSelectConfigOption {
 	}
 }
 
-type WorkItemCommentOrderBy = string
+type WorkItemCommentOrderBy string
 
 const (
 	WorkItemCommentCreatedAtDescNullsFirst WorkItemCommentOrderBy = " created_at DESC NULLS FIRST "
@@ -106,8 +106,12 @@ const (
 func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
 		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
 			s.orderBy = " order by "
-			s.orderBy += strings.Join(rows, ", ")
+			s.orderBy += strings.Join(orderStrings, ", ")
 		}
 	}
 }

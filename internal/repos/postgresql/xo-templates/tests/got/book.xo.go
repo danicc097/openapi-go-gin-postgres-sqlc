@@ -43,7 +43,7 @@ func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, er
 	return b.Insert(ctx, db)
 }
 
-// BookUpdateParams represents update params for 'xo_tests.books'
+// BookUpdateParams represents update params for 'xo_tests.books'.
 type BookUpdateParams struct {
 	Name *string `json:"name" required:"true"` // name
 }
@@ -72,7 +72,7 @@ func WithBookLimit(limit int) BookSelectConfigOption {
 	}
 }
 
-type BookOrderBy = string
+type BookOrderBy string
 
 type BookJoins struct {
 	AuthorsBook      bool // M2M book_authors

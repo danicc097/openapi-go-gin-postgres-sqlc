@@ -49,7 +49,7 @@ func CreateUserNotification(ctx context.Context, db DB, params *UserNotification
 	return un.Insert(ctx, db)
 }
 
-// UserNotificationUpdateParams represents update params for 'public.user_notifications'
+// UserNotificationUpdateParams represents update params for 'public.user_notifications'.
 type UserNotificationUpdateParams struct {
 	NotificationID *int       `json:"notificationID" required:"true"` // notification_id
 	Read           *bool      `json:"read" required:"true"`           // read
@@ -86,7 +86,7 @@ func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
 	}
 }
 
-type UserNotificationOrderBy = string
+type UserNotificationOrderBy string
 
 const ()
 

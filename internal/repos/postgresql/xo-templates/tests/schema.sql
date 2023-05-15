@@ -123,7 +123,7 @@ create table xo_tests.pag_element (
   paginated_element_id uuid default gen_random_uuid () primary key
   , name text not null
   , created_at timestamp with time zone default current_timestamp not null unique
-  , dummy int -- FIXME not inferring
+  , dummy int
   , foreign key (dummy) references xo_tests.dummy_join (dummy_join_id) on delete cascade
 );
 

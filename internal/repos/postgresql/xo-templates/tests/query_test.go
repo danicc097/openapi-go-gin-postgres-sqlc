@@ -175,7 +175,7 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
 	assert.NoError(t, err)
-	assert.Equal(t, u.UserAPIKeyJoin.UserID, userID)
+	assert.Equal(t, u.APIKeyJoin.UserID, userID)
 
 	uak, err := db.UserAPIKeyByUserID(ctx, testPool, userID, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	assert.NoError(t, err)

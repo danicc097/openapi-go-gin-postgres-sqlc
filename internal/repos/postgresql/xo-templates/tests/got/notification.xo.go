@@ -48,7 +48,7 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 	return n.Insert(ctx, db)
 }
 
-// NotificationUpdateParams represents update params for 'xo_tests.notifications'
+// NotificationUpdateParams represents update params for 'xo_tests.notifications'.
 type NotificationUpdateParams struct {
 	Body     *string     `json:"-" pattern:"^[A-Za-z0-9]*$"` // body
 	Sender   *uuid.UUID  `json:"sender" required:"true"`     // sender
@@ -85,7 +85,7 @@ func WithNotificationLimit(limit int) NotificationSelectConfigOption {
 	}
 }
 
-type NotificationOrderBy = string
+type NotificationOrderBy string
 
 type NotificationJoins struct {
 	UserReceiver bool // O2O users

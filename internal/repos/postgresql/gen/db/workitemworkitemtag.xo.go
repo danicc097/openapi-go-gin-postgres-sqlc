@@ -41,7 +41,7 @@ func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkI
 	return wiwit.Insert(ctx, db)
 }
 
-// WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'
+// WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagUpdateParams struct {
 	WorkItemTagID *int   `json:"workItemTagID" required:"true"` // work_item_tag_id
 	WorkItemID    *int64 `json:"workItemID" required:"true"`    // work_item_id
@@ -74,7 +74,7 @@ func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOpti
 	}
 }
 
-type WorkItemWorkItemTagOrderBy = string
+type WorkItemWorkItemTagOrderBy string
 
 const ()
 

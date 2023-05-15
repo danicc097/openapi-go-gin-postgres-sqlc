@@ -50,7 +50,7 @@ func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssi
 	return wiau.Insert(ctx, db)
 }
 
-// WorkItemAssignedUserUpdateParams represents update params for 'public.work_item_assigned_user'
+// WorkItemAssignedUserUpdateParams represents update params for 'public.work_item_assigned_user'.
 type WorkItemAssignedUserUpdateParams struct {
 	WorkItemID   *int64               `json:"workItemID" required:"true"`                                   // work_item_id
 	AssignedUser *uuid.UUID           `json:"assignedUser" required:"true"`                                 // assigned_user
@@ -87,7 +87,7 @@ func WithWorkItemAssignedUserLimit(limit int) WorkItemAssignedUserSelectConfigOp
 	}
 }
 
-type WorkItemAssignedUserOrderBy = string
+type WorkItemAssignedUserOrderBy string
 
 const ()
 

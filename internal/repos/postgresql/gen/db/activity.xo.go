@@ -51,7 +51,7 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 	return a.Insert(ctx, db)
 }
 
-// ActivityUpdateParams represents update params for 'public.activities'
+// ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {
 	ProjectID    *int    `json:"projectID" required:"true"`    // project_id
 	Name         *string `json:"name" required:"true"`         // name
@@ -92,7 +92,7 @@ func WithActivityLimit(limit int) ActivitySelectConfigOption {
 	}
 }
 
-type ActivityOrderBy = string
+type ActivityOrderBy string
 
 const ()
 
