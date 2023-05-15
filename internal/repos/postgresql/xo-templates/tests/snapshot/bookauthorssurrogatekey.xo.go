@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
@@ -222,7 +224,30 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
@@ -282,7 +307,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/db.Query: %w", err))
 	}
@@ -301,7 +326,30 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
@@ -361,7 +409,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/db.Query: %w", err))
 	}
@@ -382,7 +430,30 @@ func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID 
 		o(c)
 	}
 
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
@@ -439,7 +510,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", err))
 	}
@@ -461,7 +532,30 @@ func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, op
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
@@ -518,7 +612,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
 	}
@@ -542,7 +636,30 @@ func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uui
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
@@ -599,7 +716,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, authorID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
 	}
@@ -623,7 +740,30 @@ func BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db 
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
@@ -680,7 +820,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", err))
 	}

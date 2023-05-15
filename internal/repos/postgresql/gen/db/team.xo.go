@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -241,7 +242,30 @@ func TeamPaginatedByTeamIDAsc(ctx context.Context, db DB, teamID int, opts ...Te
 		o(c)
 	}
 
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
@@ -304,7 +328,7 @@ _teams_team_id.team_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/Asc/db.Query: %w", err))
 	}
@@ -323,7 +347,30 @@ func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts
 		o(c)
 	}
 
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
@@ -386,7 +433,7 @@ _teams_team_id.team_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/Asc/db.Query: %w", err))
 	}
@@ -405,7 +452,30 @@ func TeamPaginatedByTeamIDDesc(ctx context.Context, db DB, teamID int, opts ...T
 		o(c)
 	}
 
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
@@ -468,7 +538,7 @@ _teams_team_id.team_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/Desc/db.Query: %w", err))
 	}
@@ -487,7 +557,30 @@ func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opt
 		o(c)
 	}
 
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
@@ -550,7 +643,7 @@ _teams_team_id.team_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/Desc/db.Query: %w", err))
 	}
@@ -571,7 +664,30 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 		o(c)
 	}
 
+	paramStart := 6
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
@@ -629,7 +745,7 @@ _teams_team_id.team_id,
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, name, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
 	}
@@ -651,7 +767,30 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		o(c)
 	}
 
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
@@ -709,7 +848,7 @@ _teams_team_id.team_id,
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, name)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, name}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
@@ -733,7 +872,30 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSel
 		o(c)
 	}
 
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
@@ -791,7 +953,7 @@ _teams_team_id.team_id,
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
@@ -815,7 +977,30 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 		o(c)
 	}
 
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`teams.team_id,
@@ -873,7 +1058,7 @@ _teams_team_id.team_id,
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, c.joins.Members, c.joins.WorkItem, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))
 	}

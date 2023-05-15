@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -192,7 +194,30 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 		o(c)
 	}
 
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_work_items.work_item_id,
@@ -212,7 +237,7 @@ _work_items_work_item_id.work_item_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/db.Query: %w", err))
 	}
@@ -231,7 +256,30 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 		o(c)
 	}
 
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_work_items.work_item_id,
@@ -251,7 +299,7 @@ _work_items_work_item_id.work_item_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/db.Query: %w", err))
 	}
@@ -272,7 +320,30 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 		o(c)
 	}
 
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_work_items.work_item_id,
@@ -291,7 +362,7 @@ _work_items_work_item_id.work_item_id,
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", err))
 	}

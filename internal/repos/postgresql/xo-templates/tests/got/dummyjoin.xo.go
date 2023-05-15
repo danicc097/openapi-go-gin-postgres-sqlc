@@ -235,7 +235,7 @@ _dummy_join_dummy_join_id.dummy,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.PagElement, dummyJoinID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/db.Query: %w", err))
 	}
@@ -297,7 +297,7 @@ _dummy_join_dummy_join_id.dummy,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.PagElement, dummyJoinID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/db.Query: %w", err))
 	}
@@ -360,7 +360,7 @@ _dummy_join_dummy_join_id.dummy,
 
 	// run
 	// logf(sqlstr, dummyJoinID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.PagElement, dummyJoinID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/db.Query: %w", err))
 	}

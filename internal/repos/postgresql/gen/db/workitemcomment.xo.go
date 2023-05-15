@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -236,7 +237,30 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
@@ -270,7 +294,7 @@ _work_item_comments_work_item_id.work_item_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, c.joins.WorkItem, workItemCommentID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/db.Query: %w", err))
 	}
@@ -289,7 +313,30 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
@@ -323,7 +370,7 @@ _work_item_comments_work_item_id.work_item_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, c.joins.WorkItem, workItemCommentID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/db.Query: %w", err))
 	}
@@ -344,7 +391,30 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
@@ -373,7 +443,7 @@ _work_item_comments_work_item_id.work_item_id,
 
 	// run
 	// logf(sqlstr, workItemCommentID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, c.joins.WorkItem, workItemCommentID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
 	}
@@ -395,7 +465,30 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
@@ -424,7 +517,7 @@ _work_item_comments_work_item_id.work_item_id,
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, c.joins.WorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/Query: %w", err))
 	}

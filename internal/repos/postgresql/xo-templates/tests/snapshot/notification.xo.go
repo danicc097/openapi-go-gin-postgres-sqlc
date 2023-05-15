@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
@@ -210,7 +212,30 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
@@ -240,7 +265,7 @@ _notifications_sender.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, notificationID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, notificationID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/db.Query: %w", err))
 	}
@@ -259,7 +284,30 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
@@ -289,7 +337,7 @@ _notifications_sender.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, notificationID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, notificationID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/db.Query: %w", err))
 	}
@@ -310,7 +358,30 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
@@ -337,7 +408,7 @@ _notifications_sender.user_id,
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, notificationID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, notificationID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
@@ -359,7 +430,30 @@ func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ..
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
@@ -386,7 +480,7 @@ _notifications_sender.user_id,
 
 	// run
 	// logf(sqlstr, sender)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, sender)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, sender}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/Query: %w", err))
 	}

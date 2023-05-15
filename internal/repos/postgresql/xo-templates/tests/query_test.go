@@ -181,8 +181,14 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uak.UserJoin.UserID, userID)
 	assert.Equal(t, uak.UserID, userID)
+}
 
-	_, err = db.UserPaginatedByCreatedAtAsc(ctx, testPool, time.Now().Add(-999*time.Hour),
+func TestCustomFilters(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	_, err := db.UserPaginatedByCreatedAtAsc(ctx, testPool, time.Now().Add(-999*time.Hour),
 		db.WithUserJoin(db.UserJoins{UserAPIKey: true}),
 		db.WithUserFilters(map[string][]any{
 			"NOT (xo_tests.users.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},

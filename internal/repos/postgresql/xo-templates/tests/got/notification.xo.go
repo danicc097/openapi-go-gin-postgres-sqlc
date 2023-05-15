@@ -265,7 +265,7 @@ _notifications_sender.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, notificationID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, notificationID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/db.Query: %w", err))
 	}
@@ -337,7 +337,7 @@ _notifications_sender.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, notificationID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, notificationID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/db.Query: %w", err))
 	}
@@ -408,7 +408,7 @@ _notifications_sender.user_id,
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, notificationID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, notificationID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
@@ -480,7 +480,7 @@ _notifications_sender.user_id,
 
 	// run
 	// logf(sqlstr, sender)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, sender)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, sender}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/Query: %w", err))
 	}

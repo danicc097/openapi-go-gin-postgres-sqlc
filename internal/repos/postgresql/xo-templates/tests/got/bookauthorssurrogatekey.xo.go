@@ -307,7 +307,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/db.Query: %w", err))
 	}
@@ -409,7 +409,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/db.Query: %w", err))
 	}
@@ -510,7 +510,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", err))
 	}
@@ -612,7 +612,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
 	}
@@ -716,7 +716,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, authorID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
 	}
@@ -820,7 +820,7 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 	// run
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", err))
 	}

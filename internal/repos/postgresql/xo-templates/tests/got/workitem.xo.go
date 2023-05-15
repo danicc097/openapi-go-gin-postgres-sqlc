@@ -234,7 +234,7 @@ _demo_work_items_work_item_id.work_item_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
 	}
@@ -295,7 +295,7 @@ _demo_work_items_work_item_id.work_item_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
 	}
@@ -357,7 +357,7 @@ _demo_work_items_work_item_id.work_item_id,
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}

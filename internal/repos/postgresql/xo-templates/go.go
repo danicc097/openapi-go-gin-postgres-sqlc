@@ -2540,6 +2540,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 				names = append(names, joinName)
 			}
 			names = append(names, f.params(x.Fields, false))
+
+			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterValues...)..."
 		case CursorPagination:
 			prefix := "c.joins."
 			for _, c := range f.tableConstraints[x.Table.SQLName] {
@@ -2592,6 +2594,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 				names = append(names, joinName)
 			}
 			names = append(names, f.params(x.Fields, false))
+
+			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterValues...)..."
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
 		}

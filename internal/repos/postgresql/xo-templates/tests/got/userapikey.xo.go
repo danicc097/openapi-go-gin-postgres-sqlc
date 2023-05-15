@@ -274,7 +274,7 @@ _user_api_keys_user_api_key_id.api_key_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, userAPIKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/db.Query: %w", err))
 	}
@@ -340,7 +340,7 @@ _user_api_keys_user_api_key_id.api_key_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, userAPIKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/db.Query: %w", err))
 	}
@@ -405,7 +405,7 @@ _user_api_keys_user_api_key_id.api_key_id,
 
 	// run
 	// logf(sqlstr, apiKey)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, apiKey)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, apiKey}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
 	}
@@ -471,7 +471,7 @@ _user_api_keys_user_api_key_id.api_key_id,
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, userAPIKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
 	}
@@ -537,7 +537,7 @@ _user_api_keys_user_api_key_id.api_key_id,
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, userID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, userID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))
 	}

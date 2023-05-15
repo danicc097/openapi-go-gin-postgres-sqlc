@@ -5,6 +5,8 @@ package got
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -153,7 +155,30 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 		o(c)
 	}
 
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
@@ -202,7 +227,7 @@ book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 
 	// run
 	// logf(sqlstr, bookID, seller)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Sellers, c.joins.BooksSeller, bookID, seller)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, bookID, seller}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_sellers/BookSellerByBookIDSeller/db.Query: %w", err))
 	}
@@ -224,7 +249,30 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
@@ -273,7 +321,7 @@ book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Sellers, c.joins.BooksSeller, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", err))
 	}
@@ -297,7 +345,30 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
@@ -346,7 +417,7 @@ book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 
 	// run
 	// logf(sqlstr, seller)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Sellers, c.joins.BooksSeller, seller)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, seller}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", err))
 	}

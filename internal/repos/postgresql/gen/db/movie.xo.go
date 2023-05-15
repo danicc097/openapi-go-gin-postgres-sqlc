@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -204,7 +206,30 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ..
 		o(c)
 	}
 
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
@@ -223,7 +248,7 @@ movies.synopsis ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, movieID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/db.Query: %w", err))
 	}
@@ -242,7 +267,30 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts .
 		o(c)
 	}
 
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
@@ -261,7 +309,7 @@ movies.synopsis ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, movieID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/db.Query: %w", err))
 	}
@@ -282,7 +330,30 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 		o(c)
 	}
 
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
@@ -298,7 +369,7 @@ movies.synopsis `+
 
 	// run
 	// logf(sqlstr, movieID)
-	rows, err := db.Query(ctx, sqlstr, movieID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/db.Query: %w", err))
 	}

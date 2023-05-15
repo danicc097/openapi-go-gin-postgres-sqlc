@@ -227,7 +227,7 @@ book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 
 	// run
 	// logf(sqlstr, bookID, seller)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Sellers, c.joins.BooksSeller, bookID, seller)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, bookID, seller}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_sellers/BookSellerByBookIDSeller/db.Query: %w", err))
 	}
@@ -321,7 +321,7 @@ book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Sellers, c.joins.BooksSeller, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", err))
 	}
@@ -417,7 +417,7 @@ book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
 
 	// run
 	// logf(sqlstr, seller)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Sellers, c.joins.BooksSeller, seller)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, seller}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", err))
 	}

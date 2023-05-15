@@ -256,7 +256,7 @@ pag_element.dummy ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/db.Query: %w", err))
 	}
@@ -317,7 +317,7 @@ pag_element.dummy ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", err))
 	}
@@ -377,7 +377,7 @@ pag_element.dummy `+
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", err))
 	}
@@ -438,7 +438,7 @@ pag_element.dummy `+
 
 	// run
 	// logf(sqlstr, paginatedElementID)
-	rows, err := db.Query(ctx, sqlstr, paginatedElementID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{paginatedElementID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", err))
 	}

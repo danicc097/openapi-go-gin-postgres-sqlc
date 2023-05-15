@@ -255,7 +255,7 @@ _book_reviews_reviewer.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookReviewID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookReviewID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", err))
 	}
@@ -325,7 +325,7 @@ _book_reviews_reviewer.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", err))
 	}
@@ -395,7 +395,7 @@ _book_reviews_reviewer.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookReviewID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookReviewID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", err))
 	}
@@ -465,7 +465,7 @@ _book_reviews_reviewer.user_id,
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", err))
 	}
@@ -535,7 +535,7 @@ _book_reviews_reviewer.user_id,
 
 	// run
 	// logf(sqlstr, bookReviewID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookReviewID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookReviewID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/db.Query: %w", err))
 	}
@@ -606,7 +606,7 @@ _book_reviews_reviewer.user_id,
 
 	// run
 	// logf(sqlstr, reviewer, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, reviewer, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, reviewer, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/db.Query: %w", err))
 	}
@@ -677,7 +677,7 @@ _book_reviews_reviewer.user_id,
 
 	// run
 	// logf(sqlstr, reviewer)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, reviewer)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, reviewer}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
 	}
@@ -750,7 +750,7 @@ _book_reviews_reviewer.user_id,
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
 	}

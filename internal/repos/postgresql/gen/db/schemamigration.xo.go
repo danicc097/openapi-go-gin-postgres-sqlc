@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -194,7 +196,30 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 		o(c)
 	}
 
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
@@ -209,7 +234,7 @@ schema_migrations.dirty ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, version)
+	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Asc/db.Query: %w", err))
 	}
@@ -228,7 +253,30 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 		o(c)
 	}
 
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
@@ -243,7 +291,7 @@ schema_migrations.dirty ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, version)
+	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Desc/db.Query: %w", err))
 	}
@@ -264,7 +312,30 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 		o(c)
 	}
 
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
@@ -278,7 +349,7 @@ schema_migrations.dirty `+
 
 	// run
 	// logf(sqlstr, version)
-	rows, err := db.Query(ctx, sqlstr, version)
+	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", err))
 	}

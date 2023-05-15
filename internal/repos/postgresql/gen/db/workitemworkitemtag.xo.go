@@ -5,6 +5,8 @@ package db
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -153,7 +155,30 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Contex
 		o(c)
 	}
 
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
@@ -204,7 +229,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/Asc/db.Query: %w", err))
 	}
@@ -223,7 +248,30 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Conte
 		o(c)
 	}
 
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
@@ -274,7 +322,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/Desc/db.Query: %w", err))
 	}
@@ -295,7 +343,30 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 		o(c)
 	}
 
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
@@ -344,7 +415,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 	// logf(sqlstr, workItemID, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemID, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemID, workItemTagID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/db.Query: %w", err))
 	}
@@ -366,7 +437,30 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
@@ -415,7 +509,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/Query: %w", err))
 	}
@@ -439,7 +533,30 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
@@ -488,7 +605,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 	// logf(sqlstr, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/Query: %w", err))
 	}
@@ -512,7 +629,30 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 		o(c)
 	}
 
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
@@ -561,7 +701,7 @@ work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, 
 
 	// run
 	// logf(sqlstr, workItemTagID, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemTagIDWorkItemID/Query: %w", err))
 	}

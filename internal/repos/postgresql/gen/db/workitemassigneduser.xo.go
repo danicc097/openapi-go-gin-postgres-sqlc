@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
@@ -227,7 +229,30 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		o(c)
 	}
 
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
@@ -283,7 +308,7 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 
 	// run
 	// logf(sqlstr, assignedUser, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", err))
 	}
@@ -307,7 +332,30 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		o(c)
 	}
 
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
@@ -363,7 +411,7 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 
 	// run
 	// logf(sqlstr, workItemID, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID, assignedUser)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID, assignedUser}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", err))
 	}
@@ -385,7 +433,30 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
@@ -441,7 +512,7 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
 	}
@@ -465,7 +536,30 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		o(c)
 	}
 
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
 	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	fmt.Printf("filters: %v\n", filters)
+	fmt.Printf("filterValues: %v\n", filterValues)
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
@@ -521,7 +615,7 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 
 	// run
 	// logf(sqlstr, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
 	}

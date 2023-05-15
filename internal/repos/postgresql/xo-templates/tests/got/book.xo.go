@@ -321,7 +321,7 @@ books.book_id, books.book_id ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/db.Query: %w", err))
 	}
@@ -448,7 +448,7 @@ books.book_id, books.book_id ORDER BY
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/db.Query: %w", err))
 	}
@@ -576,7 +576,7 @@ books.book_id, books.book_id `, filters)
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", err))
 	}
