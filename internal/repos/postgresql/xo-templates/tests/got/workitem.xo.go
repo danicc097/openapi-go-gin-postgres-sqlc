@@ -22,6 +22,8 @@ import (
 type WorkItem struct {
 	WorkItemID int64   `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
 	Title      *string `json:"title" db:"title" required:"true"`             // title
+
+	DemoWorkItemJoin *DemoWorkItem `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"` // O2O demo_work_items (inferred)
 }
 
 // WorkItemCreateParams represents insert params for 'xo_tests.work_items'.
@@ -69,12 +71,16 @@ func WithWorkItemLimit(limit int) WorkItemSelectConfigOption {
 
 type WorkItemOrderBy = string
 
-type WorkItemJoins struct{}
+type WorkItemJoins struct {
+	DemoWorkItem bool // O2O demo_work_items
+}
 
 // WithWorkItemJoin joins with the given tables.
 func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		s.joins = WorkItemJoins{}
+		s.joins = WorkItemJoins{
+			DemoWorkItem: s.joins.DemoWorkItem || joins.DemoWorkItem,
+		}
 	}
 }
 
@@ -186,7 +192,7 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 		o(c)
 	}
 
-	paramStart := 1
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -210,18 +216,22 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
-work_items.title `+
+work_items.title,
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
 		`FROM xo_tests.work_items `+
-		``+
-		` WHERE work_items.work_item_id > $1`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id > $2`+
 		` %s  GROUP BY work_items.work_item_id, 
-work_items.title ORDER BY 
+work_items.title, 
+_demo_work_items_work_item_id.work_item_id,
+	work_items.work_item_id ORDER BY 
 		work_item_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
 	}
@@ -240,7 +250,7 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 		o(c)
 	}
 
-	paramStart := 1
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -264,18 +274,22 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
-work_items.title `+
+work_items.title,
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
 		`FROM xo_tests.work_items `+
-		``+
-		` WHERE work_items.work_item_id < $1`+
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id < $2`+
 		` %s  GROUP BY work_items.work_item_id, 
-work_items.title ORDER BY 
+work_items.title, 
+_demo_work_items_work_item_id.work_item_id,
+	work_items.work_item_id ORDER BY 
 		work_item_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
 	}
@@ -296,7 +310,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 		o(c)
 	}
 
-	paramStart := 1
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -320,17 +334,21 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
-work_items.title `+
+work_items.title,
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
 		`FROM xo_tests.work_items `+
-		``+
-		` WHERE work_items.work_item_id = $1`+
-		` %s  `, filters)
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id = $2`+
+		` %s  GROUP BY 
+_demo_work_items_work_item_id.work_item_id,
+	work_items.work_item_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}

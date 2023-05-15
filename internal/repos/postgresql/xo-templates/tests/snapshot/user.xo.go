@@ -34,7 +34,7 @@ type User struct {
 	SellerBooksJoin           *[]Book            `json:"-" db:"book_sellers_books" openapi-go:"ignore"`               // M2M book_sellers
 	ReceiverNotificationsJoin *[]Notification    `json:"-" db:"notifications_receiver" openapi-go:"ignore"`           // M2O users
 	SenderNotificationsJoin   *[]Notification    `json:"-" db:"notifications_sender" openapi-go:"ignore"`             // M2O users
-	UserAPIKeyJoin            *UserAPIKey        `json:"-" db:"user_api_key_user_id" openapi-go:"ignore"`             // O2O user_api_keys (inferred)
+	APIKeyJoin                *UserAPIKey        `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`          // O2O user_api_keys (inferred)
 }
 
 // UserCreateParams represents insert params for 'xo_tests.users'.
@@ -334,7 +334,7 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -406,8 +406,8 @@ left join (
     xo_tests.notifications
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
 		` WHERE users.created_at > $8`+
 		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.name, 
@@ -420,8 +420,8 @@ joined_book_reviews.book_reviews, users.user_id,
 users.user_id, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
 	users.user_id  ORDER BY 
 		created_at Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
@@ -492,7 +492,7 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -564,8 +564,8 @@ left join (
     xo_tests.notifications
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
 		` WHERE users.created_at < $8`+
 		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.name, 
@@ -578,8 +578,8 @@ joined_book_reviews.book_reviews, users.user_id,
 users.user_id, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
 	users.user_id  ORDER BY 
 		created_at Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
@@ -652,7 +652,7 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -724,8 +724,8 @@ left join (
     xo_tests.notifications
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
 		` WHERE users.created_at = $8`+
 		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
@@ -734,8 +734,8 @@ joined_book_reviews.book_reviews, users.user_id,
 users.user_id, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
 	users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -809,7 +809,7 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -881,8 +881,8 @@ left join (
     xo_tests.notifications
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
 		` WHERE users.name = $8`+
 		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
@@ -891,8 +891,8 @@ joined_book_reviews.book_reviews, users.user_id,
 users.user_id, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
 	users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -966,7 +966,7 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -1038,8 +1038,8 @@ left join (
     xo_tests.notifications
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
+-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
 		` WHERE users.user_id = $8`+
 		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
@@ -1048,8 +1048,8 @@ joined_book_reviews.book_reviews, users.user_id,
 users.user_id, users.user_id, 
 joined_notifications_receiver.notifications, users.user_id, 
 joined_notifications_sender.notifications, users.user_id, 
-_users_user_id.user_id,
-      _users_user_id.user_api_key_id,
+_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
 	users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -160,11 +160,10 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 	assert.Equal(t, dwi.WorkItemID, workitemID)
 	assert.Equal(t, dwi.WorkItemJoin.WorkItemID, workitemID)
 
-	// FIXME: not generated
-	// wi, err := db.WorkItemByWorkItemID(ctx, testPool, workitemID, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
-	// assert.NoError(t, err)
-	// assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, workitemID)
-	// assert.Equal(t, wi.WorkItemID, workitemID)
+	wi, err := db.WorkItemByWorkItemID(ctx, testPool, workitemID, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
+	assert.NoError(t, err)
+	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, workitemID)
+	assert.Equal(t, wi.WorkItemID, workitemID)
 }
 
 func TestO2OInferred_VerticallyPartitioned(t *testing.T) {

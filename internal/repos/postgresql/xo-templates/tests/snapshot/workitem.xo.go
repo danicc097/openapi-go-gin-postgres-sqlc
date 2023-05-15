@@ -219,7 +219,7 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 work_items.title,
 (case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
 		`FROM xo_tests.work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
 		` WHERE work_items.work_item_id > $2`+
 		` %s  GROUP BY work_items.work_item_id, 
@@ -277,7 +277,7 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 work_items.title,
 (case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
 		`FROM xo_tests.work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
 		` WHERE work_items.work_item_id < $2`+
 		` %s  GROUP BY work_items.work_item_id, 
@@ -337,7 +337,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 work_items.title,
 (case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
 		`FROM xo_tests.work_items `+
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
 		` WHERE work_items.work_item_id = $2`+
 		` %s  GROUP BY 

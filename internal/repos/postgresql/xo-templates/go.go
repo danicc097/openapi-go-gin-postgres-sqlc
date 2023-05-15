@@ -1085,7 +1085,7 @@ cc_label:
 				IsInferredO2O:  true,
 			})
 
-			t := tables[constraint.RefTableName]
+			t := tables[constraint.TableName]
 			// fmt.Printf("%s: t.PrimaryKeys: %v\n", constraint.TableName, t.PrimaryKeys)
 			// fmt.Printf("%s: t.ForeignKeys: %v\n", constraint.TableName, t.ForeignKeys)
 			// rt := tables[constraint.RefTableName]
