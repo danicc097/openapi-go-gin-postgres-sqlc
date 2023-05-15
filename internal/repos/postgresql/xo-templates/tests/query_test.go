@@ -188,14 +188,16 @@ func TestCustomFilters(t *testing.T) {
 
 	ctx := context.Background()
 
-	_, err := db.UserPaginatedByCreatedAtAsc(ctx, testPool, time.Now().Add(-999*time.Hour),
+	uu, err := db.UserPaginatedByCreatedAtAsc(ctx, testPool, time.Now().Add(-999*time.Hour),
 		db.WithUserJoin(db.UserJoins{UserAPIKey: true}),
 		db.WithUserFilters(map[string][]any{
+			"xo_tests.users.name = any ($i)":       {[]string{"Jane Smith"}}, // unique
 			"NOT (xo_tests.users.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
 			`(xo_tests.users.created_at > $i OR
 		true = $i)`: {time.Now().Add(-24 * time.Hour), true},
 		}))
 	assert.NoError(t, err)
+	assert.Len(t, uu, 1)
 }
 
 func TestCRUD_UniqueIndex(t *testing.T) {
