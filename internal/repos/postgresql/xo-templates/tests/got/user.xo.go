@@ -289,7 +289,7 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		o(c)
 	}
 
-	paramStart := 13
+	paramStart := 8
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -450,7 +450,7 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 		o(c)
 	}
 
-	paramStart := 13
+	paramStart := 8
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)

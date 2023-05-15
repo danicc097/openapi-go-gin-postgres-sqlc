@@ -204,7 +204,7 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -274,7 +274,7 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -344,7 +344,7 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -414,7 +414,7 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)

@@ -1522,7 +1522,7 @@ func (f *Funcs) last_nth(v any, constraints any, tables Tables, ff ...any) strin
 	case Table:
 		tableName := x.SQLName
 		t := x
-		return lastNth(constraints, f, tableName, tables, t, append(t.Fields, extraFields...))
+		return lastNth(constraints, f, tableName, tables, t, extraFields)
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE last_nth: %T ]]", v)
 	}

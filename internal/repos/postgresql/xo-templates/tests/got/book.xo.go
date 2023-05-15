@@ -213,7 +213,7 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 		o(c)
 	}
 
-	paramStart := 7
+	paramStart := 5
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -340,7 +340,7 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 		o(c)
 	}
 
-	paramStart := 7
+	paramStart := 5
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)

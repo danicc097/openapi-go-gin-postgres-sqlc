@@ -224,7 +224,7 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 		o(c)
 	}
 
-	paramStart := 7
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -326,7 +326,7 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 		o(c)
 	}
 
-	paramStart := 7
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)

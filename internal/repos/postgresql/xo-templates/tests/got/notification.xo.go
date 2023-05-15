@@ -212,7 +212,7 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 		o(c)
 	}
 
-	paramStart := 7
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -284,7 +284,7 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 		o(c)
 	}
 
-	paramStart := 7
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
