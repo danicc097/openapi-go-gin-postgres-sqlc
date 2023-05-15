@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
@@ -69,6 +71,7 @@ type BookAuthorSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   BookAuthorJoins
+	filters map[string][]any
 }
 type BookAuthorSelectConfigOption func(*BookAuthorSelectConfig)
 
@@ -108,6 +111,22 @@ type Book__BA_BookAuthor struct {
 type User__BA_BookAuthor struct {
 	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithBookAuthorFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithBookAuthorFilters(filters map[string][]any) BookAuthorSelectConfigOption {
+	return func(s *BookAuthorSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the BookAuthor to the database.
@@ -199,14 +218,35 @@ func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
-	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}}
+	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
@@ -219,8 +259,8 @@ book_authors.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
-		`FROM xo_tests.book_authors ` +
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors `+
+		`FROM xo_tests.book_authors `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -250,23 +290,17 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
-` +
-		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4 GROUP BY 
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
+`+
+		` WHERE book_authors.book_id = $3 AND book_authors.author_id = $4`+
+		` %s  GROUP BY 
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
-book_authors.book_id, book_authors.book_id, book_authors.author_id `
+book_authors.book_id, book_authors.book_id, book_authors.author_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/db.Query: %w", err))
 	}
@@ -282,14 +316,35 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
-	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}}
+	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
@@ -302,8 +357,8 @@ book_authors.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
-		`FROM xo_tests.book_authors ` +
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors `+
+		`FROM xo_tests.book_authors `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -333,23 +388,17 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
-` +
-		` WHERE book_authors.book_id = $3 GROUP BY 
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
+`+
+		` WHERE book_authors.book_id = $3`+
+		` %s  GROUP BY 
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
-book_authors.book_id, book_authors.book_id, book_authors.author_id `
+book_authors.book_id, book_authors.book_id, book_authors.author_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
 	}
@@ -367,14 +416,35 @@ book_authors.book_id, book_authors.book_id, book_authors.author_id `
 //
 // Generated from index 'book_authors_pkey'.
 func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
-	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}}
+	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
 book_authors.pseudonym,
@@ -387,8 +457,8 @@ book_authors.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors ` +
-		`FROM xo_tests.book_authors ` +
+		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors `+
+		`FROM xo_tests.book_authors `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
@@ -418,23 +488,17 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
-` +
-		` WHERE book_authors.author_id = $3 GROUP BY 
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
+`+
+		` WHERE book_authors.author_id = $3`+
+		` %s  GROUP BY 
 book_authors.author_id, book_authors.book_id, book_authors.author_id, 
-
-	book_authors.author_id,
-	book_authors.book_id,
-	book_authors.pseudonym,
-book_authors.book_id, book_authors.book_id, book_authors.author_id `
+book_authors.book_id, book_authors.book_id, book_authors.author_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, authorID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
 	}

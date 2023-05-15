@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -77,6 +79,7 @@ type ActivitySelectConfig struct {
 	limit   string
 	orderBy string
 	joins   ActivityJoins
+	filters map[string][]any
 }
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
 
@@ -105,6 +108,22 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
 		}
+	}
+}
+
+// WithActivityFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithActivityFilters(filters map[string][]any) ActivitySelectConfigOption {
+	return func(s *ActivitySelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -197,21 +216,43 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 
 // ActivityPaginatedByActivityIDAsc returns a cursor-paginated list of Activity in Asc order.
 func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -222,29 +263,23 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id > $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.activity_id > $3`+
+		` %s  GROUP BY activities.activity_id, 
+activities.project_id, 
+activities.name, 
+activities.description, 
+activities.is_productive, 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		activity_id Asc `
+		activity_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, activityID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, activityID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", err))
 	}
@@ -257,21 +292,43 @@ joined_time_entries.time_entries, activities.activity_id ORDER BY
 
 // ActivityPaginatedByProjectIDAsc returns a cursor-paginated list of Activity in Asc order.
 func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -282,29 +339,23 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id > $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.project_id > $3`+
+		` %s  GROUP BY activities.activity_id, 
+activities.project_id, 
+activities.name, 
+activities.description, 
+activities.is_productive, 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		project_id Asc `
+		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", err))
 	}
@@ -317,21 +368,43 @@ joined_time_entries.time_entries, activities.activity_id ORDER BY
 
 // ActivityPaginatedByActivityIDDesc returns a cursor-paginated list of Activity in Desc order.
 func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -342,29 +415,23 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id < $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.activity_id < $3`+
+		` %s  GROUP BY activities.activity_id, 
+activities.project_id, 
+activities.name, 
+activities.description, 
+activities.is_productive, 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		activity_id Desc `
+		activity_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, activityID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, activityID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", err))
 	}
@@ -377,21 +444,43 @@ joined_time_entries.time_entries, activities.activity_id ORDER BY
 
 // ActivityPaginatedByProjectIDDesc returns a cursor-paginated list of Activity in Desc order.
 func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -402,29 +491,23 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id < $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.project_id < $3`+
+		` %s  GROUP BY activities.activity_id, 
+activities.project_id, 
+activities.name, 
+activities.description, 
+activities.is_productive, 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
 joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		project_id Desc `
+		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", err))
 	}
@@ -439,22 +522,43 @@ joined_time_entries.time_entries, activities.activity_id ORDER BY
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -465,29 +569,19 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $3 AND activities.project_id = $4 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.name = $3 AND activities.project_id = $4`+
+		` %s  GROUP BY 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
-joined_time_entries.time_entries, activities.activity_id `
+joined_time_entries.time_entries, activities.activity_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, name, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
 	}
@@ -503,22 +597,43 @@ joined_time_entries.time_entries, activities.activity_id `
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -529,29 +644,19 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.name = $3`+
+		` %s  GROUP BY 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
-joined_time_entries.time_entries, activities.activity_id `
+joined_time_entries.time_entries, activities.activity_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, name)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, name}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
@@ -569,22 +674,43 @@ joined_time_entries.time_entries, activities.activity_id `
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -595,29 +721,19 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id = $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.project_id = $3`+
+		` %s  GROUP BY 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
-joined_time_entries.time_entries, activities.activity_id `
+joined_time_entries.time_entries, activities.activity_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
@@ -635,22 +751,43 @@ joined_time_entries.time_entries, activities.activity_id `
 //
 // Generated from index 'activities_pkey'.
 func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
 (case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
-		`FROM public.activities ` +
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
+		`FROM public.activities `+
 		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
@@ -661,29 +798,19 @@ left join (
   from
     time_entries
   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id = $3 GROUP BY 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
+		` WHERE activities.activity_id = $3`+
+		` %s  GROUP BY 
 _activities_project_id.project_id,
       _activities_project_id.project_id,
 	activities.activity_id, 
-
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id,
-joined_time_entries.time_entries, activities.activity_id `
+joined_time_entries.time_entries, activities.activity_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, activityID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, activityID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, activityID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))
 	}

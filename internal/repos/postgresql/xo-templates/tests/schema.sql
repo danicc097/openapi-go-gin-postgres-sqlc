@@ -2,6 +2,7 @@ create schema if not exists extensions;
 
 create extension if not exists pg_stat_statements schema extensions;
 
+-- ensure up to date
 drop schema if exists xo_tests cascade;
 
 create schema if not exists xo_tests;
@@ -19,7 +20,7 @@ create table xo_tests.user_api_keys (
 
 create table xo_tests.users (
   user_id uuid default gen_random_uuid () primary key
-  , name text not null
+  , name text not null unique
   , api_key_id int
   , foreign key (api_key_id) references xo_tests.user_api_keys (user_api_key_id) on delete cascade
   , created_at timestamp with time zone default current_timestamp not null unique
@@ -195,10 +196,11 @@ begin
 
   insert into xo_tests.pag_element (name , created_at)
     values ('element -1 day' , current_timestamp + '-1 day');
-  insert into xo_tests.pag_element (name , created_at)
-    values ('element -2 days' , current_timestamp + '-2 days');
+  -- bit of randomness
   insert into xo_tests.pag_element (name , created_at)
     values ('element -3 days' , current_timestamp + '-3 days');
+  insert into xo_tests.pag_element (name , created_at)
+    values ('element -2 days' , current_timestamp + '-2 days');
   insert into xo_tests.pag_element (name , created_at)
     values ('element -4 days' , current_timestamp + '-4 days');
 end;

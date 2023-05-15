@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -54,6 +56,7 @@ type DummyJoinSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   DummyJoinJoins
+	filters map[string][]any
 }
 type DummyJoinSelectConfigOption func(*DummyJoinSelectConfig)
 
@@ -78,6 +81,22 @@ func WithDummyJoinJoin(joins DummyJoinJoins) DummyJoinSelectConfigOption {
 		s.joins = DummyJoinJoins{
 			PagElement: s.joins.PagElement || joins.PagElement,
 		}
+	}
+}
+
+// WithDummyJoinFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithDummyJoinFilters(filters map[string][]any) DummyJoinSelectConfigOption {
+	return func(s *DummyJoinSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -167,31 +186,53 @@ func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 
 // DummyJoinPaginatedByDummyJoinIDAsc returns a cursor-paginated list of DummyJoin in Asc order.
 func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
+	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
-		`FROM xo_tests.dummy_join ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id `+
+		`FROM xo_tests.dummy_join `+
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id > $2 GROUP BY 
-	dummy_join.dummy_join_id,
-	dummy_join.name,
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id`+
+		` WHERE dummy_join.dummy_join_id > $2`+
+		` %s  GROUP BY dummy_join.dummy_join_id, 
+dummy_join.name, 
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id ORDER BY 
-		dummy_join_id Asc `
+		dummy_join_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.PagElement, dummyJoinID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/db.Query: %w", err))
 	}
@@ -204,31 +245,53 @@ _dummy_join_dummy_join_id.dummy,
 
 // DummyJoinPaginatedByDummyJoinIDDesc returns a cursor-paginated list of DummyJoin in Desc order.
 func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
+	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
-		`FROM xo_tests.dummy_join ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id `+
+		`FROM xo_tests.dummy_join `+
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id < $2 GROUP BY 
-	dummy_join.dummy_join_id,
-	dummy_join.name,
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id`+
+		` WHERE dummy_join.dummy_join_id < $2`+
+		` %s  GROUP BY dummy_join.dummy_join_id, 
+dummy_join.name, 
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
 	dummy_join.dummy_join_id ORDER BY 
-		dummy_join_id Desc `
+		dummy_join_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.PagElement, dummyJoinID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/db.Query: %w", err))
 	}
@@ -243,32 +306,52 @@ _dummy_join_dummy_join_id.dummy,
 //
 // Generated from index 'dummy_join_pkey'.
 func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) (*DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}}
+	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`dummy_join.dummy_join_id,
 dummy_join.name,
-(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id ` +
-		`FROM xo_tests.dummy_join ` +
+(case when $1::boolean = true and _dummy_join_dummy_join_id.dummy is not null then row(_dummy_join_dummy_join_id.*) end) as pag_element_dummy_join_id `+
+		`FROM xo_tests.dummy_join `+
 		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id` +
-		` WHERE dummy_join.dummy_join_id = $2 GROUP BY 
-	dummy_join.dummy_join_id,
-	dummy_join.name,
+left join xo_tests.pag_element as _dummy_join_dummy_join_id on _dummy_join_dummy_join_id.dummy = dummy_join.dummy_join_id`+
+		` WHERE dummy_join.dummy_join_id = $2`+
+		` %s  GROUP BY 
 _dummy_join_dummy_join_id.dummy,
       _dummy_join_dummy_join_id.paginated_element_id,
-	dummy_join.dummy_join_id `
+	dummy_join.dummy_join_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, dummyJoinID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.PagElement, dummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.PagElement, dummyJoinID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/db.Query: %w", err))
 	}

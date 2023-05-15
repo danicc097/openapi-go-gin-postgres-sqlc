@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -115,6 +116,7 @@ type WorkItemSelectConfig struct {
 	limit     string
 	orderBy   string
 	joins     WorkItemJoins
+	filters   map[string][]any
 	deletedAt string
 }
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
@@ -197,6 +199,22 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 type User__WIAU_WorkItem struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+}
+
+// WithWorkItemFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the WorkItem to the database.
@@ -318,10 +336,32 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 
 // WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
 func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
+	}
+
+	paramStart := 7
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -401,98 +441,33 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id > $7  AND work_items.deleted_at is %s  GROUP BY 
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
+		` WHERE work_items.work_item_id > $7`+
+		` %s   AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
+work_items.title, 
+work_items.description, 
+work_items.work_item_type_id, 
+work_items.metadata, 
+work_items.team_id, 
+work_items.kanban_step_id, 
+work_items.closed, 
+work_items.target_date, 
+work_items.created_at, 
+work_items.updated_at, 
+work_items.deleted_at, 
 _demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_time_entries.time_entries, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 work_items.work_item_id, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 work_items.work_item_id, work_items.work_item_id  ORDER BY 
-		work_item_id Asc`, c.deletedAt)
+		work_item_id Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
 	}
@@ -505,10 +480,32 @@ work_items.work_item_id, work_items.work_item_id  ORDER BY
 
 // WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
 func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
+	}
+
+	paramStart := 7
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -588,98 +585,33 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id < $7  AND work_items.deleted_at is %s  GROUP BY 
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
+		` WHERE work_items.work_item_id < $7`+
+		` %s   AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
+work_items.title, 
+work_items.description, 
+work_items.work_item_type_id, 
+work_items.metadata, 
+work_items.team_id, 
+work_items.kanban_step_id, 
+work_items.closed, 
+work_items.target_date, 
+work_items.created_at, 
+work_items.updated_at, 
+work_items.deleted_at, 
 _demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_time_entries.time_entries, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 work_items.work_item_id, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 work_items.work_item_id, work_items.work_item_id  ORDER BY 
-		work_item_id Desc`, c.deletedAt)
+		work_item_id Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
 	}
@@ -694,13 +626,34 @@ work_items.work_item_id, work_items.work_item_id  ORDER BY
 //
 // Generated from index 'work_items_deleted_at_idx'.
 func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 7
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -778,98 +731,22 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s   GROUP BY 
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
+		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)`+
+		` %s   AND work_items.deleted_at is %s   GROUP BY 
 _demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_time_entries.time_entries, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 work_items.work_item_id, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
-work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
+work_items.work_item_id, work_items.work_item_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, deletedAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/Query: %w", err))
 	}
@@ -887,13 +764,34 @@ work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 7
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -971,98 +869,22 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s   GROUP BY 
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
+		` WHERE work_items.work_item_id = $7`+
+		` %s   AND work_items.deleted_at is %s   GROUP BY 
 _demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_time_entries.time_entries, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 work_items.work_item_id, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
-work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
+work_items.work_item_id, work_items.work_item_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -1078,13 +900,34 @@ work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
 //
 // Generated from index 'work_items_team_id_idx'.
 func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 7
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -1162,98 +1005,22 @@ left join (
 			, work_item_tags.work_item_tag_id
   ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s   GROUP BY 
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
+		` WHERE work_items.team_id = $7`+
+		` %s   AND work_items.deleted_at is %s   GROUP BY 
 _demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_time_entries.time_entries, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 work_items.work_item_id, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
 joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-
-	work_items.closed,
-	work_items.created_at,
-	work_items.deleted_at,
-	work_items.description,
-	work_items.kanban_step_id,
-	work_items.metadata,
-	work_items.target_date,
-	work_items.team_id,
-	work_items.title,
-	work_items.updated_at,
-	work_items.work_item_id,
-	work_items.work_item_type_id,
-work_items.work_item_id, work_items.work_item_id `, c.deletedAt)
+work_items.work_item_id, work_items.work_item_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, teamID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/Query: %w", err))
 	}

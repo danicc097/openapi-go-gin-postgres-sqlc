@@ -806,7 +806,8 @@ x.test.backend() {
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     echo "Running ${GREEN}\"APP_ENV=$env go test $* ./...\"${OFF}"
-    APP_ENV="$env" go test -count=1 "$@" ./...
+    go list ./... | grep --invert-match "$XO_TESTS_PKG" | APP_ENV="$env" xargs go test -count=1 "$@"
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -838,7 +839,7 @@ x.test.xo() {
     echo "Running xo template tests"
 
     test_dir="$XO_TEMPLATES_DIR/tests"
-    dockerdb_psql -d $POSTGRES_DB <"$test_dir/schema.sql"
+    dockerdb_psql -d $POSTGRES_DB <"$test_dir/schema.sql" # need correct schema for xo gen
     echo "Schema loaded"
 
     rm -rf "$test_dir/got"
@@ -853,7 +854,7 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    APP_ENV="$env" go test -count=1 "$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests" ||
+    APP_ENV="$env" go test -count=1 "$XO_TESTS_PKG" ||
       err "xo tests failed"
 
     if ! $test_dir/diff_check; then
@@ -880,7 +881,8 @@ x.test.backend.watch() {
       --timefmt='%s' |
       while read -r event_time event_file 2>/dev/null || sleep $latency; do
         clear
-        APP_ENV="$env" go test -count=1 "$@" ./... && echo "${GREEN}✓ All tests passing${OFF}"
+
+        { go list ./... | grep --invert-match "$XO_TESTS_PKG" | APP_ENV="$env" xargs go test -count=1 "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
       done
   done
 }
@@ -1758,6 +1760,8 @@ readonly POSTGRES_TEST_DB="postgres_test"
 readonly DUMPS_DIR="$HOME/openapi_go_gin_postgres_dumps"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
+# can only run with count=1 at most
+readonly XO_TESTS_PKG="$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests"
 readonly OPID_AUTH="operationAuth.gen.json"
 readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
 readonly FRONTEND_SRC="frontend/src"

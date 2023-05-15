@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -67,6 +69,7 @@ type MovieSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   MovieJoins
+	filters map[string][]any
 }
 type MovieSelectConfigOption func(*MovieSelectConfig)
 
@@ -90,6 +93,22 @@ type MovieJoins struct {
 func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
 		s.joins = MovieJoins{}
+	}
+}
+
+// WithMovieFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithMovieFilters(filters map[string][]any) MovieSelectConfigOption {
+	return func(s *MovieSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -181,26 +200,52 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 
 // MoviePaginatedByMovieIDAsc returns a cursor-paginated list of Movie in Asc order.
 func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
-	c := &MovieSelectConfig{joins: MovieJoins{}}
+	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis ` +
-		`FROM public.movies ` +
-		`` +
-		` WHERE movies.movie_id > $1 ORDER BY 
-		movie_id Asc `
+movies.synopsis `+
+		`FROM public.movies `+
+		``+
+		` WHERE movies.movie_id > $1`+
+		` %s  GROUP BY movies.movie_id, 
+movies.title, 
+movies.year, 
+movies.synopsis ORDER BY 
+		movie_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, movieID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/db.Query: %w", err))
 	}
@@ -213,26 +258,52 @@ movies.synopsis ` +
 
 // MoviePaginatedByMovieIDDesc returns a cursor-paginated list of Movie in Desc order.
 func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
-	c := &MovieSelectConfig{joins: MovieJoins{}}
+	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis ` +
-		`FROM public.movies ` +
-		`` +
-		` WHERE movies.movie_id < $1 ORDER BY 
-		movie_id Desc `
+movies.synopsis `+
+		`FROM public.movies `+
+		``+
+		` WHERE movies.movie_id < $1`+
+		` %s  GROUP BY movies.movie_id, 
+movies.title, 
+movies.year, 
+movies.synopsis ORDER BY 
+		movie_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, movieID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/db.Query: %w", err))
 	}
@@ -247,27 +318,49 @@ movies.synopsis ` +
 //
 // Generated from index 'movies_pkey'.
 func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
-	c := &MovieSelectConfig{joins: MovieJoins{}}
+	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis ` +
-		`FROM public.movies ` +
-		`` +
-		` WHERE movies.movie_id = $1 `
+movies.synopsis `+
+		`FROM public.movies `+
+		``+
+		` WHERE movies.movie_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, movieID)
-	rows, err := db.Query(ctx, sqlstr, movieID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/db.Query: %w", err))
 	}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -72,6 +73,7 @@ type UserSelectConfig struct {
 	limit     string
 	orderBy   string
 	joins     UserJoins
+	filters   map[string][]any
 	deletedAt string
 }
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -150,6 +152,22 @@ type Book__BA_User struct {
 type Book__BASK_User struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithUserFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the User to the database.
@@ -265,10 +283,32 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
 func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
+	}
+
+	paramStart := 8
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -368,63 +408,27 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at > $8  AND users.deleted_at is %s  GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
+		` WHERE users.created_at > $8`+
+		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
+users.name, 
+users.api_key_id, 
+users.created_at, 
+users.deleted_at, 
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id  ORDER BY 
-		created_at Asc`, c.deletedAt)
+		created_at Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
@@ -437,10 +441,32 @@ _users_user_id.user_id,
 
 // UserPaginatedByCreatedAtDesc returns a cursor-paginated list of User in Desc order.
 func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
+	}
+
+	paramStart := 8
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -540,63 +566,27 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at < $8  AND users.deleted_at is %s  GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
+		` WHERE users.created_at < $8`+
+		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
+users.name, 
+users.api_key_id, 
+users.created_at, 
+users.deleted_at, 
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id  ORDER BY 
-		created_at Desc`, c.deletedAt)
+		created_at Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
 	}
@@ -611,13 +601,34 @@ _users_user_id.user_id,
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 8
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
@@ -715,63 +726,23 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.created_at = $8  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
+		` WHERE users.created_at = $8`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id `, c.deletedAt)
+	users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -783,17 +754,38 @@ _users_user_id.user_id,
 	return &u, nil
 }
 
-// UserByUserID retrieves a row from 'xo_tests.users' as a User.
+// UserByName retrieves a row from 'xo_tests.users' as a User.
 //
-// Generated from index 'users_pkey'.
-func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+// Generated from index 'users_name_key'.
+func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 8
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
@@ -891,63 +883,180 @@ left join (
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
-		` WHERE users.user_id = $8  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
+		` WHERE users.name = $8`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_book_reviews.book_reviews, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
-	users.user_id `, c.deletedAt)
+	users.user_id`, filters, c.deletedAt)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	// logf(sqlstr, name)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, name}, filterValues...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByName/db.Query: %w", err))
+	}
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByName/pgx.CollectOneRow: %w", err))
+	}
+
+	return &u, nil
+}
+
+// UserByUserID retrieves a row from 'xo_tests.users' as a User.
+//
+// Generated from index 'users_pkey'.
+func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 8
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
+		`users.user_id,
+users.name,
+users.api_key_id,
+users.created_at,
+users.deleted_at,
+(case when $1::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books is not null), '{}') end) as book_authors_books,
+(case when $2::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_books.__books
+		, joined_book_authors_surrogate_key_books.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
+(case when $4::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books,
+(case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
+(case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
+(case when $7::boolean = true and _users_user_id.user_id is not null then row(_users_user_id.*) end) as user_api_key_user_id `+
+		`FROM xo_tests.users `+
+		`-- M2M join generated from "book_authors_book_id_fkey"
+left join (
+	select
+			book_authors.author_id as book_authors_author_id
+			, book_authors.pseudonym as pseudonym
+			, row(books.*) as __books
+		from
+			xo_tests.book_authors
+    join xo_tests.books on books.book_id = book_authors.book_id
+    group by
+			book_authors_author_id
+			, books.book_id
+			, pseudonym
+  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
+
+-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+left join (
+	select
+			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
+			, book_authors_surrogate_key.pseudonym as pseudonym
+			, row(books.*) as __books
+		from
+			xo_tests.book_authors_surrogate_key
+    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
+    group by
+			book_authors_surrogate_key_author_id
+			, books.book_id
+			, pseudonym
+  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
+
+-- M2O join generated from "book_reviews_reviewer_fkey"
+left join (
+  select
+  reviewer as book_reviews_user_id
+    , array_agg(book_reviews.*) as book_reviews
+  from
+    xo_tests.book_reviews
+  group by
+        reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+-- M2M join generated from "book_sellers_book_id_fkey"
+left join (
+	select
+			book_sellers.seller as book_sellers_seller
+			, row(books.*) as __books
+		from
+			xo_tests.book_sellers
+    join xo_tests.books on books.book_id = book_sellers.book_id
+    group by
+			book_sellers_seller
+			, books.book_id
+  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
+
+-- M2O join generated from "notifications_receiver_fkey"
+left join (
+  select
+  receiver as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    xo_tests.notifications
+  group by
+        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+-- M2O join generated from "notifications_sender_fkey"
+left join (
+  select
+  sender as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    xo_tests.notifications
+  group by
+        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join xo_tests.user_api_keys as _users_user_id on _users_user_id.user_id = users.user_id`+
+		` WHERE users.user_id = $8`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
+users.user_id, users.user_id, 
+users.user_id, users.user_id, 
+joined_book_reviews.book_reviews, users.user_id, 
+users.user_id, users.user_id, 
+joined_notifications_receiver.notifications, users.user_id, 
+joined_notifications_sender.notifications, users.user_id, 
+_users_user_id.user_id,
+      _users_user_id.user_api_key_id,
+	users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, userID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, userID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}

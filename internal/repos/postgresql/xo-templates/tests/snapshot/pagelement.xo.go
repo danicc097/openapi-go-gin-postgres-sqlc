@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -63,6 +64,7 @@ type PagElementSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   PagElementJoins
+	filters map[string][]any
 }
 type PagElementSelectConfigOption func(*PagElementSelectConfig)
 
@@ -100,6 +102,22 @@ type PagElementJoins struct{}
 func WithPagElementJoin(joins PagElementJoins) PagElementSelectConfigOption {
 	return func(s *PagElementSelectConfig) {
 		s.joins = PagElementJoins{}
+	}
+}
+
+// WithPagElementFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithPagElementFilters(filters map[string][]any) PagElementSelectConfigOption {
+	return func(s *PagElementSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -190,26 +208,52 @@ func (pe *PagElement) Delete(ctx context.Context, db DB) error {
 
 // PagElementPaginatedByCreatedAtAsc returns a cursor-paginated list of PagElement in Asc order.
 func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
-		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.created_at > $1 ORDER BY 
-		created_at Asc `
+pag_element.dummy `+
+		`FROM xo_tests.pag_element `+
+		``+
+		` WHERE pag_element.created_at > $1`+
+		` %s  GROUP BY pag_element.paginated_element_id, 
+pag_element.name, 
+pag_element.created_at, 
+pag_element.dummy ORDER BY 
+		created_at Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/db.Query: %w", err))
 	}
@@ -222,26 +266,52 @@ pag_element.dummy ` +
 
 // PagElementPaginatedByCreatedAtDesc returns a cursor-paginated list of PagElement in Desc order.
 func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
-		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.created_at < $1 ORDER BY 
-		created_at Desc `
+pag_element.dummy `+
+		`FROM xo_tests.pag_element `+
+		``+
+		` WHERE pag_element.created_at < $1`+
+		` %s  GROUP BY pag_element.paginated_element_id, 
+pag_element.name, 
+pag_element.created_at, 
+pag_element.dummy ORDER BY 
+		created_at Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", err))
 	}
@@ -256,27 +326,49 @@ pag_element.dummy ` +
 //
 // Generated from index 'pag_element_created_at_key'.
 func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) (*PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
-		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.created_at = $1 `
+pag_element.dummy `+
+		`FROM xo_tests.pag_element `+
+		``+
+		` WHERE pag_element.created_at = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", err))
 	}
@@ -292,27 +384,49 @@ pag_element.dummy ` +
 //
 // Generated from index 'pag_element_pkey'.
 func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElementID uuid.UUID, opts ...PagElementSelectConfigOption) (*PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}}
+	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy ` +
-		`FROM xo_tests.pag_element ` +
-		`` +
-		` WHERE pag_element.paginated_element_id = $1 `
+pag_element.dummy `+
+		`FROM xo_tests.pag_element `+
+		``+
+		` WHERE pag_element.paginated_element_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, paginatedElementID)
-	rows, err := db.Query(ctx, sqlstr, paginatedElementID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{paginatedElementID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", err))
 	}

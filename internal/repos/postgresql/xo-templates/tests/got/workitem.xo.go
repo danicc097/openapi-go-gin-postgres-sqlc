@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -54,6 +56,7 @@ type WorkItemSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   WorkItemJoins
+	filters map[string][]any
 }
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 
@@ -78,6 +81,22 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 		s.joins = WorkItemJoins{
 			DemoWorkItem: s.joins.DemoWorkItem || joins.DemoWorkItem,
 		}
+	}
+}
+
+// WithWorkItemFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -167,30 +186,52 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 
 // WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
 func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
-(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id ` +
-		`FROM xo_tests.work_items ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
+		`FROM xo_tests.work_items `+
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
-left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id > $2 GROUP BY 
-	work_items.title,
-	work_items.work_item_id,
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id > $2`+
+		` %s  GROUP BY work_items.work_item_id, 
+work_items.title, 
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id ORDER BY 
-		work_item_id Asc `
+		work_item_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
 	}
@@ -203,30 +244,52 @@ _demo_work_items_work_item_id.work_item_id,
 
 // WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
 func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
-(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id ` +
-		`FROM xo_tests.work_items ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
+		`FROM xo_tests.work_items `+
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
-left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id < $2 GROUP BY 
-	work_items.title,
-	work_items.work_item_id,
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id < $2`+
+		` %s  GROUP BY work_items.work_item_id, 
+work_items.title, 
 _demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id ORDER BY 
-		work_item_id Desc `
+		work_item_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
 	}
@@ -241,31 +304,51 @@ _demo_work_items_work_item_id.work_item_id,
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
-(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id ` +
-		`FROM xo_tests.work_items ` +
+(case when $1::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id `+
+		`FROM xo_tests.work_items `+
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
-left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id = $2 GROUP BY 
-	work_items.title,
-	work_items.work_item_id,
+left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id = $2`+
+		` %s  GROUP BY 
 _demo_work_items_work_item_id.work_item_id,
-	work_items.work_item_id `
+	work_items.work_item_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoWorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoWorkItem, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}

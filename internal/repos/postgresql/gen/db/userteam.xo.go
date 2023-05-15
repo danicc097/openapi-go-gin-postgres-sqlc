@@ -5,6 +5,8 @@ package db
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -60,6 +62,7 @@ type UserTeamSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   UserTeamJoins
+	filters map[string][]any
 }
 type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 
@@ -88,6 +91,22 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 			TeamsMember: s.joins.TeamsMember || joins.TeamsMember,
 			Members:     s.joins.Members || joins.Members,
 		}
+	}
+}
+
+// WithUserTeamFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithUserTeamFilters(filters map[string][]any) UserTeamSelectConfigOption {
+	return func(s *UserTeamSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -133,14 +152,35 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'user_team_member_idx'.
 func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
@@ -150,8 +190,8 @@ user_team.member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
-		`FROM public.user_team ` +
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
@@ -177,21 +217,17 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
-` +
-		` WHERE user_team.member = $3 GROUP BY 
-	user_team.member,
-	user_team.team_id,
+`+
+		` WHERE user_team.member = $3`+
+		` %s  GROUP BY 
 user_team.team_id, user_team.team_id, user_team.member, 
-
-	user_team.member,
-	user_team.team_id,
-user_team.member, user_team.team_id, user_team.member `
+user_team.member, user_team.team_id, user_team.member `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, member)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TeamsMember, c.joins.Members, member)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.TeamsMember, c.joins.Members, member}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/Query: %w", err))
 	}
@@ -209,14 +245,35 @@ user_team.member, user_team.team_id, user_team.member `
 //
 // Generated from index 'user_team_pkey'.
 func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
@@ -226,8 +283,8 @@ user_team.member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
-		`FROM public.user_team ` +
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
@@ -253,21 +310,17 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
-` +
-		` WHERE user_team.member = $3 AND user_team.team_id = $4 GROUP BY 
-	user_team.member,
-	user_team.team_id,
+`+
+		` WHERE user_team.member = $3 AND user_team.team_id = $4`+
+		` %s  GROUP BY 
 user_team.team_id, user_team.team_id, user_team.member, 
-
-	user_team.member,
-	user_team.team_id,
-user_team.member, user_team.team_id, user_team.member `
+user_team.member, user_team.team_id, user_team.member `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, member, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TeamsMember, c.joins.Members, member, teamID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.TeamsMember, c.joins.Members, member, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/db.Query: %w", err))
 	}
@@ -283,14 +336,35 @@ user_team.member, user_team.team_id, user_team.member `
 //
 // Generated from index 'user_team_pkey'.
 func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
@@ -300,8 +374,8 @@ user_team.member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
-		`FROM public.user_team ` +
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
@@ -327,21 +401,17 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
-` +
-		` WHERE user_team.team_id = $3 GROUP BY 
-	user_team.member,
-	user_team.team_id,
+`+
+		` WHERE user_team.team_id = $3`+
+		` %s  GROUP BY 
 user_team.team_id, user_team.team_id, user_team.member, 
-
-	user_team.member,
-	user_team.team_id,
-user_team.member, user_team.team_id, user_team.member `
+user_team.member, user_team.team_id, user_team.member `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TeamsMember, c.joins.Members, teamID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.TeamsMember, c.joins.Members, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/Query: %w", err))
 	}
@@ -359,14 +429,35 @@ user_team.member, user_team.team_id, user_team.member `
 //
 // Generated from index 'user_team_team_id_member_idx'.
 func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
 user_team.member,
 (case when $1::boolean = true then COALESCE(
@@ -376,8 +467,8 @@ user_team.member,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members ` +
-		`FROM public.user_team ` +
+		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
@@ -403,21 +494,17 @@ left join (
 			user_team_team_id
 			, users.user_id
   ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
-` +
-		` WHERE user_team.team_id = $3 AND user_team.member = $4 GROUP BY 
-	user_team.member,
-	user_team.team_id,
+`+
+		` WHERE user_team.team_id = $3 AND user_team.member = $4`+
+		` %s  GROUP BY 
 user_team.team_id, user_team.team_id, user_team.member, 
-
-	user_team.member,
-	user_team.team_id,
-user_team.member, user_team.team_id, user_team.member `
+user_team.member, user_team.team_id, user_team.member `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID, member)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TeamsMember, c.joins.Members, teamID, member)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.TeamsMember, c.joins.Members, teamID, member}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/Query: %w", err))
 	}

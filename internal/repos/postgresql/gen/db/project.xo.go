@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -85,6 +86,7 @@ type ProjectSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   ProjectJoins
+	filters map[string][]any
 }
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
 
@@ -138,6 +140,22 @@ func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 			WorkItemTags:  s.joins.WorkItemTags || joins.WorkItemTags,
 			WorkItemTypes: s.joins.WorkItemTypes || joins.WorkItemTypes,
 		}
+	}
+}
+
+// WithProjectFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithProjectFilters(filters map[string][]any) ProjectSelectConfigOption {
+	return func(s *ProjectSelectConfig) {
+		s.filters = filters
 	}
 }
 
@@ -230,13 +248,35 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 
 // ProjectPaginatedByProjectIDAsc returns a cursor-paginated list of Project in Asc order.
 func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 6
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -248,8 +288,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -294,58 +334,26 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id > $6 GROUP BY 
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.project_id > $6`+
+		` %s  GROUP BY projects.project_id, 
+projects.name, 
+projects.description, 
+projects.work_items_table_name, 
+projects.board_config, 
+projects.created_at, 
+projects.updated_at, 
 joined_activities.activities, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_kanban_steps.kanban_steps, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_teams.teams, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_work_item_tags.work_item_tags, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_work_item_types.work_item_types, projects.project_id ORDER BY 
-		project_id Asc `
+		project_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Paginated/Asc/db.Query: %w", err))
 	}
@@ -358,13 +366,35 @@ joined_work_item_types.work_item_types, projects.project_id ORDER BY
 
 // ProjectPaginatedByProjectIDDesc returns a cursor-paginated list of Project in Desc order.
 func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 6
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -376,8 +406,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -422,58 +452,26 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id < $6 GROUP BY 
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.project_id < $6`+
+		` %s  GROUP BY projects.project_id, 
+projects.name, 
+projects.description, 
+projects.work_items_table_name, 
+projects.board_config, 
+projects.created_at, 
+projects.updated_at, 
 joined_activities.activities, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_kanban_steps.kanban_steps, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_teams.teams, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_work_item_tags.work_item_tags, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_work_item_types.work_item_types, projects.project_id ORDER BY 
-		project_id Desc `
+		project_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Paginated/Desc/db.Query: %w", err))
 	}
@@ -488,14 +486,35 @@ joined_work_item_types.work_item_types, projects.project_id ORDER BY
 //
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 6
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -507,8 +526,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -553,58 +572,20 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.name = $6 GROUP BY 
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.name = $6`+
+		` %s  GROUP BY 
 joined_activities.activities, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_kanban_steps.kanban_steps, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_teams.teams, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_work_item_tags.work_item_tags, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
-joined_work_item_types.work_item_types, projects.project_id `
+joined_work_item_types.work_item_types, projects.project_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", err))
 	}
@@ -620,14 +601,35 @@ joined_work_item_types.work_item_types, projects.project_id `
 //
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 6
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -639,8 +641,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -685,58 +687,20 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id = $6 GROUP BY 
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.project_id = $6`+
+		` %s  GROUP BY 
 joined_activities.activities, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_kanban_steps.kanban_steps, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_teams.teams, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_work_item_tags.work_item_tags, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
-joined_work_item_types.work_item_types, projects.project_id `
+joined_work_item_types.work_item_types, projects.project_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", err))
 	}
@@ -752,14 +716,35 @@ joined_work_item_types.work_item_types, projects.project_id `
 //
 // Generated from index 'projects_work_items_table_name_key'.
 func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName string, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 6
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`projects.project_id,
 projects.name,
 projects.description,
@@ -771,8 +756,8 @@ projects.updated_at,
 (case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.projects ` +
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
+		`FROM public.projects `+
 		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
@@ -817,58 +802,20 @@ left join (
   from
     work_item_types
   group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.work_items_table_name = $6 GROUP BY 
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
+		` WHERE projects.work_items_table_name = $6`+
+		` %s  GROUP BY 
 joined_activities.activities, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_kanban_steps.kanban_steps, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_teams.teams, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
 joined_work_item_tags.work_item_tags, projects.project_id, 
-
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name,
-joined_work_item_types.work_item_types, projects.project_id `
+joined_work_item_types.work_item_types, projects.project_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemsTableName)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, workItemsTableName)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, workItemsTableName}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/db.Query: %w", err))
 	}

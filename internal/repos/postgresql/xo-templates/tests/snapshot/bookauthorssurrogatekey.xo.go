@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
@@ -70,6 +72,7 @@ type BookAuthorsSurrogateKeySelectConfig struct {
 	limit   string
 	orderBy string
 	joins   BookAuthorsSurrogateKeyJoins
+	filters map[string][]any
 }
 type BookAuthorsSurrogateKeySelectConfigOption func(*BookAuthorsSurrogateKeySelectConfig)
 
@@ -109,6 +112,22 @@ type Book__BASK_BookAuthorsSurrogateKey struct {
 type User__BASK_BookAuthorsSurrogateKey struct {
 	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithBookAuthorsSurrogateKeyFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithBookAuthorsSurrogateKeyFilters(filters map[string][]any) BookAuthorsSurrogateKeySelectConfigOption {
+	return func(s *BookAuthorsSurrogateKeySelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the BookAuthorsSurrogateKey to the database.
@@ -199,13 +218,35 @@ func (bask *BookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
 
 // BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc returns a cursor-paginated list of BookAuthorsSurrogateKey in Asc order.
 func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
@@ -219,8 +260,8 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors ` +
-		`FROM xo_tests.book_authors_surrogate_key ` +
+		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
@@ -250,25 +291,20 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
-` +
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
+`+
+		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $3`+
+		` %s  GROUP BY book_authors_surrogate_key.book_authors_surrogate_key_id, 
+book_authors_surrogate_key.book_id, 
+book_authors_surrogate_key.author_id, 
+book_authors_surrogate_key.pseudonym, 
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id ORDER BY 
-		book_authors_surrogate_key_id Asc `
+		book_authors_surrogate_key_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/db.Query: %w", err))
 	}
@@ -281,13 +317,35 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 
 // BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc returns a cursor-paginated list of BookAuthorsSurrogateKey in Desc order.
 func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
@@ -301,8 +359,8 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors ` +
-		`FROM xo_tests.book_authors_surrogate_key ` +
+		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
@@ -332,25 +390,20 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
-` +
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
+`+
+		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $3`+
+		` %s  GROUP BY book_authors_surrogate_key.book_authors_surrogate_key_id, 
+book_authors_surrogate_key.book_id, 
+book_authors_surrogate_key.author_id, 
+book_authors_surrogate_key.pseudonym, 
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
 book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id ORDER BY 
-		book_authors_surrogate_key_id Desc `
+		book_authors_surrogate_key_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/db.Query: %w", err))
 	}
@@ -365,14 +418,35 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorsSurrogateKeySelectConfigOption) (*BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
@@ -386,8 +460,8 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors ` +
-		`FROM xo_tests.book_authors_surrogate_key ` +
+		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
@@ -417,25 +491,17 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
-` +
-		` WHERE book_authors_surrogate_key.book_id = $3 AND book_authors_surrogate_key.author_id = $4 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
+`+
+		` WHERE book_authors_surrogate_key.book_id = $3 AND book_authors_surrogate_key.author_id = $4`+
+		` %s  GROUP BY 
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
-book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
+book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookID, authorID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", err))
 	}
@@ -451,14 +517,35 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
@@ -472,8 +559,8 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors ` +
-		`FROM xo_tests.book_authors_surrogate_key ` +
+		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
@@ -503,25 +590,17 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
-` +
-		` WHERE book_authors_surrogate_key.book_id = $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
+`+
+		` WHERE book_authors_surrogate_key.book_id = $3`+
+		` %s  GROUP BY 
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
-book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
+book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
 	}
@@ -539,14 +618,35 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
@@ -560,8 +660,8 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors ` +
-		`FROM xo_tests.book_authors_surrogate_key ` +
+		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
@@ -591,25 +691,17 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
-` +
-		` WHERE book_authors_surrogate_key.author_id = $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
+`+
+		` WHERE book_authors_surrogate_key.author_id = $3`+
+		` %s  GROUP BY 
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
-book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
+book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, authorID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
 	}
@@ -627,14 +719,35 @@ book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surr
 //
 // Generated from index 'book_authors_surrogate_key_pkey'.
 func BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) (*BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}}
+	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
@@ -648,8 +761,8 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors ` +
-		`FROM xo_tests.book_authors_surrogate_key ` +
+		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
@@ -679,25 +792,17 @@ left join (
 			, users.user_id
 			, pseudonym
   ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
-` +
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $3 GROUP BY 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
+`+
+		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $3`+
+		` %s  GROUP BY 
 book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id, 
-
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym,
-book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `
+book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.AuthorsBook, bookAuthorsSurrogateKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", err))
 	}

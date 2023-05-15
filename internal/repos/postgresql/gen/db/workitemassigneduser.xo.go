@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
@@ -72,6 +74,7 @@ type WorkItemAssignedUserSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   WorkItemAssignedUserJoins
+	filters map[string][]any
 }
 type WorkItemAssignedUserSelectConfigOption func(*WorkItemAssignedUserSelectConfig)
 
@@ -113,6 +116,22 @@ type WorkItem__WIAU_WorkItemAssignedUser struct {
 type User__WIAU_WorkItemAssignedUser struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+}
+
+// WithWorkItemAssignedUserFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithWorkItemAssignedUserFilters(filters map[string][]any) WorkItemAssignedUserSelectConfigOption {
+	return func(s *WorkItemAssignedUserSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the WorkItemAssignedUser to the database.
@@ -204,14 +223,35 @@ func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
 func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser uuid.UUID, workItemID int64, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
@@ -224,8 +264,8 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
-		`FROM public.work_item_assigned_user ` +
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -255,23 +295,17 @@ left join (
 			, users.user_id
 			, role
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-` +
-		` WHERE work_item_assigned_user.assigned_user = $3 AND work_item_assigned_user.work_item_id = $4 GROUP BY 
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
+`+
+		` WHERE work_item_assigned_user.assigned_user = $3 AND work_item_assigned_user.work_item_id = $4`+
+		` %s  GROUP BY 
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
+work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, assignedUser, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", err))
 	}
@@ -289,14 +323,35 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID int64, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 4
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
@@ -309,8 +364,8 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
-		`FROM public.work_item_assigned_user ` +
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -340,23 +395,17 @@ left join (
 			, users.user_id
 			, role
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-` +
-		` WHERE work_item_assigned_user.work_item_id = $3 AND work_item_assigned_user.assigned_user = $4 GROUP BY 
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
+`+
+		` WHERE work_item_assigned_user.work_item_id = $3 AND work_item_assigned_user.assigned_user = $4`+
+		` %s  GROUP BY 
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
+work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID, assignedUser)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID, assignedUser}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", err))
 	}
@@ -372,14 +421,35 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
@@ -392,8 +462,8 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
-		`FROM public.work_item_assigned_user ` +
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -423,23 +493,17 @@ left join (
 			, users.user_id
 			, role
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-` +
-		` WHERE work_item_assigned_user.work_item_id = $3 GROUP BY 
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
+`+
+		` WHERE work_item_assigned_user.work_item_id = $3`+
+		` %s  GROUP BY 
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
+work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
 	}
@@ -457,14 +521,35 @@ work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 3
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
 work_item_assigned_user.role,
@@ -477,8 +562,8 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users ` +
-		`FROM public.work_item_assigned_user ` +
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
@@ -508,23 +593,17 @@ left join (
 			, users.user_id
 			, role
   ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-` +
-		` WHERE work_item_assigned_user.assigned_user = $3 GROUP BY 
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
+`+
+		` WHERE work_item_assigned_user.assigned_user = $3`+
+		` %s  GROUP BY 
 work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-
-	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id,
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `
+work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
 	}

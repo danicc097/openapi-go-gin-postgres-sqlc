@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -134,6 +135,7 @@ type UserSelectConfig struct {
 	limit     string
 	orderBy   string
 	joins     UserJoins
+	filters   map[string][]any
 	deletedAt string
 }
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -212,6 +214,22 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 type WorkItem__WIAU_User struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+}
+
+// WithUserFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the User to the database.
@@ -335,10 +353,32 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
 func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
+	}
+
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -448,150 +488,38 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at > $9  AND users.deleted_at is %s  GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.created_at > $9`+
+		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
+users.username, 
+users.email, 
+users.first_name, 
+users.last_name, 
+users.full_name, 
+users.external_id, 
+users.api_key_id, 
+users.scopes, 
+users.role_rank, 
+users.has_personal_notifications, 
+users.has_global_notifications, 
+users.created_at, 
+users.updated_at, 
+users.deleted_at, 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
-		created_at Asc`, c.deletedAt)
+		created_at Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
@@ -604,10 +532,32 @@ joined_work_item_comments.work_item_comments, users.user_id  ORDER BY
 
 // UserPaginatedByCreatedAtDesc returns a cursor-paginated list of User in Desc order.
 func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
+	}
+
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -717,150 +667,38 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at < $9  AND users.deleted_at is %s  GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.created_at < $9`+
+		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
+users.username, 
+users.email, 
+users.first_name, 
+users.last_name, 
+users.full_name, 
+users.external_id, 
+users.api_key_id, 
+users.scopes, 
+users.role_rank, 
+users.has_personal_notifications, 
+users.has_global_notifications, 
+users.created_at, 
+users.updated_at, 
+users.deleted_at, 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
-		created_at Desc`, c.deletedAt)
+		created_at Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
 	}
@@ -875,13 +713,34 @@ joined_work_item_comments.work_item_comments, users.user_id  ORDER BY
 //
 // Generated from index 'users_created_at_idx'.
 func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -989,150 +848,24 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.created_at = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByCreatedAt/Query: %w", err))
 	}
@@ -1150,13 +883,34 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1264,150 +1018,24 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.created_at = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -1423,13 +1051,34 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1537,150 +1186,24 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, deletedAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByDeletedAt/Query: %w", err))
 	}
@@ -1698,13 +1221,34 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1812,150 +1356,24 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.email = $9  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.email = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, email)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, email)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, email}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
 	}
@@ -1971,13 +1389,34 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_external_id_key'.
 func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -2085,150 +1524,24 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.external_id = $9  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.external_id = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, externalID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, externalID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, externalID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
 	}
@@ -2244,13 +1557,34 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -2358,150 +1692,24 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.user_id = $9  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.user_id = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, userID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, userID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
@@ -2517,13 +1725,34 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -2631,150 +1860,24 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.updated_at = $9  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.updated_at = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, updatedAt)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, updatedAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/Query: %w", err))
 	}
@@ -2792,13 +1895,34 @@ joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
 //
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
+	paramStart := 9
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -2906,150 +2030,24 @@ left join (
     work_item_comments
   group by
         user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.username = $9  AND users.deleted_at is %s   GROUP BY 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
+		` WHERE users.username = $9`+
+		` %s   AND users.deleted_at is %s   GROUP BY 
 joined_notifications_receiver.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_notifications_sender.notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_time_entries.time_entries, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 _users_user_id.user_id,
       _users_user_id.user_api_key_id,
 	users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 joined_user_notifications.user_notifications, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
 users.user_id, users.user_id, 
-
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username,
-joined_work_item_comments.work_item_comments, users.user_id `, c.deletedAt)
+joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, username)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, username)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, username}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))
 	}

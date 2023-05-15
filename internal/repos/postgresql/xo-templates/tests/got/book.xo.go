@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -57,6 +59,7 @@ type BookSelectConfig struct {
 	limit   string
 	orderBy string
 	joins   BookJoins
+	filters map[string][]any
 }
 type BookSelectConfigOption func(*BookSelectConfig)
 
@@ -100,6 +103,22 @@ type User__BA_Book struct {
 type User__BASK_Book struct {
 	User      User    `json:"user" db:"users" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithBookFilters adds the given filters, which may be parameterized with $i.
+// Filters are joined with AND.
+// NOTE: SQL injection prone.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithBookFilters(filters map[string][]any) BookSelectConfigOption {
+	return func(s *BookSelectConfig) {
+		s.filters = filters
+	}
 }
 
 // Insert inserts the Book to the database.
@@ -188,13 +207,35 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 
 // BookPaginatedByBookIDAsc returns a cursor-paginated list of Book in Asc order.
 func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
-	c := &BookSelectConfig{joins: BookJoins{}}
+	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(
@@ -211,8 +252,8 @@ books.name,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
-		`FROM xo_tests.books ` +
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
@@ -264,29 +305,20 @@ left join (
 			book_sellers_book_id
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-` +
-		` WHERE books.book_id > $5 GROUP BY 
-	books.book_id,
-	books.name,
+`+
+		` WHERE books.book_id > $5`+
+		` %s  GROUP BY books.book_id, 
+books.name, 
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 joined_book_reviews.book_reviews, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id ORDER BY 
-		book_id Asc `
+		book_id Asc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/db.Query: %w", err))
 	}
@@ -299,13 +331,35 @@ books.book_id, books.book_id ORDER BY
 
 // BookPaginatedByBookIDDesc returns a cursor-paginated list of Book in Desc order.
 func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
-	c := &BookSelectConfig{joins: BookJoins{}}
+	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := `SELECT ` +
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(
@@ -322,8 +376,8 @@ books.name,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
-		`FROM xo_tests.books ` +
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
@@ -375,29 +429,20 @@ left join (
 			book_sellers_book_id
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-` +
-		` WHERE books.book_id < $5 GROUP BY 
-	books.book_id,
-	books.name,
+`+
+		` WHERE books.book_id < $5`+
+		` %s  GROUP BY books.book_id, 
+books.name, 
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 joined_book_reviews.book_reviews, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id ORDER BY 
-		book_id Desc `
+		book_id Desc `, filters)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/db.Query: %w", err))
 	}
@@ -412,14 +457,35 @@ books.book_id, books.book_id ORDER BY
 //
 // Generated from index 'books_pkey'.
 func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) (*Book, error) {
-	c := &BookSelectConfig{joins: BookJoins{}}
+	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	// query
-	sqlstr := `SELECT ` +
+	paramStart := 5
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(
@@ -436,8 +502,8 @@ books.name,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers ` +
-		`FROM xo_tests.books ` +
+		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
@@ -489,29 +555,19 @@ left join (
 			book_sellers_book_id
 			, users.user_id
   ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-` +
-		` WHERE books.book_id = $5 GROUP BY 
-	books.book_id,
-	books.name,
+`+
+		` WHERE books.book_id = $5`+
+		` %s  GROUP BY 
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 books.book_id, books.book_id, 
-
-	books.book_id,
-	books.name,
 joined_book_reviews.book_reviews, books.book_id, 
-
-	books.book_id,
-	books.name,
-books.book_id, books.book_id `
+books.book_id, books.book_id `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", err))
 	}

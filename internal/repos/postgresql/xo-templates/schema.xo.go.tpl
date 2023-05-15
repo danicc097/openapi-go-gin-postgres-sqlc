@@ -104,7 +104,29 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 		o(c)
 	}
 
-	// query
+  paramStart := {{ last_nth $i $constraints $tables }}
+	nth := func ()  string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i"){
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND "+strings.Join(filterClauses, " AND ")+" "
+	}
+
+
 	{{ sqlstr_index $i $constraints $tables }}
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -397,22 +419,46 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ end }}
 
 {{ range $order := combine_values "Asc" "Desc" }}
-{{ range $cursor := cursor_columns $t $constraints $tables }}
-{{ $suffix := print "PaginatedBy" (fields_to_goname $cursor "") $order }}
+{{ range $cursor_fields := cursor_columns $t $constraints $tables }}
+{{ $suffix := print "PaginatedBy" (fields_to_goname $cursor_fields "") $order }}
 // {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }} in {{ $order }} order.
-{{ func_context $t $suffix $cursor }} {
+{{ func_context $t $suffix $cursor_fields }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	{{ sqlstr_paginated $t $constraints $tables $cursor $order }}
+
+  paramStart := {{ last_nth $t $constraints $tables $cursor_fields }}
+	nth := func ()  string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterValues []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i"){
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterValues = append(filterValues, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND "+strings.Join(filterClauses, " AND ")+" "
+	}
+
+
+	{{ sqlstr_paginated $t $constraints $tables $cursor_fields $order }}
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := {{ db_paginated "Query" $t $cursor }}
+	rows, err := {{ db_paginated "Query" $t $cursor_fields }}
 	if err != nil {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/db.Query: %w", err))
 	}
