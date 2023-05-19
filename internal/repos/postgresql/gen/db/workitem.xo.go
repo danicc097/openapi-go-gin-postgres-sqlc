@@ -17,10 +17,11 @@ import (
 )
 
 // WorkItem represents a row from 'public.work_items'.
-// Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
+// Change properties via SQL column comments, joined with " && ":
+//   - "properties":private to exclude a field from JSON.
+//   - "type":<pkg.type> to override the type annotation.
+//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
+//   - "tags":<tags> to append literal struct tag strings.
 type WorkItem struct {
 	WorkItemID     int64      `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
 	Title          string     `json:"title" db:"title" required:"true"`                      // title

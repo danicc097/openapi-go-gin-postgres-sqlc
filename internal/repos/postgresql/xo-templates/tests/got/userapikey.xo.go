@@ -17,10 +17,11 @@ import (
 )
 
 // UserAPIKey represents a row from 'xo_tests.user_api_keys'.
-// Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
+// Change properties via SQL column comments, joined with " && ":
+//   - "properties":private to exclude a field from JSON.
+//   - "type":<pkg.type> to override the type annotation.
+//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
+//   - "tags":<tags> to append literal struct tag strings.
 type UserAPIKey struct {
 	UserAPIKeyID int       `json:"-" db:"user_api_key_id"`                    // user_api_key_id
 	APIKey       string    `json:"apiKey" db:"api_key" required:"true"`       // api_key

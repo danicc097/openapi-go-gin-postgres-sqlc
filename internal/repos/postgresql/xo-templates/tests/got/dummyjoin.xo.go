@@ -15,10 +15,11 @@ import (
 )
 
 // DummyJoin represents a row from 'xo_tests.dummy_join'.
-// Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
+// Change properties via SQL column comments, joined with " && ":
+//   - "properties":private to exclude a field from JSON.
+//   - "type":<pkg.type> to override the type annotation.
+//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
+//   - "tags":<tags> to append literal struct tag strings.
 type DummyJoin struct {
 	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true"` // dummy_join_id
 	Name        *string `json:"name" db:"name" required:"true"`                 // name

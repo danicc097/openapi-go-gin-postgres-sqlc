@@ -16,10 +16,11 @@ import (
 )
 
 // BookAuthorsSurrogateKey represents a row from 'xo_tests.book_authors_surrogate_key'.
-// Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
+// Change properties via SQL column comments, joined with " && ":
+//   - "properties":private to exclude a field from JSON.
+//   - "type":<pkg.type> to override the type annotation.
+//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
+//   - "tags":<tags> to append literal struct tag strings.
 type BookAuthorsSurrogateKey struct {
 	BookAuthorsSurrogateKeyID int       `json:"bookAuthorsSurrogateKeyID" db:"book_authors_surrogate_key_id" required:"true"` // book_authors_surrogate_key_id
 	BookID                    int       `json:"bookID" db:"book_id" required:"true"`                                          // book_id

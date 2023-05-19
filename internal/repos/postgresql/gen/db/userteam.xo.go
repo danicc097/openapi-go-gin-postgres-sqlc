@@ -13,10 +13,11 @@ import (
 )
 
 // UserTeam represents a row from 'public.user_team'.
-// Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
+// Change properties via SQL column comments, joined with " && ":
+//   - "properties":private to exclude a field from JSON.
+//   - "type":<pkg.type> to override the type annotation.
+//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
+//   - "tags":<tags> to append literal struct tag strings.
 type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	Member uuid.UUID `json:"member" db:"member" required:"true"`  // member
