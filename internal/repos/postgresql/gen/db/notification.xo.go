@@ -17,10 +17,11 @@ import (
 )
 
 // Notification represents a row from 'public.notifications'.
-// Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
+// Change properties via SQL column comments, joined with " && ":
+//   - "properties":private to exclude a field from JSON.
+//   - "type":<pkg.type> to override the type annotation.
+//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
+//   - "tags":<tags> to append literal struct tag strings.
 type Notification struct {
 	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`                                                 // notification_id
 	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank" required:"true"`                                                     // receiver_rank
