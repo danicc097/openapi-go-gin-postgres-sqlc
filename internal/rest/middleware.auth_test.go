@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
@@ -60,7 +62,7 @@ func TestAuthorizationMiddleware_Roles(t *testing.T) {
 			if err != nil {
 				t.Fatalf("services.NewAuthorization: %v", err)
 			}
-			usvc := services.NewUser(logger.Sugar(), postgresql.NewUser(), postgresql.NewNotification(), authzsvc)
+			usvc := services.NewUser(logger.Sugar(), reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond), postgresql.NewNotification(), authzsvc)
 			authnsvc := services.NewAuthentication(logger.Sugar(), usvc, testPool)
 
 			authMw := newAuthMiddleware(logger.Sugar(), testPool, authnsvc, authzsvc, usvc)

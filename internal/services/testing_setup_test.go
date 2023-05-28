@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
@@ -53,7 +54,7 @@ func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 		logger,
 		reposwrappers.NewUserWithTracing(
 			reposwrappers.NewUserWithTimeout(
-				postgresql.NewUser(), reposwrappers.UserWithTimeoutConfig{}),
+				reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond), reposwrappers.UserWithTimeoutConfig{}),
 			postgresql.OtelName, nil),
 		reposwrappers.NewNotificationWithTracing(
 			reposwrappers.NewNotificationWithTimeout(
