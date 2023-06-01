@@ -372,7 +372,7 @@ github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/stretchr/testify v1.8.3
+# github.com/stretchr/testify v1.8.4
 ## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
@@ -455,7 +455,7 @@ go.opentelemetry.io/otel/semconv/v1.12.0
 go.opentelemetry.io/otel/semconv/v1.17.0
 go.opentelemetry.io/otel/semconv/v1.17.0/httpconv
 go.opentelemetry.io/otel/semconv/v1.4.0
-# go.opentelemetry.io/otel/exporters/jaeger v1.15.1
+# go.opentelemetry.io/otel/exporters/jaeger v1.16.0
 ## explicit; go 1.19
 go.opentelemetry.io/otel/exporters/jaeger
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/agent
@@ -469,7 +469,7 @@ go.opentelemetry.io/otel/exporters/stdout/stdouttrace
 ## explicit; go 1.19
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/metric/embedded
-# go.opentelemetry.io/otel/sdk v1.15.1
+# go.opentelemetry.io/otel/sdk v1.16.0
 ## explicit; go 1.19
 go.opentelemetry.io/otel/sdk
 go.opentelemetry.io/otel/sdk/instrumentation

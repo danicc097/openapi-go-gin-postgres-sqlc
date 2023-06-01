@@ -28,16 +28,16 @@ require (
 	github.com/prometheus/client_golang v1.15.1
 	github.com/smartystreets/assertions v1.13.1
 	github.com/smartystreets/gunit v1.4.5
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/swaggest/jsonschema-go v0.3.51
 	github.com/swaggest/openapi-go v0.2.30
 	github.com/zitadel/oidc v1.13.4
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.41.1
 	go.opentelemetry.io/contrib/propagators/jaeger v1.16.1
 	go.opentelemetry.io/otel v1.16.0
-	go.opentelemetry.io/otel/exporters/jaeger v1.15.1
+	go.opentelemetry.io/otel/exporters/jaeger v1.16.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.15.1
-	go.opentelemetry.io/otel/sdk v1.15.1
+	go.opentelemetry.io/otel/sdk v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
