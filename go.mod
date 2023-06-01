@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/danicc097/xo v1.0.0
 	github.com/deepmap/oapi-codegen v1.12.5-0.20230403173426-fd06f5aed350
-	github.com/getkin/kin-openapi v0.116.0
+	github.com/getkin/kin-openapi v0.117.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/zap v0.1.0
 	github.com/gin-gonic/gin v1.9.0
