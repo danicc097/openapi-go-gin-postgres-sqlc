@@ -229,7 +229,7 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 	restoredUser, err := deletedUser.Restore(ctx, testPool)
 	assert.NoError(t, err)
 	assert.Nil(t, restoredUser.DeletedAt)
-	assert.Equal(t, u2.Name, deletedUser.Name)
+	assert.Equal(t, u2.Name, restoredUser.Name)
 
 	// TODO test same things with nonunique index too
 }
