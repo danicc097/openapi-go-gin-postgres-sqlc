@@ -13,23 +13,11 @@ import (
 /**
  * TODO: test extensively:
  *
- * order bys
- *
- * test M2M when its 1 pk and 2 fks, and with extra info ()
- *
-	also test join table name clash for O2O constraint too:
-	name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
-	at the same time
-
-	TODO xo maybe should allow custom untyped filters for paginated queries.
-	e.g. workitems paginated by created at while filtering TeamID is X
-	filters []string and just append those, while warning for obvious sql injection risks
-	this way we could have any filtering logic, `team_id in {team1, team2}`, etc.
-
-
-	FIXME: wait for AfterConnect hook to run completely before returning db in postgresql.New() for pgx registering types,
-	else we get messages like `cannot scan unknown type (OID 2268498) in text format into **[]got.Notification`
-	simple boolean flag should suffice
+ * - order bys
+ * - index queries
+ * - join table name clash for O2O constraint too:
+     name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
+     at the same time
 */
 
 func TestCursorPagination_Timestamp(t *testing.T) {
