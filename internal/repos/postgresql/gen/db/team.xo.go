@@ -278,7 +278,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -295,6 +295,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -374,7 +375,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -391,6 +392,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -470,7 +472,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -487,6 +489,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -566,7 +569,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -583,6 +586,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -664,7 +668,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -681,6 +685,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -758,7 +763,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -775,6 +780,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -854,7 +860,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -871,6 +877,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -950,7 +957,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.teams `+
 		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects as _teams_project_id on _teams_project_id.project_id = teams.project_id
@@ -967,6 +974,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team

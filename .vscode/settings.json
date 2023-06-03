@@ -7,6 +7,9 @@
     // "--fast" // breaks some linters like errcheck, if its too slow then enable back
   ],
   "go.lintOnSave": "package",
+  "go.testFlags": [
+    "-count=1"
+  ],
   // --
   "shellcheck.executablePath": "shellcheck",
   "shellcheck.customArgs": [

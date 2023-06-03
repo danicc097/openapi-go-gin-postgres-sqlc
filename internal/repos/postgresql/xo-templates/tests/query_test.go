@@ -11,6 +11,14 @@ import (
 )
 
 /**
+ *
+ * IMPORTANT: add test for workitem assigned join see: https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44
+ *
+ * and test we dont get NULL, but those 2 items (fixed in later commit). filter where __users is null
+ * actually checks that all elements in record are not null, which is wrong. in the fiddle it happens that they arent, but a
+ * deleted_at null would filter it out, for instance.
+ *
+ *
 * TODO: test extensively:
 *
 * - order bys
@@ -52,6 +60,22 @@ func Test_Filters(t *testing.T) {
 	assert.Len(t, ee, 2)
 	assert.Equal(t, ee[0].Name, "element -3 days")
 	assert.Equal(t, ee[1].Name, "element -4 days")
+}
+
+func TestM2M_SelectFilter(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	wi, err := db.WorkItemByWorkItemID(ctx, testPool, 1, db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true}))
+	assert.NoError(t, err)
+	assert.NotNil(t, *wi.WorkItemAssignedUsersJoin)
+	assert.Len(t, *wi.WorkItemAssignedUsersJoin, 2)
+	for _, member := range *wi.WorkItemAssignedUsersJoin {
+		if member.User.UserID == uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d") {
+			assert.Equal(t, db.WorkItemRolePreparer, member.Role.WorkItemRole)
+		}
+	}
 }
 
 func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {

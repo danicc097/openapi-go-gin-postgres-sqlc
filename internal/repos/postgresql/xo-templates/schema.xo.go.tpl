@@ -421,6 +421,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 {{ range $order := combine_values "Asc" "Desc" }}
 {{ range $cursor_fields := cursor_columns $t $constraints $tables }}
+{{ if len $cursor_fields }}
 {{ $suffix := print "PaginatedBy" (fields_to_goname $cursor_fields "") $order }}
 // {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }} in {{ $order }} order.
 {{ func_context $t $suffix $cursor_fields }} {
@@ -469,6 +470,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	}
 	return res, nil
 }
+{{ end }}
 {{ end }}
 {{ end }}
 

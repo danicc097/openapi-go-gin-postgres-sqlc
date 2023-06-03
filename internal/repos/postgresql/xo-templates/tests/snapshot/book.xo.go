@@ -243,23 +243,24 @@ books.name,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors,
+		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') end) as book_authors_authors,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors,
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers `+
 		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
 			, book_authors.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors
@@ -275,6 +276,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
@@ -298,6 +300,7 @@ left join (
 left join (
 	select
 			book_sellers.book_id as book_sellers_book_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
@@ -367,23 +370,24 @@ books.name,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors,
+		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') end) as book_authors_authors,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors,
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers `+
 		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
 			, book_authors.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors
@@ -399,6 +403,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
@@ -422,6 +427,7 @@ left join (
 left join (
 	select
 			book_sellers.book_id as book_sellers_book_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
@@ -493,23 +499,24 @@ books.name,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users is not null), '{}') end) as book_authors_authors,
+		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') end) as book_authors_authors,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors,
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors,
 (case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
 (case when $4::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers `+
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers `+
 		`FROM xo_tests.books `+
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 			book_authors.book_id as book_authors_book_id
 			, book_authors.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors
@@ -525,6 +532,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
@@ -548,6 +556,7 @@ left join (
 left join (
 	select
 			book_sellers.book_id as book_sellers_book_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers

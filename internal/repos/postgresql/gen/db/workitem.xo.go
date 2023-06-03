@@ -398,12 +398,12 @@ work_items.deleted_at,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
 (case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
 (case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
@@ -426,6 +426,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user
@@ -449,6 +450,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
 			, row(work_item_tags.*) as __work_item_tags
 		from
 			work_item_work_item_tag
@@ -560,12 +562,12 @@ work_items.deleted_at,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
 (case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
 (case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
@@ -588,6 +590,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user
@@ -611,6 +614,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
 			, row(work_item_tags.*) as __work_item_tags
 		from
 			work_item_work_item_tag
@@ -724,12 +728,12 @@ work_items.deleted_at,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
 (case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
 (case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
@@ -752,6 +756,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user
@@ -775,6 +780,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
 			, row(work_item_tags.*) as __work_item_tags
 		from
 			work_item_work_item_tag
@@ -880,12 +886,12 @@ work_items.deleted_at,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
 (case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
 (case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
@@ -908,6 +914,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user
@@ -931,6 +938,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
 			, row(work_item_tags.*) as __work_item_tags
 		from
 			work_item_work_item_tag
@@ -1034,12 +1042,12 @@ work_items.deleted_at,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users,
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
 (case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $6::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
 (case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
 (case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
 (case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
@@ -1062,6 +1070,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user
@@ -1085,6 +1094,7 @@ left join (
 left join (
 	select
 			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
 			, row(work_item_tags.*) as __work_item_tags
 		from
 			work_item_work_item_tag

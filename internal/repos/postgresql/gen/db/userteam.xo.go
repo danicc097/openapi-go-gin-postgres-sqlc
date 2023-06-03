@@ -187,16 +187,17 @@ user_team.member,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.member as user_team_member
+			, teams.team_id as __teams_team_id
 			, row(teams.*) as __teams
 		from
 			user_team
@@ -210,6 +211,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -280,16 +282,17 @@ user_team.member,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.member as user_team_member
+			, teams.team_id as __teams_team_id
 			, row(teams.*) as __teams
 		from
 			user_team
@@ -303,6 +306,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -371,16 +375,17 @@ user_team.member,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.member as user_team_member
+			, teams.team_id as __teams_team_id
 			, row(teams.*) as __teams
 		from
 			user_team
@@ -394,6 +399,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team
@@ -464,16 +470,17 @@ user_team.member,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams is not null), '{}') end) as user_team_teams,
+		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
-		)) filter (where joined_user_team_members.__users is not null), '{}') end) as user_team_members `+
+		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') end) as user_team_members `+
 		`FROM public.user_team `+
 		`-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 			user_team.member as user_team_member
+			, teams.team_id as __teams_team_id
 			, row(teams.*) as __teams
 		from
 			user_team
@@ -487,6 +494,7 @@ left join (
 left join (
 	select
 			user_team.team_id as user_team_team_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			user_team

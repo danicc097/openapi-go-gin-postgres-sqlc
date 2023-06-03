@@ -92,6 +92,9 @@ func (a *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
 	}
+	fmt.Printf("wi.WorkItemAssignedUsersJoin: %+v\n", wi.WorkItemAssignedUsersJoin)
+	fmt.Printf("wi.WorkItemTagsJoin: %+v\n", wi.WorkItemWorkItemTagsJoin)
+	fmt.Printf("wi.DemoWorkItemJoin: %+v\n", wi.DemoWorkItemJoin)
 	// TODO now query workitem.xo.go joining with tags, members, demoWorkItem, etc... and return that instead.
 	// all work_item_***_project.go services must return db.WorkItem which has specific project joins, which
 	// allows us to share the same generic logic and extend it based on current project, etc.

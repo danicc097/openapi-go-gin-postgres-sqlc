@@ -27,6 +27,12 @@ var (
 	l, _ = zap.NewDevelopment()
 )
 
+const (
+	day   = 24 * time.Hour
+	week  = 7 * day
+	month = 30 * day
+)
+
 func main() {
 	var err error
 	var env, scopePolicyPath, rolePolicyPath string
@@ -201,35 +207,38 @@ func main() {
 	 *
 	 **/
 
-	// TODO: create >20 dynamically from userIDs then
-	// just update them if we want something specific to play with
-	demowi1, err := demoWiSvc.Create(ctx, pool, services.DemoWorkItemCreateParams{
-		DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
-			Base: db.WorkItemCreateParams{
-				TeamID:         team1.TeamID,
-				Title:          "A new work item",
-				Description:    "Description for a new work item",
-				WorkItemTypeID: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
-				// TODO if not passed then query where step order = 0 for a given project and use that
-				// steporder could also be generated just like idByName and viceversa
-				KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
-				TargetDate:   time.Now().Add(1 * time.Hour),
-				Metadata:     []byte(`{}`),
+	demoWorkItems := []*db.WorkItem{}
+	for i := 1; i <= 20; i++ {
+		demowi, err := demoWiSvc.Create(ctx, pool, services.DemoWorkItemCreateParams{
+			DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
+				Base: db.WorkItemCreateParams{
+					TeamID:         team1.TeamID,
+					Title:          fmt.Sprintf("A new work item (%d)", i),
+					Description:    fmt.Sprintf("Description for a new work item (%d)", i),
+					WorkItemTypeID: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
+					// TODO if not passed then query where step order = 0 for a given project and use that
+					// steporder could also be generated just like idByName and viceversa
+					KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
+					TargetDate:   time.Now().Add(time.Duration(i) * day),
+					Metadata:     []byte(`{}`),
+				},
+				DemoProject: db.DemoWorkItemCreateParams{
+					LastMessageAt: time.Now().Add(time.Duration(-i) * day),
+				},
 			},
-			DemoProject: db.DemoWorkItemCreateParams{
-				LastMessageAt: time.Now().Add(-30 * 24 * time.Hour),
+			TagIDs: []int{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+			Members: []services.Member{
+				{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
+				{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
 			},
-		},
-		TagIDs: []int{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
-		Members: []services.Member{
-			{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
-			{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
-		},
-	})
-	handleError(err)
-	logger.Info("Created work item with title: ", demowi1.Title)
+		})
+		handleError(err)
+		logger.Info("Created work item with title: ", demowi.Title)
+		fmt.Printf("demowi.WorkItemAssignedUsersJoin: %+v\n", demowi.WorkItemAssignedUsersJoin)
+		demoWorkItems = append(demoWorkItems, demowi)
+	}
 
-	demoWiSvc.Update(ctx, pool, demowi1.WorkItemID, repos.DemoWorkItemUpdateParams{
+	demoWiSvc.Update(ctx, pool, demoWorkItems[0].WorkItemID, repos.DemoWorkItemUpdateParams{
 		Base: &db.WorkItemUpdateParams{
 			KanbanStepID: pointers.New(internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsUnderReview]),
 		},
@@ -242,7 +251,7 @@ func main() {
 	 **/
 
 	_, err = teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
-		WorkItemID:      &demowi1.WorkItemID,
+		WorkItemID:      &demoWorkItems[0].WorkItemID,
 		ActivityID:      activity1.ActivityID,
 		UserID:          users[0].UserID,
 		Comment:         "Doing really important stuff as part of a work item",

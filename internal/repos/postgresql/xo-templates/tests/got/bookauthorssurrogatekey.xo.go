@@ -256,18 +256,19 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_books.__books
 		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors `+
 		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
@@ -283,6 +284,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
@@ -355,18 +357,19 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_books.__books
 		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors `+
 		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
@@ -382,6 +385,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
@@ -456,18 +460,19 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_books.__books
 		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors `+
 		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
@@ -483,6 +488,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
@@ -555,18 +561,19 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_books.__books
 		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors `+
 		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
@@ -582,6 +589,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
@@ -656,18 +664,19 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_books.__books
 		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors `+
 		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
@@ -683,6 +692,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
@@ -757,18 +767,19 @@ book_authors_surrogate_key.pseudonym,
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_books.__books
 		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books is not null), '{}') end) as book_authors_surrogate_key_books,
+		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users is not null), '{}') end) as book_authors_surrogate_key_authors `+
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors `+
 		`FROM xo_tests.book_authors_surrogate_key `+
 		`-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_authors_surrogate_key
@@ -784,6 +795,7 @@ left join (
 	select
 			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
 			, book_authors_surrogate_key.pseudonym as pseudonym
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_authors_surrogate_key
