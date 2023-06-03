@@ -2792,7 +2792,6 @@ func (f *Funcs) sqlstr_paginated(v any, constraints any, tables Tables, columns 
 		}
 
 		var orderbys []string
-
 		for _, c := range columns {
 			operator := "<"
 			if strings.ToLower(order) == "asc" {

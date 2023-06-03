@@ -62,6 +62,22 @@ func Test_Filters(t *testing.T) {
 	assert.Equal(t, ee[1].Name, "element -4 days")
 }
 
+func TestM2M_SelectFilter(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	wi, err := db.WorkItemByWorkItemID(ctx, testPool, 1, db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true}))
+	assert.NoError(t, err)
+	assert.NotNil(t, *wi.WorkItemAssignedUsersJoin)
+	assert.Len(t, *wi.WorkItemAssignedUsersJoin, 2)
+	for _, member := range *wi.WorkItemAssignedUsersJoin {
+		if member.User.UserID == uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d") {
+			assert.Equal(t, db.WorkItemRolePreparer, member.Role.WorkItemRole)
+		}
+	}
+}
+
 func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	t.Parallel()
 

@@ -29,13 +29,14 @@ type User struct {
 	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true"` // created_at
 	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at" required:"true"` // deleted_at
 
-	AuthorBooksJoin           *[]Book__BA_User   `json:"-" db:"book_authors_books" openapi-go:"ignore"`               // M2M book_authors
-	AuthorBooksJoinBASK       *[]Book__BASK_User `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"` // M2M book_authors_surrogate_key
-	ReviewerBookReviewsJoin   *[]BookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                     // M2O users
-	SellerBooksJoin           *[]Book            `json:"-" db:"book_sellers_books" openapi-go:"ignore"`               // M2M book_sellers
-	ReceiverNotificationsJoin *[]Notification    `json:"-" db:"notifications_receiver" openapi-go:"ignore"`           // M2O users
-	SenderNotificationsJoin   *[]Notification    `json:"-" db:"notifications_sender" openapi-go:"ignore"`             // M2O users
-	APIKeyJoin                *UserAPIKey        `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`          // O2O user_api_keys (inferred)
+	AuthorBooksJoin           *[]Book__BA_User       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
+	AuthorBooksJoinBASK       *[]Book__BASK_User     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	ReviewerBookReviewsJoin   *[]BookReview          `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O users
+	SellerBooksJoin           *[]Book                `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                 // M2M book_sellers
+	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
+	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
+	APIKeyJoin                *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
+	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
 }
 
 // UserCreateParams represents insert params for 'xo_tests.users'.
@@ -130,6 +131,7 @@ type UserJoins struct {
 	NotificationsReceiver bool // M2O notifications
 	NotificationsSender   bool // M2O notifications
 	UserAPIKey            bool // O2O user_api_keys
+	WorkItemsAssignedUser bool // M2M work_item_assigned_user
 }
 
 // WithUserJoin joins with the given tables.
@@ -143,6 +145,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
+			WorkItemsAssignedUser: s.joins.WorkItemsAssignedUser || joins.WorkItemsAssignedUser,
 		}
 	}
 }
@@ -157,6 +160,12 @@ type Book__BA_User struct {
 type Book__BASK_User struct {
 	Book      Book    `json:"book" db:"books" required:"true"`
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WorkItem__WIAU_User represents a M2M join against "xo_tests.work_item_assigned_user"
+type WorkItem__WIAU_User struct {
+	WorkItem WorkItem         `json:"workItem" db:"work_items" required:"true"`
+	Role     NullWorkItemRole `json:"role" db:"role" required:"true" `
 }
 
 // WithUserFilters adds the given filters, which may be parameterized with $i.
@@ -294,7 +303,7 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		o(c)
 	}
 
-	paramStart := 8
+	paramStart := 9
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -339,7 +348,12 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
+(case when $8::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -415,8 +429,24 @@ left join (
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
-		` WHERE users.created_at > $8`+
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
+-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
+			, row(work_items.*) as __work_items
+		from
+			xo_tests.work_item_assigned_user
+    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+    group by
+			work_item_assigned_user_assigned_user
+			, work_items.work_item_id
+			, role
+  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+`+
+		` WHERE users.created_at > $9`+
 		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.name, 
 users.api_key_id, 
@@ -430,13 +460,14 @@ joined_notifications_receiver.notifications, users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
 _users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
-	users.user_id  ORDER BY 
+	users.user_id, 
+users.user_id, users.user_id  ORDER BY 
 		created_at Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
@@ -455,7 +486,7 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 		o(c)
 	}
 
-	paramStart := 8
+	paramStart := 9
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -500,7 +531,12 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
+(case when $8::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -576,8 +612,24 @@ left join (
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
-		` WHERE users.created_at < $8`+
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
+-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
+			, row(work_items.*) as __work_items
+		from
+			xo_tests.work_item_assigned_user
+    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+    group by
+			work_item_assigned_user_assigned_user
+			, work_items.work_item_id
+			, role
+  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+`+
+		` WHERE users.created_at < $9`+
 		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.name, 
 users.api_key_id, 
@@ -591,13 +643,14 @@ joined_notifications_receiver.notifications, users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
 _users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
-	users.user_id  ORDER BY 
+	users.user_id, 
+users.user_id, users.user_id  ORDER BY 
 		created_at Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
 	}
@@ -618,7 +671,7 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		o(c)
 	}
 
-	paramStart := 8
+	paramStart := 9
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -663,7 +716,12 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
+(case when $8::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -739,8 +797,24 @@ left join (
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
-		` WHERE users.created_at = $8`+
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
+-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
+			, row(work_items.*) as __work_items
+		from
+			xo_tests.work_item_assigned_user
+    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+    group by
+			work_item_assigned_user_assigned_user
+			, work_items.work_item_id
+			, role
+  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+`+
+		` WHERE users.created_at = $9`+
 		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
@@ -750,13 +824,14 @@ joined_notifications_receiver.notifications, users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
 _users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
-	users.user_id`, filters, c.deletedAt)
+	users.user_id, 
+users.user_id, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -778,7 +853,7 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 		o(c)
 	}
 
-	paramStart := 8
+	paramStart := 9
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -823,7 +898,12 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
+(case when $8::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -899,8 +979,24 @@ left join (
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
-		` WHERE users.name = $8`+
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
+-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
+			, row(work_items.*) as __work_items
+		from
+			xo_tests.work_item_assigned_user
+    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+    group by
+			work_item_assigned_user_assigned_user
+			, work_items.work_item_id
+			, role
+  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+`+
+		` WHERE users.name = $9`+
 		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
@@ -910,13 +1006,14 @@ joined_notifications_receiver.notifications, users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
 _users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
-	users.user_id`, filters, c.deletedAt)
+	users.user_id, 
+users.user_id, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, name}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByName/db.Query: %w", err))
 	}
@@ -938,7 +1035,7 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 		o(c)
 	}
 
-	paramStart := 8
+	paramStart := 9
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -983,7 +1080,12 @@ users.deleted_at,
 		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
 (case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
 (case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id `+
+(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
+(case when $8::boolean = true then COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
 		`FROM xo_tests.users `+
 		`-- M2M join generated from "book_authors_book_id_fkey"
 left join (
@@ -1059,8 +1161,24 @@ left join (
   group by
         sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
 -- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id`+
-		` WHERE users.user_id = $8`+
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
+-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
+			, row(work_items.*) as __work_items
+		from
+			xo_tests.work_item_assigned_user
+    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+    group by
+			work_item_assigned_user_assigned_user
+			, work_items.work_item_id
+			, role
+  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+`+
+		` WHERE users.user_id = $9`+
 		` %s   AND users.deleted_at is %s   GROUP BY 
 users.user_id, users.user_id, 
 users.user_id, users.user_id, 
@@ -1070,13 +1188,14 @@ joined_notifications_receiver.notifications, users.user_id,
 joined_notifications_sender.notifications, users.user_id, 
 _users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
-	users.user_id`, filters, c.deletedAt)
+	users.user_id, 
+users.user_id, users.user_id`, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, userID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, userID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
