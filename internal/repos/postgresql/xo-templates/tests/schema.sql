@@ -218,10 +218,10 @@ begin
   insert into xo_tests.demo_work_items (work_item_id , checked)
     values (3 , true);
 
-  insert into xo_tests.work_item_assigned_user (assigned_user , work_item_id, role)
-    values (user_1_id, 1, 'preparer');
-  insert into xo_tests.work_item_assigned_user (assigned_user , work_item_id, role)
-    values (user_2_id, 1, 'reviewer');
+  insert into xo_tests.work_item_assigned_user (assigned_user , work_item_id , role)
+    values (user_1_id , 1 , 'preparer');
+  insert into xo_tests.work_item_assigned_user (assigned_user , work_item_id , role)
+    values (user_2_id , 1 , 'reviewer');
 
   insert into xo_tests.pag_element (name , created_at)
     values ('element -1 day' , current_timestamp + '-1 day');
