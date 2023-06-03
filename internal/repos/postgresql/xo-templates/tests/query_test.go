@@ -11,6 +11,14 @@ import (
 )
 
 /**
+ *
+ * IMPORTANT: add test for workitem assigned join see: https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44
+ *
+ * and test we dont get NULL, but those 2 items (fixed in later commit). filter where __users is null
+ * actually checks that all elements in record are not null, which is wrong. in the fiddle it happens that they arent, but a
+ * deleted_at null would filter it out, for instance.
+ *
+ *
 * TODO: test extensively:
 *
 * - order bys
