@@ -12,13 +12,6 @@ import (
 
 /**
  *
- * IMPORTANT: add test for workitem assigned join see: https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44
- *
- * and test we dont get NULL, but those 2 items (fixed in later commit). filter where __users is null
- * actually checks that all elements in record are not null, which is wrong. in the fiddle it happens that they arent, but a
- * deleted_at null would filter it out, for instance.
- *
- *
 * TODO: test extensively:
 *
 * - order bys
@@ -73,6 +66,7 @@ func TestM2M_SelectFilter(t *testing.T) {
 	assert.Len(t, *wi.WorkItemAssignedUsersJoin, 2)
 	for _, member := range *wi.WorkItemAssignedUsersJoin {
 		if member.User.UserID == uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d") {
+			assert.Nil(t, member.User.DeletedAt) // ensure proper filter clause used. e.g. filter where record is not null will exclude the whole record if just one element is null, see https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44
 			assert.Equal(t, db.WorkItemRolePreparer, member.Role.WorkItemRole)
 		}
 	}
