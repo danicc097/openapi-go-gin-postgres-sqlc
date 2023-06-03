@@ -108,6 +108,50 @@ func WithBookSellerFilters(filters map[string][]any) BookSellerSelectConfigOptio
 	}
 }
 
+const BookSellerTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
+left join (
+	select
+		book_sellers.book_id as book_sellers_book_id
+		, users.user_id as __users_user_id
+		, row(users.*) as __users
+	from
+		xo_tests.book_sellers
+	join xo_tests.users on users.user_id = book_sellers.seller
+	group by
+		book_sellers_book_id
+		, users.user_id
+) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
+`
+
+const BookSellerTableSellersSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_sellers_sellers.__users
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
+
+const BookSellerTableSellersGroupBySQL = `book_sellers.book_id, book_sellers.book_id, book_sellers.seller`
+
+const BookSellerTableBooksSellerJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
+left join (
+	select
+		book_sellers.seller as book_sellers_seller
+		, books.book_id as __books_book_id
+		, row(books.*) as __books
+	from
+		xo_tests.book_sellers
+	join xo_tests.books on books.book_id = book_sellers.book_id
+	group by
+		book_sellers_seller
+		, books.book_id
+) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
+`
+
+const BookSellerTableBooksSellerSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
+
+const BookSellerTableBooksSellerGroupBySQL = `book_sellers.seller, book_sellers.book_id, book_sellers.seller`
+
 // Insert inserts the BookSeller to the database.
 func (bs *BookSeller) Insert(ctx context.Context, db DB) (*BookSeller, error) {
 	// insert (manual)
@@ -156,7 +200,7 @@ func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID int, seller uu
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -180,54 +224,17 @@ func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID int, seller uu
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
-book_sellers.seller,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
+book_sellers.seller `+
 		`FROM xo_tests.book_sellers `+
-		`-- M2M join generated from "book_sellers_seller_fkey"
-left join (
-	select
-			book_sellers.book_id as book_sellers_book_id
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.seller
-    group by
-			book_sellers_book_id
-			, users.user_id
-  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
-
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
-`+
-		` WHERE book_sellers.book_id = $3 AND book_sellers.seller = $4`+
-		` %s  GROUP BY 
-book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
+		``+
+		` WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID, seller)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, bookID, seller}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, seller}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookSeller/BookSellersByBookIDSeller/Query: %w", err))
 	}
@@ -251,7 +258,7 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -275,54 +282,17 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
-book_sellers.seller,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
+book_sellers.seller `+
 		`FROM xo_tests.book_sellers `+
-		`-- M2M join generated from "book_sellers_seller_fkey"
-left join (
-	select
-			book_sellers.book_id as book_sellers_book_id
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.seller
-    group by
-			book_sellers_book_id
-			, users.user_id
-  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
-
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
-`+
-		` WHERE book_sellers.book_id = $3 AND book_sellers.seller = $4`+
-		` %s  GROUP BY 
-book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
+		``+
+		` WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID, seller)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, bookID, seller}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, seller}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_sellers/BookSellerByBookIDSeller/db.Query: %w", err))
 	}
@@ -344,7 +314,7 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -368,54 +338,17 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
-book_sellers.seller,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
+book_sellers.seller `+
 		`FROM xo_tests.book_sellers `+
-		`-- M2M join generated from "book_sellers_seller_fkey"
-left join (
-	select
-			book_sellers.book_id as book_sellers_book_id
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.seller
-    group by
-			book_sellers_book_id
-			, users.user_id
-  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
-
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
-`+
-		` WHERE book_sellers.book_id = $3`+
-		` %s  GROUP BY 
-book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
+		``+
+		` WHERE book_sellers.book_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", err))
 	}
@@ -439,7 +372,7 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -463,54 +396,17 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
-book_sellers.seller,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
+book_sellers.seller `+
 		`FROM xo_tests.book_sellers `+
-		`-- M2M join generated from "book_sellers_seller_fkey"
-left join (
-	select
-			book_sellers.book_id as book_sellers_book_id
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.seller
-    group by
-			book_sellers_book_id
-			, users.user_id
-  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
-
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
-`+
-		` WHERE book_sellers.seller = $3`+
-		` %s  GROUP BY 
-book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
+		``+
+		` WHERE book_sellers.seller = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, seller)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, seller}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{seller}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", err))
 	}
@@ -534,7 +430,7 @@ func BookSellersBySellerBookID(ctx context.Context, db DB, seller uuid.UUID, boo
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -558,54 +454,17 @@ func BookSellersBySellerBookID(ctx context.Context, db DB, seller uuid.UUID, boo
 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_sellers.book_id,
-book_sellers.seller,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
+book_sellers.seller `+
 		`FROM xo_tests.book_sellers `+
-		`-- M2M join generated from "book_sellers_seller_fkey"
-left join (
-	select
-			book_sellers.book_id as book_sellers_book_id
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.seller
-    group by
-			book_sellers_book_id
-			, users.user_id
-  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
-
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
-`+
-		` WHERE book_sellers.seller = $3 AND book_sellers.book_id = $4`+
-		` %s  GROUP BY 
-book_sellers.book_id, book_sellers.book_id, book_sellers.seller, 
-book_sellers.seller, book_sellers.book_id, book_sellers.seller `, filters)
+		``+
+		` WHERE book_sellers.seller = $1 AND book_sellers.book_id = $2`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, seller, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Sellers, c.joins.BooksSeller, seller, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{seller, bookID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookSeller/BookSellersBySellerBookID/Query: %w", err))
 	}

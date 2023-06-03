@@ -184,6 +184,161 @@ func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
 	}
 }
 
+const UserTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
+left join (
+	select
+		book_authors.author_id as book_authors_author_id
+		, book_authors.pseudonym as pseudonym
+		, books.book_id as __books_book_id
+		, row(books.*) as __books
+	from
+		xo_tests.book_authors
+	join xo_tests.books on books.book_id = book_authors.book_id
+	group by
+		book_authors_author_id
+		, books.book_id
+		, pseudonym
+) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
+`
+
+const UserTableBooksAuthorSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_books.__books
+		, joined_book_authors_books.pseudonym
+		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
+
+const UserTableBooksAuthorGroupBySQL = `users.user_id, users.user_id`
+
+const UserTableBooksAuthorBooksJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+left join (
+	select
+		book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
+		, book_authors_surrogate_key.pseudonym as pseudonym
+		, books.book_id as __books_book_id
+		, row(books.*) as __books
+	from
+		xo_tests.book_authors_surrogate_key
+	join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
+	group by
+		book_authors_surrogate_key_author_id
+		, books.book_id
+		, pseudonym
+) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
+`
+
+const UserTableBooksAuthorBooksSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_books.__books
+		, joined_book_authors_surrogate_key_books.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
+
+const UserTableBooksAuthorBooksGroupBySQL = `users.user_id, users.user_id`
+
+const UserTableBookReviewsJoinSQL = `-- M2O join generated from "book_reviews_reviewer_fkey"
+left join (
+  select
+  reviewer as book_reviews_user_id
+    , array_agg(book_reviews.*) as book_reviews
+  from
+    xo_tests.book_reviews
+  group by
+        reviewer
+) as joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+`
+
+const UserTableBookReviewsSelectSQL = `COALESCE(joined_book_reviews.book_reviews, '{}') as book_reviews`
+
+const UserTableBookReviewsGroupBySQL = `joined_book_reviews.book_reviews, users.user_id`
+
+const UserTableBooksSellerJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
+left join (
+	select
+		book_sellers.seller as book_sellers_seller
+		, books.book_id as __books_book_id
+		, row(books.*) as __books
+	from
+		xo_tests.book_sellers
+	join xo_tests.books on books.book_id = book_sellers.book_id
+	group by
+		book_sellers_seller
+		, books.book_id
+) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
+`
+
+const UserTableBooksSellerSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_sellers_books.__books
+		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
+
+const UserTableBooksSellerGroupBySQL = `users.user_id, users.user_id`
+
+const UserTableNotificationsReceiverJoinSQL = `-- M2O join generated from "notifications_receiver_fkey"
+left join (
+  select
+  receiver as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    xo_tests.notifications
+  group by
+        receiver
+) as joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+`
+
+const UserTableNotificationsReceiverSelectSQL = `COALESCE(joined_notifications_receiver.notifications, '{}') as notifications_receiver`
+
+const UserTableNotificationsReceiverGroupBySQL = `joined_notifications_receiver.notifications, users.user_id`
+
+const UserTableNotificationsSenderJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
+left join (
+  select
+  sender as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    xo_tests.notifications
+  group by
+        sender
+) as joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+`
+
+const UserTableNotificationsSenderSelectSQL = `COALESCE(joined_notifications_sender.notifications, '{}') as notifications_sender`
+
+const UserTableNotificationsSenderGroupBySQL = `joined_notifications_sender.notifications, users.user_id`
+
+const UserTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
+`
+
+const UserTableUserAPIKeySelectSQL = `(case when _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id`
+
+const UserTableUserAPIKeyGroupBySQL = `_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id`
+
+const UserTableWorkItemsAssignedUserJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+		, work_item_assigned_user.role as role
+		, work_items.work_item_id as __work_items_work_item_id
+		, row(work_items.*) as __work_items
+	from
+		xo_tests.work_item_assigned_user
+	join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+	group by
+		work_item_assigned_user_assigned_user
+		, work_items.work_item_id
+		, role
+) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+`
+
+const UserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+
+const UserTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
+
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// insert (primary key generated and returned by database)
@@ -303,7 +458,7 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -330,144 +485,21 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 users.name,
 users.api_key_id,
 users.created_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') end) as book_authors_books,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
-(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
-(case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $8::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
+users.deleted_at `+
 		`FROM xo_tests.users `+
-		`-- M2M join generated from "book_authors_book_id_fkey"
-left join (
-	select
-			book_authors.author_id as book_authors_author_id
-			, book_authors.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors
-    join xo_tests.books on books.book_id = book_authors.book_id
-    group by
-			book_authors_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
-
--- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
-left join (
-	select
-			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
-			, book_authors_surrogate_key.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors_surrogate_key
-    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
-    group by
-			book_authors_surrogate_key_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
-
--- M2O join generated from "book_reviews_reviewer_fkey"
-left join (
-  select
-  reviewer as book_reviews_user_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    xo_tests.book_reviews
-  group by
-        reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
-
--- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			xo_tests.work_item_assigned_user
-    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-`+
-		` WHERE users.created_at > $9`+
+		``+
+		` WHERE users.created_at > $1`+
 		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.name, 
 users.api_key_id, 
 users.created_at, 
-users.deleted_at, 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id  ORDER BY 
+users.deleted_at  ORDER BY 
 		created_at Asc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
@@ -486,7 +518,7 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -513,144 +545,21 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 users.name,
 users.api_key_id,
 users.created_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') end) as book_authors_books,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
-(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
-(case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $8::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
+users.deleted_at `+
 		`FROM xo_tests.users `+
-		`-- M2M join generated from "book_authors_book_id_fkey"
-left join (
-	select
-			book_authors.author_id as book_authors_author_id
-			, book_authors.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors
-    join xo_tests.books on books.book_id = book_authors.book_id
-    group by
-			book_authors_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
-
--- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
-left join (
-	select
-			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
-			, book_authors_surrogate_key.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors_surrogate_key
-    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
-    group by
-			book_authors_surrogate_key_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
-
--- M2O join generated from "book_reviews_reviewer_fkey"
-left join (
-  select
-  reviewer as book_reviews_user_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    xo_tests.book_reviews
-  group by
-        reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
-
--- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			xo_tests.work_item_assigned_user
-    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-`+
-		` WHERE users.created_at < $9`+
+		``+
+		` WHERE users.created_at < $1`+
 		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
 users.name, 
 users.api_key_id, 
 users.created_at, 
-users.deleted_at, 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id  ORDER BY 
+users.deleted_at  ORDER BY 
 		created_at Desc`, filters, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
 	}
@@ -671,7 +580,7 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -698,140 +607,17 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 users.name,
 users.api_key_id,
 users.created_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') end) as book_authors_books,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
-(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
-(case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $8::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
+users.deleted_at `+
 		`FROM xo_tests.users `+
-		`-- M2M join generated from "book_authors_book_id_fkey"
-left join (
-	select
-			book_authors.author_id as book_authors_author_id
-			, book_authors.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors
-    join xo_tests.books on books.book_id = book_authors.book_id
-    group by
-			book_authors_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
-
--- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
-left join (
-	select
-			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
-			, book_authors_surrogate_key.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors_surrogate_key
-    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
-    group by
-			book_authors_surrogate_key_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
-
--- M2O join generated from "book_reviews_reviewer_fkey"
-left join (
-  select
-  reviewer as book_reviews_user_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    xo_tests.book_reviews
-  group by
-        reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
-
--- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			xo_tests.work_item_assigned_user
-    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-`+
-		` WHERE users.created_at = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id`, filters, c.deletedAt)
+		``+
+		` WHERE users.created_at = $1`+
+		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -853,7 +639,7 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -880,140 +666,17 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 users.name,
 users.api_key_id,
 users.created_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') end) as book_authors_books,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
-(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
-(case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $8::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
+users.deleted_at `+
 		`FROM xo_tests.users `+
-		`-- M2M join generated from "book_authors_book_id_fkey"
-left join (
-	select
-			book_authors.author_id as book_authors_author_id
-			, book_authors.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors
-    join xo_tests.books on books.book_id = book_authors.book_id
-    group by
-			book_authors_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
-
--- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
-left join (
-	select
-			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
-			, book_authors_surrogate_key.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors_surrogate_key
-    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
-    group by
-			book_authors_surrogate_key_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
-
--- M2O join generated from "book_reviews_reviewer_fkey"
-left join (
-  select
-  reviewer as book_reviews_user_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    xo_tests.book_reviews
-  group by
-        reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
-
--- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			xo_tests.work_item_assigned_user
-    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-`+
-		` WHERE users.name = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id`, filters, c.deletedAt)
+		``+
+		` WHERE users.name = $1`+
+		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByName/db.Query: %w", err))
 	}
@@ -1035,7 +698,7 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -1062,140 +725,17 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 users.name,
 users.api_key_id,
 users.created_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') end) as book_authors_books,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') end) as book_authors_surrogate_key_books,
-(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books,
-(case when $5::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $6::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $7::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $8::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items `+
+users.deleted_at `+
 		`FROM xo_tests.users `+
-		`-- M2M join generated from "book_authors_book_id_fkey"
-left join (
-	select
-			book_authors.author_id as book_authors_author_id
-			, book_authors.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors
-    join xo_tests.books on books.book_id = book_authors.book_id
-    group by
-			book_authors_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
-
--- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
-left join (
-	select
-			book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
-			, book_authors_surrogate_key.pseudonym as pseudonym
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_authors_surrogate_key
-    join xo_tests.books on books.book_id = book_authors_surrogate_key.book_id
-    group by
-			book_authors_surrogate_key_author_id
-			, books.book_id
-			, pseudonym
-  ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
-
--- M2O join generated from "book_reviews_reviewer_fkey"
-left join (
-  select
-  reviewer as book_reviews_user_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    xo_tests.book_reviews
-  group by
-        reviewer) joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
--- M2M join generated from "book_sellers_book_id_fkey"
-left join (
-	select
-			book_sellers.seller as book_sellers_seller
-			, books.book_id as __books_book_id
-			, row(books.*) as __books
-		from
-			xo_tests.book_sellers
-    join xo_tests.books on books.book_id = book_sellers.book_id
-    group by
-			book_sellers_seller
-			, books.book_id
-  ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
-
--- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    xo_tests.notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			xo_tests.work_item_assigned_user
-    join xo_tests.work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-`+
-		` WHERE users.user_id = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-users.user_id, users.user_id, 
-users.user_id, users.user_id, 
-joined_book_reviews.book_reviews, users.user_id, 
-users.user_id, users.user_id, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id`, filters, c.deletedAt)
+		``+
+		` WHERE users.user_id = $1`+
+		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.BooksAuthor, c.joins.BooksAuthorBooks, c.joins.BookReviews, c.joins.BooksSeller, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, userID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}

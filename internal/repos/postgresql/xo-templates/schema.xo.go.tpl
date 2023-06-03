@@ -94,6 +94,8 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- $i := .Data.Index -}}
 {{- $tables := .Data.Tables -}}
 {{- $constraints := .Data.Constraints -}}
+{{ /* TODO: maybe can be init beforehand */ }}
+{{- $_ := initialize_constraints $i.Table $constraints }}
 // {{ func_name_context $i "" }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
 //
 // Generated from index '{{ $i.SQLName }}'.
@@ -104,7 +106,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 		o(c)
 	}
 
-  paramStart := {{ last_nth $i $constraints $tables }}
+  paramStart := {{ last_nth $i $tables }}
 	nth := func ()  string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -127,7 +129,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 	}
 
 
-	{{ sqlstr_index $i $constraints $tables }}
+	{{ sqlstr_index $i $tables }}
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -215,6 +217,8 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- $t := .Data.Table -}}
 {{- $tables := .Data.Tables -}}
 {{- $constraints := .Data.Constraints -}}
+{{ /* TODO: maybe can be init beforehand */ }}
+{{- $_ := initialize_constraints $t $constraints }}
 
 {{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
@@ -432,7 +436,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	}
 
 
-  paramStart := {{ last_nth $t $constraints $tables $cursor_fields }}
+  paramStart := {{ last_nth $t $tables $cursor_fields }}
 	nth := func ()  string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -455,7 +459,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	}
 
 
-	{{ sqlstr_paginated $t $constraints $tables $cursor_fields $order }}
+	{{ sqlstr_paginated $t $tables $cursor_fields $order }}
 	sqlstr += c.limit
 
 	// run
