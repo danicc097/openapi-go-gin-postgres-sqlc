@@ -119,23 +119,23 @@ func WithNotificationFilters(filters map[string][]any) NotificationSelectConfigO
 	}
 }
 
-const NotificationTableUserReceiverJoinSQL = `-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
+const notificationTableUserReceiverJoinSQL = `-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join xo_tests.users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
 `
 
-const NotificationTableUserReceiverSelectSQL = `(case when _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver`
+const notificationTableUserReceiverSelectSQL = `(case when _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver`
 
-const NotificationTableUserReceiverGroupBySQL = `_notifications_receiver.user_id,
+const notificationTableUserReceiverGroupBySQL = `_notifications_receiver.user_id,
       _notifications_receiver.user_id,
 	notifications.notification_id`
 
-const NotificationTableUserSenderJoinSQL = `-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
+const notificationTableUserSenderJoinSQL = `-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join xo_tests.users as _notifications_sender on _notifications_sender.user_id = notifications.sender
 `
 
-const NotificationTableUserSenderSelectSQL = `(case when _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender`
+const notificationTableUserSenderSelectSQL = `(case when _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender`
 
-const NotificationTableUserSenderGroupBySQL = `_notifications_sender.user_id,
+const notificationTableUserSenderGroupBySQL = `_notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id`
 
@@ -255,19 +255,49 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.UserReceiver {
+		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
+	}
+
+	if c.joins.UserSender {
+		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
 notifications.body,
 notifications.sender,
-notifications.receiver `+
-		`FROM xo_tests.notifications `+
-		``+
+notifications.receiver %s `+
+		`FROM xo_tests.notifications %s `+
 		` WHERE notifications.notification_id > $1`+
 		` %s  GROUP BY notifications.notification_id, 
 notifications.body, 
 notifications.sender, 
-notifications.receiver ORDER BY 
-		notification_id Asc `, filters)
+notifications.receiver 
+ %s 
+ ORDER BY 
+		notification_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -313,19 +343,49 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.UserReceiver {
+		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
+	}
+
+	if c.joins.UserSender {
+		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
 notifications.body,
 notifications.sender,
-notifications.receiver `+
-		`FROM xo_tests.notifications `+
-		``+
+notifications.receiver %s `+
+		`FROM xo_tests.notifications %s `+
 		` WHERE notifications.notification_id < $1`+
 		` %s  GROUP BY notifications.notification_id, 
 notifications.body, 
 notifications.sender, 
-notifications.receiver ORDER BY 
-		notification_id Desc `, filters)
+notifications.receiver 
+ %s 
+ ORDER BY 
+		notification_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run

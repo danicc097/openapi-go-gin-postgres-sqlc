@@ -122,7 +122,7 @@ func WithBookFilters(filters map[string][]any) BookSelectConfigOption {
 	}
 }
 
-const BookTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
+const bookTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 		book_authors.book_id as book_authors_book_id
@@ -139,15 +139,15 @@ left join (
 ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = books.book_id
 `
 
-const BookTableAuthorsBookSelectSQL = `COALESCE(
+const bookTableAuthorsBookSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
 		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
-const BookTableAuthorsBookGroupBySQL = `books.book_id, books.book_id`
+const bookTableAuthorsBookGroupBySQL = `books.book_id, books.book_id`
 
-const BookTableAuthorsBookUsersJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
+const bookTableAuthorsBookUsersJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
 left join (
 	select
 		book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
@@ -164,15 +164,15 @@ left join (
 ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
 `
 
-const BookTableAuthorsBookUsersSelectSQL = `COALESCE(
+const bookTableAuthorsBookUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
 
-const BookTableAuthorsBookUsersGroupBySQL = `books.book_id, books.book_id`
+const bookTableAuthorsBookUsersGroupBySQL = `books.book_id, books.book_id`
 
-const BookTableBookReviewsJoinSQL = `-- M2O join generated from "book_reviews_book_id_fkey"
+const bookTableBookReviewsJoinSQL = `-- M2O join generated from "book_reviews_book_id_fkey"
 left join (
   select
   book_id as book_reviews_book_id
@@ -184,11 +184,11 @@ left join (
 ) as joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
 `
 
-const BookTableBookReviewsSelectSQL = `COALESCE(joined_book_reviews.book_reviews, '{}') as book_reviews`
+const bookTableBookReviewsSelectSQL = `COALESCE(joined_book_reviews.book_reviews, '{}') as book_reviews`
 
-const BookTableBookReviewsGroupBySQL = `joined_book_reviews.book_reviews, books.book_id`
+const bookTableBookReviewsGroupBySQL = `joined_book_reviews.book_reviews, books.book_id`
 
-const BookTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
+const bookTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
 		book_sellers.book_id as book_sellers_book_id
@@ -203,12 +203,12 @@ left join (
 ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
 `
 
-const BookTableSellersSelectSQL = `COALESCE(
+const bookTableSellersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
 
-const BookTableSellersGroupBySQL = `books.book_id, books.book_id`
+const bookTableSellersGroupBySQL = `books.book_id, books.book_id`
 
 // Insert inserts the Book to the database.
 func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
@@ -324,15 +324,57 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookGroupBySQL)
+	}
+
+	if c.joins.AuthorsBookUsers {
+		selectClauses = append(selectClauses, bookTableAuthorsBookUsersSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookUsersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookUsersGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, bookTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, bookTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.Sellers {
+		selectClauses = append(selectClauses, bookTableSellersSelectSQL)
+		joinClauses = append(joinClauses, bookTableSellersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableSellersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
-books.name `+
-		`FROM xo_tests.books `+
-		``+
+books.name %s `+
+		`FROM xo_tests.books %s `+
 		` WHERE books.book_id > $1`+
 		` %s  GROUP BY books.book_id, 
-books.name ORDER BY 
-		book_id Asc `, filters)
+books.name 
+ %s 
+ ORDER BY 
+		book_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -378,15 +420,57 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookGroupBySQL)
+	}
+
+	if c.joins.AuthorsBookUsers {
+		selectClauses = append(selectClauses, bookTableAuthorsBookUsersSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookUsersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookUsersGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, bookTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, bookTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.Sellers {
+		selectClauses = append(selectClauses, bookTableSellersSelectSQL)
+		joinClauses = append(joinClauses, bookTableSellersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableSellersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
-books.name `+
-		`FROM xo_tests.books `+
-		``+
+books.name %s `+
+		`FROM xo_tests.books %s `+
 		` WHERE books.book_id < $1`+
 		` %s  GROUP BY books.book_id, 
-books.name ORDER BY 
-		book_id Desc `, filters)
+books.name 
+ %s 
+ ORDER BY 
+		book_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run

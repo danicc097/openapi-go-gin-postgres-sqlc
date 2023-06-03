@@ -103,13 +103,13 @@ func WithDemoWorkItemFilters(filters map[string][]any) DemoWorkItemSelectConfigO
 	}
 }
 
-const DemoWorkItemTableWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+const demoWorkItemTableWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
 left join xo_tests.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id
 `
 
-const DemoWorkItemTableWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id`
+const demoWorkItemTableWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id`
 
-const DemoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
+const demoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
       _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id`
 
@@ -227,15 +227,39 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, demoWorkItemTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, demoWorkItemTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_work_items.work_item_id,
-demo_work_items.checked `+
-		`FROM xo_tests.demo_work_items `+
-		``+
+demo_work_items.checked %s `+
+		`FROM xo_tests.demo_work_items %s `+
 		` WHERE demo_work_items.work_item_id > $1`+
 		` %s  GROUP BY demo_work_items.work_item_id, 
-demo_work_items.checked ORDER BY 
-		work_item_id Asc `, filters)
+demo_work_items.checked 
+ %s 
+ ORDER BY 
+		work_item_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -281,15 +305,39 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, demoWorkItemTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, demoWorkItemTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_work_items.work_item_id,
-demo_work_items.checked `+
-		`FROM xo_tests.demo_work_items `+
-		``+
+demo_work_items.checked %s `+
+		`FROM xo_tests.demo_work_items %s `+
 		` WHERE demo_work_items.work_item_id < $1`+
 		` %s  GROUP BY demo_work_items.work_item_id, 
-demo_work_items.checked ORDER BY 
-		work_item_id Desc `, filters)
+demo_work_items.checked 
+ %s 
+ ORDER BY 
+		work_item_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run

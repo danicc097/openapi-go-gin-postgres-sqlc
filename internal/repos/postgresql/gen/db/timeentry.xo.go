@@ -176,6 +176,46 @@ func WithTimeEntryFilters(filters map[string][]any) TimeEntrySelectConfigOption 
 	}
 }
 
+const timeEntryTableActivityJoinSQL = `-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
+left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
+`
+
+const timeEntryTableActivitySelectSQL = `(case when _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id`
+
+const timeEntryTableActivityGroupBySQL = `_time_entries_activity_id.activity_id,
+      _time_entries_activity_id.activity_id,
+	time_entries.time_entry_id`
+
+const timeEntryTableTeamJoinSQL = `-- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
+left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
+`
+
+const timeEntryTableTeamSelectSQL = `(case when _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id`
+
+const timeEntryTableTeamGroupBySQL = `_time_entries_team_id.team_id,
+      _time_entries_team_id.team_id,
+	time_entries.time_entry_id`
+
+const timeEntryTableUserJoinSQL = `-- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
+left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
+`
+
+const timeEntryTableUserSelectSQL = `(case when _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id`
+
+const timeEntryTableUserGroupBySQL = `_time_entries_user_id.user_id,
+      _time_entries_user_id.user_id,
+	time_entries.time_entry_id`
+
+const timeEntryTableWorkItemJoinSQL = `-- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
+left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id
+`
+
+const timeEntryTableWorkItemSelectSQL = `(case when _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id`
+
+const timeEntryTableWorkItemGroupBySQL = `_time_entries_work_item_id.work_item_id,
+      _time_entries_work_item_id.work_item_id,
+	time_entries.time_entry_id`
+
 // Insert inserts the TimeEntry to the database.
 func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	// insert (primary key generated and returned by database)
@@ -274,26 +314,67 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activity {
+		selectClauses = append(selectClauses, timeEntryTableActivitySelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableActivityJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableActivityGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, timeEntryTableTeamSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableTeamGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, timeEntryTableUserSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, timeEntryTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -304,21 +385,9 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id `+
-		`FROM public.time_entries `+
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id`+
-		` WHERE time_entries.time_entry_id > $5`+
+time_entries.duration_minutes %s `+
+		`FROM public.time_entries %s `+
+		` WHERE time_entries.time_entry_id > $1`+
 		` %s  GROUP BY time_entries.time_entry_id, 
 time_entries.work_item_id, 
 time_entries.activity_id, 
@@ -326,25 +395,15 @@ time_entries.team_id,
 time_entries.user_id, 
 time_entries.comment, 
 time_entries.start, 
-time_entries.duration_minutes, 
-_time_entries_activity_id.activity_id,
-      _time_entries_activity_id.activity_id,
-	time_entries.time_entry_id, 
-_time_entries_team_id.team_id,
-      _time_entries_team_id.team_id,
-	time_entries.time_entry_id, 
-_time_entries_user_id.user_id,
-      _time_entries_user_id.user_id,
-	time_entries.time_entry_id, 
-_time_entries_work_item_id.work_item_id,
-      _time_entries_work_item_id.work_item_id,
-	time_entries.time_entry_id ORDER BY 
-		time_entry_id Asc `, filters)
+time_entries.duration_minutes 
+ %s 
+ ORDER BY 
+		time_entry_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activity, c.joins.Team, c.joins.User, c.joins.WorkItem, timeEntryID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Asc/db.Query: %w", err))
 	}
@@ -363,26 +422,67 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activity {
+		selectClauses = append(selectClauses, timeEntryTableActivitySelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableActivityJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableActivityGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, timeEntryTableTeamSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableTeamGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, timeEntryTableUserSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, timeEntryTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -393,21 +493,9 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id `+
-		`FROM public.time_entries `+
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id`+
-		` WHERE time_entries.time_entry_id < $5`+
+time_entries.duration_minutes %s `+
+		`FROM public.time_entries %s `+
+		` WHERE time_entries.time_entry_id < $1`+
 		` %s  GROUP BY time_entries.time_entry_id, 
 time_entries.work_item_id, 
 time_entries.activity_id, 
@@ -415,25 +503,15 @@ time_entries.team_id,
 time_entries.user_id, 
 time_entries.comment, 
 time_entries.start, 
-time_entries.duration_minutes, 
-_time_entries_activity_id.activity_id,
-      _time_entries_activity_id.activity_id,
-	time_entries.time_entry_id, 
-_time_entries_team_id.team_id,
-      _time_entries_team_id.team_id,
-	time_entries.time_entry_id, 
-_time_entries_user_id.user_id,
-      _time_entries_user_id.user_id,
-	time_entries.time_entry_id, 
-_time_entries_work_item_id.work_item_id,
-      _time_entries_work_item_id.work_item_id,
-	time_entries.time_entry_id ORDER BY 
-		time_entry_id Desc `, filters)
+time_entries.duration_minutes 
+ %s 
+ ORDER BY 
+		time_entry_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activity, c.joins.Team, c.joins.User, c.joins.WorkItem, timeEntryID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Desc/db.Query: %w", err))
 	}
@@ -454,21 +532,21 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -484,40 +562,17 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id `+
+time_entries.duration_minutes `+
 		`FROM public.time_entries `+
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id`+
-		` WHERE time_entries.time_entry_id = $5`+
-		` %s  GROUP BY 
-_time_entries_activity_id.activity_id,
-      _time_entries_activity_id.activity_id,
-	time_entries.time_entry_id, 
-_time_entries_team_id.team_id,
-      _time_entries_team_id.team_id,
-	time_entries.time_entry_id, 
-_time_entries_user_id.user_id,
-      _time_entries_user_id.user_id,
-	time_entries.time_entry_id, 
-_time_entries_work_item_id.work_item_id,
-      _time_entries_work_item_id.work_item_id,
-	time_entries.time_entry_id `, filters)
+		``+
+		` WHERE time_entries.time_entry_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, timeEntryID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activity, c.joins.Team, c.joins.User, c.joins.WorkItem, timeEntryID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", err))
 	}
@@ -539,21 +594,21 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -569,40 +624,17 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id `+
+time_entries.duration_minutes `+
 		`FROM public.time_entries `+
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id`+
-		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6`+
-		` %s  GROUP BY 
-_time_entries_activity_id.activity_id,
-      _time_entries_activity_id.activity_id,
-	time_entries.time_entry_id, 
-_time_entries_team_id.team_id,
-      _time_entries_team_id.team_id,
-	time_entries.time_entry_id, 
-_time_entries_user_id.user_id,
-      _time_entries_user_id.user_id,
-	time_entries.time_entry_id, 
-_time_entries_work_item_id.work_item_id,
-      _time_entries_work_item_id.work_item_id,
-	time_entries.time_entry_id `, filters)
+		``+
+		` WHERE time_entries.user_id = $1 AND time_entries.team_id = $2`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activity, c.joins.Team, c.joins.User, c.joins.WorkItem, userID, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/Query: %w", err))
 	}
@@ -626,21 +658,21 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -656,40 +688,17 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes,
-(case when $1::boolean = true and _time_entries_activity_id.activity_id is not null then row(_time_entries_activity_id.*) end) as activity_activity_id,
-(case when $2::boolean = true and _time_entries_team_id.team_id is not null then row(_time_entries_team_id.*) end) as team_team_id,
-(case when $3::boolean = true and _time_entries_user_id.user_id is not null then row(_time_entries_user_id.*) end) as user_user_id,
-(case when $4::boolean = true and _time_entries_work_item_id.work_item_id is not null then row(_time_entries_work_item_id.*) end) as work_item_work_item_id `+
+time_entries.duration_minutes `+
 		`FROM public.time_entries `+
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
-left join activities as _time_entries_activity_id on _time_entries_activity_id.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
-left join teams as _time_entries_team_id on _time_entries_team_id.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
-left join users as _time_entries_user_id on _time_entries_user_id.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
-left join work_items as _time_entries_work_item_id on _time_entries_work_item_id.work_item_id = time_entries.work_item_id`+
-		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6`+
-		` %s  GROUP BY 
-_time_entries_activity_id.activity_id,
-      _time_entries_activity_id.activity_id,
-	time_entries.time_entry_id, 
-_time_entries_team_id.team_id,
-      _time_entries_team_id.team_id,
-	time_entries.time_entry_id, 
-_time_entries_user_id.user_id,
-      _time_entries_user_id.user_id,
-	time_entries.time_entry_id, 
-_time_entries_work_item_id.work_item_id,
-      _time_entries_work_item_id.work_item_id,
-	time_entries.time_entry_id `, filters)
+		``+
+		` WHERE time_entries.work_item_id = $1 AND time_entries.team_id = $2`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activity, c.joins.Team, c.joins.User, c.joins.WorkItem, workItemID, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/Query: %w", err))
 	}

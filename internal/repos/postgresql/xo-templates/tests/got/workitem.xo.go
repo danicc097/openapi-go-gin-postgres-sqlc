@@ -110,16 +110,16 @@ func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
 	}
 }
 
-const WorkItemTableDemoWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+const workItemTableDemoWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
 `
 
-const WorkItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
+const workItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
 
-const WorkItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
+const workItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id`
 
-const WorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+const workItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
 left join (
 	select
 		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
@@ -136,13 +136,13 @@ left join (
 ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
 `
 
-const WorkItemTableAssignedUsersSelectSQL = `COALESCE(
+const workItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
-const WorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+const workItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
 // Insert inserts the WorkItem to the database.
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
@@ -258,15 +258,45 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
-work_items.title `+
-		`FROM xo_tests.work_items `+
-		``+
+work_items.title %s `+
+		`FROM xo_tests.work_items %s `+
 		` WHERE work_items.work_item_id > $1`+
 		` %s  GROUP BY work_items.work_item_id, 
-work_items.title ORDER BY 
-		work_item_id Asc `, filters)
+work_items.title 
+ %s 
+ ORDER BY 
+		work_item_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -312,15 +342,45 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
-work_items.title `+
-		`FROM xo_tests.work_items `+
-		``+
+work_items.title %s `+
+		`FROM xo_tests.work_items %s `+
 		` WHERE work_items.work_item_id < $1`+
 		` %s  GROUP BY work_items.work_item_id, 
-work_items.title ORDER BY 
-		work_item_id Desc `, filters)
+work_items.title 
+ %s 
+ ORDER BY 
+		work_item_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run

@@ -138,13 +138,13 @@ func WithUserAPIKeyFilters(filters map[string][]any) UserAPIKeySelectConfigOptio
 	}
 }
 
-const UserAPIKeyTableUserJoinSQL = `-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+const userAPIKeyTableUserJoinSQL = `-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id
 `
 
-const UserAPIKeyTableUserSelectSQL = `(case when _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id`
+const userAPIKeyTableUserSelectSQL = `(case when _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id`
 
-const UserAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
+const userAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
       _user_api_keys_user_id.user_id,
 	user_api_keys.user_api_key_id`
 
@@ -264,19 +264,43 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id `+
-		`FROM xo_tests.user_api_keys `+
-		``+
+user_api_keys.user_id %s `+
+		`FROM xo_tests.user_api_keys %s `+
 		` WHERE user_api_keys.user_api_key_id > $1`+
 		` %s  GROUP BY user_api_keys.user_api_key_id, 
 user_api_keys.api_key, 
 user_api_keys.expires_on, 
-user_api_keys.user_id ORDER BY 
-		user_api_key_id Asc `, filters)
+user_api_keys.user_id 
+ %s 
+ ORDER BY 
+		user_api_key_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -322,19 +346,43 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id `+
-		`FROM xo_tests.user_api_keys `+
-		``+
+user_api_keys.user_id %s `+
+		`FROM xo_tests.user_api_keys %s `+
 		` WHERE user_api_keys.user_api_key_id < $1`+
 		` %s  GROUP BY user_api_keys.user_api_key_id, 
 user_api_keys.api_key, 
 user_api_keys.expires_on, 
-user_api_keys.user_id ORDER BY 
-		user_api_key_id Desc `, filters)
+user_api_keys.user_id 
+ %s 
+ ORDER BY 
+		user_api_key_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run

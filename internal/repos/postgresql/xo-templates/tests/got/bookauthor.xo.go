@@ -130,7 +130,7 @@ func WithBookAuthorFilters(filters map[string][]any) BookAuthorSelectConfigOptio
 	}
 }
 
-const BookAuthorTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
+const bookAuthorTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 		book_authors.author_id as book_authors_author_id
@@ -147,15 +147,15 @@ left join (
 ) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = book_authors.author_id
 `
 
-const BookAuthorTableBooksAuthorSelectSQL = `COALESCE(
+const bookAuthorTableBooksAuthorSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_books.__books
 		, joined_book_authors_books.pseudonym
 		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
 
-const BookAuthorTableBooksAuthorGroupBySQL = `book_authors.author_id, book_authors.book_id, book_authors.author_id`
+const bookAuthorTableBooksAuthorGroupBySQL = `book_authors.author_id, book_authors.book_id, book_authors.author_id`
 
-const BookAuthorTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
+const bookAuthorTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 		book_authors.book_id as book_authors_book_id
@@ -172,13 +172,13 @@ left join (
 ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
 `
 
-const BookAuthorTableAuthorsBookSelectSQL = `COALESCE(
+const bookAuthorTableAuthorsBookSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_authors.__users
 		, joined_book_authors_authors.pseudonym
 		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
-const BookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors.book_id, book_authors.author_id`
+const bookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors.book_id, book_authors.author_id`
 
 // Insert inserts the BookAuthor to the database.
 func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {

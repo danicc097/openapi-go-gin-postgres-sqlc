@@ -112,23 +112,23 @@ func WithBookReviewFilters(filters map[string][]any) BookReviewSelectConfigOptio
 	}
 }
 
-const BookReviewTableBookJoinSQL = `-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
+const bookReviewTableBookJoinSQL = `-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
 `
 
-const BookReviewTableBookSelectSQL = `(case when _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id`
+const bookReviewTableBookSelectSQL = `(case when _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id`
 
-const BookReviewTableBookGroupBySQL = `_book_reviews_book_id.book_id,
+const bookReviewTableBookGroupBySQL = `_book_reviews_book_id.book_id,
       _book_reviews_book_id.book_id,
 	book_reviews.book_review_id`
 
-const BookReviewTableUserJoinSQL = `-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
+const bookReviewTableUserJoinSQL = `-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer
 `
 
-const BookReviewTableUserSelectSQL = `(case when _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer`
+const bookReviewTableUserSelectSQL = `(case when _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer`
 
-const BookReviewTableUserGroupBySQL = `_book_reviews_reviewer.user_id,
+const bookReviewTableUserGroupBySQL = `_book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id`
 
@@ -247,17 +247,47 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer `+
-		`FROM xo_tests.book_reviews `+
-		``+
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
 		` WHERE book_reviews.book_review_id > $1`+
 		` %s  GROUP BY book_reviews.book_review_id, 
 book_reviews.book_id, 
-book_reviews.reviewer ORDER BY 
-		book_review_id Asc `, filters)
+book_reviews.reviewer 
+ %s 
+ ORDER BY 
+		book_review_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -303,17 +333,47 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer `+
-		`FROM xo_tests.book_reviews `+
-		``+
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
 		` WHERE book_reviews.book_id > $1`+
 		` %s  GROUP BY book_reviews.book_review_id, 
 book_reviews.book_id, 
-book_reviews.reviewer ORDER BY 
-		book_id Asc `, filters)
+book_reviews.reviewer 
+ %s 
+ ORDER BY 
+		book_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -359,17 +419,47 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer `+
-		`FROM xo_tests.book_reviews `+
-		``+
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
 		` WHERE book_reviews.book_review_id < $1`+
 		` %s  GROUP BY book_reviews.book_review_id, 
 book_reviews.book_id, 
-book_reviews.reviewer ORDER BY 
-		book_review_id Desc `, filters)
+book_reviews.reviewer 
+ %s 
+ ORDER BY 
+		book_review_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -415,17 +505,47 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer `+
-		`FROM xo_tests.book_reviews `+
-		``+
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
 		` WHERE book_reviews.book_id < $1`+
 		` %s  GROUP BY book_reviews.book_review_id, 
 book_reviews.book_id, 
-book_reviews.reviewer ORDER BY 
-		book_id Desc `, filters)
+book_reviews.reviewer 
+ %s 
+ ORDER BY 
+		book_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run

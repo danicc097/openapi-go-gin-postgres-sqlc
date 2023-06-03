@@ -131,7 +131,7 @@ func WithBookAuthorsSurrogateKeyFilters(filters map[string][]any) BookAuthorsSur
 	}
 }
 
-const BookAuthorsSurrogateKeyTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+const bookAuthorsSurrogateKeyTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 		book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
@@ -148,15 +148,15 @@ left join (
 ) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = book_authors_surrogate_key.author_id
 `
 
-const BookAuthorsSurrogateKeyTableBooksAuthorSelectSQL = `COALESCE(
+const bookAuthorsSurrogateKeyTableBooksAuthorSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_books.__books
 		, joined_book_authors_surrogate_key_books.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
 
-const BookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL = `book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
+const bookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL = `book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
 
-const BookAuthorsSurrogateKeyTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
+const bookAuthorsSurrogateKeyTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
 left join (
 	select
 		book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
@@ -173,13 +173,13 @@ left join (
 ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 `
 
-const BookAuthorsSurrogateKeyTableAuthorsBookSelectSQL = `COALESCE(
+const bookAuthorsSurrogateKeyTableAuthorsBookSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_authors_surrogate_key_authors.__users
 		, joined_book_authors_surrogate_key_authors.pseudonym
 		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
 
-const BookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL = `book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
+const bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL = `book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
 
 // Insert inserts the BookAuthorsSurrogateKey to the database.
 func (bask *BookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*BookAuthorsSurrogateKey, error) {
@@ -297,19 +297,49 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym `+
-		`FROM xo_tests.book_authors_surrogate_key `+
-		``+
+book_authors_surrogate_key.pseudonym %s `+
+		`FROM xo_tests.book_authors_surrogate_key %s `+
 		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $1`+
 		` %s  GROUP BY book_authors_surrogate_key.book_authors_surrogate_key_id, 
 book_authors_surrogate_key.book_id, 
 book_authors_surrogate_key.author_id, 
-book_authors_surrogate_key.pseudonym ORDER BY 
-		book_authors_surrogate_key_id Asc `, filters)
+book_authors_surrogate_key.pseudonym 
+ %s 
+ ORDER BY 
+		book_authors_surrogate_key_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -355,19 +385,49 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym `+
-		`FROM xo_tests.book_authors_surrogate_key `+
-		``+
+book_authors_surrogate_key.pseudonym %s `+
+		`FROM xo_tests.book_authors_surrogate_key %s `+
 		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $1`+
 		` %s  GROUP BY book_authors_surrogate_key.book_authors_surrogate_key_id, 
 book_authors_surrogate_key.book_id, 
 book_authors_surrogate_key.author_id, 
-book_authors_surrogate_key.pseudonym ORDER BY 
-		book_authors_surrogate_key_id Desc `, filters)
+book_authors_surrogate_key.pseudonym 
+ %s 
+ ORDER BY 
+		book_authors_surrogate_key_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run

@@ -135,6 +135,56 @@ func WithWorkItemAssignedUserFilters(filters map[string][]any) WorkItemAssignedU
 	}
 }
 
+const workItemAssignedUserTableWorkItemsAssignedUserJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+		, work_item_assigned_user.role as role
+		, work_items.work_item_id as __work_items_work_item_id
+		, row(work_items.*) as __work_items
+	from
+		work_item_assigned_user
+	join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+	group by
+		work_item_assigned_user_assigned_user
+		, work_items.work_item_id
+		, role
+) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
+`
+
+const workItemAssignedUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+
+const workItemAssignedUserTableWorkItemsAssignedUserGroupBySQL = `work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+
+const workItemAssignedUserTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+left join (
+	select
+		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
+		, work_item_assigned_user.role as role
+		, users.user_id as __users_user_id
+		, row(users.*) as __users
+	from
+		work_item_assigned_user
+	join users on users.user_id = work_item_assigned_user.assigned_user
+	group by
+		work_item_assigned_user_work_item_id
+		, users.user_id
+		, role
+) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
+`
+
+const workItemAssignedUserTableAssignedUsersSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_assigned_users.__users
+		, joined_work_item_assigned_user_assigned_users.role
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+
+const workItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+
 // Insert inserts the WorkItemAssignedUser to the database.
 func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
 	// insert (manual)
@@ -230,21 +280,21 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -255,60 +305,17 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
-work_item_assigned_user.role,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+work_item_assigned_user.role `+
 		`FROM public.work_item_assigned_user `+
-		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
-
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-`+
-		` WHERE work_item_assigned_user.assigned_user = $3 AND work_item_assigned_user.work_item_id = $4`+
-		` %s  GROUP BY 
-work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
+		``+
+		` WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, assignedUser, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", err))
 	}
@@ -332,21 +339,21 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -357,60 +364,17 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
-work_item_assigned_user.role,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+work_item_assigned_user.role `+
 		`FROM public.work_item_assigned_user `+
-		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
-
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-`+
-		` WHERE work_item_assigned_user.work_item_id = $3 AND work_item_assigned_user.assigned_user = $4`+
-		` %s  GROUP BY 
-work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
+		``+
+		` WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID, assignedUser}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", err))
 	}
@@ -432,21 +396,21 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -457,60 +421,17 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
-work_item_assigned_user.role,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+work_item_assigned_user.role `+
 		`FROM public.work_item_assigned_user `+
-		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
-
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-`+
-		` WHERE work_item_assigned_user.work_item_id = $3`+
-		` %s  GROUP BY 
-work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
+		``+
+		` WHERE work_item_assigned_user.work_item_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
 	}
@@ -534,21 +455,21 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -559,60 +480,17 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
-work_item_assigned_user.role,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+work_item_assigned_user.role `+
 		`FROM public.work_item_assigned_user `+
-		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
-
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
-`+
-		` WHERE work_item_assigned_user.assigned_user = $3`+
-		` %s  GROUP BY 
-work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user, 
-work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user `, filters)
+		``+
+		` WHERE work_item_assigned_user.assigned_user = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemsAssignedUser, c.joins.AssignedUsers, assignedUser}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
 	}

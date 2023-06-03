@@ -94,7 +94,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- $i := .Data.Index -}}
 {{- $tables := .Data.Tables -}}
 {{- $constraints := .Data.Constraints -}}
-{{ /* TODO: maybe can be init beforehand */ }}
+{{/* TODO: maybe can be init beforehand */}}
 {{- $_ := initialize_constraints $i.Table $constraints }}
 // {{ func_name_context $i "" }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
 //
@@ -113,14 +113,14 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i"){
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -217,7 +217,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- $t := .Data.Table -}}
 {{- $tables := .Data.Tables -}}
 {{- $constraints := .Data.Constraints -}}
-{{ /* TODO: maybe can be init beforehand */ }}
+{{/* TODO: maybe can be init beforehand */}}
 {{- $_ := initialize_constraints $t $constraints }}
 
 {{if $t.Comment -}}
@@ -443,14 +443,14 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i"){
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""

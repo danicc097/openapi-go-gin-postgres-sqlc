@@ -108,7 +108,7 @@ func WithBookSellerFilters(filters map[string][]any) BookSellerSelectConfigOptio
 	}
 }
 
-const BookSellerTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
+const bookSellerTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
 		book_sellers.book_id as book_sellers_book_id
@@ -123,14 +123,14 @@ left join (
 ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
 `
 
-const BookSellerTableSellersSelectSQL = `COALESCE(
+const bookSellerTableSellersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
 		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
 
-const BookSellerTableSellersGroupBySQL = `book_sellers.book_id, book_sellers.book_id, book_sellers.seller`
+const bookSellerTableSellersGroupBySQL = `book_sellers.book_id, book_sellers.book_id, book_sellers.seller`
 
-const BookSellerTableBooksSellerJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
+const bookSellerTableBooksSellerJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
 left join (
 	select
 		book_sellers.seller as book_sellers_seller
@@ -145,12 +145,12 @@ left join (
 ) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
 `
 
-const BookSellerTableBooksSellerSelectSQL = `COALESCE(
+const bookSellerTableBooksSellerSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
 		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
 
-const BookSellerTableBooksSellerGroupBySQL = `book_sellers.seller, book_sellers.book_id, book_sellers.seller`
+const bookSellerTableBooksSellerGroupBySQL = `book_sellers.seller, book_sellers.book_id, book_sellers.seller`
 
 // Insert inserts the BookSeller to the database.
 func (bs *BookSeller) Insert(ctx context.Context, db DB) (*BookSeller, error) {

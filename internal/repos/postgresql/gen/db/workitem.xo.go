@@ -231,6 +231,133 @@ func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
 	}
 }
 
+const workItemTableDemoTwoWorkItemJoinSQL = `-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join demo_two_work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = work_items.work_item_id
+`
+
+const workItemTableDemoTwoWorkItemSelectSQL = `(case when _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id`
+
+const workItemTableDemoTwoWorkItemGroupBySQL = `_demo_two_work_items_work_item_id.work_item_id,
+	work_items.work_item_id`
+
+const workItemTableDemoWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
+`
+
+const workItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
+
+const workItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
+	work_items.work_item_id`
+
+const workItemTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_work_item_id_fkey"
+left join (
+  select
+  work_item_id as time_entries_work_item_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        work_item_id
+) as joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
+`
+
+const workItemTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
+
+const workItemTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, work_items.work_item_id`
+
+const workItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+left join (
+	select
+		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
+		, work_item_assigned_user.role as role
+		, users.user_id as __users_user_id
+		, row(users.*) as __users
+	from
+		work_item_assigned_user
+	join users on users.user_id = work_item_assigned_user.assigned_user
+	group by
+		work_item_assigned_user_work_item_id
+		, users.user_id
+		, role
+) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
+`
+
+const workItemTableAssignedUsersSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_assigned_users.__users
+		, joined_work_item_assigned_user_assigned_users.role
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+
+const workItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+
+const workItemTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_work_item_id_fkey"
+left join (
+  select
+  work_item_id as work_item_comments_work_item_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    work_item_comments
+  group by
+        work_item_id
+) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+`
+
+const workItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+
+const workItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, work_items.work_item_id`
+
+const workItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+		, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
+		, row(work_item_tags.*) as __work_item_tags
+	from
+		work_item_work_item_tag
+	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+	group by
+		work_item_work_item_tag_work_item_id
+		, work_item_tags.work_item_tag_id
+) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+`
+
+const workItemTableWorkItemTagsSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
+
+const workItemTableWorkItemTagsGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+
+const workItemTableKanbanStepJoinSQL = `-- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
+left join kanban_steps as _work_items_kanban_step_id on _work_items_kanban_step_id.kanban_step_id = work_items.kanban_step_id
+`
+
+const workItemTableKanbanStepSelectSQL = `(case when _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id`
+
+const workItemTableKanbanStepGroupBySQL = `_work_items_kanban_step_id.kanban_step_id,
+      _work_items_kanban_step_id.kanban_step_id,
+	work_items.work_item_id`
+
+const workItemTableTeamJoinSQL = `-- O2O join generated from "work_items_team_id_fkey (inferred)"
+left join teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id
+`
+
+const workItemTableTeamSelectSQL = `(case when _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id`
+
+const workItemTableTeamGroupBySQL = `_work_items_team_id.team_id,
+      _work_items_team_id.team_id,
+	work_items.work_item_id`
+
+const workItemTableWorkItemTypeJoinSQL = `-- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
+left join work_item_types as _work_items_work_item_type_id on _work_items_work_item_type_id.work_item_type_id = work_items.work_item_type_id
+`
+
+const workItemTableWorkItemTypeSelectSQL = `(case when _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id`
+
+const workItemTableWorkItemTypeGroupBySQL = `_work_items_work_item_type_id.work_item_type_id,
+      _work_items_work_item_type_id.work_item_type_id,
+	work_items.work_item_id`
+
 // Insert inserts the WorkItem to the database.
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	// insert (primary key generated and returned by database)
@@ -356,26 +483,97 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 		o(c)
 	}
 
-	paramStart := 10
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoTwoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
+	}
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, workItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, workItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, workItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, workItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, workItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, workItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTypeGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -390,83 +588,9 @@ work_items.closed,
 work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
-work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
-(case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $6::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
-(case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
-(case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
-		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_two_work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
--- M2O join generated from "time_entries_work_item_id_fkey"
-left join (
-  select
-  work_item_id as time_entries_work_item_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
-
--- M2O join generated from "work_item_comments_work_item_id_fkey"
-left join (
-  select
-  work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join kanban_steps as _work_items_kanban_step_id on _work_items_kanban_step_id.kanban_step_id = work_items.kanban_step_id
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_item_types as _work_items_work_item_type_id on _work_items_work_item_type_id.work_item_type_id = work_items.work_item_type_id`+
-		` WHERE work_items.work_item_id > $10`+
+work_items.deleted_at %s `+
+		`FROM public.work_items %s `+
+		` WHERE work_items.work_item_id > $1`+
 		` %s   AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
 work_items.title, 
 work_items.description, 
@@ -478,30 +602,15 @@ work_items.closed,
 work_items.target_date, 
 work_items.created_at, 
 work_items.updated_at, 
-work_items.deleted_at, 
-_demo_two_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-_demo_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-joined_time_entries.time_entries, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-_work_items_kanban_step_id.kanban_step_id,
-      _work_items_kanban_step_id.kanban_step_id,
-	work_items.work_item_id, 
-_work_items_team_id.team_id,
-      _work_items_team_id.team_id,
-	work_items.work_item_id, 
-_work_items_work_item_type_id.work_item_type_id,
-      _work_items_work_item_type_id.work_item_type_id,
-	work_items.work_item_id  ORDER BY 
-		work_item_id Asc`, filters, c.deletedAt)
+work_items.deleted_at 
+ %s 
+  ORDER BY 
+		work_item_id Asc`, filters, selects, joins, groupbys, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, c.joins.KanbanStep, c.joins.Team, c.joins.WorkItemType, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
 	}
@@ -520,26 +629,97 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 		o(c)
 	}
 
-	paramStart := 10
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoTwoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
+	}
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, workItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, workItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, workItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, workItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, workItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, workItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTypeGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -554,83 +734,9 @@ work_items.closed,
 work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
-work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
-(case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $6::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
-(case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
-(case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
-		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_two_work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
--- M2O join generated from "time_entries_work_item_id_fkey"
-left join (
-  select
-  work_item_id as time_entries_work_item_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
-
--- M2O join generated from "work_item_comments_work_item_id_fkey"
-left join (
-  select
-  work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join kanban_steps as _work_items_kanban_step_id on _work_items_kanban_step_id.kanban_step_id = work_items.kanban_step_id
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_item_types as _work_items_work_item_type_id on _work_items_work_item_type_id.work_item_type_id = work_items.work_item_type_id`+
-		` WHERE work_items.work_item_id < $10`+
+work_items.deleted_at %s `+
+		`FROM public.work_items %s `+
+		` WHERE work_items.work_item_id < $1`+
 		` %s   AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
 work_items.title, 
 work_items.description, 
@@ -642,30 +748,15 @@ work_items.closed,
 work_items.target_date, 
 work_items.created_at, 
 work_items.updated_at, 
-work_items.deleted_at, 
-_demo_two_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-_demo_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-joined_time_entries.time_entries, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-_work_items_kanban_step_id.kanban_step_id,
-      _work_items_kanban_step_id.kanban_step_id,
-	work_items.work_item_id, 
-_work_items_team_id.team_id,
-      _work_items_team_id.team_id,
-	work_items.work_item_id, 
-_work_items_work_item_type_id.work_item_type_id,
-      _work_items_work_item_type_id.work_item_type_id,
-	work_items.work_item_id  ORDER BY 
-		work_item_id Desc`, filters, c.deletedAt)
+work_items.deleted_at 
+ %s 
+  ORDER BY 
+		work_item_id Desc`, filters, selects, joins, groupbys, c.deletedAt)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, c.joins.KanbanStep, c.joins.Team, c.joins.WorkItemType, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
 	}
@@ -686,21 +777,21 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		o(c)
 	}
 
-	paramStart := 10
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -720,107 +811,17 @@ work_items.closed,
 work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
-work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
-(case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $6::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
-(case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
-(case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
+work_items.deleted_at `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_two_work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
--- M2O join generated from "time_entries_work_item_id_fkey"
-left join (
-  select
-  work_item_id as time_entries_work_item_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
-
--- M2O join generated from "work_item_comments_work_item_id_fkey"
-left join (
-  select
-  work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join kanban_steps as _work_items_kanban_step_id on _work_items_kanban_step_id.kanban_step_id = work_items.kanban_step_id
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_item_types as _work_items_work_item_type_id on _work_items_work_item_type_id.work_item_type_id = work_items.work_item_type_id`+
-		` WHERE work_items.deleted_at = $10 AND (deleted_at IS NOT NULL)`+
-		` %s   AND work_items.deleted_at is %s   GROUP BY 
-_demo_two_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-_demo_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-joined_time_entries.time_entries, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-_work_items_kanban_step_id.kanban_step_id,
-      _work_items_kanban_step_id.kanban_step_id,
-	work_items.work_item_id, 
-_work_items_team_id.team_id,
-      _work_items_team_id.team_id,
-	work_items.work_item_id, 
-_work_items_work_item_type_id.work_item_type_id,
-      _work_items_work_item_type_id.work_item_type_id,
-	work_items.work_item_id`, filters, c.deletedAt)
+		``+
+		` WHERE work_items.deleted_at = $1 AND (deleted_at IS NOT NULL)`+
+		` %s   AND work_items.deleted_at is %s  `, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, c.joins.KanbanStep, c.joins.Team, c.joins.WorkItemType, deletedAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/Query: %w", err))
 	}
@@ -844,21 +845,21 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 		o(c)
 	}
 
-	paramStart := 10
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -878,107 +879,17 @@ work_items.closed,
 work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
-work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
-(case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $6::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
-(case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
-(case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
+work_items.deleted_at `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_two_work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
--- M2O join generated from "time_entries_work_item_id_fkey"
-left join (
-  select
-  work_item_id as time_entries_work_item_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
-
--- M2O join generated from "work_item_comments_work_item_id_fkey"
-left join (
-  select
-  work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join kanban_steps as _work_items_kanban_step_id on _work_items_kanban_step_id.kanban_step_id = work_items.kanban_step_id
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_item_types as _work_items_work_item_type_id on _work_items_work_item_type_id.work_item_type_id = work_items.work_item_type_id`+
-		` WHERE work_items.work_item_id = $10`+
-		` %s   AND work_items.deleted_at is %s   GROUP BY 
-_demo_two_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-_demo_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-joined_time_entries.time_entries, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-_work_items_kanban_step_id.kanban_step_id,
-      _work_items_kanban_step_id.kanban_step_id,
-	work_items.work_item_id, 
-_work_items_team_id.team_id,
-      _work_items_team_id.team_id,
-	work_items.work_item_id, 
-_work_items_work_item_type_id.work_item_type_id,
-      _work_items_work_item_type_id.work_item_type_id,
-	work_items.work_item_id`, filters, c.deletedAt)
+		``+
+		` WHERE work_items.work_item_id = $1`+
+		` %s   AND work_items.deleted_at is %s  `, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, c.joins.KanbanStep, c.joins.Team, c.joins.WorkItemType, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -1000,21 +911,21 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemS
 		o(c)
 	}
 
-	paramStart := 10
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -1034,107 +945,17 @@ work_items.closed,
 work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
-work_items.deleted_at,
-(case when $1::boolean = true and _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id,
-(case when $2::boolean = true and _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users,
-(case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $6::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $7::boolean = true and _work_items_kanban_step_id.kanban_step_id is not null then row(_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id,
-(case when $8::boolean = true and _work_items_team_id.team_id is not null then row(_work_items_team_id.*) end) as team_team_id,
-(case when $9::boolean = true and _work_items_work_item_type_id.work_item_type_id is not null then row(_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id `+
+work_items.deleted_at `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_two_work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
--- M2O join generated from "time_entries_work_item_id_fkey"
-left join (
-  select
-  work_item_id as time_entries_work_item_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
-left join (
-	select
-			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-			, work_item_assigned_user.role as role
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			work_item_assigned_user
-    join users on users.user_id = work_item_assigned_user.assigned_user
-    group by
-			work_item_assigned_user_work_item_id
-			, users.user_id
-			, role
-  ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
-
--- M2O join generated from "work_item_comments_work_item_id_fkey"
-left join (
-  select
-  work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
--- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
-
--- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
-left join kanban_steps as _work_items_kanban_step_id on _work_items_kanban_step_id.kanban_step_id = work_items.kanban_step_id
--- O2O join generated from "work_items_team_id_fkey (inferred)"
-left join teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id
--- O2O join generated from "work_items_work_item_type_id_fkey (inferred)"
-left join work_item_types as _work_items_work_item_type_id on _work_items_work_item_type_id.work_item_type_id = work_items.work_item_type_id`+
-		` WHERE work_items.team_id = $10`+
-		` %s   AND work_items.deleted_at is %s   GROUP BY 
-_demo_two_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-_demo_work_items_work_item_id.work_item_id,
-	work_items.work_item_id, 
-joined_time_entries.time_entries, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-joined_work_item_comments.work_item_comments, work_items.work_item_id, 
-work_items.work_item_id, work_items.work_item_id, 
-_work_items_kanban_step_id.kanban_step_id,
-      _work_items_kanban_step_id.kanban_step_id,
-	work_items.work_item_id, 
-_work_items_team_id.team_id,
-      _work_items_team_id.team_id,
-	work_items.work_item_id, 
-_work_items_work_item_type_id.work_item_type_id,
-      _work_items_work_item_type_id.work_item_type_id,
-	work_items.work_item_id`, filters, c.deletedAt)
+		``+
+		` WHERE work_items.team_id = $1`+
+		` %s   AND work_items.deleted_at is %s  `, filters, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.AssignedUsers, c.joins.WorkItemComments, c.joins.WorkItemTags, c.joins.KanbanStep, c.joins.Team, c.joins.WorkItemType, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/Query: %w", err))
 	}

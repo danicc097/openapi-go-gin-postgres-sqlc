@@ -209,15 +209,33 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`dummy_join.dummy_join_id,
-dummy_join.name `+
-		`FROM xo_tests.dummy_join `+
-		``+
+dummy_join.name %s `+
+		`FROM xo_tests.dummy_join %s `+
 		` WHERE dummy_join.dummy_join_id > $1`+
 		` %s  GROUP BY dummy_join.dummy_join_id, 
-dummy_join.name ORDER BY 
-		dummy_join_id Asc `, filters)
+dummy_join.name 
+ %s 
+ ORDER BY 
+		dummy_join_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
@@ -263,15 +281,33 @@ func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`dummy_join.dummy_join_id,
-dummy_join.name `+
-		`FROM xo_tests.dummy_join `+
-		``+
+dummy_join.name %s `+
+		`FROM xo_tests.dummy_join %s `+
 		` WHERE dummy_join.dummy_join_id < $1`+
 		` %s  GROUP BY dummy_join.dummy_join_id, 
-dummy_join.name ORDER BY 
-		dummy_join_id Desc `, filters)
+dummy_join.name 
+ %s 
+ ORDER BY 
+		dummy_join_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run

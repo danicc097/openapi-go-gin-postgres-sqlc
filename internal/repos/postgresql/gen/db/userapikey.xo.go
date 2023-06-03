@@ -139,6 +139,16 @@ func WithUserAPIKeyFilters(filters map[string][]any) UserAPIKeySelectConfigOptio
 	}
 }
 
+const userAPIKeyTableUserJoinSQL = `-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+left join users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id
+`
+
+const userAPIKeyTableUserSelectSQL = `(case when _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id`
+
+const userAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
+      _user_api_keys_user_id.user_id,
+	user_api_keys.user_api_key_id`
+
 // Insert inserts the UserAPIKey to the database.
 func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	// insert (primary key generated and returned by database)
@@ -233,21 +243,21 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -255,29 +265,48 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id `+
-		`FROM public.user_api_keys `+
-		`-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id`+
-		` WHERE user_api_keys.user_api_key_id > $2`+
+user_api_keys.user_id %s `+
+		`FROM public.user_api_keys %s `+
+		` WHERE user_api_keys.user_api_key_id > $1`+
 		` %s  GROUP BY user_api_keys.user_api_key_id, 
 user_api_keys.api_key, 
 user_api_keys.expires_on, 
-user_api_keys.user_id, 
-_user_api_keys_user_id.user_id,
-      _user_api_keys_user_id.user_id,
-	user_api_keys.user_api_key_id ORDER BY 
-		user_api_key_id Asc `, filters)
+user_api_keys.user_id 
+ %s 
+ ORDER BY 
+		user_api_key_id Asc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, userAPIKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/db.Query: %w", err))
 	}
@@ -296,21 +325,21 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -318,29 +347,48 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+	}
+	joins := ""
+	if len(joinClauses) > 0 {
+		joins = ", " + strings.Join(joinClauses, ",\n") + " "
+	}
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id `+
-		`FROM public.user_api_keys `+
-		`-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id`+
-		` WHERE user_api_keys.user_api_key_id < $2`+
+user_api_keys.user_id %s `+
+		`FROM public.user_api_keys %s `+
+		` WHERE user_api_keys.user_api_key_id < $1`+
 		` %s  GROUP BY user_api_keys.user_api_key_id, 
 user_api_keys.api_key, 
 user_api_keys.expires_on, 
-user_api_keys.user_id, 
-_user_api_keys_user_id.user_id,
-      _user_api_keys_user_id.user_id,
-	user_api_keys.user_api_key_id ORDER BY 
-		user_api_key_id Desc `, filters)
+user_api_keys.user_id 
+ %s 
+ ORDER BY 
+		user_api_key_id Desc `, filters, selects, joins, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, userAPIKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/db.Query: %w", err))
 	}
@@ -361,21 +409,21 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -387,22 +435,17 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id `+
+user_api_keys.user_id `+
 		`FROM public.user_api_keys `+
-		`-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id`+
-		` WHERE user_api_keys.api_key = $2`+
-		` %s  GROUP BY 
-_user_api_keys_user_id.user_id,
-      _user_api_keys_user_id.user_id,
-	user_api_keys.user_api_key_id `, filters)
+		``+
+		` WHERE user_api_keys.api_key = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, apiKey)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, apiKey}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
 	}
@@ -424,21 +467,21 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -450,22 +493,17 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id `+
+user_api_keys.user_id `+
 		`FROM public.user_api_keys `+
-		`-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id`+
-		` WHERE user_api_keys.user_api_key_id = $2`+
-		` %s  GROUP BY 
-_user_api_keys_user_id.user_id,
-      _user_api_keys_user_id.user_id,
-	user_api_keys.user_api_key_id `, filters)
+		``+
+		` WHERE user_api_keys.user_api_key_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, userAPIKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
 	}
@@ -487,21 +525,21 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -513,22 +551,17 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id,
-(case when $1::boolean = true and _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id `+
+user_api_keys.user_id `+
 		`FROM public.user_api_keys `+
-		`-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
-left join users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id`+
-		` WHERE user_api_keys.user_id = $2`+
-		` %s  GROUP BY 
-_user_api_keys_user_id.user_id,
-      _user_api_keys_user_id.user_id,
-	user_api_keys.user_api_key_id `, filters)
+		``+
+		` WHERE user_api_keys.user_id = $1`+
+		` %s  `, filters)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, userID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterValues...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))
 	}

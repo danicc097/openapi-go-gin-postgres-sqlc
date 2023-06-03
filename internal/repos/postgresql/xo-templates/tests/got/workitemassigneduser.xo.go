@@ -130,7 +130,7 @@ func WithWorkItemAssignedUserFilters(filters map[string][]any) WorkItemAssignedU
 	}
 }
 
-const WorkItemAssignedUserTableWorkItemsAssignedUserJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+const workItemAssignedUserTableWorkItemsAssignedUserJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
@@ -147,15 +147,15 @@ left join (
 ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
 `
 
-const WorkItemAssignedUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
+const workItemAssignedUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
-const WorkItemAssignedUserTableWorkItemsAssignedUserGroupBySQL = `work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+const workItemAssignedUserTableWorkItemsAssignedUserGroupBySQL = `work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
 
-const WorkItemAssignedUserTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+const workItemAssignedUserTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
 left join (
 	select
 		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
@@ -172,13 +172,13 @@ left join (
 ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
 `
 
-const WorkItemAssignedUserTableAssignedUsersSelectSQL = `COALESCE(
+const workItemAssignedUserTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
-const WorkItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+const workItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
 
 // Insert inserts the WorkItemAssignedUser to the database.
 func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
