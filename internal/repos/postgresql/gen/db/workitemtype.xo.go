@@ -125,6 +125,16 @@ func WithWorkItemTypeFilters(filters map[string][]any) WorkItemTypeSelectConfigO
 	}
 }
 
+const workItemTypeTableProjectJoinSQL = `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
+`
+
+const workItemTypeTableProjectSelectSQL = `(case when _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id`
+
+const workItemTypeTableProjectGroupBySQL = `_work_item_types_project_id.project_id,
+      _work_item_types_project_id.project_id,
+	work_item_types.work_item_type_id`
+
 // Insert inserts the WorkItemType to the database.
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
 	// insert (primary key generated and returned by database)
@@ -220,21 +230,21 @@ func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workIt
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -242,31 +252,42 @@ func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workIt
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTypeTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTypeTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTypeTableProjectGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
-		`FROM public.work_item_types `+
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
-		` WHERE work_item_types.work_item_type_id > $2`+
-		` %s  GROUP BY work_item_types.work_item_type_id, 
-work_item_types.project_id, 
-work_item_types.name, 
-work_item_types.description, 
-work_item_types.color, 
-_work_item_types_project_id.project_id,
-      _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id ORDER BY 
-		work_item_type_id Asc `, filters)
+work_item_types.color %s `+
+		`FROM public.work_item_types %s `+
+		` WHERE work_item_types.work_item_type_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		work_item_type_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, workItemTypeID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTypeID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/Asc/db.Query: %w", err))
 	}
@@ -285,21 +306,21 @@ func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID i
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -307,31 +328,42 @@ func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID i
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTypeTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTypeTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTypeTableProjectGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
-		`FROM public.work_item_types `+
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
-		` WHERE work_item_types.project_id > $2`+
-		` %s  GROUP BY work_item_types.work_item_type_id, 
-work_item_types.project_id, 
-work_item_types.name, 
-work_item_types.description, 
-work_item_types.color, 
-_work_item_types_project_id.project_id,
-      _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id ORDER BY 
-		project_id Asc `, filters)
+work_item_types.color %s `+
+		`FROM public.work_item_types %s `+
+		` WHERE work_item_types.project_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/Asc/db.Query: %w", err))
 	}
@@ -350,21 +382,21 @@ func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workI
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -372,31 +404,42 @@ func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workI
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTypeTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTypeTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTypeTableProjectGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
-		`FROM public.work_item_types `+
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
-		` WHERE work_item_types.work_item_type_id < $2`+
-		` %s  GROUP BY work_item_types.work_item_type_id, 
-work_item_types.project_id, 
-work_item_types.name, 
-work_item_types.description, 
-work_item_types.color, 
-_work_item_types_project_id.project_id,
-      _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id ORDER BY 
-		work_item_type_id Desc `, filters)
+work_item_types.color %s `+
+		`FROM public.work_item_types %s `+
+		` WHERE work_item_types.work_item_type_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		work_item_type_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, workItemTypeID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTypeID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/Desc/db.Query: %w", err))
 	}
@@ -415,21 +458,21 @@ func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID 
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -437,31 +480,42 @@ func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTypeTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTypeTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTypeTableProjectGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
-		`FROM public.work_item_types `+
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
-		` WHERE work_item_types.project_id < $2`+
-		` %s  GROUP BY work_item_types.work_item_type_id, 
-work_item_types.project_id, 
-work_item_types.name, 
-work_item_types.description, 
-work_item_types.color, 
-_work_item_types_project_id.project_id,
-      _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id ORDER BY 
-		project_id Desc `, filters)
+work_item_types.color %s `+
+		`FROM public.work_item_types %s `+
+		` WHERE work_item_types.project_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/Desc/db.Query: %w", err))
 	}
@@ -482,21 +536,21 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -504,27 +558,42 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTypeTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTypeTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTypeTableProjectGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
-		`FROM public.work_item_types `+
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
-		` WHERE work_item_types.name = $2 AND work_item_types.project_id = $3`+
-		` %s  GROUP BY 
-_work_item_types_project_id.project_id,
-      _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id `, filters)
+work_item_types.color %s `+
+		`FROM public.work_item_types %s `+
+		` WHERE work_item_types.name = $1 AND work_item_types.project_id = $2`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, name, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", err))
 	}
@@ -546,21 +615,21 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -568,27 +637,42 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTypeTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTypeTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTypeTableProjectGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
-		`FROM public.work_item_types `+
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
-		` WHERE work_item_types.name = $2`+
-		` %s  GROUP BY 
-_work_item_types_project_id.project_id,
-      _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id `, filters)
+work_item_types.color %s `+
+		`FROM public.work_item_types %s `+
+		` WHERE work_item_types.name = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", err))
 	}
@@ -612,21 +696,21 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ..
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -634,27 +718,42 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ..
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTypeTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTypeTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTypeTableProjectGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
-		`FROM public.work_item_types `+
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
-		` WHERE work_item_types.project_id = $2`+
-		` %s  GROUP BY 
-_work_item_types_project_id.project_id,
-      _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id `, filters)
+work_item_types.color %s `+
+		`FROM public.work_item_types %s `+
+		` WHERE work_item_types.project_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", err))
 	}
@@ -678,21 +777,21 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -700,27 +799,42 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTypeTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTypeTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTypeTableProjectGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color,
-(case when $1::boolean = true and _work_item_types_project_id.project_id is not null then row(_work_item_types_project_id.*) end) as project_project_id `+
-		`FROM public.work_item_types `+
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
-left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id`+
-		` WHERE work_item_types.work_item_type_id = $2`+
-		` %s  GROUP BY 
-_work_item_types_project_id.project_id,
-      _work_item_types_project_id.project_id,
-	work_item_types.work_item_type_id `, filters)
+work_item_types.color %s `+
+		`FROM public.work_item_types %s `+
+		` WHERE work_item_types.work_item_type_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTypeID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, workItemTypeID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTypeID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", err))
 	}

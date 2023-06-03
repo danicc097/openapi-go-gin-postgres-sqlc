@@ -181,6 +181,42 @@ func WithNotificationFilters(filters map[string][]any) NotificationSelectConfigO
 	}
 }
 
+const notificationTableUserReceiverJoinSQL = `-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
+left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
+`
+
+const notificationTableUserReceiverSelectSQL = `(case when _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver`
+
+const notificationTableUserReceiverGroupBySQL = `_notifications_receiver.user_id,
+      _notifications_receiver.user_id,
+	notifications.notification_id`
+
+const notificationTableUserSenderJoinSQL = `-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
+left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
+`
+
+const notificationTableUserSenderSelectSQL = `(case when _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender`
+
+const notificationTableUserSenderGroupBySQL = `_notifications_sender.user_id,
+      _notifications_sender.user_id,
+	notifications.notification_id`
+
+const notificationTableUserNotificationsJoinSQL = `-- M2O join generated from "user_notifications_notification_id_fkey"
+left join (
+  select
+  notification_id as user_notifications_notification_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        notification_id
+) as joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id
+`
+
+const notificationTableUserNotificationsSelectSQL = `COALESCE(joined_user_notifications.user_notifications, '{}') as user_notifications`
+
+const notificationTableUserNotificationsGroupBySQL = `joined_user_notifications.user_notifications, notifications.notification_id`
+
 // Insert inserts the Notification to the database.
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
 	// insert (primary key generated and returned by database)
@@ -280,26 +316,58 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.UserReceiver {
+		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
+	}
+
+	if c.joins.UserSender {
+		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, notificationTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserNotificationsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -312,48 +380,17 @@ notifications.link,
 notifications.created_at,
 notifications.sender,
 notifications.receiver,
-notifications.notification_type,
-(case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
-(case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
-(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications `+
-		`FROM public.notifications `+
-		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
--- M2O join generated from "user_notifications_notification_id_fkey"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id`+
-		` WHERE notifications.notification_id > $4`+
-		` %s  GROUP BY notifications.notification_id, 
-notifications.receiver_rank, 
-notifications.title, 
-notifications.body, 
-notifications.label, 
-notifications.link, 
-notifications.created_at, 
-notifications.sender, 
-notifications.receiver, 
-notifications.notification_type, 
-_notifications_receiver.user_id,
-      _notifications_receiver.user_id,
-	notifications.notification_id, 
-_notifications_sender.user_id,
-      _notifications_sender.user_id,
-	notifications.notification_id, 
-joined_user_notifications.user_notifications, notifications.notification_id ORDER BY 
-		notification_id Asc `, filters)
+notifications.notification_type %s `+
+		`FROM public.notifications %s `+
+		` WHERE notifications.notification_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		notification_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, c.joins.UserNotifications, notificationID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/db.Query: %w", err))
 	}
@@ -372,26 +409,58 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.UserReceiver {
+		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
+	}
+
+	if c.joins.UserSender {
+		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, notificationTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserNotificationsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -404,48 +473,17 @@ notifications.link,
 notifications.created_at,
 notifications.sender,
 notifications.receiver,
-notifications.notification_type,
-(case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
-(case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
-(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications `+
-		`FROM public.notifications `+
-		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
--- M2O join generated from "user_notifications_notification_id_fkey"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id`+
-		` WHERE notifications.notification_id < $4`+
-		` %s  GROUP BY notifications.notification_id, 
-notifications.receiver_rank, 
-notifications.title, 
-notifications.body, 
-notifications.label, 
-notifications.link, 
-notifications.created_at, 
-notifications.sender, 
-notifications.receiver, 
-notifications.notification_type, 
-_notifications_receiver.user_id,
-      _notifications_receiver.user_id,
-	notifications.notification_id, 
-_notifications_sender.user_id,
-      _notifications_sender.user_id,
-	notifications.notification_id, 
-joined_user_notifications.user_notifications, notifications.notification_id ORDER BY 
-		notification_id Desc `, filters)
+notifications.notification_type %s `+
+		`FROM public.notifications %s `+
+		` WHERE notifications.notification_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		notification_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, c.joins.UserNotifications, notificationID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/db.Query: %w", err))
 	}
@@ -466,26 +504,58 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.UserReceiver {
+		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
+	}
+
+	if c.joins.UserSender {
+		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, notificationTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserNotificationsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -498,39 +568,17 @@ notifications.link,
 notifications.created_at,
 notifications.sender,
 notifications.receiver,
-notifications.notification_type,
-(case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
-(case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
-(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications `+
-		`FROM public.notifications `+
-		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
--- M2O join generated from "user_notifications_notification_id_fkey"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id`+
-		` WHERE notifications.notification_id = $4`+
-		` %s  GROUP BY 
-_notifications_receiver.user_id,
-      _notifications_receiver.user_id,
-	notifications.notification_id, 
-_notifications_sender.user_id,
-      _notifications_sender.user_id,
-	notifications.notification_id, 
-joined_user_notifications.user_notifications, notifications.notification_id `, filters)
+notifications.notification_type %s `+
+		`FROM public.notifications %s `+
+		` WHERE notifications.notification_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, c.joins.UserNotifications, notificationID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
@@ -552,26 +600,58 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 3
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.UserReceiver {
+		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
+	}
+
+	if c.joins.UserSender {
+		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, notificationTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserNotificationsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -584,39 +664,17 @@ notifications.link,
 notifications.created_at,
 notifications.sender,
 notifications.receiver,
-notifications.notification_type,
-(case when $1::boolean = true and _notifications_receiver.user_id is not null then row(_notifications_receiver.*) end) as user_receiver,
-(case when $2::boolean = true and _notifications_sender.user_id is not null then row(_notifications_sender.*) end) as user_sender,
-(case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications `+
-		`FROM public.notifications `+
-		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
-left join users as _notifications_receiver on _notifications_receiver.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
-left join users as _notifications_sender on _notifications_sender.user_id = notifications.sender
--- M2O join generated from "user_notifications_notification_id_fkey"
-left join (
-  select
-  notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        notification_id) joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id`+
-		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6`+
-		` %s  GROUP BY 
-_notifications_receiver.user_id,
-      _notifications_receiver.user_id,
-	notifications.notification_id, 
-_notifications_sender.user_id,
-      _notifications_sender.user_id,
-	notifications.notification_id, 
-joined_user_notifications.user_notifications, notifications.notification_id `, filters)
+notifications.notification_type %s `+
+		`FROM public.notifications %s `+
+		` WHERE notifications.receiver_rank = $1 AND notifications.notification_type = $2 AND notifications.created_at = $3`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, receiverRank, notificationType, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.UserReceiver, c.joins.UserSender, c.joins.UserNotifications, receiverRank, notificationType, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{receiverRank, notificationType, createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/NotificationsByReceiverRankNotificationTypeCreatedAt/Query: %w", err))
 	}

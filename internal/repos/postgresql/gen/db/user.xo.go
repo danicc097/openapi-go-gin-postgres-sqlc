@@ -237,6 +237,143 @@ func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
 	}
 }
 
+const userTableNotificationsReceiverJoinSQL = `-- M2O join generated from "notifications_receiver_fkey"
+left join (
+  select
+  receiver as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    notifications
+  group by
+        receiver
+) as joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+`
+
+const userTableNotificationsReceiverSelectSQL = `COALESCE(joined_notifications_receiver.notifications, '{}') as notifications_receiver`
+
+const userTableNotificationsReceiverGroupBySQL = `joined_notifications_receiver.notifications, users.user_id`
+
+const userTableNotificationsSenderJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
+left join (
+  select
+  sender as notifications_user_id
+    , array_agg(notifications.*) as notifications
+  from
+    notifications
+  group by
+        sender
+) as joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+`
+
+const userTableNotificationsSenderSelectSQL = `COALESCE(joined_notifications_sender.notifications, '{}') as notifications_sender`
+
+const userTableNotificationsSenderGroupBySQL = `joined_notifications_sender.notifications, users.user_id`
+
+const userTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as time_entries_user_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        user_id
+) as joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
+`
+
+const userTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
+
+const userTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, users.user_id`
+
+const userTableUserNotificationsJoinSQL = `-- M2O join generated from "user_notifications_user_id_fkey"
+left join (
+  select
+  user_id as user_notifications_user_id
+    , array_agg(user_notifications.*) as user_notifications
+  from
+    user_notifications
+  group by
+        user_id
+) as joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
+`
+
+const userTableUserNotificationsSelectSQL = `COALESCE(joined_user_notifications.user_notifications, '{}') as user_notifications`
+
+const userTableUserNotificationsGroupBySQL = `joined_user_notifications.user_notifications, users.user_id`
+
+const userTableTeamsMemberJoinSQL = `-- M2M join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_team.member as user_team_member
+		, teams.team_id as __teams_team_id
+		, row(teams.*) as __teams
+	from
+		user_team
+	join teams on teams.team_id = user_team.team_id
+	group by
+		user_team_member
+		, teams.team_id
+) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
+`
+
+const userTableTeamsMemberSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_user_team_teams.__teams
+		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') as user_team_teams`
+
+const userTableTeamsMemberGroupBySQL = `users.user_id, users.user_id`
+
+const userTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
+left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
+`
+
+const userTableUserAPIKeySelectSQL = `(case when _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id`
+
+const userTableUserAPIKeyGroupBySQL = `_users_api_key_id.user_api_key_id,
+      _users_api_key_id.user_api_key_id,
+	users.user_id`
+
+const userTableWorkItemsAssignedUserJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+left join (
+	select
+		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
+		, work_item_assigned_user.role as role
+		, work_items.work_item_id as __work_items_work_item_id
+		, row(work_items.*) as __work_items
+	from
+		work_item_assigned_user
+	join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+	group by
+		work_item_assigned_user_assigned_user
+		, work_items.work_item_id
+		, role
+) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+`
+
+const userTableWorkItemsAssignedUserSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_assigned_user_work_items.__work_items
+		, joined_work_item_assigned_user_work_items.role
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+
+const userTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
+
+const userTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_user_id_fkey"
+left join (
+  select
+  user_id as work_item_comments_user_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    work_item_comments
+  group by
+        user_id
+) as joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id
+`
+
+const userTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+
+const userTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, users.user_id`
+
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// insert (primary key generated and returned by database)
@@ -364,26 +501,88 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -401,132 +600,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at > $9`+
-		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
-users.username, 
-users.email, 
-users.first_name, 
-users.last_name, 
-users.full_name, 
-users.external_id, 
-users.api_key_id, 
-users.scopes, 
-users.role_rank, 
-users.has_personal_notifications, 
-users.has_global_notifications, 
-users.created_at, 
-users.updated_at, 
-users.deleted_at, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
-		created_at Asc`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.created_at > $1`+
+		` %s   AND users.deleted_at is %s  %s 
+  ORDER BY 
+		created_at Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
@@ -545,26 +629,88 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -582,132 +728,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at < $9`+
-		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
-users.username, 
-users.email, 
-users.first_name, 
-users.last_name, 
-users.full_name, 
-users.external_id, 
-users.api_key_id, 
-users.scopes, 
-users.role_rank, 
-users.has_personal_notifications, 
-users.has_global_notifications, 
-users.created_at, 
-users.updated_at, 
-users.deleted_at, 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id  ORDER BY 
-		created_at Desc`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.created_at < $1`+
+		` %s   AND users.deleted_at is %s  %s 
+  ORDER BY 
+		created_at Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
 	}
@@ -728,26 +759,88 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...U
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -765,118 +858,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.created_at = $1`+
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByCreatedAt/Query: %w", err))
 	}
@@ -900,26 +892,88 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -937,118 +991,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.created_at = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.created_at = $1`+
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -1070,26 +1023,88 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -1107,118 +1122,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.deleted_at = $1 AND (deleted_at IS NOT NULL)`+
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, deletedAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByDeletedAt/Query: %w", err))
 	}
@@ -1242,26 +1156,88 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -1279,118 +1255,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.email = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.email = $1`+
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, email)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, email}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{email}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
 	}
@@ -1412,26 +1287,88 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -1449,118 +1386,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.external_id = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.external_id = $1`+
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, externalID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, externalID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{externalID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
 	}
@@ -1582,26 +1418,88 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -1619,118 +1517,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.user_id = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.user_id = $1`+
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, userID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
@@ -1752,26 +1549,88 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -1789,118 +1648,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.updated_at = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.updated_at = $1`+
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, updatedAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{updatedAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/Query: %w", err))
 	}
@@ -1924,26 +1682,88 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		o(c)
 	}
 
-	paramStart := 9
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -1961,118 +1781,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then COALESCE(joined_notifications_receiver.notifications, '{}') end) as notifications_receiver,
-(case when $2::boolean = true then COALESCE(joined_notifications_sender.notifications, '{}') end) as notifications_sender,
-(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
-(case when $5::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') end) as user_team_teams,
-(case when $6::boolean = true and _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id,
-(case when $7::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
-(case when $8::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
-left join (
-  select
-  receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        receiver) joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
--- M2O join generated from "notifications_sender_fkey"
-left join (
-  select
-  sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
-  from
-    notifications
-  group by
-        sender) joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
--- M2O join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2O join generated from "user_notifications_user_id_fkey"
-left join (
-  select
-  user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
-  from
-    user_notifications
-  group by
-        user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-			user_team.member as user_team_member
-			, teams.team_id as __teams_team_id
-			, row(teams.*) as __teams
-		from
-			user_team
-    join teams on teams.team_id = user_team.team_id
-    group by
-			user_team_member
-			, teams.team_id
-  ) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
-
--- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
-left join (
-	select
-			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-			, work_item_assigned_user.role as role
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_assigned_user
-    join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
-    group by
-			work_item_assigned_user_assigned_user
-			, work_items.work_item_id
-			, role
-  ) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
-
--- M2O join generated from "work_item_comments_user_id_fkey"
-left join (
-  select
-  user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        user_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id`+
-		` WHERE users.username = $9`+
-		` %s   AND users.deleted_at is %s   GROUP BY 
-joined_notifications_receiver.notifications, users.user_id, 
-joined_notifications_sender.notifications, users.user_id, 
-joined_time_entries.time_entries, users.user_id, 
-joined_user_notifications.user_notifications, users.user_id, 
-users.user_id, users.user_id, 
-_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id, 
-users.user_id, users.user_id, 
-joined_work_item_comments.work_item_comments, users.user_id`, filters, c.deletedAt)
+users.deleted_at %s `+
+		`FROM public.users %s `+
+		` WHERE users.username = $1`+
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, username)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserNotifications, c.joins.TeamsMember, c.joins.UserAPIKey, c.joins.WorkItemsAssignedUser, c.joins.WorkItemComments, username}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{username}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))
 	}

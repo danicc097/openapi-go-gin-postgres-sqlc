@@ -164,6 +164,86 @@ func WithProjectFilters(filters map[string][]any) ProjectSelectConfigOption {
 	}
 }
 
+const projectTableActivitiesJoinSQL = `-- M2O join generated from "activities_project_id_fkey"
+left join (
+  select
+  project_id as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+  group by
+        project_id
+) as joined_activities on joined_activities.activities_project_id = projects.project_id
+`
+
+const projectTableActivitiesSelectSQL = `COALESCE(joined_activities.activities, '{}') as activities`
+
+const projectTableActivitiesGroupBySQL = `joined_activities.activities, projects.project_id`
+
+const projectTableKanbanStepsJoinSQL = `-- M2O join generated from "kanban_steps_project_id_fkey"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+  group by
+        project_id
+) as joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
+`
+
+const projectTableKanbanStepsSelectSQL = `COALESCE(joined_kanban_steps.kanban_steps, '{}') as kanban_steps`
+
+const projectTableKanbanStepsGroupBySQL = `joined_kanban_steps.kanban_steps, projects.project_id`
+
+const projectTableTeamsJoinSQL = `-- M2O join generated from "teams_project_id_fkey"
+left join (
+  select
+  project_id as teams_project_id
+    , array_agg(teams.*) as teams
+  from
+    teams
+  group by
+        project_id
+) as joined_teams on joined_teams.teams_project_id = projects.project_id
+`
+
+const projectTableTeamsSelectSQL = `COALESCE(joined_teams.teams, '{}') as teams`
+
+const projectTableTeamsGroupBySQL = `joined_teams.teams, projects.project_id`
+
+const projectTableWorkItemTagsJoinSQL = `-- M2O join generated from "work_item_tags_project_id_fkey"
+left join (
+  select
+  project_id as work_item_tags_project_id
+    , array_agg(work_item_tags.*) as work_item_tags
+  from
+    work_item_tags
+  group by
+        project_id
+) as joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
+`
+
+const projectTableWorkItemTagsSelectSQL = `COALESCE(joined_work_item_tags.work_item_tags, '{}') as work_item_tags`
+
+const projectTableWorkItemTagsGroupBySQL = `joined_work_item_tags.work_item_tags, projects.project_id`
+
+const projectTableWorkItemTypesJoinSQL = `-- M2O join generated from "work_item_types_project_id_fkey"
+left join (
+  select
+  project_id as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+  group by
+        project_id
+) as joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id
+`
+
+const projectTableWorkItemTypesSelectSQL = `COALESCE(joined_work_item_types.work_item_types, '{}') as work_item_types`
+
+const projectTableWorkItemTypesGroupBySQL = `joined_work_item_types.work_item_types, projects.project_id`
+
 // Insert inserts the Project to the database.
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	// insert (primary key generated and returned by database)
@@ -259,26 +339,70 @@ func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, o
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activities {
+		selectClauses = append(selectClauses, projectTableActivitiesSelectSQL)
+		joinClauses = append(joinClauses, projectTableActivitiesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
+	}
+
+	if c.joins.KanbanSteps {
+		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
+		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableKanbanStepsGroupBySQL)
+	}
+
+	if c.joins.Teams {
+		selectClauses = append(selectClauses, projectTableTeamsSelectSQL)
+		joinClauses = append(joinClauses, projectTableTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTypes {
+		selectClauses = append(selectClauses, projectTableWorkItemTypesSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTypesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTypesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -288,77 +412,17 @@ projects.description,
 projects.work_items_table_name,
 projects.board_config,
 projects.created_at,
-projects.updated_at,
-(case when $1::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities,
-(case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
-(case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
-(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
-		`FROM public.projects `+
-		`-- M2O join generated from "activities_project_id_fkey"
-left join (
-  select
-  project_id as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
--- M2O join generated from "kanban_steps_project_id_fkey"
-left join (
-  select
-  project_id as kanban_steps_project_id
-    , array_agg(kanban_steps.*) as kanban_steps
-  from
-    kanban_steps
-  group by
-        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
--- M2O join generated from "teams_project_id_fkey"
-left join (
-  select
-  project_id as teams_project_id
-    , array_agg(teams.*) as teams
-  from
-    teams
-  group by
-        project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
--- M2O join generated from "work_item_tags_project_id_fkey"
-left join (
-  select
-  project_id as work_item_tags_project_id
-    , array_agg(work_item_tags.*) as work_item_tags
-  from
-    work_item_tags
-  group by
-        project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
--- M2O join generated from "work_item_types_project_id_fkey"
-left join (
-  select
-  project_id as work_item_types_project_id
-    , array_agg(work_item_types.*) as work_item_types
-  from
-    work_item_types
-  group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
-		` WHERE projects.project_id > $6`+
-		` %s  GROUP BY projects.project_id, 
-projects.name, 
-projects.description, 
-projects.work_items_table_name, 
-projects.board_config, 
-projects.created_at, 
-projects.updated_at, 
-joined_activities.activities, projects.project_id, 
-joined_kanban_steps.kanban_steps, projects.project_id, 
-joined_teams.teams, projects.project_id, 
-joined_work_item_tags.work_item_tags, projects.project_id, 
-joined_work_item_types.work_item_types, projects.project_id ORDER BY 
-		project_id Asc `, filters)
+projects.updated_at %s `+
+		`FROM public.projects %s `+
+		` WHERE projects.project_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Paginated/Asc/db.Query: %w", err))
 	}
@@ -377,26 +441,70 @@ func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, 
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activities {
+		selectClauses = append(selectClauses, projectTableActivitiesSelectSQL)
+		joinClauses = append(joinClauses, projectTableActivitiesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
+	}
+
+	if c.joins.KanbanSteps {
+		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
+		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableKanbanStepsGroupBySQL)
+	}
+
+	if c.joins.Teams {
+		selectClauses = append(selectClauses, projectTableTeamsSelectSQL)
+		joinClauses = append(joinClauses, projectTableTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTypes {
+		selectClauses = append(selectClauses, projectTableWorkItemTypesSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTypesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTypesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -406,77 +514,17 @@ projects.description,
 projects.work_items_table_name,
 projects.board_config,
 projects.created_at,
-projects.updated_at,
-(case when $1::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities,
-(case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
-(case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
-(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
-		`FROM public.projects `+
-		`-- M2O join generated from "activities_project_id_fkey"
-left join (
-  select
-  project_id as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
--- M2O join generated from "kanban_steps_project_id_fkey"
-left join (
-  select
-  project_id as kanban_steps_project_id
-    , array_agg(kanban_steps.*) as kanban_steps
-  from
-    kanban_steps
-  group by
-        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
--- M2O join generated from "teams_project_id_fkey"
-left join (
-  select
-  project_id as teams_project_id
-    , array_agg(teams.*) as teams
-  from
-    teams
-  group by
-        project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
--- M2O join generated from "work_item_tags_project_id_fkey"
-left join (
-  select
-  project_id as work_item_tags_project_id
-    , array_agg(work_item_tags.*) as work_item_tags
-  from
-    work_item_tags
-  group by
-        project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
--- M2O join generated from "work_item_types_project_id_fkey"
-left join (
-  select
-  project_id as work_item_types_project_id
-    , array_agg(work_item_types.*) as work_item_types
-  from
-    work_item_types
-  group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
-		` WHERE projects.project_id < $6`+
-		` %s  GROUP BY projects.project_id, 
-projects.name, 
-projects.description, 
-projects.work_items_table_name, 
-projects.board_config, 
-projects.created_at, 
-projects.updated_at, 
-joined_activities.activities, projects.project_id, 
-joined_kanban_steps.kanban_steps, projects.project_id, 
-joined_teams.teams, projects.project_id, 
-joined_work_item_tags.work_item_tags, projects.project_id, 
-joined_work_item_types.work_item_types, projects.project_id ORDER BY 
-		project_id Desc `, filters)
+projects.updated_at %s `+
+		`FROM public.projects %s `+
+		` WHERE projects.project_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Paginated/Desc/db.Query: %w", err))
 	}
@@ -497,26 +545,70 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activities {
+		selectClauses = append(selectClauses, projectTableActivitiesSelectSQL)
+		joinClauses = append(joinClauses, projectTableActivitiesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
+	}
+
+	if c.joins.KanbanSteps {
+		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
+		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableKanbanStepsGroupBySQL)
+	}
+
+	if c.joins.Teams {
+		selectClauses = append(selectClauses, projectTableTeamsSelectSQL)
+		joinClauses = append(joinClauses, projectTableTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTypes {
+		selectClauses = append(selectClauses, projectTableWorkItemTypesSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTypesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTypesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -526,71 +618,17 @@ projects.description,
 projects.work_items_table_name,
 projects.board_config,
 projects.created_at,
-projects.updated_at,
-(case when $1::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities,
-(case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
-(case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
-(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
-		`FROM public.projects `+
-		`-- M2O join generated from "activities_project_id_fkey"
-left join (
-  select
-  project_id as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
--- M2O join generated from "kanban_steps_project_id_fkey"
-left join (
-  select
-  project_id as kanban_steps_project_id
-    , array_agg(kanban_steps.*) as kanban_steps
-  from
-    kanban_steps
-  group by
-        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
--- M2O join generated from "teams_project_id_fkey"
-left join (
-  select
-  project_id as teams_project_id
-    , array_agg(teams.*) as teams
-  from
-    teams
-  group by
-        project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
--- M2O join generated from "work_item_tags_project_id_fkey"
-left join (
-  select
-  project_id as work_item_tags_project_id
-    , array_agg(work_item_tags.*) as work_item_tags
-  from
-    work_item_tags
-  group by
-        project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
--- M2O join generated from "work_item_types_project_id_fkey"
-left join (
-  select
-  project_id as work_item_types_project_id
-    , array_agg(work_item_types.*) as work_item_types
-  from
-    work_item_types
-  group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
-		` WHERE projects.name = $6`+
-		` %s  GROUP BY 
-joined_activities.activities, projects.project_id, 
-joined_kanban_steps.kanban_steps, projects.project_id, 
-joined_teams.teams, projects.project_id, 
-joined_work_item_tags.work_item_tags, projects.project_id, 
-joined_work_item_types.work_item_types, projects.project_id `, filters)
+projects.updated_at %s `+
+		`FROM public.projects %s `+
+		` WHERE projects.name = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", err))
 	}
@@ -612,26 +650,70 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activities {
+		selectClauses = append(selectClauses, projectTableActivitiesSelectSQL)
+		joinClauses = append(joinClauses, projectTableActivitiesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
+	}
+
+	if c.joins.KanbanSteps {
+		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
+		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableKanbanStepsGroupBySQL)
+	}
+
+	if c.joins.Teams {
+		selectClauses = append(selectClauses, projectTableTeamsSelectSQL)
+		joinClauses = append(joinClauses, projectTableTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTypes {
+		selectClauses = append(selectClauses, projectTableWorkItemTypesSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTypesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTypesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -641,71 +723,17 @@ projects.description,
 projects.work_items_table_name,
 projects.board_config,
 projects.created_at,
-projects.updated_at,
-(case when $1::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities,
-(case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
-(case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
-(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
-		`FROM public.projects `+
-		`-- M2O join generated from "activities_project_id_fkey"
-left join (
-  select
-  project_id as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
--- M2O join generated from "kanban_steps_project_id_fkey"
-left join (
-  select
-  project_id as kanban_steps_project_id
-    , array_agg(kanban_steps.*) as kanban_steps
-  from
-    kanban_steps
-  group by
-        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
--- M2O join generated from "teams_project_id_fkey"
-left join (
-  select
-  project_id as teams_project_id
-    , array_agg(teams.*) as teams
-  from
-    teams
-  group by
-        project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
--- M2O join generated from "work_item_tags_project_id_fkey"
-left join (
-  select
-  project_id as work_item_tags_project_id
-    , array_agg(work_item_tags.*) as work_item_tags
-  from
-    work_item_tags
-  group by
-        project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
--- M2O join generated from "work_item_types_project_id_fkey"
-left join (
-  select
-  project_id as work_item_types_project_id
-    , array_agg(work_item_types.*) as work_item_types
-  from
-    work_item_types
-  group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
-		` WHERE projects.project_id = $6`+
-		` %s  GROUP BY 
-joined_activities.activities, projects.project_id, 
-joined_kanban_steps.kanban_steps, projects.project_id, 
-joined_teams.teams, projects.project_id, 
-joined_work_item_tags.work_item_tags, projects.project_id, 
-joined_work_item_types.work_item_types, projects.project_id `, filters)
+projects.updated_at %s `+
+		`FROM public.projects %s `+
+		` WHERE projects.project_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", err))
 	}
@@ -727,26 +755,70 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 		o(c)
 	}
 
-	paramStart := 6
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activities {
+		selectClauses = append(selectClauses, projectTableActivitiesSelectSQL)
+		joinClauses = append(joinClauses, projectTableActivitiesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
+	}
+
+	if c.joins.KanbanSteps {
+		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
+		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableKanbanStepsGroupBySQL)
+	}
+
+	if c.joins.Teams {
+		selectClauses = append(selectClauses, projectTableTeamsSelectSQL)
+		joinClauses = append(joinClauses, projectTableTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTypes {
+		selectClauses = append(selectClauses, projectTableWorkItemTypesSelectSQL)
+		joinClauses = append(joinClauses, projectTableWorkItemTypesJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableWorkItemTypesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -756,71 +828,17 @@ projects.description,
 projects.work_items_table_name,
 projects.board_config,
 projects.created_at,
-projects.updated_at,
-(case when $1::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities,
-(case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
-(case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
-(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
-(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types `+
-		`FROM public.projects `+
-		`-- M2O join generated from "activities_project_id_fkey"
-left join (
-  select
-  project_id as activities_project_id
-    , array_agg(activities.*) as activities
-  from
-    activities
-  group by
-        project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
--- M2O join generated from "kanban_steps_project_id_fkey"
-left join (
-  select
-  project_id as kanban_steps_project_id
-    , array_agg(kanban_steps.*) as kanban_steps
-  from
-    kanban_steps
-  group by
-        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
--- M2O join generated from "teams_project_id_fkey"
-left join (
-  select
-  project_id as teams_project_id
-    , array_agg(teams.*) as teams
-  from
-    teams
-  group by
-        project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
--- M2O join generated from "work_item_tags_project_id_fkey"
-left join (
-  select
-  project_id as work_item_tags_project_id
-    , array_agg(work_item_tags.*) as work_item_tags
-  from
-    work_item_tags
-  group by
-        project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
--- M2O join generated from "work_item_types_project_id_fkey"
-left join (
-  select
-  project_id as work_item_types_project_id
-    , array_agg(work_item_types.*) as work_item_types
-  from
-    work_item_types
-  group by
-        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id`+
-		` WHERE projects.work_items_table_name = $6`+
-		` %s  GROUP BY 
-joined_activities.activities, projects.project_id, 
-joined_kanban_steps.kanban_steps, projects.project_id, 
-joined_teams.teams, projects.project_id, 
-joined_work_item_tags.work_item_tags, projects.project_id, 
-joined_work_item_types.work_item_types, projects.project_id `, filters)
+projects.updated_at %s `+
+		`FROM public.projects %s `+
+		` WHERE projects.work_items_table_name = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemsTableName)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, workItemsTableName}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemsTableName}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/db.Query: %w", err))
 	}

@@ -148,6 +148,26 @@ func WithWorkItemCommentFilters(filters map[string][]any) WorkItemCommentSelectC
 	}
 }
 
+const workItemCommentTableUserJoinSQL = `-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
+left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
+`
+
+const workItemCommentTableUserSelectSQL = `(case when _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id`
+
+const workItemCommentTableUserGroupBySQL = `_work_item_comments_user_id.user_id,
+      _work_item_comments_user_id.user_id,
+	work_item_comments.work_item_comment_id`
+
+const workItemCommentTableWorkItemJoinSQL = `-- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
+left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id
+`
+
+const workItemCommentTableWorkItemSelectSQL = `(case when _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id`
+
+const workItemCommentTableWorkItemGroupBySQL = `_work_item_comments_work_item_id.work_item_id,
+      _work_item_comments_work_item_id.work_item_id,
+	work_item_comments.work_item_comment_id`
+
 // Insert inserts the WorkItemComment to the database.
 func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// insert (primary key generated and returned by database)
@@ -242,26 +262,52 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, workItemCommentTableUserSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, workItemCommentTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -270,33 +316,17 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at,
-(case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id `+
-		`FROM public.work_item_comments `+
-		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
--- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id`+
-		` WHERE work_item_comments.work_item_comment_id > $3`+
-		` %s  GROUP BY work_item_comments.work_item_comment_id, 
-work_item_comments.work_item_id, 
-work_item_comments.user_id, 
-work_item_comments.message, 
-work_item_comments.created_at, 
-work_item_comments.updated_at, 
-_work_item_comments_user_id.user_id,
-      _work_item_comments_user_id.user_id,
-	work_item_comments.work_item_comment_id, 
-_work_item_comments_work_item_id.work_item_id,
-      _work_item_comments_work_item_id.work_item_id,
-	work_item_comments.work_item_comment_id ORDER BY 
-		work_item_comment_id Asc `, filters)
+work_item_comments.updated_at %s `+
+		`FROM public.work_item_comments %s `+
+		` WHERE work_item_comments.work_item_comment_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		work_item_comment_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, c.joins.WorkItem, workItemCommentID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/db.Query: %w", err))
 	}
@@ -315,26 +345,52 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, workItemCommentTableUserSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, workItemCommentTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -343,33 +399,17 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at,
-(case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id `+
-		`FROM public.work_item_comments `+
-		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
--- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id`+
-		` WHERE work_item_comments.work_item_comment_id < $3`+
-		` %s  GROUP BY work_item_comments.work_item_comment_id, 
-work_item_comments.work_item_id, 
-work_item_comments.user_id, 
-work_item_comments.message, 
-work_item_comments.created_at, 
-work_item_comments.updated_at, 
-_work_item_comments_user_id.user_id,
-      _work_item_comments_user_id.user_id,
-	work_item_comments.work_item_comment_id, 
-_work_item_comments_work_item_id.work_item_id,
-      _work_item_comments_work_item_id.work_item_id,
-	work_item_comments.work_item_comment_id ORDER BY 
-		work_item_comment_id Desc `, filters)
+work_item_comments.updated_at %s `+
+		`FROM public.work_item_comments %s `+
+		` WHERE work_item_comments.work_item_comment_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		work_item_comment_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, c.joins.WorkItem, workItemCommentID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/db.Query: %w", err))
 	}
@@ -390,26 +430,52 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, workItemCommentTableUserSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, workItemCommentTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -418,28 +484,17 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at,
-(case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id `+
-		`FROM public.work_item_comments `+
-		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
--- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id`+
-		` WHERE work_item_comments.work_item_comment_id = $3`+
-		` %s  GROUP BY 
-_work_item_comments_user_id.user_id,
-      _work_item_comments_user_id.user_id,
-	work_item_comments.work_item_comment_id, 
-_work_item_comments_work_item_id.work_item_id,
-      _work_item_comments_work_item_id.work_item_id,
-	work_item_comments.work_item_comment_id `, filters)
+work_item_comments.updated_at %s `+
+		`FROM public.work_item_comments %s `+
+		` WHERE work_item_comments.work_item_comment_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemCommentID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, c.joins.WorkItem, workItemCommentID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
 	}
@@ -461,26 +516,52 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, workItemCommentTableUserSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, workItemCommentTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -489,28 +570,17 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at,
-(case when $1::boolean = true and _work_item_comments_user_id.user_id is not null then row(_work_item_comments_user_id.*) end) as user_user_id,
-(case when $2::boolean = true and _work_item_comments_work_item_id.work_item_id is not null then row(_work_item_comments_work_item_id.*) end) as work_item_work_item_id `+
-		`FROM public.work_item_comments `+
-		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
-left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
--- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
-left join work_items as _work_item_comments_work_item_id on _work_item_comments_work_item_id.work_item_id = work_item_comments.work_item_id`+
-		` WHERE work_item_comments.work_item_id = $3`+
-		` %s  GROUP BY 
-_work_item_comments_user_id.user_id,
-      _work_item_comments_user_id.user_id,
-	work_item_comments.work_item_comment_id, 
-_work_item_comments_work_item_id.work_item_id,
-      _work_item_comments_work_item_id.work_item_id,
-	work_item_comments.work_item_comment_id `, filters)
+work_item_comments.updated_at %s `+
+		`FROM public.work_item_comments %s `+
+		` WHERE work_item_comments.work_item_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.User, c.joins.WorkItem, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/Query: %w", err))
 	}

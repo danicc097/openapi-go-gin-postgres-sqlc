@@ -204,14 +204,14 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -219,20 +219,33 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
-schema_migrations.dirty `+
-		`FROM public.schema_migrations `+
-		``+
+schema_migrations.dirty %s `+
+		`FROM public.schema_migrations %s `+
 		` WHERE schema_migrations.version > $1`+
-		` %s  GROUP BY schema_migrations.version, 
-schema_migrations.dirty ORDER BY 
-		version Asc `, filters)
+		` %s   %s 
+  ORDER BY 
+		version Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Asc/db.Query: %w", err))
 	}
@@ -258,14 +271,14 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -273,20 +286,33 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
-schema_migrations.dirty `+
-		`FROM public.schema_migrations `+
-		``+
+schema_migrations.dirty %s `+
+		`FROM public.schema_migrations %s `+
 		` WHERE schema_migrations.version < $1`+
-		` %s  GROUP BY schema_migrations.version, 
-schema_migrations.dirty ORDER BY 
-		version Desc `, filters)
+		` %s   %s 
+  ORDER BY 
+		version Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Desc/db.Query: %w", err))
 	}
@@ -314,14 +340,14 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -329,19 +355,33 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`schema_migrations.version,
-schema_migrations.dirty `+
-		`FROM public.schema_migrations `+
-		``+
+schema_migrations.dirty %s `+
+		`FROM public.schema_migrations %s `+
 		` WHERE schema_migrations.version = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, version)
-	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", err))
 	}

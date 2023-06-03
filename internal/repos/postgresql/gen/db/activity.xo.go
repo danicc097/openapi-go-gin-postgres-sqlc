@@ -128,6 +128,32 @@ func WithActivityFilters(filters map[string][]any) ActivitySelectConfigOption {
 	}
 }
 
+const activityTableProjectJoinSQL = `-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
+left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
+`
+
+const activityTableProjectSelectSQL = `(case when _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id`
+
+const activityTableProjectGroupBySQL = `_activities_project_id.project_id,
+      _activities_project_id.project_id,
+	activities.activity_id`
+
+const activityTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        activity_id
+) as joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+`
+
+const activityTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
+
+const activityTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, activities.activity_id`
+
 // Insert inserts the Activity to the database.
 func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	// insert (primary key generated and returned by database)
@@ -223,21 +249,21 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -245,42 +271,48 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive,
-(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
-		`FROM public.activities `+
-		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
--- M2O join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
-		` WHERE activities.activity_id > $3`+
-		` %s  GROUP BY activities.activity_id, 
-activities.project_id, 
-activities.name, 
-activities.description, 
-activities.is_productive, 
-_activities_project_id.project_id,
-      _activities_project_id.project_id,
-	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		activity_id Asc `, filters)
+activities.is_productive %s `+
+		`FROM public.activities %s `+
+		` WHERE activities.activity_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		activity_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, activityID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", err))
 	}
@@ -299,21 +331,21 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -321,42 +353,48 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive,
-(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
-		`FROM public.activities `+
-		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
--- M2O join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
-		` WHERE activities.project_id > $3`+
-		` %s  GROUP BY activities.activity_id, 
-activities.project_id, 
-activities.name, 
-activities.description, 
-activities.is_productive, 
-_activities_project_id.project_id,
-      _activities_project_id.project_id,
-	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		project_id Asc `, filters)
+activities.is_productive %s `+
+		`FROM public.activities %s `+
+		` WHERE activities.project_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", err))
 	}
@@ -375,21 +413,21 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -397,42 +435,48 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive,
-(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
-		`FROM public.activities `+
-		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
--- M2O join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
-		` WHERE activities.activity_id < $3`+
-		` %s  GROUP BY activities.activity_id, 
-activities.project_id, 
-activities.name, 
-activities.description, 
-activities.is_productive, 
-_activities_project_id.project_id,
-      _activities_project_id.project_id,
-	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		activity_id Desc `, filters)
+activities.is_productive %s `+
+		`FROM public.activities %s `+
+		` WHERE activities.activity_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		activity_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, activityID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", err))
 	}
@@ -451,21 +495,21 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -473,42 +517,48 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive,
-(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
-		`FROM public.activities `+
-		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
--- M2O join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
-		` WHERE activities.project_id < $3`+
-		` %s  GROUP BY activities.activity_id, 
-activities.project_id, 
-activities.name, 
-activities.description, 
-activities.is_productive, 
-_activities_project_id.project_id,
-      _activities_project_id.project_id,
-	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id ORDER BY 
-		project_id Desc `, filters)
+activities.is_productive %s `+
+		`FROM public.activities %s `+
+		` WHERE activities.project_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", err))
 	}
@@ -529,21 +579,21 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -551,38 +601,48 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive,
-(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
-		`FROM public.activities `+
-		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
--- M2O join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
-		` WHERE activities.name = $3 AND activities.project_id = $4`+
-		` %s  GROUP BY 
-_activities_project_id.project_id,
-      _activities_project_id.project_id,
-	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id `, filters)
+activities.is_productive %s `+
+		`FROM public.activities %s `+
+		` WHERE activities.name = $1 AND activities.project_id = $2`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, name, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
 	}
@@ -604,21 +664,21 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -626,38 +686,48 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive,
-(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
-		`FROM public.activities `+
-		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
--- M2O join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
-		` WHERE activities.name = $3`+
-		` %s  GROUP BY 
-_activities_project_id.project_id,
-      _activities_project_id.project_id,
-	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id `, filters)
+activities.is_productive %s `+
+		`FROM public.activities %s `+
+		` WHERE activities.name = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
@@ -681,21 +751,21 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -703,38 +773,48 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive,
-(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
-		`FROM public.activities `+
-		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
--- M2O join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
-		` WHERE activities.project_id = $3`+
-		` %s  GROUP BY 
-_activities_project_id.project_id,
-      _activities_project_id.project_id,
-	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id `, filters)
+activities.is_productive %s `+
+		`FROM public.activities %s `+
+		` WHERE activities.project_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
@@ -758,21 +838,21 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -780,38 +860,48 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive,
-(case when $1::boolean = true and _activities_project_id.project_id is not null then row(_activities_project_id.*) end) as project_project_id,
-(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries `+
-		`FROM public.activities `+
-		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
-left join projects as _activities_project_id on _activities_project_id.project_id = activities.project_id
--- M2O join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id`+
-		` WHERE activities.activity_id = $3`+
-		` %s  GROUP BY 
-_activities_project_id.project_id,
-      _activities_project_id.project_id,
-	activities.activity_id, 
-joined_time_entries.time_entries, activities.activity_id `, filters)
+activities.is_productive %s `+
+		`FROM public.activities %s `+
+		` WHERE activities.activity_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, activityID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Project, c.joins.TimeEntries, activityID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))
 	}

@@ -19,6 +19,7 @@ import (
 * - join table name clash for O2O constraint too:
     name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
     at the same time
+* IMPORTANT: explain analyze to ensure dynamic sql query plans for joins dont do hash joins
 */
 
 func TestCursorPagination_Timestamp(t *testing.T) {

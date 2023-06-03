@@ -110,6 +110,50 @@ func WithWorkItemWorkItemTagFilters(filters map[string][]any) WorkItemWorkItemTa
 	}
 }
 
+const workItemWorkItemTagTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+		, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
+		, row(work_item_tags.*) as __work_item_tags
+	from
+		work_item_work_item_tag
+	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+	group by
+		work_item_work_item_tag_work_item_id
+		, work_item_tags.work_item_tag_id
+) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
+`
+
+const workItemWorkItemTagTableWorkItemTagsSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
+
+const workItemWorkItemTagTableWorkItemTagsGroupBySQL = `work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id`
+
+const workItemWorkItemTagTableWorkItemsWorkItemTagJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+		, work_items.work_item_id as __work_items_work_item_id
+		, row(work_items.*) as __work_items
+	from
+		work_item_work_item_tag
+	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+	group by
+		work_item_work_item_tag_work_item_tag_id
+		, work_items.work_item_id
+) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
+`
+
+const workItemWorkItemTagTableWorkItemsWorkItemTagSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_work_item_work_item_tag_work_items.__work_items
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') as work_item_work_item_tag_work_items`
+
+const workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL = `work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id`
+
 // Insert inserts the WorkItemWorkItemTag to the database.
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	// insert (manual)
@@ -156,21 +200,21 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Contex
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -178,58 +222,46 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Contex
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
-		`FROM public.work_item_work_item_tag `+
-		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
-
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_work_item_tag
-    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by
-			work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id
-  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
-`+
-		` WHERE work_item_work_item_tag.work_item_tag_id > $3 AND work_item_work_item_tag.work_item_id > $4`+
-		` %s  GROUP BY work_item_work_item_tag.work_item_tag_id, 
-work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id ORDER BY 
+work_item_work_item_tag.work_item_id %s `+
+		`FROM public.work_item_work_item_tag %s `+
+		` WHERE work_item_work_item_tag.work_item_tag_id > $1 AND work_item_work_item_tag.work_item_id > $2`+
+		` %s   %s 
+  ORDER BY 
 		work_item_tag_id Asc ,
-		work_item_id Asc `, filters)
+		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID, workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/Asc/db.Query: %w", err))
 	}
@@ -248,21 +280,21 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Conte
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -270,58 +302,46 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Conte
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
-		`FROM public.work_item_work_item_tag `+
-		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
-
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_work_item_tag
-    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by
-			work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id
-  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
-`+
-		` WHERE work_item_work_item_tag.work_item_tag_id < $3 AND work_item_work_item_tag.work_item_id < $4`+
-		` %s  GROUP BY work_item_work_item_tag.work_item_tag_id, 
-work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id ORDER BY 
+work_item_work_item_tag.work_item_id %s `+
+		`FROM public.work_item_work_item_tag %s `+
+		` WHERE work_item_work_item_tag.work_item_tag_id < $1 AND work_item_work_item_tag.work_item_id < $2`+
+		` %s   %s 
+  ORDER BY 
 		work_item_tag_id Desc ,
-		work_item_id Desc `, filters)
+		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID, workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/Desc/db.Query: %w", err))
 	}
@@ -342,21 +362,21 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -364,56 +384,45 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
-		`FROM public.work_item_work_item_tag `+
-		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
-
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_work_item_tag
-    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by
-			work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id
-  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
-`+
-		` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4`+
-		` %s  GROUP BY 
-work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `, filters)
+work_item_work_item_tag.work_item_id %s `+
+		`FROM public.work_item_work_item_tag %s `+
+		` WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemID, workItemTagID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, workItemTagID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/db.Query: %w", err))
 	}
@@ -435,21 +444,21 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -457,56 +466,45 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
-		`FROM public.work_item_work_item_tag `+
-		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
-
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_work_item_tag
-    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by
-			work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id
-  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
-`+
-		` WHERE work_item_work_item_tag.work_item_id = $3`+
-		` %s  GROUP BY 
-work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `, filters)
+work_item_work_item_tag.work_item_id %s `+
+		`FROM public.work_item_work_item_tag %s `+
+		` WHERE work_item_work_item_tag.work_item_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/Query: %w", err))
 	}
@@ -530,21 +528,21 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -552,56 +550,45 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
-		`FROM public.work_item_work_item_tag `+
-		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
-
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_work_item_tag
-    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by
-			work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id
-  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
-`+
-		` WHERE work_item_work_item_tag.work_item_tag_id = $3`+
-		` %s  GROUP BY 
-work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `, filters)
+work_item_work_item_tag.work_item_id %s `+
+		`FROM public.work_item_work_item_tag %s `+
+		` WHERE work_item_work_item_tag.work_item_tag_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/Query: %w", err))
 	}
@@ -625,21 +612,21 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -647,56 +634,45 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') end) as work_item_work_item_tag_work_item_tags,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
-		`FROM public.work_item_work_item_tag `+
-		`-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-			, row(work_item_tags.*) as __work_item_tags
-		from
-			work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-    group by
-			work_item_work_item_tag_work_item_id
-			, work_item_tags.work_item_tag_id
-  ) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_item_work_item_tag.work_item_tag_id
-
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
-left join (
-	select
-			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id as __work_items_work_item_id
-			, row(work_items.*) as __work_items
-		from
-			work_item_work_item_tag
-    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
-    group by
-			work_item_work_item_tag_work_item_tag_id
-			, work_items.work_item_id
-  ) as joined_work_item_work_item_tag_work_items on joined_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
-`+
-		` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4`+
-		` %s  GROUP BY 
-work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id, 
-work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id `, filters)
+work_item_work_item_tag.work_item_id %s `+
+		`FROM public.work_item_work_item_tag %s `+
+		` WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTagID, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.WorkItemTags, c.joins.WorkItemsWorkItemTag, workItemTagID, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID, workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/WorkItemWorkItemTagByWorkItemTagIDWorkItemID/Query: %w", err))
 	}

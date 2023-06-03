@@ -112,6 +112,26 @@ func WithBookReviewFilters(filters map[string][]any) BookReviewSelectConfigOptio
 	}
 }
 
+const bookReviewTableBookJoinSQL = `-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
+left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
+`
+
+const bookReviewTableBookSelectSQL = `(case when _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id`
+
+const bookReviewTableBookGroupBySQL = `_book_reviews_book_id.book_id,
+      _book_reviews_book_id.book_id,
+	book_reviews.book_review_id`
+
+const bookReviewTableUserJoinSQL = `-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
+left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer
+`
+
+const bookReviewTableUserSelectSQL = `(case when _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer`
+
+const bookReviewTableUserGroupBySQL = `_book_reviews_reviewer.user_id,
+      _book_reviews_reviewer.user_id,
+	book_reviews.book_review_id`
+
 // Insert inserts the BookReview to the database.
 func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 	// insert (primary key generated and returned by database)
@@ -205,21 +225,21 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -227,33 +247,46 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer,
-(case when $1::boolean = true and _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id,
-(case when $2::boolean = true and _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer `+
-		`FROM xo_tests.book_reviews `+
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer`+
-		` WHERE book_reviews.book_review_id > $3`+
-		` %s  GROUP BY book_reviews.book_review_id, 
-book_reviews.book_id, 
-book_reviews.reviewer, 
-_book_reviews_book_id.book_id,
-      _book_reviews_book_id.book_id,
-	book_reviews.book_review_id, 
-_book_reviews_reviewer.user_id,
-      _book_reviews_reviewer.user_id,
-	book_reviews.book_review_id ORDER BY 
-		book_review_id Asc `, filters)
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
+		` WHERE book_reviews.book_review_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		book_review_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookReviewID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", err))
 	}
@@ -272,21 +305,21 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -294,33 +327,46 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer,
-(case when $1::boolean = true and _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id,
-(case when $2::boolean = true and _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer `+
-		`FROM xo_tests.book_reviews `+
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer`+
-		` WHERE book_reviews.book_id > $3`+
-		` %s  GROUP BY book_reviews.book_review_id, 
-book_reviews.book_id, 
-book_reviews.reviewer, 
-_book_reviews_book_id.book_id,
-      _book_reviews_book_id.book_id,
-	book_reviews.book_review_id, 
-_book_reviews_reviewer.user_id,
-      _book_reviews_reviewer.user_id,
-	book_reviews.book_review_id ORDER BY 
-		book_id Asc `, filters)
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
+		` WHERE book_reviews.book_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		book_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", err))
 	}
@@ -339,21 +385,21 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -361,33 +407,46 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer,
-(case when $1::boolean = true and _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id,
-(case when $2::boolean = true and _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer `+
-		`FROM xo_tests.book_reviews `+
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer`+
-		` WHERE book_reviews.book_review_id < $3`+
-		` %s  GROUP BY book_reviews.book_review_id, 
-book_reviews.book_id, 
-book_reviews.reviewer, 
-_book_reviews_book_id.book_id,
-      _book_reviews_book_id.book_id,
-	book_reviews.book_review_id, 
-_book_reviews_reviewer.user_id,
-      _book_reviews_reviewer.user_id,
-	book_reviews.book_review_id ORDER BY 
-		book_review_id Desc `, filters)
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
+		` WHERE book_reviews.book_review_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		book_review_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookReviewID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", err))
 	}
@@ -406,21 +465,21 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -428,33 +487,46 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer,
-(case when $1::boolean = true and _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id,
-(case when $2::boolean = true and _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer `+
-		`FROM xo_tests.book_reviews `+
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer`+
-		` WHERE book_reviews.book_id < $3`+
-		` %s  GROUP BY book_reviews.book_review_id, 
-book_reviews.book_id, 
-book_reviews.reviewer, 
-_book_reviews_book_id.book_id,
-      _book_reviews_book_id.book_id,
-	book_reviews.book_review_id, 
-_book_reviews_reviewer.user_id,
-      _book_reviews_reviewer.user_id,
-	book_reviews.book_review_id ORDER BY 
-		book_id Desc `, filters)
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
+		` WHERE book_reviews.book_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		book_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", err))
 	}
@@ -475,21 +547,21 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -497,31 +569,46 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer,
-(case when $1::boolean = true and _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id,
-(case when $2::boolean = true and _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer `+
-		`FROM xo_tests.book_reviews `+
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer`+
-		` WHERE book_reviews.book_review_id = $3`+
-		` %s  GROUP BY 
-_book_reviews_book_id.book_id,
-      _book_reviews_book_id.book_id,
-	book_reviews.book_review_id, 
-_book_reviews_reviewer.user_id,
-      _book_reviews_reviewer.user_id,
-	book_reviews.book_review_id `, filters)
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
+		` WHERE book_reviews.book_review_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookReviewID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookReviewID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/db.Query: %w", err))
 	}
@@ -543,21 +630,21 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 		o(c)
 	}
 
-	paramStart := 4
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -565,31 +652,46 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer,
-(case when $1::boolean = true and _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id,
-(case when $2::boolean = true and _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer `+
-		`FROM xo_tests.book_reviews `+
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer`+
-		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4`+
-		` %s  GROUP BY 
-_book_reviews_book_id.book_id,
-      _book_reviews_book_id.book_id,
-	book_reviews.book_review_id, 
-_book_reviews_reviewer.user_id,
-      _book_reviews_reviewer.user_id,
-	book_reviews.book_review_id `, filters)
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
+		` WHERE book_reviews.reviewer = $1 AND book_reviews.book_id = $2`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, reviewer, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, reviewer, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{reviewer, bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/db.Query: %w", err))
 	}
@@ -611,21 +713,21 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -633,31 +735,46 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer,
-(case when $1::boolean = true and _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id,
-(case when $2::boolean = true and _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer `+
-		`FROM xo_tests.book_reviews `+
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer`+
-		` WHERE book_reviews.reviewer = $3`+
-		` %s  GROUP BY 
-_book_reviews_book_id.book_id,
-      _book_reviews_book_id.book_id,
-	book_reviews.book_review_id, 
-_book_reviews_reviewer.user_id,
-      _book_reviews_reviewer.user_id,
-	book_reviews.book_review_id `, filters)
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
+		` WHERE book_reviews.reviewer = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, reviewer)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, reviewer}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{reviewer}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
 	}
@@ -681,21 +798,21 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 		o(c)
 	}
 
-	paramStart := 3
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -703,31 +820,46 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Book {
+		selectClauses = append(selectClauses, bookReviewTableBookSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableBookGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, bookReviewTableUserSelectSQL)
+		joinClauses = append(joinClauses, bookReviewTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, bookReviewTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_reviews.book_review_id,
 book_reviews.book_id,
-book_reviews.reviewer,
-(case when $1::boolean = true and _book_reviews_book_id.book_id is not null then row(_book_reviews_book_id.*) end) as book_book_id,
-(case when $2::boolean = true and _book_reviews_reviewer.user_id is not null then row(_book_reviews_reviewer.*) end) as user_reviewer `+
-		`FROM xo_tests.book_reviews `+
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
-left join xo_tests.books as _book_reviews_book_id on _book_reviews_book_id.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
-left join xo_tests.users as _book_reviews_reviewer on _book_reviews_reviewer.user_id = book_reviews.reviewer`+
-		` WHERE book_reviews.book_id = $3`+
-		` %s  GROUP BY 
-_book_reviews_book_id.book_id,
-      _book_reviews_book_id.book_id,
-	book_reviews.book_review_id, 
-_book_reviews_reviewer.user_id,
-      _book_reviews_reviewer.user_id,
-	book_reviews.book_review_id `, filters)
+book_reviews.reviewer %s `+
+		`FROM xo_tests.book_reviews %s `+
+		` WHERE book_reviews.book_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.Book, c.joins.User, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
 	}

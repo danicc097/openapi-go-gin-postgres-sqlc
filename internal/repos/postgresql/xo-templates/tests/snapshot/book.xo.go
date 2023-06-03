@@ -122,6 +122,94 @@ func WithBookFilters(filters map[string][]any) BookSelectConfigOption {
 	}
 }
 
+const bookTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
+left join (
+	select
+		book_authors.book_id as book_authors_book_id
+		, book_authors.pseudonym as pseudonym
+		, users.user_id as __users_user_id
+		, row(users.*) as __users
+	from
+		xo_tests.book_authors
+	join xo_tests.users on users.user_id = book_authors.author_id
+	group by
+		book_authors_book_id
+		, users.user_id
+		, pseudonym
+) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = books.book_id
+`
+
+const bookTableAuthorsBookSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_authors.__users
+		, joined_book_authors_authors.pseudonym
+		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
+
+const bookTableAuthorsBookGroupBySQL = `books.book_id, books.book_id`
+
+const bookTableAuthorsBookUsersJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
+left join (
+	select
+		book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
+		, book_authors_surrogate_key.pseudonym as pseudonym
+		, users.user_id as __users_user_id
+		, row(users.*) as __users
+	from
+		xo_tests.book_authors_surrogate_key
+	join xo_tests.users on users.user_id = book_authors_surrogate_key.author_id
+	group by
+		book_authors_surrogate_key_book_id
+		, users.user_id
+		, pseudonym
+) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
+`
+
+const bookTableAuthorsBookUsersSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_authors.__users
+		, joined_book_authors_surrogate_key_authors.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
+
+const bookTableAuthorsBookUsersGroupBySQL = `books.book_id, books.book_id`
+
+const bookTableBookReviewsJoinSQL = `-- M2O join generated from "book_reviews_book_id_fkey"
+left join (
+  select
+  book_id as book_reviews_book_id
+    , array_agg(book_reviews.*) as book_reviews
+  from
+    xo_tests.book_reviews
+  group by
+        book_id
+) as joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
+`
+
+const bookTableBookReviewsSelectSQL = `COALESCE(joined_book_reviews.book_reviews, '{}') as book_reviews`
+
+const bookTableBookReviewsGroupBySQL = `joined_book_reviews.book_reviews, books.book_id`
+
+const bookTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
+left join (
+	select
+		book_sellers.book_id as book_sellers_book_id
+		, users.user_id as __users_user_id
+		, row(users.*) as __users
+	from
+		xo_tests.book_sellers
+	join xo_tests.users on users.user_id = book_sellers.seller
+	group by
+		book_sellers_book_id
+		, users.user_id
+) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
+`
+
+const bookTableSellersSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_sellers_sellers.__users
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
+
+const bookTableSellersGroupBySQL = `books.book_id, books.book_id`
+
 // Insert inserts the Book to the database.
 func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 	// insert (primary key generated and returned by database)
@@ -214,21 +302,21 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -236,93 +324,57 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookGroupBySQL)
+	}
+
+	if c.joins.AuthorsBookUsers {
+		selectClauses = append(selectClauses, bookTableAuthorsBookUsersSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookUsersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookUsersGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, bookTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, bookTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.Sellers {
+		selectClauses = append(selectClauses, bookTableSellersSelectSQL)
+		joinClauses = append(joinClauses, bookTableSellersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableSellersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
-books.name,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_authors.__users
-		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') end) as book_authors_authors,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_authors.__users
-		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors,
-(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers `+
-		`FROM xo_tests.books `+
-		`-- M2M join generated from "book_authors_author_id_fkey"
-left join (
-	select
-			book_authors.book_id as book_authors_book_id
-			, book_authors.pseudonym as pseudonym
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_authors
-    join xo_tests.users on users.user_id = book_authors.author_id
-    group by
-			book_authors_book_id
-			, users.user_id
-			, pseudonym
-  ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = books.book_id
-
--- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
-left join (
-	select
-			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
-			, book_authors_surrogate_key.pseudonym as pseudonym
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_authors_surrogate_key
-    join xo_tests.users on users.user_id = book_authors_surrogate_key.author_id
-    group by
-			book_authors_surrogate_key_book_id
-			, users.user_id
-			, pseudonym
-  ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
-
--- M2O join generated from "book_reviews_book_id_fkey"
-left join (
-  select
-  book_id as book_reviews_book_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    xo_tests.book_reviews
-  group by
-        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
--- M2M join generated from "book_sellers_seller_fkey"
-left join (
-	select
-			book_sellers.book_id as book_sellers_book_id
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.seller
-    group by
-			book_sellers_book_id
-			, users.user_id
-  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-`+
-		` WHERE books.book_id > $5`+
-		` %s  GROUP BY books.book_id, 
-books.name, 
-books.book_id, books.book_id, 
-books.book_id, books.book_id, 
-joined_book_reviews.book_reviews, books.book_id, 
-books.book_id, books.book_id ORDER BY 
-		book_id Asc `, filters)
+books.name %s `+
+		`FROM xo_tests.books %s `+
+		` WHERE books.book_id > $1`+
+		` %s   %s 
+  ORDER BY 
+		book_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/db.Query: %w", err))
 	}
@@ -341,21 +393,21 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -363,93 +415,57 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookGroupBySQL)
+	}
+
+	if c.joins.AuthorsBookUsers {
+		selectClauses = append(selectClauses, bookTableAuthorsBookUsersSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookUsersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookUsersGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, bookTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, bookTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.Sellers {
+		selectClauses = append(selectClauses, bookTableSellersSelectSQL)
+		joinClauses = append(joinClauses, bookTableSellersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableSellersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
-books.name,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_authors.__users
-		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') end) as book_authors_authors,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_authors.__users
-		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors,
-(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers `+
-		`FROM xo_tests.books `+
-		`-- M2M join generated from "book_authors_author_id_fkey"
-left join (
-	select
-			book_authors.book_id as book_authors_book_id
-			, book_authors.pseudonym as pseudonym
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_authors
-    join xo_tests.users on users.user_id = book_authors.author_id
-    group by
-			book_authors_book_id
-			, users.user_id
-			, pseudonym
-  ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = books.book_id
-
--- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
-left join (
-	select
-			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
-			, book_authors_surrogate_key.pseudonym as pseudonym
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_authors_surrogate_key
-    join xo_tests.users on users.user_id = book_authors_surrogate_key.author_id
-    group by
-			book_authors_surrogate_key_book_id
-			, users.user_id
-			, pseudonym
-  ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
-
--- M2O join generated from "book_reviews_book_id_fkey"
-left join (
-  select
-  book_id as book_reviews_book_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    xo_tests.book_reviews
-  group by
-        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
--- M2M join generated from "book_sellers_seller_fkey"
-left join (
-	select
-			book_sellers.book_id as book_sellers_book_id
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.seller
-    group by
-			book_sellers_book_id
-			, users.user_id
-  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-`+
-		` WHERE books.book_id < $5`+
-		` %s  GROUP BY books.book_id, 
-books.name, 
-books.book_id, books.book_id, 
-books.book_id, books.book_id, 
-joined_book_reviews.book_reviews, books.book_id, 
-books.book_id, books.book_id ORDER BY 
-		book_id Desc `, filters)
+books.name %s `+
+		`FROM xo_tests.books %s `+
+		` WHERE books.book_id < $1`+
+		` %s   %s 
+  ORDER BY 
+		book_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/db.Query: %w", err))
 	}
@@ -470,21 +486,21 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 		o(c)
 	}
 
-	paramStart := 5
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -492,92 +508,57 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookGroupBySQL)
+	}
+
+	if c.joins.AuthorsBookUsers {
+		selectClauses = append(selectClauses, bookTableAuthorsBookUsersSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookUsersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookUsersGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, bookTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, bookTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.Sellers {
+		selectClauses = append(selectClauses, bookTableSellersSelectSQL)
+		joinClauses = append(joinClauses, bookTableSellersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableSellersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
-books.name,
-(case when $1::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_authors.__users
-		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') end) as book_authors_authors,
-(case when $2::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_authors.__users
-		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') end) as book_authors_surrogate_key_authors,
-(case when $3::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews,
-(case when $4::boolean = true then COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers `+
-		`FROM xo_tests.books `+
-		`-- M2M join generated from "book_authors_author_id_fkey"
-left join (
-	select
-			book_authors.book_id as book_authors_book_id
-			, book_authors.pseudonym as pseudonym
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_authors
-    join xo_tests.users on users.user_id = book_authors.author_id
-    group by
-			book_authors_book_id
-			, users.user_id
-			, pseudonym
-  ) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = books.book_id
-
--- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
-left join (
-	select
-			book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
-			, book_authors_surrogate_key.pseudonym as pseudonym
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_authors_surrogate_key
-    join xo_tests.users on users.user_id = book_authors_surrogate_key.author_id
-    group by
-			book_authors_surrogate_key_book_id
-			, users.user_id
-			, pseudonym
-  ) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
-
--- M2O join generated from "book_reviews_book_id_fkey"
-left join (
-  select
-  book_id as book_reviews_book_id
-    , array_agg(book_reviews.*) as book_reviews
-  from
-    xo_tests.book_reviews
-  group by
-        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
--- M2M join generated from "book_sellers_seller_fkey"
-left join (
-	select
-			book_sellers.book_id as book_sellers_book_id
-			, users.user_id as __users_user_id
-			, row(users.*) as __users
-		from
-			xo_tests.book_sellers
-    join xo_tests.users on users.user_id = book_sellers.seller
-    group by
-			book_sellers_book_id
-			, users.user_id
-  ) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
-`+
-		` WHERE books.book_id = $5`+
-		` %s  GROUP BY 
-books.book_id, books.book_id, 
-books.book_id, books.book_id, 
-joined_book_reviews.book_reviews, books.book_id, 
-books.book_id, books.book_id `, filters)
+books.name %s `+
+		`FROM xo_tests.books %s `+
+		` WHERE books.book_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.AuthorsBook, c.joins.AuthorsBookUsers, c.joins.BookReviews, c.joins.Sellers, bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", err))
 	}

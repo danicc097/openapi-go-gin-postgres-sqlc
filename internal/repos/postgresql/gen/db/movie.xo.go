@@ -214,14 +214,14 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ..
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -229,24 +229,35 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ..
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis `+
-		`FROM public.movies `+
-		``+
+movies.synopsis %s `+
+		`FROM public.movies %s `+
 		` WHERE movies.movie_id > $1`+
-		` %s  GROUP BY movies.movie_id, 
-movies.title, 
-movies.year, 
-movies.synopsis ORDER BY 
-		movie_id Asc `, filters)
+		` %s   %s 
+  ORDER BY 
+		movie_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/db.Query: %w", err))
 	}
@@ -272,14 +283,14 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts .
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -287,24 +298,35 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts .
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis `+
-		`FROM public.movies `+
-		``+
+movies.synopsis %s `+
+		`FROM public.movies %s `+
 		` WHERE movies.movie_id < $1`+
-		` %s  GROUP BY movies.movie_id, 
-movies.title, 
-movies.year, 
-movies.synopsis ORDER BY 
-		movie_id Desc `, filters)
+		` %s   %s 
+  ORDER BY 
+		movie_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/db.Query: %w", err))
 	}
@@ -332,14 +354,14 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -347,21 +369,35 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`movies.movie_id,
 movies.title,
 movies.year,
-movies.synopsis `+
-		`FROM public.movies `+
-		``+
+movies.synopsis %s `+
+		`FROM public.movies %s `+
 		` WHERE movies.movie_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, movieID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/db.Query: %w", err))
 	}
