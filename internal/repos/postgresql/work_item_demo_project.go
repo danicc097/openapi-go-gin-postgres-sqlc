@@ -23,8 +23,8 @@ func NewDemoWorkItem() *DemoWorkItem {
 var _ repos.DemoWorkItem = (*DemoWorkItem)(nil)
 
 func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
-	extraOpts := db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true})
-	return db.WorkItemByWorkItemID(ctx, d, id, (append(opts, extraOpts))...)
+	extraOpts := []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true})}
+	return db.WorkItemByWorkItemID(ctx, d, id, (append(extraOpts, opts...))...)
 }
 
 func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.WorkItem, error) {

@@ -63,16 +63,15 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 			return nil, fmt.Errorf("wiRepo.ByID: %w", err)
 		}
 
-		// FIXME xo joins scanning when join table has extra fields
-		// ::: should be fixed now
-		fmt.Printf("wi.WorkItemAssignedUsersJoin: %v\n", wi.WorkItemAssignedUsersJoin)
-		fmt.Printf("wi.WorkItemTimeEntriesJoin: %v\n", wi.WorkItemTimeEntriesJoin)
+		fmt.Printf("wi.WorkItemAssignedUsersJoin: %+v\n", wi.WorkItemAssignedUsersJoin)
+		fmt.Printf("wi.WorkItemTimeEntriesJoin: %+v\n", wi.WorkItemTimeEntriesJoin)
 
 		memberIDs := make([]uuid.UUID, len(*wi.WorkItemAssignedUsersJoin))
 		for i, m := range *wi.WorkItemAssignedUsersJoin {
 			memberIDs[i] = m.User.UserID
 		}
 		if !slices.Contains(memberIDs, caller.UserID) {
+			// FIXME filter where not null for m2m in assigned members not doing what we think
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot link activity to an unassigned work item")
 		}
 	}
