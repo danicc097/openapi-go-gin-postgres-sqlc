@@ -19,6 +19,9 @@ import (
 * - join table name clash for O2O constraint too:
     name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
     at the same time
+
+* TODO: all sqlstrs should have a top comment for logging purposes to differentiate calls in pgx traces.
+* simply adding the function itself is enough, we already have parameters, etc.
 * IMPORTANT: explain analyze to ensure dynamic sql query plans for joins dont do hash joins
 */
 
