@@ -333,6 +333,7 @@ book_authors.pseudonym %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorByBookIDAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
@@ -416,6 +417,7 @@ book_authors.pseudonym %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
@@ -501,6 +503,7 @@ book_authors.pseudonym %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsByAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, authorID)

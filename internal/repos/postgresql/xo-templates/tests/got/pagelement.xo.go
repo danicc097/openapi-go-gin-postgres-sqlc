@@ -288,6 +288,7 @@ pag_element.dummy %s `+
   ORDER BY 
 		created_at Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* PagElementPaginatedByCreatedAtAsc */\n" + sqlstr
 
 	// run
 
@@ -363,6 +364,7 @@ pag_element.dummy %s `+
   ORDER BY 
 		created_at Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* PagElementPaginatedByCreatedAtDesc */\n" + sqlstr
 
 	// run
 
@@ -440,6 +442,7 @@ pag_element.dummy %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* PagElementByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
@@ -518,6 +521,7 @@ pag_element.dummy %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* PagElementByPaginatedElementID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, paginatedElementID)

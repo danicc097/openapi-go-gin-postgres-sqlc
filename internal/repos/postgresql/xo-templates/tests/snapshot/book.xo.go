@@ -371,6 +371,7 @@ books.name %s `+
   ORDER BY 
 		book_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookPaginatedByBookIDAsc */\n" + sqlstr
 
 	// run
 
@@ -462,6 +463,7 @@ books.name %s `+
   ORDER BY 
 		book_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookPaginatedByBookIDDesc */\n" + sqlstr
 
 	// run
 
@@ -555,6 +557,7 @@ books.name %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)

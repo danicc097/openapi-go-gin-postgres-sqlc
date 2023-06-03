@@ -315,6 +315,7 @@ work_item_tags.color %s `+
   ORDER BY 
 		work_item_tag_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagIDAsc */\n" + sqlstr
 
 	// run
 
@@ -397,6 +398,7 @@ work_item_tags.color %s `+
   ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTagPaginatedByProjectIDAsc */\n" + sqlstr
 
 	// run
 
@@ -479,6 +481,7 @@ work_item_tags.color %s `+
   ORDER BY 
 		work_item_tag_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagIDDesc */\n" + sqlstr
 
 	// run
 
@@ -561,6 +564,7 @@ work_item_tags.color %s `+
   ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTagPaginatedByProjectIDDesc */\n" + sqlstr
 
 	// run
 
@@ -645,6 +649,7 @@ work_item_tags.color %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTagByNameProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name, projectID)
@@ -730,6 +735,7 @@ work_item_tags.color %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTagsByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
@@ -817,6 +823,7 @@ work_item_tags.color %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTagsByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
@@ -904,6 +911,7 @@ work_item_tags.color %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTagByWorkItemTagID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemTagID)

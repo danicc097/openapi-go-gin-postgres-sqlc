@@ -334,6 +334,7 @@ book_authors_surrogate_key.pseudonym %s `+
   ORDER BY 
 		book_authors_surrogate_key_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc */\n" + sqlstr
 
 	// run
 
@@ -415,6 +416,7 @@ book_authors_surrogate_key.pseudonym %s `+
   ORDER BY 
 		book_authors_surrogate_key_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc */\n" + sqlstr
 
 	// run
 
@@ -498,6 +500,7 @@ book_authors_surrogate_key.pseudonym %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeyByBookIDAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
@@ -582,6 +585,7 @@ book_authors_surrogate_key.pseudonym %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeysByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
@@ -668,6 +672,7 @@ book_authors_surrogate_key.pseudonym %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeysByAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, authorID)
@@ -754,6 +759,7 @@ book_authors_surrogate_key.pseudonym %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)

@@ -302,6 +302,7 @@ kanban_steps.time_trackable %s `+
   ORDER BY 
 		kanban_step_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByKanbanStepIDAsc */\n" + sqlstr
 
 	// run
 
@@ -380,6 +381,7 @@ kanban_steps.time_trackable %s `+
   ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByProjectIDAsc */\n" + sqlstr
 
 	// run
 
@@ -458,6 +460,7 @@ kanban_steps.time_trackable %s `+
   ORDER BY 
 		step_order Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByStepOrderAsc */\n" + sqlstr
 
 	// run
 
@@ -536,6 +539,7 @@ kanban_steps.time_trackable %s `+
   ORDER BY 
 		kanban_step_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByKanbanStepIDDesc */\n" + sqlstr
 
 	// run
 
@@ -614,6 +618,7 @@ kanban_steps.time_trackable %s `+
   ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByProjectIDDesc */\n" + sqlstr
 
 	// run
 
@@ -692,6 +697,7 @@ kanban_steps.time_trackable %s `+
   ORDER BY 
 		step_order Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByStepOrderDesc */\n" + sqlstr
 
 	// run
 
@@ -772,6 +778,7 @@ kanban_steps.time_trackable %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepByKanbanStepID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, kanbanStepID)
@@ -853,6 +860,7 @@ kanban_steps.time_trackable %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepByProjectIDNameStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID, name, stepOrder)
@@ -934,6 +942,7 @@ kanban_steps.time_trackable %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepsByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
@@ -1017,6 +1026,7 @@ kanban_steps.time_trackable %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepsByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
@@ -1100,6 +1110,7 @@ kanban_steps.time_trackable %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepsByStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, stepOrder)
@@ -1183,6 +1194,7 @@ kanban_steps.time_trackable %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepByProjectIDStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID, stepOrder)

@@ -607,6 +607,7 @@ users.deleted_at %s `+
   ORDER BY 
 		created_at Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserPaginatedByCreatedAtAsc */\n" + sqlstr
 
 	// run
 
@@ -735,6 +736,7 @@ users.deleted_at %s `+
   ORDER BY 
 		created_at Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserPaginatedByCreatedAtDesc */\n" + sqlstr
 
 	// run
 
@@ -865,6 +867,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UsersByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
@@ -998,6 +1001,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
@@ -1129,6 +1133,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UsersByDeletedAt_WhereDeletedAtIsNotNull */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, deletedAt)
@@ -1262,6 +1267,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserByEmail */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, email)
@@ -1393,6 +1399,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserByExternalID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, externalID)
@@ -1524,6 +1531,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)
@@ -1655,6 +1663,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UsersByUpdatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, updatedAt)
@@ -1788,6 +1797,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserByUsername */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, username)

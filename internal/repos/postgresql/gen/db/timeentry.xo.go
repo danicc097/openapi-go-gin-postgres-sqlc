@@ -389,6 +389,7 @@ time_entries.duration_minutes %s `+
   ORDER BY 
 		time_entry_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* TimeEntryPaginatedByTimeEntryIDAsc */\n" + sqlstr
 
 	// run
 
@@ -486,6 +487,7 @@ time_entries.duration_minutes %s `+
   ORDER BY 
 		time_entry_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* TimeEntryPaginatedByTimeEntryIDDesc */\n" + sqlstr
 
 	// run
 
@@ -585,6 +587,7 @@ time_entries.duration_minutes %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* TimeEntryByTimeEntryID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, timeEntryID)
@@ -685,6 +688,7 @@ time_entries.duration_minutes %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* TimeEntriesByUserIDTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID, teamID)
@@ -787,6 +791,7 @@ time_entries.duration_minutes %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* TimeEntriesByWorkItemIDTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID, teamID)

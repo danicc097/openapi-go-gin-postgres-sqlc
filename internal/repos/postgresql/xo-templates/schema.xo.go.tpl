@@ -132,6 +132,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 	{{ sqlstr_index $i $tables }}
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+  sqlstr = "/* {{ func_name_context $i "" }} */\n"+sqlstr
 
 	// run
 	// logf(sqlstr, {{ params $i.Fields false }})
@@ -461,6 +462,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 	{{ sqlstr_paginated $t $tables $cursor_fields $order }}
 	sqlstr += c.limit
+  sqlstr = "/* {{ func_name_context $t $suffix }} */\n"+sqlstr
 
 	// run
 

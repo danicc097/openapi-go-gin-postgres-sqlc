@@ -283,6 +283,7 @@ book_reviews.reviewer %s `+
   ORDER BY 
 		book_review_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookReviewPaginatedByBookReviewIDAsc */\n" + sqlstr
 
 	// run
 
@@ -363,6 +364,7 @@ book_reviews.reviewer %s `+
   ORDER BY 
 		book_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookReviewPaginatedByBookIDAsc */\n" + sqlstr
 
 	// run
 
@@ -443,6 +445,7 @@ book_reviews.reviewer %s `+
   ORDER BY 
 		book_review_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookReviewPaginatedByBookReviewIDDesc */\n" + sqlstr
 
 	// run
 
@@ -523,6 +526,7 @@ book_reviews.reviewer %s `+
   ORDER BY 
 		book_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookReviewPaginatedByBookIDDesc */\n" + sqlstr
 
 	// run
 
@@ -605,6 +609,7 @@ book_reviews.reviewer %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookReviewByBookReviewID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookReviewID)
@@ -688,6 +693,7 @@ book_reviews.reviewer %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookReviewByReviewerBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, reviewer, bookID)
@@ -771,6 +777,7 @@ book_reviews.reviewer %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookReviewsByReviewer */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, reviewer)
@@ -856,6 +863,7 @@ book_reviews.reviewer %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookReviewsByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)

@@ -309,6 +309,7 @@ activities.is_productive %s `+
   ORDER BY 
 		activity_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* ActivityPaginatedByActivityIDAsc */\n" + sqlstr
 
 	// run
 
@@ -391,6 +392,7 @@ activities.is_productive %s `+
   ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* ActivityPaginatedByProjectIDAsc */\n" + sqlstr
 
 	// run
 
@@ -473,6 +475,7 @@ activities.is_productive %s `+
   ORDER BY 
 		activity_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* ActivityPaginatedByActivityIDDesc */\n" + sqlstr
 
 	// run
 
@@ -555,6 +558,7 @@ activities.is_productive %s `+
   ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* ActivityPaginatedByProjectIDDesc */\n" + sqlstr
 
 	// run
 
@@ -639,6 +643,7 @@ activities.is_productive %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* ActivityByNameProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name, projectID)
@@ -724,6 +729,7 @@ activities.is_productive %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* ActivitiesByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
@@ -811,6 +817,7 @@ activities.is_productive %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* ActivitiesByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
@@ -898,6 +905,7 @@ activities.is_productive %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* ActivityByActivityID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, activityID)

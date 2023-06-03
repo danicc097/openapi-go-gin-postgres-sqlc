@@ -292,6 +292,7 @@ notifications.receiver %s `+
   ORDER BY 
 		notification_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* NotificationPaginatedByNotificationIDAsc */\n" + sqlstr
 
 	// run
 
@@ -373,6 +374,7 @@ notifications.receiver %s `+
   ORDER BY 
 		notification_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* NotificationPaginatedByNotificationIDDesc */\n" + sqlstr
 
 	// run
 
@@ -456,6 +458,7 @@ notifications.receiver %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* NotificationByNotificationID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, notificationID)
@@ -540,6 +543,7 @@ notifications.receiver %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* NotificationsBySender */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, sender)

@@ -592,6 +592,7 @@ work_items.deleted_at %s `+
   ORDER BY 
 		work_item_id Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
 
 	// run
 
@@ -723,6 +724,7 @@ work_items.deleted_at %s `+
   ORDER BY 
 		work_item_id Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
 
 	// run
 
@@ -856,6 +858,7 @@ work_items.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemsByDeletedAt_WhereDeletedAtIsNotNull */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, deletedAt)
@@ -992,6 +995,7 @@ work_items.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
@@ -1126,6 +1130,7 @@ work_items.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemsByTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID)

@@ -260,6 +260,7 @@ user_team.member %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserTeamsByMember */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, member)
@@ -344,6 +345,7 @@ user_team.member %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserTeamByMemberTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, member, teamID)
@@ -426,6 +428,7 @@ user_team.member %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserTeamsByTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID)
@@ -510,6 +513,7 @@ user_team.member %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserTeamsByTeamIDMember */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID, member)

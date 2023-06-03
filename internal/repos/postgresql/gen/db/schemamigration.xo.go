@@ -242,6 +242,7 @@ schema_migrations.dirty %s `+
   ORDER BY 
 		version Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* SchemaMigrationPaginatedByVersionAsc */\n" + sqlstr
 
 	// run
 
@@ -309,6 +310,7 @@ schema_migrations.dirty %s `+
   ORDER BY 
 		version Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* SchemaMigrationPaginatedByVersionDesc */\n" + sqlstr
 
 	// run
 
@@ -378,6 +380,7 @@ schema_migrations.dirty %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* SchemaMigrationByVersion */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, version)

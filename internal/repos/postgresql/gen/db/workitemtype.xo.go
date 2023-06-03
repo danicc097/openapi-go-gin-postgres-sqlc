@@ -284,6 +284,7 @@ work_item_types.color %s `+
   ORDER BY 
 		work_item_type_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTypePaginatedByWorkItemTypeIDAsc */\n" + sqlstr
 
 	// run
 
@@ -360,6 +361,7 @@ work_item_types.color %s `+
   ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTypePaginatedByProjectIDAsc */\n" + sqlstr
 
 	// run
 
@@ -436,6 +438,7 @@ work_item_types.color %s `+
   ORDER BY 
 		work_item_type_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTypePaginatedByWorkItemTypeIDDesc */\n" + sqlstr
 
 	// run
 
@@ -512,6 +515,7 @@ work_item_types.color %s `+
   ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTypePaginatedByProjectIDDesc */\n" + sqlstr
 
 	// run
 
@@ -590,6 +594,7 @@ work_item_types.color %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTypeByNameProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name, projectID)
@@ -669,6 +674,7 @@ work_item_types.color %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTypesByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
@@ -750,6 +756,7 @@ work_item_types.color %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTypesByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
@@ -831,6 +838,7 @@ work_item_types.color %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemTypeByWorkItemTypeID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemTypeID)

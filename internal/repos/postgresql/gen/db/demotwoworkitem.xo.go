@@ -279,6 +279,7 @@ demo_two_work_items.custom_date_for_project_2 %s `+
   ORDER BY 
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoTwoWorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
 
 	// run
 
@@ -352,6 +353,7 @@ demo_two_work_items.custom_date_for_project_2 %s `+
   ORDER BY 
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoTwoWorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
 
 	// run
 
@@ -427,6 +429,7 @@ demo_two_work_items.custom_date_for_project_2 %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DemoTwoWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)

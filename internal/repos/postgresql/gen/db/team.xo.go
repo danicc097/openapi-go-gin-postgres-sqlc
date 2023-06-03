@@ -359,6 +359,7 @@ teams.updated_at %s `+
   ORDER BY 
 		team_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* TeamPaginatedByTeamIDAsc */\n" + sqlstr
 
 	// run
 
@@ -448,6 +449,7 @@ teams.updated_at %s `+
   ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* TeamPaginatedByProjectIDAsc */\n" + sqlstr
 
 	// run
 
@@ -537,6 +539,7 @@ teams.updated_at %s `+
   ORDER BY 
 		team_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* TeamPaginatedByTeamIDDesc */\n" + sqlstr
 
 	// run
 
@@ -626,6 +629,7 @@ teams.updated_at %s `+
   ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* TeamPaginatedByProjectIDDesc */\n" + sqlstr
 
 	// run
 
@@ -717,6 +721,7 @@ teams.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* TeamByNameProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name, projectID)
@@ -809,6 +814,7 @@ teams.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* TeamsByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
@@ -903,6 +909,7 @@ teams.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* TeamsByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
@@ -997,6 +1004,7 @@ teams.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* TeamByTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID)

@@ -257,6 +257,7 @@ book_sellers.seller %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellersByBookIDSeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, seller)
@@ -341,6 +342,7 @@ book_sellers.seller %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellerByBookIDSeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, seller)
@@ -423,6 +425,7 @@ book_sellers.seller %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellersByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
@@ -507,6 +510,7 @@ book_sellers.seller %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellersBySeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, seller)
@@ -591,6 +595,7 @@ book_sellers.seller %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellersBySellerBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, seller, bookID)

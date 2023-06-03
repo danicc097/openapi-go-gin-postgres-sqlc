@@ -295,6 +295,7 @@ user_notifications.user_id %s `+
   ORDER BY 
 		user_notification_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationPaginatedByUserNotificationIDAsc */\n" + sqlstr
 
 	// run
 
@@ -376,6 +377,7 @@ user_notifications.user_id %s `+
   ORDER BY 
 		notification_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationPaginatedByNotificationIDAsc */\n" + sqlstr
 
 	// run
 
@@ -457,6 +459,7 @@ user_notifications.user_id %s `+
   ORDER BY 
 		user_notification_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationPaginatedByUserNotificationIDDesc */\n" + sqlstr
 
 	// run
 
@@ -538,6 +541,7 @@ user_notifications.user_id %s `+
   ORDER BY 
 		notification_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationPaginatedByNotificationIDDesc */\n" + sqlstr
 
 	// run
 
@@ -621,6 +625,7 @@ user_notifications.user_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationByNotificationIDUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, notificationID, userID)
@@ -705,6 +710,7 @@ user_notifications.user_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationsByNotificationID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, notificationID)
@@ -791,6 +797,7 @@ user_notifications.user_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationByUserNotificationID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userNotificationID)
@@ -875,6 +882,7 @@ user_notifications.user_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationsByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)

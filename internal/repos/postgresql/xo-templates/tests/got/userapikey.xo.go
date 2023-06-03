@@ -295,6 +295,7 @@ user_api_keys.user_id %s `+
   ORDER BY 
 		user_api_key_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyIDAsc */\n" + sqlstr
 
 	// run
 
@@ -370,6 +371,7 @@ user_api_keys.user_id %s `+
   ORDER BY 
 		user_api_key_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyIDDesc */\n" + sqlstr
 
 	// run
 
@@ -447,6 +449,7 @@ user_api_keys.user_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserAPIKeyByAPIKey */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, apiKey)
@@ -525,6 +528,7 @@ user_api_keys.user_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserAPIKeyByUserAPIKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
@@ -603,6 +607,7 @@ user_api_keys.user_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserAPIKeyByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)

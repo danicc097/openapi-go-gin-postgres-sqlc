@@ -232,6 +232,7 @@ dummy_join.name %s `+
   ORDER BY 
 		dummy_join_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DummyJoinPaginatedByDummyJoinIDAsc */\n" + sqlstr
 
 	// run
 
@@ -299,6 +300,7 @@ dummy_join.name %s `+
   ORDER BY 
 		dummy_join_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DummyJoinPaginatedByDummyJoinIDDesc */\n" + sqlstr
 
 	// run
 
@@ -368,6 +370,7 @@ dummy_join.name %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DummyJoinByDummyJoinID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, dummyJoinID)

@@ -333,6 +333,7 @@ work_item_assigned_user.role %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemAssignedUsersByAssignedUserWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, assignedUser, workItemID)
@@ -418,6 +419,7 @@ work_item_assigned_user.role %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemAssignedUserByWorkItemIDAssignedUser */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID, assignedUser)
@@ -501,6 +503,7 @@ work_item_assigned_user.role %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemAssignedUsersByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
@@ -586,6 +589,7 @@ work_item_assigned_user.role %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemAssignedUsersByAssignedUser */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, assignedUser)

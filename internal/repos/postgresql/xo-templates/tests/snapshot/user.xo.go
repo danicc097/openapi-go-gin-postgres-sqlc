@@ -554,6 +554,7 @@ users.deleted_at %s `+
   ORDER BY 
 		created_at Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserPaginatedByCreatedAtAsc */\n" + sqlstr
 
 	// run
 
@@ -672,6 +673,7 @@ users.deleted_at %s `+
   ORDER BY 
 		created_at Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserPaginatedByCreatedAtDesc */\n" + sqlstr
 
 	// run
 
@@ -792,6 +794,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
@@ -913,6 +916,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
@@ -1034,6 +1038,7 @@ users.deleted_at %s `+
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)

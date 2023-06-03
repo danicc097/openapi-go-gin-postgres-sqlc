@@ -293,6 +293,7 @@ work_items.title %s `+
   ORDER BY 
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
 
 	// run
 
@@ -372,6 +373,7 @@ work_items.title %s `+
   ORDER BY 
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
 
 	// run
 
@@ -453,6 +455,7 @@ work_items.title %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)

@@ -419,6 +419,7 @@ projects.updated_at %s `+
   ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* ProjectPaginatedByProjectIDAsc */\n" + sqlstr
 
 	// run
 
@@ -521,6 +522,7 @@ projects.updated_at %s `+
   ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* ProjectPaginatedByProjectIDDesc */\n" + sqlstr
 
 	// run
 
@@ -625,6 +627,7 @@ projects.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* ProjectByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
@@ -730,6 +733,7 @@ projects.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* ProjectByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
@@ -835,6 +839,7 @@ projects.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* ProjectByWorkItemsTableName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemsTableName)

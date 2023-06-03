@@ -256,6 +256,7 @@ demo_work_items.checked %s `+
   ORDER BY 
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
 
 	// run
 
@@ -329,6 +330,7 @@ demo_work_items.checked %s `+
   ORDER BY 
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
 
 	// run
 
@@ -404,6 +406,7 @@ demo_work_items.checked %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)

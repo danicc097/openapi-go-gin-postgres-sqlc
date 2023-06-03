@@ -254,6 +254,7 @@ movies.synopsis %s `+
   ORDER BY 
 		movie_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* MoviePaginatedByMovieIDAsc */\n" + sqlstr
 
 	// run
 
@@ -323,6 +324,7 @@ movies.synopsis %s `+
   ORDER BY 
 		movie_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* MoviePaginatedByMovieIDDesc */\n" + sqlstr
 
 	// run
 
@@ -394,6 +396,7 @@ movies.synopsis %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* MovieByMovieID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, movieID)

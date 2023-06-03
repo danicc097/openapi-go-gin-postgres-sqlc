@@ -258,6 +258,7 @@ work_item_work_item_tag.work_item_id %s `+
 		work_item_tag_id Asc ,
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc */\n" + sqlstr
 
 	// run
 
@@ -338,6 +339,7 @@ work_item_work_item_tag.work_item_id %s `+
 		work_item_tag_id Desc ,
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc */\n" + sqlstr
 
 	// run
 
@@ -419,6 +421,7 @@ work_item_work_item_tag.work_item_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemWorkItemTagByWorkItemIDWorkItemTagID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID, workItemTagID)
@@ -501,6 +504,7 @@ work_item_work_item_tag.work_item_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemWorkItemTagsByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
@@ -585,6 +589,7 @@ work_item_work_item_tag.work_item_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemWorkItemTagsByWorkItemTagID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemTagID)
@@ -669,6 +674,7 @@ work_item_work_item_tag.work_item_id %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemWorkItemTagsByWorkItemTagIDWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemTagID, workItemID)

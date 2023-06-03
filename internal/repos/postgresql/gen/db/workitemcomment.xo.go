@@ -323,6 +323,7 @@ work_item_comments.updated_at %s `+
   ORDER BY 
 		work_item_comment_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentIDAsc */\n" + sqlstr
 
 	// run
 
@@ -406,6 +407,7 @@ work_item_comments.updated_at %s `+
   ORDER BY 
 		work_item_comment_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentIDDesc */\n" + sqlstr
 
 	// run
 
@@ -491,6 +493,7 @@ work_item_comments.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemCommentByWorkItemCommentID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemCommentID)
@@ -577,6 +580,7 @@ work_item_comments.updated_at %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemCommentsByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)

@@ -306,6 +306,7 @@ demo_work_items.reopened %s `+
   ORDER BY 
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
 
 	// run
 
@@ -382,6 +383,7 @@ demo_work_items.reopened %s `+
   ORDER BY 
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
 
 	// run
 
@@ -460,6 +462,7 @@ demo_work_items.reopened %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
@@ -539,6 +542,7 @@ demo_work_items.reopened %s `+
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemsByRefLine */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, ref, line)
