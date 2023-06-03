@@ -53,6 +53,9 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 
 	searchPaths := []string{"public", "xo_tests"}
 	conn, err := pgx.Connect(context.Background(), dsn.String())
+	if err != nil {
+		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not connect to database")
+	}
 	typeNames, err := queryDatabaseTypeNames(context.Background(), conn, searchPaths...)
 	if err != nil {
 		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not query database types")
