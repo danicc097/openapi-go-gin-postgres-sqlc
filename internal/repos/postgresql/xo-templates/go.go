@@ -3025,7 +3025,7 @@ const (
 		{{- range .LookupExtraCols }}
 		, joined_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}
 		{{- end }}
-		)) filter (where joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}} is not null), '{}') end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
+		)) filter (where joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}_{{.JoinTablePK}} is not null), '{}') end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
 	O2OSelect = `(case when {{.Nth}}::boolean = true and {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`
@@ -3051,6 +3051,7 @@ left join (
 			{{- range .LookupExtraCols }}
 			, {{$.LookupTable}}.{{.}} as {{ . -}}
 			{{- end }}
+			, {{.JoinTable}}.{{.JoinTablePK}} as __{{.LookupJoinTablePKAgg}}_{{.JoinTablePK}}
 			, row({{.JoinTable}}.*) as __{{.LookupJoinTablePKAgg}}
 		from
 			{{.Schema}}{{.LookupTable}}

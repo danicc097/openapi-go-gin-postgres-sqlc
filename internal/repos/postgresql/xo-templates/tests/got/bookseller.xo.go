@@ -184,16 +184,17 @@ book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books `+
+		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
 		`FROM xo_tests.book_sellers `+
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
 			book_sellers.book_id as book_sellers_book_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
@@ -207,6 +208,7 @@ left join (
 left join (
 	select
 			book_sellers.seller as book_sellers_seller
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_sellers
@@ -277,16 +279,17 @@ book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books `+
+		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
 		`FROM xo_tests.book_sellers `+
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
 			book_sellers.book_id as book_sellers_book_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
@@ -300,6 +303,7 @@ left join (
 left join (
 	select
 			book_sellers.seller as book_sellers_seller
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_sellers
@@ -368,16 +372,17 @@ book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books `+
+		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
 		`FROM xo_tests.book_sellers `+
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
 			book_sellers.book_id as book_sellers_book_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
@@ -391,6 +396,7 @@ left join (
 left join (
 	select
 			book_sellers.seller as book_sellers_seller
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_sellers
@@ -461,16 +467,17 @@ book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books `+
+		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
 		`FROM xo_tests.book_sellers `+
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
 			book_sellers.book_id as book_sellers_book_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
@@ -484,6 +491,7 @@ left join (
 left join (
 	select
 			book_sellers.seller as book_sellers_seller
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_sellers
@@ -554,16 +562,17 @@ book_sellers.seller,
 (case when $1::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users is not null), '{}') end) as book_sellers_sellers,
+		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') end) as book_sellers_sellers,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books is not null), '{}') end) as book_sellers_books `+
+		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') end) as book_sellers_books `+
 		`FROM xo_tests.book_sellers `+
 		`-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
 			book_sellers.book_id as book_sellers_book_id
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			xo_tests.book_sellers
@@ -577,6 +586,7 @@ left join (
 left join (
 	select
 			book_sellers.seller as book_sellers_seller
+			, books.book_id as __books_book_id
 			, row(books.*) as __books
 		from
 			xo_tests.book_sellers

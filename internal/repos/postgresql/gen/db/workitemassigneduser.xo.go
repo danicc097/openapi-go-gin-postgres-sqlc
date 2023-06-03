@@ -260,18 +260,19 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users `+
 		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
 			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_assigned_user
@@ -287,6 +288,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user
@@ -360,18 +362,19 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users `+
 		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
 			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_assigned_user
@@ -387,6 +390,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user
@@ -458,18 +462,19 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users `+
 		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
 			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_assigned_user
@@ -485,6 +490,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user
@@ -558,18 +564,19 @@ work_item_assigned_user.role,
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_work_items.__work_items
 		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items is not null), '{}') end) as work_item_assigned_user_work_items,
+		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_assigned_user_work_items,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users is not null), '{}') end) as work_item_assigned_user_assigned_users `+
+		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') end) as work_item_assigned_user_assigned_users `+
 		`FROM public.work_item_assigned_user `+
 		`-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 			work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
 			, work_item_assigned_user.role as role
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_assigned_user
@@ -585,6 +592,7 @@ left join (
 	select
 			work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
 			, work_item_assigned_user.role as role
+			, users.user_id as __users_user_id
 			, row(users.*) as __users
 		from
 			work_item_assigned_user

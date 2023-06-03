@@ -255,7 +255,7 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
 		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
@@ -263,6 +263,7 @@ left join projects as _work_item_tags_project_id on _work_item_tags_project_id.p
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_work_item_tag
@@ -338,7 +339,7 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
 		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
@@ -346,6 +347,7 @@ left join projects as _work_item_tags_project_id on _work_item_tags_project_id.p
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_work_item_tag
@@ -421,7 +423,7 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
 		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
@@ -429,6 +431,7 @@ left join projects as _work_item_tags_project_id on _work_item_tags_project_id.p
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_work_item_tag
@@ -504,7 +507,7 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
 		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
@@ -512,6 +515,7 @@ left join projects as _work_item_tags_project_id on _work_item_tags_project_id.p
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_work_item_tag
@@ -589,7 +593,7 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
 		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
@@ -597,6 +601,7 @@ left join projects as _work_item_tags_project_id on _work_item_tags_project_id.p
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_work_item_tag
@@ -671,7 +676,7 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
 		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
@@ -679,6 +684,7 @@ left join projects as _work_item_tags_project_id on _work_item_tags_project_id.p
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_work_item_tag
@@ -755,7 +761,7 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
 		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
@@ -763,6 +769,7 @@ left join projects as _work_item_tags_project_id on _work_item_tags_project_id.p
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_work_item_tag
@@ -839,7 +846,7 @@ work_item_tags.color,
 (case when $2::boolean = true then COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_work_item_tag_work_items.__work_items
-		)) filter (where joined_work_item_work_item_tag_work_items.__work_items is not null), '{}') end) as work_item_work_item_tag_work_items `+
+		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') end) as work_item_work_item_tag_work_items `+
 		`FROM public.work_item_tags `+
 		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
@@ -847,6 +854,7 @@ left join projects as _work_item_tags_project_id on _work_item_tags_project_id.p
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, work_items.work_item_id as __work_items_work_item_id
 			, row(work_items.*) as __work_items
 		from
 			work_item_work_item_tag
