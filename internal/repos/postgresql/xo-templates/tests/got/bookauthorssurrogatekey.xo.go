@@ -282,14 +282,14 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -315,15 +315,12 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -333,18 +330,14 @@ book_authors_surrogate_key.author_id,
 book_authors_surrogate_key.pseudonym %s `+
 		`FROM xo_tests.book_authors_surrogate_key %s `+
 		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $1`+
-		` %s  GROUP BY book_authors_surrogate_key.book_authors_surrogate_key_id, 
-book_authors_surrogate_key.book_id, 
-book_authors_surrogate_key.author_id, 
-book_authors_surrogate_key.pseudonym 
- %s 
- ORDER BY 
-		book_authors_surrogate_key_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		book_authors_surrogate_key_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/db.Query: %w", err))
 	}
@@ -370,14 +363,14 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -403,15 +396,12 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -421,18 +411,14 @@ book_authors_surrogate_key.author_id,
 book_authors_surrogate_key.pseudonym %s `+
 		`FROM xo_tests.book_authors_surrogate_key %s `+
 		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $1`+
-		` %s  GROUP BY book_authors_surrogate_key.book_authors_surrogate_key_id, 
-book_authors_surrogate_key.book_id, 
-book_authors_surrogate_key.author_id, 
-book_authors_surrogate_key.pseudonym 
- %s 
- ORDER BY 
-		book_authors_surrogate_key_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		book_authors_surrogate_key_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/db.Query: %w", err))
 	}
@@ -460,14 +446,14 @@ func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID 
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -475,21 +461,47 @@ func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym `+
-		`FROM xo_tests.book_authors_surrogate_key `+
-		``+
+book_authors_surrogate_key.pseudonym %s `+
+		`FROM xo_tests.book_authors_surrogate_key %s `+
 		` WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", err))
 	}
@@ -518,14 +530,14 @@ func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, op
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -533,21 +545,47 @@ func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, op
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym `+
-		`FROM xo_tests.book_authors_surrogate_key `+
-		``+
+book_authors_surrogate_key.pseudonym %s `+
+		`FROM xo_tests.book_authors_surrogate_key %s `+
 		` WHERE book_authors_surrogate_key.book_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
 	}
@@ -578,14 +616,14 @@ func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uui
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -593,21 +631,47 @@ func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uui
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym `+
-		`FROM xo_tests.book_authors_surrogate_key `+
-		``+
+book_authors_surrogate_key.pseudonym %s `+
+		`FROM xo_tests.book_authors_surrogate_key %s `+
 		` WHERE book_authors_surrogate_key.author_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
 	}
@@ -638,14 +702,14 @@ func BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db 
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -653,21 +717,47 @@ func BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors_surrogate_key.book_authors_surrogate_key_id,
 book_authors_surrogate_key.book_id,
 book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym `+
-		`FROM xo_tests.book_authors_surrogate_key `+
-		``+
+book_authors_surrogate_key.pseudonym %s `+
+		`FROM xo_tests.book_authors_surrogate_key %s `+
 		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", err))
 	}

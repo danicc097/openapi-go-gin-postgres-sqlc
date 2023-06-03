@@ -132,6 +132,16 @@ func WithPagElementFilters(filters map[string][]any) PagElementSelectConfigOptio
 	}
 }
 
+const pagElementTableDummyJoinJoinSQL = `-- O2O join generated from "pag_element_dummy_fkey (inferred)"
+left join xo_tests.dummy_join as _pag_element_dummy on _pag_element_dummy.dummy_join_id = pag_element.dummy
+`
+
+const pagElementTableDummyJoinSelectSQL = `(case when _pag_element_dummy.dummy_join_id is not null then row(_pag_element_dummy.*) end) as dummy_join_dummy`
+
+const pagElementTableDummyJoinGroupBySQL = `_pag_element_dummy.dummy_join_id,
+      _pag_element_dummy.dummy_join_id,
+	pag_element.paginated_element_id`
+
 // Insert inserts the PagElement to the database.
 func (pe *PagElement) Insert(ctx context.Context, db DB) (*PagElement, error) {
 	// insert (primary key generated and returned by database)
@@ -225,21 +235,21 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -247,29 +257,41 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DummyJoin {
+		selectClauses = append(selectClauses, pagElementTableDummyJoinSelectSQL)
+		joinClauses = append(joinClauses, pagElementTableDummyJoinJoinSQL)
+		groupByClauses = append(groupByClauses, pagElementTableDummyJoinGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy,
-(case when $1::boolean = true and _pag_element_dummy.dummy_join_id is not null then row(_pag_element_dummy.*) end) as dummy_join_dummy `+
-		`FROM xo_tests.pag_element `+
-		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.dummy_join as _pag_element_dummy on _pag_element_dummy.dummy_join_id = pag_element.dummy`+
-		` WHERE pag_element.created_at > $2`+
-		` %s  GROUP BY pag_element.paginated_element_id, 
-pag_element.name, 
-pag_element.created_at, 
-pag_element.dummy, 
-_pag_element_dummy.dummy_join_id,
-      _pag_element_dummy.dummy_join_id,
-	pag_element.paginated_element_id ORDER BY 
-		created_at Asc `, filters)
+pag_element.dummy %s `+
+		`FROM xo_tests.pag_element %s `+
+		` WHERE pag_element.created_at > $1`+
+		` %s   %s 
+  ORDER BY 
+		created_at Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DummyJoin, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/db.Query: %w", err))
 	}
@@ -288,21 +310,21 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -310,29 +332,41 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DummyJoin {
+		selectClauses = append(selectClauses, pagElementTableDummyJoinSelectSQL)
+		joinClauses = append(joinClauses, pagElementTableDummyJoinJoinSQL)
+		groupByClauses = append(groupByClauses, pagElementTableDummyJoinGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy,
-(case when $1::boolean = true and _pag_element_dummy.dummy_join_id is not null then row(_pag_element_dummy.*) end) as dummy_join_dummy `+
-		`FROM xo_tests.pag_element `+
-		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.dummy_join as _pag_element_dummy on _pag_element_dummy.dummy_join_id = pag_element.dummy`+
-		` WHERE pag_element.created_at < $2`+
-		` %s  GROUP BY pag_element.paginated_element_id, 
-pag_element.name, 
-pag_element.created_at, 
-pag_element.dummy, 
-_pag_element_dummy.dummy_join_id,
-      _pag_element_dummy.dummy_join_id,
-	pag_element.paginated_element_id ORDER BY 
-		created_at Desc `, filters)
+pag_element.dummy %s `+
+		`FROM xo_tests.pag_element %s `+
+		` WHERE pag_element.created_at < $1`+
+		` %s   %s 
+  ORDER BY 
+		created_at Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DummyJoin, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", err))
 	}
@@ -353,21 +387,21 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -375,26 +409,41 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DummyJoin {
+		selectClauses = append(selectClauses, pagElementTableDummyJoinSelectSQL)
+		joinClauses = append(joinClauses, pagElementTableDummyJoinJoinSQL)
+		groupByClauses = append(groupByClauses, pagElementTableDummyJoinGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy,
-(case when $1::boolean = true and _pag_element_dummy.dummy_join_id is not null then row(_pag_element_dummy.*) end) as dummy_join_dummy `+
-		`FROM xo_tests.pag_element `+
-		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.dummy_join as _pag_element_dummy on _pag_element_dummy.dummy_join_id = pag_element.dummy`+
-		` WHERE pag_element.created_at = $2`+
-		` %s  GROUP BY 
-_pag_element_dummy.dummy_join_id,
-      _pag_element_dummy.dummy_join_id,
-	pag_element.paginated_element_id `, filters)
+pag_element.dummy %s `+
+		`FROM xo_tests.pag_element %s `+
+		` WHERE pag_element.created_at = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DummyJoin, createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", err))
 	}
@@ -416,21 +465,21 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 		o(c)
 	}
 
-	paramStart := 2
+	paramStart := 1
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -438,26 +487,41 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DummyJoin {
+		selectClauses = append(selectClauses, pagElementTableDummyJoinSelectSQL)
+		joinClauses = append(joinClauses, pagElementTableDummyJoinJoinSQL)
+		groupByClauses = append(groupByClauses, pagElementTableDummyJoinGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`pag_element.paginated_element_id,
 pag_element.name,
 pag_element.created_at,
-pag_element.dummy,
-(case when $1::boolean = true and _pag_element_dummy.dummy_join_id is not null then row(_pag_element_dummy.*) end) as dummy_join_dummy `+
-		`FROM xo_tests.pag_element `+
-		`-- O2O join generated from "pag_element_dummy_fkey (inferred)"
-left join xo_tests.dummy_join as _pag_element_dummy on _pag_element_dummy.dummy_join_id = pag_element.dummy`+
-		` WHERE pag_element.paginated_element_id = $2`+
-		` %s  GROUP BY 
-_pag_element_dummy.dummy_join_id,
-      _pag_element_dummy.dummy_join_id,
-	pag_element.paginated_element_id `, filters)
+pag_element.dummy %s `+
+		`FROM xo_tests.pag_element %s `+
+		` WHERE pag_element.paginated_element_id = $1`+
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, paginatedElementID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{c.joins.DummyJoin, paginatedElementID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{paginatedElementID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", err))
 	}

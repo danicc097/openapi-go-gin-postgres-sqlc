@@ -295,15 +295,12 @@ func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItem
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -314,19 +311,14 @@ work_item_tags.description,
 work_item_tags.color %s `+
 		`FROM public.work_item_tags %s `+
 		` WHERE work_item_tags.work_item_tag_id > $1`+
-		` %s  GROUP BY work_item_tags.work_item_tag_id, 
-work_item_tags.project_id, 
-work_item_tags.name, 
-work_item_tags.description, 
-work_item_tags.color 
- %s 
- ORDER BY 
-		work_item_tag_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		work_item_tag_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", err))
 	}
@@ -385,15 +377,12 @@ func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID in
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -404,19 +393,14 @@ work_item_tags.description,
 work_item_tags.color %s `+
 		`FROM public.work_item_tags %s `+
 		` WHERE work_item_tags.project_id > $1`+
-		` %s  GROUP BY work_item_tags.work_item_tag_id, 
-work_item_tags.project_id, 
-work_item_tags.name, 
-work_item_tags.description, 
-work_item_tags.color 
- %s 
- ORDER BY 
-		project_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", err))
 	}
@@ -475,15 +459,12 @@ func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workIte
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -494,19 +475,14 @@ work_item_tags.description,
 work_item_tags.color %s `+
 		`FROM public.work_item_tags %s `+
 		` WHERE work_item_tags.work_item_tag_id < $1`+
-		` %s  GROUP BY work_item_tags.work_item_tag_id, 
-work_item_tags.project_id, 
-work_item_tags.name, 
-work_item_tags.description, 
-work_item_tags.color 
- %s 
- ORDER BY 
-		work_item_tag_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		work_item_tag_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", err))
 	}
@@ -565,15 +541,12 @@ func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID i
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -584,19 +557,14 @@ work_item_tags.description,
 work_item_tags.color %s `+
 		`FROM public.work_item_tags %s `+
 		` WHERE work_item_tags.project_id < $1`+
-		` %s  GROUP BY work_item_tags.work_item_tag_id, 
-work_item_tags.project_id, 
-work_item_tags.name, 
-work_item_tags.description, 
-work_item_tags.color 
- %s 
- ORDER BY 
-		project_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", err))
 	}
@@ -639,22 +607,48 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTagTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
-work_item_tags.color `+
-		`FROM public.work_item_tags `+
-		``+
+work_item_tags.color %s `+
+		`FROM public.work_item_tags %s `+
 		` WHERE work_item_tags.name = $1 AND work_item_tags.project_id = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/db.Query: %w", err))
 	}
@@ -698,22 +692,48 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTagTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
-work_item_tags.color `+
-		`FROM public.work_item_tags `+
-		``+
+work_item_tags.color %s `+
+		`FROM public.work_item_tags %s `+
 		` WHERE work_item_tags.name = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
 	}
@@ -759,22 +779,48 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTagTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
-work_item_tags.color `+
-		`FROM public.work_item_tags `+
-		``+
+work_item_tags.color %s `+
+		`FROM public.work_item_tags %s `+
 		` WHERE work_item_tags.project_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
 	}
@@ -820,22 +866,48 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, workItemTagTableProjectSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWorkItemTag {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_tags.work_item_tag_id,
 work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
-work_item_tags.color `+
-		`FROM public.work_item_tags `+
-		``+
+work_item_tags.color %s `+
+		`FROM public.work_item_tags %s `+
 		` WHERE work_item_tags.work_item_tag_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/db.Query: %w", err))
 	}

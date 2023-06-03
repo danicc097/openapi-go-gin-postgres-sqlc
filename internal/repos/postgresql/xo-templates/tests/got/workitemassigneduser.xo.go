@@ -282,14 +282,14 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -297,20 +297,46 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, workItemAssignedUserTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, workItemAssignedUserTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssignedUserTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemAssignedUserTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemAssignedUserTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssignedUserTableAssignedUsersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
-work_item_assigned_user.role `+
-		`FROM xo_tests.work_item_assigned_user `+
-		``+
+work_item_assigned_user.role %s `+
+		`FROM xo_tests.work_item_assigned_user %s `+
 		` WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, assignedUser, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", err))
 	}
@@ -341,14 +367,14 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -356,20 +382,46 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, workItemAssignedUserTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, workItemAssignedUserTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssignedUserTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemAssignedUserTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemAssignedUserTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssignedUserTableAssignedUsersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
-work_item_assigned_user.role `+
-		`FROM xo_tests.work_item_assigned_user `+
-		``+
+work_item_assigned_user.role %s `+
+		`FROM xo_tests.work_item_assigned_user %s `+
 		` WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", err))
 	}
@@ -398,14 +450,14 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -413,20 +465,46 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, workItemAssignedUserTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, workItemAssignedUserTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssignedUserTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemAssignedUserTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemAssignedUserTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssignedUserTableAssignedUsersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
-work_item_assigned_user.role `+
-		`FROM xo_tests.work_item_assigned_user `+
-		``+
+work_item_assigned_user.role %s `+
+		`FROM xo_tests.work_item_assigned_user %s `+
 		` WHERE work_item_assigned_user.work_item_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
 	}
@@ -457,14 +535,14 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -472,20 +550,46 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, workItemAssignedUserTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, workItemAssignedUserTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssignedUserTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemAssignedUserTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemAssignedUserTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssignedUserTableAssignedUsersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_assigned_user.work_item_id,
 work_item_assigned_user.assigned_user,
-work_item_assigned_user.role `+
-		`FROM xo_tests.work_item_assigned_user `+
-		``+
+work_item_assigned_user.role %s `+
+		`FROM xo_tests.work_item_assigned_user %s `+
 		` WHERE work_item_assigned_user.assigned_user = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
 	}

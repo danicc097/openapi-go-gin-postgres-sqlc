@@ -2406,64 +2406,6 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 				}
 				names = append(names, prefix+p.Name)
 			}
-			// not even used
-		// case Table:
-		// 	// TODO should be f.joinNames too, where is "_" coming from?
-		// 	for _, p := range x.Fields {
-		// 		names = append(names, prefix+checkName(p.GoName))
-		// 	}
-		// 	// append joins
-		// 	for _, c := range f.tableConstraints[x.SQLName] {
-		// 		if c.Type != "foreign_key" {
-		// 			continue
-		// 		}
-		// 		var joinName string
-		// 		switch c.Cardinality {
-		// 		case M2M:
-		// 			fmt.Fprintf(os.Stderr, "hhhhhhere")
-		// 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
-		// 			joinName = prefix + c.TableName + "_" + inflector.Pluralize(lookupName)
-		// 			if c.JoinTableClash {
-		// 				lc := strings.TrimSuffix(c.LookupColumn, "_id")
-		// 				joinName = joinName + camelExport(lc)
-		// 			}
-		// 		case M2O:
-		// 			if c.RefTableName == x.SQLName {
-		// 				joinName = prefix + camelExport(c.TableName)
-		// 				if c.JoinTableClash {
-		// 					joinName = joinName + "_" + c.ColumnName
-		// 				}
-		// 			}
-		// 			if c.TableName == x.SQLName {
-		// 				joinName = prefix + camelExport(c.RefTableName)
-		// 				if c.JoinTableClash {
-		// 					joinName = joinName + "_" + c.RefColumnName
-		// 				}
-		// 			}
-		// 		case O2O:
-		// 			if c.TableName == x.SQLName {
-		// 				joinName = prefix + camelExport(singularize(c.RefTableName))
-		// 				if c.JoinTableClash {
-		// 					joinName = joinName + camelExport(c.ColumnName)
-		// 				}
-		// 			}
-		// 			// dummy created automatically to avoid this duplication
-		// 			// if c.RefTableName == x.SQLName {
-		// 			// 	joinName = prefix + camelExport(singularize(c.TableName))
-		// 			// }
-		// 		default:
-		// 		}
-		// 		if joinName == "" {
-		// 			continue
-		// 		}
-		// 		for _, name := range names {
-		// 			if name == joinName {
-		// 				// prevent clash
-		// 				joinName = joinName + camelExport(c.RefTableName)
-		// 			}
-		// 		}
-		// 		names = append(names, joinName)
-		// 	}
 		case []Field:
 			for _, p := range x {
 				names = append(names, prefix+checkName(p.GoName))
@@ -2473,23 +2415,13 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 				names = append(names, params)
 			}
 		case Index:
-			// TODO remove constraints. sqlstr will be dynamically concatenated
-			// first thing will always be boolean parameters for joins
-			// NOTE: keep this same logic in separate function that generates the sqlstr pieces to be Sprintf'ed
-			// just need joinName for buf.WriteString("if c.joins.%s: \n\tjoins = append(joins, %sTable%sJoinSQL)\n", tGoName, joinName)
-			joinNames := f.joinNames(x.Table)
-			fmt.Println(joinNames)
-
 			names = append(names, f.params(x.Fields, false))
 
-			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterValues...)..."
+			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterParams...)..."
 		case CursorPagination:
-			joinNames := f.joinNames(x.Table)
-			fmt.Println(joinNames)
-
 			names = append(names, f.params(x.Fields, false))
 
-			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterValues...)..."
+			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterParams...)..."
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
 		}
@@ -2749,56 +2681,60 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field, order st
 			" %s ",
 		}
 
-		var groupbyClause string
-		if len(groupbys) > 0 {
-			groupbyClause = " GROUP BY " + strings.Join(groupbys, ", \n") + " \n %s \n"
-		}
+		groupbyClause := " %s \n"
 
-		buf := strings.Builder{}
-
-		buf.WriteString(`
-		var selectClauses []string
-		var joinClauses []string
-		var groupByClauses []string
-		`)
-		for _, j := range f.joinNames(x) {
-			buf.WriteString(fmt.Sprintf(`
-			if c.joins.%[2]s {
-				selectClauses = append(selectClauses, %[1]sTable%[2]sSelectSQL)
-				joinClauses = append(joinClauses, %[1]sTable%[2]sJoinSQL)
-				groupByClauses = append(groupByClauses, %[1]sTable%[2]sGroupBySQL)
-			}
-			`, f.lower_first(x.GoName), j))
-		}
-		buf.WriteString(`
-		selects := ""
-		if len(selectClauses) > 0 {
-			selects = ", " + strings.Join(selectClauses, ",\n") + " "
-		}
-		joins := ""
-		if len(joinClauses) > 0 {
-			joins = ", " + strings.Join(joinClauses, ",\n") + " "
-		}
-		groupbys := ""
-		if len(groupByClauses) > 0 {
-			groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
-		}
-		`)
+		buf := f.sqlstrBase(x)
 
 		if tableHasDeletedAt {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, filters, selects, joins, groupbys, c.deletedAt)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins, filters, c.deletedAt, groupbys)",
 				strings.Join(lines, "` +\n\t `"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
 				groupbyClause,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 			))
 		} else {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s `, filters, selects, joins, groupbys)", strings.Join(lines, "` +\n\t `")+groupbyClause+" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t")))
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, groupbys)",
+				strings.Join(lines, "` +\n\t `"),
+				groupbyClause,
+				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
+			))
 		}
 
 		return buf.String()
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
+}
+
+func (f *Funcs) sqlstrBase(x Table) *strings.Builder {
+	buf := &strings.Builder{}
+
+	buf.WriteString(`
+		var selectClauses []string
+		var joinClauses []string
+		var groupByClauses []string
+		`)
+	for _, j := range f.joinNames(x) {
+		buf.WriteString(fmt.Sprintf(`
+			if c.joins.%[2]s {
+				selectClauses = append(selectClauses, %[1]sTable%[2]sSelectSQL)
+				joinClauses = append(joinClauses, %[1]sTable%[2]sJoinSQL)
+				groupByClauses = append(groupByClauses, %[1]sTable%[2]sGroupBySQL)
+			}
+			`, f.lower_first(x.GoName), j))
+	}
+	buf.WriteString(`
+		selects := ""
+		if len(selectClauses) > 0 {
+			selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+		}
+		joins := strings.Join(joinClauses, " \n ") + " "
+		groupbys := ""
+		if len(groupByClauses) > 0 {
+			groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		}
+		`)
+
+	return buf
 }
 
 func mainGroupByFields(x Table, f *Funcs, funcs template.FuncMap) []string {
@@ -3051,10 +2987,9 @@ left join {{.Schema}}{{.JoinTable}} as {{ .Alias}}_{{.JoinTableAlias}} on {{ .Al
 
 // sqlstr_index builds a index fields.
 func (f *Funcs) sqlstr_index(v any, tables Tables) string {
-	var groupbys []string
 	switch x := v.(type) {
 	case Index:
-		var filters, fields, joins []string
+		var filters, fields []string
 
 		var tableHasDeletedAt bool
 		for _, field := range x.Table.Fields {
@@ -3095,27 +3030,30 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 
 		lines := []string{
 			"SELECT ",
-			strings.Join(fields, ",\n") + " ",
-			"FROM " + f.schemafn(x.Table.SQLName) + " ",
-			strings.Join(joins, "\n"),
+			strings.Join(fields, ",\n") + " %s ",
+			"FROM " + f.schemafn(x.Table.SQLName) + " %s ",
 			" WHERE " + strings.Join(filters, " AND "),
 			" %s ",
 		}
 
-		var groupbyClause string
-		if len(groupbys) > 0 {
-			groupbyClause = " GROUP BY \n" + strings.Join(groupbys, ", \n")
-		}
+		groupbyClause := " %s \n"
+
+		buf := f.sqlstrBase(x.Table)
 
 		if tableHasDeletedAt {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s %s`, filters, c.deletedAt)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, c.deletedAt, groupbys)",
 				strings.Join(lines, "` +\n\t `"),
-				fmt.Sprintf(" AND %s.deleted_at is %%s ", x.Table.SQLName),
+				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
 				groupbyClause,
-			)
+			))
 		} else {
-			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s `, filters)", strings.Join(lines, "` +\n\t `")+groupbyClause)
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s`, selects, joins, filters, groupbys)",
+				strings.Join(lines, "` +\n\t `"),
+				groupbyClause,
+			))
 		}
+
+		return buf.String()
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
 }

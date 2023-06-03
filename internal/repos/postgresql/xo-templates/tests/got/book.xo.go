@@ -309,14 +309,14 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -354,15 +354,12 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -370,16 +367,14 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 books.name %s `+
 		`FROM xo_tests.books %s `+
 		` WHERE books.book_id > $1`+
-		` %s  GROUP BY books.book_id, 
-books.name 
- %s 
- ORDER BY 
-		book_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		book_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/db.Query: %w", err))
 	}
@@ -405,14 +400,14 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -450,15 +445,12 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -466,16 +458,14 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 books.name %s `+
 		`FROM xo_tests.books %s `+
 		` WHERE books.book_id < $1`+
-		` %s  GROUP BY books.book_id, 
-books.name 
- %s 
- ORDER BY 
-		book_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		book_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/db.Query: %w", err))
 	}
@@ -503,14 +493,14 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -518,19 +508,57 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookGroupBySQL)
+	}
+
+	if c.joins.AuthorsBookUsers {
+		selectClauses = append(selectClauses, bookTableAuthorsBookUsersSelectSQL)
+		joinClauses = append(joinClauses, bookTableAuthorsBookUsersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableAuthorsBookUsersGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, bookTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, bookTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.Sellers {
+		selectClauses = append(selectClauses, bookTableSellersSelectSQL)
+		joinClauses = append(joinClauses, bookTableSellersJoinSQL)
+		groupByClauses = append(groupByClauses, bookTableSellersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`books.book_id,
-books.name `+
-		`FROM xo_tests.books `+
-		``+
+books.name %s `+
+		`FROM xo_tests.books %s `+
 		` WHERE books.book_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", err))
 	}

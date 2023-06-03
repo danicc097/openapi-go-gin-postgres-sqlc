@@ -577,15 +577,12 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -606,29 +603,14 @@ users.updated_at,
 users.deleted_at %s `+
 		`FROM public.users %s `+
 		` WHERE users.created_at > $1`+
-		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
-users.username, 
-users.email, 
-users.first_name, 
-users.last_name, 
-users.full_name, 
-users.external_id, 
-users.api_key_id, 
-users.scopes, 
-users.role_rank, 
-users.has_personal_notifications, 
-users.has_global_notifications, 
-users.created_at, 
-users.updated_at, 
-users.deleted_at 
- %s 
+		` %s   AND users.deleted_at is %s  %s 
   ORDER BY 
-		created_at Asc`, filters, selects, joins, groupbys, c.deletedAt)
+		created_at Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
@@ -723,15 +705,12 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -752,29 +731,14 @@ users.updated_at,
 users.deleted_at %s `+
 		`FROM public.users %s `+
 		` WHERE users.created_at < $1`+
-		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
-users.username, 
-users.email, 
-users.first_name, 
-users.last_name, 
-users.full_name, 
-users.external_id, 
-users.api_key_id, 
-users.scopes, 
-users.role_rank, 
-users.has_personal_notifications, 
-users.has_global_notifications, 
-users.created_at, 
-users.updated_at, 
-users.deleted_at 
- %s 
+		` %s   AND users.deleted_at is %s  %s 
   ORDER BY 
-		created_at Desc`, filters, selects, joins, groupbys, c.deletedAt)
+		created_at Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
 	}
@@ -817,6 +781,68 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...U
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -832,17 +858,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at `+
-		`FROM public.users `+
-		``+
+users.deleted_at %s `+
+		`FROM public.users %s `+
 		` WHERE users.created_at = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByCreatedAt/Query: %w", err))
 	}
@@ -888,6 +914,68 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -903,17 +991,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at `+
-		`FROM public.users `+
-		``+
+users.deleted_at %s `+
+		`FROM public.users %s `+
 		` WHERE users.created_at = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -957,6 +1045,68 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -972,17 +1122,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at `+
-		`FROM public.users `+
-		``+
+users.deleted_at %s `+
+		`FROM public.users %s `+
 		` WHERE users.deleted_at = $1 AND (deleted_at IS NOT NULL)`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByDeletedAt/Query: %w", err))
 	}
@@ -1028,6 +1178,68 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1043,17 +1255,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at `+
-		`FROM public.users `+
-		``+
+users.deleted_at %s `+
+		`FROM public.users %s `+
 		` WHERE users.email = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, email)
-	rows, err := db.Query(ctx, sqlstr, append([]any{email}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{email}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
 	}
@@ -1097,6 +1309,68 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1112,17 +1386,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at `+
-		`FROM public.users `+
-		``+
+users.deleted_at %s `+
+		`FROM public.users %s `+
 		` WHERE users.external_id = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, externalID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{externalID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{externalID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
 	}
@@ -1166,6 +1440,68 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1181,17 +1517,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at `+
-		`FROM public.users `+
-		``+
+users.deleted_at %s `+
+		`FROM public.users %s `+
 		` WHERE users.user_id = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
@@ -1235,6 +1571,68 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1250,17 +1648,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at `+
-		`FROM public.users `+
-		``+
+users.deleted_at %s `+
+		`FROM public.users %s `+
 		` WHERE users.updated_at = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{updatedAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{updatedAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/Query: %w", err))
 	}
@@ -1306,6 +1704,68 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.UserNotifications {
+		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
+		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
@@ -1321,17 +1781,17 @@ users.has_personal_notifications,
 users.has_global_notifications,
 users.created_at,
 users.updated_at,
-users.deleted_at `+
-		`FROM public.users `+
-		``+
+users.deleted_at %s `+
+		`FROM public.users %s `+
 		` WHERE users.username = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, username)
-	rows, err := db.Query(ctx, sqlstr, append([]any{username}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{username}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))
 	}

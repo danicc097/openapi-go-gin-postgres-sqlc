@@ -302,15 +302,12 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -322,20 +319,14 @@ work_item_comments.created_at,
 work_item_comments.updated_at %s `+
 		`FROM public.work_item_comments %s `+
 		` WHERE work_item_comments.work_item_comment_id > $1`+
-		` %s  GROUP BY work_item_comments.work_item_comment_id, 
-work_item_comments.work_item_id, 
-work_item_comments.user_id, 
-work_item_comments.message, 
-work_item_comments.created_at, 
-work_item_comments.updated_at 
- %s 
- ORDER BY 
-		work_item_comment_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		work_item_comment_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/db.Query: %w", err))
 	}
@@ -394,15 +385,12 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -414,20 +402,14 @@ work_item_comments.created_at,
 work_item_comments.updated_at %s `+
 		`FROM public.work_item_comments %s `+
 		` WHERE work_item_comments.work_item_comment_id < $1`+
-		` %s  GROUP BY work_item_comments.work_item_comment_id, 
-work_item_comments.work_item_id, 
-work_item_comments.user_id, 
-work_item_comments.message, 
-work_item_comments.created_at, 
-work_item_comments.updated_at 
- %s 
- ORDER BY 
-		work_item_comment_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		work_item_comment_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/db.Query: %w", err))
 	}
@@ -470,23 +452,49 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, workItemCommentTableUserSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, workItemCommentTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
 work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at `+
-		`FROM public.work_item_comments `+
-		``+
+work_item_comments.updated_at %s `+
+		`FROM public.work_item_comments %s `+
 		` WHERE work_item_comments.work_item_comment_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemCommentID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
 	}
@@ -530,23 +538,49 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, workItemCommentTableUserSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, workItemCommentTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemCommentTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemCommentTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_item_comments.work_item_comment_id,
 work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at `+
-		`FROM public.work_item_comments `+
-		``+
+work_item_comments.updated_at %s `+
+		`FROM public.work_item_comments %s `+
 		` WHERE work_item_comments.work_item_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/Query: %w", err))
 	}

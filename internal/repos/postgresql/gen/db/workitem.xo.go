@@ -565,15 +565,12 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -591,26 +588,14 @@ work_items.updated_at,
 work_items.deleted_at %s `+
 		`FROM public.work_items %s `+
 		` WHERE work_items.work_item_id > $1`+
-		` %s   AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
-work_items.title, 
-work_items.description, 
-work_items.work_item_type_id, 
-work_items.metadata, 
-work_items.team_id, 
-work_items.kanban_step_id, 
-work_items.closed, 
-work_items.target_date, 
-work_items.created_at, 
-work_items.updated_at, 
-work_items.deleted_at 
- %s 
+		` %s   AND work_items.deleted_at is %s  %s 
   ORDER BY 
-		work_item_id Asc`, filters, selects, joins, groupbys, c.deletedAt)
+		work_item_id Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
 	}
@@ -711,15 +696,12 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -737,26 +719,14 @@ work_items.updated_at,
 work_items.deleted_at %s `+
 		`FROM public.work_items %s `+
 		` WHERE work_items.work_item_id < $1`+
-		` %s   AND work_items.deleted_at is %s  GROUP BY work_items.work_item_id, 
-work_items.title, 
-work_items.description, 
-work_items.work_item_type_id, 
-work_items.metadata, 
-work_items.team_id, 
-work_items.kanban_step_id, 
-work_items.closed, 
-work_items.target_date, 
-work_items.created_at, 
-work_items.updated_at, 
-work_items.deleted_at 
- %s 
+		` %s   AND work_items.deleted_at is %s  %s 
   ORDER BY 
-		work_item_id Desc`, filters, selects, joins, groupbys, c.deletedAt)
+		work_item_id Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
 	}
@@ -799,6 +769,74 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoTwoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
+	}
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, workItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, workItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, workItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, workItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, workItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, workItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTypeGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -811,17 +849,17 @@ work_items.closed,
 work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
-work_items.deleted_at `+
-		`FROM public.work_items `+
-		``+
+work_items.deleted_at %s `+
+		`FROM public.work_items %s `+
 		` WHERE work_items.deleted_at = $1 AND (deleted_at IS NOT NULL)`+
-		` %s   AND work_items.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND work_items.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/Query: %w", err))
 	}
@@ -867,6 +905,74 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoTwoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
+	}
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, workItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, workItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, workItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, workItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, workItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, workItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTypeGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -879,17 +985,17 @@ work_items.closed,
 work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
-work_items.deleted_at `+
-		`FROM public.work_items `+
-		``+
+work_items.deleted_at %s `+
+		`FROM public.work_items %s `+
 		` WHERE work_items.work_item_id = $1`+
-		` %s   AND work_items.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND work_items.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -933,6 +1039,74 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemS
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoTwoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
+	}
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, workItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, workItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, workItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, workItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, workItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, workItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTypeGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
@@ -945,17 +1119,17 @@ work_items.closed,
 work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
-work_items.deleted_at `+
-		`FROM public.work_items `+
-		``+
+work_items.deleted_at %s `+
+		`FROM public.work_items %s `+
 		` WHERE work_items.team_id = $1`+
-		` %s   AND work_items.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND work_items.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/Query: %w", err))
 	}

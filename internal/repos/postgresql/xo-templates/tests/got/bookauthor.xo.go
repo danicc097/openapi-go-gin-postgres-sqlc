@@ -282,14 +282,14 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -297,20 +297,46 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
-book_authors.pseudonym `+
-		`FROM xo_tests.book_authors `+
-		``+
+book_authors.pseudonym %s `+
+		`FROM xo_tests.book_authors %s `+
 		` WHERE book_authors.book_id = $1 AND book_authors.author_id = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/db.Query: %w", err))
 	}
@@ -339,14 +365,14 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -354,20 +380,46 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
-book_authors.pseudonym `+
-		`FROM xo_tests.book_authors `+
-		``+
+book_authors.pseudonym %s `+
+		`FROM xo_tests.book_authors %s `+
 		` WHERE book_authors.book_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
 	}
@@ -398,14 +450,14 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -413,20 +465,46 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, bookAuthorTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, bookAuthorTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, bookAuthorTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, bookAuthorTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`book_authors.book_id,
 book_authors.author_id,
-book_authors.pseudonym `+
-		`FROM xo_tests.book_authors `+
-		``+
+book_authors.pseudonym %s `+
+		`FROM xo_tests.book_authors %s `+
 		` WHERE book_authors.author_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
 	}

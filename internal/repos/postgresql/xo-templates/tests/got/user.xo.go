@@ -465,14 +465,14 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -534,15 +534,12 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -553,19 +550,14 @@ users.created_at,
 users.deleted_at %s `+
 		`FROM xo_tests.users %s `+
 		` WHERE users.created_at > $1`+
-		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
-users.name, 
-users.api_key_id, 
-users.created_at, 
-users.deleted_at 
- %s 
+		` %s   AND users.deleted_at is %s  %s 
   ORDER BY 
-		created_at Asc`, filters, selects, joins, groupbys, c.deletedAt)
+		created_at Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
 	}
@@ -591,14 +583,14 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -660,15 +652,12 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -679,19 +668,14 @@ users.created_at,
 users.deleted_at %s `+
 		`FROM xo_tests.users %s `+
 		` WHERE users.created_at < $1`+
-		` %s   AND users.deleted_at is %s  GROUP BY users.user_id, 
-users.name, 
-users.api_key_id, 
-users.created_at, 
-users.deleted_at 
- %s 
+		` %s   AND users.deleted_at is %s  %s 
   ORDER BY 
-		created_at Desc`, filters, selects, joins, groupbys, c.deletedAt)
+		created_at Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
 	}
@@ -719,14 +703,14 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -734,22 +718,84 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, userTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.BooksAuthorBooks {
+		selectClauses = append(selectClauses, userTableBooksAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksAuthorBooksGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, userTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, userTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.BooksSeller {
+		selectClauses = append(selectClauses, userTableBooksSellerSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksSellerJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksSellerGroupBySQL)
+	}
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
 users.api_key_id,
 users.created_at,
-users.deleted_at `+
-		`FROM xo_tests.users `+
-		``+
+users.deleted_at %s `+
+		`FROM xo_tests.users %s `+
 		` WHERE users.created_at = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -778,14 +824,14 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -793,22 +839,84 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, userTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.BooksAuthorBooks {
+		selectClauses = append(selectClauses, userTableBooksAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksAuthorBooksGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, userTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, userTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.BooksSeller {
+		selectClauses = append(selectClauses, userTableBooksSellerSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksSellerJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksSellerGroupBySQL)
+	}
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
 users.api_key_id,
 users.created_at,
-users.deleted_at `+
-		`FROM xo_tests.users `+
-		``+
+users.deleted_at %s `+
+		`FROM xo_tests.users %s `+
 		` WHERE users.name = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByName/db.Query: %w", err))
 	}
@@ -837,14 +945,14 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -852,22 +960,84 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, userTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.BooksAuthorBooks {
+		selectClauses = append(selectClauses, userTableBooksAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksAuthorBooksGroupBySQL)
+	}
+
+	if c.joins.BookReviews {
+		selectClauses = append(selectClauses, userTableBookReviewsSelectSQL)
+		joinClauses = append(joinClauses, userTableBookReviewsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBookReviewsGroupBySQL)
+	}
+
+	if c.joins.BooksSeller {
+		selectClauses = append(selectClauses, userTableBooksSellerSelectSQL)
+		joinClauses = append(joinClauses, userTableBooksSellerJoinSQL)
+		groupByClauses = append(groupByClauses, userTableBooksSellerGroupBySQL)
+	}
+
+	if c.joins.NotificationsReceiver {
+		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
+	}
+
+	if c.joins.NotificationsSender {
+		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
+		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
+		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
+	}
+
+	if c.joins.UserAPIKey {
+		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
+		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
+		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
+	}
+
+	if c.joins.WorkItemsAssignedUser {
+		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
+		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
+		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.name,
 users.api_key_id,
 users.created_at,
-users.deleted_at `+
-		`FROM xo_tests.users `+
-		``+
+users.deleted_at %s `+
+		`FROM xo_tests.users %s `+
 		` WHERE users.user_id = $1`+
-		` %s   AND users.deleted_at is %s  `, filters, c.deletedAt)
+		` %s   AND users.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}

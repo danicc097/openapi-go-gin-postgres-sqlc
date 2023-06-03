@@ -240,14 +240,14 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -273,15 +273,12 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -291,18 +288,14 @@ notifications.sender,
 notifications.receiver %s `+
 		`FROM xo_tests.notifications %s `+
 		` WHERE notifications.notification_id > $1`+
-		` %s  GROUP BY notifications.notification_id, 
-notifications.body, 
-notifications.sender, 
-notifications.receiver 
- %s 
- ORDER BY 
-		notification_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		notification_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/db.Query: %w", err))
 	}
@@ -328,14 +321,14 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -361,15 +354,12 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -379,18 +369,14 @@ notifications.sender,
 notifications.receiver %s `+
 		`FROM xo_tests.notifications %s `+
 		` WHERE notifications.notification_id < $1`+
-		` %s  GROUP BY notifications.notification_id, 
-notifications.body, 
-notifications.sender, 
-notifications.receiver 
- %s 
- ORDER BY 
-		notification_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		notification_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/db.Query: %w", err))
 	}
@@ -418,14 +404,14 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -433,21 +419,47 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.UserReceiver {
+		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
+	}
+
+	if c.joins.UserSender {
+		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
 notifications.body,
 notifications.sender,
-notifications.receiver `+
-		`FROM xo_tests.notifications `+
-		``+
+notifications.receiver %s `+
+		`FROM xo_tests.notifications %s `+
 		` WHERE notifications.notification_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
@@ -476,14 +488,14 @@ func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ..
 	}
 
 	var filterClauses []string
-	var filterValues []any
+	var filterParams []any
 	for filterTmpl, params := range c.filters {
 		filter := filterTmpl
 		for strings.Contains(filter, "$i") {
 			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
 		}
 		filterClauses = append(filterClauses, filter)
-		filterValues = append(filterValues, params...)
+		filterParams = append(filterParams, params...)
 	}
 
 	filters := ""
@@ -491,21 +503,47 @@ func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ..
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.UserReceiver {
+		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
+	}
+
+	if c.joins.UserSender {
+		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
+		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
+		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`notifications.notification_id,
 notifications.body,
 notifications.sender,
-notifications.receiver `+
-		`FROM xo_tests.notifications `+
-		``+
+notifications.receiver %s `+
+		`FROM xo_tests.notifications %s `+
 		` WHERE notifications.sender = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, sender)
-	rows, err := db.Query(ctx, sqlstr, append([]any{sender}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{sender}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/Query: %w", err))
 	}

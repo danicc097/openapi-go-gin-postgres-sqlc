@@ -289,15 +289,12 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -308,19 +305,14 @@ activities.description,
 activities.is_productive %s `+
 		`FROM public.activities %s `+
 		` WHERE activities.activity_id > $1`+
-		` %s  GROUP BY activities.activity_id, 
-activities.project_id, 
-activities.name, 
-activities.description, 
-activities.is_productive 
- %s 
- ORDER BY 
-		activity_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		activity_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", err))
 	}
@@ -379,15 +371,12 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -398,19 +387,14 @@ activities.description,
 activities.is_productive %s `+
 		`FROM public.activities %s `+
 		` WHERE activities.project_id > $1`+
-		` %s  GROUP BY activities.activity_id, 
-activities.project_id, 
-activities.name, 
-activities.description, 
-activities.is_productive 
- %s 
- ORDER BY 
-		project_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", err))
 	}
@@ -469,15 +453,12 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -488,19 +469,14 @@ activities.description,
 activities.is_productive %s `+
 		`FROM public.activities %s `+
 		` WHERE activities.activity_id < $1`+
-		` %s  GROUP BY activities.activity_id, 
-activities.project_id, 
-activities.name, 
-activities.description, 
-activities.is_productive 
- %s 
- ORDER BY 
-		activity_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		activity_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", err))
 	}
@@ -559,15 +535,12 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -578,19 +551,14 @@ activities.description,
 activities.is_productive %s `+
 		`FROM public.activities %s `+
 		` WHERE activities.project_id < $1`+
-		` %s  GROUP BY activities.activity_id, 
-activities.project_id, 
-activities.name, 
-activities.description, 
-activities.is_productive 
- %s 
- ORDER BY 
-		project_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", err))
 	}
@@ -633,22 +601,48 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive `+
-		`FROM public.activities `+
-		``+
+activities.is_productive %s `+
+		`FROM public.activities %s `+
 		` WHERE activities.name = $1 AND activities.project_id = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
 	}
@@ -692,22 +686,48 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive `+
-		`FROM public.activities `+
-		``+
+activities.is_productive %s `+
+		`FROM public.activities %s `+
 		` WHERE activities.name = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
@@ -753,22 +773,48 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive `+
-		`FROM public.activities `+
-		``+
+activities.is_productive %s `+
+		`FROM public.activities %s `+
 		` WHERE activities.project_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
@@ -814,22 +860,48 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Project {
+		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
+		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`activities.activity_id,
 activities.project_id,
 activities.name,
 activities.description,
-activities.is_productive `+
-		`FROM public.activities `+
-		``+
+activities.is_productive %s `+
+		`FROM public.activities %s `+
 		` WHERE activities.activity_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, activityID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))
 	}

@@ -225,19 +225,45 @@ func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...Use
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTeamTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
-user_team.member `+
-		`FROM public.user_team `+
-		``+
+user_team.member %s `+
+		`FROM public.user_team %s `+
 		` WHERE user_team.member = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, member)
-	rows, err := db.Query(ctx, sqlstr, append([]any{member}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{member}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/Query: %w", err))
 	}
@@ -283,19 +309,45 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTeamTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
-user_team.member `+
-		`FROM public.user_team `+
-		``+
+user_team.member %s `+
+		`FROM public.user_team %s `+
 		` WHERE user_team.member = $1 AND user_team.team_id = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, member, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{member, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{member, teamID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/db.Query: %w", err))
 	}
@@ -339,19 +391,45 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTeamTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
-user_team.member `+
-		`FROM public.user_team `+
-		``+
+user_team.member %s `+
+		`FROM public.user_team %s `+
 		` WHERE user_team.team_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/Query: %w", err))
 	}
@@ -397,19 +475,45 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.TeamsMember {
+		selectClauses = append(selectClauses, userTeamTableTeamsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableTeamsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
+	}
+
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_team.team_id,
-user_team.member `+
-		`FROM public.user_team `+
-		``+
+user_team.member %s `+
+		`FROM public.user_team %s `+
 		` WHERE user_team.team_id = $1 AND user_team.member = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID, member)
-	rows, err := db.Query(ctx, sqlstr, append([]any{teamID, member}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID, member}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/Query: %w", err))
 	}

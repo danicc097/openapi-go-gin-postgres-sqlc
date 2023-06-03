@@ -277,15 +277,12 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -295,18 +292,14 @@ user_api_keys.expires_on,
 user_api_keys.user_id %s `+
 		`FROM public.user_api_keys %s `+
 		` WHERE user_api_keys.user_api_key_id > $1`+
-		` %s  GROUP BY user_api_keys.user_api_key_id, 
-user_api_keys.api_key, 
-user_api_keys.expires_on, 
-user_api_keys.user_id 
- %s 
- ORDER BY 
-		user_api_key_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		user_api_key_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/db.Query: %w", err))
 	}
@@ -359,15 +352,12 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -377,18 +367,14 @@ user_api_keys.expires_on,
 user_api_keys.user_id %s `+
 		`FROM public.user_api_keys %s `+
 		` WHERE user_api_keys.user_api_key_id < $1`+
-		` %s  GROUP BY user_api_keys.user_api_key_id, 
-user_api_keys.api_key, 
-user_api_keys.expires_on, 
-user_api_keys.user_id 
- %s 
- ORDER BY 
-		user_api_key_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		user_api_key_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/db.Query: %w", err))
 	}
@@ -431,21 +417,41 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id `+
-		`FROM public.user_api_keys `+
-		``+
+user_api_keys.user_id %s `+
+		`FROM public.user_api_keys %s `+
 		` WHERE user_api_keys.api_key = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, apiKey)
-	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
 	}
@@ -489,21 +495,41 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id `+
-		`FROM public.user_api_keys `+
-		``+
+user_api_keys.user_id %s `+
+		`FROM public.user_api_keys %s `+
 		` WHERE user_api_keys.user_api_key_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
 	}
@@ -547,21 +573,41 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id `+
-		`FROM public.user_api_keys `+
-		``+
+user_api_keys.user_id %s `+
+		`FROM public.user_api_keys %s `+
 		` WHERE user_api_keys.user_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))
 	}

@@ -262,15 +262,12 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -278,16 +275,14 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 demo_two_work_items.custom_date_for_project_2 %s `+
 		`FROM public.demo_two_work_items %s `+
 		` WHERE demo_two_work_items.work_item_id > $1`+
-		` %s  GROUP BY demo_two_work_items.work_item_id, 
-demo_two_work_items.custom_date_for_project_2 
- %s 
- ORDER BY 
-		work_item_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Asc/db.Query: %w", err))
 	}
@@ -340,15 +335,12 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -356,16 +348,14 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 demo_two_work_items.custom_date_for_project_2 %s `+
 		`FROM public.demo_two_work_items %s `+
 		` WHERE demo_two_work_items.work_item_id < $1`+
-		` %s  GROUP BY demo_two_work_items.work_item_id, 
-demo_two_work_items.custom_date_for_project_2 
- %s 
- ORDER BY 
-		work_item_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Desc/db.Query: %w", err))
 	}
@@ -408,19 +398,39 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`demo_two_work_items.work_item_id,
-demo_two_work_items.custom_date_for_project_2 `+
-		`FROM public.demo_two_work_items `+
-		``+
+demo_two_work_items.custom_date_for_project_2 %s `+
+		`FROM public.demo_two_work_items %s `+
 		` WHERE demo_two_work_items.work_item_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/db.Query: %w", err))
 	}

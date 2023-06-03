@@ -366,15 +366,12 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -388,22 +385,14 @@ time_entries.start,
 time_entries.duration_minutes %s `+
 		`FROM public.time_entries %s `+
 		` WHERE time_entries.time_entry_id > $1`+
-		` %s  GROUP BY time_entries.time_entry_id, 
-time_entries.work_item_id, 
-time_entries.activity_id, 
-time_entries.team_id, 
-time_entries.user_id, 
-time_entries.comment, 
-time_entries.start, 
-time_entries.duration_minutes 
- %s 
- ORDER BY 
-		time_entry_id Asc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		time_entry_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Asc/db.Query: %w", err))
 	}
@@ -474,15 +463,12 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 
 	selects := ""
 	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, ",\n") + " "
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
-	joins := ""
-	if len(joinClauses) > 0 {
-		joins = ", " + strings.Join(joinClauses, ",\n") + " "
-	}
+	joins := strings.Join(joinClauses, " \n ") + " "
 	groupbys := ""
 	if len(groupByClauses) > 0 {
-		groupbys = ", " + strings.Join(groupByClauses, ",\n") + " "
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT `+
@@ -496,22 +482,14 @@ time_entries.start,
 time_entries.duration_minutes %s `+
 		`FROM public.time_entries %s `+
 		` WHERE time_entries.time_entry_id < $1`+
-		` %s  GROUP BY time_entries.time_entry_id, 
-time_entries.work_item_id, 
-time_entries.activity_id, 
-time_entries.team_id, 
-time_entries.user_id, 
-time_entries.comment, 
-time_entries.start, 
-time_entries.duration_minutes 
- %s 
- ORDER BY 
-		time_entry_id Desc `, filters, selects, joins, groupbys)
+		` %s   %s 
+  ORDER BY 
+		time_entry_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Desc/db.Query: %w", err))
 	}
@@ -554,6 +532,44 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activity {
+		selectClauses = append(selectClauses, timeEntryTableActivitySelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableActivityJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableActivityGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, timeEntryTableTeamSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableTeamGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, timeEntryTableUserSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, timeEntryTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`time_entries.time_entry_id,
 time_entries.work_item_id,
@@ -562,17 +578,17 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes `+
-		`FROM public.time_entries `+
-		``+
+time_entries.duration_minutes %s `+
+		`FROM public.time_entries %s `+
 		` WHERE time_entries.time_entry_id = $1`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, timeEntryID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", err))
 	}
@@ -616,6 +632,44 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activity {
+		selectClauses = append(selectClauses, timeEntryTableActivitySelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableActivityJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableActivityGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, timeEntryTableTeamSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableTeamGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, timeEntryTableUserSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, timeEntryTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`time_entries.time_entry_id,
 time_entries.work_item_id,
@@ -624,17 +678,17 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes `+
-		`FROM public.time_entries `+
-		``+
+time_entries.duration_minutes %s `+
+		`FROM public.time_entries %s `+
 		` WHERE time_entries.user_id = $1 AND time_entries.team_id = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID, teamID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/Query: %w", err))
 	}
@@ -680,6 +734,44 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Activity {
+		selectClauses = append(selectClauses, timeEntryTableActivitySelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableActivityJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableActivityGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, timeEntryTableTeamSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableTeamGroupBySQL)
+	}
+
+	if c.joins.User {
+		selectClauses = append(selectClauses, timeEntryTableUserSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableUserGroupBySQL)
+	}
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, timeEntryTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, timeEntryTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, timeEntryTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`time_entries.time_entry_id,
 time_entries.work_item_id,
@@ -688,17 +780,17 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes `+
-		`FROM public.time_entries `+
-		``+
+time_entries.duration_minutes %s `+
+		`FROM public.time_entries %s `+
 		` WHERE time_entries.work_item_id = $1 AND time_entries.team_id = $2`+
-		` %s  `, filters)
+		` %s   %s 
+`, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, teamID}, filterValues...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, teamID}, filterParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/Query: %w", err))
 	}
