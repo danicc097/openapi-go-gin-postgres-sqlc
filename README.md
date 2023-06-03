@@ -138,9 +138,6 @@ Simplified:
 
 ## TODOs
 
-- Pgx v5 db struct tag scanning and switch to json
-  camel (pending release)
-
 - Meaningful project name.
 
 - System design docs/diagrams.
@@ -151,21 +148,3 @@ Simplified:
   Can generate a mock with e.g.
   [openapi-mock](https://github.com/muonsoft/openapi-mock).
 
-- For parsing kinopenapi validation errors to our own more user
-  friendly ValidationError check out
-  https://github.com/getkin/kin-openapi/pull/197
-  as well as
-  unpack_errors_test.go + adapt the generic `convertError` to our needs
-  until data validation is updated:
-  https://github.com/getkin/kin-openapi/pull/412
-
-- frontend miscellanea:
-  1. codegen from oas:
-  - ~~ts client (openapitools)~~ keep away from this project
-  - react-query components (fabien0102/openapi-codegen)
-  - React Query hooks, Axios requests and Typescript types (rametta/rapini) generation
-  - orval react-query looks promising: https://github.com/anymaniax/orval/tree/master/samples/react-query
-
-  1. state management:
-    - zustand + react-query should by far cover all needs. Data will be heavily
-      dependent on backend.
