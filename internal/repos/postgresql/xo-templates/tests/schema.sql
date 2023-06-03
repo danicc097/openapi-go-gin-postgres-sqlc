@@ -75,6 +75,10 @@ create table xo_tests.book_sellers (
   , foreign key (book_id) references xo_tests.books (book_id) on delete cascade
 );
 
+create index on xo_tests.book_sellers (book_id , seller);
+
+create index on xo_tests.book_sellers (seller , book_id);
+
 comment on column xo_tests.book_sellers.seller is '"cardinality":M2M';
 
 comment on column xo_tests.book_sellers.book_id is '"cardinality":M2M';
