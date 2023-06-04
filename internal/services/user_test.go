@@ -303,7 +303,6 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	}
 }
 
-// TODO use servicetestutil, and rename all that to servicetestutil instead
 // dont use repos here, we want the actual services logic
 func createTestUsers(t *testing.T) testUsers {
 	t.Helper()
