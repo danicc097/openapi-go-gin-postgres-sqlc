@@ -40,10 +40,10 @@ func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem, w
 }
 
 // ByID gets a work item by ID.
-func (a *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.ByID").End()
 
-	wi, err := a.demowiRepo.ByID(ctx, d, id)
+	wi, err := w.demowiRepo.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
 	}
@@ -52,16 +52,16 @@ func (a *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkI
 }
 
 // Create creates a new work item.
-func (a *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.Create").End()
 
-	demoWi, err := a.demowiRepo.Create(ctx, d, params.DemoWorkItemCreateParams)
+	demoWi, err := w.demowiRepo.Create(ctx, d, params.DemoWorkItemCreateParams)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
 	for _, id := range params.TagIDs {
-		err := a.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
+		err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
 			WorkItemTagID: id,
 			WorkItemID:    demoWi.WorkItemID,
 		})
@@ -74,7 +74,7 @@ func (a *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 	}
 
 	for _, m := range params.Members {
-		err := a.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
+		err := w.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
 			AssignedUser: m.UserID,
 			WorkItemID:   demoWi.WorkItemID,
 			Role:         m.Role,
@@ -82,31 +82,28 @@ func (a *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		var ierr *internal.Error
 		if err != nil {
 			if errors.As(err, &ierr); ierr.Code() != internal.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("db.CreateWorkItemWorkItemAssignedUser: %w", err)
+				return nil, fmt.Errorf("a.AssignMember: %w", err)
 			}
 		}
 	}
 
+	// TODO rest response with non pointer required joins as usual, so that it is always up to date
+	// (else tests - with response validation - will fail)
+	// response validation could be disabled in prod for better availability in place of strictness
 	opts := db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true, AssignedUsers: true, WorkItemTags: true})
-	wi, err := a.demowiRepo.ByID(ctx, d, demoWi.WorkItemID, opts)
+	wi, err := w.demowiRepo.ByID(ctx, d, demoWi.WorkItemID, opts)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
 	}
-	fmt.Printf("wi.WorkItemAssignedUsersJoin: %+v\n", wi.WorkItemAssignedUsersJoin)
-	fmt.Printf("wi.WorkItemTagsJoin: %+v\n", wi.WorkItemWorkItemTagsJoin)
-	fmt.Printf("wi.DemoWorkItemJoin: %+v\n", wi.DemoWorkItemJoin)
-	// TODO now query workitem.xo.go joining with tags, members, demoWorkItem, etc... and return that instead.
-	// all work_item_***_project.go services must return db.WorkItem which has specific project joins, which
-	// allows us to share the same generic logic and extend it based on current project, etc.
 
 	return wi, nil
 }
 
 // Update updates an existing work item.
-func (a *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.Update").End()
 
-	wi, err := a.demowiRepo.Update(ctx, d, id, params)
+	wi, err := w.demowiRepo.Update(ctx, d, id, params)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Update: %w", err)
 	}
@@ -115,10 +112,10 @@ func (a *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 }
 
 // Delete deletes a work item by ID.
-func (a *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.Delete").End()
 
-	wi, err := a.demowiRepo.Delete(ctx, d, id)
+	wi, err := w.demowiRepo.Delete(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Delete: %w", err)
 	}
@@ -126,13 +123,13 @@ func (a *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.Wor
 	return wi, nil
 }
 
-func (a *DemoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
+func (w *DemoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
 	_, err := db.CreateWorkItemWorkItemTag(ctx, d, params)
 
 	return err
 }
 
-func (a *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int64) error {
+func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int64) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
@@ -141,35 +138,35 @@ func (a *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, work
 	return wiwit.Delete(ctx, d)
 }
 
-func (a *DemoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
+func (w *DemoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
 	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
 
 	return err
 }
 
-func (a *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int64) error {
-	wiwit := &db.WorkItemAssignedUser{
+func (w *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int64) error {
+	wim := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
 		WorkItemID:   workItemID,
 	}
 
-	return wiwit.Delete(ctx, d)
+	return wim.Delete(ctx, d)
 }
 
 // repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
 // params for dedicated workItem require workItemID (FK-as-PK)
 // TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
 
-func (a *DemoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+func (w *DemoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
 	// WorkItemsByTeamID with deleted opt, orderby createdAt
 	return []db.WorkItem{}, errors.New("not implemented")
 }
 
-func (a *DemoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+func (w *DemoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
 	// WorkItemsByTeamID with orderby createdAt
 	return []db.WorkItem{}, errors.New("not implemented")
 }
 
-func (a *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
-	return a.demowiRepo.Restore(ctx, d, id)
+func (w *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+	return w.demowiRepo.Restore(ctx, d, id)
 }
