@@ -1449,7 +1449,10 @@ update_spec_with_structs() {
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
-  # NOTE: try to use https://github.com/pkujhd/goloader if we get errors again
+  # NOTE: maybe https://github.com/pkujhd/goloader allows reloading packages at runtime
+  # otherwise maybe yaegi can be used for openapi-go without much fuzz
+  # Only implement the above if there are cases where we cant have compilable state when
+  # building gen-schema at this step, or the workaround is too tedious
   go build -o $BUILD_DIR/gen-schema cmd/gen-schema/main.go # need new PublicStructs compiled
   # go build -buildmode=plugin -o internal/postgen/structs/main.gen.so $GOMOD_PKG/internal/postgen/structs
 
