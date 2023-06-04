@@ -160,14 +160,14 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "user_updated_up_to_same_rank_and_scopes_allowed",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Scopes: pointers.New(services.ScopesByRole[models.RoleManager]),
+					Scopes: pointers.New(authzsvc.DefaultScopes(models.RoleManager)),
 					Role:   pointers.New(models.RoleManager),
 				},
 				id:     testUsers.user.User.UserID.String(),
 				caller: testUsers.manager.User,
 			},
 			want: want{
-				Scopes: services.ScopesByRole[models.RoleManager], // when role is updated scopes are reset, and the ones in params ignored
+				Scopes: authzsvc.DefaultScopes(models.RoleManager), // when role is updated scopes are reset, and the ones in params ignored
 				Rank:   authzsvc.Roles[models.RoleManager].Rank,
 			},
 		},
@@ -197,7 +197,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "can_set_scopes_assigned_to_self_without_role_update",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Scopes: pointers.New(services.ScopesByRole[models.RoleAdmin]),
+					Scopes: pointers.New(authzsvc.DefaultScopes(models.RoleAdmin)),
 				},
 				id:     testUsers.user.User.UserID.String(),
 				caller: testUsers.admin.User,
@@ -265,7 +265,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			},
 			want: want{
 				Rank:   authzsvc.Roles[models.RoleGuest].Rank,
-				Scopes: services.ScopesByRole[models.RoleGuest], // scopes are reset on role change
+				Scopes: authzsvc.DefaultScopes(models.RoleGuest), // scopes are reset on role change
 			},
 		},
 	}

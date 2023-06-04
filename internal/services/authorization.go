@@ -11,8 +11,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// NOTE: openapi Role enum is merely a string enum array for views. Ranks are for internal use.
-
 // Role represents a predefined role that may be required
 // for specific actions regardless of scopes assigned to a user.
 type Role struct {
@@ -38,20 +36,18 @@ var (
 		models.ScopeTestScope,
 	}
 	managerScopes = append(userScopes, models.ScopeWorkItemReview)
-	adminScopes   = append(managerScopes, models.ScopeWorkItemReview)
-)
+	adminScopes   = append(managerScopes, models.ScopeUsersWrite)
 
-// nolint:gochecknoglobals
-// ScopesByRole represents user scopes by role.
-// Scopes are assigned/revoked upon role change (reset completely).
-var ScopesByRole = map[models.Role]models.Scopes{
-	models.RoleGuest:        {},
-	models.RoleUser:         userScopes,
-	models.RoleAdvancedUser: userScopes,
-	models.RoleManager:      managerScopes,
-	models.RoleAdmin:        adminScopes,
-	models.RoleSuperAdmin:   adminScopes,
-}
+	// scopesByRole represents user scopes by role.
+	scopesByRole = map[models.Role]models.Scopes{
+		models.RoleGuest:        {},
+		models.RoleUser:         userScopes,
+		models.RoleAdvancedUser: userScopes,
+		models.RoleManager:      managerScopes,
+		models.RoleAdmin:        adminScopes,
+		models.RoleSuperAdmin:   adminScopes,
+	}
+)
 
 // Authorization represents a service for authorization.
 type Authorization struct {
@@ -143,9 +139,12 @@ func (a *Authorization) HasRequiredScopes(scopes models.Scopes, requiredScopes m
 }
 
 // DefaultScopes returns the default scopes for a role.
-func (a *Authorization) DefaultScopes(role models.Role) (scopes models.Scopes) {
-	if defaultScopes, ok := ScopesByRole[role]; ok {
-		scopes = append(scopes, defaultScopes...)
+// Scopes are assigned/revoked upon role change (reset completely).
+func (a *Authorization) DefaultScopes(role models.Role) models.Scopes {
+	scopes := models.Scopes{}
+
+	if defaultScopes, ok := scopesByRole[role]; ok {
+		scopes = defaultScopes
 	}
 
 	return scopes

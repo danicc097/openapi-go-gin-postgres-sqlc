@@ -99,18 +99,18 @@ func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User)
 }
 
 // ParseToken returns a token string claims.
-func (a *Authentication) ParseToken(ctx context.Context, tokenString string) (*AppClaims, error) {
+func (a *Authentication) ParseToken(ctx context.Context, token string) (*AppClaims, error) {
 	cfg := internal.Config()
-	token, err := jwt.ParseWithClaims(tokenString, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
+	jwtToken, err := jwt.ParseWithClaims(token, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return cfg.SigningKey, nil
 	})
 
-	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+	if _, ok := jwtToken.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, fmt.Errorf("unexpected signing method: %v", jwtToken.Header["alg"])
 	}
 
-	claims, ok := token.Claims.(*AppClaims)
-	if ok && token.Valid {
+	claims, ok := jwtToken.Claims.(*AppClaims)
+	if ok && jwtToken.Valid {
 		fmt.Printf("%v %v", claims.Email, claims.Username)
 	} else {
 		return nil, fmt.Errorf("could not parse token string: %w", err)
