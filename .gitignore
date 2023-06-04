@@ -1,4 +1,5 @@
 .direnv
+**/*.so
 **/build
 .envrc.local
 __debug_bin

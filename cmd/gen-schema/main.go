@@ -14,7 +14,7 @@ import (
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen/structs"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/swaggest/jsonschema-go"
@@ -90,11 +90,11 @@ func main() {
 
 	for _, sn := range structNames {
 		dummyOp := openapi3.Operation{}
-		// TODO we need to compile gen-schema right after PublicStructs file is updated
+		// we need to compile gen-schema right after PublicStructs file is updated
 		// cannot import packages at runtime
 		// if we have an uncompilable state then we need workarounds to compile regardless
-		// UDPATE: use https://pkg.go.dev/plugin
-		st, ok := postgen.PublicStructs[sn]
+		// UDPATE: use https://github.com/pkujhd/goloader instead of plugin pkg which cant reload changed go file at runtime
+		st, ok := structs.PublicStructs[sn]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)
 		}
