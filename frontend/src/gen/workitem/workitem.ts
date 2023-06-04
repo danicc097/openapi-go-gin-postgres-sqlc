@@ -18,38 +18,62 @@ import type {
   UseInfiniteQueryResult,
   QueryKey,
 } from '@tanstack/react-query'
-import type { DbWorkItem, DbWorkItemComment } from '.././model'
+import type {
+  DbWorkItem,
+  RestDemoWorkItemCreateRequest,
+  DbWorkItemComment,
+  RestWorkItemCommentCreateRequest,
+} from '.././model'
 
 /**
  * @summary create workitem
  */
-export const createWorkitem = (options?: AxiosRequestConfig): Promise<AxiosResponse<DbWorkItem>> => {
-  return axios.post(`/workitem/`, undefined, options)
+export const createWorkitem = (
+  restDemoWorkItemCreateRequest: RestDemoWorkItemCreateRequest,
+  options?: AxiosRequestConfig,
+): Promise<AxiosResponse<DbWorkItem>> => {
+  return axios.post(`/workitem/`, restDemoWorkItemCreateRequest, options)
 }
 
-export const getCreateWorkitemMutationOptions = <
-  TError = AxiosError<unknown>,
-  TVariables = void,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof createWorkitem>>, TError, TVariables, TContext>
+export const getCreateWorkitemMutationOptions = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkitem>>,
+    TError,
+    { data: RestDemoWorkItemCreateRequest },
+    TContext
+  >
   axios?: AxiosRequestConfig
-}): UseMutationOptions<Awaited<ReturnType<typeof createWorkitem>>, TError, TVariables, TContext> => {
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createWorkitem>>,
+  TError,
+  { data: RestDemoWorkItemCreateRequest },
+  TContext
+> => {
   const { mutation: mutationOptions, axios: axiosOptions } = options ?? {}
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkitem>>, TVariables> = () => {
-    return createWorkitem(axiosOptions)
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createWorkitem>>,
+    { data: RestDemoWorkItemCreateRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return createWorkitem(data, axiosOptions)
   }
 
   return { mutationFn, ...mutationOptions }
 }
 
 export type CreateWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
-
+export type CreateWorkitemMutationBody = RestDemoWorkItemCreateRequest
 export type CreateWorkitemMutationError = AxiosError<unknown>
 
-export const useCreateWorkitem = <TError = AxiosError<unknown>, TVariables = void, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof createWorkitem>>, TError, TVariables, TContext>
+export const useCreateWorkitem = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkitem>>,
+    TError,
+    { data: RestDemoWorkItemCreateRequest },
+    TContext
+  >
   axios?: AxiosRequestConfig
 }) => {
   const mutationOptions = getCreateWorkitemMutationOptions(options)
@@ -216,32 +240,51 @@ export const useDeleteWorkitem = <TError = AxiosError<unknown>, TContext = unkno
  */
 export const createWorkitemComment = (
   id: number,
+  restWorkItemCommentCreateRequest: RestWorkItemCommentCreateRequest,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<DbWorkItemComment>> => {
-  return axios.post(`/workitem/${id}/comments/`, undefined, options)
+  return axios.post(`/workitem/${id}/comments/`, restWorkItemCommentCreateRequest, options)
 }
 
 export const getCreateWorkitemCommentMutationOptions = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof createWorkitemComment>>, TError, { id: number }, TContext>
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkitemComment>>,
+    TError,
+    { id: number; data: RestWorkItemCommentCreateRequest },
+    TContext
+  >
   axios?: AxiosRequestConfig
-}): UseMutationOptions<Awaited<ReturnType<typeof createWorkitemComment>>, TError, { id: number }, TContext> => {
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createWorkitemComment>>,
+  TError,
+  { id: number; data: RestWorkItemCommentCreateRequest },
+  TContext
+> => {
   const { mutation: mutationOptions, axios: axiosOptions } = options ?? {}
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkitemComment>>, { id: number }> = (props) => {
-    const { id } = props ?? {}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createWorkitemComment>>,
+    { id: number; data: RestWorkItemCommentCreateRequest }
+  > = (props) => {
+    const { id, data } = props ?? {}
 
-    return createWorkitemComment(id, axiosOptions)
+    return createWorkitemComment(id, data, axiosOptions)
   }
 
   return { mutationFn, ...mutationOptions }
 }
 
 export type CreateWorkitemCommentMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitemComment>>>
-
+export type CreateWorkitemCommentMutationBody = RestWorkItemCommentCreateRequest
 export type CreateWorkitemCommentMutationError = AxiosError<unknown>
 
 export const useCreateWorkitemComment = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof createWorkitemComment>>, TError, { id: number }, TContext>
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkitemComment>>,
+    TError,
+    { id: number; data: RestWorkItemCommentCreateRequest },
+    TContext
+  >
   axios?: AxiosRequestConfig
 }) => {
   const mutationOptions = getCreateWorkitemCommentMutationOptions(options)

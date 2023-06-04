@@ -38,6 +38,9 @@ import {
   UuidUUID,
   PgtypeJSONB,
   DbWorkItem,
+  RestWorkItemTagCreateRequest,
+  RestDemoWorkItemCreateRequest,
+  RestWorkItemCommentCreateRequest,
   Project,
   DbActivityCreateParams,
   DbKanbanStepCreateParams,
@@ -54,6 +57,10 @@ import {
   DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
+  DbDemoWorkItemCreateParams,
+  DbWorkItemCreateParams,
+  ModelsWorkItemRole,
+  ServicesMember,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -422,6 +429,42 @@ export const DbWorkItemDecoder: Decoder<DbWorkItem> = {
     return validateJson(json, schema, DbWorkItemDecoder.definitionName)
   },
 }
+export const RestWorkItemTagCreateRequestDecoder: Decoder<RestWorkItemTagCreateRequest> = {
+  definitionName: 'RestWorkItemTagCreateRequest',
+  schemaRef: '#/definitions/RestWorkItemTagCreateRequest',
+
+  decode(json: unknown): RestWorkItemTagCreateRequest {
+    const schema = ajv.getSchema(RestWorkItemTagCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestWorkItemTagCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestWorkItemTagCreateRequestDecoder.definitionName)
+  },
+}
+export const RestDemoWorkItemCreateRequestDecoder: Decoder<RestDemoWorkItemCreateRequest> = {
+  definitionName: 'RestDemoWorkItemCreateRequest',
+  schemaRef: '#/definitions/RestDemoWorkItemCreateRequest',
+
+  decode(json: unknown): RestDemoWorkItemCreateRequest {
+    const schema = ajv.getSchema(RestDemoWorkItemCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestDemoWorkItemCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestDemoWorkItemCreateRequestDecoder.definitionName)
+  },
+}
+export const RestWorkItemCommentCreateRequestDecoder: Decoder<RestWorkItemCommentCreateRequest> = {
+  definitionName: 'RestWorkItemCommentCreateRequest',
+  schemaRef: '#/definitions/RestWorkItemCommentCreateRequest',
+
+  decode(json: unknown): RestWorkItemCommentCreateRequest {
+    const schema = ajv.getSchema(RestWorkItemCommentCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestWorkItemCommentCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestWorkItemCommentCreateRequestDecoder.definitionName)
+  },
+}
 export const ProjectDecoder: Decoder<Project> = {
   definitionName: 'Project',
   schemaRef: '#/definitions/Project',
@@ -612,5 +655,53 @@ export const DemoWorkItemTypesDecoder: Decoder<DemoWorkItemTypes> = {
       throw new Error(`Schema ${DemoWorkItemTypesDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoWorkItemTypesDecoder.definitionName)
+  },
+}
+export const DbDemoWorkItemCreateParamsDecoder: Decoder<DbDemoWorkItemCreateParams> = {
+  definitionName: 'DbDemoWorkItemCreateParams',
+  schemaRef: '#/definitions/DbDemoWorkItemCreateParams',
+
+  decode(json: unknown): DbDemoWorkItemCreateParams {
+    const schema = ajv.getSchema(DbDemoWorkItemCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbDemoWorkItemCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbDemoWorkItemCreateParamsDecoder.definitionName)
+  },
+}
+export const DbWorkItemCreateParamsDecoder: Decoder<DbWorkItemCreateParams> = {
+  definitionName: 'DbWorkItemCreateParams',
+  schemaRef: '#/definitions/DbWorkItemCreateParams',
+
+  decode(json: unknown): DbWorkItemCreateParams {
+    const schema = ajv.getSchema(DbWorkItemCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemCreateParamsDecoder.definitionName)
+  },
+}
+export const ModelsWorkItemRoleDecoder: Decoder<ModelsWorkItemRole> = {
+  definitionName: 'ModelsWorkItemRole',
+  schemaRef: '#/definitions/ModelsWorkItemRole',
+
+  decode(json: unknown): ModelsWorkItemRole {
+    const schema = ajv.getSchema(ModelsWorkItemRoleDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsWorkItemRoleDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsWorkItemRoleDecoder.definitionName)
+  },
+}
+export const ServicesMemberDecoder: Decoder<ServicesMember> = {
+  definitionName: 'ServicesMember',
+  schemaRef: '#/definitions/ServicesMember',
+
+  decode(json: unknown): ServicesMember {
+    const schema = ajv.getSchema(ServicesMemberDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ServicesMemberDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ServicesMemberDecoder.definitionName)
   },
 }

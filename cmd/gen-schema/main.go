@@ -90,10 +90,10 @@ func main() {
 
 	for _, sn := range structNames {
 		dummyOp := openapi3.Operation{}
-		// TODO these need to be loaded at runtime since they're changed right before.
-		// we could just compile gen-schema right after PublicStructs file is updated
-		// but sometimes we need to work on uncompilable state.
-		// best option is to convert to a simple json file and load it.
+		// TODO we need to compile gen-schema right after PublicStructs file is updated
+		// cannot import packages at runtime
+		// if we have an uncompilable state then we need workarounds to compile regardless
+		// UDPATE: use https://pkg.go.dev/plugin
 		st, ok := postgen.PublicStructs[sn]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)

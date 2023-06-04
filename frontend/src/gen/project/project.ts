@@ -26,6 +26,7 @@ import type {
   RestDemoWorkItemsResponse,
   GetProjectWorkitemsParams,
   DbWorkItemTag,
+  RestWorkItemTagCreateRequest,
 } from '.././model'
 
 /**
@@ -525,48 +526,49 @@ export const useGetProjectWorkitems = <
  */
 export const createWorkitemTag = (
   projectName: 'demo' | 'demo_two',
+  restWorkItemTagCreateRequest: RestWorkItemTagCreateRequest,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<DbWorkItemTag>> => {
-  return axios.post(`/project/${projectName}/tag/`, undefined, options)
+  return axios.post(`/project/${projectName}/tag/`, restWorkItemTagCreateRequest, options)
 }
 
 export const getCreateWorkitemTagMutationOptions = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitemTag>>,
     TError,
-    { projectName: 'demo' | 'demo_two' },
+    { projectName: 'demo' | 'demo_two'; data: RestWorkItemTagCreateRequest },
     TContext
   >
   axios?: AxiosRequestConfig
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createWorkitemTag>>,
   TError,
-  { projectName: 'demo' | 'demo_two' },
+  { projectName: 'demo' | 'demo_two'; data: RestWorkItemTagCreateRequest },
   TContext
 > => {
   const { mutation: mutationOptions, axios: axiosOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createWorkitemTag>>,
-    { projectName: 'demo' | 'demo_two' }
+    { projectName: 'demo' | 'demo_two'; data: RestWorkItemTagCreateRequest }
   > = (props) => {
-    const { projectName } = props ?? {}
+    const { projectName, data } = props ?? {}
 
-    return createWorkitemTag(projectName, axiosOptions)
+    return createWorkitemTag(projectName, data, axiosOptions)
   }
 
   return { mutationFn, ...mutationOptions }
 }
 
 export type CreateWorkitemTagMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitemTag>>>
-
+export type CreateWorkitemTagMutationBody = RestWorkItemTagCreateRequest
 export type CreateWorkitemTagMutationError = AxiosError<unknown>
 
 export const useCreateWorkitemTag = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitemTag>>,
     TError,
-    { projectName: 'demo' | 'demo_two' },
+    { projectName: 'demo' | 'demo_two'; data: RestWorkItemTagCreateRequest },
     TContext
   >
   axios?: AxiosRequestConfig

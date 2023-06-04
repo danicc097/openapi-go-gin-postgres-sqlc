@@ -271,6 +271,15 @@ type DbDemoWorkItem struct {
 	WorkItemID    int       `json:"workItemID"`
 }
 
+// DbDemoWorkItemCreateParams defines the model for DbDemoWorkItemCreateParams.
+type DbDemoWorkItemCreateParams struct {
+	LastMessageAt time.Time `json:"lastMessageAt"`
+	Line          string    `json:"line"`
+	Ref           string    `json:"ref"`
+	Reopened      bool      `json:"reopened"`
+	WorkItemID    int       `json:"workItemID"`
+}
+
 // DbKanbanStep defines the model for DbKanbanStep.
 type DbKanbanStep struct {
 	Color         string `json:"color"`
@@ -379,6 +388,18 @@ type DbWorkItemComment struct {
 	WorkItemID        int       `json:"workItemID"`
 }
 
+// DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
+type DbWorkItemCreateParams struct {
+	Closed         *time.Time `json:"closed"`
+	Description    string     `json:"description"`
+	KanbanStepID   int        `json:"kanbanStepID"`
+	Metadata       *[]int     `json:"metadata"`
+	TargetDate     time.Time  `json:"targetDate"`
+	TeamID         int        `json:"teamID"`
+	Title          string     `json:"title"`
+	WorkItemTypeID int        `json:"workItemTypeID"`
+}
+
 // DbWorkItemRole defines the model for DbWorkItemRole.
 type DbWorkItemRole = string
 
@@ -464,6 +485,9 @@ type InitializeProjectRequest struct {
 	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
 }
 
+// ModelsWorkItemRole defines the model for ModelsWorkItemRole.
+type ModelsWorkItemRole = string
+
 // NotificationType represents a database 'notification_type'
 type NotificationType string
 
@@ -486,6 +510,14 @@ type ProjectConfigField struct {
 	Name          string `json:"name"`
 	Path          string `json:"path"`
 	ShowCollapsed bool   `json:"showCollapsed"`
+}
+
+// RestDemoWorkItemCreateRequest defines the model for RestDemoWorkItemCreateRequest.
+type RestDemoWorkItemCreateRequest struct {
+	Base        DbWorkItemCreateParams     `json:"base"`
+	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
+	Members     *[]ServicesMember          `json:"members"`
+	TagIDs      *[]int                     `json:"tagIDs"`
 }
 
 // RestDemoWorkItemsResponse defines the model for RestDemoWorkItemsResponse.
@@ -525,6 +557,21 @@ type RestProjectBoardResponse struct {
 	WorkItemTypes *[]DbWorkItemType `json:"workItemTypes"`
 }
 
+// RestWorkItemCommentCreateRequest defines the model for RestWorkItemCommentCreateRequest.
+type RestWorkItemCommentCreateRequest struct {
+	Message    string   `json:"message"`
+	UserID     UuidUUID `json:"userID"`
+	WorkItemID int      `json:"workItemID"`
+}
+
+// RestWorkItemTagCreateRequest defines the model for RestWorkItemTagCreateRequest.
+type RestWorkItemTagCreateRequest struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
+}
+
 // Role defines the model for Role.
 type Role string
 
@@ -533,6 +580,12 @@ type Scope string
 
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
+
+// ServicesMember defines the model for ServicesMember.
+type ServicesMember struct {
+	Role   ModelsWorkItemRole `json:"role"`
+	UserID UuidUUID           `json:"userID"`
+}
 
 // Topics string identifiers for SSE event listeners.
 type Topics string
@@ -622,11 +675,20 @@ type UpdateProjectConfigJSONRequestBody = ProjectConfig
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 type InitializeProjectJSONRequestBody = InitializeProjectRequest
 
+// CreateWorkitemTagJSONRequestBody defines body for CreateWorkitemTag for application/json ContentType.
+type CreateWorkitemTagJSONRequestBody = RestWorkItemTagCreateRequest
+
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
 
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
+
+// CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
+type CreateWorkitemJSONRequestBody = RestDemoWorkItemCreateRequest
+
+// CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
+type CreateWorkitemCommentJSONRequestBody = RestWorkItemCommentCreateRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -738,8 +800,10 @@ type ClientInterface interface {
 
 	InitializeProject(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateWorkitemTag request
-	CreateWorkitemTag(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateWorkitemTag request with any body
+	CreateWorkitemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWorkitemTag(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProjectWorkitems request
 	GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -760,8 +824,10 @@ type ClientInterface interface {
 
 	UpdateUserAuthorization(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateWorkitem request
-	CreateWorkitem(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateWorkitem request with any body
+	CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteWorkitem request
 	DeleteWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -772,8 +838,10 @@ type ClientInterface interface {
 	// UpdateWorkitem request
 	UpdateWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateWorkitemComment request
-	CreateWorkitemComment(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateWorkitemComment request with any body
+	CreateWorkitemCommentWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWorkitemComment(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -932,8 +1000,20 @@ func (c *Client) InitializeProject(ctx context.Context, projectName ProjectName,
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateWorkitemTag(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkitemTagRequest(c.Server, projectName)
+func (c *Client) CreateWorkitemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemTagRequestWithBody(c.Server, projectName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkitemTag(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemTagRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1028,8 +1108,20 @@ func (c *Client) UpdateUserAuthorization(ctx context.Context, id UUID, body Upda
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateWorkitem(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkitemRequest(c.Server)
+func (c *Client) CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1076,8 +1168,20 @@ func (c *Client) UpdateWorkitem(ctx context.Context, id Serial, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateWorkitemComment(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkitemCommentRequest(c.Server, id)
+func (c *Client) CreateWorkitemCommentWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemCommentRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkitemComment(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemCommentRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1446,8 +1550,19 @@ func NewInitializeProjectRequestWithBody(server string, projectName ProjectName,
 	return req, nil
 }
 
-// NewCreateWorkitemTagRequest generates requests for CreateWorkitemTag
-func NewCreateWorkitemTagRequest(server string, projectName ProjectName) (*http.Request, error) {
+// NewCreateWorkitemTagRequest calls the generic CreateWorkitemTag builder with application/json body
+func NewCreateWorkitemTagRequest(server string, projectName ProjectName, body CreateWorkitemTagJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWorkitemTagRequestWithBody(server, projectName, "application/json", bodyReader)
+}
+
+// NewCreateWorkitemTagRequestWithBody generates requests for CreateWorkitemTag with any type of body
+func NewCreateWorkitemTagRequestWithBody(server string, projectName ProjectName, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1472,10 +1587,12 @@ func NewCreateWorkitemTagRequest(server string, projectName ProjectName) (*http.
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -1705,8 +1822,19 @@ func NewUpdateUserAuthorizationRequestWithBody(server string, id UUID, contentTy
 	return req, nil
 }
 
-// NewCreateWorkitemRequest generates requests for CreateWorkitem
-func NewCreateWorkitemRequest(server string) (*http.Request, error) {
+// NewCreateWorkitemRequest calls the generic CreateWorkitem builder with application/json body
+func NewCreateWorkitemRequest(server string, body CreateWorkitemJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWorkitemRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateWorkitemRequestWithBody generates requests for CreateWorkitem with any type of body
+func NewCreateWorkitemRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1724,10 +1852,12 @@ func NewCreateWorkitemRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -1834,8 +1964,19 @@ func NewUpdateWorkitemRequest(server string, id Serial) (*http.Request, error) {
 	return req, nil
 }
 
-// NewCreateWorkitemCommentRequest generates requests for CreateWorkitemComment
-func NewCreateWorkitemCommentRequest(server string, id Serial) (*http.Request, error) {
+// NewCreateWorkitemCommentRequest calls the generic CreateWorkitemComment builder with application/json body
+func NewCreateWorkitemCommentRequest(server string, id Serial, body CreateWorkitemCommentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWorkitemCommentRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewCreateWorkitemCommentRequestWithBody generates requests for CreateWorkitemComment with any type of body
+func NewCreateWorkitemCommentRequestWithBody(server string, id Serial, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1860,10 +2001,12 @@ func NewCreateWorkitemCommentRequest(server string, id Serial) (*http.Request, e
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -1948,8 +2091,10 @@ type ClientWithResponsesInterface interface {
 
 	InitializeProjectWithResponse(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
 
-	// CreateWorkitemTag request
-	CreateWorkitemTagWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error)
+	// CreateWorkitemTag request with any body
+	CreateWorkitemTagWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error)
+
+	CreateWorkitemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error)
 
 	// GetProjectWorkitems request
 	GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
@@ -1970,8 +2115,10 @@ type ClientWithResponsesInterface interface {
 
 	UpdateUserAuthorizationWithResponse(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
-	// CreateWorkitem request
-	CreateWorkitemWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
+	// CreateWorkitem request with any body
+	CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
+
+	CreateWorkitemWithResponse(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
 
 	// DeleteWorkitem request
 	DeleteWorkitemWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error)
@@ -1982,8 +2129,10 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkitem request
 	UpdateWorkitemWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error)
 
-	// CreateWorkitemComment request
-	CreateWorkitemCommentWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
+	// CreateWorkitemComment request with any body
+	CreateWorkitemCommentWithBodyWithResponse(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
+
+	CreateWorkitemCommentWithResponse(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
 }
 
 type AdminPingResponse struct {
@@ -2589,9 +2738,17 @@ func (c *ClientWithResponses) InitializeProjectWithResponse(ctx context.Context,
 	return ParseInitializeProjectResponse(rsp)
 }
 
-// CreateWorkitemTagWithResponse request returning *CreateWorkitemTagResponse
-func (c *ClientWithResponses) CreateWorkitemTagWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error) {
-	rsp, err := c.CreateWorkitemTag(ctx, projectName, reqEditors...)
+// CreateWorkitemTagWithBodyWithResponse request with arbitrary body returning *CreateWorkitemTagResponse
+func (c *ClientWithResponses) CreateWorkitemTagWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error) {
+	rsp, err := c.CreateWorkitemTagWithBody(ctx, projectName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemTagResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWorkitemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error) {
+	rsp, err := c.CreateWorkitemTag(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2659,9 +2816,17 @@ func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Co
 	return ParseUpdateUserAuthorizationResponse(rsp)
 }
 
-// CreateWorkitemWithResponse request returning *CreateWorkitemResponse
-func (c *ClientWithResponses) CreateWorkitemWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error) {
-	rsp, err := c.CreateWorkitem(ctx, reqEditors...)
+// CreateWorkitemWithBodyWithResponse request with arbitrary body returning *CreateWorkitemResponse
+func (c *ClientWithResponses) CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error) {
+	rsp, err := c.CreateWorkitemWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWorkitemWithResponse(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error) {
+	rsp, err := c.CreateWorkitem(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -2695,9 +2860,17 @@ func (c *ClientWithResponses) UpdateWorkitemWithResponse(ctx context.Context, id
 	return ParseUpdateWorkitemResponse(rsp)
 }
 
-// CreateWorkitemCommentWithResponse request returning *CreateWorkitemCommentResponse
-func (c *ClientWithResponses) CreateWorkitemCommentWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error) {
-	rsp, err := c.CreateWorkitemComment(ctx, id, reqEditors...)
+// CreateWorkitemCommentWithBodyWithResponse request with arbitrary body returning *CreateWorkitemCommentResponse
+func (c *ClientWithResponses) CreateWorkitemCommentWithBodyWithResponse(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error) {
+	rsp, err := c.CreateWorkitemCommentWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemCommentResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWorkitemCommentWithResponse(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error) {
+	rsp, err := c.CreateWorkitemComment(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

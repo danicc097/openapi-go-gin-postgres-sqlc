@@ -1200,11 +1200,59 @@ components:
         - deletedAt
       type: object
       x-postgen-struct: DbWorkItem
-    RestWorkItemTagCreateRequest:
+    RestWorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      required:
+        - projectID
+        - name
+        - description
+        - color
+      type: object
       x-postgen-struct: RestWorkItemTagCreateRequest
-    RestDemoWorkItemCreateRequest:
+    RestDemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoProject:
+          $ref: '#/components/schemas/DbDemoWorkItemCreateParams'
+        members:
+          items:
+            $ref: '#/components/schemas/ServicesMember'
+          nullable: true
+          type: array
+        tagIDs:
+          items:
+            type: integer
+          nullable: true
+          type: array
+      required:
+        - demoProject
+        - base
+        - tagIDs
+        - members
+      type: object
       x-postgen-struct: RestDemoWorkItemCreateRequest
-    RestWorkItemCommentCreateRequest:
+    RestWorkItemCommentCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        message:
+          type: string
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+        - userID
+        - message
+      type: object
       x-postgen-struct: RestWorkItemCommentCreateRequest
     Project: # Generated from projects table. DO NOT EDIT.
       enum:
@@ -1347,6 +1395,74 @@ components:
       enum:
         - Type 1
       x-generated: '-'
+    DbDemoWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        lastMessageAt:
+          format: date-time
+          type: string
+        line:
+          type: string
+        ref:
+          pattern: ^[0-9]{8}$
+          type: string
+        reopened:
+          type: boolean
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+        - ref
+        - line
+        - lastMessageAt
+        - reopened
+      type: object
+    DbWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        closed:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        metadata:
+          items:
+            minimum: 0
+            type: integer
+          nullable: true
+          type: array
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          type: integer
+        title:
+          type: string
+        workItemTypeID:
+          type: integer
+      required:
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - closed
+        - targetDate
+      type: object
+    ModelsWorkItemRole: # Generated from internal structs. DO NOT EDIT.
+      type: string
+    ServicesMember: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/ModelsWorkItemRole'
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+      required:
+        - userID
+        - role
+      type: object
   examples:
     User:
       value:

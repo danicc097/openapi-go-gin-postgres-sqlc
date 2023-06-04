@@ -376,6 +376,23 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
+    RestWorkItemTagCreateRequest: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+    };
+    RestDemoWorkItemCreateRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
+      members: (components["schemas"]["ServicesMember"])[] | null;
+      tagIDs: (number)[] | null;
+    };
+    RestWorkItemCommentCreateRequest: {
+      message: string;
+      userID: components["schemas"]["UuidUUID"];
+      workItemID: number;
+    };
     /** @enum {string} */
     Project: "demo" | "demo_two";
     DbActivityCreateParams: {
@@ -433,6 +450,31 @@ export interface components {
     DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
     /** @enum {string} */
     DemoWorkItemTypes: "Type 1";
+    DbDemoWorkItemCreateParams: {
+      /** Format: date-time */
+      lastMessageAt: string;
+      line: string;
+      ref: string;
+      reopened: boolean;
+      workItemID: number;
+    };
+    DbWorkItemCreateParams: {
+      /** Format: date-time */
+      closed: string | null;
+      description: string;
+      kanbanStepID: number;
+      metadata: (number)[] | null;
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      title: string;
+      workItemTypeID: number;
+    };
+    ModelsWorkItemRole: string;
+    ServicesMember: {
+      role: components["schemas"]["ModelsWorkItemRole"];
+      userID: components["schemas"]["UuidUUID"];
+    };
   };
   responses: never;
   parameters: {
@@ -700,6 +742,11 @@ export interface operations {
         projectName: components["parameters"]["ProjectName"];
       };
     };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RestWorkItemTagCreateRequest"];
+      };
+    };
     responses: {
       /** @description Success. */
       201: {
@@ -711,6 +758,11 @@ export interface operations {
   };
   /** create workitem */
   CreateWorkitem: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RestDemoWorkItemCreateRequest"];
+      };
+    };
     responses: {
       /** @description Success. */
       201: {
@@ -769,6 +821,11 @@ export interface operations {
     parameters: {
       path: {
         id: components["parameters"]["Serial"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RestWorkItemCommentCreateRequest"];
       };
     };
     responses: {

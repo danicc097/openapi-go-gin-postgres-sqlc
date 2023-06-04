@@ -1449,6 +1449,8 @@ update_spec_with_structs() {
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
+  go build -o $BUILD_DIR/gen-schema cmd/gen-schema/main.go # need new PublicStructs compiled
+
   gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
