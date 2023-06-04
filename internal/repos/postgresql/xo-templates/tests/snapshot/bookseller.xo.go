@@ -155,12 +155,12 @@ const bookSellerTableBooksSellerGroupBySQL = `book_sellers.seller, book_sellers.
 // Insert inserts the BookSeller to the database.
 func (bs *BookSeller) Insert(ctx context.Context, db DB) (*BookSeller, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO xo_tests.book_sellers (` +
-		`book_id, seller` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.book_sellers (
+	book_id, seller
+	) VALUES (
+	$1, $2
+	)
+	 RETURNING * `
 	// run
 	logf(sqlstr, bs.BookID, bs.Seller)
 	rows, err := db.Query(ctx, sqlstr, bs.BookID, bs.Seller)
@@ -181,8 +181,8 @@ func (bs *BookSeller) Insert(ctx context.Context, db DB) (*BookSeller, error) {
 // Delete deletes the BookSeller from the database.
 func (bs *BookSeller) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM xo_tests.book_sellers ` +
-		`WHERE book_id = $1 AND seller = $2 `
+	sqlstr := `DELETE FROM xo_tests.book_sellers 
+	WHERE book_id = $1 AND seller = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, bs.BookID, bs.Seller); err != nil {
 		return logerror(err)
@@ -248,15 +248,16 @@ func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID int, seller uu
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_sellers.book_id,
-book_sellers.seller %s `+
-		`FROM xo_tests.book_sellers %s `+
-		` WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_sellers.book_id,
+	book_sellers.seller %s 
+	 FROM xo_tests.book_sellers %s 
+	 WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellersByBookIDSeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, seller)
@@ -332,15 +333,16 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_sellers.book_id,
-book_sellers.seller %s `+
-		`FROM xo_tests.book_sellers %s `+
-		` WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_sellers.book_id,
+	book_sellers.seller %s 
+	 FROM xo_tests.book_sellers %s 
+	 WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellerByBookIDSeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, seller)
@@ -414,15 +416,16 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_sellers.book_id,
-book_sellers.seller %s `+
-		`FROM xo_tests.book_sellers %s `+
-		` WHERE book_sellers.book_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_sellers.book_id,
+	book_sellers.seller %s 
+	 FROM xo_tests.book_sellers %s 
+	 WHERE book_sellers.book_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellersByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
@@ -498,15 +501,16 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_sellers.book_id,
-book_sellers.seller %s `+
-		`FROM xo_tests.book_sellers %s `+
-		` WHERE book_sellers.seller = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_sellers.book_id,
+	book_sellers.seller %s 
+	 FROM xo_tests.book_sellers %s 
+	 WHERE book_sellers.seller = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellersBySeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, seller)
@@ -582,15 +586,16 @@ func BookSellersBySellerBookID(ctx context.Context, db DB, seller uuid.UUID, boo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_sellers.book_id,
-book_sellers.seller %s `+
-		`FROM xo_tests.book_sellers %s `+
-		` WHERE book_sellers.seller = $1 AND book_sellers.book_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_sellers.book_id,
+	book_sellers.seller %s 
+	 FROM xo_tests.book_sellers %s 
+	 WHERE book_sellers.seller = $1 AND book_sellers.book_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookSellersBySellerBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, seller, bookID)

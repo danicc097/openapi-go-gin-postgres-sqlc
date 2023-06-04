@@ -145,11 +145,11 @@ const userNotificationTableUserGroupBySQL = `_user_notifications_user_id.user_id
 // Insert inserts the UserNotification to the database.
 func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotification, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO public.user_notifications (` +
-		`notification_id, read, user_id` +
-		`) VALUES (` +
-		`$1, $2, $3` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO public.user_notifications (
+	notification_id, read, user_id
+	) VALUES (
+	$1, $2, $3
+	) RETURNING * `
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.UserID)
 
@@ -170,10 +170,10 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 // Update updates a UserNotification in the database.
 func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotification, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.user_notifications SET ` +
-		`notification_id = $1, read = $2, user_id = $3 ` +
-		`WHERE user_notification_id = $4 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE public.user_notifications SET 
+	notification_id = $1, read = $2, user_id = $3 
+	WHERE user_notification_id = $4 
+	RETURNING * `
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
 
@@ -219,8 +219,8 @@ func (un *UserNotification) Upsert(ctx context.Context, db DB, params *UserNotif
 // Delete deletes the UserNotification from the database.
 func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.user_notifications ` +
-		`WHERE user_notification_id = $1 `
+	sqlstr := `DELETE FROM public.user_notifications 
+	WHERE user_notification_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID); err != nil {
 		return logerror(err)
@@ -284,17 +284,18 @@ func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id %s `+
-		`FROM public.user_notifications %s `+
-		` WHERE user_notifications.user_notification_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_notifications.user_notification_id,
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id %s 
+	 FROM public.user_notifications %s 
+	 WHERE user_notifications.user_notification_id > $1
+	 %s   %s 
   ORDER BY 
 		user_notification_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationPaginatedByUserNotificationIDAsc */\n" + sqlstr
 
 	// run
 
@@ -365,17 +366,18 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id %s `+
-		`FROM public.user_notifications %s `+
-		` WHERE user_notifications.notification_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_notifications.user_notification_id,
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id %s 
+	 FROM public.user_notifications %s 
+	 WHERE user_notifications.notification_id > $1
+	 %s   %s 
   ORDER BY 
 		notification_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationPaginatedByNotificationIDAsc */\n" + sqlstr
 
 	// run
 
@@ -446,17 +448,18 @@ func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db D
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id %s `+
-		`FROM public.user_notifications %s `+
-		` WHERE user_notifications.user_notification_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_notifications.user_notification_id,
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id %s 
+	 FROM public.user_notifications %s 
+	 WHERE user_notifications.user_notification_id < $1
+	 %s   %s 
   ORDER BY 
 		user_notification_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationPaginatedByUserNotificationIDDesc */\n" + sqlstr
 
 	// run
 
@@ -527,17 +530,18 @@ func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, n
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id %s `+
-		`FROM public.user_notifications %s `+
-		` WHERE user_notifications.notification_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_notifications.user_notification_id,
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id %s 
+	 FROM public.user_notifications %s 
+	 WHERE user_notifications.notification_id < $1
+	 %s   %s 
   ORDER BY 
 		notification_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationPaginatedByNotificationIDDesc */\n" + sqlstr
 
 	// run
 
@@ -610,17 +614,18 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id %s `+
-		`FROM public.user_notifications %s `+
-		` WHERE user_notifications.notification_id = $1 AND user_notifications.user_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_notifications.user_notification_id,
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id %s 
+	 FROM public.user_notifications %s 
+	 WHERE user_notifications.notification_id = $1 AND user_notifications.user_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationByNotificationIDUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, notificationID, userID)
@@ -694,17 +699,18 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id %s `+
-		`FROM public.user_notifications %s `+
-		` WHERE user_notifications.notification_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_notifications.user_notification_id,
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id %s 
+	 FROM public.user_notifications %s 
+	 WHERE user_notifications.notification_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationsByNotificationID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, notificationID)
@@ -780,17 +786,18 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id %s `+
-		`FROM public.user_notifications %s `+
-		` WHERE user_notifications.user_notification_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_notifications.user_notification_id,
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id %s 
+	 FROM public.user_notifications %s 
+	 WHERE user_notifications.user_notification_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationByUserNotificationID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userNotificationID)
@@ -864,17 +871,18 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_notifications.user_notification_id,
-user_notifications.notification_id,
-user_notifications.read,
-user_notifications.user_id %s `+
-		`FROM public.user_notifications %s `+
-		` WHERE user_notifications.user_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_notifications.user_notification_id,
+	user_notifications.notification_id,
+	user_notifications.read,
+	user_notifications.user_id %s 
+	 FROM public.user_notifications %s 
+	 WHERE user_notifications.user_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserNotificationsByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)

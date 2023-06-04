@@ -116,12 +116,12 @@ const demoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_
 // Insert inserts the DemoWorkItem to the database.
 func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO xo_tests.demo_work_items (` +
-		`work_item_id, checked` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.demo_work_items (
+	work_item_id, checked
+	) VALUES (
+	$1, $2
+	)
+	 RETURNING * `
 	// run
 	logf(sqlstr, dwi.WorkItemID, dwi.Checked)
 	rows, err := db.Query(ctx, sqlstr, dwi.WorkItemID, dwi.Checked)
@@ -140,10 +140,10 @@ func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, erro
 // Update updates a DemoWorkItem in the database.
 func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.demo_work_items SET ` +
-		`checked = $1 ` +
-		`WHERE work_item_id = $2 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE xo_tests.demo_work_items SET 
+	checked = $1 
+	WHERE work_item_id = $2 
+	RETURNING * `
 	// run
 	logf(sqlstr, dwi.Checked, dwi.WorkItemID)
 
@@ -188,8 +188,8 @@ func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB, params *DemoWorkItem
 // Delete deletes the DemoWorkItem from the database.
 func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.demo_work_items ` +
-		`WHERE work_item_id = $1 `
+	sqlstr := `DELETE FROM xo_tests.demo_work_items 
+	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dwi.WorkItemID); err != nil {
 		return logerror(err)
@@ -247,15 +247,16 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_work_items.work_item_id,
-demo_work_items.checked %s `+
-		`FROM xo_tests.demo_work_items %s `+
-		` WHERE demo_work_items.work_item_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.work_item_id,
+	demo_work_items.checked %s 
+	 FROM xo_tests.demo_work_items %s 
+	 WHERE demo_work_items.work_item_id > $1
+	 %s   %s 
   ORDER BY 
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
 
 	// run
 
@@ -320,15 +321,16 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_work_items.work_item_id,
-demo_work_items.checked %s `+
-		`FROM xo_tests.demo_work_items %s `+
-		` WHERE demo_work_items.work_item_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.work_item_id,
+	demo_work_items.checked %s 
+	 FROM xo_tests.demo_work_items %s 
+	 WHERE demo_work_items.work_item_id < $1
+	 %s   %s 
   ORDER BY 
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
 
 	// run
 
@@ -395,15 +397,16 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_work_items.work_item_id,
-demo_work_items.checked %s `+
-		`FROM xo_tests.demo_work_items %s `+
-		` WHERE demo_work_items.work_item_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.work_item_id,
+	demo_work_items.checked %s 
+	 FROM xo_tests.demo_work_items %s 
+	 WHERE demo_work_items.work_item_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)

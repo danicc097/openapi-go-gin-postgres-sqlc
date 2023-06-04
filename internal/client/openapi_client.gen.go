@@ -271,6 +271,15 @@ type DbDemoWorkItem struct {
 	WorkItemID    int       `json:"workItemID"`
 }
 
+// DbDemoWorkItemCreateParams defines the model for DbDemoWorkItemCreateParams.
+type DbDemoWorkItemCreateParams struct {
+	LastMessageAt time.Time `json:"lastMessageAt"`
+	Line          string    `json:"line"`
+	Ref           string    `json:"ref"`
+	Reopened      bool      `json:"reopened"`
+	WorkItemID    int       `json:"workItemID"`
+}
+
 // DbKanbanStep defines the model for DbKanbanStep.
 type DbKanbanStep struct {
 	Color         string `json:"color"`
@@ -379,6 +388,18 @@ type DbWorkItemComment struct {
 	WorkItemID        int       `json:"workItemID"`
 }
 
+// DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
+type DbWorkItemCreateParams struct {
+	Closed         *time.Time `json:"closed"`
+	Description    string     `json:"description"`
+	KanbanStepID   int        `json:"kanbanStepID"`
+	Metadata       *[]int     `json:"metadata"`
+	TargetDate     time.Time  `json:"targetDate"`
+	TeamID         int        `json:"teamID"`
+	Title          string     `json:"title"`
+	WorkItemTypeID int        `json:"workItemTypeID"`
+}
+
 // DbWorkItemRole defines the model for DbWorkItemRole.
 type DbWorkItemRole = string
 
@@ -464,6 +485,9 @@ type InitializeProjectRequest struct {
 	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
 }
 
+// ModelsWorkItemRole defines the model for ModelsWorkItemRole.
+type ModelsWorkItemRole = string
+
 // NotificationType represents a database 'notification_type'
 type NotificationType string
 
@@ -486,6 +510,14 @@ type ProjectConfigField struct {
 	Name          string `json:"name"`
 	Path          string `json:"path"`
 	ShowCollapsed bool   `json:"showCollapsed"`
+}
+
+// RestDemoWorkItemCreateRequest defines the model for RestDemoWorkItemCreateRequest.
+type RestDemoWorkItemCreateRequest struct {
+	Base        DbWorkItemCreateParams     `json:"base"`
+	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
+	Members     *[]ServicesMember          `json:"members"`
+	TagIDs      *[]int                     `json:"tagIDs"`
 }
 
 // RestDemoWorkItemsResponse defines the model for RestDemoWorkItemsResponse.
@@ -525,6 +557,21 @@ type RestProjectBoardResponse struct {
 	WorkItemTypes *[]DbWorkItemType `json:"workItemTypes"`
 }
 
+// RestWorkItemCommentCreateRequest defines the model for RestWorkItemCommentCreateRequest.
+type RestWorkItemCommentCreateRequest struct {
+	Message    string   `json:"message"`
+	UserID     UuidUUID `json:"userID"`
+	WorkItemID int      `json:"workItemID"`
+}
+
+// RestWorkItemTagCreateRequest defines the model for RestWorkItemTagCreateRequest.
+type RestWorkItemTagCreateRequest struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
+}
+
 // Role defines the model for Role.
 type Role string
 
@@ -533,6 +580,12 @@ type Scope string
 
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
+
+// ServicesMember defines the model for ServicesMember.
+type ServicesMember struct {
+	Role   ModelsWorkItemRole `json:"role"`
+	UserID UuidUUID           `json:"userID"`
+}
 
 // Topics string identifiers for SSE event listeners.
 type Topics string
@@ -601,14 +654,14 @@ type ValidationError struct {
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
-// PathSerial defines the model for PathSerial.
-type PathSerial = int
-
 // ProjectName defines the model for ProjectName.
 type ProjectName = Project
 
-// Uuid defines the model for uuid.
-type Uuid = string
+// Serial defines the model for Serial.
+type Serial = int
+
+// UUID defines the model for UUID.
+type UUID = string
 
 // GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
 type GetProjectWorkitemsParams struct {
@@ -622,11 +675,20 @@ type UpdateProjectConfigJSONRequestBody = ProjectConfig
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 type InitializeProjectJSONRequestBody = InitializeProjectRequest
 
+// CreateWorkitemTagJSONRequestBody defines body for CreateWorkitemTag for application/json ContentType.
+type CreateWorkitemTagJSONRequestBody = RestWorkItemTagCreateRequest
+
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
 
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
+
+// CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
+type CreateWorkitemJSONRequestBody = RestDemoWorkItemCreateRequest
+
+// CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
+type CreateWorkitemCommentJSONRequestBody = RestWorkItemCommentCreateRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -738,6 +800,11 @@ type ClientInterface interface {
 
 	InitializeProject(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateWorkitemTag request with any body
+	CreateWorkitemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWorkitemTag(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetProjectWorkitems request
 	GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -745,17 +812,36 @@ type ClientInterface interface {
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
-	DeleteUser(ctx context.Context, id Uuid, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBody(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUser(ctx context.Context, id Uuid, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUserAuthorization request with any body
-	UpdateUserAuthorizationWithBody(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUserAuthorization(ctx context.Context, id Uuid, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserAuthorization(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWorkitem request with any body
+	CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteWorkitem request
+	DeleteWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWorkitem request
+	GetWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateWorkitem request
+	UpdateWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWorkitemComment request with any body
+	CreateWorkitemCommentWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWorkitemComment(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -914,6 +1000,30 @@ func (c *Client) InitializeProject(ctx context.Context, projectName ProjectName,
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateWorkitemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemTagRequestWithBody(c.Server, projectName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkitemTag(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemTagRequest(c.Server, projectName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectWorkitemsRequest(c.Server, projectName, params)
 	if err != nil {
@@ -938,7 +1048,7 @@ func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteUser(ctx context.Context, id Uuid, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteUserRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -950,7 +1060,7 @@ func (c *Client) DeleteUser(ctx context.Context, id Uuid, reqEditors ...RequestE
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserWithBody(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -962,7 +1072,7 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id Uuid, contentType st
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUser(ctx context.Context, id Uuid, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -974,7 +1084,7 @@ func (c *Client) UpdateUser(ctx context.Context, id Uuid, body UpdateUserJSONReq
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -986,8 +1096,92 @@ func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id Uuid, c
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserAuthorization(ctx context.Context, id Uuid, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorization(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWorkitemRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWorkitemRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkitemRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkitemCommentWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemCommentRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWorkitemComment(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkitemCommentRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1356,6 +1550,53 @@ func NewInitializeProjectRequestWithBody(server string, projectName ProjectName,
 	return req, nil
 }
 
+// NewCreateWorkitemTagRequest calls the generic CreateWorkitemTag builder with application/json body
+func NewCreateWorkitemTagRequest(server string, projectName ProjectName, body CreateWorkitemTagJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWorkitemTagRequestWithBody(server, projectName, "application/json", bodyReader)
+}
+
+// NewCreateWorkitemTagRequestWithBody generates requests for CreateWorkitemTag with any type of body
+func NewCreateWorkitemTagRequestWithBody(server string, projectName ProjectName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/tag/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetProjectWorkitemsRequest generates requests for GetProjectWorkitems
 func NewGetProjectWorkitemsRequest(server string, projectName ProjectName, params *GetProjectWorkitemsParams) (*http.Request, error) {
 	var err error
@@ -1454,7 +1695,7 @@ func NewGetCurrentUserRequest(server string) (*http.Request, error) {
 }
 
 // NewDeleteUserRequest generates requests for DeleteUser
-func NewDeleteUserRequest(server string, id Uuid) (*http.Request, error) {
+func NewDeleteUserRequest(server string, id UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1488,7 +1729,7 @@ func NewDeleteUserRequest(server string, id Uuid) (*http.Request, error) {
 }
 
 // NewUpdateUserRequest calls the generic UpdateUser builder with application/json body
-func NewUpdateUserRequest(server string, id Uuid, body UpdateUserJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserRequest(server string, id UUID, body UpdateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -1499,7 +1740,7 @@ func NewUpdateUserRequest(server string, id Uuid, body UpdateUserJSONRequestBody
 }
 
 // NewUpdateUserRequestWithBody generates requests for UpdateUser with any type of body
-func NewUpdateUserRequestWithBody(server string, id Uuid, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserRequestWithBody(server string, id UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1535,7 +1776,7 @@ func NewUpdateUserRequestWithBody(server string, id Uuid, contentType string, bo
 }
 
 // NewUpdateUserAuthorizationRequest calls the generic UpdateUserAuthorization builder with application/json body
-func NewUpdateUserAuthorizationRequest(server string, id Uuid, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserAuthorizationRequest(server string, id UUID, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -1546,7 +1787,7 @@ func NewUpdateUserAuthorizationRequest(server string, id Uuid, body UpdateUserAu
 }
 
 // NewUpdateUserAuthorizationRequestWithBody generates requests for UpdateUserAuthorization with any type of body
-func NewUpdateUserAuthorizationRequestWithBody(server string, id Uuid, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserAuthorizationRequestWithBody(server string, id UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1572,6 +1813,195 @@ func NewUpdateUserAuthorizationRequestWithBody(server string, id Uuid, contentTy
 	}
 
 	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateWorkitemRequest calls the generic CreateWorkitem builder with application/json body
+func NewCreateWorkitemRequest(server string, body CreateWorkitemJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWorkitemRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateWorkitemRequestWithBody generates requests for CreateWorkitem with any type of body
+func NewCreateWorkitemRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/workitem/")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteWorkitemRequest generates requests for DeleteWorkitem
+func NewDeleteWorkitemRequest(server string, id Serial) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/workitem/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetWorkitemRequest generates requests for GetWorkitem
+func NewGetWorkitemRequest(server string, id Serial) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/workitem/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateWorkitemRequest generates requests for UpdateWorkitem
+func NewUpdateWorkitemRequest(server string, id Serial) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/workitem/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateWorkitemCommentRequest calls the generic CreateWorkitemComment builder with application/json body
+func NewCreateWorkitemCommentRequest(server string, id Serial, body CreateWorkitemCommentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWorkitemCommentRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewCreateWorkitemCommentRequestWithBody generates requests for CreateWorkitemComment with any type of body
+func NewCreateWorkitemCommentRequestWithBody(server string, id Serial, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/workitem/%s/comments/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -1661,6 +2091,11 @@ type ClientWithResponsesInterface interface {
 
 	InitializeProjectWithResponse(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
 
+	// CreateWorkitemTag request with any body
+	CreateWorkitemTagWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error)
+
+	CreateWorkitemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error)
+
 	// GetProjectWorkitems request
 	GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
 
@@ -1668,17 +2103,36 @@ type ClientWithResponsesInterface interface {
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
 
 	// DeleteUser request
-	DeleteUserWithResponse(ctx context.Context, id Uuid, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
+	DeleteUserWithResponse(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBodyWithResponse(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
-	UpdateUserWithResponse(ctx context.Context, id Uuid, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithResponse(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
 	// UpdateUserAuthorization request with any body
-	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
-	UpdateUserAuthorizationWithResponse(ctx context.Context, id Uuid, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithResponse(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+
+	// CreateWorkitem request with any body
+	CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
+
+	CreateWorkitemWithResponse(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
+
+	// DeleteWorkitem request
+	DeleteWorkitemWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error)
+
+	// GetWorkitem request
+	GetWorkitemWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*GetWorkitemResponse, error)
+
+	// UpdateWorkitem request
+	UpdateWorkitemWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error)
+
+	// CreateWorkitemComment request with any body
+	CreateWorkitemCommentWithBodyWithResponse(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
+
+	CreateWorkitemCommentWithResponse(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
 }
 
 type AdminPingResponse struct {
@@ -1918,6 +2372,30 @@ func (r InitializeProjectResponse) StatusCode() int {
 	return 0
 }
 
+type CreateWorkitemTagResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *struct {
+		union json.RawMessage
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWorkitemTagResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWorkitemTagResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetProjectWorkitemsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2022,6 +2500,123 @@ func (r UpdateUserAuthorizationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateUserAuthorizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateWorkitemResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *struct {
+		union json.RawMessage
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWorkitemResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWorkitemResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteWorkitemResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteWorkitemResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteWorkitemResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWorkitemResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		union json.RawMessage
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWorkitemResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWorkitemResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateWorkitemResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		union json.RawMessage
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateWorkitemResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateWorkitemResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateWorkitemCommentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		union json.RawMessage
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWorkitemCommentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWorkitemCommentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2143,6 +2738,23 @@ func (c *ClientWithResponses) InitializeProjectWithResponse(ctx context.Context,
 	return ParseInitializeProjectResponse(rsp)
 }
 
+// CreateWorkitemTagWithBodyWithResponse request with arbitrary body returning *CreateWorkitemTagResponse
+func (c *ClientWithResponses) CreateWorkitemTagWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error) {
+	rsp, err := c.CreateWorkitemTagWithBody(ctx, projectName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemTagResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWorkitemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemTagResponse, error) {
+	rsp, err := c.CreateWorkitemTag(ctx, projectName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemTagResponse(rsp)
+}
+
 // GetProjectWorkitemsWithResponse request returning *GetProjectWorkitemsResponse
 func (c *ClientWithResponses) GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error) {
 	rsp, err := c.GetProjectWorkitems(ctx, projectName, params, reqEditors...)
@@ -2162,7 +2774,7 @@ func (c *ClientWithResponses) GetCurrentUserWithResponse(ctx context.Context, re
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
-func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id Uuid, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
+func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
 	rsp, err := c.DeleteUser(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -2171,7 +2783,7 @@ func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id Uui
 }
 
 // UpdateUserWithBodyWithResponse request with arbitrary body returning *UpdateUserResponse
-func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUserWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -2179,7 +2791,7 @@ func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context
 	return ParseUpdateUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id Uuid, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUser(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -2188,7 +2800,7 @@ func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id Uui
 }
 
 // UpdateUserAuthorizationWithBodyWithResponse request with arbitrary body returning *UpdateUserAuthorizationResponse
-func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
 	rsp, err := c.UpdateUserAuthorizationWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -2196,12 +2808,73 @@ func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx co
 	return ParseUpdateUserAuthorizationResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id Uuid, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
 	rsp, err := c.UpdateUserAuthorization(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateUserAuthorizationResponse(rsp)
+}
+
+// CreateWorkitemWithBodyWithResponse request with arbitrary body returning *CreateWorkitemResponse
+func (c *ClientWithResponses) CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error) {
+	rsp, err := c.CreateWorkitemWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWorkitemWithResponse(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error) {
+	rsp, err := c.CreateWorkitem(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemResponse(rsp)
+}
+
+// DeleteWorkitemWithResponse request returning *DeleteWorkitemResponse
+func (c *ClientWithResponses) DeleteWorkitemWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error) {
+	rsp, err := c.DeleteWorkitem(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteWorkitemResponse(rsp)
+}
+
+// GetWorkitemWithResponse request returning *GetWorkitemResponse
+func (c *ClientWithResponses) GetWorkitemWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*GetWorkitemResponse, error) {
+	rsp, err := c.GetWorkitem(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetWorkitemResponse(rsp)
+}
+
+// UpdateWorkitemWithResponse request returning *UpdateWorkitemResponse
+func (c *ClientWithResponses) UpdateWorkitemWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error) {
+	rsp, err := c.UpdateWorkitem(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateWorkitemResponse(rsp)
+}
+
+// CreateWorkitemCommentWithBodyWithResponse request with arbitrary body returning *CreateWorkitemCommentResponse
+func (c *ClientWithResponses) CreateWorkitemCommentWithBodyWithResponse(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error) {
+	rsp, err := c.CreateWorkitemCommentWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemCommentResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWorkitemCommentWithResponse(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error) {
+	rsp, err := c.CreateWorkitemComment(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkitemCommentResponse(rsp)
 }
 
 // ParseAdminPingResponse parses an HTTP response from a AdminPingWithResponse call
@@ -2440,6 +3113,34 @@ func ParseInitializeProjectResponse(rsp *http.Response) (*InitializeProjectRespo
 	return response, nil
 }
 
+// ParseCreateWorkitemTagResponse parses an HTTP response from a CreateWorkitemTagWithResponse call
+func ParseCreateWorkitemTagResponse(rsp *http.Response) (*CreateWorkitemTagResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWorkitemTagResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetProjectWorkitemsResponse parses an HTTP response from a GetProjectWorkitemsWithResponse call
 func ParseGetProjectWorkitemsResponse(rsp *http.Response) (*GetProjectWorkitemsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -2547,6 +3248,134 @@ func ParseUpdateUserAuthorizationResponse(rsp *http.Response) (*UpdateUserAuthor
 	response := &UpdateUserAuthorizationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCreateWorkitemResponse parses an HTTP response from a CreateWorkitemWithResponse call
+func ParseCreateWorkitemResponse(rsp *http.Response) (*CreateWorkitemResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWorkitemResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteWorkitemResponse parses an HTTP response from a DeleteWorkitemWithResponse call
+func ParseDeleteWorkitemResponse(rsp *http.Response) (*DeleteWorkitemResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteWorkitemResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetWorkitemResponse parses an HTTP response from a GetWorkitemWithResponse call
+func ParseGetWorkitemResponse(rsp *http.Response) (*GetWorkitemResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWorkitemResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateWorkitemResponse parses an HTTP response from a UpdateWorkitemWithResponse call
+func ParseUpdateWorkitemResponse(rsp *http.Response) (*UpdateWorkitemResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateWorkitemResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateWorkitemCommentResponse parses an HTTP response from a CreateWorkitemCommentWithResponse call
+func ParseCreateWorkitemCommentResponse(rsp *http.Response) (*CreateWorkitemCommentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWorkitemCommentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil

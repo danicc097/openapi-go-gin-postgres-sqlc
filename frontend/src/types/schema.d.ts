@@ -68,6 +68,26 @@ export interface paths {
     /** returns workitems for a project */
     get: operations["GetProjectWorkitems"];
   };
+  "/project/{projectName}/tag/": {
+    /** create workitem tag */
+    post: operations["CreateWorkitemTag"];
+  };
+  "/workitem/": {
+    /** create workitem */
+    post: operations["CreateWorkitem"];
+  };
+  "/workitem/{id}/": {
+    /** get workitem */
+    get: operations["GetWorkitem"];
+    /** delete workitem */
+    delete: operations["DeleteWorkitem"];
+    /** update workitem */
+    patch: operations["UpdateWorkitem"];
+  };
+  "/workitem/{id}/comments/": {
+    /** create workitem comment */
+    post: operations["CreateWorkitemComment"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -356,6 +376,23 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
+    RestWorkItemTagCreateRequest: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+    };
+    RestDemoWorkItemCreateRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
+      members: (components["schemas"]["ServicesMember"])[] | null;
+      tagIDs: (number)[] | null;
+    };
+    RestWorkItemCommentCreateRequest: {
+      message: string;
+      userID: components["schemas"]["UuidUUID"];
+      workItemID: number;
+    };
     /** @enum {string} */
     Project: "demo" | "demo_two";
     DbActivityCreateParams: {
@@ -413,6 +450,31 @@ export interface components {
     DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
     /** @enum {string} */
     DemoWorkItemTypes: "Type 1";
+    DbDemoWorkItemCreateParams: {
+      /** Format: date-time */
+      lastMessageAt: string;
+      line: string;
+      ref: string;
+      reopened: boolean;
+      workItemID: number;
+    };
+    DbWorkItemCreateParams: {
+      /** Format: date-time */
+      closed: string | null;
+      description: string;
+      kanbanStepID: number;
+      metadata: (number)[] | null;
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      title: string;
+      workItemTypeID: number;
+    };
+    ModelsWorkItemRole: string;
+    ServicesMember: {
+      role: components["schemas"]["ModelsWorkItemRole"];
+      userID: components["schemas"]["UuidUUID"];
+    };
   };
   responses: never;
   parameters: {
@@ -422,15 +484,15 @@ export interface components {
      */
     ProjectName: components["schemas"]["Project"];
     /**
-     * @description UUID identifier of entity that needs to be updated 
+     * @description UUID identifier 
      * @example 123e4567-e89b-12d3-a456-426614174000
      */
-    uuid: string;
+    UUID: string;
     /**
-     * @description integer identifier that needs to be updated 
+     * @description integer identifier 
      * @example 41131
      */
-    PathSerial: number;
+    Serial: number;
   };
   requestBodies: never;
   headers: never;
@@ -523,7 +585,7 @@ export interface operations {
   UpdateUserAuthorization: {
     parameters: {
       path: {
-        id: components["parameters"]["uuid"];
+        id: components["parameters"]["UUID"];
       };
     };
     /** @description Updated user object */
@@ -541,7 +603,7 @@ export interface operations {
   DeleteUser: {
     parameters: {
       path: {
-        id: components["parameters"]["uuid"];
+        id: components["parameters"]["UUID"];
       };
     };
     responses: {
@@ -553,7 +615,7 @@ export interface operations {
   UpdateUser: {
     parameters: {
       path: {
-        id: components["parameters"]["uuid"];
+        id: components["parameters"]["UUID"];
       };
     };
     /** @description Updated user object */
@@ -584,7 +646,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Project successfully initialized. */
+      /** @description Success. */
       204: never;
     };
   };
@@ -645,7 +707,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Project successfully initialized. */
+      /** @description Success. */
       200: {
         content: {
           "application/json": components["schemas"]["RestProjectBoardResponse"];
@@ -665,10 +727,112 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Project successfully initialized. */
+      /** @description Success. */
       200: {
         content: {
           "application/json": components["schemas"]["RestDemoWorkItemsResponse"];
+        };
+      };
+    };
+  };
+  /** create workitem tag */
+  CreateWorkitemTag: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RestWorkItemTagCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["DbWorkItemTag"];
+        };
+      };
+    };
+  };
+  /** create workitem */
+  CreateWorkitem: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RestDemoWorkItemCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["DbWorkItem"];
+        };
+      };
+    };
+  };
+  /** get workitem */
+  GetWorkitem: {
+    parameters: {
+      path: {
+        id: components["parameters"]["Serial"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DbWorkItem"];
+        };
+      };
+    };
+  };
+  /** delete workitem */
+  DeleteWorkitem: {
+    parameters: {
+      path: {
+        id: components["parameters"]["Serial"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+    };
+  };
+  /** update workitem */
+  UpdateWorkitem: {
+    parameters: {
+      path: {
+        id: components["parameters"]["Serial"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DbWorkItem"];
+        };
+      };
+    };
+  };
+  /** create workitem comment */
+  CreateWorkitemComment: {
+    parameters: {
+      path: {
+        id: components["parameters"]["Serial"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RestWorkItemCommentCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DbWorkItemComment"];
         };
       };
     };

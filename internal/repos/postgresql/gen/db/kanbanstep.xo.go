@@ -152,11 +152,11 @@ const kanbanStepTableProjectGroupBySQL = `_kanban_steps_project_id.project_id,
 // Insert inserts the KanbanStep to the database.
 func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`project_id, step_order, name, description, color, time_trackable` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO public.kanban_steps (
+	project_id, step_order, name, description, color, time_trackable
+	) VALUES (
+	$1, $2, $3, $4, $5, $6
+	) RETURNING * `
 	// run
 	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
 
@@ -177,10 +177,10 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 // Update updates a KanbanStep in the database.
 func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.kanban_steps SET ` +
-		`project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6 ` +
-		`WHERE kanban_step_id = $7 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE public.kanban_steps SET 
+	project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6 
+	WHERE kanban_step_id = $7 
+	RETURNING * `
 	// run
 	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
 
@@ -229,8 +229,8 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB, params *KanbanStepCreat
 // Delete deletes the KanbanStep from the database.
 func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.kanban_steps ` +
-		`WHERE kanban_step_id = $1 `
+	sqlstr := `DELETE FROM public.kanban_steps 
+	WHERE kanban_step_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID); err != nil {
 		return logerror(err)
@@ -288,20 +288,21 @@ func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStep
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.kanban_step_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.kanban_step_id > $1
+	 %s   %s 
   ORDER BY 
 		kanban_step_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByKanbanStepIDAsc */\n" + sqlstr
 
 	// run
 
@@ -366,20 +367,21 @@ func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.project_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.project_id > $1
+	 %s   %s 
   ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByProjectIDAsc */\n" + sqlstr
 
 	// run
 
@@ -444,20 +446,21 @@ func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.step_order > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.step_order > $1
+	 %s   %s 
   ORDER BY 
 		step_order Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByStepOrderAsc */\n" + sqlstr
 
 	// run
 
@@ -522,20 +525,21 @@ func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanSte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.kanban_step_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.kanban_step_id < $1
+	 %s   %s 
   ORDER BY 
 		kanban_step_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByKanbanStepIDDesc */\n" + sqlstr
 
 	// run
 
@@ -600,20 +604,21 @@ func KanbanStepPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.project_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.project_id < $1
+	 %s   %s 
   ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByProjectIDDesc */\n" + sqlstr
 
 	// run
 
@@ -678,20 +683,21 @@ func KanbanStepPaginatedByStepOrderDesc(ctx context.Context, db DB, stepOrder in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.step_order < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.step_order < $1
+	 %s   %s 
   ORDER BY 
 		step_order Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepPaginatedByStepOrderDesc */\n" + sqlstr
 
 	// run
 
@@ -758,20 +764,21 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.kanban_step_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.kanban_step_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepByKanbanStepID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, kanbanStepID)
@@ -839,20 +846,21 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND kanban_steps.step_order = $3`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND kanban_steps.step_order = $3
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepByProjectIDNameStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID, name, stepOrder)
@@ -920,20 +928,21 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...K
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.project_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.project_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepsByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
@@ -1003,20 +1012,21 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.name = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.name = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepsByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
@@ -1086,20 +1096,21 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.step_order = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.step_order = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepsByStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, stepOrder)
@@ -1169,20 +1180,21 @@ func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, s
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`kanban_steps.kanban_step_id,
-kanban_steps.project_id,
-kanban_steps.step_order,
-kanban_steps.name,
-kanban_steps.description,
-kanban_steps.color,
-kanban_steps.time_trackable %s `+
-		`FROM public.kanban_steps %s `+
-		` WHERE kanban_steps.project_id = $1 AND kanban_steps.step_order = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.kanban_step_id,
+	kanban_steps.project_id,
+	kanban_steps.step_order,
+	kanban_steps.name,
+	kanban_steps.description,
+	kanban_steps.color,
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
+	 WHERE kanban_steps.project_id = $1 AND kanban_steps.step_order = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* KanbanStepByProjectIDStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID, stepOrder)

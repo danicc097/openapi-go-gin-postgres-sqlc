@@ -1045,6 +1045,89 @@
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "RestWorkItemTagCreateRequest": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTagCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestDemoWorkItemCreateRequest": {
+      "properties": {
+        "base": {
+          "$ref": "#/definitions/DbWorkItemCreateParams"
+        },
+        "demoProject": {
+          "$ref": "#/definitions/DbDemoWorkItemCreateParams"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/ServicesMember"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "tagIDs": {
+          "items": {
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "demoProject",
+        "base",
+        "tagIDs",
+        "members"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoWorkItemCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestWorkItemCommentCreateRequest": {
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "userID",
+        "message"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemCommentCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "Project": {
       "enum": [
         "demo",
@@ -1261,6 +1344,108 @@
       ],
       "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoWorkItemCreateParams": {
+      "properties": {
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "ref": {
+          "pattern": "^[0-9]{8}$",
+          "type": "string"
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemCreateParams": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "metadata": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsWorkItemRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ServicesMember": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/ModelsWorkItemRole"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        }
+      },
+      "required": [
+        "userID",
+        "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1354,6 +1539,15 @@
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
     },
+    "RestWorkItemTagCreateRequest": {
+      "$ref": "#/definitions/RestWorkItemTagCreateRequest"
+    },
+    "RestDemoWorkItemCreateRequest": {
+      "$ref": "#/definitions/RestDemoWorkItemCreateRequest"
+    },
+    "RestWorkItemCommentCreateRequest": {
+      "$ref": "#/definitions/RestWorkItemCommentCreateRequest"
+    },
     "Project": {
       "$ref": "#/definitions/Project"
     },
@@ -1401,6 +1595,18 @@
     },
     "DemoWorkItemTypes": {
       "$ref": "#/definitions/DemoWorkItemTypes"
+    },
+    "DbDemoWorkItemCreateParams": {
+      "$ref": "#/definitions/DbDemoWorkItemCreateParams"
+    },
+    "DbWorkItemCreateParams": {
+      "$ref": "#/definitions/DbWorkItemCreateParams"
+    },
+    "ModelsWorkItemRole": {
+      "$ref": "#/definitions/ModelsWorkItemRole"
+    },
+    "ServicesMember": {
+      "$ref": "#/definitions/ServicesMember"
     }
   }
 }

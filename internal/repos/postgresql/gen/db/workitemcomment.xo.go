@@ -171,11 +171,11 @@ const workItemCommentTableWorkItemGroupBySQL = `_work_item_comments_work_item_id
 // Insert inserts the WorkItemComment to the database.
 func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_id, user_id, message` +
-		`) VALUES (` +
-		`$1, $2, $3` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO public.work_item_comments (
+	work_item_id, user_id, message
+	) VALUES (
+	$1, $2, $3
+	) RETURNING * `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
 
@@ -196,10 +196,10 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 // Update updates a WorkItemComment in the database.
 func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_comments SET ` +
-		`work_item_id = $1, user_id = $2, message = $3 ` +
-		`WHERE work_item_comment_id = $4 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE public.work_item_comments SET 
+	work_item_id = $1, user_id = $2, message = $3 
+	WHERE work_item_comment_id = $4 
+	RETURNING * `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
 
@@ -245,8 +245,8 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB, params *WorkItemC
 // Delete deletes the WorkItemComment from the database.
 func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_comments ` +
-		`WHERE work_item_comment_id = $1 `
+	sqlstr := `DELETE FROM public.work_item_comments 
+	WHERE work_item_comment_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID); err != nil {
 		return logerror(err)
@@ -310,19 +310,20 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_comments.work_item_comment_id,
-work_item_comments.work_item_id,
-work_item_comments.user_id,
-work_item_comments.message,
-work_item_comments.created_at,
-work_item_comments.updated_at %s `+
-		`FROM public.work_item_comments %s `+
-		` WHERE work_item_comments.work_item_comment_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+	work_item_comments.user_id,
+	work_item_comments.message,
+	work_item_comments.created_at,
+	work_item_comments.updated_at %s 
+	 FROM public.work_item_comments %s 
+	 WHERE work_item_comments.work_item_comment_id > $1
+	 %s   %s 
   ORDER BY 
 		work_item_comment_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentIDAsc */\n" + sqlstr
 
 	// run
 
@@ -393,19 +394,20 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_comments.work_item_comment_id,
-work_item_comments.work_item_id,
-work_item_comments.user_id,
-work_item_comments.message,
-work_item_comments.created_at,
-work_item_comments.updated_at %s `+
-		`FROM public.work_item_comments %s `+
-		` WHERE work_item_comments.work_item_comment_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+	work_item_comments.user_id,
+	work_item_comments.message,
+	work_item_comments.created_at,
+	work_item_comments.updated_at %s 
+	 FROM public.work_item_comments %s 
+	 WHERE work_item_comments.work_item_comment_id < $1
+	 %s   %s 
   ORDER BY 
 		work_item_comment_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentIDDesc */\n" + sqlstr
 
 	// run
 
@@ -478,19 +480,20 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_comments.work_item_comment_id,
-work_item_comments.work_item_id,
-work_item_comments.user_id,
-work_item_comments.message,
-work_item_comments.created_at,
-work_item_comments.updated_at %s `+
-		`FROM public.work_item_comments %s `+
-		` WHERE work_item_comments.work_item_comment_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+	work_item_comments.user_id,
+	work_item_comments.message,
+	work_item_comments.created_at,
+	work_item_comments.updated_at %s 
+	 FROM public.work_item_comments %s 
+	 WHERE work_item_comments.work_item_comment_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemCommentByWorkItemCommentID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemCommentID)
@@ -564,19 +567,20 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_comments.work_item_comment_id,
-work_item_comments.work_item_id,
-work_item_comments.user_id,
-work_item_comments.message,
-work_item_comments.created_at,
-work_item_comments.updated_at %s `+
-		`FROM public.work_item_comments %s `+
-		` WHERE work_item_comments.work_item_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id,
+	work_item_comments.user_id,
+	work_item_comments.message,
+	work_item_comments.created_at,
+	work_item_comments.updated_at %s 
+	 FROM public.work_item_comments %s 
+	 WHERE work_item_comments.work_item_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* WorkItemCommentsByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)

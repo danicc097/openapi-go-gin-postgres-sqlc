@@ -19,6 +19,18 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 						models.Scope("test-scope")},
 				}),
 		}
+	case CreateWorkitem:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case CreateWorkitemComment:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case CreateWorkitemTag:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case DeleteUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -29,6 +41,10 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 						models.Scope("test-scope"),
 						models.Scope("users:write")},
 				}),
+		}
+	case DeleteWorkitem:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
 		}
 	case Events:
 		return []gin.HandlerFunc{}
@@ -53,6 +69,10 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 				}),
 		}
 	case GetProjectWorkitems:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case GetWorkitem:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
@@ -95,6 +115,10 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 				AuthRestriction{
 					MinimumRole: models.Role("user"),
 				}),
+		}
+	case UpdateWorkitem:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
 		}
 	default:
 		return []gin.HandlerFunc{}

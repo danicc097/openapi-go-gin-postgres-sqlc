@@ -184,11 +184,11 @@ const bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL = `book_authors_surrogat
 // Insert inserts the BookAuthorsSurrogateKey to the database.
 func (bask *BookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*BookAuthorsSurrogateKey, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO xo_tests.book_authors_surrogate_key (` +
-		`book_id, author_id, pseudonym` +
-		`) VALUES (` +
-		`$1, $2, $3` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.book_authors_surrogate_key (
+	book_id, author_id, pseudonym
+	) VALUES (
+	$1, $2, $3
+	) RETURNING * `
 	// run
 	logf(sqlstr, bask.BookID, bask.AuthorID, bask.Pseudonym)
 
@@ -209,10 +209,10 @@ func (bask *BookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*BookAu
 // Update updates a BookAuthorsSurrogateKey in the database.
 func (bask *BookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*BookAuthorsSurrogateKey, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_authors_surrogate_key SET ` +
-		`book_id = $1, author_id = $2, pseudonym = $3 ` +
-		`WHERE book_authors_surrogate_key_id = $4 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE xo_tests.book_authors_surrogate_key SET 
+	book_id = $1, author_id = $2, pseudonym = $3 
+	WHERE book_authors_surrogate_key_id = $4 
+	RETURNING * `
 	// run
 	logf(sqlstr, bask.BookID, bask.AuthorID, bask.Pseudonym, bask.BookAuthorsSurrogateKeyID)
 
@@ -258,8 +258,8 @@ func (bask *BookAuthorsSurrogateKey) Upsert(ctx context.Context, db DB, params *
 // Delete deletes the BookAuthorsSurrogateKey from the database.
 func (bask *BookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.book_authors_surrogate_key ` +
-		`WHERE book_authors_surrogate_key_id = $1 `
+	sqlstr := `DELETE FROM xo_tests.book_authors_surrogate_key 
+	WHERE book_authors_surrogate_key_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, bask.BookAuthorsSurrogateKeyID); err != nil {
 		return logerror(err)
@@ -323,17 +323,18 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors_surrogate_key.book_authors_surrogate_key_id,
-book_authors_surrogate_key.book_id,
-book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym %s `+
-		`FROM xo_tests.book_authors_surrogate_key %s `+
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM xo_tests.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $1
+	 %s   %s 
   ORDER BY 
 		book_authors_surrogate_key_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc */\n" + sqlstr
 
 	// run
 
@@ -404,17 +405,18 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors_surrogate_key.book_authors_surrogate_key_id,
-book_authors_surrogate_key.book_id,
-book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym %s `+
-		`FROM xo_tests.book_authors_surrogate_key %s `+
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM xo_tests.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $1
+	 %s   %s 
   ORDER BY 
 		book_authors_surrogate_key_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc */\n" + sqlstr
 
 	// run
 
@@ -487,17 +489,18 @@ func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors_surrogate_key.book_authors_surrogate_key_id,
-book_authors_surrogate_key.book_id,
-book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym %s `+
-		`FROM xo_tests.book_authors_surrogate_key %s `+
-		` WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM xo_tests.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeyByBookIDAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
@@ -571,17 +574,18 @@ func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, op
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors_surrogate_key.book_authors_surrogate_key_id,
-book_authors_surrogate_key.book_id,
-book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym %s `+
-		`FROM xo_tests.book_authors_surrogate_key %s `+
-		` WHERE book_authors_surrogate_key.book_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM xo_tests.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeysByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
@@ -657,17 +661,18 @@ func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uui
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors_surrogate_key.book_authors_surrogate_key_id,
-book_authors_surrogate_key.book_id,
-book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym %s `+
-		`FROM xo_tests.book_authors_surrogate_key %s `+
-		` WHERE book_authors_surrogate_key.author_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM xo_tests.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.author_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeysByAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, authorID)
@@ -743,17 +748,18 @@ func BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors_surrogate_key.book_authors_surrogate_key_id,
-book_authors_surrogate_key.book_id,
-book_authors_surrogate_key.author_id,
-book_authors_surrogate_key.pseudonym %s `+
-		`FROM xo_tests.book_authors_surrogate_key %s `+
-		` WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM xo_tests.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)

@@ -98,11 +98,11 @@ func WithDummyJoinFilters(filters map[string][]any) DummyJoinSelectConfigOption 
 // Insert inserts the DummyJoin to the database.
 func (dj *DummyJoin) Insert(ctx context.Context, db DB) (*DummyJoin, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO xo_tests.dummy_join (` +
-		`name` +
-		`) VALUES (` +
-		`$1` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.dummy_join (
+	name
+	) VALUES (
+	$1
+	) RETURNING * `
 	// run
 	logf(sqlstr, dj.Name)
 
@@ -123,10 +123,10 @@ func (dj *DummyJoin) Insert(ctx context.Context, db DB) (*DummyJoin, error) {
 // Update updates a DummyJoin in the database.
 func (dj *DummyJoin) Update(ctx context.Context, db DB) (*DummyJoin, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.dummy_join SET ` +
-		`name = $1 ` +
-		`WHERE dummy_join_id = $2 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE xo_tests.dummy_join SET 
+	name = $1 
+	WHERE dummy_join_id = $2 
+	RETURNING * `
 	// run
 	logf(sqlstr, dj.Name, dj.DummyJoinID)
 
@@ -170,8 +170,8 @@ func (dj *DummyJoin) Upsert(ctx context.Context, db DB, params *DummyJoinCreateP
 // Delete deletes the DummyJoin from the database.
 func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.dummy_join ` +
-		`WHERE dummy_join_id = $1 `
+	sqlstr := `DELETE FROM xo_tests.dummy_join 
+	WHERE dummy_join_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dj.DummyJoinID); err != nil {
 		return logerror(err)
@@ -223,15 +223,16 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`dummy_join.dummy_join_id,
-dummy_join.name %s `+
-		`FROM xo_tests.dummy_join %s `+
-		` WHERE dummy_join.dummy_join_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	dummy_join.dummy_join_id,
+	dummy_join.name %s 
+	 FROM xo_tests.dummy_join %s 
+	 WHERE dummy_join.dummy_join_id > $1
+	 %s   %s 
   ORDER BY 
 		dummy_join_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DummyJoinPaginatedByDummyJoinIDAsc */\n" + sqlstr
 
 	// run
 
@@ -290,15 +291,16 @@ func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`dummy_join.dummy_join_id,
-dummy_join.name %s `+
-		`FROM xo_tests.dummy_join %s `+
-		` WHERE dummy_join.dummy_join_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	dummy_join.dummy_join_id,
+	dummy_join.name %s 
+	 FROM xo_tests.dummy_join %s 
+	 WHERE dummy_join.dummy_join_id < $1
+	 %s   %s 
   ORDER BY 
 		dummy_join_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DummyJoinPaginatedByDummyJoinIDDesc */\n" + sqlstr
 
 	// run
 
@@ -359,15 +361,16 @@ func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`dummy_join.dummy_join_id,
-dummy_join.name %s `+
-		`FROM xo_tests.dummy_join %s `+
-		` WHERE dummy_join.dummy_join_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	dummy_join.dummy_join_id,
+	dummy_join.name %s 
+	 FROM xo_tests.dummy_join %s 
+	 WHERE dummy_join.dummy_join_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DummyJoinByDummyJoinID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, dummyJoinID)

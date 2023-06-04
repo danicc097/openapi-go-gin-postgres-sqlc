@@ -160,12 +160,12 @@ const demoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_
 // Insert inserts the DemoWorkItem to the database.
 func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO public.demo_work_items (` +
-		`work_item_id, ref, line, last_message_at, reopened` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` RETURNING * `
+	sqlstr := `INSERT INTO public.demo_work_items (
+	work_item_id, ref, line, last_message_at, reopened
+	) VALUES (
+	$1, $2, $3, $4, $5
+	)
+	 RETURNING * `
 	// run
 	logf(sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened)
 	rows, err := db.Query(ctx, sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened)
@@ -184,10 +184,10 @@ func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, erro
 // Update updates a DemoWorkItem in the database.
 func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.demo_work_items SET ` +
-		`ref = $1, line = $2, last_message_at = $3, reopened = $4 ` +
-		`WHERE work_item_id = $5 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE public.demo_work_items SET 
+	ref = $1, line = $2, last_message_at = $3, reopened = $4 
+	WHERE work_item_id = $5 
+	RETURNING * `
 	// run
 	logf(sqlstr, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened, dwi.WorkItemID)
 
@@ -235,8 +235,8 @@ func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB, params *DemoWorkItem
 // Delete deletes the DemoWorkItem from the database.
 func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.demo_work_items ` +
-		`WHERE work_item_id = $1 `
+	sqlstr := `DELETE FROM public.demo_work_items 
+	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dwi.WorkItemID); err != nil {
 		return logerror(err)
@@ -294,18 +294,19 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_work_items.work_item_id,
-demo_work_items.ref,
-demo_work_items.line,
-demo_work_items.last_message_at,
-demo_work_items.reopened %s `+
-		`FROM public.demo_work_items %s `+
-		` WHERE demo_work_items.work_item_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.work_item_id,
+	demo_work_items.ref,
+	demo_work_items.line,
+	demo_work_items.last_message_at,
+	demo_work_items.reopened %s 
+	 FROM public.demo_work_items %s 
+	 WHERE demo_work_items.work_item_id > $1
+	 %s   %s 
   ORDER BY 
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
 
 	// run
 
@@ -370,18 +371,19 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_work_items.work_item_id,
-demo_work_items.ref,
-demo_work_items.line,
-demo_work_items.last_message_at,
-demo_work_items.reopened %s `+
-		`FROM public.demo_work_items %s `+
-		` WHERE demo_work_items.work_item_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.work_item_id,
+	demo_work_items.ref,
+	demo_work_items.line,
+	demo_work_items.last_message_at,
+	demo_work_items.reopened %s 
+	 FROM public.demo_work_items %s 
+	 WHERE demo_work_items.work_item_id < $1
+	 %s   %s 
   ORDER BY 
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
 
 	// run
 
@@ -448,18 +450,19 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_work_items.work_item_id,
-demo_work_items.ref,
-demo_work_items.line,
-demo_work_items.last_message_at,
-demo_work_items.reopened %s `+
-		`FROM public.demo_work_items %s `+
-		` WHERE demo_work_items.work_item_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.work_item_id,
+	demo_work_items.ref,
+	demo_work_items.line,
+	demo_work_items.last_message_at,
+	demo_work_items.reopened %s 
+	 FROM public.demo_work_items %s 
+	 WHERE demo_work_items.work_item_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
@@ -527,18 +530,19 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_work_items.work_item_id,
-demo_work_items.ref,
-demo_work_items.line,
-demo_work_items.last_message_at,
-demo_work_items.reopened %s `+
-		`FROM public.demo_work_items %s `+
-		` WHERE demo_work_items.ref = $1 AND demo_work_items.line = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.work_item_id,
+	demo_work_items.ref,
+	demo_work_items.line,
+	demo_work_items.last_message_at,
+	demo_work_items.reopened %s 
+	 FROM public.demo_work_items %s 
+	 WHERE demo_work_items.ref = $1 AND demo_work_items.line = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* DemoWorkItemsByRefLine */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, ref, line)

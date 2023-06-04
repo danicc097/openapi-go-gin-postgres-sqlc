@@ -43,6 +43,7 @@ export type Topics = 'GlobalAlerts'
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
+export type ModelsWorkItemRole = string
 export type DbWorkItemRole = string
 /**
  * represents a database 'notification_type'
@@ -290,6 +291,44 @@ export interface DbWorkItem {
   updatedAt: string
   workItemID: number
   workItemTypeID: number
+}
+export interface RestWorkItemTagCreateRequest {
+  color: string
+  description: string
+  name: string
+  projectID: number
+}
+export interface RestDemoWorkItemCreateRequest {
+  base: DbWorkItemCreateParams
+  demoProject: DbDemoWorkItemCreateParams
+  members: ServicesMember[] | null
+  tagIDs: number[] | null
+}
+export interface DbWorkItemCreateParams {
+  closed: string | null
+  description: string
+  kanbanStepID: number
+  metadata: number[] | null
+  targetDate: string
+  teamID: number
+  title: string
+  workItemTypeID: number
+}
+export interface DbDemoWorkItemCreateParams {
+  lastMessageAt: string
+  line: string
+  ref: string
+  reopened: boolean
+  workItemID: number
+}
+export interface ServicesMember {
+  role: ModelsWorkItemRole
+  userID: UuidUUID
+}
+export interface RestWorkItemCommentCreateRequest {
+  message: string
+  userID: UuidUUID
+  workItemID: number
 }
 export interface DbKanbanStepCreateParams {
   color?: string

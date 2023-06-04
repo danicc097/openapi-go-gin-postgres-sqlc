@@ -1,9 +1,12 @@
 package rest
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -51,4 +54,23 @@ func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 	// res := UserResponse{UserPublic: user.ToPublic(), Role: role.Name, Scopes: user.Scopes}
 
 	// c.JSON(http.StatusOK, res)
+}
+
+// create workitem tag
+func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
+	ctx := c.Request.Context()
+
+	defer newOTELSpan(ctx, "CreateWorkitemTag", trace.WithAttributes(userIDAttribute(c))).End()
+
+	user := getUserFromCtx(c)
+	if user == nil {
+		renderErrorResponse(c, "user not found", errors.New("user not found"))
+
+		return
+	}
+	h.workitemtagsvc.Create(c, h.pool, &db.WorkItemTagCreateParams{
+		ProjectID: internal.ProjectIDByName[project],
+		// TODO params + oapi path parameters override name
+	})
+	c.JSON(http.StatusNotImplemented, "not implemented")
 }

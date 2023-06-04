@@ -34,6 +34,9 @@ import {
   UuidUUID,
   PgtypeJSONB,
   DbWorkItem,
+  RestWorkItemTagCreateRequest,
+  RestDemoWorkItemCreateRequest,
+  RestWorkItemCommentCreateRequest,
   Project,
   DbActivityCreateParams,
   DbKanbanStepCreateParams,
@@ -50,6 +53,10 @@ import {
   DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
+  DbDemoWorkItemCreateParams,
+  DbWorkItemCreateParams,
+  ModelsWorkItemRole,
+  ServicesMember,
 } from './models'
 
 export const schemaDefinitions = {
@@ -92,6 +99,18 @@ export const schemaDefinitions = {
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
+  RestWorkItemTagCreateRequest: info<RestWorkItemTagCreateRequest>(
+    'RestWorkItemTagCreateRequest',
+    '#/definitions/RestWorkItemTagCreateRequest',
+  ),
+  RestDemoWorkItemCreateRequest: info<RestDemoWorkItemCreateRequest>(
+    'RestDemoWorkItemCreateRequest',
+    '#/definitions/RestDemoWorkItemCreateRequest',
+  ),
+  RestWorkItemCommentCreateRequest: info<RestWorkItemCommentCreateRequest>(
+    'RestWorkItemCommentCreateRequest',
+    '#/definitions/RestWorkItemCommentCreateRequest',
+  ),
   Project: info<Project>('Project', '#/definitions/Project'),
   DbActivityCreateParams: info<DbActivityCreateParams>(
     'DbActivityCreateParams',
@@ -129,6 +148,16 @@ export const schemaDefinitions = {
   DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
   DemoTwoWorkItemTypes: info<DemoTwoWorkItemTypes>('DemoTwoWorkItemTypes', '#/definitions/DemoTwoWorkItemTypes'),
   DemoWorkItemTypes: info<DemoWorkItemTypes>('DemoWorkItemTypes', '#/definitions/DemoWorkItemTypes'),
+  DbDemoWorkItemCreateParams: info<DbDemoWorkItemCreateParams>(
+    'DbDemoWorkItemCreateParams',
+    '#/definitions/DbDemoWorkItemCreateParams',
+  ),
+  DbWorkItemCreateParams: info<DbWorkItemCreateParams>(
+    'DbWorkItemCreateParams',
+    '#/definitions/DbWorkItemCreateParams',
+  ),
+  ModelsWorkItemRole: info<ModelsWorkItemRole>('ModelsWorkItemRole', '#/definitions/ModelsWorkItemRole'),
+  ServicesMember: info<ServicesMember>('ServicesMember', '#/definitions/ServicesMember'),
 }
 
 export interface SchemaInfo<T> {

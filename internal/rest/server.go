@@ -197,7 +197,30 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	case "prod":
 		vg.Use(rlMw.Limit())
 	}
-
+	workitemrepo := reposwrappers.NewWorkItemWithTracing(
+		reposwrappers.NewWorkItemWithTimeout(
+			postgresql.NewWorkItem(),
+			reposwrappers.WorkItemWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	demoworkitemrepo := reposwrappers.NewDemoWorkItemWithTracing(
+		reposwrappers.NewDemoWorkItemWithTimeout(
+			postgresql.NewDemoWorkItem(),
+			reposwrappers.DemoWorkItemWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	workitemtagrepo := reposwrappers.NewWorkItemTagWithTracing(
+		reposwrappers.NewWorkItemTagWithTimeout(
+			postgresql.NewWorkItemTag(),
+			reposwrappers.WorkItemTagWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
 	urepo := reposwrappers.NewUserWithTracing(
 		reposwrappers.NewUserWithTimeout(
 			postgresql.NewUser(),
@@ -220,10 +243,23 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
 	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
+	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, demoworkitemrepo, workitemrepo)
+	workitemtagsvc := services.NewWorkItemTag(conf.Logger, workitemtagrepo)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
-	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw, provider)
+	handlers := NewHandlers(
+		conf.Logger,
+		conf.Pool,
+		conf.MovieSvcClient,
+		usvc,
+		demoworkitemsvc,
+		workitemtagsvc,
+		authzsvc,
+		authnsvc,
+		authmw,
+		provider,
+	)
 
 	RegisterHandlers(vg, handlers)
 

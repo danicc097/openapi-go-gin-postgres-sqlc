@@ -58,3 +58,11 @@ type UserCreateRequest struct {
 type DemoWorkItemCreateRequest struct {
 	services.DemoWorkItemCreateParams
 }
+
+type WorkItemTagCreateRequest struct {
+	db.WorkItemTagCreateParams
+}
+
+type WorkItemCommentCreateRequest struct {
+	db.WorkItemCommentCreateParams
+}

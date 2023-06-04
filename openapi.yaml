@@ -139,7 +139,7 @@ paths:
       summary: updates user role and scopes by id
       operationId: UpdateUserAuthorization
       parameters:
-        - $ref: '#/components/parameters/uuid'
+        - $ref: '#/components/parameters/UUID'
       requestBody:
         content:
           application/json:
@@ -161,7 +161,7 @@ paths:
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
-        - $ref: '#/components/parameters/uuid'
+        - $ref: '#/components/parameters/UUID'
       responses:
         "404":
           description: User not found
@@ -178,7 +178,7 @@ paths:
       summary: updates the user by id
       operationId: UpdateUser
       parameters:
-        - $ref: '#/components/parameters/uuid'
+        - $ref: '#/components/parameters/UUID'
       requestBody:
         content:
           application/json:
@@ -213,7 +213,7 @@ paths:
         required: true
       responses:
         "204":
-          description: Project successfully initialized.
+          description: Success.
       tags:
         - project
       x-required-role: admin
@@ -284,7 +284,7 @@ paths:
         - $ref: '#/components/parameters/ProjectName'
       responses:
         "200":
-          description: Project successfully initialized.
+          description: Success.
           content:
             application/json:
               schema:
@@ -310,7 +310,7 @@ paths:
           name: deleted
       responses:
         "200":
-          description: Project successfully initialized.
+          description: Success.
           content:
             application/json:
               schema:
@@ -318,6 +318,129 @@ paths:
                   - $ref: '#/components/schemas/RestDemoWorkItemsResponse'
       tags:
         - project
+  /project/{projectName}/tag/:
+    post:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: create workitem tag
+      operationId: CreateWorkitemTag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestWorkItemTagCreateRequest'
+        required: true
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      responses:
+        "201":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DbWorkItemTag'
+      tags:
+        - project
+  /workitem/:
+    post:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: create workitem
+      operationId: CreateWorkitem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestDemoWorkItemCreateRequest'
+        required: true
+      responses:
+        "201":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DbWorkItem'
+      tags:
+        - workitem
+  /workitem/{id}/:
+    get:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: get workitem
+      operationId: GetWorkitem
+      parameters:
+        - $ref: '#/components/parameters/Serial'
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DbWorkItem'
+      tags:
+        - workitem
+    patch:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: update workitem
+      operationId: UpdateWorkitem
+      parameters:
+        - $ref: '#/components/parameters/Serial'
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DbWorkItem'
+      tags:
+        - workitem
+    delete:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: delete workitem
+      operationId: DeleteWorkitem
+      parameters:
+        - $ref: '#/components/parameters/Serial'
+      responses:
+        "204":
+          description: Success.
+      tags:
+        - workitem
+  /workitem/{id}/comments/:
+    post:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: create workitem comment
+      operationId: CreateWorkitemComment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestWorkItemCommentCreateRequest'
+        required: true
+      parameters:
+        - $ref: '#/components/parameters/Serial'
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DbWorkItemComment'
+      tags:
+        - workitem
 components:
   parameters:
     ProjectName:
@@ -330,8 +453,8 @@ components:
         $ref: '#/components/schemas/Project'
       example: demo
       style: simple
-    uuid:
-      description: UUID identifier of entity that needs to be updated
+    UUID:
+      description: UUID identifier
       explode: false
       in: path
       name: id
@@ -341,8 +464,8 @@ components:
         pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       example: 123e4567-e89b-12d3-a456-426614174000
       style: simple
-    PathSerial:
-      description: integer identifier that needs to be updated
+    Serial:
+      description: integer identifier
       explode: false
       in: path
       name: id
@@ -1077,6 +1200,60 @@ components:
         - deletedAt
       type: object
       x-postgen-struct: DbWorkItem
+    RestWorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      required:
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-postgen-struct: RestWorkItemTagCreateRequest
+    RestDemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoProject:
+          $ref: '#/components/schemas/DbDemoWorkItemCreateParams'
+        members:
+          items:
+            $ref: '#/components/schemas/ServicesMember'
+          nullable: true
+          type: array
+        tagIDs:
+          items:
+            type: integer
+          nullable: true
+          type: array
+      required:
+        - demoProject
+        - base
+        - tagIDs
+        - members
+      type: object
+      x-postgen-struct: RestDemoWorkItemCreateRequest
+    RestWorkItemCommentCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        message:
+          type: string
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+        - userID
+        - message
+      type: object
+      x-postgen-struct: RestWorkItemCommentCreateRequest
     Project: # Generated from projects table. DO NOT EDIT.
       enum:
         - demo
@@ -1218,6 +1395,74 @@ components:
       enum:
         - Type 1
       x-generated: '-'
+    DbDemoWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        lastMessageAt:
+          format: date-time
+          type: string
+        line:
+          type: string
+        ref:
+          pattern: ^[0-9]{8}$
+          type: string
+        reopened:
+          type: boolean
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+        - ref
+        - line
+        - lastMessageAt
+        - reopened
+      type: object
+    DbWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        closed:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        metadata:
+          items:
+            minimum: 0
+            type: integer
+          nullable: true
+          type: array
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          type: integer
+        title:
+          type: string
+        workItemTypeID:
+          type: integer
+      required:
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - closed
+        - targetDate
+      type: object
+    ModelsWorkItemRole: # Generated from internal structs. DO NOT EDIT.
+      type: string
+    ServicesMember: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/ModelsWorkItemRole'
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+      required:
+        - userID
+        - role
+      type: object
   examples:
     User:
       value:

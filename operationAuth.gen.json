@@ -83,5 +83,35 @@
     "scopes": null,
     "role": null,
     "requiresAuthentication": true
+  },
+  "CreateWorkitemTag": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "CreateWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "CreateWorkitemComment": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
   }
 }

@@ -158,12 +158,12 @@ const userTeamTableMembersGroupBySQL = `user_team.member, user_team.team_id, use
 // Insert inserts the UserTeam to the database.
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO public.user_team (` +
-		`team_id, member` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` RETURNING * `
+	sqlstr := `INSERT INTO public.user_team (
+	team_id, member
+	) VALUES (
+	$1, $2
+	)
+	 RETURNING * `
 	// run
 	logf(sqlstr, ut.TeamID, ut.Member)
 	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.Member)
@@ -184,8 +184,8 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 // Delete deletes the UserTeam from the database.
 func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.user_team ` +
-		`WHERE team_id = $1 AND member = $2 `
+	sqlstr := `DELETE FROM public.user_team 
+	WHERE team_id = $1 AND member = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.Member); err != nil {
 		return logerror(err)
@@ -251,15 +251,16 @@ func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...Use
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_team.team_id,
-user_team.member %s `+
-		`FROM public.user_team %s `+
-		` WHERE user_team.member = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_team.team_id,
+	user_team.member %s 
+	 FROM public.user_team %s 
+	 WHERE user_team.member = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserTeamsByMember */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, member)
@@ -335,15 +336,16 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_team.team_id,
-user_team.member %s `+
-		`FROM public.user_team %s `+
-		` WHERE user_team.member = $1 AND user_team.team_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_team.team_id,
+	user_team.member %s 
+	 FROM public.user_team %s 
+	 WHERE user_team.member = $1 AND user_team.team_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserTeamByMemberTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, member, teamID)
@@ -417,15 +419,16 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_team.team_id,
-user_team.member %s `+
-		`FROM public.user_team %s `+
-		` WHERE user_team.team_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_team.team_id,
+	user_team.member %s 
+	 FROM public.user_team %s 
+	 WHERE user_team.team_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserTeamsByTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID)
@@ -501,15 +504,16 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`user_team.team_id,
-user_team.member %s `+
-		`FROM public.user_team %s `+
-		` WHERE user_team.team_id = $1 AND user_team.member = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_team.team_id,
+	user_team.member %s 
+	 FROM public.user_team %s 
+	 WHERE user_team.team_id = $1 AND user_team.member = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* UserTeamsByTeamIDMember */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID, member)

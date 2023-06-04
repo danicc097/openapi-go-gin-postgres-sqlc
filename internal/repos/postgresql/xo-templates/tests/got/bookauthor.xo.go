@@ -183,12 +183,12 @@ const bookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors
 // Insert inserts the BookAuthor to the database.
 func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO xo_tests.book_authors (` +
-		`book_id, author_id, pseudonym` +
-		`) VALUES (` +
-		`$1, $2, $3` +
-		`)` +
-		` RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.book_authors (
+	book_id, author_id, pseudonym
+	) VALUES (
+	$1, $2, $3
+	)
+	 RETURNING * `
 	// run
 	logf(sqlstr, ba.BookID, ba.AuthorID, ba.Pseudonym)
 	rows, err := db.Query(ctx, sqlstr, ba.BookID, ba.AuthorID, ba.Pseudonym)
@@ -207,10 +207,10 @@ func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 // Update updates a BookAuthor in the database.
 func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_authors SET ` +
-		`pseudonym = $1 ` +
-		`WHERE book_id = $2  AND author_id = $3 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE xo_tests.book_authors SET 
+	pseudonym = $1 
+	WHERE book_id = $2  AND author_id = $3 
+	RETURNING * `
 	// run
 	logf(sqlstr, ba.Pseudonym, ba.BookID, ba.AuthorID)
 
@@ -256,8 +256,8 @@ func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreat
 // Delete deletes the BookAuthor from the database.
 func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM xo_tests.book_authors ` +
-		`WHERE book_id = $1 AND author_id = $2 `
+	sqlstr := `DELETE FROM xo_tests.book_authors 
+	WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, ba.BookID, ba.AuthorID); err != nil {
 		return logerror(err)
@@ -323,16 +323,17 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors.book_id,
-book_authors.author_id,
-book_authors.pseudonym %s `+
-		`FROM xo_tests.book_authors %s `+
-		` WHERE book_authors.book_id = $1 AND book_authors.author_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors.book_id,
+	book_authors.author_id,
+	book_authors.pseudonym %s 
+	 FROM xo_tests.book_authors %s 
+	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorByBookIDAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
@@ -406,16 +407,17 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors.book_id,
-book_authors.author_id,
-book_authors.pseudonym %s `+
-		`FROM xo_tests.book_authors %s `+
-		` WHERE book_authors.book_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors.book_id,
+	book_authors.author_id,
+	book_authors.pseudonym %s 
+	 FROM xo_tests.book_authors %s 
+	 WHERE book_authors.book_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
@@ -491,16 +493,17 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_authors.book_id,
-book_authors.author_id,
-book_authors.pseudonym %s `+
-		`FROM xo_tests.book_authors %s `+
-		` WHERE book_authors.author_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors.book_id,
+	book_authors.author_id,
+	book_authors.pseudonym %s 
+	 FROM xo_tests.book_authors %s 
+	 WHERE book_authors.author_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
+	sqlstr = "/* BookAuthorsByAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, authorID)
