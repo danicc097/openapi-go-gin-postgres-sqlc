@@ -145,11 +145,11 @@ const pagElementTableDummyJoinGroupBySQL = `_pag_element_dummy.dummy_join_id,
 // Insert inserts the PagElement to the database.
 func (pe *PagElement) Insert(ctx context.Context, db DB) (*PagElement, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO xo_tests.pag_element (` +
-		`name, dummy` +
-		`) VALUES (` +
-		`$1, $2` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.pag_element (
+	name, dummy
+	) VALUES (
+	$1, $2
+	) RETURNING * `
 	// run
 	logf(sqlstr, pe.Name, pe.Dummy)
 
@@ -170,10 +170,10 @@ func (pe *PagElement) Insert(ctx context.Context, db DB) (*PagElement, error) {
 // Update updates a PagElement in the database.
 func (pe *PagElement) Update(ctx context.Context, db DB) (*PagElement, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.pag_element SET ` +
-		`name = $1, dummy = $2 ` +
-		`WHERE paginated_element_id = $3 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE xo_tests.pag_element SET 
+	name = $1, dummy = $2 
+	WHERE paginated_element_id = $3 
+	RETURNING * `
 	// run
 	logf(sqlstr, pe.Name, pe.CreatedAt, pe.Dummy, pe.PaginatedElementID)
 
@@ -218,8 +218,8 @@ func (pe *PagElement) Upsert(ctx context.Context, db DB, params *PagElementCreat
 // Delete deletes the PagElement from the database.
 func (pe *PagElement) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.pag_element ` +
-		`WHERE paginated_element_id = $1 `
+	sqlstr := `DELETE FROM xo_tests.pag_element 
+	WHERE paginated_element_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, pe.PaginatedElementID); err != nil {
 		return logerror(err)
@@ -277,14 +277,14 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`pag_element.paginated_element_id,
-pag_element.name,
-pag_element.created_at,
-pag_element.dummy %s `+
-		`FROM xo_tests.pag_element %s `+
-		` WHERE pag_element.created_at > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	pag_element.paginated_element_id,
+	pag_element.name,
+	pag_element.created_at,
+	pag_element.dummy %s 
+	 FROM xo_tests.pag_element %s 
+	 WHERE pag_element.created_at > $1
+	 %s   %s 
   ORDER BY 
 		created_at Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -353,14 +353,14 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`pag_element.paginated_element_id,
-pag_element.name,
-pag_element.created_at,
-pag_element.dummy %s `+
-		`FROM xo_tests.pag_element %s `+
-		` WHERE pag_element.created_at < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	pag_element.paginated_element_id,
+	pag_element.name,
+	pag_element.created_at,
+	pag_element.dummy %s 
+	 FROM xo_tests.pag_element %s 
+	 WHERE pag_element.created_at < $1
+	 %s   %s 
   ORDER BY 
 		created_at Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -431,14 +431,14 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`pag_element.paginated_element_id,
-pag_element.name,
-pag_element.created_at,
-pag_element.dummy %s `+
-		`FROM xo_tests.pag_element %s `+
-		` WHERE pag_element.created_at = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	pag_element.paginated_element_id,
+	pag_element.name,
+	pag_element.created_at,
+	pag_element.dummy %s 
+	 FROM xo_tests.pag_element %s 
+	 WHERE pag_element.created_at = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -510,14 +510,14 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`pag_element.paginated_element_id,
-pag_element.name,
-pag_element.created_at,
-pag_element.dummy %s `+
-		`FROM xo_tests.pag_element %s `+
-		` WHERE pag_element.paginated_element_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	pag_element.paginated_element_id,
+	pag_element.name,
+	pag_element.created_at,
+	pag_element.dummy %s 
+	 FROM xo_tests.pag_element %s 
+	 WHERE pag_element.paginated_element_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

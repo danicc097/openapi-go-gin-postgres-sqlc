@@ -157,12 +157,12 @@ const workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL = `work_item_work_i
 // Insert inserts the WorkItemWorkItemTag to the database.
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO public.work_item_work_item_tag (` +
-		`work_item_tag_id, work_item_id` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` RETURNING * `
+	sqlstr := `INSERT INTO public.work_item_work_item_tag (
+	work_item_tag_id, work_item_id
+	) VALUES (
+	$1, $2
+	)
+	 RETURNING * `
 	// run
 	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
 	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
@@ -183,8 +183,8 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 // Delete deletes the WorkItemWorkItemTag from the database.
 func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.work_item_work_item_tag ` +
-		`WHERE work_item_tag_id = $1 AND work_item_id = $2 `
+	sqlstr := `DELETE FROM public.work_item_work_item_tag 
+	WHERE work_item_tag_id = $1 AND work_item_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID); err != nil {
 		return logerror(err)
@@ -248,12 +248,12 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Contex
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id %s `+
-		`FROM public.work_item_work_item_tag %s `+
-		` WHERE work_item_work_item_tag.work_item_tag_id > $1 AND work_item_work_item_tag.work_item_id > $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_work_item_tag.work_item_tag_id,
+	work_item_work_item_tag.work_item_id %s 
+	 FROM public.work_item_work_item_tag %s 
+	 WHERE work_item_work_item_tag.work_item_tag_id > $1 AND work_item_work_item_tag.work_item_id > $2
+	 %s   %s 
   ORDER BY 
 		work_item_tag_id Asc ,
 		work_item_id Asc`, selects, joins, filters, groupbys)
@@ -329,12 +329,12 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Conte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id %s `+
-		`FROM public.work_item_work_item_tag %s `+
-		` WHERE work_item_work_item_tag.work_item_tag_id < $1 AND work_item_work_item_tag.work_item_id < $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_work_item_tag.work_item_tag_id,
+	work_item_work_item_tag.work_item_id %s 
+	 FROM public.work_item_work_item_tag %s 
+	 WHERE work_item_work_item_tag.work_item_tag_id < $1 AND work_item_work_item_tag.work_item_id < $2
+	 %s   %s 
   ORDER BY 
 		work_item_tag_id Desc ,
 		work_item_id Desc`, selects, joins, filters, groupbys)
@@ -412,12 +412,12 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id %s `+
-		`FROM public.work_item_work_item_tag %s `+
-		` WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_work_item_tag.work_item_tag_id,
+	work_item_work_item_tag.work_item_id %s 
+	 FROM public.work_item_work_item_tag %s 
+	 WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -495,12 +495,12 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id %s `+
-		`FROM public.work_item_work_item_tag %s `+
-		` WHERE work_item_work_item_tag.work_item_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_work_item_tag.work_item_tag_id,
+	work_item_work_item_tag.work_item_id %s 
+	 FROM public.work_item_work_item_tag %s 
+	 WHERE work_item_work_item_tag.work_item_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -580,12 +580,12 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id %s `+
-		`FROM public.work_item_work_item_tag %s `+
-		` WHERE work_item_work_item_tag.work_item_tag_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_work_item_tag.work_item_tag_id,
+	work_item_work_item_tag.work_item_id %s 
+	 FROM public.work_item_work_item_tag %s 
+	 WHERE work_item_work_item_tag.work_item_tag_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -665,12 +665,12 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id %s `+
-		`FROM public.work_item_work_item_tag %s `+
-		` WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_work_item_tag.work_item_tag_id,
+	work_item_work_item_tag.work_item_id %s 
+	 FROM public.work_item_work_item_tag %s 
+	 WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

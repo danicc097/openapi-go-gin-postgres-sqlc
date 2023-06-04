@@ -139,12 +139,12 @@ const demoTwoWorkItemTableWorkItemGroupBySQL = `_demo_two_work_items_work_item_i
 // Insert inserts the DemoTwoWorkItem to the database.
 func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO public.demo_two_work_items (` +
-		`work_item_id, custom_date_for_project_2` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` RETURNING * `
+	sqlstr := `INSERT INTO public.demo_two_work_items (
+	work_item_id, custom_date_for_project_2
+	) VALUES (
+	$1, $2
+	)
+	 RETURNING * `
 	// run
 	logf(sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
 	rows, err := db.Query(ctx, sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
@@ -163,10 +163,10 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 // Update updates a DemoTwoWorkItem in the database.
 func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.demo_two_work_items SET ` +
-		`custom_date_for_project_2 = $1 ` +
-		`WHERE work_item_id = $2 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE public.demo_two_work_items SET 
+	custom_date_for_project_2 = $1 
+	WHERE work_item_id = $2 
+	RETURNING * `
 	// run
 	logf(sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
 
@@ -211,8 +211,8 @@ func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoW
 // Delete deletes the DemoTwoWorkItem from the database.
 func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.demo_two_work_items ` +
-		`WHERE work_item_id = $1 `
+	sqlstr := `DELETE FROM public.demo_two_work_items 
+	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dtwi.WorkItemID); err != nil {
 		return logerror(err)
@@ -270,12 +270,12 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_two_work_items.work_item_id,
-demo_two_work_items.custom_date_for_project_2 %s `+
-		`FROM public.demo_two_work_items %s `+
-		` WHERE demo_two_work_items.work_item_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_two_work_items.work_item_id,
+	demo_two_work_items.custom_date_for_project_2 %s 
+	 FROM public.demo_two_work_items %s 
+	 WHERE demo_two_work_items.work_item_id > $1
+	 %s   %s 
   ORDER BY 
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -344,12 +344,12 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_two_work_items.work_item_id,
-demo_two_work_items.custom_date_for_project_2 %s `+
-		`FROM public.demo_two_work_items %s `+
-		` WHERE demo_two_work_items.work_item_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_two_work_items.work_item_id,
+	demo_two_work_items.custom_date_for_project_2 %s 
+	 FROM public.demo_two_work_items %s 
+	 WHERE demo_two_work_items.work_item_id < $1
+	 %s   %s 
   ORDER BY 
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -420,12 +420,12 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`demo_two_work_items.work_item_id,
-demo_two_work_items.custom_date_for_project_2 %s `+
-		`FROM public.demo_two_work_items %s `+
-		` WHERE demo_two_work_items.work_item_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_two_work_items.work_item_id,
+	demo_two_work_items.custom_date_for_project_2 %s 
+	 FROM public.demo_two_work_items %s 
+	 WHERE demo_two_work_items.work_item_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

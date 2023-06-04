@@ -2589,7 +2589,7 @@ func (f *Funcs) sqlstr(typ string, v any) string {
 	default:
 		return fmt.Sprintf("const sqlstr = `UNKNOWN QUERY TYPE: %s`", typ)
 	}
-	return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+	return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "\n\t"))
 }
 
 // check pk can be straightforwardly used as cursor
@@ -2675,8 +2675,8 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field, order st
 
 		lines := []string{
 			"SELECT ",
-			strings.Join(fields, ",\n") + " %s ",
-			"FROM " + f.schemafn(x.SQLName) + " %s ",
+			strings.Join(fields, ",\n\t") + " %s ",
+			" FROM " + f.schemafn(x.SQLName) + " %s ",
 			" WHERE " + strings.Join(filters, " AND "),
 			" %s ",
 		}
@@ -2687,14 +2687,14 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field, order st
 
 		if tableHasDeletedAt {
 			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins, filters, c.deletedAt, groupbys)",
-				strings.Join(lines, "` +\n\t `"),
+				strings.Join(lines, "\n\t"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
 				groupbyClause,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 			))
 		} else {
 			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, groupbys)",
-				strings.Join(lines, "` +\n\t `"),
+				strings.Join(lines, "\n\t"),
 				groupbyClause,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 			))
@@ -3030,8 +3030,8 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 
 		lines := []string{
 			"SELECT ",
-			strings.Join(fields, ",\n") + " %s ",
-			"FROM " + f.schemafn(x.Table.SQLName) + " %s ",
+			strings.Join(fields, ",\n\t") + " %s ",
+			" FROM " + f.schemafn(x.Table.SQLName) + " %s ",
 			" WHERE " + strings.Join(filters, " AND "),
 			" %s ",
 		}
@@ -3042,13 +3042,13 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 
 		if tableHasDeletedAt {
 			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, c.deletedAt, groupbys)",
-				strings.Join(lines, "` +\n\t `"),
+				strings.Join(lines, "\n\t"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
 				groupbyClause,
 			))
 		} else {
 			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s`, selects, joins, filters, groupbys)",
-				strings.Join(lines, "` +\n\t `"),
+				strings.Join(lines, "\n\t"),
 				groupbyClause,
 			))
 		}

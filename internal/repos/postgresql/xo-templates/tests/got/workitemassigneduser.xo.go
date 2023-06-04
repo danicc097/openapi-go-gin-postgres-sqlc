@@ -183,12 +183,12 @@ const workItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_use
 // Insert inserts the WorkItemAssignedUser to the database.
 func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
 	// insert (manual)
-	sqlstr := `INSERT INTO xo_tests.work_item_assigned_user (` +
-		`work_item_id, assigned_user, role` +
-		`) VALUES (` +
-		`$1, $2, $3` +
-		`)` +
-		` RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.work_item_assigned_user (
+	work_item_id, assigned_user, role
+	) VALUES (
+	$1, $2, $3
+	)
+	 RETURNING * `
 	// run
 	logf(sqlstr, wiau.WorkItemID, wiau.AssignedUser, wiau.Role)
 	rows, err := db.Query(ctx, sqlstr, wiau.WorkItemID, wiau.AssignedUser, wiau.Role)
@@ -207,10 +207,10 @@ func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemA
 // Update updates a WorkItemAssignedUser in the database.
 func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.work_item_assigned_user SET ` +
-		`role = $1 ` +
-		`WHERE work_item_id = $2  AND assigned_user = $3 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE xo_tests.work_item_assigned_user SET 
+	role = $1 
+	WHERE work_item_id = $2  AND assigned_user = $3 
+	RETURNING * `
 	// run
 	logf(sqlstr, wiau.Role, wiau.WorkItemID, wiau.AssignedUser)
 
@@ -256,8 +256,8 @@ func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *Wor
 // Delete deletes the WorkItemAssignedUser from the database.
 func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM xo_tests.work_item_assigned_user ` +
-		`WHERE work_item_id = $1 AND assigned_user = $2 `
+	sqlstr := `DELETE FROM xo_tests.work_item_assigned_user 
+	WHERE work_item_id = $1 AND assigned_user = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wiau.WorkItemID, wiau.AssignedUser); err != nil {
 		return logerror(err)
@@ -323,13 +323,13 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_assigned_user.work_item_id,
-work_item_assigned_user.assigned_user,
-work_item_assigned_user.role %s `+
-		`FROM xo_tests.work_item_assigned_user %s `+
-		` WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_assigned_user.work_item_id,
+	work_item_assigned_user.assigned_user,
+	work_item_assigned_user.role %s 
+	 FROM xo_tests.work_item_assigned_user %s 
+	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -409,13 +409,13 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_assigned_user.work_item_id,
-work_item_assigned_user.assigned_user,
-work_item_assigned_user.role %s `+
-		`FROM xo_tests.work_item_assigned_user %s `+
-		` WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_assigned_user.work_item_id,
+	work_item_assigned_user.assigned_user,
+	work_item_assigned_user.role %s 
+	 FROM xo_tests.work_item_assigned_user %s 
+	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -493,13 +493,13 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_assigned_user.work_item_id,
-work_item_assigned_user.assigned_user,
-work_item_assigned_user.role %s `+
-		`FROM xo_tests.work_item_assigned_user %s `+
-		` WHERE work_item_assigned_user.work_item_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_assigned_user.work_item_id,
+	work_item_assigned_user.assigned_user,
+	work_item_assigned_user.role %s 
+	 FROM xo_tests.work_item_assigned_user %s 
+	 WHERE work_item_assigned_user.work_item_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -579,13 +579,13 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_assigned_user.work_item_id,
-work_item_assigned_user.assigned_user,
-work_item_assigned_user.role %s `+
-		`FROM xo_tests.work_item_assigned_user %s `+
-		` WHERE work_item_assigned_user.assigned_user = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_assigned_user.work_item_id,
+	work_item_assigned_user.assigned_user,
+	work_item_assigned_user.role %s 
+	 FROM xo_tests.work_item_assigned_user %s 
+	 WHERE work_item_assigned_user.assigned_user = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

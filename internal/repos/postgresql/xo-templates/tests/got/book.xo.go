@@ -213,11 +213,11 @@ const bookTableSellersGroupBySQL = `books.book_id, books.book_id`
 // Insert inserts the Book to the database.
 func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO xo_tests.books (` +
-		`name` +
-		`) VALUES (` +
-		`$1` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.books (
+	name
+	) VALUES (
+	$1
+	) RETURNING * `
 	// run
 	logf(sqlstr, b.Name)
 
@@ -238,10 +238,10 @@ func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 // Update updates a Book in the database.
 func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.books SET ` +
-		`name = $1 ` +
-		`WHERE book_id = $2 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE xo_tests.books SET 
+	name = $1 
+	WHERE book_id = $2 
+	RETURNING * `
 	// run
 	logf(sqlstr, b.Name, b.BookID)
 
@@ -285,8 +285,8 @@ func (b *Book) Upsert(ctx context.Context, db DB, params *BookCreateParams) (*Bo
 // Delete deletes the Book from the database.
 func (b *Book) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.books ` +
-		`WHERE book_id = $1 `
+	sqlstr := `DELETE FROM xo_tests.books 
+	WHERE book_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, b.BookID); err != nil {
 		return logerror(err)
@@ -362,12 +362,12 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`books.book_id,
-books.name %s `+
-		`FROM xo_tests.books %s `+
-		` WHERE books.book_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	books.book_id,
+	books.name %s 
+	 FROM xo_tests.books %s 
+	 WHERE books.book_id > $1
+	 %s   %s 
   ORDER BY 
 		book_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -454,12 +454,12 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`books.book_id,
-books.name %s `+
-		`FROM xo_tests.books %s `+
-		` WHERE books.book_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	books.book_id,
+	books.name %s 
+	 FROM xo_tests.books %s 
+	 WHERE books.book_id < $1
+	 %s   %s 
   ORDER BY 
 		book_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -548,12 +548,12 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`books.book_id,
-books.name %s `+
-		`FROM xo_tests.books %s `+
-		` WHERE books.book_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	books.book_id,
+	books.name %s 
+	 FROM xo_tests.books %s 
+	 WHERE books.book_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

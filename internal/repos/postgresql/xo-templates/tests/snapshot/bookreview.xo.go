@@ -135,11 +135,11 @@ const bookReviewTableUserGroupBySQL = `_book_reviews_reviewer.user_id,
 // Insert inserts the BookReview to the database.
 func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO xo_tests.book_reviews (` +
-		`book_id, reviewer` +
-		`) VALUES (` +
-		`$1, $2` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO xo_tests.book_reviews (
+	book_id, reviewer
+	) VALUES (
+	$1, $2
+	) RETURNING * `
 	// run
 	logf(sqlstr, br.BookID, br.Reviewer)
 
@@ -160,10 +160,10 @@ func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 // Update updates a BookReview in the database.
 func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_reviews SET ` +
-		`book_id = $1, reviewer = $2 ` +
-		`WHERE book_review_id = $3 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE xo_tests.book_reviews SET 
+	book_id = $1, reviewer = $2 
+	WHERE book_review_id = $3 
+	RETURNING * `
 	// run
 	logf(sqlstr, br.BookID, br.Reviewer, br.BookReviewID)
 
@@ -208,8 +208,8 @@ func (br *BookReview) Upsert(ctx context.Context, db DB, params *BookReviewCreat
 // Delete deletes the BookReview from the database.
 func (br *BookReview) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.book_reviews ` +
-		`WHERE book_review_id = $1 `
+	sqlstr := `DELETE FROM xo_tests.book_reviews 
+	WHERE book_review_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, br.BookReviewID); err != nil {
 		return logerror(err)
@@ -273,13 +273,13 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_reviews.book_review_id,
-book_reviews.book_id,
-book_reviews.reviewer %s `+
-		`FROM xo_tests.book_reviews %s `+
-		` WHERE book_reviews.book_review_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_reviews.book_review_id,
+	book_reviews.book_id,
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
+	 WHERE book_reviews.book_review_id > $1
+	 %s   %s 
   ORDER BY 
 		book_review_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -354,13 +354,13 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_reviews.book_review_id,
-book_reviews.book_id,
-book_reviews.reviewer %s `+
-		`FROM xo_tests.book_reviews %s `+
-		` WHERE book_reviews.book_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_reviews.book_review_id,
+	book_reviews.book_id,
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
+	 WHERE book_reviews.book_id > $1
+	 %s   %s 
   ORDER BY 
 		book_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -435,13 +435,13 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_reviews.book_review_id,
-book_reviews.book_id,
-book_reviews.reviewer %s `+
-		`FROM xo_tests.book_reviews %s `+
-		` WHERE book_reviews.book_review_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_reviews.book_review_id,
+	book_reviews.book_id,
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
+	 WHERE book_reviews.book_review_id < $1
+	 %s   %s 
   ORDER BY 
 		book_review_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -516,13 +516,13 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_reviews.book_review_id,
-book_reviews.book_id,
-book_reviews.reviewer %s `+
-		`FROM xo_tests.book_reviews %s `+
-		` WHERE book_reviews.book_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_reviews.book_review_id,
+	book_reviews.book_id,
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
+	 WHERE book_reviews.book_id < $1
+	 %s   %s 
   ORDER BY 
 		book_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -599,13 +599,13 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_reviews.book_review_id,
-book_reviews.book_id,
-book_reviews.reviewer %s `+
-		`FROM xo_tests.book_reviews %s `+
-		` WHERE book_reviews.book_review_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_reviews.book_review_id,
+	book_reviews.book_id,
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
+	 WHERE book_reviews.book_review_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -683,13 +683,13 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_reviews.book_review_id,
-book_reviews.book_id,
-book_reviews.reviewer %s `+
-		`FROM xo_tests.book_reviews %s `+
-		` WHERE book_reviews.reviewer = $1 AND book_reviews.book_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_reviews.book_review_id,
+	book_reviews.book_id,
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
+	 WHERE book_reviews.reviewer = $1 AND book_reviews.book_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -767,13 +767,13 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_reviews.book_review_id,
-book_reviews.book_id,
-book_reviews.reviewer %s `+
-		`FROM xo_tests.book_reviews %s `+
-		` WHERE book_reviews.reviewer = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_reviews.book_review_id,
+	book_reviews.book_id,
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
+	 WHERE book_reviews.reviewer = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -853,13 +853,13 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`book_reviews.book_review_id,
-book_reviews.book_id,
-book_reviews.reviewer %s `+
-		`FROM xo_tests.book_reviews %s `+
-		` WHERE book_reviews.book_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_reviews.book_review_id,
+	book_reviews.book_id,
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
+	 WHERE book_reviews.book_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

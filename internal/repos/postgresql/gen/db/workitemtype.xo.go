@@ -138,11 +138,11 @@ const workItemTypeTableProjectGroupBySQL = `_work_item_types_project_id.project_
 // Insert inserts the WorkItemType to the database.
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
 	// insert (primary key generated and returned by database)
-	sqlstr := `INSERT INTO public.work_item_types (` +
-		`project_id, name, description, color` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`) RETURNING * `
+	sqlstr := `INSERT INTO public.work_item_types (
+	project_id, name, description, color
+	) VALUES (
+	$1, $2, $3, $4
+	) RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 
@@ -163,10 +163,10 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 // Update updates a WorkItemType in the database.
 func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_types SET ` +
-		`project_id = $1, name = $2, description = $3, color = $4 ` +
-		`WHERE work_item_type_id = $5 ` +
-		`RETURNING * `
+	sqlstr := `UPDATE public.work_item_types SET 
+	project_id = $1, name = $2, description = $3, color = $4 
+	WHERE work_item_type_id = $5 
+	RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
 
@@ -213,8 +213,8 @@ func (wit *WorkItemType) Upsert(ctx context.Context, db DB, params *WorkItemType
 // Delete deletes the WorkItemType from the database.
 func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_types ` +
-		`WHERE work_item_type_id = $1 `
+	sqlstr := `DELETE FROM public.work_item_types 
+	WHERE work_item_type_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID); err != nil {
 		return logerror(err)
@@ -272,15 +272,15 @@ func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color %s `+
-		`FROM public.work_item_types %s `+
-		` WHERE work_item_types.work_item_type_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_types.work_item_type_id,
+	work_item_types.project_id,
+	work_item_types.name,
+	work_item_types.description,
+	work_item_types.color %s 
+	 FROM public.work_item_types %s 
+	 WHERE work_item_types.work_item_type_id > $1
+	 %s   %s 
   ORDER BY 
 		work_item_type_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -349,15 +349,15 @@ func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID i
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color %s `+
-		`FROM public.work_item_types %s `+
-		` WHERE work_item_types.project_id > $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_types.work_item_type_id,
+	work_item_types.project_id,
+	work_item_types.name,
+	work_item_types.description,
+	work_item_types.color %s 
+	 FROM public.work_item_types %s 
+	 WHERE work_item_types.project_id > $1
+	 %s   %s 
   ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -426,15 +426,15 @@ func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color %s `+
-		`FROM public.work_item_types %s `+
-		` WHERE work_item_types.work_item_type_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_types.work_item_type_id,
+	work_item_types.project_id,
+	work_item_types.name,
+	work_item_types.description,
+	work_item_types.color %s 
+	 FROM public.work_item_types %s 
+	 WHERE work_item_types.work_item_type_id < $1
+	 %s   %s 
   ORDER BY 
 		work_item_type_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -503,15 +503,15 @@ func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color %s `+
-		`FROM public.work_item_types %s `+
-		` WHERE work_item_types.project_id < $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_types.work_item_type_id,
+	work_item_types.project_id,
+	work_item_types.name,
+	work_item_types.description,
+	work_item_types.color %s 
+	 FROM public.work_item_types %s 
+	 WHERE work_item_types.project_id < $1
+	 %s   %s 
   ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
@@ -582,15 +582,15 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color %s `+
-		`FROM public.work_item_types %s `+
-		` WHERE work_item_types.name = $1 AND work_item_types.project_id = $2`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_types.work_item_type_id,
+	work_item_types.project_id,
+	work_item_types.name,
+	work_item_types.description,
+	work_item_types.color %s 
+	 FROM public.work_item_types %s 
+	 WHERE work_item_types.name = $1 AND work_item_types.project_id = $2
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -662,15 +662,15 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color %s `+
-		`FROM public.work_item_types %s `+
-		` WHERE work_item_types.name = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_types.work_item_type_id,
+	work_item_types.project_id,
+	work_item_types.name,
+	work_item_types.description,
+	work_item_types.color %s 
+	 FROM public.work_item_types %s 
+	 WHERE work_item_types.name = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -744,15 +744,15 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color %s `+
-		`FROM public.work_item_types %s `+
-		` WHERE work_item_types.project_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_types.work_item_type_id,
+	work_item_types.project_id,
+	work_item_types.name,
+	work_item_types.description,
+	work_item_types.color %s 
+	 FROM public.work_item_types %s 
+	 WHERE work_item_types.project_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -826,15 +826,15 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`work_item_types.work_item_type_id,
-work_item_types.project_id,
-work_item_types.name,
-work_item_types.description,
-work_item_types.color %s `+
-		`FROM public.work_item_types %s `+
-		` WHERE work_item_types.work_item_type_id = $1`+
-		` %s   %s 
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_types.work_item_type_id,
+	work_item_types.project_id,
+	work_item_types.name,
+	work_item_types.description,
+	work_item_types.color %s 
+	 FROM public.work_item_types %s 
+	 WHERE work_item_types.work_item_type_id = $1
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
