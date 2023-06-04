@@ -90,6 +90,10 @@ func main() {
 
 	for _, sn := range structNames {
 		dummyOp := openapi3.Operation{}
+		// TODO these need to be loaded at runtime since they're changed right before.
+		// we could just compile gen-schema right after PublicStructs file is updated
+		// but sometimes we need to work on uncompilable state.
+		// best option is to convert to a simple json file and load it.
 		st, ok := postgen.PublicStructs[sn]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)

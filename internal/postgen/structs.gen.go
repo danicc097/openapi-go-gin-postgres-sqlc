@@ -130,15 +130,17 @@ var PublicStructs = map[string]any{
 
 	//
 
-	"RestDemoWorkItemCreateRequest": rest.DemoWorkItemCreateRequest{},
-	"RestDemoWorkItemsResponse":     rest.DemoWorkItemsResponse{},
-	"RestProjectBoardCreateRequest": rest.ProjectBoardCreateRequest{},
-	"RestProjectBoardResponse":      rest.ProjectBoardResponse{},
-	"RestTeamCreateRequest":         rest.TeamCreateRequest{},
-	"RestTeamUpdateRequest":         rest.TeamUpdateRequest{},
-	"RestUserCreateRequest":         rest.UserCreateRequest{},
-	"RestUserResponse":              rest.UserResponse{},
-	"RestWorkItemResponse":          rest.WorkItemResponse{},
+	"RestDemoWorkItemCreateRequest":    rest.DemoWorkItemCreateRequest{},
+	"RestDemoWorkItemsResponse":        rest.DemoWorkItemsResponse{},
+	"RestProjectBoardCreateRequest":    rest.ProjectBoardCreateRequest{},
+	"RestProjectBoardResponse":         rest.ProjectBoardResponse{},
+	"RestTeamCreateRequest":            rest.TeamCreateRequest{},
+	"RestTeamUpdateRequest":            rest.TeamUpdateRequest{},
+	"RestUserCreateRequest":            rest.UserCreateRequest{},
+	"RestUserResponse":                 rest.UserResponse{},
+	"RestWorkItemCommentCreateRequest": rest.WorkItemCommentCreateRequest{},
+	"RestWorkItemResponse":             rest.WorkItemResponse{},
+	"RestWorkItemTagCreateRequest":     rest.WorkItemTagCreateRequest{},
 
 	//
 

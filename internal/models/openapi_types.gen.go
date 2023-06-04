@@ -588,14 +588,14 @@ type ValidationError struct {
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
-// PathSerial defines the model for PathSerial.
-type PathSerial = int
-
 // ProjectName defines the model for ProjectName.
 type ProjectName = Project
 
-// Uuid defines the model for uuid.
-type Uuid = string
+// Serial defines the model for Serial.
+type Serial = int
+
+// UUID defines the model for UUID.
+type UUID = string
 
 // GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
 type GetProjectWorkitemsParams struct {

@@ -47,6 +47,9 @@ type ServerInterface interface {
 	// creates initial data (teams, work item types, tags...) for a new project
 	// (POST /project/{projectName}/initialize)
 	InitializeProject(c *gin.Context, projectName externalRef0.ProjectName)
+	// create workitem tag
+	// (POST /project/{projectName}/tag/)
+	CreateWorkitemTag(c *gin.Context, projectName externalRef0.ProjectName)
 	// returns workitems for a project
 	// (GET /project/{projectName}/workitems)
 	GetProjectWorkitems(c *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams)
@@ -55,13 +58,28 @@ type ServerInterface interface {
 	GetCurrentUser(c *gin.Context)
 	// deletes the user by id
 	// (DELETE /user/{id})
-	DeleteUser(c *gin.Context, id externalRef0.Uuid)
+	DeleteUser(c *gin.Context, id externalRef0.UUID)
 	// updates the user by id
 	// (PATCH /user/{id})
-	UpdateUser(c *gin.Context, id externalRef0.Uuid)
+	UpdateUser(c *gin.Context, id externalRef0.UUID)
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
-	UpdateUserAuthorization(c *gin.Context, id externalRef0.Uuid)
+	UpdateUserAuthorization(c *gin.Context, id externalRef0.UUID)
+	// create workitem
+	// (POST /workitem/)
+	CreateWorkitem(c *gin.Context)
+	// delete workitem
+	// (DELETE /workitem/{id}/)
+	DeleteWorkitem(c *gin.Context, id externalRef0.Serial)
+	// get workitem
+	// (GET /workitem/{id}/)
+	GetWorkitem(c *gin.Context, id externalRef0.Serial)
+	// update workitem
+	// (PATCH /workitem/{id}/)
+	UpdateWorkitem(c *gin.Context, id externalRef0.Serial)
+	// create workitem comment
+	// (POST /workitem/{id}/comments/)
+	CreateWorkitemComment(c *gin.Context, id externalRef0.Serial)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -219,6 +237,27 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 	siw.Handler.InitializeProject(c, projectName)
 }
 
+// CreateWorkitemTag operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateWorkitemTag(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateWorkitemTag(c, projectName)
+}
+
 // GetProjectWorkitems operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 
@@ -275,7 +314,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Uuid
+	var id externalRef0.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -296,7 +335,7 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Uuid
+	var id externalRef0.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -317,7 +356,7 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Uuid
+	var id externalRef0.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -330,6 +369,100 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.UpdateUserAuthorization(c, id)
+}
+
+// CreateWorkitem operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateWorkitem(c *gin.Context) {
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateWorkitem(c)
+}
+
+// DeleteWorkitem operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.Serial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteWorkitem(c, id)
+}
+
+// GetWorkitem operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetWorkitem(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.Serial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetWorkitem(c, id)
+}
+
+// UpdateWorkitem operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.Serial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateWorkitem(c, id)
+}
+
+// CreateWorkitemComment operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateWorkitemComment(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.Serial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateWorkitemComment(c, id)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -404,6 +537,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(InitializeProject), wrapper.InitializeProject)...,
 	)...)
 
+	router.POST(options.BaseURL+"/project/:projectName/tag/", append(
+		wrapper.Handler.authMiddlewares(CreateWorkitemTag),
+		append(wrapper.Handler.middlewares(CreateWorkitemTag), wrapper.CreateWorkitemTag)...,
+	)...)
+
 	router.GET(options.BaseURL+"/project/:projectName/workitems", append(
 		wrapper.Handler.authMiddlewares(GetProjectWorkitems),
 		append(wrapper.Handler.middlewares(GetProjectWorkitems), wrapper.GetProjectWorkitems)...,
@@ -427,5 +565,30 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PATCH(options.BaseURL+"/user/:id/authorization", append(
 		wrapper.Handler.authMiddlewares(UpdateUserAuthorization),
 		append(wrapper.Handler.middlewares(UpdateUserAuthorization), wrapper.UpdateUserAuthorization)...,
+	)...)
+
+	router.POST(options.BaseURL+"/workitem/", append(
+		wrapper.Handler.authMiddlewares(CreateWorkitem),
+		append(wrapper.Handler.middlewares(CreateWorkitem), wrapper.CreateWorkitem)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/workitem/:id/", append(
+		wrapper.Handler.authMiddlewares(DeleteWorkitem),
+		append(wrapper.Handler.middlewares(DeleteWorkitem), wrapper.DeleteWorkitem)...,
+	)...)
+
+	router.GET(options.BaseURL+"/workitem/:id/", append(
+		wrapper.Handler.authMiddlewares(GetWorkitem),
+		append(wrapper.Handler.middlewares(GetWorkitem), wrapper.GetWorkitem)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/workitem/:id/", append(
+		wrapper.Handler.authMiddlewares(UpdateWorkitem),
+		append(wrapper.Handler.middlewares(UpdateWorkitem), wrapper.UpdateWorkitem)...,
+	)...)
+
+	router.POST(options.BaseURL+"/workitem/:id/comments/", append(
+		wrapper.Handler.authMiddlewares(CreateWorkitemComment),
+		append(wrapper.Handler.middlewares(CreateWorkitemComment), wrapper.CreateWorkitemComment)...,
 	)...)
 }

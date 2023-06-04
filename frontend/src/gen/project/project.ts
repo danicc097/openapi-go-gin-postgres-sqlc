@@ -25,6 +25,7 @@ import type {
   RestProjectBoardResponse,
   RestDemoWorkItemsResponse,
   GetProjectWorkitemsParams,
+  DbWorkItemTag,
 } from '.././model'
 
 /**
@@ -517,4 +518,60 @@ export const useGetProjectWorkitems = <
   query.queryKey = queryOptions.queryKey
 
   return query
+}
+
+/**
+ * @summary create workitem tag
+ */
+export const createWorkitemTag = (
+  projectName: 'demo' | 'demo_two',
+  options?: AxiosRequestConfig,
+): Promise<AxiosResponse<DbWorkItemTag>> => {
+  return axios.post(`/project/${projectName}/tag/`, undefined, options)
+}
+
+export const getCreateWorkitemTagMutationOptions = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkitemTag>>,
+    TError,
+    { projectName: 'demo' | 'demo_two' },
+    TContext
+  >
+  axios?: AxiosRequestConfig
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createWorkitemTag>>,
+  TError,
+  { projectName: 'demo' | 'demo_two' },
+  TContext
+> => {
+  const { mutation: mutationOptions, axios: axiosOptions } = options ?? {}
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createWorkitemTag>>,
+    { projectName: 'demo' | 'demo_two' }
+  > = (props) => {
+    const { projectName } = props ?? {}
+
+    return createWorkitemTag(projectName, axiosOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type CreateWorkitemTagMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitemTag>>>
+
+export type CreateWorkitemTagMutationError = AxiosError<unknown>
+
+export const useCreateWorkitemTag = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkitemTag>>,
+    TError,
+    { projectName: 'demo' | 'demo_two' },
+    TContext
+  >
+  axios?: AxiosRequestConfig
+}) => {
+  const mutationOptions = getCreateWorkitemTagMutationOptions(options)
+
+  return useMutation(mutationOptions)
 }
