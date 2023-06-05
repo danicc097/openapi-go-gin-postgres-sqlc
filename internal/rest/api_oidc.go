@@ -13,6 +13,8 @@ import (
 func (h *Handlers) MyProviderLogin(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
 
+	// use adaptation of https://github.com/zitadel/oidc/blob/main/example/client/app/app.go
+
 	// X TODO if env is dev should have helper func or just use zitadel oidcserver but with dummy data?
 	// X real server, though fake, will be hard to keep in sync. much easier to use a map of tokens that get returned
 	// X and key is set in .env.dev -> "DEV_USER": <map key> so that backend route on login gets that inmemory token,
