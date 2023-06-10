@@ -63,7 +63,7 @@ func ctxWithUserInfo(c *gin.Context, userinfo []byte) {
 
 // Helper function to get the gin context from within requests. It returns
 // nil if not found or wrong type.
-// TODO why would we need this?
+// Useful for kin-openapi functions which only accept context.
 func getGinContextFromCtx(c context.Context) *gin.Context {
 	ginCtx, ok := c.Value(ginContextKey).(*gin.Context)
 	if !ok {
