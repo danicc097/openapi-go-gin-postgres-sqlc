@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	pathLoggedOut = "/oidc/logged-out"
+	// prefix        = "/oidc/" handled by traefik.
+	pathLoggedOut = "logged-out"
 )
 
 func init() {
@@ -56,6 +57,7 @@ func SetupServer(issuer string, storage Storage, extraOptions ...op.Option) *mux
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "OK")
 	})
+	// subrouter := router.PathPrefix(prefix).Subrouter()
 	router.Use(loggingMiddleware)
 
 	// for simplicity, we provide a very small default page for users who have signed out

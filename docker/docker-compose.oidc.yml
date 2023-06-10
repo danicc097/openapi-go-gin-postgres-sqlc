@@ -21,13 +21,16 @@ services:
       - ../.env.${APP_ENV:?not set}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.simple-oidc-server.rule=Host(`${OIDC_DOMAIN:?not set}`) && PathPrefix("/oidc")
-      - traefik.http.routers.simple-oidc-server.middlewares=strip_prefix_oidc # check docs to exclude requests from compression
+      # TODO oidc lib should not remove the issuer suffix... there doesn't seem to be a way to change it
+      - traefik.http.routers.simple-oidc-server.rule=Host(`${OIDC_DOMAIN:?not set}`) && (PathPrefix("/oidc") || Path("/auth/callback"))
+      - traefik.http.routers.simple-oidc-server.middlewares=strip_prefix_oidc
       - traefik.http.middlewares.strip_prefix_oidc.stripprefix.prefixes=/oidc
       - traefik.docker.network=traefik-net
       - traefik.http.routers.simple-oidc-server.entrypoints=websecure
       - traefik.http.routers.simple-oidc-server.tls=true
       - traefik.http.services.simple-oidc-server.loadbalancer.server.port=${OIDC_SERVER_PORT:?not set}
+
+
     restart: unless-stopped
     logging: *default-logging
     healthcheck:

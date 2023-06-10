@@ -7,10 +7,12 @@ import (
 	"github.com/zitadel/oidc/v2/pkg/op"
 )
 
+const prefix = "oidc/"
+
 var (
 	// we use the default login UI and pass the (auth request) id
 	defaultLoginURL = func(id string) string {
-		return "oidc/login/username?authRequestID=" + id
+		return prefix + "login/username?authRequestID=" + id
 	}
 
 	// clients to be used by the storage interface

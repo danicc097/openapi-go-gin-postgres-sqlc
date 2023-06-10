@@ -33,6 +33,9 @@ services:
     logging: *default-logging
     healthcheck:
       test: ['CMD', 'pg_isready']
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   redis:
     image: redis:7.0.9-alpine3.17
