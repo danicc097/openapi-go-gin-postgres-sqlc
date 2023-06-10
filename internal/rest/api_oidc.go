@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -33,28 +34,35 @@ func (h *Handlers) MyProviderLogin(c *gin.Context) {
 
 func (h *Handlers) MyProviderCallback(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
+
+	userinfo := getUserInfoFromCtx(c)
+	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
 }
 
 func state() string {
 	return uuid.New().String()
 }
 
-func (h *Handlers) marshalToken(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty) {
-	data, err := json.Marshal(tokens)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Printf("marshalTokendata: %v\n", data)
-	w.Write(data)
-}
-
 func (h *Handlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 	data, err := json.Marshal(info)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("could not marshal userinfo: %s", err.Error()), http.StatusInternalServerError)
+
 		return
 	}
-	fmt.Printf("marshalUserinfo data: %v\n", data)
-	w.Write(data)
+	_, err = w.Write(data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("could not write userinfo: %s", err.Error()), http.StatusInternalServerError)
+
+		return
+	}
+}
+
+func (h *Handlers) codeExchange() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
+		c.Writer = rbw
+		rp.CodeExchangeHandler(rp.UserinfoCallback(h.marshalUserinfo), h.provider).ServeHTTP(rbw, c.Request)
+		ctxWithUserInfo(c, rbw.body.Bytes())
+	}
 }

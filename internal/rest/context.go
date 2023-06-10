@@ -9,6 +9,7 @@ import (
 
 const (
 	userCtxKey             = "user"
+	userInfoCtxKey         = "user-info"
 	ginContextKey          = "middleware.openapi/gin-context"
 	userDataKey            = "middleware.openapi/user-data"
 	skipResponseValidation = "skip-response-validation"
@@ -44,6 +45,19 @@ func getUserFromCtx(c *gin.Context) *db.User {
 
 func ctxWithUser(c *gin.Context, user *db.User) {
 	c.Set(userCtxKey, user)
+}
+
+func getUserInfoFromCtx(c *gin.Context) []byte {
+	user, ok := c.Value(userInfoCtxKey).([]byte)
+	if !ok {
+		return nil
+	}
+
+	return user
+}
+
+func ctxWithUserInfo(c *gin.Context, userinfo []byte) {
+	c.Set(userInfoCtxKey, userinfo)
 }
 
 // Helper function to get the gin context from within requests. It returns
