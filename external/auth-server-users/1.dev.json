@@ -1,0 +1,47 @@
+// users to test out login in development.
+// TODO would need to find best strategy to load them in initial-data cmd. Or maybe have dev mode without login and tokens in frontend
+// could have env var to switch auth server login required for dev on and off.
+// + initial-data knows its "dev" env so it just registers certain users.
+// + having x-api-key for messing with backend (already done).
+// On the other hand,  E2E gets different env to test login, redirects, token creation, etc.
+// E2E doesn't really need initial-data since we will create everything from scratch, ie we will test
+// register and update cases when logging in via auth server first and consequent times
+{
+  "admin": {
+    "id": "id1",
+    "username": "admin",
+    "password": "admin",
+    "firstName": "Mr",
+    "lastName": "Admin",
+    "email": "admin@admin.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de",
+    "isAdmin": true
+  },
+  "user2": {
+    "id": "id2",
+    "username": "user2",
+    "password": "user2",
+    "firstName": "Test 2",
+    "lastName": "User 2",
+    "email": "user2@app.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de"
+  },
+  "user3": {
+    "id": "id3",
+    "username": "user3",
+    "password": "user3",
+    "firstName": "Test 3",
+    "lastName": "User 3",
+    "email": "user3@app.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de"
+  }
+}
