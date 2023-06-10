@@ -3,6 +3,7 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -35,8 +36,15 @@ func (h *Handlers) MyProviderLogin(c *gin.Context) {
 func (h *Handlers) MyProviderCallback(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
 
+	rw := getResponseWriterFromCtx(c)
+	c.Writer = rw.ResponseWriter
 	userinfo := getUserInfoFromCtx(c)
+	if userinfo == nil {
+		renderErrorResponse(c, "user info not found", errors.New("user info not found"))
+	}
 	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
+
+	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
 }
 
 func state() string {
@@ -61,6 +69,7 @@ func (h *Handlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, token
 func (h *Handlers) codeExchange() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
+		ctxWithResponseWriter(c, rbw)
 		c.Writer = rbw
 		rp.CodeExchangeHandler(rp.UserinfoCallback(h.marshalUserinfo), h.provider).ServeHTTP(rbw, c.Request)
 		ctxWithUserInfo(c, rbw.body.Bytes())
