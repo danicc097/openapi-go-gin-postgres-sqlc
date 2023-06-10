@@ -4,9 +4,12 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
+	"github.com/gorilla/schema"
+	"github.com/muhlemmer/gu"
 	"golang.org/x/text/language"
 	"gopkg.in/square/go-jose.v2"
 )
@@ -44,15 +47,92 @@ func (d *Display) UnmarshalText(text []byte) error {
 
 type Gender string
 
+type Locale struct {
+	tag language.Tag
+}
+
+func NewLocale(tag language.Tag) *Locale {
+	return &Locale{tag: tag}
+}
+
+func (l *Locale) Tag() language.Tag {
+	if l == nil {
+		return language.Und
+	}
+
+	return l.tag
+}
+
+func (l *Locale) String() string {
+	return l.Tag().String()
+}
+
+func (l *Locale) MarshalJSON() ([]byte, error) {
+	tag := l.Tag()
+	if tag.IsRoot() {
+		return []byte("null"), nil
+	}
+
+	return json.Marshal(tag)
+}
+
+func (l *Locale) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &l.tag)
+}
+
 type Locales []language.Tag
 
-func (l *Locales) UnmarshalText(text []byte) error {
-	locales := strings.Split(string(text), " ")
+// ParseLocales parses a slice of strings into Locales.
+// If an entry causes a parse error or is undefined,
+// it is ignored and not set to Locales.
+func ParseLocales(locales []string) Locales {
+	out := make(Locales, 0, len(locales))
 	for _, locale := range locales {
 		tag, err := language.Parse(locale)
 		if err == nil && !tag.IsRoot() {
-			*l = append(*l, tag)
+			out = append(out, tag)
 		}
+	}
+	return out
+}
+
+// UnmarshalText implements the [encoding.TextUnmarshaler] interface.
+// It decodes an unquoted space seperated string into Locales.
+// Undefined language tags in the input are ignored and ommited from
+// the resulting Locales.
+func (l *Locales) UnmarshalText(text []byte) error {
+	*l = ParseLocales(
+		strings.Split(string(text), " "),
+	)
+	return nil
+}
+
+// UnmarshalJSON implements the [json.Unmarshaler] interface.
+// It decodes a json array or a space seperated string into Locales.
+// Undefined language tags in the input are ignored and ommited from
+// the resulting Locales.
+func (l *Locales) UnmarshalJSON(data []byte) error {
+	var dst any
+	if err := json.Unmarshal(data, &dst); err != nil {
+		return fmt.Errorf("oidc locales: %w", err)
+	}
+
+	// We catch the posibility of a space seperated string here,
+	// because UnmarshalText might have been implicetely called
+	// by the json library before we added UnmarshalJSON.
+	switch v := dst.(type) {
+	case nil:
+		*l = nil
+	case string:
+		*l = ParseLocales(strings.Split(v, " "))
+	case []any:
+		locales, err := gu.AssertInterfaces[string](v)
+		if err != nil {
+			return fmt.Errorf("oidc locales: %w", err)
+		}
+		*l = ParseLocales(locales)
+	default:
+		return fmt.Errorf("oidc locales: unsupported type: %T", v)
 	}
 	return nil
 }
@@ -125,7 +205,35 @@ func (s SpaceDelimitedArray) Value() (driver.Value, error) {
 	return strings.Join(s, " "), nil
 }
 
-type Time time.Time
+// NewEncoder returns a schema Encoder with
+// a registered encoder for SpaceDelimitedArray.
+func NewEncoder() *schema.Encoder {
+	e := schema.NewEncoder()
+	e.RegisterEncoder(SpaceDelimitedArray{}, func(value reflect.Value) string {
+		return value.Interface().(SpaceDelimitedArray).Encode()
+	})
+	return e
+}
+
+type Time int64
+
+func (ts Time) AsTime() time.Time {
+	if ts == 0 {
+		return time.Time{}
+	}
+	return time.Unix(int64(ts), 0)
+}
+
+func FromTime(tt time.Time) Time {
+	if tt.IsZero() {
+		return 0
+	}
+	return Time(tt.Unix())
+}
+
+func NowTime() Time {
+	return FromTime(time.Now())
+}
 
 func (ts *Time) UnmarshalJSON(data []byte) error {
 	var v any
@@ -134,7 +242,7 @@ func (ts *Time) UnmarshalJSON(data []byte) error {
 	}
 	switch x := v.(type) {
 	case float64:
-		*ts = Time(time.Unix(int64(x), 0))
+		*ts = Time(x)
 	case string:
 		// Compatibility with Auth0:
 		// https://github.com/zitadel/oidc/issues/292
@@ -142,17 +250,13 @@ func (ts *Time) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return fmt.Errorf("oidc.Time: %w", err)
 		}
-		*ts = Time(tt.Round(time.Second))
+		*ts = FromTime(tt)
 	case nil:
-		*ts = Time{}
+		*ts = 0
 	default:
 		return fmt.Errorf("oidc.Time: unable to parse type %T with value %v", x, x)
 	}
 	return nil
-}
-
-func (t *Time) MarshalJSON() ([]byte, error) {
-	return json.Marshal(time.Time(*t).UTC().Unix())
 }
 
 type RequestObject struct {
@@ -165,5 +269,4 @@ func (r *RequestObject) GetIssuer() string {
 	return r.Issuer
 }
 
-func (r *RequestObject) SetSignatureAlgorithm(algorithm jose.SignatureAlgorithm) {
-}
+func (*RequestObject) SetSignatureAlgorithm(algorithm jose.SignatureAlgorithm) {}

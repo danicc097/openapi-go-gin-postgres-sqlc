@@ -1,9 +1,5 @@
 package oidc
 
-import (
-	"golang.org/x/text/language"
-)
-
 const (
 	DiscoveryEndpoint = "/.well-known/openid-configuration"
 )
@@ -29,6 +25,8 @@ type DiscoveryConfiguration struct {
 
 	// EndSessionEndpoint is a URL where the RP can perform a redirect to request that the End-User be logged out at the OP.
 	EndSessionEndpoint string `json:"end_session_endpoint,omitempty"`
+
+	DeviceAuthorizationEndpoint string `json:"device_authorization_endpoint,omitempty"`
 
 	// CheckSessionIframe is a URL where the OP provides an iframe that support cross-origin communications for session state information with the RP Client.
 	CheckSessionIframe string `json:"check_session_iframe,omitempty"`
@@ -128,10 +126,10 @@ type DiscoveryConfiguration struct {
 	ServiceDocumentation string `json:"service_documentation,omitempty"`
 
 	// ClaimsLocalesSupported contains a list of BCP47 language tag values that the OP supports for values of Claims returned.
-	ClaimsLocalesSupported []language.Tag `json:"claims_locales_supported,omitempty"`
+	ClaimsLocalesSupported Locales `json:"claims_locales_supported,omitempty"`
 
 	// UILocalesSupported contains a list of BCP47 language tag values that the OP supports for the user interface.
-	UILocalesSupported []language.Tag `json:"ui_locales_supported,omitempty"`
+	UILocalesSupported Locales `json:"ui_locales_supported,omitempty"`
 
 	// RequestParameterSupported specifies whether the OP supports use of the `request` parameter. If omitted, the default value is false.
 	RequestParameterSupported bool `json:"request_parameter_supported,omitempty"`

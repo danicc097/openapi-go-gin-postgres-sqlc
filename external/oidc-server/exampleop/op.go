@@ -1,19 +1,17 @@
 package exampleop
 
 import (
-	"context"
 	"crypto/sha256"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/text/language"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/external/oidc-server/storage"
-	"github.com/zitadel/logging"
-	"github.com/zitadel/oidc/pkg/op"
+	"github.com/zitadel/oidc/v2/example/server/storage"
+	"github.com/zitadel/oidc/v2/pkg/op"
 )
 
 const (
@@ -30,26 +28,14 @@ func init() {
 
 type Storage interface {
 	op.Storage
-	CheckUsernamePassword(username, password, id string) error
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		logging.Info(r.RequestURI)
-
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(w, r)
-	})
+	authenticate
+	deviceAuthenticate
 }
 
 // SetupServer creates an OIDC server with Issuer=http://localhost:<port>
 //
 // Use one of the pre-made clients in storage/clients.go or register a new one.
-func SetupServer(ctx context.Context, issuer string, storage Storage) *mux.Router {
-	// this will allow us to use an issuer with http:// instead of https://
-	os.Setenv(op.OidcDevMode, "true")
-
+func SetupServer(issuer string, storage Storage, extraOptions ...op.Option) *mux.Router {
 	// the OpenID Provider requires a 32-byte key for (token) encryption
 	// be sure to create a proper crypto random key and manage it securely!
 	key := sha256.Sum256([]byte("test"))
@@ -60,7 +46,6 @@ func SetupServer(ctx context.Context, issuer string, storage Storage) *mux.Route
 		fmt.Fprint(w, "OK")
 	})
 
-	router.Use(loggingMiddleware)
 	// for simplicity, we provide a very small default page for users who have signed out
 	router.HandleFunc(pathLoggedOut, func(w http.ResponseWriter, req *http.Request) {
 		_, err := w.Write([]byte("signed out successfully"))
@@ -70,7 +55,7 @@ func SetupServer(ctx context.Context, issuer string, storage Storage) *mux.Route
 	})
 
 	// creation of the OpenIDProvider with the just created in-memory Storage
-	provider, err := newOP(ctx, storage, issuer, key)
+	provider, err := newOP(storage, issuer, key, extraOptions...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,10 +68,13 @@ func SetupServer(ctx context.Context, issuer string, storage Storage) *mux.Route
 	// so we will direct all calls to /login to the login UI
 	router.PathPrefix("/login/").Handler(http.StripPrefix("/login", l.router))
 
+	router.PathPrefix("/device").Subrouter()
+	registerDeviceAuth(storage, router.PathPrefix("/device").Subrouter())
+
 	// we register the http handler of the OP on the root, so that the discovery endpoint (/.well-known/openid-configuration)
 	// is served on the correct path
 	//
-	// if your issuer ends with a path (e.g. http://localhost:10001/custom/path/),
+	// if your issuer ends with a path (e.g. http://localhost:9998/custom/path/),
 	// then you would have to set the path prefix (/custom/path/)
 	router.PathPrefix("/").Handler(provider.HttpHandler())
 
@@ -96,9 +84,8 @@ func SetupServer(ctx context.Context, issuer string, storage Storage) *mux.Route
 // newOP will create an OpenID Provider for localhost on a specified port with a given encryption key
 // and a predefined default logout uri
 // it will enable all options (see descriptions)
-func newOP(ctx context.Context, storage op.Storage, issuer string, key [32]byte) (op.OpenIDProvider, error) {
+func newOP(storage op.Storage, issuer string, key [32]byte, extraOptions ...op.Option) (op.OpenIDProvider, error) {
 	config := &op.Config{
-		Issuer:    issuer,
 		CryptoKey: key,
 
 		// will be used if the end_session endpoint is called without a post_logout_redirect_uri
@@ -121,10 +108,21 @@ func newOP(ctx context.Context, storage op.Storage, issuer string, key [32]byte)
 
 		// this example has only static texts (in English), so we'll set the here accordingly
 		SupportedUILocales: []language.Tag{language.English},
+
+		DeviceAuthorization: op.DeviceAuthorizationConfig{
+			Lifetime:     5 * time.Minute,
+			PollInterval: 5 * time.Second,
+			UserFormPath: "/device",
+			UserCode:     op.UserCodeBase20,
+		},
 	}
-	handler, err := op.NewOpenIDProvider(ctx, config, storage,
-		// as an example on how to customize an endpoint this will change the authorization_endpoint from /authorize to /auth
-		op.WithCustomAuthEndpoint(op.NewEndpoint("auth")),
+	handler, err := op.NewOpenIDProvider(issuer, config, storage,
+		append([]op.Option{
+			// we must explicitly allow the use of the http issuer
+			op.WithAllowInsecure(),
+			// as an example on how to customize an endpoint this will change the authorization_endpoint from /authorize to /auth
+			op.WithCustomAuthEndpoint(op.NewEndpoint("auth")),
+		}, extraOptions...)...,
 	)
 	if err != nil {
 		return nil, err

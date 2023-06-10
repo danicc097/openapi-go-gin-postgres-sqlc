@@ -3,14 +3,14 @@ package storage
 import (
 	"time"
 
-	"github.com/zitadel/oidc/pkg/oidc"
-	"github.com/zitadel/oidc/pkg/op"
+	"github.com/zitadel/oidc/v2/pkg/oidc"
+	"github.com/zitadel/oidc/v2/pkg/op"
 )
 
 var (
 	// we use the default login UI and pass the (auth request) id
 	defaultLoginURL = func(id string) string {
-		return "oidc/login/username?authRequestID=" + id
+		return "/login/username?authRequestID=" + id
 	}
 
 	// clients to be used by the storage interface
@@ -32,6 +32,8 @@ type Client struct {
 	devMode                        bool
 	idTokenUserinfoClaimsAssertion bool
 	clockSkew                      time.Duration
+	postLogoutRedirectURIGlobs     []string
+	redirectURIGlobs               []string
 }
 
 // GetID must return the client_id
@@ -146,7 +148,6 @@ func NativeClient(id string, redirectURIs ...string) *Client {
 	if len(redirectURIs) == 0 {
 		redirectURIs = []string{
 			"http://localhost/auth/callback",
-			"https://localhost:8090/v2/auth/myprovider/callback", // add as needed
 			"custom://auth/callback",
 		}
 	}
@@ -159,7 +160,7 @@ func NativeClient(id string, redirectURIs ...string) *Client {
 		loginURL:        defaultLoginURL,
 		responseTypes:   []oidc.ResponseType{oidc.ResponseTypeCode},
 		grantTypes:      []oidc.GrantType{oidc.GrantTypeCode, oidc.GrantTypeRefreshToken},
-		accessTokenType: 0,
+		accessTokenType: op.AccessTokenTypeBearer,
 		devMode:         false,
 		// recommended to avoid unnecesary requests. also necessary for bookstack as it assumes claims were merged
 		idTokenUserinfoClaimsAssertion: true,
@@ -179,18 +180,58 @@ func WebClient(id, secret string, redirectURIs ...string) *Client {
 		}
 	}
 	return &Client{
-		id:              id,
-		secret:          secret,
-		redirectURIs:    redirectURIs,
-		applicationType: op.ApplicationTypeWeb,
-		authMethod:      oidc.AuthMethodBasic,
-		loginURL:        defaultLoginURL,
-		responseTypes:   []oidc.ResponseType{oidc.ResponseTypeCode},
-		grantTypes:      []oidc.GrantType{oidc.GrantTypeCode, oidc.GrantTypeRefreshToken},
-		accessTokenType: 0,
-		devMode:         false,
-		// recommended to avoid unnecesary requests. also necessary for bookstack as it assumes claims were merged
+		id:                             id,
+		secret:                         secret,
+		redirectURIs:                   redirectURIs,
+		applicationType:                op.ApplicationTypeWeb,
+		authMethod:                     oidc.AuthMethodBasic,
+		loginURL:                       defaultLoginURL,
+		responseTypes:                  []oidc.ResponseType{oidc.ResponseTypeCode},
+		grantTypes:                     []oidc.GrantType{oidc.GrantTypeCode, oidc.GrantTypeRefreshToken},
+		accessTokenType:                op.AccessTokenTypeBearer,
+		devMode:                        false,
 		idTokenUserinfoClaimsAssertion: true,
 		clockSkew:                      0,
 	}
+}
+
+// DeviceClient creates a device client with Basic authentication.
+func DeviceClient(id, secret string) *Client {
+	return &Client{
+		id:                             id,
+		secret:                         secret,
+		redirectURIs:                   nil,
+		applicationType:                op.ApplicationTypeWeb,
+		authMethod:                     oidc.AuthMethodBasic,
+		loginURL:                       defaultLoginURL,
+		responseTypes:                  []oidc.ResponseType{oidc.ResponseTypeCode},
+		grantTypes:                     []oidc.GrantType{oidc.GrantTypeDeviceCode},
+		accessTokenType:                op.AccessTokenTypeBearer,
+		devMode:                        false,
+		idTokenUserinfoClaimsAssertion: false,
+		clockSkew:                      0,
+	}
+}
+
+type hasRedirectGlobs struct {
+	*Client
+}
+
+// RedirectURIGlobs provide wildcarding for additional valid redirects
+func (c hasRedirectGlobs) RedirectURIGlobs() []string {
+	return c.redirectURIGlobs
+}
+
+// PostLogoutRedirectURIGlobs provide extra wildcarding for additional valid redirects
+func (c hasRedirectGlobs) PostLogoutRedirectURIGlobs() []string {
+	return c.postLogoutRedirectURIGlobs
+}
+
+// RedirectGlobsClient wraps the client in a op.HasRedirectGlobs
+// only if DevMode is enabled.
+func RedirectGlobsClient(client *Client) op.Client {
+	if client.devMode {
+		return hasRedirectGlobs{client}
+	}
+	return client
 }

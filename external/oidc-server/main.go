@@ -16,12 +16,12 @@ func main() {
 	// the OpenIDProvider interface needs a Storage interface handling various checks and state manipulations
 	// this might be the layer for accessing your database
 	// in this example it will be handled in-memory
-	storage := storage.NewStorage(storage.NewUserStore())
+	issuer := os.Getenv("OIDC_ISSUER")
+	storage := storage.NewStorage(storage.NewUserStore(issuer))
 
 	port := "10001" // exposed on OIDC_SERVER_PORT
 
-	issuer := os.Getenv("OIDC_ISSUER")
-	router := exampleop.SetupServer(ctx, issuer, storage)
+	router := exampleop.SetupServer(issuer, storage)
 
 	server := &http.Server{
 		Addr:    ":" + port,
