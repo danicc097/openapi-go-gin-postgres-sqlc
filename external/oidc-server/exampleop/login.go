@@ -14,6 +14,8 @@ type login struct {
 	callback     func(context.Context, string) string
 }
 
+const prefix = "/oidc"
+
 func NewLogin(authenticate authenticate, callback func(context.Context, string) string) *login {
 	l := &login{
 		authenticate: authenticate,
@@ -72,5 +74,6 @@ func (l *login) checkLoginHandler(w http.ResponseWriter, r *http.Request) {
 		renderLogin(w, id, err)
 		return
 	}
-	http.Redirect(w, r, l.callback(r.Context(), id), http.StatusFound)
+	// don't use l.callback, will remove issuer path prefix
+	http.Redirect(w, r, prefix+"/auth/callback?id="+id, http.StatusFound)
 }
