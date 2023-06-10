@@ -10,12 +10,13 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/text/language"
 
-	"github.com/zitadel/oidc/v2/example/server/storage"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/external/oidc-server/storage"
+	"github.com/zitadel/logging"
 	"github.com/zitadel/oidc/v2/pkg/op"
 )
 
 const (
-	pathLoggedOut = "/logged-out"
+	pathLoggedOut = "/oidc/logged-out"
 )
 
 func init() {
@@ -32,6 +33,16 @@ type Storage interface {
 	deviceAuthenticate
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do stuff here
+		logging.Info(r.RequestURI)
+
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
+}
+
 // SetupServer creates an OIDC server with Issuer=http://localhost:<port>
 //
 // Use one of the pre-made clients in storage/clients.go or register a new one.
@@ -45,6 +56,7 @@ func SetupServer(issuer string, storage Storage, extraOptions ...op.Option) *mux
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "OK")
 	})
+	router.Use(loggingMiddleware)
 
 	// for simplicity, we provide a very small default page for users who have signed out
 	router.HandleFunc(pathLoggedOut, func(w http.ResponseWriter, req *http.Request) {
@@ -59,7 +71,6 @@ func SetupServer(issuer string, storage Storage, extraOptions ...op.Option) *mux
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	// the provider will only take care of the OpenID Protocol, so there must be some sort of UI for the login process
 	// for the simplicity of the example this means a simple page with username and password field
 	l := NewLogin(storage, op.AuthCallbackURL(provider))

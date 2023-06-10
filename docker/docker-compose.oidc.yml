@@ -32,7 +32,7 @@ services:
     logging: *default-logging
     healthcheck:
       test: ["CMD-SHELL", "wget -O/dev/null -q http://localhost:10001/health || exit 1"]
-      interval: 1s
+      interval: 5s
       timeout: 5s
       retries: 3
 
