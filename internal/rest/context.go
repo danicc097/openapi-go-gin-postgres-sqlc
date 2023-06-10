@@ -9,6 +9,8 @@ import (
 
 const (
 	userCtxKey             = "user"
+	userInfoCtxKey         = "user-info"
+	responseWriteCtxKey    = "response-writer"
 	ginContextKey          = "middleware.openapi/gin-context"
 	userDataKey            = "middleware.openapi/user-data"
 	skipResponseValidation = "skip-response-validation"
@@ -44,6 +46,33 @@ func getUserFromCtx(c *gin.Context) *db.User {
 
 func ctxWithUser(c *gin.Context, user *db.User) {
 	c.Set(userCtxKey, user)
+}
+
+func getUserInfoFromCtx(c *gin.Context) []byte {
+	user, ok := c.Value(userInfoCtxKey).([]byte)
+	if !ok {
+		return nil
+	}
+
+	return user
+}
+
+func ctxWithUserInfo(c *gin.Context, userinfo []byte) {
+	c.Set(userInfoCtxKey, userinfo)
+}
+
+// stores actual response writer overriden by middlewares
+func ctxWithResponseWriter(c *gin.Context, rw *responseBodyWriter) {
+	c.Set(responseWriteCtxKey, rw)
+}
+
+func getResponseWriterFromCtx(c *gin.Context) *responseBodyWriter {
+	rw, ok := c.Value(responseWriteCtxKey).(*responseBodyWriter)
+	if !ok {
+		return nil
+	}
+
+	return rw
 }
 
 // Helper function to get the gin context from within requests. It returns

@@ -193,7 +193,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		rank = &role.Rank
 
 		// always reset scopes when changing role
-		params.Scopes = pointers.New(ScopesByRole[*params.Role])
+		params.Scopes = pointers.New(u.authzsvc.DefaultScopes(*params.Role))
 	}
 
 	user, err = u.urepo.Update(ctx, d, uid, &db.UserUpdateParams{

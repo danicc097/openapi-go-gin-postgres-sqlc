@@ -1,17 +1,22 @@
 package rest
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/zitadel/oidc/pkg/client/rp"
-	"github.com/zitadel/oidc/pkg/oidc"
+	"github.com/zitadel/oidc/v2/pkg/client/rp"
+	"github.com/zitadel/oidc/v2/pkg/oidc"
 )
 
 func (h *Handlers) MyProviderLogin(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
+
+	// use adaptation of https://github.com/zitadel/oidc/blob/main/example/client/app/app.go
 
 	// X TODO if env is dev should have helper func or just use zitadel oidcserver but with dummy data?
 	// X real server, though fake, will be hard to keep in sync. much easier to use a map of tokens that get returned
@@ -30,18 +35,43 @@ func (h *Handlers) MyProviderLogin(c *gin.Context) {
 
 func (h *Handlers) MyProviderCallback(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
+
+	rw := getResponseWriterFromCtx(c)
+	c.Writer = rw.ResponseWriter
+	userinfo := getUserInfoFromCtx(c)
+	if userinfo == nil {
+		renderErrorResponse(c, "user info not found", errors.New("user info not found"))
+	}
+	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
+
+	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
 }
 
 func state() string {
 	return uuid.New().String()
 }
 
-// TODO we would create our own authentication here (another jwt), create user if not exists and then redirect back to our app frontend
-func (h *Handlers) marshalToken(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens, state string, rp rp.RelyingParty) {
-	data, err := json.Marshal(tokens)
+func (h *Handlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
+	data, err := json.Marshal(info)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("could not marshal userinfo: %s", err.Error()), http.StatusInternalServerError)
+
 		return
 	}
-	w.Write(data)
+	_, err = w.Write(data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("could not write userinfo: %s", err.Error()), http.StatusInternalServerError)
+
+		return
+	}
+}
+
+func (h *Handlers) codeExchange() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
+		ctxWithResponseWriter(c, rbw)
+		c.Writer = rbw
+		rp.CodeExchangeHandler(rp.UserinfoCallback(h.marshalUserinfo), h.provider).ServeHTTP(rbw, c.Request)
+		ctxWithUserInfo(c, rbw.body.Bytes())
+	}
 }

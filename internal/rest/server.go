@@ -21,8 +21,8 @@ import (
 	rv8 "github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/zitadel/oidc/pkg/client/rp"
-	httphelper "github.com/zitadel/oidc/pkg/http"
+	"github.com/zitadel/oidc/v2/pkg/client/rp"
+	httphelper "github.com/zitadel/oidc/v2/pkg/http"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -157,10 +157,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
 	// oidc
-	clientID := cfg.OIDC.ClientID
-	clientSecret := cfg.OIDC.ClientSecret
 	keyPath := "" // not used
-	issuer := cfg.OIDC.Issuer
 	scopes := strings.Split(cfg.OIDC.Scopes, " ")
 
 	redirectURI := internal.BuildAPIURL(conf.MyProviderCallbackPath)
@@ -170,13 +167,13 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		rp.WithCookieHandler(cookieHandler),
 		rp.WithVerifierOpts(rp.WithIssuedAtOffset(5 * time.Second)),
 	}
-	if clientSecret == "" {
+	if cfg.OIDC.ClientSecret == "" {
 		options = append(options, rp.WithPKCE(cookieHandler))
 	}
 	if keyPath != "" {
 		options = append(options, rp.WithJWTProfile(rp.SignerFromKeyPath(keyPath)))
 	}
-	provider, err := rp.NewRelyingPartyOIDC(issuer, clientID, clientSecret, redirectURI, scopes, options...)
+	provider, err := rp.NewRelyingPartyOIDC(cfg.OIDC.Issuer, cfg.OIDC.ClientID, cfg.OIDC.ClientSecret, redirectURI, scopes, options...)
 	if err != nil {
 		return nil, fmt.Errorf("error creating provider %s", err)
 	}

@@ -61,7 +61,7 @@ services:
       - 9200:9200
       # - 9300:9300 # internode communication
     healthcheck:
-      interval: 2s
+      interval: 5s
       retries: 3
       test: curl -s 127.0.0.1:9200 &>/dev/null
     volumes:

@@ -17,6 +17,7 @@ type User struct {
 	Phone             string
 	PhoneVerified     bool
 	PreferredLanguage language.Tag
+	IsAdmin           bool
 }
 
 type Service struct {
@@ -33,7 +34,7 @@ type userStore struct {
 	users map[string]*User
 }
 
-func NewUserStore() UserStore {
+func NewUserStore(issuer string) UserStore {
 	return userStore{
 		users: map[string]*User{
 			"id1": {

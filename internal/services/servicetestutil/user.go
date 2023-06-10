@@ -37,6 +37,8 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		Scopes:     params.Scopes,
 		Role:       params.Role,
 	}
+
+	// don't use repos for tests
 	user, err := ff.usvc.Register(ctx, ff.pool, ucp)
 	if err != nil {
 		return nil, fmt.Errorf("usvc.Register: %w", err)
@@ -59,7 +61,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		}
 	}
 	if params.WithToken {
-		accessToken, err = ff.authnsvc.CreateAccessTokenForUser(ctx, user) // TODO simply returns a jwt
+		accessToken, err = ff.authnsvc.CreateAccessTokenForUser(ctx, user)
 		if err != nil {
 			return nil, fmt.Errorf("authnsvc.CreateAPIKeyForUser: %w", err)
 		}

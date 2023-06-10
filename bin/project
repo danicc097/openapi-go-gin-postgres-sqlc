@@ -896,17 +896,18 @@ x.build() {
 
 # Run backend with hot-reloading.
 x.run.backend-hr() {
-  # TODO wait until healthy, else might have errors connecting to mock oidc server on startup, etc.
+  # TODO replace healthcheck with adhoc calls and bring services up in btaches
+  # to prevent either bombarding with req or having to wait too long at startup.
+  # see https://github.com/moby/moby/issues/33410
   run_shared_services up -d --build --remove-orphans --wait
   # NOTE: building binary very unreliable, leads to bin not found.
-  # [[ -z $NO_GEN ]] && pre_build_cmd="bin/project gen" # gen too slow at this point, always disable
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,*.cache,$CACHE" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$CACHE" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |

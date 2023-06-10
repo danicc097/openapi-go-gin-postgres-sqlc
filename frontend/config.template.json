@@ -5,6 +5,5 @@
   "API_PREFIX": "",
   "API_PORT": "",
   "FRONTEND_PORT": "",
-  "AUTH_SERVER_UI_LOGIN": "",
   "AUTH_SERVER_UI_PROFILE": ""
 }

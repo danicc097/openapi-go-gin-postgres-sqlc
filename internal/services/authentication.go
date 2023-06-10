@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -55,21 +54,23 @@ func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (
 	return a.usvc.ByAPIKey(ctx, a.pool, apiKey)
 }
 
-// GetOrRegisterUserFromOAuth2Token returns a user from an OAuth2 token.
-func (a *Authentication) GetOrRegisterUserFromOAuth2Token(ctx context.Context, token string) (*db.User, error) {
+// GetOrRegisterUserFromProvider returns a user from a JWT.
+func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, token string) (*db.User, error) {
 	// return a.usvc.ByExternalID(ctx, a.pool, externalID)
+	// TODO see https://github.com/zitadel/oidc/tree/main/example/client
+	// this would be used in MyProviderCallback after MyProviderLogin
 	return nil, nil
 }
 
 // CreateAccessTokenForUser creates a new token for a user.
 func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.User) (string, error) {
-	issuer := os.Getenv("DOMAIN")
+	cfg := internal.Config()
 	claims := AppClaims{
 		Email:    user.Email,
 		Username: user.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // mandatory
-			Issuer:    issuer,                                             // mandatory
+			Issuer:    cfg.OIDC.Issuer,                                    // mandatory
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Subject:   user.ExternalID,
@@ -79,12 +80,10 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	cfg := internal.Config()
 	ss, err := token.SignedString(cfg.SigningKey)
 	if err != nil {
 		return "", fmt.Errorf("could not sign token: %w", err)
 	}
-	fmt.Printf("signed string %v : %v\n", ss, err)
 
 	return ss, nil
 }
@@ -100,18 +99,18 @@ func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User)
 }
 
 // ParseToken returns a token string claims.
-func (a *Authentication) ParseToken(ctx context.Context, tokenString string) (*AppClaims, error) {
+func (a *Authentication) ParseToken(ctx context.Context, token string) (*AppClaims, error) {
 	cfg := internal.Config()
-	token, err := jwt.ParseWithClaims(tokenString, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
+	jwtToken, err := jwt.ParseWithClaims(token, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return cfg.SigningKey, nil
 	})
 
-	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+	if _, ok := jwtToken.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, fmt.Errorf("unexpected signing method: %v", jwtToken.Header["alg"])
 	}
 
-	claims, ok := token.Claims.(*AppClaims)
-	if ok && token.Valid {
+	claims, ok := jwtToken.Claims.(*AppClaims)
+	if ok && jwtToken.Valid {
 		fmt.Printf("%v %v", claims.Email, claims.Username)
 	} else {
 		return nil, fmt.Errorf("could not parse token string: %w", err)

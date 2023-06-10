@@ -13,15 +13,12 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// the OpenIDProvider interface needs a Storage interface handling various checks and state manipulations
-	// this might be the layer for accessing your database
-	// in this example it will be handled in-memory
-	storage := storage.NewStorage(storage.NewUserStore())
-
-	port := "10001" // exposed on OIDC_SERVER_PORT
-
 	issuer := os.Getenv("OIDC_ISSUER")
-	router := exampleop.SetupServer(ctx, issuer, storage)
+	storage := storage.NewStorage(storage.NewUserStore(issuer))
+
+	port := "10001" // for internal network, and exposed on OIDC_SERVER_PORT
+
+	router := exampleop.SetupServer(issuer, storage)
 
 	server := &http.Server{
 		Addr:    ":" + port,
@@ -29,7 +26,7 @@ func main() {
 	}
 	log.Default().Printf("listening at: %s", server.Addr)
 	err := server.ListenAndServe()
-	// if running directly localhost manually add certs
+	// if running in localhost manually add certs, else let traefik handle https
 	// err := server.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
 	if err != nil {
 		log.Fatal(err)
