@@ -1716,7 +1716,6 @@ done
 
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
-ensure_envvars_set "docker/.env.template" "docker/.env"
 
 set -a
 # export to all subsequent commands or scripts
