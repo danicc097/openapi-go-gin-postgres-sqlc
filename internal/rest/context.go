@@ -61,20 +61,6 @@ func ctxWithUserInfo(c *gin.Context, userinfo []byte) {
 	c.Set(userInfoCtxKey, userinfo)
 }
 
-// stores actual response writer overriden by middlewares
-func ctxWithResponseWriter(c *gin.Context, rw *responseBodyWriter) {
-	c.Set(responseWriteCtxKey, rw)
-}
-
-func getResponseWriterFromCtx(c *gin.Context) *responseBodyWriter {
-	rw, ok := c.Value(responseWriteCtxKey).(*responseBodyWriter)
-	if !ok {
-		return nil
-	}
-
-	return rw
-}
-
 // Helper function to get the gin context from within requests. It returns
 // nil if not found or wrong type.
 // TODO why would we need this?

@@ -36,8 +36,6 @@ func (h *Handlers) MyProviderLogin(c *gin.Context) {
 func (h *Handlers) MyProviderCallback(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
 
-	rw := getResponseWriterFromCtx(c)
-	c.Writer = rw.ResponseWriter
 	userinfo := getUserInfoFromCtx(c)
 	if userinfo == nil {
 		renderErrorResponse(c, "user info not found", errors.New("user info not found"))
@@ -69,9 +67,11 @@ func (h *Handlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, token
 func (h *Handlers) codeExchange() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
-		ctxWithResponseWriter(c, rbw)
 		c.Writer = rbw
 		rp.CodeExchangeHandler(rp.UserinfoCallback(h.marshalUserinfo), h.provider).ServeHTTP(rbw, c.Request)
 		ctxWithUserInfo(c, rbw.body.Bytes())
+		rbw.body = &bytes.Buffer{}
+		c.Next()
+		rbw.ResponseWriter.Write(rbw.body.Bytes())
 	}
 }
