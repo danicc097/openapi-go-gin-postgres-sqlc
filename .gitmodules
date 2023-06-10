@@ -1,9 +1,12 @@
 [submodule "internal/python-ml-app-protos"]
 path = internal/python-ml-app-protos
 url = git@github.com:danicc097/python-ml-app-protos.git
+branch = master
 [submodule "python-ml-app"]
 path = python-ml-app
 url = git@github.com:danicc097/python-ml-app.git
+branch = master
 [submodule "external/oidc-server"]
-	path = external/oidc-server
-	url = git@github.com:danicc097/oidc-server.git
+path = external/oidc-server
+url = git@github.com:danicc097/oidc-server.git
+branch = main
