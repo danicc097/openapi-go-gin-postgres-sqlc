@@ -21,4 +21,4 @@ COPY . /e2e
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store/v3 \
   pnpm install -r --offline
 
-RUN pnpm run test
+RUN pnpm exec playwright test
