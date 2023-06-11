@@ -91,9 +91,8 @@ x.check-build-deps() {
         exit 1
       fi
 
-      confirm "Do you want to install $bin now?" </dev/tty >/dev/tty || exit 1
+      with_tty confirm "Do you want to install $bin now?" || exit 1
 
-      # TODO test -n "$NO_CONFIRMATION" && { yes y | install...}
       echo "Installing $bin..."
       if ! "install.bin.$bin"; then
         err "$bin installation failed"
@@ -112,7 +111,7 @@ x.bootstrap() {
     x.setup.swagger-ui
     x.gen.build-tools
     traefik_dir="$HOME/traefik-bootstrap"
-    confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" </dev/tty >/dev/tty && x.setup.traefik "$traefik_dir"
+    with_tty confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -859,7 +858,7 @@ x.test.xo() {
       err "xo tests failed"
 
     if ! $test_dir/diff_check; then
-      confirm "Do you want to update test snapshot with current changes?" </dev/tty >/dev/tty && { # must redirect inside xlog pipeline
+      with_tty confirm "Do you want to update test snapshot with current changes?" && { # must redirect inside xlog pipeline
         rm -rf "$test_dir/snapshot"
         cp -r "$test_dir/got" "$test_dir/snapshot"
       }
@@ -1088,7 +1087,7 @@ x.db.recreate() {
 
 # Drop and recreate the database in the current environment.
 x.db.drop() {
-  [[ $env = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && confirm "This will drop production database data. Continue?" </dev/tty >/dev/tty
+  [[ $env = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && with_tty confirm "This will drop production database data. Continue?"
   { { {
     drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

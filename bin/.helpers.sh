@@ -27,6 +27,15 @@ else
   OFF=""
 fi
 
+# redirects a command/script to tty in order to bypass xlog and xerr pipeline redirection.
+with_tty() {
+  if [ -c /dev/tty ]; then
+    "$@" </dev/tty >/dev/tty
+  else
+    "$@"
+  fi
+}
+
 ensure_pwd_is_top_level() {
   if [[ -z $TOP_LEVEL_DIR ]]; then
     echo "No .git directory found, skipping top level directory check."
@@ -37,6 +46,7 @@ ensure_pwd_is_top_level() {
 }
 
 # Prompt the user for confirmation.
+# Most likely will want to always run as `with_tty confirm ...`
 confirm() {
   test -n "$NO_CONFIRMATION" && return
 
@@ -46,9 +56,6 @@ confirm() {
   [[ -z $prompt ]] && prompt="Are you sure?"
 
   prompt+=" [y/n]"
-
-  # Always read input from the terminal ignoring pipelines
-  exec </dev/tty
 
   sleep 0.3 # for some reason there's a race between xlog/xerr and this prompt with VSCode terminal
   while true; do
