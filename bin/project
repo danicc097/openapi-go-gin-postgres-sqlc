@@ -91,7 +91,7 @@ x.check-build-deps() {
         exit 1
       fi
 
-      confirm "Do you want to install $bin now?" || exit 1
+      confirm "Do you want to install $bin now?" </dev/tty >/dev/tty || exit 1
 
       # TODO test -n "$NO_CONFIRMATION" && { yes y | install...}
       echo "Installing $bin..."
@@ -112,7 +112,7 @@ x.bootstrap() {
     x.setup.swagger-ui
     x.gen.build-tools
     traefik_dir="$HOME/traefik-bootstrap"
-    confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
+    confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" </dev/tty >/dev/tty && x.setup.traefik "$traefik_dir"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -657,6 +657,7 @@ export type schemas = components['schemas']
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
+  [[ -n $NO_GEN ]] && return
   backup-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   drop-and-migrate-gen-db
   { { {
@@ -790,7 +791,7 @@ x.test.backend.setup() {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
     run_shared_services up -d --build --remove-orphans --wait
-    [[ -z $NO_GEN ]] && x.gen
+    x.gen
     # no need to migrate, done on every test run internally
     drop_and_recreate_db $POSTGRES_TEST_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -959,10 +960,9 @@ x.backend.sync-deps() {
   go mod vendor
 }
 
-# Run project in production mode.
-x.run-prod() {
-  env="prod"
-
+# Run project in production mode, i.e. dockerized and bundled.
+# TODO .env.e2e should be a symlink of .env.ci
+x.run-dockerized() {
   run_shared_services up -d --build --remove-orphans --wait
   x.db.recreate
 
@@ -970,7 +970,7 @@ x.run-prod() {
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
-    -f docker-compose."$env".yml \
+    -f docker-compose.yml \
     --env-file ".env.$env" \
     up -d --build --wait 2>&1 # https://github.com/docker/compose/issues/7346
 
@@ -1084,7 +1084,7 @@ x.db.recreate() {
 
 # Drop and recreate the database in the current environment.
 x.db.drop() {
-  [[ $env = "prod" ]] && confirm "This will drop all database data. Continue?"
+  [[ $env = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && confirm "This will drop production database data. Continue?" </dev/tty >/dev/tty
   { { {
     drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1514,7 +1514,6 @@ xo_schema() {
 
 drop-and-migrate-gen-db() {
   test -n "$gen_migrated" && return
-
   gen_migrated="${FUNCNAME[1]}"
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
@@ -1694,7 +1693,7 @@ while [[ "$#" -gt 0 ]]; do
     # Environment to run commands in. Defaults to "dev".
     # Args: env
     env="${1#--x-env=}"
-    valid_envs="dev staging prod ci"
+    valid_envs="dev e2e prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi
