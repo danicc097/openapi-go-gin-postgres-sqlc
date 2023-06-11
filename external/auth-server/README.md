@@ -9,7 +9,7 @@ auth login won't be used for those specific users).
 Frontend auth logic will have a guard if env = dev, and if we set a `DEV_USER`
 is set
 ```ts
-import devUsers from ".../1.dev.json"
+import devUsers from ".../1.dev.json" // need symlink
 
 const DEV_USER: <keyof devUsers | null> = "admin"
 ```
