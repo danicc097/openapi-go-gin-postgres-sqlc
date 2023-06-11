@@ -5,7 +5,7 @@
     "password": "admin",
     "firstName": "Mr",
     "lastName": "Admin",
-    "email": "admin@admin.com",
+    "email": "admin@myapp.com",
     "emailVerified": true,
     "phone": "",
     "phoneVerified": false,

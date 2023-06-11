@@ -62,13 +62,35 @@ func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, toke
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "could not get user from external id: %s", err)
 	}
+	role := models.RoleUser
+
+	guestRole, _ := a.usvc.authzsvc.RoleByName(models.RoleGuest)
+
+	cfg := internal.Config()
+
+	adminUser, err := a.usvc.ByEmail(ctx, a.pool, cfg.Admin.Email)
+	if err != nil {
+		return nil, internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not get admin user %s: %s", cfg.Admin.Email, err)
+	}
+
+	if token["email_verified"].(bool) {
+		if u.RoleRank == guestRole.Rank {
+			u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID.String(), adminUser, &models.UpdateUserAuthRequest{Role: &guestRole.Name})
+			if err != nil {
+				return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update user auth after email verification: %s", err)
+			}
+		}
+	} else {
+		role = models.RoleGuest
+	}
+
 	if u == nil {
-		role := models.RoleUser
-		if isAdmin, _ := token["is_admin"].(bool); isAdmin { // TODO is_admin not returned currently
-			role = models.RoleAdmin
+		if auth, ok := token["auth"].(map[string]any); ok {
+			if isAdmin, _ := auth["is_admin"].(bool); isAdmin {
+				role = models.RoleAdmin
+			}
 		}
 
-		// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}
 		u, err = a.usvc.Register(ctx, a.pool, UserRegisterParams{
 			Username:   token["preferred_username"].(string),
 			Email:      token["email"].(string),

@@ -29,7 +29,7 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 		resp.Error = "internal error"
 		resp.Message = msg
 	} else {
-		resp.Message = ierr.Cause().Error()
+		resp.Message = ierr.Cause().Error() // do we really want cause only
 		switch ierr.Code() {
 		case internal.ErrorCodeNotFound:
 			status = http.StatusNotFound
@@ -49,6 +49,9 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			status = http.StatusForbidden
 		case internal.ErrorCodeUnauthenticated:
 			status = http.StatusUnauthorized
+		case internal.ErrorCodePrivate:
+			resp.Message = "internal error"
+			fallthrough
 		case internal.ErrorCodeUnknown:
 			fallthrough
 		default:
