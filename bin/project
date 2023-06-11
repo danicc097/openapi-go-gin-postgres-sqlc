@@ -961,8 +961,9 @@ x.backend.sync-deps() {
 }
 
 # Run project in production mode, i.e. dockerized and bundled.
-# TODO .env.e2e should be a symlink of .env.ci
 x.run-dockerized() {
+  # TODO .env.e2e should be a symlink of .env.ci
+  # project run-dockerized --x-env=prod --x-no-gen
   run_shared_services up -d --build --remove-orphans --wait
   x.db.recreate
 
@@ -972,7 +973,7 @@ x.run-dockerized() {
     --project-name "$PROJECT_PREFIX"_"$env" \
     -f docker-compose.yml \
     --env-file ".env.$env" \
-    up -d --build --wait 2>&1 # https://github.com/docker/compose/issues/7346
+    up -d --build --wait --force-recreate 2>&1 # https://github.com/docker/compose/issues/7346
 
   echo "Migrations:"
   x.migrate up

@@ -1,6 +1,7 @@
 # Certificates
 
-Create with `mkcert` manually or setup with ``project check-build-deps``.
+Create with `mkcert` manually or setup with ``project check-build-deps``. Make sure
+to append the certificate pair to your local traefik setup in `traefik/dynamic_conf.yaml`.
 
 ```bash
 mkcert -install
