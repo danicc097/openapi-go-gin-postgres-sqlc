@@ -962,7 +962,10 @@ x.backend.sync-deps() {
 
 # Run project in production mode, i.e. dockerized and bundled.
 x.run-dockerized() {
-  # TODO .env.e2e should be a symlink of .env.ci
+  # .env.e2e should NOT be a symlink of .env.ci
+  # we will run e2e services with project run-dockerized --x-env=e2e --x-no-gen
+  # which a 1:1 clone of prod setup
+  # it will use production dockerized versions which require container name resolution, diff ports etc
   # project run-dockerized --x-env=prod --x-no-gen
   run_shared_services up -d --build --remove-orphans --wait
   x.db.recreate
