@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -67,26 +66,25 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 	role := models.RoleUser
 
 	guestRole := a.usvc.authzsvc.RoleByName(models.RoleGuest)
-	superAdminRole := a.usvc.authzsvc.RoleByName(models.RoleSuperAdmin)
 
 	cfg := internal.Config()
 
-	superAdmin, err := a.usvc.ByEmail(ctx, a.pool, cfg.SuperAdmins.DefaultEmail)
+	superAdmin, err := a.usvc.ByEmail(ctx, a.pool, cfg.SuperAdmin.DefaultEmail)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not get admin user %s: %s", cfg.SuperAdmins.DefaultEmail, err)
+		return nil, internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not get admin user %s: %s", cfg.SuperAdmin.DefaultEmail, err)
 	}
 
 	// superAdmin is registered without id since an account needs to exist beforehand (created via initial-data, for any env)
-	if userinfo.Email == cfg.SuperAdmins.DefaultEmail && superAdmin.ExternalID == "" {
+	if userinfo.Email == cfg.SuperAdmin.DefaultEmail && superAdmin.ExternalID == "" {
 		// external ID is not editable via services.
 		superAdmin, err = a.usvc.urepo.Update(ctx, a.pool, superAdmin.UserID, &db.UserUpdateParams{
 			ExternalID: pointers.New(userinfo.Subject),
 		})
 		if err != nil {
-			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmins.DefaultEmail, err)
+			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmin.DefaultEmail, err)
 		}
-		// continue as normal to update superAdmin with updated info.
-		// superAdmin account can be changed on demand via SUPERADMIN_EMAIL and info will always be synced with auth server
+		// continue as normal to update superAdmin if necessary.
+		// default superAdmin account can be changed on startup via SUPERADMIN_EMAIL and info will always be synced with auth server
 		u = superAdmin
 	}
 
@@ -112,22 +110,6 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 		})
 		if err != nil {
 			return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "could not get register user from provider: %s", err)
-		}
-	}
-
-	// check if user is superadmin
-	if ee := cfg.SuperAdmins.Emails; ee != nil {
-		for _, email := range strings.Split(*ee, " ") {
-			if u.Email != email {
-				continue
-			}
-			if role, _ := a.usvc.authzsvc.RoleByRank(u.RoleRank); role.Rank == superAdminRole.Rank {
-				continue
-			}
-			u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID.String(), superAdmin, &models.UpdateUserAuthRequest{Role: &superAdminRole.Name})
-			if err != nil {
-				return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update superadmin role: %s", err)
-			}
 		}
 	}
 

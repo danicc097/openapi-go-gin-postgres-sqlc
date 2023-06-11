@@ -43,16 +43,14 @@ type RedisConfig struct {
 
 type SuperAdminConfig struct {
 	DefaultEmail string `env:"DEFAULT_SUPERADMIN_EMAIL"`
-	// additional superadmins, separated by space
-	Emails *string `env:"SUPERADMIN_EMAILS"`
 }
 
 // AppConfig contains app settings.
 type AppConfig struct {
-	Postgres    PostgresConfig
-	Redis       RedisConfig
-	OIDC        OIDCConfig
-	SuperAdmins SuperAdminConfig
+	Postgres   PostgresConfig
+	Redis      RedisConfig
+	OIDC       OIDCConfig
+	SuperAdmin SuperAdminConfig
 
 	Domain     string `env:"DOMAIN"`
 	APIPort    string `env:"API_PORT"`
