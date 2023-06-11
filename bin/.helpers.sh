@@ -29,7 +29,7 @@ fi
 
 # redirects a command/script to tty in order to bypass xlog and xerr pipeline redirection.
 with_tty() {
-  if [ -c /dev/tty ]; then
+  if test -c /dev/tty; then
     "$@" </dev/tty >/dev/tty
   else
     "$@"
