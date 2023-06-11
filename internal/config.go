@@ -23,7 +23,6 @@ type OIDCConfig struct {
 	Issuer       string `env:"OIDC_ISSUER"`
 	Scopes       string `env:"OIDC_SCOPES"`
 	Domain       string `env:"OIDC_DOMAIN"`
-	ServerPort   string `env:"OIDC_SERVER_PORT"`
 }
 
 type PostgresConfig struct {
