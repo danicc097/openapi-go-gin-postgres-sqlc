@@ -41,6 +41,11 @@ func (h *Handlers) MyProviderCallback(c *gin.Context) {
 		renderErrorResponse(c, "user info not found", errors.New("user info not found"))
 	}
 	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
+	// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}
+
+	// GetOrRegisterUserFromProvider
+	// CreateAccessTokenForUser
+	// get "auth:redirect-uri" cookie
 
 	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
 }
