@@ -16,14 +16,10 @@ func TestAuthorization_Roles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewAuthorization: %v", err)
 	}
-	userRole, err := svc.RoleByName(models.RoleUser)
-	if err != nil {
-		t.Fatalf("role does not exist: %v", err)
-	}
-	managerRole, err := svc.RoleByName(models.RoleManager)
-	if err != nil {
-		t.Fatalf("role does not exist: %v", err)
-	}
+
+	userRole := svc.RoleByName(models.RoleUser)
+	managerRole := svc.RoleByName(models.RoleManager)
+
 	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleManager), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleAdmin), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredRole(managerRole, models.RoleAdmin), "access restricted")

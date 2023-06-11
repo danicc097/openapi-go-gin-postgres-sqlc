@@ -25,7 +25,7 @@ jobs:
         run: |
           source .envrc
 
-          # go mod download # use vendor
+          # go mod download # it will access network/cache, which is not necessary with -mod=vendor
           go mod verify
 
           cd frontend

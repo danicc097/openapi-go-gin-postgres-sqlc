@@ -1,0 +1,65 @@
+version: "3.8"
+x-logging: &default-logging
+  options:
+    max-size: "10m"
+    max-file: "2"
+  driver: json-file
+
+# Debug config with docker-compose --env-file <...> config
+services:
+  backend:
+    image: ${PROJECT_PREFIX:?not set}-${APP_ENV}-backend:latest
+    container_name: backend_${PROJECT_PREFIX}_${APP_ENV}
+    networks:
+      - traefik-net
+    command: ./rest-server -env=.env.${APP_ENV}
+    volumes:
+      - ./.env.${APP_ENV}:/.env.${APP_ENV}
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - "DOCKER_UID=${DOCKER_UID:?not set}"
+        - "DOCKER_GID=${DOCKER_GID:?not set}"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "authserver.local.localhost:host-gateway" # required if running locally
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.rule=Host(`${DOMAIN:?not set}`) && PathPrefix("${API_PREFIX:?not set}")
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.middlewares=${PROJECT_PREFIX}-stripprefix-backend,${PROJECT_PREFIX}-compress # check docs to exclude requests from compression
+      - traefik.http.middlewares.${PROJECT_PREFIX}-compress.compress=true
+      - traefik.http.middlewares.${PROJECT_PREFIX}-stripprefix-backend.stripprefix.prefixes=${API_PREFIX:?not set}
+      - traefik.docker.network=traefik-net
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.entrypoints=websecure
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.tls=true
+      - traefik.http.services.${PROJECT_PREFIX}-${APP_ENV}-backend.loadbalancer.server.port=${API_PORT:?not set}
+    logging: *default-logging
+
+  frontend:
+    image: ${PROJECT_PREFIX:?not set}-${APP_ENV}-frontend:latest
+    container_name: frontend_${PROJECT_PREFIX}_${APP_ENV}
+    networks:
+      - traefik-net
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    env_file: .env.${APP_ENV}
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-frontend.rule=Host(`${DOMAIN:?not set}`)
+      - traefik.docker.network=traefik-net
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-frontend.middlewares=${PROJECT_PREFIX}-compress
+      - traefik.http.middlewares.${PROJECT_PREFIX}-compress.compress=true
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-frontend.entrypoints=websecure
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-frontend.tls=true
+      - traefik.http.services.${PROJECT_PREFIX}-${APP_ENV}-frontend.loadbalancer.server.port=${FRONTEND_PORT:?not set}
+    logging: *default-logging
+
+networks:
+  traefik-net:
+    name: traefik-net
+    external: true

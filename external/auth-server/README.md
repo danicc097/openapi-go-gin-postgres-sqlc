@@ -1,3 +1,5 @@
+# users
+
 `1.dev.json`: users to test out login in development.
 Users loaded in ascending filename order, therefore ensure e2e tests always
 loaded last.
@@ -22,3 +24,4 @@ On the other hand,  E2E gets different env to test login, redirects, token creat
 E2E doesn't really need initial-data since we will create everything from scratch, ie we will test
 register and update cases when logging in via auth server first and consequent
 times
+

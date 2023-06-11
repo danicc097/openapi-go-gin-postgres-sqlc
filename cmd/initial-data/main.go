@@ -124,7 +124,7 @@ func main() {
 	// external_id will be changed. superadmin email may be changed at any time.
 	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "superadmin",
-		Email:      cfg.SuperAdmins.DefaultEmail,
+		Email:      cfg.SuperAdmin.DefaultEmail,
 		ExternalID: "", // will be updated on login
 		Role:       models.RoleSuperAdmin,
 	})

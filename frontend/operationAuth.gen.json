@@ -1,1 +1,117 @@
-../operationAuth.gen.json
+{
+  "MyProviderCallback": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "MyProviderLogin": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "Events": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "Ping": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "OpenapiYamlGet": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "AdminPing": {
+    "scopes": [
+      "test-scope"
+    ],
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "GetCurrentUser": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateUserAuthorization": {
+    "scopes": null,
+    "role": "user",
+    "requiresAuthentication": true
+  },
+  "DeleteUser": {
+    "scopes": [
+      "test-scope",
+      "users:write"
+    ],
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "UpdateUser": {
+    "scopes": null,
+    "role": "user",
+    "requiresAuthentication": true
+  },
+  "InitializeProject": {
+    "scopes": null,
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "GetProject": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetProjectConfig": {
+    "scopes": null,
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "UpdateProjectConfig": {
+    "scopes": null,
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "GetProjectBoard": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetProjectWorkitems": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "CreateWorkitemTag": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "CreateWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "CreateWorkitemComment": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  }
+}

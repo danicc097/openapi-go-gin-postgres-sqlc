@@ -46,7 +46,7 @@ export default function Navbar() {
 
   useEffect(() => {
     if (user && notify) {
-      showTestNotification(user.user.email)
+      showTestNotification(user.email)
       setNotify(false)
     }
   }, [user, showTestNotification, notify])

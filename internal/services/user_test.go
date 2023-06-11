@@ -168,7 +168,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			},
 			want: want{
 				Scopes: authzsvc.DefaultScopes(models.RoleManager), // when role is updated scopes are reset, and the ones in params ignored
-				Rank:   authzsvc.Roles[models.RoleManager].Rank,
+				Rank:   authzsvc.RoleByName(models.RoleManager).Rank,
 			},
 		},
 		{
@@ -264,7 +264,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				caller: testUsers.admin.User,
 			},
 			want: want{
-				Rank:   authzsvc.Roles[models.RoleGuest].Rank,
+				Rank:   authzsvc.RoleByName(models.RoleGuest).Rank,
 				Scopes: authzsvc.DefaultScopes(models.RoleGuest), // scopes are reset on role change
 			},
 		},

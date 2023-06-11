@@ -19,6 +19,7 @@
     "@babel/core": "^7.20.2",
     "@elastic/datemath": "^5.0.3",
     "@elastic/eui": "^78.0.0",
+    "@emotion/babel-plugin": "^11.11.0",
     "@emotion/css": "^11.10.5",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.5",

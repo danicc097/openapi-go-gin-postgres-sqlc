@@ -91,9 +91,8 @@ x.check-build-deps() {
         exit 1
       fi
 
-      confirm "Do you want to install $bin now?" || exit 1
+      with_tty confirm "Do you want to install $bin now?" || exit 1
 
-      # TODO test -n "$NO_CONFIRMATION" && { yes y | install...}
       echo "Installing $bin..."
       if ! "install.bin.$bin"; then
         err "$bin installation failed"
@@ -106,13 +105,13 @@ x.check-build-deps() {
 # Check dependencies and fetch required tools.
 x.bootstrap() {
   { { {
-    git submodule update --init --recursive # sync later on with git `git submodule update --init --recursive --remote`
+    git submodule update --init --recursive # sync later on with git `git submodule update --force --recursive --remote`
     x.check-build-deps
     x.install-tools
     x.setup.swagger-ui
     x.gen.build-tools
     traefik_dir="$HOME/traefik-bootstrap"
-    confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
+    with_tty confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -657,6 +656,7 @@ export type schemas = components['schemas']
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
+  [[ -n $NO_GEN ]] && return
   backup-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   drop-and-migrate-gen-db
   { { {
@@ -790,7 +790,7 @@ x.test.backend.setup() {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
     run_shared_services up -d --build --remove-orphans --wait
-    [[ -z $NO_GEN ]] && x.gen
+    x.gen
     # no need to migrate, done on every test run internally
     drop_and_recreate_db $POSTGRES_TEST_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -858,7 +858,7 @@ x.test.xo() {
       err "xo tests failed"
 
     if ! $test_dir/diff_check; then
-      confirm "Do you want to update test snapshot with current changes?" </dev/tty >/dev/tty && { # must redirect inside xlog pipeline
+      with_tty confirm "Do you want to update test snapshot with current changes?" && { # must redirect inside xlog pipeline
         rm -rf "$test_dir/snapshot"
         cp -r "$test_dir/got" "$test_dir/snapshot"
       }
@@ -959,10 +959,13 @@ x.backend.sync-deps() {
   go mod vendor
 }
 
-# Run project in production mode.
-x.run-prod() {
-  env="prod"
-
+# Run project in production mode, i.e. dockerized and bundled.
+x.run-dockerized() {
+  # .env.e2e should NOT be a symlink of .env.ci
+  # we will run e2e services with project run-dockerized --x-env=e2e --x-no-gen
+  # which a 1:1 clone of prod setup
+  # it will use production dockerized versions which require container name resolution, diff ports etc
+  # project run-dockerized --x-env=prod --x-no-gen
   run_shared_services up -d --build --remove-orphans --wait
   x.db.recreate
 
@@ -970,9 +973,9 @@ x.run-prod() {
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
-    -f docker-compose."$env".yml \
+    -f docker-compose.yml \
     --env-file ".env.$env" \
-    up -d --build --wait 2>&1 # https://github.com/docker/compose/issues/7346
+    up -d --build --wait --force-recreate 2>&1 # https://github.com/docker/compose/issues/7346
 
   echo "Migrations:"
   x.migrate up
@@ -1084,7 +1087,7 @@ x.db.recreate() {
 
 # Drop and recreate the database in the current environment.
 x.db.drop() {
-  [[ $env = "prod" ]] && confirm "This will drop all database data. Continue?"
+  [[ $env = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && with_tty confirm "This will drop production database data. Continue?"
   { { {
     drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1207,7 +1210,7 @@ x.e2e.run() {
     cd e2e
     DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
       docker build -t "$name" .
-    docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
+    docker run -it --rm --ipc=host --network host -v "$(pwd):/src" "$name" bash -c "pytest $*"
     cd - >/dev/null
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1514,7 +1517,6 @@ xo_schema() {
 
 drop-and-migrate-gen-db() {
   test -n "$gen_migrated" && return
-
   gen_migrated="${FUNCNAME[1]}"
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
@@ -1694,7 +1696,7 @@ while [[ "$#" -gt 0 ]]; do
     # Environment to run commands in. Defaults to "dev".
     # Args: env
     env="${1#--x-env=}"
-    valid_envs="dev staging prod ci"
+    valid_envs="dev e2e prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi

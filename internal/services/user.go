@@ -51,10 +51,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	if params.Role == "" {
 		params.Role = models.RoleUser
 	}
-	role, err := u.authzsvc.RoleByName(params.Role)
-	if err != nil {
-		return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
-	}
+	role := u.authzsvc.RoleByName(params.Role)
 
 	// append default scopes for role upon registration regardless of provided params
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
@@ -100,7 +97,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
 
-	adminRole := u.authzsvc.Roles[models.RoleAdmin]
+	adminRole := u.authzsvc.RoleByName(models.RoleAdmin)
 
 	if user.UserID != caller.UserID &&
 		caller.RoleRank < adminRole.Rank {
@@ -152,7 +149,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
 
-	adminRole := u.authzsvc.Roles[models.RoleAdmin]
+	adminRole := u.authzsvc.RoleByName(models.RoleAdmin)
 
 	if caller.RoleRank < adminRole.Rank {
 		if user.UserID == caller.UserID { // exit early, though it's not possible to update to something not assigned to self already anyway
@@ -178,10 +175,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 
 	var rank *int16
 	if params.Role != nil {
-		role, err := u.authzsvc.RoleByName(*params.Role)
-		if err != nil {
-			return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
-		}
+		role := u.authzsvc.RoleByName(*params.Role)
 		if role.Rank > caller.RoleRank {
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
 		}
