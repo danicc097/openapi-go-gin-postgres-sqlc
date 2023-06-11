@@ -41,16 +41,16 @@ type RedisConfig struct {
 	Host string `env:"REDIS_HOST"`
 }
 
-type AdminConfig struct {
-	Email string `env:"ADMIN_EMAIL"`
+type SuperAdminConfig struct {
+	Email string `env:"SUPERADMIN_EMAIL"`
 }
 
 // AppConfig contains app settings.
 type AppConfig struct {
-	Postgres PostgresConfig
-	Redis    RedisConfig
-	OIDC     OIDCConfig
-	Admin    AdminConfig
+	Postgres   PostgresConfig
+	Redis      RedisConfig
+	OIDC       OIDCConfig
+	SuperAdmin SuperAdminConfig
 
 	Domain     string `env:"DOMAIN"`
 	APIPort    string `env:"API_PORT"`

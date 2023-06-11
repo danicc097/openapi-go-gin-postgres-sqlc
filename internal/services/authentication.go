@@ -56,9 +56,9 @@ func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (
 	return a.usvc.ByAPIKey(ctx, a.pool, apiKey)
 }
 
-// GetOrRegisterUserFromProvider returns a user from a JWT.
-func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, token map[string]any) (*db.User, error) {
-	u, err := a.usvc.ByExternalID(ctx, a.pool, token["sub"].(string))
+// GetOrRegisterUserFromProvider returns a user from user info.
+func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, userinfo map[string]any) (*db.User, error) {
+	u, err := a.usvc.ByExternalID(ctx, a.pool, userinfo["sub"].(string))
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "could not get user from external id: %s", err)
 	}
@@ -68,14 +68,23 @@ func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, toke
 
 	cfg := internal.Config()
 
-	adminUser, err := a.usvc.ByEmail(ctx, a.pool, cfg.Admin.Email)
+	superAdmin, err := a.usvc.ByEmail(ctx, a.pool, cfg.SuperAdmin.Email)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not get admin user %s: %s", cfg.Admin.Email, err)
+		return nil, internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not get admin user %s: %s", cfg.SuperAdmin.Email, err)
 	}
 
-	if token["email_verified"].(bool) {
+	// superAdmin is registered without id since an account needs to exist beforehand (created via initial-data, for any env)
+	if userinfo["email"].(string) == cfg.SuperAdmin.Email && superAdmin.ExternalID == "" {
+		superAdmin.ExternalID = userinfo["sub"].(string)
+		superAdmin, err = superAdmin.Update(ctx, a.pool)
+		if err != nil {
+			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmin.Email, err)
+		}
+	}
+
+	if userinfo["email_verified"].(bool) {
 		if u.RoleRank == guestRole.Rank {
-			u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID.String(), adminUser, &models.UpdateUserAuthRequest{Role: &guestRole.Name})
+			u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID.String(), superAdmin, &models.UpdateUserAuthRequest{Role: &guestRole.Name})
 			if err != nil {
 				return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update user auth after email verification: %s", err)
 			}
@@ -85,18 +94,18 @@ func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, toke
 	}
 
 	if u == nil {
-		if auth, ok := token["auth"].(map[string]any); ok {
+		if auth, ok := userinfo["auth"].(map[string]any); ok {
 			if isAdmin, _ := auth["is_admin"].(bool); isAdmin {
 				role = models.RoleAdmin
 			}
 		}
 
 		u, err = a.usvc.Register(ctx, a.pool, UserRegisterParams{
-			Username:   token["preferred_username"].(string),
-			Email:      token["email"].(string),
-			ExternalID: token["sub"].(string),
-			FirstName:  pointers.New(token["given_name"].(string)),
-			LastName:   pointers.New(token["family_name"].(string)),
+			Username:   userinfo["preferred_username"].(string),
+			Email:      userinfo["email"].(string),
+			ExternalID: userinfo["sub"].(string),
+			FirstName:  pointers.New(userinfo["given_name"].(string)),
+			LastName:   pointers.New(userinfo["family_name"].(string)),
 			Role:       role,
 		})
 		if err != nil {
