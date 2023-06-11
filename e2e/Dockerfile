@@ -1,8 +1,3 @@
-#
-# See https://playwright.dev/python/docs/docker
-# Use a Docker image version that matches Playwright version.
-# use supported regular ubuntu
-#
 FROM mcr.microsoft.com/playwright:v1.35.0-jammy
 
 WORKDIR /e2e

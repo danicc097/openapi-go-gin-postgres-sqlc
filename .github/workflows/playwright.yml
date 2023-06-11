@@ -10,6 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8.3.1
+        run_install: false
+
+    - name: Setup pnpm cache (1)
+      id: pnpm-cache
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+    - name: Setup pnpm cache (2)
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/e2e/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
     - name: Run Playwright tests
       run: |
         source .envrc
@@ -18,6 +38,7 @@ jobs:
         echo "$HOME/bin" >> $GITHUB_PATH
 
         project e2e.run --x-env=ci
+
     - uses: actions/upload-artifact@v3
       if: always()
       with:
