@@ -68,22 +68,24 @@ func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, user
 
 	cfg := internal.Config()
 
-	superAdmin, err := a.usvc.ByEmail(ctx, a.pool, cfg.SuperAdmin.Email)
+	superAdmin, err := a.usvc.ByEmail(ctx, a.pool, cfg.SuperAdmins.DefaultEmail)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not get admin user %s: %s", cfg.SuperAdmin.Email, err)
+		return nil, internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not get admin user %s: %s", cfg.SuperAdmins.DefaultEmail, err)
 	}
 
 	// superAdmin is registered without id since an account needs to exist beforehand (created via initial-data, for any env)
-	if userinfo["email"].(string) == cfg.SuperAdmin.Email && superAdmin.ExternalID == "" {
+	if userinfo["email"].(string) == cfg.SuperAdmins.DefaultEmail && superAdmin.ExternalID == "" {
 		superAdmin.ExternalID = userinfo["sub"].(string)
 		superAdmin, err = superAdmin.Update(ctx, a.pool)
 		if err != nil {
-			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmin.Email, err)
+			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmins.DefaultEmail, err)
 		}
 		// continue as normal to update superAdmin with updated info.
 		// superAdmin account can be changed on demand via SUPERADMIN_EMAIL and info will always be synced with auth server
 		u = superAdmin
 	}
+
+	// TODO check if email in cfg.SuperAdmins.Emails, if so update role if not already superAdmin
 
 	if userinfo["email_verified"].(bool) {
 		if u.RoleRank == guestRole.Rank {
