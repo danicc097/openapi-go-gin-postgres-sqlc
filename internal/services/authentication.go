@@ -66,8 +66,8 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 	}
 	role := models.RoleUser
 
-	guestRole, _ := a.usvc.authzsvc.RoleByName(models.RoleGuest)
-	superAdminRole, _ := a.usvc.authzsvc.RoleByName(models.RoleSuperAdmin)
+	guestRole := a.usvc.authzsvc.RoleByName(models.RoleGuest)
+	superAdminRole := a.usvc.authzsvc.RoleByName(models.RoleSuperAdmin)
 
 	cfg := internal.Config()
 
@@ -78,8 +78,10 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 
 	// superAdmin is registered without id since an account needs to exist beforehand (created via initial-data, for any env)
 	if userinfo.Email == cfg.SuperAdmins.DefaultEmail && superAdmin.ExternalID == "" {
-		superAdmin.ExternalID = userinfo.Subject
-		superAdmin, err = superAdmin.Update(ctx, a.pool) // TODO external ID is not editable via services but should be. if params external id is set we just ensure caller is admin.
+		// external ID is not editable via services.
+		superAdmin, err = a.usvc.urepo.Update(ctx, a.pool, superAdmin.UserID, &db.UserUpdateParams{
+			ExternalID: pointers.New(userinfo.Subject),
+		})
 		if err != nil {
 			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmins.DefaultEmail, err)
 		}

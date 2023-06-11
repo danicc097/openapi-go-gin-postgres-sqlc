@@ -52,8 +52,8 @@ var (
 // Authorization represents a service for authorization.
 type Authorization struct {
 	logger         *zap.SugaredLogger
-	Roles          roles
-	Scopes         scopes
+	roles          roles
+	scopes         scopes
 	existingRoles  []models.Role
 	existingScopes models.Scopes
 }
@@ -81,24 +81,19 @@ func NewAuthorization(logger *zap.SugaredLogger, scopePolicy string, rolePolicy 
 
 	return &Authorization{
 		logger:         logger,
-		Roles:          roles,
-		Scopes:         scopes,
+		roles:          roles,
+		scopes:         scopes,
 		existingRoles:  models.AllRoleValues(),
 		existingScopes: models.AllScopeValues(),
 	}, nil
 }
 
-func (a *Authorization) RoleByName(role models.Role) (Role, error) {
-	rl, ok := a.Roles[role]
-	if !ok {
-		return Role{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", role)
-	}
-
-	return rl, nil
+func (a *Authorization) RoleByName(role models.Role) Role {
+	return a.roles[role]
 }
 
 func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
-	for _, r := range a.Roles {
+	for _, r := range a.roles {
 		if r.Rank == rank {
 			return r, true
 		}
@@ -108,7 +103,7 @@ func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
 }
 
 func (a *Authorization) ScopeByName(scope string) (Scope, error) {
-	s, ok := a.Scopes[models.Scope(scope)]
+	s, ok := a.scopes[models.Scope(scope)]
 	if !ok {
 		return Scope{}, internal.NewErrorf(internal.ErrorCodeInvalidScope, "unknown scope %s", scope)
 	}
@@ -117,11 +112,7 @@ func (a *Authorization) ScopeByName(scope string) (Scope, error) {
 }
 
 func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
-	rl, ok := a.Roles[requiredRole]
-	if !ok {
-		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", requiredRole)
-	}
-	if role.Rank < rl.Rank {
+	if role.Rank < a.roles[requiredRole].Rank {
 		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted: unauthorized role")
 	}
 
