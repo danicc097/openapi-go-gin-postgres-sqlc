@@ -25,7 +25,6 @@ services:
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
-      - "authserver.localhost:host-gateway"
     labels:
       - traefik.enable=true
       - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.rule=Host(`${DOMAIN:?not set}`) && PathPrefix("${API_PREFIX:?not set}")
