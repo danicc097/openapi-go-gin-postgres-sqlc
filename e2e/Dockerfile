@@ -8,10 +8,10 @@ ENV PATH /e2e/node_modules/.bin:$PATH
 
 COPY package.json /e2e/
 COPY pnpm-lock.yaml /e2e/
-RUN ls -lhA /e2e/node_modules/.bin
-RUN ls -lhA /e2e
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store/v3 \
   pnpm install -r --frozen-lockfile
 
 RUN ls -lhA /e2e/node_modules/.bin
 RUN ls -lhA /e2e
+RUN ls -lhA ./node_modules/.bin
+RUN ls -lhA .
