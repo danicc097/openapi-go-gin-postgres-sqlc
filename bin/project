@@ -1188,20 +1188,6 @@ x.db.restore() {
 
 ########################## e2e ##########################
 
-# Setup E2E Python environment.
-x.e2e.sync-deps() {
-  { { {
-    cd e2e
-    python -m venv .venv
-    source .venv/bin/activate
-    pip install pip-tools
-    pip-compile requirements.in
-    pip-compile requirements-dev.in
-    pip-sync requirements-dev.txt requirements.txt
-    cd - >/dev/null
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
 # Run E2E tests.
 x.e2e.run() {
   { { {
@@ -1209,7 +1195,7 @@ x.e2e.run() {
     cd e2e
     DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
       docker build -t "$name" .
-    docker run -i --rm --ipc=host --network host -v "$(pwd):/e2e" "$name" bash -c "playwright test"
+    docker run -i --rm --ipc=host --network host -v "$(pwd):/e2e" "$name" bash -c "pnpm exec playwright test"
     cd - >/dev/null
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }

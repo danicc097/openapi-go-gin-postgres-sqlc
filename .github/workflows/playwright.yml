@@ -30,6 +30,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
+    # TODO: will be moved to tests action when barebone ok
     - name: Run Playwright tests
       run: |
         source .envrc
