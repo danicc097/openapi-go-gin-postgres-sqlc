@@ -1210,7 +1210,7 @@ x.e2e.run() {
     cd e2e
     DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
       docker build -t "$name" .
-    docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
+    docker run -it --rm --ipc=host --network host -v "$(pwd):/src" "$name" bash -c "pytest $*"
     cd - >/dev/null
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
