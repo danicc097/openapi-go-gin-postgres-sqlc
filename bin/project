@@ -1202,8 +1202,7 @@ x.e2e.sync-deps() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Run E2E tests. Accepts `pytest` parameters.
-# Args: [...]
+# Run E2E tests.
 x.e2e.run() {
   { { {
     name="$PROJECT_PREFIX-e2e"
