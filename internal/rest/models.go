@@ -51,10 +51,6 @@ type TeamUpdateRequest struct {
 	db.TeamUpdateParams
 }
 
-type UserCreateRequest struct {
-	services.UserRegisterParams
-}
-
 type DemoWorkItemCreateRequest struct {
 	services.DemoWorkItemCreateParams
 }

@@ -115,11 +115,17 @@ func main() {
 	logger.Info("Registered ", u.Username)
 	users = append(users, u)
 
+	cfg := internal.Config()
+	// register superAdmin which is used for internal calls that require a (super)admin caller.
+	// e.g. first user registration via auth callback requires an existing admin,
+	// which wouldn't be possible without a registered admin beforehand.
+	// e2e will test regular admin registration, and those must exist in auth server as admins as well.
+	// superAdmin login is also possible as long as auth server account exists, and
+	// external_id will be changed. superadmin email may be changed at any time.
 	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
-		Username:   "superadmin_1",
-		FirstName:  pointers.New("MrSuperadmin"),
-		Email:      "superadmin_1" + "@mail.com",
-		ExternalID: "external_id_superadmin_1",
+		Username:   "superadmin",
+		Email:      cfg.SuperAdmins.DefaultEmail,
+		ExternalID: "", // will be updated on login
 		Role:       models.RoleSuperAdmin,
 	})
 	handleError(err)

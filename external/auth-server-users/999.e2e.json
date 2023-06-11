@@ -1,0 +1,26 @@
+{
+  "testUser1": {
+    "id": "testUser1-id",
+    "username": "testUser1",
+    "password": "testUser1",
+    "firstName": "Test 1",
+    "lastName": "User 1",
+    "email": "testUser1@app.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de"
+  },
+  "testUser2": {
+    "id": "testUser2-id",
+    "username": "testUser2",
+    "password": "testUser2",
+    "firstName": "Test 2",
+    "lastName": "User 2",
+    "email": "testUser2@app.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de"
+  }
+}

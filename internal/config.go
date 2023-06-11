@@ -18,12 +18,12 @@ var (
 )
 
 type OIDCConfig struct {
-	ClientID     string  `env:"OIDC_CLIENT_ID"`
-	ClientSecret string  `env:"OIDC_CLIENT_SECRET"`
-	Issuer       string  `env:"OIDC_ISSUER"`
-	Scopes       string  `env:"OIDC_SCOPES"`
-	Domain       string  `env:"OIDC_DOMAIN"`
-	ServerPort   *string `env:"OIDC_SERVER_PORT"`
+	ClientID     string `env:"OIDC_CLIENT_ID"`
+	ClientSecret string `env:"OIDC_CLIENT_SECRET"`
+	Issuer       string `env:"OIDC_ISSUER"`
+	Scopes       string `env:"OIDC_SCOPES"`
+	Domain       string `env:"OIDC_DOMAIN"`
+	ServerPort   string `env:"OIDC_SERVER_PORT"`
 }
 
 type PostgresConfig struct {
@@ -41,11 +41,18 @@ type RedisConfig struct {
 	Host string `env:"REDIS_HOST"`
 }
 
+type SuperAdminConfig struct {
+	DefaultEmail string `env:"DEFAULT_SUPERADMIN_EMAIL"`
+	// additional superadmins, separated by space
+	Emails *string `env:"SUPERADMIN_EMAILS"`
+}
+
 // AppConfig contains app settings.
 type AppConfig struct {
-	Postgres PostgresConfig
-	Redis    RedisConfig
-	OIDC     OIDCConfig
+	Postgres    PostgresConfig
+	Redis       RedisConfig
+	OIDC        OIDCConfig
+	SuperAdmins SuperAdminConfig
 
 	Domain     string `env:"DOMAIN"`
 	APIPort    string `env:"API_PORT"`

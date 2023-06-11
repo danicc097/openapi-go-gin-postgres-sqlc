@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -25,7 +27,7 @@ type Authentication struct {
 }
 
 // NewAuthentication returns a new authentication service.
-// TODO can we use tx instead of providing pool at startup
+// TODO should we use tx instead of providing pool only
 func NewAuthentication(logger *zap.SugaredLogger, usvc *User, pool *pgxpool.Pool) *Authentication {
 	return &Authentication{
 		logger: logger,
@@ -43,7 +45,7 @@ func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token strin
 
 	user, err := a.usvc.ByEmail(ctx, a.pool, claims.Email)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "user from token not found")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "user from token not found: %s", err)
 	}
 
 	return user, nil
@@ -54,12 +56,69 @@ func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (
 	return a.usvc.ByAPIKey(ctx, a.pool, apiKey)
 }
 
-// GetOrRegisterUserFromProvider returns a user from a JWT.
-func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, token string) (*db.User, error) {
-	// return a.usvc.ByExternalID(ctx, a.pool, externalID)
-	// TODO see https://github.com/zitadel/oidc/tree/main/example/client
-	// this would be used in MyProviderCallback after MyProviderLogin
-	return nil, nil
+// GetOrRegisterUserFromProvider returns a user from user info.
+func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, userinfo map[string]any) (*db.User, error) {
+	u, err := a.usvc.ByExternalID(ctx, a.pool, userinfo["sub"].(string))
+	if err != nil {
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "could not get user from external id: %s", err)
+	}
+	role := models.RoleUser
+
+	guestRole, _ := a.usvc.authzsvc.RoleByName(models.RoleGuest)
+
+	cfg := internal.Config()
+
+	superAdmin, err := a.usvc.ByEmail(ctx, a.pool, cfg.SuperAdmins.DefaultEmail)
+	if err != nil {
+		return nil, internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not get admin user %s: %s", cfg.SuperAdmins.DefaultEmail, err)
+	}
+
+	// superAdmin is registered without id since an account needs to exist beforehand (created via initial-data, for any env)
+	if userinfo["email"].(string) == cfg.SuperAdmins.DefaultEmail && superAdmin.ExternalID == "" {
+		superAdmin.ExternalID = userinfo["sub"].(string)
+		superAdmin, err = superAdmin.Update(ctx, a.pool)
+		if err != nil {
+			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmins.DefaultEmail, err)
+		}
+		// continue as normal to update superAdmin with updated info.
+		// superAdmin account can be changed on demand via SUPERADMIN_EMAIL and info will always be synced with auth server
+		u = superAdmin
+	}
+
+	// TODO check if email in cfg.SuperAdmins.Emails, if so update role if not already superAdmin
+
+	if userinfo["email_verified"].(bool) {
+		if u.RoleRank == guestRole.Rank {
+			u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID.String(), superAdmin, &models.UpdateUserAuthRequest{Role: &guestRole.Name})
+			if err != nil {
+				return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update user auth after email verification: %s", err)
+			}
+		}
+	} else {
+		role = models.RoleGuest
+	}
+
+	if u == nil {
+		if auth, ok := userinfo["auth"].(map[string]any); ok {
+			if isAdmin, _ := auth["is_admin"].(bool); isAdmin {
+				role = models.RoleAdmin
+			}
+		}
+
+		u, err = a.usvc.Register(ctx, a.pool, UserRegisterParams{
+			Username:   userinfo["preferred_username"].(string),
+			Email:      userinfo["email"].(string),
+			ExternalID: userinfo["sub"].(string),
+			FirstName:  pointers.New(userinfo["given_name"].(string)),
+			LastName:   pointers.New(userinfo["family_name"].(string)),
+			Role:       role,
+		})
+		if err != nil {
+			return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "could not get register user from provider: %s", err)
+		}
+	}
+
+	return u, nil
 }
 
 // CreateAccessTokenForUser creates a new token for a user.

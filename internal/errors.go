@@ -20,6 +20,8 @@ type ErrorCode uint
 
 const (
 	ErrorCodeUnknown ErrorCode = iota
+	// ErrorCodePrivate marks an error to be hidden in response.
+	ErrorCodePrivate
 	ErrorCodeNotFound
 	ErrorCodeInvalidArgument
 	ErrorCodeAlreadyExists

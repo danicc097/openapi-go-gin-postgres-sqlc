@@ -17,6 +17,8 @@ services:
     ports:
       - ${OIDC_SERVER_PORT:?not set}:10001
     command: ./server
+    volumes:
+      - ${AUTH_SERVER_USERS_DIR:?not set}:/data/users/
     env_file:
       - ../.env.${APP_ENV:?not set}
     labels:
@@ -28,15 +30,13 @@ services:
       - traefik.http.routers.simple-oidc-server.entrypoints=websecure
       - traefik.http.routers.simple-oidc-server.tls=true
       - traefik.http.services.simple-oidc-server.loadbalancer.server.port=${OIDC_SERVER_PORT:?not set}
-
-
     restart: unless-stopped
     logging: *default-logging
     healthcheck:
       test: ["CMD-SHELL", "wget -O/dev/null -q http://localhost:10001/health || exit 1"]
       interval: 5s
-      timeout: 5s
-      retries: 3
+      timeout: 30s
+      retries: 5
 
 
 networks:

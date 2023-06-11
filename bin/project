@@ -106,7 +106,7 @@ x.check-build-deps() {
 # Check dependencies and fetch required tools.
 x.bootstrap() {
   { { {
-    git submodule update --init --recursive # sync later on with git submodule update --remote --recursive
+    git submodule update --init --recursive # sync later on with git `git submodule update --init --recursive --remote`
     x.check-build-deps
     x.install-tools
     x.setup.swagger-ui
@@ -1716,7 +1716,6 @@ done
 
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
-ensure_envvars_set "docker/.env.template" "docker/.env"
 
 set -a
 # export to all subsequent commands or scripts

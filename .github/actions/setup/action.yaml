@@ -51,8 +51,6 @@ runs:
       run: |
         source .envrc
 
-        cp docker/.env.ci docker/.env
-
         { yes || :; } | project bootstrap --x-env=ci
 
         # project e2e.sync-deps --x-env=ci # won't use python playwright
