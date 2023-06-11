@@ -18,7 +18,8 @@ services:
       - ${EXTERNAL_OIDC_SERVER_PORT:?not set}:10001
     command: ./server
     volumes:
-      - ${AUTH_SERVER_USERS_DIR:?not set}:/data/users/
+      - ../external/auth-server/:/data/:ro
+      - /etc/ssl/certs:/etc/ssl/certs:ro
     env_file:
       - ../.env.${APP_ENV:?not set}
     labels:

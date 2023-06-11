@@ -159,7 +159,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	// oidc
 	keyPath := "" // not used
 	scopes := strings.Split(cfg.OIDC.Scopes, " ")
-	fmt.Printf("scopes: %v\n", scopes)
+
 	redirectURI := internal.BuildAPIURL(conf.MyProviderCallbackPath)
 	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
 
