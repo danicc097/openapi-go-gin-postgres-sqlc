@@ -1195,6 +1195,7 @@ x.e2e.run() {
     cd e2e
     DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
       docker build -t "$name" .
+    ls -hA $(pwd)
     docker run -i --rm --ipc=host --network host -v "$(pwd):/e2e/" "$name" bash -c "playwright test"
     cd - >/dev/null
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
