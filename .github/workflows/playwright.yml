@@ -13,22 +13,13 @@ jobs:
         working-directory: ${{ env.cwd }}
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    # TODO run dockerized later on via `project` for shared local/ci use
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    - uses: pnpm/action-setup@v2
-      with:
-        version: 8.3.1
-        run_install: false
-    - name: Install dependencies
-      run: pnpm install
-    - name: Install Playwright Browsers
-      run: pnpm exec playwright install --with-deps
     - name: Run Playwright tests
-      run: pnpm exec playwright test
+      run: |
+        source .envrc
+
+        project e2e.run --x-env=ci
     - uses: actions/upload-artifact@v3
       if: always()
       with:
