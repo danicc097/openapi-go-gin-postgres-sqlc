@@ -43,7 +43,7 @@ func (h *Handlers) MyProviderCallback(c *gin.Context) {
 	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
 	// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}
 
-	// GetOrRegisterUserFromProvider
+	// GetOrRegisterUserFromUserInfo
 	// CreateAccessTokenForUser
 	// get "auth:redirect-uri" cookie
 
