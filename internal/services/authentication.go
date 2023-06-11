@@ -80,6 +80,9 @@ func (a *Authentication) GetOrRegisterUserFromProvider(ctx context.Context, user
 		if err != nil {
 			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmin.Email, err)
 		}
+		// continue as normal to update superAdmin with updated info.
+		// superAdmin account can be changed on demand via SUPERADMIN_EMAIL and info will always be synced with auth server
+		u = superAdmin
 	}
 
 	if userinfo["email_verified"].(bool) {
