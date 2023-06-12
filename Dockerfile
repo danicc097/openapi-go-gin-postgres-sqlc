@@ -27,3 +27,5 @@ COPY --from=build /go/src/openapi.yaml ./
 COPY --from=build /go/src/scopes.json ./
 COPY --from=build /go/src/roles.json ./
 COPY --from=build /go/src/operationAuth.gen.json ./
+
+ENTRYPOINT [ "./rest-server" ]
