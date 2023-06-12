@@ -15,7 +15,7 @@ services:
     networks:
       - traefik-net
     ports:
-      - ${MOCK_OIDC_SERVER_PORT:?not set}:10001
+      - ${MOCK_OIDC_SERVER_PORT:?not set}
     command:
         - "--path-prefix=/oidc"
     volumes:
@@ -24,6 +24,7 @@ services:
     environment:
       DATA_DIR: ${MOCK_OIDC_SERVER_DATA_DIR:?not set}
       ISSUER: ${OIDC_ISSUER:?not set}
+      PORT: ${MOCK_OIDC_SERVER_PORT:?not set}
     labels:
       - traefik.enable=true
       - traefik.http.routers.simple-oidc-server.rule=Host(`${OIDC_DOMAIN:?not set}`) && PathPrefix("/oidc")
@@ -36,7 +37,7 @@ services:
     restart: unless-stopped
     logging: *default-logging
     healthcheck:
-      test: ["CMD-SHELL", "wget -O/dev/null -q http://localhost:10001/health || exit 1"]
+      test: ["CMD-SHELL", "wget -O/dev/null -q http://localhost:${MOCK_OIDC_SERVER_PORT:?not set}/health || exit 1"]
       interval: 5s
       timeout: 30s
       retries: 5
