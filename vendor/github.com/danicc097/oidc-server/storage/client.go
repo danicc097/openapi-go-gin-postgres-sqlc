@@ -13,7 +13,7 @@ var (
 	defaultLoginURL = func(pathPrefix string) func(id string) string {
 		prefix := ""
 		if pathPrefix != "" {
-			prefix = strings.TrimPrefix(pathPrefix, "/") + "/"
+			prefix = strings.TrimPrefix(strings.TrimSuffix(pathPrefix, "/"), "/") + "/"
 		}
 		return func(id string) string {
 			return prefix + "login/username?authRequestID=" + id

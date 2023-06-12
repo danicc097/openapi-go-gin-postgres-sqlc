@@ -113,7 +113,10 @@ func Run[T storage.User](config Config[T]) {
 	ctx := context.Background()
 
 	issuer := os.Getenv("ISSUER")
-	port := "10001" // for internal network
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "10001"
+	}
 	usersDataDir := path.Join(os.Getenv("DATA_DIR"), "users")
 
 	us, err := storage.NewUserStore[T](issuer, usersDataDir)

@@ -139,6 +139,9 @@ func watchUsersFolder[T User](dataDir string, userStore *userStore[T]) {
 	defer watcher.Close()
 
 	done := make(chan bool)
+	debounceTimer := time.NewTimer(0)  // Create a timer with no initial delay
+	debouncedEvent := fsnotify.Event{} // Stores the latest event to process
+
 	go func() {
 		for {
 			select {
@@ -148,7 +151,21 @@ func watchUsersFolder[T User](dataDir string, userStore *userStore[T]) {
 				}
 				if event.Has(fsnotify.Write) {
 					log.Printf("file modified: %s", event.Name)
-					time.Sleep(50 * time.Millisecond) // seems to be kind of a race with a duplicated event
+
+					debouncedEvent = event // update the debounced event always to latest
+
+					if !debounceTimer.Stop() {
+						// timer has already expired, drain the channel
+						select {
+						case <-debounceTimer.C:
+						default:
+						}
+					}
+
+					debounceTimer.Reset(50 * time.Millisecond)
+				}
+			case <-debounceTimer.C:
+				if debouncedEvent.Name != "" {
 					err := userStore.LoadUsersFromJSON()
 					StorageErrors.mu.Lock()
 					StorageErrors.Errors = []string{}
@@ -158,6 +175,8 @@ func watchUsersFolder[T User](dataDir string, userStore *userStore[T]) {
 						log.Println(errMsg)
 					}
 					StorageErrors.mu.Unlock()
+
+					debouncedEvent = fsnotify.Event{}
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {

@@ -45,6 +45,8 @@ github.com/danicc097/oidc-server v1.1.0 h1:30hCehVFrAapIxg7rKDnZIRfFuR3xEkTvR1Fy
 github.com/danicc097/oidc-server v1.1.0/go.mod h1:kT3ggpHhUFDbiDx2YTvj2THUlUP6zAPdz88IrbMBvVw=
 github.com/danicc097/oidc-server v1.2.0 h1:ZbBmxL26ZPtBxQPDsv7jvLJGjZgLv8YL0yu9OXS9taY=
 github.com/danicc097/oidc-server v1.2.0/go.mod h1:kT3ggpHhUFDbiDx2YTvj2THUlUP6zAPdz88IrbMBvVw=
+github.com/danicc097/oidc-server v1.2.2 h1:vnAuKsFcKR3iYoZVyNj+nMi/JwDKd4fODMh0IGB5BTk=
+github.com/danicc097/oidc-server v1.2.2/go.mod h1:kT3ggpHhUFDbiDx2YTvj2THUlUP6zAPdz88IrbMBvVw=
 github.com/danicc097/xo v1.0.0 h1:VYmDSw2FhA1ZlO/rgFBLbEj0Vetwx5gNj+pQ3fua8dU=
 github.com/danicc097/xo v1.0.0/go.mod h1:K8Nos/pTgSFd7n54fFumtilRIPUHj7ycQvvNGcut0Rk=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
