@@ -3,7 +3,7 @@ module github.com/danicc097/openapi-go-gin-postgres-sqlc
 go 1.19
 
 require (
-	github.com/danicc097/oidc-server v1.0.0
+	github.com/danicc097/oidc-server v1.0.1
 	github.com/danicc097/xo v1.0.0
 	github.com/deepmap/oapi-codegen v1.13.0
 	github.com/getkin/kin-openapi v0.118.0
