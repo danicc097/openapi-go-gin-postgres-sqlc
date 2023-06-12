@@ -30,6 +30,7 @@ go.work*
 /pom.xml
 **/testdata/**/got
 /certificates/*.pem
+oidc-server
 
 whiteboard.excalidraw
 heredoc-example

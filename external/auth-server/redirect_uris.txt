@@ -1,2 +1,0 @@
-https://myapp.prod.localhost/api/v2/auth/myprovider/callback
-https://localhost:8090/v2/auth/myprovider/callback

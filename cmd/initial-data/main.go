@@ -106,7 +106,7 @@ func main() {
 	// TODO: use users which will exist in auth server. that way we can test out these users as well.
 	// no need to do it for local.json. as for e2e, we dont want any initial data apart from the superadmin at all
 	// so that it mimics real usage from an empty project.
-	authServerUsersPath := "external/auth-server/users/base.json"
+	authServerUsersPath := "cmd/oidc-server/data/users/base.json"
 	usersBlob, err := os.ReadFile(authServerUsersPath)
 	handleError(err)
 	var uu map[string]*AuthServerUser // sync with oidc-server storage.User
