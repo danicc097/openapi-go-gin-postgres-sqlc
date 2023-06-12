@@ -17,6 +17,12 @@ IMPORTANT: even if we run local oidc server, for dev initial-data we need existi
 instead of this mess of changing current user in dev and adding adhoc backend behavior,
 we can have simple logic in internal/services/authentication.go:61
 if env=dev to update external_id just as with superadmin.
+(we could have initial-data register all users in users/base.json actually when app
+env is dev or ci... the externalID is already known. we dont care about
+local.json since we can manually log in to test things). however, base.json
+users are used to create dummy entities.
+IMPORTANT: do not change how superAdmin initial-data works, since its shared for
+all envs
 this way initial-data creates users found in *.dev.json, *.admin.json with nil
 external id (instead of empty string).
 Would need change:
@@ -31,28 +37,20 @@ oidc-server:
 -  should not silently override users, instead shutdown completely
   so that user overrides from local.json (or duplicated between e2e and base in base.json) are not allowed. much easier to work it
   and reason about.
-Also, there needs to be a better way to define users.
-Have a single base.json file with users indexed by (e2e|base).
-This way e2e test users
-However we need a way to have a local.json that also gets loaded for testing
-out stuff quickly without reloading server.
-It will be read exactly the same way, therefore we could have a local.json
-with `{ "base": {...<users>}}`.
-there is also no need for 2.admin.json if there's already isAdmin in json.
 
 
 below is not needed anymore. will login with auth server in development
 and backend authetnication checks if AppEnv == dev or ci as explained above
 ```ts
 // ... Frontend auth hook ....
-if (process.env.NODE_ENV === "dev") {
-  const localUsers = import(".../local.json") // with symlink
-  const baseUsers = import(".../base.json") // with symlink
+// if (process.env.NODE_ENV === "dev") {
+//   const localUsers = import(".../local.json") // with symlink
+//   const baseUsers = import(".../base.json") // with symlink
 
-  authServerUsers = { ...localUsers, ...baseUsers } //
+//   authServerUsers = { ...localUsers, ...baseUsers } //
 
-  const DEV_USER: <keyof authServerUsers | null> = "admin" // auto login
-}
+//   const DEV_USER: <keyof authServerUsers | null> = "admin" // auto login
+// }
 ```
 
 then we call dedicated dev api login route which only works if app_env is dev

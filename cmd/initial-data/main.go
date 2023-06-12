@@ -87,6 +87,10 @@ func main() {
 
 	var users []*db.User
 
+	// TODO use users from auth-server-users-base.json instead (use ID as externalID), which will exist
+	// in auth server. that way we can test out these users as well.
+	// no need to do it for local.json. as for e2e, we dont want any initial data apart from the superadmin at all
+	// so that it mimics real usage from an empty project.
 	logger.Info("Registering users...")
 	for i := 0; i < 10; i++ {
 		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
@@ -116,12 +120,10 @@ func main() {
 	users = append(users, u)
 
 	cfg := internal.Config()
-	// register superAdmin which is used for internal calls that require a (super)admin caller.
+
+	// register superAdmin, which is used for internal calls that require a (super)admin caller.
 	// e.g. first user registration via auth callback requires an existing admin,
 	// which wouldn't be possible without a registered admin beforehand.
-	// e2e will test regular admin registration, and those must exist in auth server as admins as well.
-	// superAdmin login is also possible as long as auth server account exists, and
-	// external_id will be changed. superadmin email may be changed at any time.
 	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "superadmin",
 		Email:      cfg.SuperAdmin.DefaultEmail,
