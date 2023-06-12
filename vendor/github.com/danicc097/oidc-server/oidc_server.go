@@ -103,6 +103,7 @@ func Run[T storage.User](config Config[T]) {
 	if config.PathPrefix != "" {
 		log.Default().Printf("Using domain path prefix: %v\n", config.PathPrefix)
 	}
+
 	storage.RegisterClients(
 		storage.NativeClient("native", config.PathPrefix, redirectURIs...),
 		storage.WebClient("web", "secret", config.PathPrefix, redirectURIs...),
