@@ -10,18 +10,21 @@ services:
     image: simple-oidc-server:latest
     container_name: simple-oidc-server
     build:
-      context: ../external/oidc-server
-      dockerfile: Dockerfile
+      context: ../.
+      dockerfile: Dockerfile.oidc-server
     networks:
       - traefik-net
     ports:
-      - ${EXTERNAL_OIDC_SERVER_PORT:?not set}:10001
-    command: ./server
+      - ${MOCK_OIDC_SERVER_PORT:?not set}
+    command:
+        - "--path-prefix=/oidc"
     volumes:
-      - ../external/auth-server/:/data/:ro
+      - ../cmd/oidc-server/data/:${MOCK_OIDC_SERVER_DATA_DIR:?not set}/:ro
       - /etc/ssl/certs:/etc/ssl/certs:ro
-    env_file:
-      - ../.env.${APP_ENV:?not set}
+    environment:
+      DATA_DIR: ${MOCK_OIDC_SERVER_DATA_DIR:?not set}
+      ISSUER: ${OIDC_ISSUER:?not set}
+      PORT: ${MOCK_OIDC_SERVER_PORT:?not set}
     labels:
       - traefik.enable=true
       - traefik.http.routers.simple-oidc-server.rule=Host(`${OIDC_DOMAIN:?not set}`) && PathPrefix("/oidc")
@@ -30,11 +33,11 @@ services:
       - traefik.docker.network=traefik-net
       - traefik.http.routers.simple-oidc-server.entrypoints=websecure
       - traefik.http.routers.simple-oidc-server.tls=true
-      - traefik.http.services.simple-oidc-server.loadbalancer.server.port=${EXTERNAL_OIDC_SERVER_PORT:?not set}
+      - traefik.http.services.simple-oidc-server.loadbalancer.server.port=${MOCK_OIDC_SERVER_PORT:?not set}
     restart: unless-stopped
     logging: *default-logging
     healthcheck:
-      test: ["CMD-SHELL", "wget -O/dev/null -q http://localhost:10001/health || exit 1"]
+      test: ["CMD-SHELL", "wget -O/dev/null -q http://localhost:${MOCK_OIDC_SERVER_PORT:?not set}/health || exit 1"]
       interval: 5s
       timeout: 30s
       retries: 5

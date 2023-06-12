@@ -30,10 +30,11 @@ go.work*
 /pom.xml
 **/testdata/**/got
 /certificates/*.pem
+/oidc-server
 
-whiteboard.excalidraw
-heredoc-example
-file-to-watch
+/whiteboard.excalidraw
+/heredoc-example
+/file-to-watch
 .env
 .env*.prod
 .env*.production
@@ -43,6 +44,6 @@ file-to-watch
 openapi-go.code-workspace
 frontend/vite.config.ts.timestamp-*.mjs
 test-spec.yaml
-rest-server
+/rest-server
 
-openapi.test.gen.yaml
+/openapi.test.gen.yaml

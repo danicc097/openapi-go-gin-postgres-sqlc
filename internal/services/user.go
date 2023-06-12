@@ -112,12 +112,6 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 	if params.LastName != nil {
 		repoUpdateParams.LastName = pointers.New(params.LastName)
 	}
-	if params.Email != nil {
-		repoUpdateParams.Email = params.Email
-	}
-	if params.Username != nil {
-		repoUpdateParams.Username = params.Username
-	}
 
 	user, err = u.urepo.Update(ctx, d, uid, &repoUpdateParams)
 	if err != nil {

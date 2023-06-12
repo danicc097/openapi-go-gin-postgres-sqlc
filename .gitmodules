@@ -6,7 +6,3 @@ branch = master
 path = python-ml-app
 url = git@github.com:danicc097/python-ml-app.git
 branch = master
-[submodule "external/oidc-server"]
-path = external/oidc-server
-url = git@github.com:danicc097/oidc-server.git
-branch = main

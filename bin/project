@@ -990,9 +990,7 @@ x.stop-project() {
 
 # Recreates docker volumes for Postgres, Redis, etc. Unsaved data will be lost.
 x.recreate-shared-services() {
-  { { {
-    run_shared_services up -d --build --force-recreate --wait
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  run_shared_services up -d --build --force-recreate --wait
 }
 
 # Checks before release:

@@ -61,7 +61,7 @@ func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (
 func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, userinfo oidc.UserInfo) (*db.User, error) {
 	u, err := a.usvc.ByExternalID(ctx, a.pool, userinfo.Subject)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "could not get user from external id: %s", err)
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not get user from external id: %s", err)
 	}
 	role := models.RoleUser
 
@@ -109,7 +109,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 			Role:       role,
 		})
 		if err != nil {
-			return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "could not get register user from provider: %s", err)
+			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not get register user from provider: %s", err)
 		}
 	}
 
@@ -118,6 +118,17 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 		u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID.String(), superAdmin, &models.UpdateUserAuthRequest{Role: &guestRole.Name})
 		if err != nil {
 			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not update user auth after email verification: %s", err)
+		}
+	}
+
+	// update out of sync editable fields
+	if u.FirstName != pointers.New(userinfo.GivenName) || u.LastName != pointers.New(userinfo.FamilyName) {
+		u, err = a.usvc.Update(ctx, a.pool, u.UserID.String(), superAdmin, &models.UpdateUserRequest{
+			FirstName: pointers.New(userinfo.GivenName),
+			LastName:  pointers.New(userinfo.FamilyName),
+		})
+		if err != nil {
+			return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not get update out of sync userinfo: %s", err)
 		}
 	}
 

@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
-import authServerAdminUsers from '../auth-server-admin-users.json'
-import authServerUsers from '../auth-server-users.json'
+import authServerUsers from '../auth-server-users-e2e.json'
 
 test('has title', async ({ page }) => {
   await page.goto('https://playwright.dev/')

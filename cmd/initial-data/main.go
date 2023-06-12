@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -20,6 +21,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -32,6 +34,20 @@ const (
 	week  = 7 * day
 	month = 30 * day
 )
+
+type AuthServerUser struct {
+	ID                string       `json:"id"`
+	Username          string       `json:"username"`
+	Password          string       `json:"password"`
+	FirstName         string       `json:"firstName"`
+	LastName          string       `json:"lastName"`
+	Email             string       `json:"email"`
+	EmailVerified     bool         `json:"emailVerified"`
+	Phone             string       `json:"phone"`
+	PhoneVerified     bool         `json:"phoneVerified"`
+	PreferredLanguage language.Tag `json:"preferredLanguage"`
+	IsAdmin           bool         `json:"isAdmin"`
+}
 
 func main() {
 	var err error
@@ -87,6 +103,16 @@ func main() {
 
 	var users []*db.User
 
+	// TODO: use users which will exist in auth server. that way we can test out these users as well.
+	// no need to do it for local.json. as for e2e, we dont want any initial data apart from the superadmin at all
+	// so that it mimics real usage from an empty project.
+	authServerUsersPath := "cmd/oidc-server/data/users/base.json"
+	usersBlob, err := os.ReadFile(authServerUsersPath)
+	handleError(err)
+	var uu map[string]*AuthServerUser // sync with oidc-server storage.User
+	err = json.Unmarshal(usersBlob, &uu)
+	handleError(err)
+
 	logger.Info("Registering users...")
 	for i := 0; i < 10; i++ {
 		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
@@ -116,12 +142,10 @@ func main() {
 	users = append(users, u)
 
 	cfg := internal.Config()
-	// register superAdmin which is used for internal calls that require a (super)admin caller.
+
+	// register superAdmin, which is used for internal calls that require a (super)admin caller.
 	// e.g. first user registration via auth callback requires an existing admin,
 	// which wouldn't be possible without a registered admin beforehand.
-	// e2e will test regular admin registration, and those must exist in auth server as admins as well.
-	// superAdmin login is also possible as long as auth server account exists, and
-	// external_id will be changed. superadmin email may be changed at any time.
 	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "superadmin",
 		Email:      cfg.SuperAdmin.DefaultEmail,

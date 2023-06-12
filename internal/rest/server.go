@@ -173,7 +173,6 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	if keyPath != "" {
 		options = append(options, rp.WithJWTProfile(rp.SignerFromKeyPath(keyPath)))
 	}
-	// TODO how to add certificate? else error creating provider Get "https://authserver.local.localhost/oidc/.well-known/openid-configuration": x509: certificate is valid for 043d88a742a9ff5b40075d52a0446fd7.555e6493aa59673171806bb237e3b433.traefik.default, not authserver.local.localhost
 	provider, err := rp.NewRelyingPartyOIDC(cfg.OIDC.Issuer, cfg.OIDC.ClientID, cfg.OIDC.ClientSecret, redirectURI, scopes, options...)
 	if err != nil {
 		return nil, fmt.Errorf("error creating provider: %w", err)

@@ -1,0 +1,39 @@
+{
+  "admin": {
+    "id": "E2E-admin-id",
+    "username": "admin",
+    "password": "admin",
+    "firstName": "Mr",
+    "lastName": "Admin",
+    "email": "admin@myapp.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de",
+    "isAdmin": true
+  },
+  "user1": {
+    "id": "E2E-user1-id",
+    "username": "user1",
+    "password": "user1",
+    "firstName": "Test 1",
+    "lastName": "User 1",
+    "email": "user1@app.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de"
+  },
+  "user2": {
+    "id": "E2E-user2-id",
+    "username": "user2",
+    "password": "user2",
+    "firstName": "Test 2",
+    "lastName": "User 2",
+    "email": "user2@app.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de"
+  }
+}

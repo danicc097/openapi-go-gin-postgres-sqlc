@@ -1,0 +1,39 @@
+{
+  "admin": {
+    "id": "BASE-admin-id",
+    "username": "admin",
+    "password": "admin",
+    "firstName": "Mr",
+    "lastName": "Admin",
+    "email": "admin@myapp.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de",
+    "isAdmin": true
+  },
+  "user2": {
+    "id": "BASE-user2-id",
+    "username": "user2",
+    "password": "user2",
+    "firstName": "Test 2",
+    "lastName": "User 2",
+    "email": "user2@app.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de"
+  },
+  "user3": {
+    "id": "BASE-user3-id",
+    "username": "user3",
+    "password": "user3",
+    "firstName": "Test 3",
+    "lastName": "User 3",
+    "email": "user3@app.com",
+    "emailVerified": true,
+    "phone": "",
+    "phoneVerified": false,
+    "preferredLanguage": "de"
+  }
+}
