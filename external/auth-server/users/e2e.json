@@ -1,6 +1,6 @@
 {
   "admin": {
-    "id": "BASE-admin-id",
+    "id": "E2E-admin-id",
     "username": "admin",
     "password": "admin",
     "firstName": "Mr",
