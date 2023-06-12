@@ -1,17 +1,58 @@
 # users
 
-`1.dev.json`: users to test out login in development.
-Users loaded in ascending filename order, therefore ensure e2e tests always
+`*.e2e.json`: users used in E2E tests. NOTE: used in tests.
+`*.admin.json`: shared admin users. NOTE: used in tests.
+`*.dev.json`: predefined users to check out login behavior in development. NOTE: used for
+dev initial-data (TODO:).
+`*.local.json`: you may additional users to check out login behavior in
+development. Not tracked, add as desired.
+
+Users are loaded in ascending filename order, therefore ensure e2e tests always
 loaded last.
 TODO:
 in dev mode would need to create from JSON with random external id (external
 auth login won't be used for those specific users).
-Frontend auth logic will have a guard if env = dev, and if we set a `DEV_USER`
-is set
-```ts
-import devUsers from ".../1.dev.json" // need symlink
 
-const DEV_USER: <keyof devUsers | null> = "admin"
+IMPORTANT: even if we run local oidc server, for dev initial-data we need existing users.
+instead of this mess of changing current user in dev and adding adhoc backend behavior,
+we can have simple logic in internal/services/authentication.go:61
+if env=dev to update external_id just as with superadmin.
+this way initial-data creates users found in *.dev.json, *.admin.json with nil
+external id (instead of empty string).
+Would need change:
+```sql
+create unique index on users (external_id)
+where
+  external_id is not null;
+```
+and can test out what happens when users change by changing local.json users.
+oidc-server:
+-  should watch /data/users for changes and update users accordingly. add mutex.
+-  should not silently override users, instead shutdown completely
+  so that user overrides from local.json (or duplicated between e2e and base in base.json) are not allowed. much easier to work it
+  and reason about.
+Also, there needs to be a better way to define users.
+Have a single base.json file with users indexed by (e2e|base).
+This way e2e test users
+However we need a way to have a local.json that also gets loaded for testing
+out stuff quickly without reloading server.
+It will be read exactly the same way, therefore we could have a local.json
+with `{ "base": {...<users>}}`.
+there is also no need for 2.admin.json if there's already isAdmin in json.
+
+
+below is not needed anymore. will login with auth server in development
+and backend authetnication checks if AppEnv == dev or ci as explained above
+```ts
+// ... Frontend auth hook ....
+if (process.env.NODE_ENV === "dev") {
+  const localUsers = import(".../local.json") // with symlink
+  const baseUsers = import(".../base.json") // with symlink
+
+  authServerUsers = { ...localUsers, ...baseUsers } //
+
+  const DEV_USER: <keyof authServerUsers | null> = "admin" // auto login
+}
 ```
 
 then we call dedicated dev api login route which only works if app_env is dev
