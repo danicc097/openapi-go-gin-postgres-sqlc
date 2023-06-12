@@ -26,7 +26,9 @@ type OIDCConfig struct {
 }
 
 type PostgresConfig struct {
-	Port         int    `env:"DB_PORT"`
+	// Port represents the db port exposed in localhost.
+	Port int `env:"DB_PORT"`
+	// Port represents the db port used inside the db container.
 	InternalPort string `env:"POSTGRES_PORT"`
 	User         string `env:"POSTGRES_USER"`
 	Password     string `env:"POSTGRES_PASSWORD"`

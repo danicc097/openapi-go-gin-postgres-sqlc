@@ -16,7 +16,6 @@ services:
       - "--env=.env.${APP_ENV}"
     volumes:
       - ./.env.${APP_ENV}:/.env.${APP_ENV}
-      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     build:
       context: .
       dockerfile: Dockerfile

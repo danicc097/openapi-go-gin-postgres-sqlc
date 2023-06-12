@@ -1239,11 +1239,15 @@ run_hot_reload() {
 run_shared_services() {
   docker network create traefik-net 2>/dev/null || true
 
+  local extra_services
+  if [[ $env != "prod" ]]; then
+    extra_services="-f docker-compose.oidc.yml"
+  fi
   cd docker
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     -p "$PROJECT_PREFIX" \
     -f docker-compose.shared.yml \
-    -f docker-compose.oidc.yml \
+    $extra_services \
     --env-file ../.env."$env" \
     "$@" 2>&1 # https://github.com/docker/compose/issues/7346
   cd - >/dev/null
