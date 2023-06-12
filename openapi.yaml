@@ -1079,15 +1079,17 @@ components:
           description: originally from auth server but updatable
           type: string
           pattern: ^[\p{L} '-]+$
-        username:
-          description: originally from auth server but updatable
-          type: string
-          pattern: ^[\.a-zA-Z0-9_-]+$
-        email:
-          description: originally from auth server but updatable
-          type: string
-          # format: email # bad oapi-codegen type
-          pattern: ^[a-zA-Z0-9._%+-]+@(mydomain\.com|anotherdomain\.com)$
+          # will be synced with auth server
+          # username:
+          #   description: originally from auth server but updatable
+          #   type: string
+          #   pattern: ^[\.a-zA-Z0-9_-]+$
+          # will be synced with auth server
+          # email:
+          #   description: originally from auth server but updatable
+          #   type: string
+          #   # format: email # bad oapi-codegen type
+          #   pattern: ^[a-zA-Z0-9._%+-]+@(mydomain\.com|anotherdomain\.com)$
       type: object
     UpdateUserAuthRequest:
       description: represents User authorization data to update

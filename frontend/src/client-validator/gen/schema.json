@@ -875,16 +875,6 @@
           "description": "originally from auth server but updatable",
           "type": "string",
           "pattern": "^[\\p{L} '-]+$"
-        },
-        "username": {
-          "description": "originally from auth server but updatable",
-          "type": "string",
-          "pattern": "^[\\.a-zA-Z0-9_-]+$"
-        },
-        "email": {
-          "description": "originally from auth server but updatable",
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9._%+-]+@(mydomain\\.com|anotherdomain\\.com)$"
         }
       },
       "type": "object",
