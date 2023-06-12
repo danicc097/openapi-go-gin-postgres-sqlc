@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -20,6 +21,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -32,6 +34,20 @@ const (
 	week  = 7 * day
 	month = 30 * day
 )
+
+type AuthServerUser struct {
+	ID                string       `json:"id"`
+	Username          string       `json:"username"`
+	Password          string       `json:"password"`
+	FirstName         string       `json:"firstName"`
+	LastName          string       `json:"lastName"`
+	Email             string       `json:"email"`
+	EmailVerified     bool         `json:"emailVerified"`
+	Phone             string       `json:"phone"`
+	PhoneVerified     bool         `json:"phoneVerified"`
+	PreferredLanguage language.Tag `json:"preferredLanguage"`
+	IsAdmin           bool         `json:"isAdmin"`
+}
 
 func main() {
 	var err error
@@ -87,10 +103,16 @@ func main() {
 
 	var users []*db.User
 
-	// TODO use users from auth-server-users-base.json instead (use ID as externalID), which will exist
-	// in auth server. that way we can test out these users as well.
+	// TODO: use users which will exist in auth server. that way we can test out these users as well.
 	// no need to do it for local.json. as for e2e, we dont want any initial data apart from the superadmin at all
 	// so that it mimics real usage from an empty project.
+	authServerUsersPath := "external/auth-server/users/base.json"
+	usersBlob, err := os.ReadFile(authServerUsersPath)
+	handleError(err)
+	var uu map[string]*AuthServerUser // sync with oidc-server storage.User
+	err = json.Unmarshal(usersBlob, &uu)
+	handleError(err)
+
 	logger.Info("Registering users...")
 	for i := 0; i < 10; i++ {
 		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{

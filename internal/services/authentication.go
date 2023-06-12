@@ -121,6 +121,8 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 		}
 	}
 
+	// TODO: update email, username, etc. if not matching records
+
 	return u, nil
 }
 
