@@ -1,12 +1,12 @@
 FROM golang:1.19-alpine AS build
 
 WORKDIR /go/src
-COPY go.* ./
+COPY ./vendor/ ./vendor/
+COPY ./cmd/oidc-server/main.go go.mod go.sum ./
 # RUN go mod download # it will access network/cache, which is not necessary with -mod=vendor
-COPY ./cmd/oidc-server/. .
 ENV CGO_ENABLED=0
 RUN --mount=type=cache,target=/root/.cache/go-build \
-  GOWORK=off go build -mod=vendor -o oidc-server ./cmd/oidc-server
+  GOWORK=off go build -mod=vendor -o oidc-server ./main.go
 
 FROM alpine:3.15 AS runtime
 
@@ -14,3 +14,5 @@ RUN apk --no-cache add ca-certificates
 
 ENV GIN_MODE=release
 COPY --from=build /go/src/oidc-server ./
+
+ENTRYPOINT [ "./oidc-server" ]
