@@ -5,14 +5,16 @@ https://github.com/zitadel/oidc/tree/main/example/server. Features
 
 # Setup
 
-## Runtime environment variables
+Authorization server listens on port `10001`. Expose accordingly if using
+containers.
+
+
+# Runtime environment variables
 
 - `ISSUER`: fully qualified domain name.
 - `DATA_DIR`: absolute path to stored mock data. e.g. `/data`
-- `PORT` (optional): server port. Default: `10001`. Expose accordingly if using
-containers.
 
-## Required files
+# Required files
 
 - `${DATA_DIR}/users/*.json`: JSON files with key-value pairs of users for easier
   testing. Keys are ignored. Server will raise errors at login page if duplicated IDs are

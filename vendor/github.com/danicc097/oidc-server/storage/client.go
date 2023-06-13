@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"strings"
 	"time"
 
 	"github.com/zitadel/oidc/v2/pkg/oidc"
@@ -13,7 +12,7 @@ var (
 	defaultLoginURL = func(pathPrefix string) func(id string) string {
 		prefix := ""
 		if pathPrefix != "" {
-			prefix = strings.TrimPrefix(strings.TrimSuffix(pathPrefix, "/"), "/") + "/"
+			prefix = pathPrefix + "/"
 		}
 		return func(id string) string {
 			return prefix + "login/username?authRequestID=" + id

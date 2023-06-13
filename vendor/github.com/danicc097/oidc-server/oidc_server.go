@@ -98,11 +98,7 @@ func Run[T storage.User](config Config[T]) {
 
 	redirectURIs := strings.Split(string(content), "\n")
 
-	log.Default().Printf("Redirect URIs: %s\n", redirectURIs)
-
-	if config.PathPrefix != "" {
-		log.Default().Printf("Using domain path prefix: %v\n", config.PathPrefix)
-	}
+	fmt.Printf("Redirect URIs: %s\n", redirectURIs)
 
 	storage.RegisterClients(
 		storage.NativeClient("native", config.PathPrefix, redirectURIs...),
@@ -113,10 +109,7 @@ func Run[T storage.User](config Config[T]) {
 	ctx := context.Background()
 
 	issuer := os.Getenv("ISSUER")
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "10001"
-	}
+	port := "10001" // for internal network
 	usersDataDir := path.Join(os.Getenv("DATA_DIR"), "users")
 
 	us, err := storage.NewUserStore[T](issuer, usersDataDir)
