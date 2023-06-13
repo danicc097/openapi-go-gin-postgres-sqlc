@@ -1,4 +1,4 @@
-package postgen
+package internal
 
 import (
 	"bytes"
@@ -11,7 +11,8 @@ import (
 // SetupSwaggerUI sets url as the base path.
 func SetupSwaggerUI(url string, specPath string) error {
 	buf := &bytes.Buffer{}
-	staticDir := "internal/static"
+	swaggerUIDir := "internal/static/swagger-ui"
+	cfg := Config()
 
 	t, err := template.New("").Parse(`
 window.onload = function () {
@@ -24,6 +25,16 @@ window.onload = function () {
 		presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
 		plugins: [SwaggerUIBundle.plugins.DownloadUrl],
 		layout: "StandaloneLayout",
+		onComplete: function () {
+			const env = {{.Env}};
+			let spec = ui.specSelectors.specJson().toJS();
+			console.log(spec.servers)
+			let servers = spec.servers.filter((item) => {
+				return item["description"]?.toLowerCase() === env.toLowerCase();
+			});
+			spec.servers = servers;
+			ui.specActions.updateJsonSpec(spec);
+		},
 	});
 
 	//</editor-fold>
@@ -35,13 +46,14 @@ window.onload = function () {
 
 	params := map[string]interface{}{
 		"URL": strconv.Quote(url),
+		"Env": strconv.Quote(cfg.AppEnv),
 	}
 
 	if err := t.Execute(buf, params); err != nil {
 		return err
 	}
 
-	swaggerInit, err := os.Create(path.Join(staticDir, "swagger-ui/swagger-initializer.js"))
+	swaggerInit, err := os.Create(path.Join(swaggerUIDir, "swagger-initializer.js"))
 	if err != nil {
 		return err
 	}
@@ -50,11 +62,12 @@ window.onload = function () {
 		return err
 	}
 
-	bundleSpec := path.Join(staticDir, "swagger-ui/openapi.yaml")
-	os.Remove(bundleSpec)
-	if err := os.Link(specPath, bundleSpec); err != nil {
-		return err
-	}
+	// not needed, handler will use spec path from entrypoint args instead of reading the embed
+	// bundleSpec := path.Join(swaggerUIDir, "openapi.yaml")
+	// os.Remove(bundleSpec)
+	// if err := os.Link(specPath, bundleSpec); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

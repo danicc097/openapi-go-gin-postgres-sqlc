@@ -20,6 +20,7 @@ type Handlers struct {
 	logger          *zap.SugaredLogger
 	pool            *pgxpool.Pool
 	movieSvcClient  v1.MovieGenreClient
+	specPath        string
 	authmw          *authMiddleware
 	authzsvc        *services.Authorization
 	authnsvc        *services.Authentication
@@ -31,6 +32,7 @@ type Handlers struct {
 func NewHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	movieSvcClient v1.MovieGenreClient,
+	specPath string,
 	usvc *services.User,
 	demoworkitemsvc *services.DemoWorkItem,
 	workitemtagsvc *services.WorkItemTag,
@@ -57,6 +59,7 @@ func NewHandlers(
 	// will send messages to channels on specific events.
 	// but will be useful if we need to check something external
 	// every X timeframe (e.g. wiki documents alert, new documents loaded for an active workitem, etc.)
+
 	go func() {
 		for {
 			now := time.Now().Format("2006-01-02 15:04:05")
@@ -79,6 +82,7 @@ func NewHandlers(
 		authmw:          authmw,
 		event:           event,
 		provider:        provider,
+		specPath:        specPath,
 	}
 }
 

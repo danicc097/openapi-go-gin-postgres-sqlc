@@ -26,8 +26,8 @@ type OIDCConfig struct {
 }
 
 type PostgresConfig struct {
+	// Port represents the db port to use in the application, depending on setup (dockerized or not).
 	Port         int    `env:"DB_PORT"`
-	InternalPort string `env:"POSTGRES_PORT"`
 	User         string `env:"POSTGRES_USER"`
 	Password     string `env:"POSTGRES_PASSWORD"`
 	Server       string `env:"POSTGRES_SERVER"`

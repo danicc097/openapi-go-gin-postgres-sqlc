@@ -25,7 +25,7 @@ func BuildAPIURL(subpaths ...string) string {
 	var host string
 
 	switch cfg.AppEnv {
-	case "prod":
+	case "prod", "e2e":
 		host = cfg.Domain
 	default:
 		host = cfg.Domain + ":" + cfg.APIPort
@@ -38,6 +38,8 @@ func BuildAPIURL(subpaths ...string) string {
 	}
 
 	url := dsn.String()
+
+	fmt.Printf("openapi url: %v\n", url)
 
 	return url
 }

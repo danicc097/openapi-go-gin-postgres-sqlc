@@ -707,7 +707,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in pregen postgen gen-schema oapi-codegen jet; do
+    for cmd in pregen postgen oapi-codegen jet; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -887,19 +887,13 @@ x.test.backend.watch() {
   done
 }
 
-# Build the entire project.
-x.build() {
-  { { {
-    go build -o $BUILD_DIR/rest-server "$PWD"/cmd/rest-server
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
 # Run backend with hot-reloading.
 x.run.backend-hr() {
   # TODO replace healthcheck with adhoc calls and bring services up in btaches
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
   run_shared_services up -d --build --remove-orphans --wait
+  go run cmd/swagger-ui-setup/main.go -env=".env.$env"
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
@@ -966,10 +960,12 @@ x.run-dockerized() {
   # which a 1:1 clone of prod setup
   # it will use production dockerized versions which require container name resolution, diff ports etc
   # project run-dockerized --x-env=prod --x-no-gen
-  run_shared_services up -d --build --remove-orphans --wait
+  run_shared_services up -d --build --wait
   x.db.recreate
 
   x.gen
+
+  go run cmd/swagger-ui-setup/main.go -env=".env.$env"
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
@@ -977,7 +973,6 @@ x.run-dockerized() {
     --env-file ".env.$env" \
     up -d --build --wait --force-recreate 2>&1 # https://github.com/docker/compose/issues/7346
 
-  echo "Migrations:"
   x.migrate up
 }
 
@@ -1028,7 +1023,7 @@ x.migrate() {
   { { {
     migrate \
       -path $MIGRATIONS_DIR/ \
-      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" \
       "$@" 2>&1 # migrate outputs everything to stderr
 
     if [[ "${*:1}" =~ (up)+ ]]; then
@@ -1192,10 +1187,17 @@ x.e2e.run() {
     name="$PROJECT_PREFIX-e2e"
     cd e2e
     pnpm install -r --frozen-lockfile
-    DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
-      docker build -t "$name" .
-    docker run -i --rm --ipc=host --network host -v "$(pwd):/e2e/" "$name" bash -c "playwright test"
+    DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker build -t "$name" .
     cd - >/dev/null
+
+    # need symlink resolution
+    docker run -i --rm \
+      --ipc=host \
+      --network host \
+      -v "$(pwd)/cmd/oidc-server/data/:/cmd/oidc-server/data/" \
+      -v "$(pwd)/e2e:/e2e/" \
+      "$name" \
+      bash -c "playwright test"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1239,11 +1241,15 @@ run_hot_reload() {
 run_shared_services() {
   docker network create traefik-net 2>/dev/null || true
 
+  local extra_services
+  if [[ $env != "prod" ]]; then
+    extra_services="-f docker-compose.oidc.yml"
+  fi
   cd docker
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     -p "$PROJECT_PREFIX" \
     -f docker-compose.shared.yml \
-    -f docker-compose.oidc.yml \
+    $extra_services \
     --env-file ../.env."$env" \
     "$@" 2>&1 # https://github.com/docker/compose/issues/7346
   cd - >/dev/null
@@ -1441,10 +1447,10 @@ update_spec_with_structs() {
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
-  go build -o $BUILD_DIR/gen-schema cmd/gen-schema/main.go # need new PublicStructs compiled
   # go build -buildmode=plugin -o internal/postgen/structs/main.gen.so $GOMOD_PKG/internal/postgen/structs
 
-  gen-schema --struct-names $struct_names_list | yq '
+  # need new PublicStructs compiled
+  go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
 
@@ -1494,7 +1500,7 @@ xo_schema() {
   # xo cannot use db files as input, needs an up-to-date schema
   # not recreating db on every gen can lead to plain wrong generation based on an old dev schema.
   # Also use a unique db to prevent cosmic accidents
-  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
+  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
     --src "$XO_TEMPLATES_DIR" \
     "$@"
 }

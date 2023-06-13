@@ -5,6 +5,7 @@ ARG DOCKER_UID
 ARG DOCKER_GID
 
 WORKDIR /go/src
+
 COPY go.* ./
 # RUN go mod download # it will access network/cache, which is not necessary with -mod=vendor
 COPY . .
@@ -19,11 +20,17 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 FROM alpine:3.15 AS runtime
 
+# requires mounting /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
 RUN apk --no-cache add ca-certificates
 
 ENV GIN_MODE=release
-COPY --from=build /go/src/rest-server ./
-COPY --from=build /go/src/openapi.yaml ./
-COPY --from=build /go/src/scopes.json ./
-COPY --from=build /go/src/roles.json ./
-COPY --from=build /go/src/operationAuth.gen.json ./
+COPY --from=build /go/src/rest-server \
+  # bound to current app state
+  /go/src/openapi.yaml \
+  /go/src/scopes.json \
+  /go/src/roles.json \
+  /go/src/operationAuth.gen.json \
+  ./
+COPY --from=build /go/src/internal/static/swagger-ui/ ./internal/static/swagger-ui/
+
+ENTRYPOINT [ "./rest-server" ]

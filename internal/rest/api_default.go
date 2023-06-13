@@ -2,8 +2,8 @@ package rest
 
 import (
 	"net/http"
+	"os"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,12 +11,12 @@ import (
 func (h *Handlers) OpenapiYamlGet(c *gin.Context) {
 	c.Set(skipResponseValidation, true)
 
-	oas, err := static.SwaggerUI.ReadFile("swagger-ui/openapi.yaml")
+	oas, err := os.ReadFile(h.specPath)
 	if err != nil {
 		panic("openapi spec not found")
 	}
 
-	c.Data(http.StatusOK, gin.MIMEYAML, oas)
+	c.String(http.StatusOK, string(oas))
 }
 
 // Ping ping pongs.

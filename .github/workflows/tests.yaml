@@ -53,3 +53,7 @@ jobs:
           source .envrc
 
           project test.frontend --x-env=ci
+
+      # TODO: reuse actions/setup:
+      # https://stackoverflow.com/questions/65242830/in-a-github-actions-workflow-is-there-a-way-to-have-multiple-jobs-reuse-the-sam
+      # https://github.com/kmadof/github-actions-manual/blob/main/.github/actions/say-hello/action.yml

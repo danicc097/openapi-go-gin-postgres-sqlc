@@ -27,8 +27,13 @@ info:
   title: OpenAPI openapi-go-gin-postgres-sqlc
   version: 2.0.0
 servers:
+  # description must match current APP_ENV for Swagger UI docs
   - url: https://localhost:8090/v2
-  - url: https://openapi.prod.localhost/api/v2
+    description: dev
+  - url: https://myapp.e2e.localhost/api/v2
+    description: e2e
+  - url: https://myapp.prod.localhost/api/v2
+    description: prod
   # for tests validation middleware to work on random port.
   - url: /v2
   - url: /

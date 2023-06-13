@@ -40,7 +40,7 @@ func main() {
 
 	cfg := internal.Config()
 	dbConnection := postgres.DBConnection{
-		Host:       cfg.Postgres.Server,
+		Host:       "localhost", // will never run dockerized
 		Port:       cfg.Postgres.Port,
 		User:       cfg.Postgres.User,
 		Password:   cfg.Postgres.Password,

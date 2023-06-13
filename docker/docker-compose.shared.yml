@@ -26,7 +26,7 @@ services:
       - ../.psqlrc:/var/lib/postgresql/.psqlrc
     command: postgres -c "config_file=/etc/postgresql/postgresql.conf"
     ports:
-      - ${POSTGRES_PORT:?not set}:5432
+      - ${EXPOSED_POSTGRES_PORT:?not set}:${POSTGRES_PORT:?not set}
     env_file:
       - ../.env.${APP_ENV:?not set}
     restart: unless-stopped

@@ -12,9 +12,11 @@ services:
     container_name: backend_${PROJECT_PREFIX}_${APP_ENV}
     networks:
       - traefik-net
-    command: ./rest-server -env=.env.${APP_ENV}
+    command:
+      - "--env=.env.${APP_ENV}"
     volumes:
       - ./.env.${APP_ENV}:/.env.${APP_ENV}
+      # required since mock server will use these
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     build:
       context: .
@@ -44,8 +46,8 @@ services:
     networks:
       - traefik-net
     build:
-      context: frontend
-      dockerfile: Dockerfile
+      context: . # need complete context to follow symlinks, if any
+      dockerfile: frontend/Dockerfile
     env_file: .env.${APP_ENV}
     restart: unless-stopped
     labels:

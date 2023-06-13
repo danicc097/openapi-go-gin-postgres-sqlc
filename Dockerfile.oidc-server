@@ -10,6 +10,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 FROM alpine:3.15 AS runtime
 
+# requires mounting /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
 RUN apk --no-cache add ca-certificates
 
 ENV GIN_MODE=release

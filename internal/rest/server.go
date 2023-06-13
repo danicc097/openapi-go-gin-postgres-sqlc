@@ -191,7 +191,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 
 	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
 	switch cfg.AppEnv {
-	case "prod":
+	case "prod", "e2e":
 		vg.Use(rlMw.Limit())
 	}
 	workitemrepo := reposwrappers.NewWorkItemWithTracing(
@@ -249,6 +249,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		conf.Logger,
 		conf.Pool,
 		conf.MovieSvcClient,
+		conf.SpecPath,
 		usvc,
 		demoworkitemsvc,
 		workitemtagsvc,
@@ -287,7 +288,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	var logger *zap.Logger
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
 	switch cfg.AppEnv {
-	case "prod":
+	case "prod", "e2e":
 		logger, err = zap.NewProduction()
 	default:
 		logger, err = zap.NewDevelopment()
@@ -392,7 +393,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		case "dev", "ci":
 			// err = srv.httpsrv.ListenAndServe()
 			err = srv.httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
-		case "prod":
+		case "prod", "e2e":
 			err = srv.httpsrv.ListenAndServe()
 		default:
 			err = fmt.Errorf("unknown APP_ENV: %s", env)

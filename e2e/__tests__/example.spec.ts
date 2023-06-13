@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test'
 import authServerUsers from '../auth-server-users-e2e.json'
 
+test('users loaded', async ({ page }) => {
+  expect(authServerUsers).toBeDefined()
+})
+
 test('has title', async ({ page }) => {
   await page.goto('https://playwright.dev/')
 
