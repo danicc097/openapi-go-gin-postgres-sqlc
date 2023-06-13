@@ -14,6 +14,19 @@ func SetupSwaggerUI(url string, specPath string) error {
 	swaggerUIDir := "internal/static/swagger-ui"
 
 	t, err := template.New("").Parse(`
+const detectEnvironment = () => {
+	const host = window.location.host.toLowerCase();
+	if (host.indexOf("localhost") > -1) {
+		return "dev";
+	}
+	if (host.indexOf("e2e") > -1) {
+		return "e2e";
+	}
+	if (host.indexOf("prod") > -1) {
+		return "prod";
+	}
+};
+
 window.onload = function () {
 	//<editor-fold desc="Changeable Configuration Block">
 
@@ -24,6 +37,15 @@ window.onload = function () {
 		presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
 		plugins: [SwaggerUIBundle.plugins.DownloadUrl],
 		layout: "StandaloneLayout",
+		onComplete: function () {
+			const env = detectEnvironment();
+			let spec = ui.specSelectors.specJson().toJS();
+			let servers = spec.servers.filter((item) => {
+				return item.description.toLowerCase() === env.toLowerCase();
+			});
+			spec.servers = servers;
+			ui.specActions.updateJsonSpec(spec);
+		},
 	});
 
 	//</editor-fold>
