@@ -4,8 +4,8 @@ import (
 	"context"
 	"flag"
 
-	oidc_server "github.com/danicc097/oidc-server"
-	"github.com/danicc097/oidc-server/storage"
+	oidc_server "github.com/danicc097/oidc-server/v3"
+	"github.com/danicc097/oidc-server/v3/storage"
 	"github.com/zitadel/oidc/v2/pkg/oidc"
 	"golang.org/x/text/language"
 )

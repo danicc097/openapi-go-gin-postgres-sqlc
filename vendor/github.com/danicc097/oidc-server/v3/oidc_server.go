@@ -12,8 +12,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/danicc097/oidc-server/exampleop"
-	"github.com/danicc097/oidc-server/storage"
+	"github.com/danicc097/oidc-server/v3/exampleop"
+	"github.com/danicc097/oidc-server/v3/storage"
 )
 
 // Config defines OIDC server configuration.
@@ -98,7 +98,11 @@ func Run[T storage.User](config Config[T]) {
 
 	redirectURIs := strings.Split(string(content), "\n")
 
-	fmt.Printf("Redirect URIs: %s\n", redirectURIs)
+	log.Default().Printf("Redirect URIs: %s\n", redirectURIs)
+
+	if config.PathPrefix != "" {
+		log.Default().Printf("Using domain path prefix: %v\n", config.PathPrefix)
+	}
 
 	storage.RegisterClients(
 		storage.NativeClient("native", config.PathPrefix, redirectURIs...),
@@ -109,7 +113,10 @@ func Run[T storage.User](config Config[T]) {
 	ctx := context.Background()
 
 	issuer := os.Getenv("ISSUER")
-	port := "10001" // for internal network
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "10001"
+	}
 	usersDataDir := path.Join(os.Getenv("DATA_DIR"), "users")
 
 	us, err := storage.NewUserStore[T](issuer, usersDataDir)

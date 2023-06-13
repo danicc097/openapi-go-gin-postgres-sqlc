@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/danicc097/oidc-server/storage"
+	"github.com/danicc097/oidc-server/v3/storage"
 	"github.com/gorilla/mux"
 )
 
@@ -56,14 +56,17 @@ func (l *login) renderLogin(w http.ResponseWriter, id string, err error) {
 
 		return
 	}
-
+	prefix := ""
+	if l.pathPrefix != "" {
+		prefix = "/" + strings.TrimPrefix(strings.TrimSuffix(l.pathPrefix, "/"), "/")
+	}
 	data := &struct {
 		ID         string
 		Error      string
 		PathPrefix string
 	}{
 		ID:         id,
-		PathPrefix: l.pathPrefix,
+		PathPrefix: prefix,
 		Error:      errMsg(err),
 	}
 	err = templates.ExecuteTemplate(w, "login", data)

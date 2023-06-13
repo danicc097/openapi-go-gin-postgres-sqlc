@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/getkin/kin-openapi/openapi3filter"
@@ -49,7 +50,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if apiKey != "" {
 			u, err := a.authnsvc.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil || u == nil {
-				renderResponse(c, gin.H{"error": "unauthenticated", "detail": "could not get user from api key"}, http.StatusUnauthorized)
+				renderErrorResponse(c, "unauthenticated", internal.NewErrorf(internal.ErrorCodeUnauthenticated, "could not get user from api key"))
 				c.Abort()
 
 				return
@@ -64,7 +65,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if strings.HasPrefix(auth, "Bearer ") {
 			u, err := a.authnsvc.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
 			if err != nil || u == nil {
-				renderResponse(c, gin.H{"error": "unauthenticated", "detail": "could not get user from token"}, http.StatusUnauthorized)
+				renderErrorResponse(c, "unauthenticated", internal.NewErrorf(internal.ErrorCodeUnauthenticated, "could not get user from token"))
 				c.Abort()
 
 				return
@@ -75,7 +76,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		renderResponse(c, gin.H{"error": "unauthenticated", "detail": "No authentication data provided"}, http.StatusUnauthorized)
+		renderErrorResponse(c, "unauthenticated", internal.NewErrorf(internal.ErrorCodeUnauthenticated, "could not get user from token"))
 		c.Abort()
 	}
 }
