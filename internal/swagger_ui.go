@@ -12,21 +12,9 @@ import (
 func SetupSwaggerUI(url string, specPath string) error {
 	buf := &bytes.Buffer{}
 	swaggerUIDir := "internal/static/swagger-ui"
+	cfg := Config()
 
 	t, err := template.New("").Parse(`
-const detectEnvironment = () => {
-	const host = window.location.host.toLowerCase();
-	if (host.indexOf("localhost") > -1) {
-		return "dev";
-	}
-	if (host.indexOf("e2e") > -1) {
-		return "e2e";
-	}
-	if (host.indexOf("prod") > -1) {
-		return "prod";
-	}
-};
-
 window.onload = function () {
 	//<editor-fold desc="Changeable Configuration Block">
 
@@ -38,10 +26,11 @@ window.onload = function () {
 		plugins: [SwaggerUIBundle.plugins.DownloadUrl],
 		layout: "StandaloneLayout",
 		onComplete: function () {
-			const env = detectEnvironment();
+			const env = {{.Env}};
 			let spec = ui.specSelectors.specJson().toJS();
+			console.log(spec.servers)
 			let servers = spec.servers.filter((item) => {
-				return item.description.toLowerCase() === env.toLowerCase();
+				return item["description"]?.toLowerCase() === env.toLowerCase();
 			});
 			spec.servers = servers;
 			ui.specActions.updateJsonSpec(spec);
@@ -57,6 +46,7 @@ window.onload = function () {
 
 	params := map[string]interface{}{
 		"URL": strconv.Quote(url),
+		"Env": strconv.Quote(cfg.AppEnv),
 	}
 
 	if err := t.Execute(buf, params); err != nil {
