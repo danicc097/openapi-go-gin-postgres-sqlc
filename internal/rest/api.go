@@ -1,6 +1,9 @@
 package rest
 
 import (
+	"fmt"
+	"time"
+
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
@@ -41,16 +44,15 @@ func NewHandlers(
 	event := newSSEServer()
 
 	// we can have as many of these but need to delay call
-	// reenable when implementing actual sse later as sanity check
-	// go func() {
-	// 	for {
-	// 		now := time.Now().Format("2006-01-02 15:04:05")
-	// 		currentTime := fmt.Sprintf("The Current Time Is %v", now)
+	go func() {
+		for {
+			now := time.Now().Format("2006-01-02 15:04:05")
+			currentTime := fmt.Sprintf("The Current Time Is %v", now)
 
-	// 		event.Message <- currentTime
-	// 		time.Sleep(time.Second * 2)
-	// 	}
-	// }()
+			event.Message <- currentTime
+			time.Sleep(time.Second * 2)
+		}
+	}()
 
 	// we can have as many of these but need to delay call
 	// we probably won't have an infinite running goroutine like this,
@@ -58,16 +60,15 @@ func NewHandlers(
 	// but will be useful if we need to check something external
 	// every X timeframe (e.g. wiki documents alert, new documents loaded for an active workitem, etc.)
 
-	// reenable when implementing actual sse later as sanity check
-	// go func() {
-	// 	for {
-	// 		now := time.Now().Format("2006-01-02 15:04:05")
-	// 		currentTime := fmt.Sprintf("user notifications - The Current Time Is %v", now)
+	go func() {
+		for {
+			now := time.Now().Format("2006-01-02 15:04:05")
+			currentTime := fmt.Sprintf("user notifications - The Current Time Is %v", now)
 
-	// 		event.Message2 <- currentTime
-	// 		time.Sleep(time.Second * 2)
-	// 	}
-	// }()
+			event.Message2 <- currentTime
+			time.Sleep(time.Second * 2)
+		}
+	}()
 
 	return &Handlers{
 		logger:          logger,

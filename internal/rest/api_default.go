@@ -16,7 +16,7 @@ func (h *Handlers) OpenapiYamlGet(c *gin.Context) {
 		panic("openapi spec not found")
 	}
 
-	c.Data(http.StatusOK, gin.MIMEYAML, oas)
+	c.String(http.StatusOK, string(oas))
 }
 
 // Ping ping pongs.
