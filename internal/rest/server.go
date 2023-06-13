@@ -249,6 +249,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		conf.Logger,
 		conf.Pool,
 		conf.MovieSvcClient,
+		conf.SpecPath,
 		usvc,
 		demoworkitemsvc,
 		workitemtagsvc,

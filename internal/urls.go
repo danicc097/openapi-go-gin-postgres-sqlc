@@ -39,5 +39,7 @@ func BuildAPIURL(subpaths ...string) string {
 
 	url := dsn.String()
 
+	fmt.Printf("openapi url: %v\n", url)
+
 	return url
 }

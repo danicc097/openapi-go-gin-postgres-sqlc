@@ -887,19 +887,13 @@ x.test.backend.watch() {
   done
 }
 
-# Build the entire project.
-x.build() {
-  { { {
-    go build -o $BUILD_DIR/rest-server "$PWD"/cmd/rest-server
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
 # Run backend with hot-reloading.
 x.run.backend-hr() {
   # TODO replace healthcheck with adhoc calls and bring services up in btaches
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
   run_shared_services up -d --build --remove-orphans --wait
+  go run cmd/swagger-ui-setup/main.go -env=".env.$env"
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
@@ -971,13 +965,14 @@ x.run-dockerized() {
 
   x.gen
 
+  go run cmd/swagger-ui-setup/main.go -env=".env.$env"
+
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
     -f docker-compose.yml \
     --env-file ".env.$env" \
     up -d --build --wait --force-recreate 2>&1 # https://github.com/docker/compose/issues/7346
 
-  echo "Migrations:"
   x.migrate up
 }
 

@@ -5,6 +5,7 @@ ARG DOCKER_UID
 ARG DOCKER_GID
 
 WORKDIR /go/src
+
 COPY go.* ./
 # RUN go mod download # it will access network/cache, which is not necessary with -mod=vendor
 COPY . .
@@ -30,5 +31,6 @@ COPY --from=build /go/src/rest-server \
   /go/src/roles.json \
   /go/src/operationAuth.gen.json \
   ./
+COPY --from=build /go/src/internal/static/swagger-ui/ ./internal/static/swagger-ui/
 
 ENTRYPOINT [ "./rest-server" ]
