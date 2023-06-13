@@ -966,7 +966,7 @@ x.run-dockerized() {
   # which a 1:1 clone of prod setup
   # it will use production dockerized versions which require container name resolution, diff ports etc
   # project run-dockerized --x-env=prod --x-no-gen
-  run_shared_services up -d --build --remove-orphans --wait
+  run_shared_services up -d --build --wait
   x.db.recreate
 
   x.gen

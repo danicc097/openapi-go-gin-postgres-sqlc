@@ -92,6 +92,7 @@ func main() {
 
 	if env == "prod" {
 		// prod specific init
+		fmt.Printf("TODO: create superAdmin only")
 		os.Exit(0)
 	}
 

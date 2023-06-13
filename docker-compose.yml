@@ -16,6 +16,8 @@ services:
       - "--env=.env.${APP_ENV}"
     volumes:
       - ./.env.${APP_ENV}:/.env.${APP_ENV}
+      # required since mock server will use these
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     build:
       context: .
       dockerfile: Dockerfile
