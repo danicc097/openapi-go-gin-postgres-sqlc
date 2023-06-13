@@ -707,7 +707,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in pregen postgen gen-schema oapi-codegen jet; do
+    for cmd in pregen postgen oapi-codegen jet; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -1447,10 +1447,10 @@ update_spec_with_structs() {
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
-  go build -o $BUILD_DIR/gen-schema cmd/gen-schema/main.go # need new PublicStructs compiled
   # go build -buildmode=plugin -o internal/postgen/structs/main.gen.so $GOMOD_PKG/internal/postgen/structs
 
-  gen-schema --struct-names $struct_names_list | yq '
+  # need new PublicStructs compiled
+  go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
 
