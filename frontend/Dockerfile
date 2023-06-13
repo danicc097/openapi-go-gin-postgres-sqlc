@@ -31,7 +31,7 @@ RUN ls -h
 # runtime env not available in vite.config
 
 # copy symlink targets, not enough to just have build context containing them
-# FIXME: this shouldn't be neccesary?
+# TODO: should this be necessary?
 COPY ./*.json /
 
 RUN pnpm run build
