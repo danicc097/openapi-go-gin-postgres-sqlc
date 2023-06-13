@@ -11,12 +11,12 @@ RUN wget --no-check-certificate https://github.com/stedolan/jq/releases/download
 RUN chmod +x /usr/bin/jq
 RUN apk add --no-cache bash git openssh gettext
 
-COPY pnpm-lock.yaml /frontend
+COPY ./frontend/pnpm-lock.yaml /frontend/
 
 # https://pnpm.io/cli/fetch (ensure buildkit used and cache target up to date: pnpm store path)
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store/v3 \
   pnpm fetch
-COPY . /frontend
+COPY ./frontend/. /frontend/
 # ensure config has all k-v as "<KEY>": "$<KEY>"
 RUN jq \
   'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
@@ -26,9 +26,14 @@ RUN cat config.json
 # --offline since it's been fetched beforehand
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store/v3 \
   pnpm install -r --offline
-
+RUN ls -h
 #RUN pnpm run test:no-watch
 # runtime env not available in vite.config
+
+# copy symlink targets, not enough to just have build context containing them
+# FIXME: this shouldn't be neccesary?
+COPY ./*.json /
+
 RUN pnpm run build
 
 FROM nginx:1-alpine
@@ -36,8 +41,8 @@ ENV ENV_REPLACE_GLOB=/usr/share/nginx/html/assets/*.js
 RUN apk add --no-cache bash moreutils
 COPY --from=nodebuild /frontend/build /usr/share/nginx/html
 
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-COPY nginx/replace-envvars.sh /docker-entrypoint.d/
+COPY ./frontend/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./frontend/nginx/replace-envvars.sh /docker-entrypoint.d/
 RUN chmod +x /docker-entrypoint.d/replace-envvars.sh
 
 EXPOSE 80
