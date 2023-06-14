@@ -88,7 +88,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "db.Ping")
 	}
 
-	sqlPool, err := sql.Open("pgx", pgxPool.Config.ConnString())
+	sqlPool, err := sql.Open("pgx", pgxPool.Config().ConnString())
 	if err != nil {
 		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "sql.Open")
 	}

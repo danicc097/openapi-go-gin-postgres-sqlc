@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -19,31 +20,35 @@ func GetFileRuntimeDirectory() string {
 	return dir
 }
 
+var setupOnce sync.Once
+
 // Setup runs necessary pre-testing commands for a package: env vars loading, sourcing...
 func Setup() {
-	rootDir := path.Join(GetFileRuntimeDirectory(), "../..")
+	setupOnce.Do(func() {
+		rootDir := path.Join(GetFileRuntimeDirectory(), "../..")
 
-	appEnv := envvar.GetEnv("APP_ENV", "dev")
-	if err := envvar.Load(path.Join(rootDir, ".env."+appEnv)); err != nil {
-		log.Fatalf("envvar.Load: %s\n", err)
-	}
+		appEnv := envvar.GetEnv("APP_ENV", "dev")
+		if err := envvar.Load(path.Join(rootDir, ".env."+appEnv)); err != nil {
+			log.Fatalf("envvar.Load: %s\n", err)
+		}
 
-	os.Setenv("POSTGRES_DB", "postgres_test")
-	os.Setenv("IS_TESTING", "1") // for external scripts
+		os.Setenv("POSTGRES_DB", "postgres_test")
+		os.Setenv("IS_TESTING", "1") // for external scripts
 
-	// update config with testing env vars
-	if err := internal.NewAppConfig(); err != nil {
-		log.Fatalf("internal.NewAppConfig: %s\n", err)
-	}
+		// update config with testing env vars
+		if err := internal.NewAppConfig(); err != nil {
+			log.Fatalf("internal.NewAppConfig: %s\n", err)
+		}
 
-	cmd := exec.Command(
-		"bash", "-c",
-		"source .envrc",
-	)
-	cmd.Dir = rootDir
-	if out, err := cmd.CombinedOutput(); err != nil {
-		errAndExit(out, err)
-	}
+		cmd := exec.Command(
+			"bash", "-c",
+			"source .envrc",
+		)
+		cmd.Dir = rootDir
+		if out, err := cmd.CombinedOutput(); err != nil {
+			errAndExit(out, err)
+		}
+	})
 }
 
 func errAndExit(out []byte, err error) {
