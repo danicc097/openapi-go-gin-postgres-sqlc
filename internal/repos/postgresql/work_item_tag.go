@@ -25,7 +25,7 @@ var _ repos.WorkItemTag = (*WorkItemTag)(nil)
 func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
 	workItemTag, err := db.CreateWorkItemTag(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("could not create time entry: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not create work item tag: %w", parseErrorDetail(err))
 	}
 
 	return workItemTag, nil
