@@ -78,7 +78,9 @@ func NewAppConfig() error {
 
 // Config returns the app global config initialized from environment variables
 func Config() *AppConfig {
-	// not needed
+	// not needed. we will only populate at startup and there won't be any more writes.
+	// lock is just needed for write, especially due to tests: e.g. rest runTestServer will create (the same) config concurrently
+	// for all tests, which run in parallel...
 	// configLock.RLock()
 	// defer configLock.RUnlock()
 
