@@ -9,7 +9,7 @@ import (
 // BuildAPIURL returns a fully-qualified URL with the given path elements
 // accounting for reverse proxy configuration.
 func BuildAPIURL(subpaths ...string) string {
-	cfg := Config()
+	cfg := Config
 	elems := []string{cfg.APIPrefix, cfg.APIVersion}
 	elems = append(elems, subpaths...)
 
@@ -38,8 +38,6 @@ func BuildAPIURL(subpaths ...string) string {
 	}
 
 	url := dsn.String()
-
-	fmt.Printf("openapi url: %v\n", url)
 
 	return url
 }

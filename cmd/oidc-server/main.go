@@ -4,44 +4,11 @@ import (
 	"context"
 	"flag"
 
-	oidc_server "github.com/danicc097/oidc-server"
-	"github.com/danicc097/oidc-server/storage"
+	oidc_server "github.com/danicc097/oidc-server/v3"
+	"github.com/danicc097/oidc-server/v3/storage"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/zitadel/oidc/v2/pkg/oidc"
-	"golang.org/x/text/language"
 )
-
-// User implements storage.User.
-// nolint: revive
-// TODO: would be in shared models, since we also use this in initial-data for dev
-type User struct {
-	ID_               string       `json:"id"` // need exported for unmarshalling
-	Username_         string       `json:"username"`
-	Password_         string       `json:"password"`
-	FirstName         string       `json:"firstName"`
-	LastName          string       `json:"lastName"`
-	Email             string       `json:"email"`
-	EmailVerified     bool         `json:"emailVerified"`
-	Phone             string       `json:"phone"`
-	PhoneVerified     bool         `json:"phoneVerified"`
-	PreferredLanguage language.Tag `json:"preferredLanguage"`
-	IsAdmin_          bool         `json:"isAdmin"`
-}
-
-func (u User) ID() string {
-	return u.ID_
-}
-
-func (u User) Username() string {
-	return u.Username_
-}
-
-func (u User) IsAdmin() bool {
-	return u.IsAdmin_
-}
-
-func (u User) Password() string {
-	return u.Password_
-}
 
 const (
 	// CustomScope is an example for how to use custom scopes in this library
@@ -72,7 +39,7 @@ func getPrivateClaimsFromScopesFunc(ctx context.Context, userID, clientID string
 	return claims, nil
 }
 
-func setUserInfoFunc(user *User, userInfo *oidc.UserInfo, scope, clientID string) {
+func setUserInfoFunc(user *models.AuthServerUser, userInfo *oidc.UserInfo, scope, clientID string) {
 	switch scope {
 	case oidc.ScopeOpenID:
 		userInfo.Subject = user.ID()
@@ -108,7 +75,7 @@ func main() {
 
 	flag.Parse()
 
-	config := oidc_server.Config[User]{
+	config := oidc_server.Config[models.AuthServerUser]{
 		SetUserInfoFunc:                setUserInfoFunc,
 		GetPrivateClaimsFromScopesFunc: getPrivateClaimsFromScopesFunc,
 		PathPrefix:                     pathPrefix,

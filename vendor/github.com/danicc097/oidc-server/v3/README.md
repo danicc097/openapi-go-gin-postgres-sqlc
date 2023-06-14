@@ -1,14 +1,14 @@
 # oidc-server
 
 OpenID Connect development server based on
-https://github.com/zitadel/oidc/tree/main/example/server. Features
+https://github.com/zitadel/oidc/tree/main/example/server.
 
 # Setup
 
 ## Runtime environment variables
 
 - `ISSUER`: fully qualified domain name.
-- `DATA_DIR`: absolute path to stored mock data. e.g. `/data`
+- `DATA_DIR`: absolute path to stored mock data. e.g. `/data`.
 - `PORT` (optional): server port. Default: `10001`. Expose accordingly if using
 containers.
 

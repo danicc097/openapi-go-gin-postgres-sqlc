@@ -12,9 +12,11 @@ import (
 )
 
 var (
-	configLock = &sync.RWMutex{}
+	configLock = &sync.Mutex{}
 
-	config *AppConfig
+	// Config returns the app global config initialized from environment variables.
+	// [Read] locks not needed if there are no writes involved. Config is only populated at startup so there won't be any more writes.
+	Config *AppConfig
 )
 
 type OIDCConfig struct {
@@ -71,17 +73,9 @@ func NewAppConfig() error {
 		return fmt.Errorf("loadEnvToConfig: %w", err)
 	}
 
-	config = cfg
+	Config = cfg
 
 	return nil
-}
-
-// Config returns the app global config initialized from environment variables
-func Config() AppConfig {
-	configLock.RLock()
-	defer configLock.RUnlock()
-
-	return *config
 }
 
 // loadEnvToConfig loads env vars to a given struct based on an `env` tag.

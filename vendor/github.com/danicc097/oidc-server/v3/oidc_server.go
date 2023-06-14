@@ -12,8 +12,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/danicc097/oidc-server/exampleop"
-	"github.com/danicc097/oidc-server/storage"
+	"github.com/danicc097/oidc-server/v3/exampleop"
+	"github.com/danicc097/oidc-server/v3/storage"
 )
 
 // Config defines OIDC server configuration.

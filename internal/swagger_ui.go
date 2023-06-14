@@ -12,7 +12,6 @@ import (
 func SetupSwaggerUI(url string, specPath string) error {
 	buf := &bytes.Buffer{}
 	swaggerUIDir := "internal/static/swagger-ui"
-	cfg := Config()
 
 	t, err := template.New("").Parse(`
 window.onload = function () {
@@ -46,7 +45,7 @@ window.onload = function () {
 
 	params := map[string]interface{}{
 		"URL": strconv.Quote(url),
-		"Env": strconv.Quote(cfg.AppEnv),
+		"Env": strconv.Quote(Config.AppEnv),
 	}
 
 	if err := t.Execute(buf, params); err != nil {

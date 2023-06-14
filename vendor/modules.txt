@@ -48,11 +48,11 @@ github.com/cespare/xxhash/v2
 # github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
 ## explicit; go 1.15
 github.com/chenzhuoyu/base64x
-# github.com/danicc097/oidc-server v1.2.2
+# github.com/danicc097/oidc-server/v3 v3.1.0
 ## explicit; go 1.19
-github.com/danicc097/oidc-server
-github.com/danicc097/oidc-server/exampleop
-github.com/danicc097/oidc-server/storage
+github.com/danicc097/oidc-server/v3
+github.com/danicc097/oidc-server/v3/exampleop
+github.com/danicc097/oidc-server/v3/storage
 # github.com/danicc097/xo v1.0.0
 ## explicit; go 1.19
 github.com/danicc097/xo/loader
@@ -522,7 +522,7 @@ go.uber.org/zap/zaptest
 # golang.org/x/arch v0.3.0
 ## explicit; go 1.17
 golang.org/x/arch/x86/x86asm
-# golang.org/x/crypto v0.9.0
+# golang.org/x/crypto v0.10.0
 ## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
@@ -538,7 +538,7 @@ golang.org/x/exp/slices
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.10.0
+# golang.org/x/net v0.11.0
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/html
@@ -550,7 +550,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.8.0
+# golang.org/x/oauth2 v0.9.0
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/internal

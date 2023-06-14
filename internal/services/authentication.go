@@ -67,7 +67,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 
 	guestRole := a.usvc.authzsvc.RoleByName(models.RoleGuest)
 
-	cfg := internal.Config()
+	cfg := internal.Config
 
 	superAdmin, err := a.usvc.ByEmail(ctx, a.pool, cfg.SuperAdmin.DefaultEmail)
 	if err != nil {
@@ -137,7 +137,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 
 // CreateAccessTokenForUser creates a new token for a user.
 func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.User) (string, error) {
-	cfg := internal.Config()
+	cfg := internal.Config
 	claims := AppClaims{
 		Email:    user.Email,
 		Username: user.Username,
@@ -173,7 +173,7 @@ func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User)
 
 // ParseToken returns a token string claims.
 func (a *Authentication) ParseToken(ctx context.Context, token string) (*AppClaims, error) {
-	cfg := internal.Config()
+	cfg := internal.Config
 	jwtToken, err := jwt.ParseWithClaims(token, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return cfg.SigningKey, nil
 	})

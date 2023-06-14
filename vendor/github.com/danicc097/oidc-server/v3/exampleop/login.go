@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/danicc097/oidc-server/storage"
+	"github.com/danicc097/oidc-server/v3/storage"
 	"github.com/gorilla/mux"
 )
 

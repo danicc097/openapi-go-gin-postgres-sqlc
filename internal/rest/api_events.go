@@ -270,14 +270,14 @@ func (stream *Event) listen() {
 
 		// Broadcast message to client
 		case eventMsg := <-stream.Message:
-			fmt.Printf("eventMsg: %v\n", eventMsg)
+			// fmt.Printf("eventMsg: %v\n", eventMsg)
 			for clientMessageChan := range stream.ClientsForMessage1 {
 				clientMessageChan <- eventMsg
 			}
 
 		// Broadcast message 2to client
 		case eventMsg := <-stream.Message2:
-			fmt.Printf("eventMsg (2): %v\n", eventMsg)
+			// fmt.Printf("eventMsg (2): %v\n", eventMsg)
 			for clientMessageChan := range stream.ClientsForMessage2 {
 				clientMessageChan <- eventMsg
 			}

@@ -26,7 +26,7 @@ var pgxAfterConnectLock = sync.Mutex{}
 
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
 func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
-	cfg := internal.Config()
+	cfg := internal.Config
 	dsn := url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(cfg.Postgres.User, cfg.Postgres.Password),

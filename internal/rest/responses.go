@@ -20,6 +20,7 @@ type ErrorResponse struct {
 	ValidationError models.HTTPValidationError `json:"validationError,omitempty"`
 }
 
+// renderErrorResponse writes an error response from message and error.
 func renderErrorResponse(c *gin.Context, msg string, err error) {
 	resp := ErrorResponse{Error: msg}
 	status := http.StatusInternalServerError
@@ -34,6 +35,8 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 		case internal.ErrorCodeNotFound:
 			status = http.StatusNotFound
 		case internal.ErrorCodeInvalidArgument:
+			status = http.StatusBadRequest
+		case internal.ErrorCodeInvalidRole, internal.ErrorCodeInvalidScope:
 			status = http.StatusBadRequest
 		case internal.ErrorCodeRequestValidation:
 			status = http.StatusBadRequest
@@ -51,6 +54,7 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			status = http.StatusUnauthorized
 		case internal.ErrorCodePrivate:
 			resp.Message = "internal error"
+			resp.Error = "internal error"
 			fallthrough
 		case internal.ErrorCodeUnknown:
 			fallthrough
@@ -147,7 +151,7 @@ func extractValidationError(err error, typ string) models.HTTPValidationError {
 	return httpValidationError
 }
 
-func renderResponse(c *gin.Context, res interface{}, status int) {
+func renderResponse(c *gin.Context, res any, status int) {
 	c.Header("Content-Type", "application/json")
 
 	content, err := json.Marshal(res)
