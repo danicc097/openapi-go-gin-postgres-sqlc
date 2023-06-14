@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -63,12 +62,8 @@ func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 	defer newOTELSpan(ctx, "CreateWorkitemTag", trace.WithAttributes(userIDAttribute(c))).End()
 
 	user := getUserFromCtx(c)
-	if user == nil {
-		renderErrorResponse(c, "user not found", errors.New("user not found"))
 
-		return
-	}
-	h.workitemtagsvc.Create(c, h.pool, &db.WorkItemTagCreateParams{
+	h.workitemtagsvc.Create(c, h.pool, user, &db.WorkItemTagCreateParams{
 		ProjectID: internal.ProjectIDByName[project],
 		// TODO params + oapi path parameters override name
 	})

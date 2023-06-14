@@ -25,11 +25,6 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 
 	//  user from context isntead has the appropriate joins already (teams, etc.)
 	user := getUserFromCtx(c)
-	if user == nil {
-		renderErrorResponse(c, "user not found", errors.New("user not found"))
-
-		return
-	}
 
 	role, ok := h.authzsvc.RoleByRank(user.RoleRank)
 	if !ok {

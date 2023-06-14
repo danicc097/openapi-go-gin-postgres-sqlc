@@ -88,17 +88,17 @@ func main() {
 	// register superAdmin, which is used for internal calls that require a (super)admin caller.
 	// e.g. first user registration via auth callback requires an existing admin,
 	// which wouldn't be possible without a registered admin beforehand.
-	u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
+	superAdmin, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "superadmin",
 		Email:      cfg.SuperAdmin.DefaultEmail,
 		ExternalID: "", // will be updated on login
 		Role:       models.RoleSuperAdmin,
 	})
 	handleError(err)
-	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
+	_, err = authnSvc.CreateAPIKeyForUser(ctx, superAdmin)
 	handleError(err)
-	logger.Info("Registered ", u.Username)
-	users = append(users, u)
+	logger.Info("Registered ", superAdmin.Username)
+	users = append(users, superAdmin)
 
 	//
 	//
@@ -136,7 +136,7 @@ func main() {
 		logger.Info("Registered ", u.Username)
 		users = append(users, u)
 	}
-	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
+	u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "manager_1",
 		FirstName:  pointers.New("MrManager"),
 		Email:      "manager_1" + "@mail.com",
@@ -204,7 +204,7 @@ func main() {
 	 *
 	 **/
 
-	wiTag1, err := wiTagSvc.Create(ctx, pool, &db.WorkItemTagCreateParams{
+	wiTag1, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
@@ -213,7 +213,7 @@ func main() {
 	handleError(err)
 	logger.Info("Created tag ", wiTag1.Name)
 
-	wiTag2, err := wiTagSvc.Create(ctx, pool, &db.WorkItemTagCreateParams{
+	wiTag2, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 2",
 		Description: "Tag 2 description",
