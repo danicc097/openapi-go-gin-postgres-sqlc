@@ -78,8 +78,9 @@ func NewAppConfig() error {
 
 // Config returns the app global config initialized from environment variables
 func Config() AppConfig {
-	configLock.RLock()
-	defer configLock.RUnlock()
+	// not needed
+	// configLock.RLock()
+	// defer configLock.RUnlock()
 
 	return *config
 }

@@ -805,7 +805,7 @@ x.test.backend() {
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
-    echo "Running ${GREEN}\"APP_ENV=$env go test $* ./...\"${OFF}"
+    echo "Running ${GREEN}\"APP_ENV=$env go test -count=1 $* ./...\"${OFF}"
     go list ./... | grep --invert-match "$XO_TESTS_PKG" | APP_ENV="$env" xargs go test -count=1 "$@"
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

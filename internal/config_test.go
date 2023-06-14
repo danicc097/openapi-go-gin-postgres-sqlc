@@ -11,7 +11,7 @@ func TestNewAppConfig(t *testing.T) {
 	type nestedCfg struct {
 		Name string `env:"TEST_CFG_NAME"`
 	}
-	// NOTE: zero need and counterproductive to allow pointer nested structs for config
+	// NOTE: zero need and counterproductive to allow pointer nested structs for config.
 	type cfg struct {
 		NestedCfg       nestedCfg
 		Length          int     `env:"TEST_CFG_LEN"`
