@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -37,6 +38,10 @@ type MovieCreateParams struct {
 
 // CreateMovie creates a new Movie in the database with the given params.
 func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	m := &Movie{
 		Title:    params.Title,
 		Year:     params.Year,
@@ -139,7 +144,7 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 }
 
 // Update updates a Movie in the database.
-func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
+func (m *Movie) Update(ctx context.Context, db DB, params *MovieUpdateParams) (*Movie, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.movies SET 
 	title = $1, year = $2, synopsis = $3 
@@ -164,6 +169,10 @@ func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 // Upsert upserts a Movie in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (m *Movie) Upsert(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	m.Title = params.Title
@@ -177,7 +186,11 @@ func (m *Movie) Upsert(ctx context.Context, db DB, params *MovieCreateParams) (*
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			m, err = m.Update(ctx, db)
+			m, err = m.Update(ctx, db, &MovieUpdateParams{Title: pointers.New(params.Title),
+				Year:     pointers.New(params.Year),
+				Synopsis: pointers.New(params.Synopsis),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

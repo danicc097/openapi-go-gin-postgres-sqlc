@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -37,6 +38,10 @@ type BookCreateParams struct {
 
 // CreateBook creates a new Book in the database with the given params.
 func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	b := &Book{
 		Name: params.Name,
 	}
@@ -236,7 +241,7 @@ func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 }
 
 // Update updates a Book in the database.
-func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
+func (b *Book) Update(ctx context.Context, db DB, params *BookUpdateParams) (*Book, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.books SET 
 	name = $1 
@@ -261,6 +266,10 @@ func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 // Upsert upserts a Book in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (b *Book) Upsert(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	b.Name = params.Name
@@ -272,7 +281,7 @@ func (b *Book) Upsert(ctx context.Context, db DB, params *BookCreateParams) (*Bo
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			b, err = b.Update(ctx, db)
+			b, err = b.Update(ctx, db, &BookUpdateParams{Name: pointers.New(params.Name)})
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

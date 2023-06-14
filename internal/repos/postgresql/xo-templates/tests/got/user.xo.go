@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -47,6 +48,10 @@ type UserCreateParams struct {
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	u := &User{
 		Name:     params.Name,
 		APIKeyID: params.APIKeyID,
@@ -365,7 +370,7 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 }
 
 // Update updates a User in the database.
-func (u *User) Update(ctx context.Context, db DB) (*User, error) {
+func (u *User) Update(ctx context.Context, db DB, params *UserUpdateParams) (*User, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.users SET 
 	name = $1, api_key_id = $2, deleted_at = $3 
@@ -390,6 +395,10 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 // Upsert upserts a User in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	u.Name = params.Name
@@ -402,7 +411,11 @@ func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*Us
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			u, err = u.Update(ctx, db)
+			u, err = u.Update(ctx, db, &UserUpdateParams{
+				Name:     pointers.New(params.Name),
+				APIKeyID: pointers.New(params.APIKeyID),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}
@@ -443,7 +456,7 @@ func (u *User) SoftDelete(ctx context.Context, db DB) error {
 // Restore restores a soft deleted User from the database.
 func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	u.DeletedAt = nil
-	newu, err := u.Update(ctx, db)
+	newu, err := u.Update(ctx, db, &UserUpdateParams{})
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Restore/pgx.CollectRows: %w", err))
 	}

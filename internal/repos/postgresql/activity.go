@@ -37,9 +37,7 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params *db.Act
 		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
-	activity.SetUpdateParams(params)
-
-	activity, err = activity.Update(ctx, d)
+	activity, err = activity.Update(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not update activity: %w", parseErrorDetail(err))
 	}

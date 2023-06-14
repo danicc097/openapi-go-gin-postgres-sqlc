@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -52,6 +53,10 @@ type TimeEntryCreateParams struct {
 
 // CreateTimeEntry creates a new TimeEntry in the database with the given params.
 func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	te := &TimeEntry{
 		WorkItemID:      params.WorkItemID,
 		ActivityID:      params.ActivityID,
@@ -242,7 +247,7 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 }
 
 // Update updates a TimeEntry in the database.
-func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
+func (te *TimeEntry) Update(ctx context.Context, db DB, params *TimeEntryUpdateParams) (*TimeEntry, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.time_entries SET 
 	work_item_id = $1, activity_id = $2, team_id = $3, user_id = $4, comment = $5, start = $6, duration_minutes = $7 
@@ -267,6 +272,10 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 // Upsert upserts a TimeEntry in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	te.WorkItemID = params.WorkItemID
@@ -284,7 +293,15 @@ func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateP
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			te, err = te.Update(ctx, db)
+			te, err = te.Update(ctx, db, &TimeEntryUpdateParams{WorkItemID: pointers.New(params.WorkItemID),
+				ActivityID:      pointers.New(params.ActivityID),
+				TeamID:          pointers.New(params.TeamID),
+				UserID:          pointers.New(params.UserID),
+				Comment:         pointers.New(params.Comment),
+				Start:           pointers.New(params.Start),
+				DurationMinutes: pointers.New(params.DurationMinutes),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -39,6 +40,10 @@ type BookAuthorCreateParams struct {
 
 // CreateBookAuthor creates a new BookAuthor in the database with the given params.
 func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	ba := &BookAuthor{
 		BookID:    params.BookID,
 		AuthorID:  params.AuthorID,
@@ -205,7 +210,7 @@ func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 }
 
 // Update updates a BookAuthor in the database.
-func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
+func (ba *BookAuthor) Update(ctx context.Context, db DB, params *BookAuthorUpdateParams) (*BookAuthor, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.book_authors SET 
 	pseudonym = $1 
@@ -230,6 +235,10 @@ func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
 // Upsert upserts a BookAuthor in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	ba.BookID = params.BookID
@@ -243,7 +252,12 @@ func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreat
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			ba, err = ba.Update(ctx, db)
+			ba, err = ba.Update(ctx, db, &BookAuthorUpdateParams{
+				BookID:    pointers.New(params.BookID),
+				AuthorID:  pointers.New(params.AuthorID),
+				Pseudonym: pointers.New(params.Pseudonym),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

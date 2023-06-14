@@ -9,6 +9,7 @@ import (
 	"time"
 
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests/got"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -223,8 +224,7 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 	u2, err := db.CreateUser(ctx, testPool, &db.UserCreateParams{Name: "test_user_2"})
 	assert.NoError(t, err)
 
-	u1.Name = "test_user_1_update"
-	u1, err = u1.Update(ctx, testPool)
+	u1, err = u1.Update(ctx, testPool, &db.UserUpdateParams{Name: pointers.New("test_user_1_update")})
 	assert.NoError(t, err)
 	assert.Equal(t, "test_user_1_update", u1.Name)
 

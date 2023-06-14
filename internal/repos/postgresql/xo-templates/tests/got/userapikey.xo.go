@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -40,6 +41,10 @@ type UserAPIKeyCreateParams struct {
 
 // CreateUserAPIKey creates a new UserAPIKey in the database with the given params.
 func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	uak := &UserAPIKey{
 		APIKey:    params.APIKey,
 		ExpiresOn: params.ExpiresOn,
@@ -174,7 +179,7 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 }
 
 // Update updates a UserAPIKey in the database.
-func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
+func (uak *UserAPIKey) Update(ctx context.Context, db DB, params *UserAPIKeyUpdateParams) (*UserAPIKey, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.user_api_keys SET 
 	api_key = $1, expires_on = $2, user_id = $3 
@@ -199,6 +204,10 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 // Upsert upserts a UserAPIKey in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (uak *UserAPIKey) Upsert(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	uak.APIKey = params.APIKey
@@ -212,7 +221,12 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB, params *UserAPIKeyCrea
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			uak, err = uak.Update(ctx, db)
+			uak, err = uak.Update(ctx, db, &UserAPIKeyUpdateParams{
+				APIKey:    pointers.New(params.APIKey),
+				ExpiresOn: pointers.New(params.ExpiresOn),
+				UserID:    pointers.New(params.UserID),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

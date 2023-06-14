@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -39,6 +40,10 @@ type PagElementCreateParams struct {
 
 // CreatePagElement creates a new PagElement in the database with the given params.
 func CreatePagElement(ctx context.Context, db DB, params *PagElementCreateParams) (*PagElement, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	pe := &PagElement{
 		Name:  params.Name,
 		Dummy: params.Dummy,
@@ -168,7 +173,7 @@ func (pe *PagElement) Insert(ctx context.Context, db DB) (*PagElement, error) {
 }
 
 // Update updates a PagElement in the database.
-func (pe *PagElement) Update(ctx context.Context, db DB) (*PagElement, error) {
+func (pe *PagElement) Update(ctx context.Context, db DB, params *PagElementUpdateParams) (*PagElement, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.pag_element SET 
 	name = $1, dummy = $2 
@@ -193,6 +198,10 @@ func (pe *PagElement) Update(ctx context.Context, db DB) (*PagElement, error) {
 // Upsert upserts a PagElement in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (pe *PagElement) Upsert(ctx context.Context, db DB, params *PagElementCreateParams) (*PagElement, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	pe.Name = params.Name
@@ -205,7 +214,11 @@ func (pe *PagElement) Upsert(ctx context.Context, db DB, params *PagElementCreat
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			pe, err = pe.Update(ctx, db)
+			pe, err = pe.Update(ctx, db, &PagElementUpdateParams{
+				Name:  pointers.New(params.Name),
+				Dummy: pointers.New(params.Dummy),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

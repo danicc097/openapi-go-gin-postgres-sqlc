@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -42,6 +43,10 @@ type ActivityCreateParams struct {
 
 // CreateActivity creates a new Activity in the database with the given params.
 func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	a := &Activity{
 		ProjectID:    params.ProjectID,
 		Name:         params.Name,
@@ -180,7 +185,7 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 }
 
 // Update updates a Activity in the database.
-func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
+func (a *Activity) Update(ctx context.Context, db DB, params *ActivityUpdateParams) (*Activity, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.activities SET 
 	project_id = $1, name = $2, description = $3, is_productive = $4 
@@ -205,6 +210,10 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 // Upsert upserts a Activity in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	a.ProjectID = params.ProjectID
@@ -219,7 +228,12 @@ func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreatePara
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			a, err = a.Update(ctx, db)
+			a, err = a.Update(ctx, db, &ActivityUpdateParams{ProjectID: pointers.New(params.ProjectID),
+				Name:         pointers.New(params.Name),
+				Description:  pointers.New(params.Description),
+				IsProductive: pointers.New(params.IsProductive),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

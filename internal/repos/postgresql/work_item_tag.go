@@ -37,9 +37,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params *d
 		return nil, fmt.Errorf("could not get work item tag by id %w", parseErrorDetail(err))
 	}
 
-	workItemTag.SetUpdateParams(params)
-
-	workItemTag, err = workItemTag.Update(ctx, d)
+	workItemTag, err = workItemTag.Update(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not update work item tag: %w", parseErrorDetail(err))
 	}

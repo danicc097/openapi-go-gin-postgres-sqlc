@@ -37,9 +37,7 @@ func (wit *WorkItemComment) Update(ctx context.Context, d db.DBTX, id int64, par
 		return nil, fmt.Errorf("could not get workItemComment by id %w", parseErrorDetail(err))
 	}
 
-	workItemComment.SetUpdateParams(params)
-
-	workItemComment, err = workItemComment.Update(ctx, d)
+	workItemComment, err = workItemComment.Update(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not update workItemComment: %w", parseErrorDetail(err))
 	}

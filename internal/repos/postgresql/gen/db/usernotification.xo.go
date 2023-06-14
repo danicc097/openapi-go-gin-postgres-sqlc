@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -41,6 +42,10 @@ type UserNotificationCreateParams struct {
 
 // CreateUserNotification creates a new UserNotification in the database with the given params.
 func CreateUserNotification(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	un := &UserNotification{
 		NotificationID: params.NotificationID,
 		Read:           params.Read,
@@ -168,7 +173,7 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 }
 
 // Update updates a UserNotification in the database.
-func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotification, error) {
+func (un *UserNotification) Update(ctx context.Context, db DB, params *UserNotificationUpdateParams) (*UserNotification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_notifications SET 
 	notification_id = $1, read = $2, user_id = $3 
@@ -193,6 +198,10 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 // Upsert upserts a UserNotification in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (un *UserNotification) Upsert(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	un.NotificationID = params.NotificationID
@@ -206,7 +215,11 @@ func (un *UserNotification) Upsert(ctx context.Context, db DB, params *UserNotif
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			un, err = un.Update(ctx, db)
+			un, err = un.Update(ctx, db, &UserNotificationUpdateParams{NotificationID: pointers.New(params.NotificationID),
+				Read:   pointers.New(params.Read),
+				UserID: pointers.New(params.UserID),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

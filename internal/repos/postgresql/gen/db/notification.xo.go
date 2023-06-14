@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -54,6 +55,10 @@ type NotificationCreateParams struct {
 
 // CreateNotification creates a new Notification in the database with the given params.
 func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	n := &Notification{
 		ReceiverRank:     params.ReceiverRank,
 		Title:            params.Title,
@@ -243,7 +248,7 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 }
 
 // Update updates a Notification in the database.
-func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error) {
+func (n *Notification) Update(ctx context.Context, db DB, params *NotificationUpdateParams) (*Notification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.notifications SET 
 	receiver_rank = $1, title = $2, body = $3, label = $4, link = $5, sender = $6, receiver = $7, notification_type = $8 
@@ -268,6 +273,10 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 // Upsert upserts a Notification in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	n.ReceiverRank = params.ReceiverRank
@@ -286,7 +295,16 @@ func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCr
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			n, err = n.Update(ctx, db)
+			n, err = n.Update(ctx, db, &NotificationUpdateParams{ReceiverRank: pointers.New(params.ReceiverRank),
+				Title:            pointers.New(params.Title),
+				Body:             pointers.New(params.Body),
+				Label:            pointers.New(params.Label),
+				Link:             pointers.New(params.Link),
+				Sender:           pointers.New(params.Sender),
+				Receiver:         pointers.New(params.Receiver),
+				NotificationType: pointers.New(params.NotificationType),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -37,6 +38,10 @@ type DemoTwoWorkItemCreateParams struct {
 
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.
 func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	dtwi := &DemoTwoWorkItem{
 		WorkItemID:            params.WorkItemID,
 		CustomDateForProject2: params.CustomDateForProject2,
@@ -161,7 +166,7 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 }
 
 // Update updates a DemoTwoWorkItem in the database.
-func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
+func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB, params *DemoTwoWorkItemUpdateParams) (*DemoTwoWorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.demo_two_work_items SET 
 	custom_date_for_project_2 = $1 
@@ -186,6 +191,10 @@ func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkIte
 // Upsert upserts a DemoTwoWorkItem in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	dtwi.WorkItemID = params.WorkItemID
@@ -198,7 +207,7 @@ func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoW
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			dtwi, err = dtwi.Update(ctx, db)
+			dtwi, err = dtwi.Update(ctx, db, &DemoTwoWorkItemUpdateParams{CustomDateForProject2: pointers.New(params.CustomDateForProject2)})
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

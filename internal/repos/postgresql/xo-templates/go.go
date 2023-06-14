@@ -2158,6 +2158,11 @@ func (f *Funcs) recv(name string, context bool, t Table, v any) string {
 			r = append(r, "[]"+t.GoName)
 			break
 		}
+		if x == "Update" {
+			p = append(p, fmt.Sprintf("params *%sUpdateParams", t.GoName))
+			r = append(r, "*"+t.GoName)
+			break
+		}
 		r = append(r, "*"+t.GoName)
 	}
 	r = append(r, "error")
@@ -3494,6 +3499,7 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 	}
 
 	isSingleFK, isSinglePK := analyzeField(table, field)
+
 	switch typ {
 	case "CreateParams":
 	case "UpsertParams":
@@ -3509,6 +3515,12 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 		return fmt.Sprintf("\t%[1]s.%[2]s = params.%[2]s\n", f.short(table), field.GoName), nil
 	case "CreateParams":
 		return fmt.Sprintf("\t%[1]s: params.%[1]s,\n", field.GoName), nil
+	case "UpdateWithUpsertParams":
+		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
+			fmt.Printf("UpdateWithUpsertParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
+			return "", nil
+		}
+		return fmt.Sprintf("\t%[1]s: pointers.New(params.%[1]s),\n", field.GoName), nil
 	case "UpdateParams":
 		return fmt.Sprintf(`if params.%[2]s != nil {
 	%[1]s.%[2]s = *params.%[2]s

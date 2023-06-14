@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -32,6 +33,10 @@ type DummyJoinCreateParams struct {
 
 // CreateDummyJoin creates a new DummyJoin in the database with the given params.
 func CreateDummyJoin(ctx context.Context, db DB, params *DummyJoinCreateParams) (*DummyJoin, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	dj := &DummyJoin{
 		Name: params.Name,
 	}
@@ -121,7 +126,7 @@ func (dj *DummyJoin) Insert(ctx context.Context, db DB) (*DummyJoin, error) {
 }
 
 // Update updates a DummyJoin in the database.
-func (dj *DummyJoin) Update(ctx context.Context, db DB) (*DummyJoin, error) {
+func (dj *DummyJoin) Update(ctx context.Context, db DB, params *DummyJoinUpdateParams) (*DummyJoin, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.dummy_join SET 
 	name = $1 
@@ -146,6 +151,10 @@ func (dj *DummyJoin) Update(ctx context.Context, db DB) (*DummyJoin, error) {
 // Upsert upserts a DummyJoin in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (dj *DummyJoin) Upsert(ctx context.Context, db DB, params *DummyJoinCreateParams) (*DummyJoin, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	dj.Name = params.Name
@@ -157,7 +166,7 @@ func (dj *DummyJoin) Upsert(ctx context.Context, db DB, params *DummyJoinCreateP
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			dj, err = dj.Update(ctx, db)
+			dj, err = dj.Update(ctx, db, &DummyJoinUpdateParams{Name: pointers.New(params.Name)})
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

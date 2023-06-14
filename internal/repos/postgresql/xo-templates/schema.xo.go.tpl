@@ -247,6 +247,10 @@ type {{ $t.GoName }}CreateParams struct {
 
 // Create{{ $t.GoName }} creates a new {{ $t.GoName }} in the database with the given params.
 func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}CreateParams) (*{{ $t.GoName }}, error) {
+  if params == nil {
+    return nil, fmt.Errorf("nil create params")
+  }
+
   {{ short $t }} := &{{ $t.GoName }}{
 {{ range $t.Fields -}}
 	{{ set_field . "CreateParams" $t -}}
@@ -341,6 +345,10 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 // {{ func_name_context "Upsert" "" }} upserts a {{ $t.GoName }} in the database.
 // Requires appropiate PK(s) to be set beforehand.
 {{ recv_context $t "Upsert" "" }}  {
+  if params == nil {
+    return nil, fmt.Errorf("nil create params")
+  }
+
 	var err error
 
   {{ range $t.Fields -}}
@@ -354,7 +362,12 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 			if pgErr.Code != pgerrcode.UniqueViolation {
 			  return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-		  {{ short $t }}, err = {{ short $t }}.Update(ctx, db)
+		  {{ short $t }}, err = {{ short $t }}.Update(ctx, db, &{{ $t.GoName }}UpdateParams{
+  {{- range $t.Fields -}}
+    {{ set_field . "UpdateWithUpsertParams" $t -}}
+  {{ end -}}
+      },
+      )
       if err != nil {
 			  return nil, fmt.Errorf("UpsertUser/Update: %w", err)
       }
@@ -415,7 +428,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 // {{ func_name_context "Restore" "" }} restores a soft deleted {{ $t.GoName }} from the database.
 {{ recv_context $t "Restore" "" }} {
 	{{ short $t }}.DeletedAt = nil
-	new{{ short $t }}, err:= {{ short $t }}.Update(ctx,db)
+	new{{ short $t }}, err:= {{ short $t }}.Update(ctx, db, &{{ $t.GoName }}UpdateParams{})
 	if err != nil {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Restore/pgx.CollectRows: %w", err))
 	}

@@ -34,6 +34,10 @@ type WorkItemWorkItemTagCreateParams struct {
 
 // CreateWorkItemWorkItemTag creates a new WorkItemWorkItemTag in the database with the given params.
 func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	wiwit := &WorkItemWorkItemTag{
 		WorkItemTagID: params.WorkItemTagID,
 		WorkItemID:    params.WorkItemID,

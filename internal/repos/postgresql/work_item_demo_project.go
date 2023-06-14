@@ -51,19 +51,11 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 	}
 	demoWorkItem := workItem.DemoWorkItemJoin
 
-	if params.Base != nil {
-		workItem.SetUpdateParams(params.Base)
-	}
-
-	if params.DemoProject != nil {
-		demoWorkItem.SetUpdateParams(params.DemoProject)
-	}
-
-	workItem, err = workItem.Update(ctx, d)
+	workItem, err = workItem.Update(ctx, d, params.Base)
 	if err != nil {
 		return nil, fmt.Errorf("could not update workItem: %w", parseErrorDetail(err))
 	}
-	demoWorkItem, err = demoWorkItem.Update(ctx, d)
+	demoWorkItem, err = demoWorkItem.Update(ctx, d, params.DemoProject)
 	if err != nil {
 		return nil, fmt.Errorf("could not update demoWorkItem: %w", parseErrorDetail(err))
 	}

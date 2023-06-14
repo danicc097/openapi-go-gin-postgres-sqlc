@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -41,6 +42,10 @@ type WorkItemTypeCreateParams struct {
 
 // CreateWorkItemType creates a new WorkItemType in the database with the given params.
 func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	wit := &WorkItemType{
 		ProjectID:   params.ProjectID,
 		Name:        params.Name,
@@ -161,7 +166,7 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 }
 
 // Update updates a WorkItemType in the database.
-func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error) {
+func (wit *WorkItemType) Update(ctx context.Context, db DB, params *WorkItemTypeUpdateParams) (*WorkItemType, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_types SET 
 	project_id = $1, name = $2, description = $3, color = $4 
@@ -186,6 +191,10 @@ func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, erro
 // Upsert upserts a WorkItemType in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (wit *WorkItemType) Upsert(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	wit.ProjectID = params.ProjectID
@@ -200,7 +209,12 @@ func (wit *WorkItemType) Upsert(ctx context.Context, db DB, params *WorkItemType
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			wit, err = wit.Update(ctx, db)
+			wit, err = wit.Update(ctx, db, &WorkItemTypeUpdateParams{ProjectID: pointers.New(params.ProjectID),
+				Name:        pointers.New(params.Name),
+				Description: pointers.New(params.Description),
+				Color:       pointers.New(params.Color),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

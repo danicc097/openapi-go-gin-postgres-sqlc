@@ -11,6 +11,7 @@ import (
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -49,6 +50,10 @@ type ProjectCreateParams struct {
 
 // CreateProject creates a new Project in the database with the given params.
 func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	p := &Project{
 		Name:               params.Name,
 		Description:        params.Description,
@@ -270,7 +275,7 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 }
 
 // Update updates a Project in the database.
-func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
+func (p *Project) Update(ctx context.Context, db DB, params *ProjectUpdateParams) (*Project, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET 
 	name = $1, description = $2, work_items_table_name = $3, board_config = $4 
@@ -295,6 +300,10 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 // Upsert upserts a Project in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	p.Name = params.Name
@@ -309,7 +318,12 @@ func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			p, err = p.Update(ctx, db)
+			p, err = p.Update(ctx, db, &ProjectUpdateParams{Name: pointers.New(params.Name),
+				Description:        pointers.New(params.Description),
+				WorkItemsTableName: pointers.New(params.WorkItemsTableName),
+				BoardConfig:        pointers.New(params.BoardConfig),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -35,6 +36,10 @@ type WorkItemCreateParams struct {
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	wi := &WorkItem{
 		Title: params.Title,
 	}
@@ -170,7 +175,7 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 }
 
 // Update updates a WorkItem in the database.
-func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
+func (wi *WorkItem) Update(ctx context.Context, db DB, params *WorkItemUpdateParams) (*WorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.work_items SET 
 	title = $1 
@@ -195,6 +200,10 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 // Upsert upserts a WorkItem in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	wi.Title = params.Title
@@ -206,7 +215,7 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			wi, err = wi.Update(ctx, db)
+			wi, err = wi.Update(ctx, db, &WorkItemUpdateParams{Title: pointers.New(params.Title)})
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

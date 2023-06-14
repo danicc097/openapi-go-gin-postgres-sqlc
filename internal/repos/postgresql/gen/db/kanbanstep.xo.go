@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -45,6 +46,10 @@ type KanbanStepCreateParams struct {
 
 // CreateKanbanStep creates a new KanbanStep in the database with the given params.
 func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	ks := &KanbanStep{
 		ProjectID:     params.ProjectID,
 		StepOrder:     params.StepOrder,
@@ -175,7 +180,7 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 }
 
 // Update updates a KanbanStep in the database.
-func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
+func (ks *KanbanStep) Update(ctx context.Context, db DB, params *KanbanStepUpdateParams) (*KanbanStep, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET 
 	project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6 
@@ -200,6 +205,10 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 // Upsert upserts a KanbanStep in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (ks *KanbanStep) Upsert(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	ks.ProjectID = params.ProjectID
@@ -216,7 +225,14 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB, params *KanbanStepCreat
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			ks, err = ks.Update(ctx, db)
+			ks, err = ks.Update(ctx, db, &KanbanStepUpdateParams{ProjectID: pointers.New(params.ProjectID),
+				StepOrder:     pointers.New(params.StepOrder),
+				Name:          pointers.New(params.Name),
+				Description:   pointers.New(params.Description),
+				Color:         pointers.New(params.Color),
+				TimeTrackable: pointers.New(params.TimeTrackable),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

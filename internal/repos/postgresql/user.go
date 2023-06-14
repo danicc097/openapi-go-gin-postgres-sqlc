@@ -46,9 +46,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.U
 		*params.Scopes = slices.Unique(*params.Scopes)
 	}
 
-	user.SetUpdateParams(params)
-
-	user, err = user.Update(ctx, d)
+	user, err = user.Update(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
 	}
@@ -128,8 +126,7 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 		return nil, fmt.Errorf("could not save api key: %w", parseErrorDetail(err))
 	}
 
-	user.APIKeyID = pointers.New(uak.UserAPIKeyID)
-	if _, err := user.Update(ctx, d); err != nil {
+	if _, err := user.Update(ctx, d, &db.UserUpdateParams{APIKeyID: pointers.New(pointers.New(uak.UserAPIKeyID))}); err != nil {
 		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
 	}
 

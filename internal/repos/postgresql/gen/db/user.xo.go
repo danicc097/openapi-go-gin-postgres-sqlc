@@ -11,6 +11,7 @@ import (
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -68,6 +69,10 @@ type UserCreateParams struct {
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	u := &User{
 		Username:                 params.Username,
 		Email:                    params.Email,
@@ -400,7 +405,7 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 }
 
 // Update updates a User in the database.
-func (u *User) Update(ctx context.Context, db DB) (*User, error) {
+func (u *User) Update(ctx context.Context, db DB, params *UserUpdateParams) (*User, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET 
 	username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 
@@ -425,6 +430,10 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 // Upsert upserts a User in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	u.Username = params.Username
@@ -445,7 +454,18 @@ func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*Us
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			u, err = u.Update(ctx, db)
+			u, err = u.Update(ctx, db, &UserUpdateParams{Username: pointers.New(params.Username),
+				Email:                    pointers.New(params.Email),
+				FirstName:                pointers.New(params.FirstName),
+				LastName:                 pointers.New(params.LastName),
+				ExternalID:               pointers.New(params.ExternalID),
+				APIKeyID:                 pointers.New(params.APIKeyID),
+				Scopes:                   pointers.New(params.Scopes),
+				RoleRank:                 pointers.New(params.RoleRank),
+				HasPersonalNotifications: pointers.New(params.HasPersonalNotifications),
+				HasGlobalNotifications:   pointers.New(params.HasGlobalNotifications),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}
@@ -486,7 +506,7 @@ func (u *User) SoftDelete(ctx context.Context, db DB) error {
 // Restore restores a soft deleted User from the database.
 func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	u.DeletedAt = nil
-	newu, err := u.Update(ctx, db)
+	newu, err := u.Update(ctx, db, &UserUpdateParams{})
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Restore/pgx.CollectRows: %w", err))
 	}

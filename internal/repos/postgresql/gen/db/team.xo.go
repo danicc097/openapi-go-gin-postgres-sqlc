@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -44,6 +45,10 @@ type TeamCreateParams struct {
 
 // CreateTeam creates a new Team in the database with the given params.
 func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	t := &Team{
 		ProjectID:   params.ProjectID,
 		Name:        params.Name,
@@ -224,7 +229,7 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 }
 
 // Update updates a Team in the database.
-func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
+func (t *Team) Update(ctx context.Context, db DB, params *TeamUpdateParams) (*Team, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET 
 	project_id = $1, name = $2, description = $3 
@@ -249,6 +254,10 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 // Upsert upserts a Team in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (t *Team) Upsert(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	t.ProjectID = params.ProjectID
@@ -262,7 +271,11 @@ func (t *Team) Upsert(ctx context.Context, db DB, params *TeamCreateParams) (*Te
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			t, err = t.Update(ctx, db)
+			t, err = t.Update(ctx, db, &TeamUpdateParams{ProjectID: pointers.New(params.ProjectID),
+				Name:        pointers.New(params.Name),
+				Description: pointers.New(params.Description),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

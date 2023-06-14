@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -34,6 +35,10 @@ type SchemaMigrationCreateParams struct {
 
 // CreateSchemaMigration creates a new SchemaMigration in the database with the given params.
 func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	sm := &SchemaMigration{
 		Version: params.Version,
 		Dirty:   params.Dirty,
@@ -130,7 +135,7 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 }
 
 // Update updates a SchemaMigration in the database.
-func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration, error) {
+func (sm *SchemaMigration) Update(ctx context.Context, db DB, params *SchemaMigrationUpdateParams) (*SchemaMigration, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.schema_migrations SET 
 	dirty = $1 
@@ -155,6 +160,10 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 // Upsert upserts a SchemaMigration in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	sm.Version = params.Version
@@ -167,7 +176,10 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigr
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			sm, err = sm.Update(ctx, db)
+			sm, err = sm.Update(ctx, db, &SchemaMigrationUpdateParams{Version: pointers.New(params.Version),
+				Dirty: pointers.New(params.Dirty),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

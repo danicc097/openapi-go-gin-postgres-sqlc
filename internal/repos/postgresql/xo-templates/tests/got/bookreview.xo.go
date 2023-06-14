@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -38,6 +39,10 @@ type BookReviewCreateParams struct {
 
 // CreateBookReview creates a new BookReview in the database with the given params.
 func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams) (*BookReview, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	br := &BookReview{
 		BookID:   params.BookID,
 		Reviewer: params.Reviewer,
@@ -158,7 +163,7 @@ func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 }
 
 // Update updates a BookReview in the database.
-func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
+func (br *BookReview) Update(ctx context.Context, db DB, params *BookReviewUpdateParams) (*BookReview, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.book_reviews SET 
 	book_id = $1, reviewer = $2 
@@ -183,6 +188,10 @@ func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
 // Upsert upserts a BookReview in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (br *BookReview) Upsert(ctx context.Context, db DB, params *BookReviewCreateParams) (*BookReview, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	br.BookID = params.BookID
@@ -195,7 +204,11 @@ func (br *BookReview) Upsert(ctx context.Context, db DB, params *BookReviewCreat
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			br, err = br.Update(ctx, db)
+			br, err = br.Update(ctx, db, &BookReviewUpdateParams{
+				BookID:   pointers.New(params.BookID),
+				Reviewer: pointers.New(params.Reviewer),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

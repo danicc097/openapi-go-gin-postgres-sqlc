@@ -37,9 +37,7 @@ func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params *d
 		return nil, fmt.Errorf("could not get timeEntry by id %w", parseErrorDetail(err))
 	}
 
-	timeEntry.SetUpdateParams(params)
-
-	timeEntry, err = timeEntry.Update(ctx, d)
+	timeEntry, err = timeEntry.Update(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not update timeEntry: %w", parseErrorDetail(err))
 	}

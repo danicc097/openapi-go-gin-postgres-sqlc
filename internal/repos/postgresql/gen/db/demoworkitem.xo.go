@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -43,6 +44,10 @@ type DemoWorkItemCreateParams struct {
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
 func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	dwi := &DemoWorkItem{
 		WorkItemID:    params.WorkItemID,
 		Ref:           params.Ref,
@@ -182,7 +187,7 @@ func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, erro
 }
 
 // Update updates a DemoWorkItem in the database.
-func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, error) {
+func (dwi *DemoWorkItem) Update(ctx context.Context, db DB, params *DemoWorkItemUpdateParams) (*DemoWorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.demo_work_items SET 
 	ref = $1, line = $2, last_message_at = $3, reopened = $4 
@@ -207,6 +212,10 @@ func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, erro
 // Upsert upserts a DemoWorkItem in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	dwi.WorkItemID = params.WorkItemID
@@ -222,7 +231,12 @@ func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB, params *DemoWorkItem
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			dwi, err = dwi.Update(ctx, db)
+			dwi, err = dwi.Update(ctx, db, &DemoWorkItemUpdateParams{Ref: pointers.New(params.Ref),
+				Line:          pointers.New(params.Line),
+				LastMessageAt: pointers.New(params.LastMessageAt),
+				Reopened:      pointers.New(params.Reopened),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

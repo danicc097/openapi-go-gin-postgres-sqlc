@@ -35,6 +35,10 @@ type UserTeamCreateParams struct {
 
 // CreateUserTeam creates a new UserTeam in the database with the given params.
 func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*UserTeam, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	ut := &UserTeam{
 		TeamID: params.TeamID,
 		Member: params.Member,

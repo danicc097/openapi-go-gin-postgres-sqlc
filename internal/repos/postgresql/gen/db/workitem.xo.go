@@ -11,6 +11,7 @@ import (
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -62,6 +63,10 @@ type WorkItemCreateParams struct {
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	wi := &WorkItem{
 		Title:          params.Title,
 		Description:    params.Description,
@@ -384,7 +389,7 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 }
 
 // Update updates a WorkItem in the database.
-func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
+func (wi *WorkItem) Update(ctx context.Context, db DB, params *WorkItemUpdateParams) (*WorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET 
 	title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, deleted_at = $9 
@@ -409,6 +414,10 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 // Upsert upserts a WorkItem in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	wi.Title = params.Title
@@ -427,7 +436,16 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			wi, err = wi.Update(ctx, db)
+			wi, err = wi.Update(ctx, db, &WorkItemUpdateParams{Title: pointers.New(params.Title),
+				Description:    pointers.New(params.Description),
+				WorkItemTypeID: pointers.New(params.WorkItemTypeID),
+				Metadata:       pointers.New(params.Metadata),
+				TeamID:         pointers.New(params.TeamID),
+				KanbanStepID:   pointers.New(params.KanbanStepID),
+				Closed:         pointers.New(params.Closed),
+				TargetDate:     pointers.New(params.TargetDate),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}
@@ -468,7 +486,7 @@ func (wi *WorkItem) SoftDelete(ctx context.Context, db DB) error {
 // Restore restores a soft deleted WorkItem from the database.
 func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 	wi.DeletedAt = nil
-	newwi, err := wi.Update(ctx, db)
+	newwi, err := wi.Update(ctx, db, &WorkItemUpdateParams{})
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Restore/pgx.CollectRows: %w", err))
 	}

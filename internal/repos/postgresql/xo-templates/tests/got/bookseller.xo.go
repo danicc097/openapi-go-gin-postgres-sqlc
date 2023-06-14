@@ -34,6 +34,10 @@ type BookSellerCreateParams struct {
 
 // CreateBookSeller creates a new BookSeller in the database with the given params.
 func CreateBookSeller(ctx context.Context, db DB, params *BookSellerCreateParams) (*BookSeller, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	bs := &BookSeller{
 		BookID: params.BookID,
 		Seller: params.Seller,

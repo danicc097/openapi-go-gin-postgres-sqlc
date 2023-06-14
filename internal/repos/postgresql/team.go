@@ -37,9 +37,7 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpd
 		return nil, fmt.Errorf("could not get team by id %w", parseErrorDetail(err))
 	}
 
-	team.SetUpdateParams(params)
-
-	team, err = team.Update(ctx, d)
+	team, err = team.Update(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not update team: %w", parseErrorDetail(err))
 	}

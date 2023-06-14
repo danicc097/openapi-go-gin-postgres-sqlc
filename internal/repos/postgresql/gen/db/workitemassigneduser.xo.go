@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -42,6 +43,10 @@ type WorkItemAssignedUserCreateParams struct {
 
 // CreateWorkItemAssignedUser creates a new WorkItemAssignedUser in the database with the given params.
 func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssignedUserCreateParams) (*WorkItemAssignedUser, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	wiau := &WorkItemAssignedUser{
 		WorkItemID:   params.WorkItemID,
 		AssignedUser: params.AssignedUser,
@@ -210,7 +215,7 @@ func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemA
 }
 
 // Update updates a WorkItemAssignedUser in the database.
-func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
+func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB, params *WorkItemAssignedUserUpdateParams) (*WorkItemAssignedUser, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_assigned_user SET 
 	role = $1 
@@ -235,6 +240,10 @@ func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemA
 // Upsert upserts a WorkItemAssignedUser in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *WorkItemAssignedUserCreateParams) (*WorkItemAssignedUser, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	wiau.WorkItemID = params.WorkItemID
@@ -248,7 +257,11 @@ func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *Wor
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			wiau, err = wiau.Update(ctx, db)
+			wiau, err = wiau.Update(ctx, db, &WorkItemAssignedUserUpdateParams{WorkItemID: pointers.New(params.WorkItemID),
+				AssignedUser: pointers.New(params.AssignedUser),
+				Role:         pointers.New(params.Role),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}

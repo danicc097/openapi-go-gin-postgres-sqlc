@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -40,6 +41,10 @@ type BookAuthorsSurrogateKeyCreateParams struct {
 
 // CreateBookAuthorsSurrogateKey creates a new BookAuthorsSurrogateKey in the database with the given params.
 func CreateBookAuthorsSurrogateKey(ctx context.Context, db DB, params *BookAuthorsSurrogateKeyCreateParams) (*BookAuthorsSurrogateKey, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	bask := &BookAuthorsSurrogateKey{
 		BookID:    params.BookID,
 		AuthorID:  params.AuthorID,
@@ -207,7 +212,7 @@ func (bask *BookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*BookAu
 }
 
 // Update updates a BookAuthorsSurrogateKey in the database.
-func (bask *BookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*BookAuthorsSurrogateKey, error) {
+func (bask *BookAuthorsSurrogateKey) Update(ctx context.Context, db DB, params *BookAuthorsSurrogateKeyUpdateParams) (*BookAuthorsSurrogateKey, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.book_authors_surrogate_key SET 
 	book_id = $1, author_id = $2, pseudonym = $3 
@@ -232,6 +237,10 @@ func (bask *BookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*BookAu
 // Upsert upserts a BookAuthorsSurrogateKey in the database.
 // Requires appropiate PK(s) to be set beforehand.
 func (bask *BookAuthorsSurrogateKey) Upsert(ctx context.Context, db DB, params *BookAuthorsSurrogateKeyCreateParams) (*BookAuthorsSurrogateKey, error) {
+	if params == nil {
+		return nil, fmt.Errorf("nil create params")
+	}
+
 	var err error
 
 	bask.BookID = params.BookID
@@ -245,7 +254,12 @@ func (bask *BookAuthorsSurrogateKey) Upsert(ctx context.Context, db DB, params *
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
 			}
-			bask, err = bask.Update(ctx, db)
+			bask, err = bask.Update(ctx, db, &BookAuthorsSurrogateKeyUpdateParams{
+				BookID:    pointers.New(params.BookID),
+				AuthorID:  pointers.New(params.AuthorID),
+				Pseudonym: pointers.New(params.Pseudonym),
+			},
+			)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
 			}
