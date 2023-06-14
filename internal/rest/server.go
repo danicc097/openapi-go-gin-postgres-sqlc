@@ -147,7 +147,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	// pprof.Register(router, "dev/pprof")
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	cfg := internal.Config()
+	cfg := internal.Config
 
 	for _, mw := range srv.middlewares {
 		router.Use(mw)
@@ -283,7 +283,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "envvar.Load")
 	}
 
-	cfg := internal.Config()
+	cfg := internal.Config
 
 	var logger *zap.Logger
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap

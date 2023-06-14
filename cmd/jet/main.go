@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
-	cfg := internal.Config()
+	cfg := internal.Config
 	dbConnection := postgres.DBConnection{
 		Host:       "localhost", // will never run dockerized
 		Port:       cfg.Postgres.Port,

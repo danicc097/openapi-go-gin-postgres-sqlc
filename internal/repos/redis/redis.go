@@ -13,7 +13,7 @@ import (
 
 // New instantiates the Redis client using configuration defined in environment variables.
 func New() (*redis.Client, error) {
-	cfg := internal.Config()
+	cfg := internal.Config
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr: cfg.Redis.Host,

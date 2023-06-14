@@ -83,7 +83,7 @@ func main() {
 
 	var users []*db.User
 
-	cfg := internal.Config()
+	cfg := internal.Config
 
 	// register superAdmin, which is used for internal calls that require a (super)admin caller.
 	// e.g. first user registration via auth callback requires an existing admin,
