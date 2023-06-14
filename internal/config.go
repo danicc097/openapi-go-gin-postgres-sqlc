@@ -77,12 +77,12 @@ func NewAppConfig() error {
 }
 
 // Config returns the app global config initialized from environment variables
-func Config() AppConfig {
+func Config() *AppConfig {
 	// not needed
 	// configLock.RLock()
 	// defer configLock.RUnlock()
 
-	return *config
+	return config
 }
 
 // loadEnvToConfig loads env vars to a given struct based on an `env` tag.
