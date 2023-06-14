@@ -46,7 +46,11 @@ jobs:
         run: |
           source .envrc
 
-          project test.backend -race -count=40 --x-env=ci
+          count=10
+          for i in $(seq $count); do
+              project test.backend -race -count=40 --x-env=ci
+          done
+
 
       - name: Test frontend
         run: |

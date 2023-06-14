@@ -18,6 +18,8 @@ var (
 	// [Read] locks not needed if there are no writes involved. Config is only populated at startup and there won't be any more writes.
 	// lock is just needed for write, especially due to tests: e.g. rest runTestServer will create (the same) config concurrently
 	// for all tests, which run in parallel...
+	// TODO: need mutex lock just like configLock for runTestServer. else theres data race in tests...
+
 	Config *AppConfig
 )
 
