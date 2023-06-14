@@ -1,9 +1,11 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,5 +23,6 @@ func (h *Handlers) OpenapiYamlGet(c *gin.Context) {
 
 // Ping ping pongs.
 func (h *Handlers) Ping(c *gin.Context) {
+	fmt.Printf("internal.Config.AppEnv: %v\n", internal.Config.AppEnv)
 	c.String(http.StatusOK, "pong")
 }
