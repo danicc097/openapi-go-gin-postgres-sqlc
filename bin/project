@@ -805,8 +805,8 @@ x.test.backend() {
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
-    echo "Running ${GREEN}\"APP_ENV=$env go test -count=1 $* ./...\"${OFF}"
-    APP_ENV="$env" go test -tags skipxo -count=1 "$@"
+    echo "Running ${GREEN}\"APP_ENV=$env go test -tags skipxo -count=1 $* ./...\"${OFF}"
+    APP_ENV="$env" go test -tags skipxo -count=1 "$@" ./...
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -882,7 +882,7 @@ x.test.backend.watch() {
       while read -r event_time event_file 2>/dev/null || sleep $latency; do
         clear
 
-        { APP_ENV="$env" go test -tags skipxo -count=1 "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
+        { APP_ENV="$env" go test -tags skipxo -count=1 "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
       done
   done
 }

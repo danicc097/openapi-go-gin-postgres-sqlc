@@ -8,9 +8,11 @@ import (
 	"path"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+	"go.uber.org/atomic"
 )
 
 // Returns the directory of the file this function lives in.
@@ -20,7 +22,10 @@ func GetFileRuntimeDirectory() string {
 	return dir
 }
 
-var setupOnce sync.Once
+var (
+	setupOnce sync.Once
+	setupDone atomic.Bool
+)
 
 // Setup runs necessary pre-testing commands for a package: env vars loading, sourcing...
 func Setup() {
@@ -48,7 +53,13 @@ func Setup() {
 		if out, err := cmd.CombinedOutput(); err != nil {
 			errAndExit(out, err)
 		}
+
+		setupDone.Store(true)
 	})
+
+	for !setupDone.Load() {
+		time.Sleep(100 * time.Millisecond)
+	}
 }
 
 func errAndExit(out []byte, err error) {
