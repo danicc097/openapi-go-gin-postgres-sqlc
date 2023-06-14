@@ -6,6 +6,7 @@ import (
 	"log"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -37,12 +38,25 @@ func openBrowser(url string) {
 func main() {
 	var env, address, specPath, scopePolicyPath, rolePolicyPath string
 
-	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
-	flag.StringVar(&address, "address", ":8090", "HTTP Server Address")
+	flag.StringVar(&env, "env", "", "Environment Variables filename")
+	flag.StringVar(&address, "address", "", "HTTP Server Address")
 	flag.StringVar(&specPath, "spec-path", "openapi.yaml", "OpenAPI specification filepath")
 	flag.StringVar(&rolePolicyPath, "roles-path", "roles.json", "Roles policy JSON filepath")
 	flag.StringVar(&scopePolicyPath, "scopes-path", "scopes.json", "Scopes policy JSON filepath")
 	flag.Parse()
+
+	var errs []string
+
+	if address == "" {
+		errs = append(errs, "    - address is required but unset")
+	}
+	if env == "" {
+		errs = append(errs, "    - env is required but unset")
+	}
+
+	if len(errs) > 0 {
+		log.Fatalf("error: \n" + strings.Join(errs, "\n"))
+	}
 
 	// go openBrowser(url)
 

@@ -328,7 +328,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	}
 
 	srv, err := NewServer(Config{
-		Address:                address,
+		Address:                ":" + strings.TrimPrefix(address, ":"),
 		Pool:                   pool,
 		SQLPool:                sqlpool,
 		Redis:                  rdb,

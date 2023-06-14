@@ -8,14 +8,15 @@ x-logging: &default-logging
 # Debug config with docker-compose --env-file <...> config
 services:
   backend:
-    image: ${PROJECT_PREFIX:?not set}-${APP_ENV}-backend:latest
+    image: ${PROJECT_PREFIX:?not set}-${APP_ENV:?not set}-backend:latest
     container_name: backend_${PROJECT_PREFIX}_${APP_ENV}
     networks:
       - traefik-net
     command:
       - "--env=.env.${APP_ENV}"
+      - "--address=${API_PORT}"
     volumes:
-      - ./.env.${APP_ENV}:/.env.${APP_ENV}:ro
+      - ${PWD}/.env.${APP_ENV}:/.env.${APP_ENV}:ro
       # required since mock server will use these
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     build:
