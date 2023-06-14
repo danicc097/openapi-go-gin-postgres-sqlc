@@ -27,13 +27,13 @@ services:
       PORT: ${MOCK_OIDC_SERVER_PORT:?not set}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.simple-oidc-server.rule=Host(`${OIDC_DOMAIN:?not set}`) && PathPrefix("/oidc")
-      - traefik.http.routers.simple-oidc-server.middlewares=strip_prefix_oidc # check docs to exclude requests from compression
-      - traefik.http.middlewares.strip_prefix_oidc.stripprefix.prefixes=/oidc
+      - traefik.http.routers.${PROJECT_PREFIX}-simple-oidc-server.rule=Host(`${OIDC_DOMAIN:?not set}`) && PathPrefix("/oidc")
+      - traefik.http.routers.${PROJECT_PREFIX}-simple-oidc-server.middlewares=${PROJECT_PREFIX}-simple-oidc-server-strip-prefix # check docs to exclude requests from compression
+      - traefik.http.middlewares.${PROJECT_PREFIX}-simple-oidc-server-strip-prefix.stripprefix.prefixes=/oidc
       - traefik.docker.network=traefik-net
-      - traefik.http.routers.simple-oidc-server.entrypoints=websecure
-      - traefik.http.routers.simple-oidc-server.tls=true
-      - traefik.http.services.simple-oidc-server.loadbalancer.server.port=${MOCK_OIDC_SERVER_PORT:?not set}
+      - traefik.http.routers.${PROJECT_PREFIX}-simple-oidc-server.entrypoints=websecure
+      - traefik.http.routers.${PROJECT_PREFIX}-simple-oidc-server.tls=true
+      - traefik.http.services.${PROJECT_PREFIX}-simple-oidc-server.loadbalancer.server.port=${MOCK_OIDC_SERVER_PORT:?not set}
     restart: unless-stopped
     logging: *default-logging
     healthcheck:
