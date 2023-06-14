@@ -1,4 +1,4 @@
-import type { Page, BrowserContext } from '@playwright/test'
+import type { Page, BrowserContext } from 'playwright'
 
 export class LoginPage {
   private readonly page: Page

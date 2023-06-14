@@ -1186,12 +1186,14 @@ x.e2e.run() {
   { { {
     name="$PROJECT_PREFIX-e2e"
     cd e2e
-    pnpm install -r --frozen-lockfile
+    pnpm i # cannot install playwright lib
     DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker build -t "$name" .
     cd - >/dev/null
 
-    # need symlink resolution
-    docker run -i --rm \
+    # need symlink resolution for data
+
+    test -0 && opts="-t"
+    docker run -i $opts --rm \
       --ipc=host \
       --network host \
       -v "$(pwd)/cmd/oidc-server/data/:/cmd/oidc-server/data/" \
