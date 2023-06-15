@@ -36,10 +36,9 @@ func openBrowser(url string) {
 }
 
 func main() {
-	var env, address, specPath, scopePolicyPath, rolePolicyPath string
+	var env, specPath, scopePolicyPath, rolePolicyPath string
 
 	flag.StringVar(&env, "env", "", "Environment Variables filename")
-	flag.StringVar(&address, "address", "", "HTTP Server Address")
 	flag.StringVar(&specPath, "spec-path", "openapi.yaml", "OpenAPI specification filepath")
 	flag.StringVar(&rolePolicyPath, "roles-path", "roles.json", "Roles policy JSON filepath")
 	flag.StringVar(&scopePolicyPath, "scopes-path", "scopes.json", "Scopes policy JSON filepath")
@@ -47,9 +46,6 @@ func main() {
 
 	var errs []string
 
-	if address == "" {
-		errs = append(errs, "    - address is required but unset")
-	}
 	if env == "" {
 		errs = append(errs, "    - env is required but unset")
 	}
@@ -68,7 +64,7 @@ func main() {
 	prometheus.MustRegister(cpuTemp)
 	cpuTemp.Set(65.3)
 
-	errC, err := server.Run(env, address, specPath, rolePolicyPath, scopePolicyPath)
+	errC, err := server.Run(env, specPath, rolePolicyPath, scopePolicyPath)
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
 	}

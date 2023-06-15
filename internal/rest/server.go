@@ -276,7 +276,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 
 // Run configures a server and underlying services with the given configuration.
 // NewServer takes its own config as is now
-func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
+func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
 	var err error
 
 	if err = envvar.Load(env); err != nil {
@@ -328,7 +328,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	}
 
 	srv, err := NewServer(Config{
-		Address:                ":" + strings.TrimPrefix(address, ":"),
+		Address:                ":" + strings.TrimPrefix(cfg.APIPort, ":"),
 		Pool:                   pool,
 		SQLPool:                sqlpool,
 		Redis:                  rdb,
@@ -383,7 +383,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	}()
 
 	go func() {
-		logger.Info("Listening and serving", zap.String("address", address))
+		logger.Info("Listening and serving", zap.String("address", cfg.APIPort))
 
 		// "ListenAndServe always returns a non-nil error. After Shutdown or Close, the returned error is
 		// ErrServerClosed."

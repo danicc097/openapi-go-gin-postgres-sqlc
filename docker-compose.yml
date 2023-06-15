@@ -14,7 +14,6 @@ services:
       - traefik-net
     command:
       - "--env=.env.${APP_ENV}"
-      - "--address=${API_PORT}"
     volumes:
       - ${PWD}/.env.${APP_ENV}:/.env.${APP_ENV}:ro
       # required since mock server will use these

@@ -898,7 +898,7 @@ x.run.backend-hr() {
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
     --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/ -env=.env.$env -address=$API_PORT" \
+    --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
     --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$CACHE" \
