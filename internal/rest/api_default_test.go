@@ -19,7 +19,7 @@ func TestPingRoute(t *testing.T) {
 	}
 	defer srv.Close()
 
-	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructURL("/ping"), nil)
+	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/ping"), nil)
 	resp := httptest.NewRecorder()
 	srv.Handler.ServeHTTP(resp, req)
 

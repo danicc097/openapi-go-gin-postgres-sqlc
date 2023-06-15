@@ -35,7 +35,7 @@ func TestAdminPingRoute(t *testing.T) {
 	defer srv.Close()
 
 	resp := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructURL("/admin/ping"), nil)
+	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/admin/ping"), nil)
 	req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
 
 	srv.Handler.ServeHTTP(resp, req)

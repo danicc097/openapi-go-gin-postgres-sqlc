@@ -13,7 +13,7 @@ type constructURLOptions struct {
 	params any
 }
 
-// ConstructURLOption is the type for options that can be passed to ConstructURL.
+// ConstructURLOption is the type for options that can be passed to ConstructInternalPath.
 type ConstructURLOption func(*constructURLOptions)
 
 // WithQueryParams specifies the struct containing the query parameters.
@@ -23,9 +23,10 @@ func WithQueryParams(params any) ConstructURLOption {
 	}
 }
 
-// ConstructURL constructs a URL with encoded parameters based on the non-nil fields of the provided struct.
+// ConstructInternalPath constructs a URL with encoded parameters based
+// on the non-nil fields of the provided struct via the form tag.
 // Required path prefixes are added automatically.
-func ConstructURL(subpath string, options ...ConstructURLOption) (string, error) {
+func ConstructInternalPath(subpath string, options ...ConstructURLOption) (string, error) {
 	cleanSubpath := strings.TrimPrefix(strings.TrimPrefix(subpath, internal.Config.APIVersion), "/")
 	u, err := url.Parse(internal.Config.APIVersion + "/" + cleanSubpath)
 	if err != nil {
@@ -83,10 +84,10 @@ func ConstructURL(subpath string, options ...ConstructURLOption) (string, error)
 	return u.String(), nil
 }
 
-// MustConstructURL constructs a URL with encoded parameters based on the non-nil fields of the provided struct.
+// MustConstructInternalPath constructs a URL with encoded parameters based on the non-nil fields of the provided struct.
 // Required path prefixes are added automatically. It panics if an error occurs during URL construction.
-func MustConstructURL(subpath string, options ...ConstructURLOption) string {
-	url, err := ConstructURL(subpath, options...)
+func MustConstructInternalPath(subpath string, options ...ConstructURLOption) string {
+	url, err := ConstructInternalPath(subpath, options...)
 	if err != nil {
 		panic(fmt.Errorf("could not construct URL: %w", err))
 	}

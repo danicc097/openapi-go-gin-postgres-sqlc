@@ -47,7 +47,7 @@ func TestGetUserRoute(t *testing.T) {
 			t.Fatalf("ff.CreateUser: %s", err)
 		}
 
-		req, err := http.NewRequest(http.MethodGet, resttestutil.MustConstructURL("/user/me"), &bytes.Buffer{})
+		req, err := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/user/me"), &bytes.Buffer{})
 		if err != nil {
 			t.Errorf("%v", err)
 		}
@@ -114,7 +114,7 @@ func TestUpdateUserRoute(t *testing.T) {
 			t.Errorf("unexpected error %v", err)
 		}
 
-		path := resttestutil.MustConstructURL(fmt.Sprintf("/user/%s/authorization", normalUser.User.UserID))
+		path := resttestutil.MustConstructInternalPath(fmt.Sprintf("/user/%s/authorization", normalUser.User.UserID))
 		req, err := http.NewRequest(http.MethodPatch, path, &buf)
 		if err != nil {
 			t.Errorf("unexpected error %v", err)
@@ -150,7 +150,7 @@ func TestUpdateUserRoute(t *testing.T) {
 			t.Errorf("unexpected error %v", err)
 		}
 
-		path := resttestutil.MustConstructURL(fmt.Sprintf("/user/%s", normalUser.User.UserID))
+		path := resttestutil.MustConstructInternalPath(fmt.Sprintf("/user/%s", normalUser.User.UserID))
 		req, err := http.NewRequest(http.MethodPatch, path, &buf)
 		if err != nil {
 			t.Errorf("unexpected error %v", err)
