@@ -1192,7 +1192,7 @@ x.e2e.run() {
 
     # need symlink resolution for data
 
-    test -0 && opts="-t"
+    test -t 0 && opts="-t"
     docker run -i $opts --rm \
       --ipc=host \
       --network host \
