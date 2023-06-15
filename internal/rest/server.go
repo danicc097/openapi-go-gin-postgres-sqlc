@@ -421,7 +421,7 @@ func createOpenAPIValidatorOptions() OAValidatorOptions {
 
 	oafilterOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
 	oaOptions := OAValidatorOptions{
-		ValidateResponse: true,
+		ValidateResponse: os.Getenv("IS_TESTING") != "",
 		Options:          oafilterOpts,
 	}
 

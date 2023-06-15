@@ -169,8 +169,6 @@ channel use cases,etc:
 // to subscribe to the current project's topics only
 func (h *Handlers) Events(c *gin.Context, params models.EventsParams) {
 	c.Set(skipRequestValidation, true)
-	c.Set(skipResponseValidation, true)
-
 	clientChan, ok := c.Value("clientChan").(ClientChan)
 	if !ok {
 		return

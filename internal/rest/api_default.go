@@ -12,8 +12,6 @@ import (
 
 // OpenapiYamlGet returns this very openapi spec.
 func (h *Handlers) OpenapiYamlGet(c *gin.Context) {
-	c.Set(skipResponseValidation, true)
-
 	oas, err := os.ReadFile(h.specPath)
 	if err != nil {
 		panic("openapi spec not found")

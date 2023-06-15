@@ -92,7 +92,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 
 		c.Next() // handle actual endpoint
 
-		if !options.ValidateResponse || getSkipResponseValidationFromCtx(c) {
+		if !options.ValidateResponse && !getValidateResponseFromCtx(c) {
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return
