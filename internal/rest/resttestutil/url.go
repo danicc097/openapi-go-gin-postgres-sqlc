@@ -3,9 +3,10 @@ package resttestutil
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"reflect"
 	"strings"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 )
 
 type constructURLOptions struct {
@@ -23,10 +24,10 @@ func WithQueryParams(params any) ConstructURLOption {
 }
 
 // ConstructURL constructs a URL with encoded parameters based on the non-nil fields of the provided struct.
-// Host path prefixes are added automatically.
+// Required path prefixes are added automatically.
 func ConstructURL(subpath string, options ...ConstructURLOption) (string, error) {
-	cleanSubpath := strings.TrimPrefix(strings.TrimPrefix(subpath, os.Getenv("API_VERSION")), "/")
-	u, err := url.Parse(os.Getenv("API_VERSION") + "/" + cleanSubpath)
+	cleanSubpath := strings.TrimPrefix(strings.TrimPrefix(subpath, internal.Config.APIVersion), "/")
+	u, err := url.Parse(internal.Config.APIVersion + "/" + cleanSubpath)
 	if err != nil {
 		return "", fmt.Errorf("could not parse URL: %w", err)
 	}
@@ -83,7 +84,7 @@ func ConstructURL(subpath string, options ...ConstructURLOption) (string, error)
 }
 
 // MustConstructURL constructs a URL with encoded parameters based on the non-nil fields of the provided struct.
-// Host path prefixes are added automatically. It panics if an error occurs during URL construction.
+// Required path prefixes are added automatically. It panics if an error occurs during URL construction.
 func MustConstructURL(subpath string, options ...ConstructURLOption) string {
 	url, err := ConstructURL(subpath, options...)
 	if err != nil {
