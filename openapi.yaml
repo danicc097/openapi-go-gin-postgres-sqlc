@@ -56,6 +56,12 @@ paths:
   /events:
     get:
       operationId: Events
+      parameters:
+        - name: projectName
+          required: true
+          schema:
+            $ref: '#/components/schemas/Project'
+          in: query
       responses:
         "200":
           description: events

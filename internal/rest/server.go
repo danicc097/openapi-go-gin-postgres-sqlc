@@ -288,7 +288,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	var logger *zap.Logger
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
 	switch cfg.AppEnv {
-	case "prod", "e2e":
+	case "prod":
 		logger, err = zap.NewProduction()
 	default:
 		logger, err = zap.NewDevelopment()

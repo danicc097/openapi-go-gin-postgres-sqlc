@@ -16,7 +16,7 @@ import type {
   UseInfiniteQueryResult,
   QueryKey,
 } from '@tanstack/react-query'
-import type { HTTPValidationError } from '.././model'
+import type { EventsParams, HTTPValidationError } from '.././model'
 
 export const myProviderCallback = (options?: AxiosRequestConfig): Promise<AxiosResponse<void>> => {
   return axios.get(`/auth/myprovider/callback`, options)
@@ -174,24 +174,28 @@ export const useMyProviderLogin = <
   return query
 }
 
-export const events = (options?: AxiosRequestConfig): Promise<AxiosResponse<string>> => {
-  return axios.get(`/events`, options)
+export const events = (params: EventsParams, options?: AxiosRequestConfig): Promise<AxiosResponse<string>> => {
+  return axios.get(`/events`, {
+    ...options,
+    params: { ...params, ...options?.params },
+  })
 }
 
-export const getEventsQueryKey = () => [`/events`] as const
+export const getEventsQueryKey = (params: EventsParams) => [`/events`, ...(params ? [params] : [])] as const
 
-export const getEventsInfiniteQueryOptions = <
-  TData = Awaited<ReturnType<typeof events>>,
-  TError = AxiosError<unknown>,
->(options?: {
-  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
-  axios?: AxiosRequestConfig
-}): UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey } => {
+export const getEventsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = AxiosError<unknown>>(
+  params: EventsParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, axios: axiosOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getEventsQueryKey()
+  const queryKey = queryOptions?.queryKey ?? getEventsQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) => events({ signal, ...axiosOptions })
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) =>
+    events(params, { signal, ...axiosOptions })
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions }
 }
@@ -199,11 +203,14 @@ export const getEventsInfiniteQueryOptions = <
 export type EventsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
 export type EventsInfiniteQueryError = AxiosError<unknown>
 
-export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TError = AxiosError<unknown>>(options?: {
-  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
-  axios?: AxiosRequestConfig
-}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getEventsInfiniteQueryOptions(options)
+export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TError = AxiosError<unknown>>(
+  params: EventsParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getEventsInfiniteQueryOptions(params, options)
 
   const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -212,18 +219,16 @@ export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TE
   return query
 }
 
-export const getEventsQueryOptions = <
-  TData = Awaited<ReturnType<typeof events>>,
-  TError = AxiosError<unknown>,
->(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
-  axios?: AxiosRequestConfig
-}): UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey } => {
+export const getEventsQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = AxiosError<unknown>>(
+  params: EventsParams,
+  options?: { query?: UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>; axios?: AxiosRequestConfig },
+): UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey } => {
   const { query: queryOptions, axios: axiosOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getEventsQueryKey()
+  const queryKey = queryOptions?.queryKey ?? getEventsQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) => events({ signal, ...axiosOptions })
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) =>
+    events(params, { signal, ...axiosOptions })
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions }
 }
@@ -231,11 +236,11 @@ export const getEventsQueryOptions = <
 export type EventsQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
 export type EventsQueryError = AxiosError<unknown>
 
-export const useEvents = <TData = Awaited<ReturnType<typeof events>>, TError = AxiosError<unknown>>(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
-  axios?: AxiosRequestConfig
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getEventsQueryOptions(options)
+export const useEvents = <TData = Awaited<ReturnType<typeof events>>, TError = AxiosError<unknown>>(
+  params: EventsParams,
+  options?: { query?: UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>; axios?: AxiosRequestConfig },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getEventsQueryOptions(params, options)
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 

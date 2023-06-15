@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -47,7 +47,7 @@ func TestGetUserRoute(t *testing.T) {
 			t.Fatalf("ff.CreateUser: %s", err)
 		}
 
-		req, err := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/user/me", &bytes.Buffer{})
+		req, err := http.NewRequest(http.MethodGet, resttestutil.MustConstructURL("/user/me"), &bytes.Buffer{})
 		if err != nil {
 			t.Errorf("%v", err)
 		}
@@ -114,7 +114,7 @@ func TestUpdateUserRoute(t *testing.T) {
 			t.Errorf("unexpected error %v", err)
 		}
 
-		path := os.Getenv("API_VERSION") + fmt.Sprintf("/user/%s/authorization", normalUser.User.UserID)
+		path := resttestutil.MustConstructURL(fmt.Sprintf("/user/%s/authorization", normalUser.User.UserID))
 		req, err := http.NewRequest(http.MethodPatch, path, &buf)
 		if err != nil {
 			t.Errorf("unexpected error %v", err)
@@ -150,7 +150,7 @@ func TestUpdateUserRoute(t *testing.T) {
 			t.Errorf("unexpected error %v", err)
 		}
 
-		path := os.Getenv("API_VERSION") + fmt.Sprintf("/user/%s", normalUser.User.UserID)
+		path := resttestutil.MustConstructURL(fmt.Sprintf("/user/%s", normalUser.User.UserID))
 		req, err := http.NewRequest(http.MethodPatch, path, &buf)
 		if err != nil {
 			t.Errorf("unexpected error %v", err)

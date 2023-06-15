@@ -25,7 +25,7 @@ type ServerInterface interface {
 	MyProviderLogin(c *gin.Context)
 
 	// (GET /events)
-	Events(c *gin.Context)
+	Events(c *gin.Context, params externalRef0.EventsParams)
 	// Returns this very OpenAPI spec.
 	// (GET /openapi.yaml)
 	OpenapiYamlGet(c *gin.Context)
@@ -117,7 +117,27 @@ func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
 // Events operation with its own middleware.
 func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
 
-	siw.Handler.Events(c)
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params externalRef0.EventsParams
+
+	// ------------- Required query parameter "projectName" -------------
+
+	if paramValue := c.Query("projectName"); paramValue != "" {
+
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument projectName is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "projectName", c.Request.URL.Query(), &params.ProjectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	siw.Handler.Events(c, params)
 }
 
 // OpenapiYamlGet operation with its own middleware.

@@ -644,6 +644,11 @@ type Serial = int
 // UUID defines the model for UUID.
 type UUID = string
 
+// EventsParams defines parameters for Events.
+type EventsParams struct {
+	ProjectName Project `form:"projectName" json:"projectName"`
+}
+
 // GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
 type GetProjectWorkitemsParams struct {
 	Open    *bool `form:"open,omitempty" json:"open,omitempty"`

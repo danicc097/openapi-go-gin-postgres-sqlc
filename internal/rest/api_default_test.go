@@ -3,9 +3,9 @@ package rest
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +19,7 @@ func TestPingRoute(t *testing.T) {
 	}
 	defer srv.Close()
 
-	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
+	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructURL("/ping"), nil)
 	resp := httptest.NewRecorder()
 	srv.Handler.ServeHTTP(resp, req)
 
