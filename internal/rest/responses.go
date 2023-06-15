@@ -30,7 +30,8 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 		resp.Error = "internal error"
 		resp.Message = msg
 	} else {
-		resp.Message = ierr.Cause().Error() // do we really want cause only
+		resp.Message = ierr.Error() // we dont really want cause only. client will parse accordingly or ignore message.
+		fmt.Printf("resp.Message: %v\n", resp.Message)
 		switch ierr.Code() {
 		case internal.ErrorCodeNotFound:
 			status = http.StatusNotFound
