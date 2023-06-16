@@ -141,9 +141,9 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 // Update updates a Movie in the database.
 func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.movies SET
-	title = $1, year = $2, synopsis = $3
-	WHERE movie_id = $4
+	sqlstr := `UPDATE public.movies SET 
+	title = $1, year = $2, synopsis = $3 
+	WHERE movie_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
@@ -190,7 +190,7 @@ func (m *Movie) Upsert(ctx context.Context, db DB, params *MovieCreateParams) (*
 // Delete deletes the Movie from the database.
 func (m *Movie) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.movies
+	sqlstr := `DELETE FROM public.movies 
 	WHERE movie_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID); err != nil {
@@ -243,15 +243,15 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	movies.movie_id,
 	movies.title,
 	movies.year,
-	movies.synopsis %s
-	 FROM public.movies %s
+	movies.synopsis %s 
+	 FROM public.movies %s 
 	 WHERE movies.movie_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		movie_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* MoviePaginatedByMovieIDAsc */\n" + sqlstr
@@ -313,15 +313,15 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts .
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	movies.movie_id,
 	movies.title,
 	movies.year,
-	movies.synopsis %s
-	 FROM public.movies %s
+	movies.synopsis %s 
+	 FROM public.movies %s 
 	 WHERE movies.movie_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		movie_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* MoviePaginatedByMovieIDDesc */\n" + sqlstr
@@ -385,14 +385,14 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	movies.movie_id,
 	movies.title,
 	movies.year,
-	movies.synopsis %s
-	 FROM public.movies %s
+	movies.synopsis %s 
+	 FROM public.movies %s 
 	 WHERE movies.movie_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

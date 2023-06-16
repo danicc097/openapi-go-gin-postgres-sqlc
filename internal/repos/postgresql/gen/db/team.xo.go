@@ -226,9 +226,9 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 // Update updates a Team in the database.
 func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.teams SET
-	project_id = $1, name = $2, description = $3
-	WHERE team_id = $4
+	sqlstr := `UPDATE public.teams SET 
+	project_id = $1, name = $2, description = $3 
+	WHERE team_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
@@ -275,7 +275,7 @@ func (t *Team) Upsert(ctx context.Context, db DB, params *TeamCreateParams) (*Te
 // Delete deletes the Team from the database.
 func (t *Team) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.teams
+	sqlstr := `DELETE FROM public.teams 
 	WHERE team_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID); err != nil {
@@ -346,17 +346,17 @@ func TeamPaginatedByTeamIDAsc(ctx context.Context, db DB, teamID int, opts ...Te
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.team_id,
 	teams.project_id,
 	teams.name,
 	teams.description,
 	teams.created_at,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.team_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		team_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* TeamPaginatedByTeamIDAsc */\n" + sqlstr
@@ -436,17 +436,17 @@ func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.team_id,
 	teams.project_id,
 	teams.name,
 	teams.description,
 	teams.created_at,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.project_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* TeamPaginatedByProjectIDAsc */\n" + sqlstr
@@ -526,17 +526,17 @@ func TeamPaginatedByTeamIDDesc(ctx context.Context, db DB, teamID int, opts ...T
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.team_id,
 	teams.project_id,
 	teams.name,
 	teams.description,
 	teams.created_at,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.team_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		team_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* TeamPaginatedByTeamIDDesc */\n" + sqlstr
@@ -616,17 +616,17 @@ func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.team_id,
 	teams.project_id,
 	teams.name,
 	teams.description,
 	teams.created_at,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.project_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* TeamPaginatedByProjectIDDesc */\n" + sqlstr
@@ -708,16 +708,16 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.team_id,
 	teams.project_id,
 	teams.name,
 	teams.description,
 	teams.created_at,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.name = $1 AND teams.project_id = $2
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -801,16 +801,16 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.team_id,
 	teams.project_id,
 	teams.name,
 	teams.description,
 	teams.created_at,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.name = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -896,16 +896,16 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSel
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.team_id,
 	teams.project_id,
 	teams.name,
 	teams.description,
 	teams.created_at,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.project_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -991,16 +991,16 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.team_id,
 	teams.project_id,
 	teams.name,
 	teams.description,
 	teams.created_at,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.team_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

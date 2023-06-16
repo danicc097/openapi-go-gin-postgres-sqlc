@@ -188,9 +188,9 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 // Update updates a WorkItemTag in the database.
 func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_tags SET
-	project_id = $1, name = $2, description = $3, color = $4
-	WHERE work_item_tag_id = $5
+	sqlstr := `UPDATE public.work_item_tags SET 
+	project_id = $1, name = $2, description = $3, color = $4 
+	WHERE work_item_tag_id = $5 
 	RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
@@ -238,7 +238,7 @@ func (wit *WorkItemTag) Upsert(ctx context.Context, db DB, params *WorkItemTagCr
 // Delete deletes the WorkItemTag from the database.
 func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_tags
+	sqlstr := `DELETE FROM public.work_item_tags 
 	WHERE work_item_tag_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID); err != nil {
@@ -303,16 +303,16 @@ func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItem
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.work_item_tag_id,
 	work_item_tags.project_id,
 	work_item_tags.name,
 	work_item_tags.description,
-	work_item_tags.color %s
-	 FROM public.work_item_tags %s
+	work_item_tags.color %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		work_item_tag_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagIDAsc */\n" + sqlstr
@@ -386,16 +386,16 @@ func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.work_item_tag_id,
 	work_item_tags.project_id,
 	work_item_tags.name,
 	work_item_tags.description,
-	work_item_tags.color %s
-	 FROM public.work_item_tags %s
+	work_item_tags.color %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagPaginatedByProjectIDAsc */\n" + sqlstr
@@ -469,16 +469,16 @@ func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.work_item_tag_id,
 	work_item_tags.project_id,
 	work_item_tags.name,
 	work_item_tags.description,
-	work_item_tags.color %s
-	 FROM public.work_item_tags %s
+	work_item_tags.color %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		work_item_tag_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagIDDesc */\n" + sqlstr
@@ -552,16 +552,16 @@ func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID i
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.work_item_tag_id,
 	work_item_tags.project_id,
 	work_item_tags.name,
 	work_item_tags.description,
-	work_item_tags.color %s
-	 FROM public.work_item_tags %s
+	work_item_tags.color %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagPaginatedByProjectIDDesc */\n" + sqlstr
@@ -637,15 +637,15 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.work_item_tag_id,
 	work_item_tags.project_id,
 	work_item_tags.name,
 	work_item_tags.description,
-	work_item_tags.color %s
-	 FROM public.work_item_tags %s
+	work_item_tags.color %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.name = $1 AND work_item_tags.project_id = $2
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -723,15 +723,15 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.work_item_tag_id,
 	work_item_tags.project_id,
 	work_item_tags.name,
 	work_item_tags.description,
-	work_item_tags.color %s
-	 FROM public.work_item_tags %s
+	work_item_tags.color %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.name = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -811,15 +811,15 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.work_item_tag_id,
 	work_item_tags.project_id,
 	work_item_tags.name,
 	work_item_tags.description,
-	work_item_tags.color %s
-	 FROM public.work_item_tags %s
+	work_item_tags.color %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -899,15 +899,15 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.work_item_tag_id,
 	work_item_tags.project_id,
 	work_item_tags.name,
 	work_item_tags.description,
-	work_item_tags.color %s
-	 FROM public.work_item_tags %s
+	work_item_tags.color %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

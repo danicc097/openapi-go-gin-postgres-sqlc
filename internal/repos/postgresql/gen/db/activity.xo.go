@@ -182,9 +182,9 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 // Update updates a Activity in the database.
 func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.activities SET
-	project_id = $1, name = $2, description = $3, is_productive = $4
-	WHERE activity_id = $5
+	sqlstr := `UPDATE public.activities SET 
+	project_id = $1, name = $2, description = $3, is_productive = $4 
+	WHERE activity_id = $5 
 	RETURNING * `
 	// run
 	logf(sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
@@ -232,7 +232,7 @@ func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreatePara
 // Delete deletes the Activity from the database.
 func (a *Activity) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.activities
+	sqlstr := `DELETE FROM public.activities 
 	WHERE activity_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, a.ActivityID); err != nil {
@@ -297,16 +297,16 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.project_id,
 	activities.name,
 	activities.description,
-	activities.is_productive %s
-	 FROM public.activities %s
+	activities.is_productive %s 
+	 FROM public.activities %s 
 	 WHERE activities.activity_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		activity_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByActivityIDAsc */\n" + sqlstr
@@ -380,16 +380,16 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.project_id,
 	activities.name,
 	activities.description,
-	activities.is_productive %s
-	 FROM public.activities %s
+	activities.is_productive %s 
+	 FROM public.activities %s 
 	 WHERE activities.project_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		project_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByProjectIDAsc */\n" + sqlstr
@@ -463,16 +463,16 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.project_id,
 	activities.name,
 	activities.description,
-	activities.is_productive %s
-	 FROM public.activities %s
+	activities.is_productive %s 
+	 FROM public.activities %s 
 	 WHERE activities.activity_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		activity_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByActivityIDDesc */\n" + sqlstr
@@ -546,16 +546,16 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.project_id,
 	activities.name,
 	activities.description,
-	activities.is_productive %s
-	 FROM public.activities %s
+	activities.is_productive %s 
+	 FROM public.activities %s 
 	 WHERE activities.project_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		project_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByProjectIDDesc */\n" + sqlstr
@@ -631,15 +631,15 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.project_id,
 	activities.name,
 	activities.description,
-	activities.is_productive %s
-	 FROM public.activities %s
+	activities.is_productive %s 
+	 FROM public.activities %s 
 	 WHERE activities.name = $1 AND activities.project_id = $2
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -717,15 +717,15 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.project_id,
 	activities.name,
 	activities.description,
-	activities.is_productive %s
-	 FROM public.activities %s
+	activities.is_productive %s 
+	 FROM public.activities %s 
 	 WHERE activities.name = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -805,15 +805,15 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.project_id,
 	activities.name,
 	activities.description,
-	activities.is_productive %s
-	 FROM public.activities %s
+	activities.is_productive %s 
+	 FROM public.activities %s 
 	 WHERE activities.project_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -893,15 +893,15 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.project_id,
 	activities.name,
 	activities.description,
-	activities.is_productive %s
-	 FROM public.activities %s
+	activities.is_productive %s 
+	 FROM public.activities %s 
 	 WHERE activities.activity_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

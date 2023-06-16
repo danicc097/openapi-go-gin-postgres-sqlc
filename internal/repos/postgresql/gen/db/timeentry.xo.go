@@ -244,9 +244,9 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 // Update updates a TimeEntry in the database.
 func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.time_entries SET
-	work_item_id = $1, activity_id = $2, team_id = $3, user_id = $4, comment = $5, start = $6, duration_minutes = $7
-	WHERE time_entry_id = $8
+	sqlstr := `UPDATE public.time_entries SET 
+	work_item_id = $1, activity_id = $2, team_id = $3, user_id = $4, comment = $5, start = $6, duration_minutes = $7 
+	WHERE time_entry_id = $8 
 	RETURNING * `
 	// run
 	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
@@ -297,7 +297,7 @@ func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateP
 // Delete deletes the TimeEntry from the database.
 func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.time_entries
+	sqlstr := `DELETE FROM public.time_entries 
 	WHERE time_entry_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID); err != nil {
@@ -374,7 +374,7 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	time_entries.time_entry_id,
 	time_entries.work_item_id,
 	time_entries.activity_id,
@@ -382,11 +382,11 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 	time_entries.user_id,
 	time_entries.comment,
 	time_entries.start,
-	time_entries.duration_minutes %s
-	 FROM public.time_entries %s
+	time_entries.duration_minutes %s 
+	 FROM public.time_entries %s 
 	 WHERE time_entries.time_entry_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		time_entry_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntryPaginatedByTimeEntryIDAsc */\n" + sqlstr
@@ -472,7 +472,7 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	time_entries.time_entry_id,
 	time_entries.work_item_id,
 	time_entries.activity_id,
@@ -480,11 +480,11 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 	time_entries.user_id,
 	time_entries.comment,
 	time_entries.start,
-	time_entries.duration_minutes %s
-	 FROM public.time_entries %s
+	time_entries.duration_minutes %s 
+	 FROM public.time_entries %s 
 	 WHERE time_entries.time_entry_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		time_entry_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntryPaginatedByTimeEntryIDDesc */\n" + sqlstr
@@ -572,7 +572,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	time_entries.time_entry_id,
 	time_entries.work_item_id,
 	time_entries.activity_id,
@@ -580,10 +580,10 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 	time_entries.user_id,
 	time_entries.comment,
 	time_entries.start,
-	time_entries.duration_minutes %s
-	 FROM public.time_entries %s
+	time_entries.duration_minutes %s 
+	 FROM public.time_entries %s 
 	 WHERE time_entries.time_entry_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -673,7 +673,7 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	time_entries.time_entry_id,
 	time_entries.work_item_id,
 	time_entries.activity_id,
@@ -681,10 +681,10 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 	time_entries.user_id,
 	time_entries.comment,
 	time_entries.start,
-	time_entries.duration_minutes %s
-	 FROM public.time_entries %s
+	time_entries.duration_minutes %s 
+	 FROM public.time_entries %s 
 	 WHERE time_entries.user_id = $1 AND time_entries.team_id = $2
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -776,7 +776,7 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	time_entries.time_entry_id,
 	time_entries.work_item_id,
 	time_entries.activity_id,
@@ -784,10 +784,10 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64
 	time_entries.user_id,
 	time_entries.comment,
 	time_entries.start,
-	time_entries.duration_minutes %s
-	 FROM public.time_entries %s
+	time_entries.duration_minutes %s 
+	 FROM public.time_entries %s 
 	 WHERE time_entries.work_item_id = $1 AND time_entries.team_id = $2
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
