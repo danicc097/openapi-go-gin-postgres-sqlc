@@ -256,10 +256,6 @@ install.bin.mkcert() {
     wget https://github.com/FiloSottile/mkcert/releases/download/v"$VERSION"/mkcert-v"$VERSION"-linux-amd64 -O mkcert
     chmod +x mkcert
     mv mkcert ./bin/tools/
-    cd "$CERTIFICATES_DIR" || exit
-    echo "Setting up local certificates"
-    mkcert --cert-file localhost.pem --key-file localhost-key.pem "localhost" "*.e2e.localhost" "*.local.localhost" "*.dev.localhost" "*.ci.localhost" "*.prod.localhost" "127.0.0.1" "::1" "host.docker.internal"
-    cd ..
     mkcert -install
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
