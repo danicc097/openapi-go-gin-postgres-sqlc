@@ -17,6 +17,18 @@ var errorDetailRegex = regexp.MustCompile(`\((.*)\)=\((.*)\)`)
 func parseErrorDetail(err error) error {
 	newErr := internal.WrapErrorf(err, internal.ErrorCodeUnknown, err.Error())
 
+	/**
+	 * TODO: will have generic xo Error struct, which has Entity field.
+	 * so we build error with NewErrorf("User", err).
+	 * Then in responses.go we use errors.As for this Error struct (will stop at Error, not pgx error)
+	 * So we would grab e.Entity and construct the new string based on wrapped errors in Error
+	 * which we already are handling (pgErr, pgx.ErrNoRows)...
+	 * the end goal is that error.Title in responses.go err.Cause() gives something like: `<.Entity> not found`, `... already exists`
+	 * which can directly be shown in a callout.
+	 *
+	 *
+	 */
+
 	var column, value string
 	var pgErr *pgconn.PgError
 	if !errors.As(err, &pgErr) {
