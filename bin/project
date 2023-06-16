@@ -1035,7 +1035,7 @@ x.setup.mkcert() {
   { { {
     cd "$CERTIFICATES_DIR" || exit
     echo "Setting up local certificates"
-    mkcert --cert-file localhost.pem --key-file localhost-key.pem "localhost" "*.e2e.localhost" "*.local.localhost" "*.dev.localhost" "*.ci.localhost" "*.prod.localhost" "127.0.0.1" "::1" "host.docker.internal"
+    mkcert --cert-file localhost.pem --key-file localhost-key.pem "localhost" "*.e2e.localhost" "*.local.localhost" "*.dev.localhost" "*.ci.localhost" "*.prod.localhost" "127.0.0.1" "::1" "host.docker.internal" 2>&1
     cd -
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1143,7 +1143,6 @@ x.db.gen.initial-data() {
 
 # Seed database.
 x.db.initial-data() {
-  # xlog eats up read -p (prompt)
   { { {
     x.db.drop
     x.migrate up
@@ -1176,7 +1175,6 @@ x.db.dump() {
 # Restore the database with the latest dump or `file` for the current environment.
 # Args: [file]
 x.db.restore() {
-  # xlog eats up read -p (prompt)
   dump_file="$1"
   if [[ -n $dump_file ]]; then
     [[ ! -f $dump_file ]] && err "$dump_file does not exist"
