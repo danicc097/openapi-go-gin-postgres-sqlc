@@ -90,8 +90,8 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		case internal.ErrorCodeUnauthenticated:
 			status = http.StatusUnauthorized
 		case internal.ErrorCodePrivate:
-			resp.Detail = "internal error"
-			resp.Title = "internal error"
+			resp = ErrorResponse{Title: "internal error", Detail: "internal error"}
+
 			fallthrough
 		case internal.ErrorCodeUnknown:
 			fallthrough
