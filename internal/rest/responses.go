@@ -19,17 +19,22 @@ type ErrorResponse struct {
 	Detail          string                      `json:"detail"`
 	Status          int                         `json:"status"`
 	Error           string                      `json:"error"`
+	Type            string                      `json:"type"`
 	ValidationError *models.HTTPValidationError `json:"validationError,omitempty"`
 }
 
 // renderErrorResponse writes an error response from title and error.
+// Inspired by https://www.rfc-editor.org/rfc/rfc7807.
 func renderErrorResponse(c *gin.Context, title string, err error) {
-	resp := ErrorResponse{Title: title, Error: err.Error()}
-	status := http.StatusInternalServerError
+	resp := ErrorResponse{
+		Title: title, Error: err.Error(),
+		Type:   internal.ErrorCodeUnknown.String(),
+		Status: http.StatusInternalServerError,
+	}
 
 	/**
 	 *
-	 * https://www.rfc-editor.org/rfc/rfc7807
+	 *
 	 *
 
 	o  "type" (string) - A URI reference [RFC3986] that identifies the
@@ -38,6 +43,9 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		 problem type (e.g., using HTML [W3C.REC-html5-20141028]).  When
 		 this member is not present, its value is assumed to be
 		 "about:blank".
+		 TODO: simple html page with fragments, generated from mapping
+		 ErrCode to go tmpl
+		 : /problems#NotFound
 
 	o  "title" (string) - A short, human-readable summary of the problem
 		 type.  It SHOULD NOT change from occurrence to occurrence of the
@@ -49,10 +57,6 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 
 	o  "detail" (string) - A human-readable explanation specific to this
 		 occurrence of the problem.
-
-	o  "instance" (string) - A URI reference that identifies the specific
-		 occurrence of the problem.  It may or may not yield further
-		 information if dereferenced.
 	*/
 
 	var ierr *internal.Error
@@ -60,29 +64,29 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		resp.Title = "internal error"
 		resp.Detail = title
 	} else {
+		resp.Type = ierr.Code().String()
 		resp.Detail = ierr.Cause().Error()
-		fmt.Printf("resp.Message: %v\n", resp.Detail)
 		switch ierr.Code() {
 		case internal.ErrorCodeNotFound:
-			status = http.StatusNotFound
+			resp.Status = http.StatusNotFound
 		case internal.ErrorCodeInvalidArgument:
-			status = http.StatusBadRequest
-		case internal.ErrorCodeInvalidRole, internal.ErrorCodeInvalidScope:
-			status = http.StatusBadRequest
+			resp.Status = http.StatusBadRequest
+		case internal.ErrorCodeInvalidRole, internal.ErrorCodeInvalidScope, internal.ErrorCodeInvalidUUID:
+			resp.Status = http.StatusBadRequest
 		case internal.ErrorCodeRequestValidation:
-			status = http.StatusBadRequest
+			resp.Status = http.StatusBadRequest
 			resp.Detail = "OpenAPI request validation failed"
 			resp.ValidationError = extractValidationError(err, "request")
 		case internal.ErrorCodeResponseValidation:
-			status = http.StatusInternalServerError
+			resp.Status = http.StatusInternalServerError
 			resp.Detail = "OpenAPI response validation failed"
 			resp.ValidationError = extractValidationError(err, "response")
 		case internal.ErrorCodeAlreadyExists:
-			status = http.StatusConflict
+			resp.Status = http.StatusConflict
 		case internal.ErrorCodeUnauthorized:
-			status = http.StatusForbidden
+			resp.Status = http.StatusForbidden
 		case internal.ErrorCodeUnauthenticated:
-			status = http.StatusUnauthorized
+			resp.Status = http.StatusUnauthorized
 		case internal.ErrorCodePrivate:
 			resp = ErrorResponse{Title: "internal error", Detail: "internal error"}
 
@@ -90,11 +94,9 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		case internal.ErrorCodeUnknown:
 			fallthrough
 		default:
-			status = http.StatusInternalServerError
+			resp.Status = http.StatusInternalServerError
 		}
 	}
-
-	resp.Status = status
 
 	if err != nil {
 		span := newOTELSpan(c.Request.Context(), "renderErrorResponse")
@@ -103,7 +105,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		span.RecordError(err)
 	}
 
-	renderResponse(c, resp, status)
+	renderResponse(c, resp, resp.Status)
 }
 
 func extractValidationError(err error, typ string) *models.HTTPValidationError {

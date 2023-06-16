@@ -19,6 +19,7 @@ type Error struct {
 // ErrorCode defines supported error codes.
 type ErrorCode uint
 
+//go:generate stringer -type=ErrorCode -trimprefix=ErrorCode
 const (
 	ErrorCodeUnknown ErrorCode = iota
 	// ErrorCodePrivate marks an error to be hidden in response.
