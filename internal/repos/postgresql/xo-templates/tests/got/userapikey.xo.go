@@ -176,9 +176,9 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 // Update updates a UserAPIKey in the database.
 func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.user_api_keys SET
-	api_key = $1, expires_on = $2, user_id = $3
-	WHERE user_api_key_id = $4
+	sqlstr := `UPDATE xo_tests.user_api_keys SET 
+	api_key = $1, expires_on = $2, user_id = $3 
+	WHERE user_api_key_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
@@ -225,7 +225,7 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB, params *UserAPIKeyCrea
 // Delete deletes the UserAPIKey from the database.
 func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.user_api_keys
+	sqlstr := `DELETE FROM xo_tests.user_api_keys 
 	WHERE user_api_key_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID); err != nil {
@@ -284,15 +284,15 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		user_api_key_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyIDAsc */\n" + sqlstr
@@ -360,15 +360,15 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		user_api_key_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyIDDesc */\n" + sqlstr
@@ -438,14 +438,14 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.api_key = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -517,14 +517,14 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -596,14 +596,14 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

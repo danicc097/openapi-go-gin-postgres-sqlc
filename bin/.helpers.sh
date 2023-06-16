@@ -48,6 +48,7 @@ ensure_pwd_is_top_level() {
 # Prompt the user for confirmation.
 # Most likely will want to always run as `with_tty confirm ...`
 confirm() {
+  test -n "$CI" && return
   test -n "$NO_CONFIRMATION" && return
 
   local prompt="$1"

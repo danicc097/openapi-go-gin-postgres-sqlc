@@ -172,9 +172,9 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 // Update updates a WorkItem in the database.
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.work_items SET
-	title = $1
-	WHERE work_item_id = $2
+	sqlstr := `UPDATE xo_tests.work_items SET 
+	title = $1 
+	WHERE work_item_id = $2 
 	RETURNING * `
 	// run
 	logf(sqlstr, wi.Title, wi.WorkItemID)
@@ -219,7 +219,7 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 // Delete deletes the WorkItem from the database.
 func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.work_items
+	sqlstr := `DELETE FROM xo_tests.work_items 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
@@ -284,13 +284,13 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s
-	 FROM xo_tests.work_items %s
+	work_items.title %s 
+	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
@@ -364,13 +364,13 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s
-	 FROM xo_tests.work_items %s
+	work_items.title %s 
+	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
@@ -446,12 +446,12 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s
-	 FROM xo_tests.work_items %s
+	work_items.title %s 
+	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
