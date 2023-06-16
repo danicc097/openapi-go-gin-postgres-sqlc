@@ -207,9 +207,9 @@ func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 // Update updates a BookAuthor in the database.
 func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_authors SET 
-	pseudonym = $1 
-	WHERE book_id = $2  AND author_id = $3 
+	sqlstr := `UPDATE xo_tests.book_authors SET
+	pseudonym = $1
+	WHERE book_id = $2  AND author_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, ba.Pseudonym, ba.BookID, ba.AuthorID)
@@ -228,7 +228,7 @@ func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
 }
 
 // Upsert upserts a BookAuthor in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
 	var err error
 
@@ -256,7 +256,7 @@ func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreat
 // Delete deletes the BookAuthor from the database.
 func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM xo_tests.book_authors 
+	sqlstr := `DELETE FROM xo_tests.book_authors
 	WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, ba.BookID, ba.AuthorID); err != nil {
@@ -323,13 +323,13 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.book_id,
 	book_authors.author_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -407,13 +407,13 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.book_id,
 	book_authors.author_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.book_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -493,13 +493,13 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.book_id,
 	book_authors.author_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.author_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

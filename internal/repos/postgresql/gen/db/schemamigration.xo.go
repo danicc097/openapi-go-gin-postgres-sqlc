@@ -132,9 +132,9 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 // Update updates a SchemaMigration in the database.
 func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.schema_migrations SET 
-	dirty = $1 
-	WHERE version = $2 
+	sqlstr := `UPDATE public.schema_migrations SET
+	dirty = $1
+	WHERE version = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
@@ -153,7 +153,7 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 }
 
 // Upsert upserts a SchemaMigration in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
 	var err error
 
@@ -180,7 +180,7 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigr
 // Delete deletes the SchemaMigration from the database.
 func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.schema_migrations 
+	sqlstr := `DELETE FROM public.schema_migrations
 	WHERE version = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
@@ -233,13 +233,13 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	schema_migrations.version,
-	schema_migrations.dirty %s 
-	 FROM public.schema_migrations %s 
+	schema_migrations.dirty %s
+	 FROM public.schema_migrations %s
 	 WHERE schema_migrations.version > $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		version Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* SchemaMigrationPaginatedByVersionAsc */\n" + sqlstr
@@ -301,13 +301,13 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	schema_migrations.version,
-	schema_migrations.dirty %s 
-	 FROM public.schema_migrations %s 
+	schema_migrations.dirty %s
+	 FROM public.schema_migrations %s
 	 WHERE schema_migrations.version < $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		version Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* SchemaMigrationPaginatedByVersionDesc */\n" + sqlstr
@@ -371,12 +371,12 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	schema_migrations.version,
-	schema_migrations.dirty %s 
-	 FROM public.schema_migrations %s 
+	schema_migrations.dirty %s
+	 FROM public.schema_migrations %s
 	 WHERE schema_migrations.version = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

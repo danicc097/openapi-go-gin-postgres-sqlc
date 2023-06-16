@@ -212,9 +212,9 @@ func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemA
 // Update updates a WorkItemAssignedUser in the database.
 func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_assigned_user SET 
-	role = $1 
-	WHERE work_item_id = $2  AND assigned_user = $3 
+	sqlstr := `UPDATE public.work_item_assigned_user SET
+	role = $1
+	WHERE work_item_id = $2  AND assigned_user = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, wiau.Role, wiau.WorkItemID, wiau.AssignedUser)
@@ -233,7 +233,7 @@ func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemA
 }
 
 // Upsert upserts a WorkItemAssignedUser in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *WorkItemAssignedUserCreateParams) (*WorkItemAssignedUser, error) {
 	var err error
 
@@ -261,7 +261,7 @@ func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *Wor
 // Delete deletes the WorkItemAssignedUser from the database.
 func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.work_item_assigned_user 
+	sqlstr := `DELETE FROM public.work_item_assigned_user
 	WHERE work_item_id = $1 AND assigned_user = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wiau.WorkItemID, wiau.AssignedUser); err != nil {
@@ -328,13 +328,13 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.work_item_id,
 	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.role %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -414,13 +414,13 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.work_item_id,
 	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.role %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -498,13 +498,13 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.work_item_id,
 	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.role %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -584,13 +584,13 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.work_item_id,
 	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.role %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.assigned_user = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -340,7 +340,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 
 // {{ func_name_context "Upsert" "" }} upserts a {{ $t.GoName }} in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 {{ recv_context $t "Upsert" "" }}  {
 	var err error
 

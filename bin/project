@@ -169,7 +169,7 @@ x.gen.pregen() {
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
-    # spec must always be valid before generating. Schemas to generate must already exist with the appropiate vendor extension
+    # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
     pregen -env=".env.$env" --validate-spec-only
 
     sync_db_enums_with_spec
