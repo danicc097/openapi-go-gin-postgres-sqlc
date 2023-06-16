@@ -4,15 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/jackc/pgerrcode"
 )
-
-var errNoRows = "no rows in result set"
 
 var errorDetailRegex = regexp.MustCompile(`\((.*)\)=\((.*)\)`)
 
@@ -21,7 +19,11 @@ func parseErrorDetail(err error) error {
 
 	var column, value string
 	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
+	if !errors.As(err, &pgErr) {
+		if errors.Is(err, pgx.ErrNoRows) {
+			newErr = internal.NewErrorf(internal.ErrorCodeNotFound, "not found")
+		}
+	} else {
 		switch pgErr.Code {
 		case pgerrcode.UniqueViolation:
 			matches := errorDetailRegex.FindStringSubmatch(pgErr.Detail)
@@ -32,10 +34,6 @@ func parseErrorDetail(err error) error {
 			newErr = internal.NewErrorf(internal.ErrorCodeAlreadyExists, fmt.Sprintf("%s %q already exists", column, value))
 		default:
 			newErr = internal.NewErrorf(internal.ErrorCodeUnknown, fmt.Sprintf("%s | %s", pgErr.Detail, pgErr.Message))
-		}
-	} else {
-		if e := err.Error(); strings.Contains(e, errNoRows) {
-			newErr = internal.NewErrorf(internal.ErrorCodeNotFound, e)
 		}
 	}
 

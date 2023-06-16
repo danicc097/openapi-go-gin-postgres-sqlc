@@ -24,7 +24,12 @@ func NewProject() *Project {
 var _ repos.Project = (*Project)(nil)
 
 func (u *Project) ByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error) {
-	return db.ProjectByProjectID(ctx, d, id)
+	project, err := db.ProjectByProjectID(ctx, d, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get project: %w", parseErrorDetail(err))
+	}
+
+	return project, nil
 }
 
 func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error) {
