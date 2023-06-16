@@ -15,14 +15,16 @@ import (
 
 // ErrorResponse represents a response containing an error message.
 type ErrorResponse struct {
-	Error           string                     `json:"error"`
-	Message         string                     `json:"message"`
-	ValidationError models.HTTPValidationError `json:"validationError,omitempty"`
+	Title           string                      `json:"title"`
+	Detail          string                      `json:"detail"`
+	Status          int                         `json:"status"`
+	Error           string                      `json:"error"`
+	ValidationError *models.HTTPValidationError `json:"validationError,omitempty"`
 }
 
-// renderErrorResponse writes an error response from message and error.
-func renderErrorResponse(c *gin.Context, msg string, err error) {
-	resp := ErrorResponse{Error: msg}
+// renderErrorResponse writes an error response from title and error.
+func renderErrorResponse(c *gin.Context, title string, err error) {
+	resp := ErrorResponse{Title: title, Error: err.Error()}
 	status := http.StatusInternalServerError
 
 	/**
@@ -55,11 +57,11 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 
 	var ierr *internal.Error
 	if !errors.As(err, &ierr) {
-		resp.Error = "internal error"
-		resp.Message = msg
+		resp.Title = "internal error"
+		resp.Detail = title
 	} else {
-		resp.Message = ierr.Error() // we dont really want cause only. client will parse accordingly or ignore message.
-		fmt.Printf("resp.Message: %v\n", resp.Message)
+		resp.Detail = ierr.Error() // we dont really want cause only. client will parse accordingly or ignore message.
+		fmt.Printf("resp.Message: %v\n", resp.Detail)
 		switch ierr.Code() {
 		case internal.ErrorCodeNotFound:
 			// resp.Error =  TODO: xo should return descriptive root error with double wrapping so
@@ -75,11 +77,11 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			status = http.StatusBadRequest
 		case internal.ErrorCodeRequestValidation:
 			status = http.StatusBadRequest
-			resp.Message = "OpenAPI request validation failed"
+			resp.Detail = "OpenAPI request validation failed"
 			resp.ValidationError = extractValidationError(err, "request")
 		case internal.ErrorCodeResponseValidation:
 			status = http.StatusInternalServerError
-			resp.Message = "OpenAPI response validation failed"
+			resp.Detail = "OpenAPI response validation failed"
 			resp.ValidationError = extractValidationError(err, "response")
 		case internal.ErrorCodeAlreadyExists:
 			status = http.StatusConflict
@@ -88,8 +90,8 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 		case internal.ErrorCodeUnauthenticated:
 			status = http.StatusUnauthorized
 		case internal.ErrorCodePrivate:
-			resp.Message = "internal error"
-			resp.Error = "internal error"
+			resp.Detail = "internal error"
+			resp.Title = "internal error"
 			fallthrough
 		case internal.ErrorCodeUnknown:
 			fallthrough
@@ -97,6 +99,8 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			status = http.StatusInternalServerError
 		}
 	}
+
+	resp.Status = status
 
 	if err != nil {
 		span := newOTELSpan(c.Request.Context(), "renderErrorResponse")
@@ -108,7 +112,7 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	renderResponse(c, resp, status)
 }
 
-func extractValidationError(err error, typ string) models.HTTPValidationError {
+func extractValidationError(err error, typ string) *models.HTTPValidationError {
 	var origErrs []string
 	var vErrs []models.ValidationError
 
@@ -183,7 +187,7 @@ func extractValidationError(err error, typ string) models.HTTPValidationError {
 		Messages: slices.RemoveEmptyString(origErrs),
 	}
 
-	return httpValidationError
+	return &httpValidationError
 }
 
 func renderResponse(c *gin.Context, res any, status int) {

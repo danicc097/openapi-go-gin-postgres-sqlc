@@ -67,29 +67,28 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 
 	caller := getUserFromCtx(c)
 	if caller == nil {
-		renderErrorResponse(c, "Could not get user from context.", nil)
+		renderErrorResponse(c, "Could not get current user", nil)
 
 		return
 	}
 
 	user, err := h.usvc.Update(c, tx, id, caller, body)
 	if err != nil {
-		renderErrorResponse(c, "err: ", err)
+		renderErrorResponse(c, "Could not update user", err)
 
 		return
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		renderErrorResponse(c, "could not save changes", err)
+		renderErrorResponse(c, "Could not save changes", err)
 
 		return
 	}
 
 	role, ok := h.authzsvc.RoleByRank(user.RoleRank)
 	if !ok {
-		msg := fmt.Sprintf("role with rank %d not found", user.RoleRank)
-		renderErrorResponse(c, msg, errors.New(msg))
+		renderErrorResponse(c, fmt.Sprintf("Role with rank %d not found", user.RoleRank), nil)
 
 		return
 	}
@@ -125,7 +124,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 
 	caller := getUserFromCtx(c)
 	if caller == nil {
-		renderErrorResponse(c, "Could not get user from context.", nil)
+		renderErrorResponse(c, "Could not get current user", nil)
 
 		return
 	}

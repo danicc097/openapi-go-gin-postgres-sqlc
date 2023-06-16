@@ -93,7 +93,7 @@ func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 	return func(c *gin.Context) {
 		user := getUserFromCtx(c)
 		if user == nil {
-			renderErrorResponse(c, "Could not get user from context.", nil)
+			renderErrorResponse(c, "Could not get current user.", nil)
 			c.Abort()
 
 			return
