@@ -60,16 +60,10 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		resp.Title = "internal error"
 		resp.Detail = title
 	} else {
-		resp.Detail = ierr.Error() // we dont really want cause only. client will parse accordingly or ignore message.
+		resp.Detail = ierr.Cause().Error()
 		fmt.Printf("resp.Message: %v\n", resp.Detail)
 		switch ierr.Code() {
 		case internal.ErrorCodeNotFound:
-			// resp.Error =  TODO: xo should return descriptive root error with double wrapping so
-			// responses can just use err and set that as error.Detail.
-			// error.Title will be based on internal err code exclusively with .Cause() and xo should generate those,
-			//  e.g. PublicWorkItemNotFound ErrNotFound = errors.New("Work item not found") ->  (will need sentence case fn in go.go)
-			//  e.g. PublicWorkItem... Err... = errors.New("Work item could not be ..." ->
-			// fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", PublicUserNotFound)
 			status = http.StatusNotFound
 		case internal.ErrorCodeInvalidArgument:
 			status = http.StatusBadRequest
