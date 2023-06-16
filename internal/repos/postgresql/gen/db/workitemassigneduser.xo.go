@@ -198,11 +198,11 @@ func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemA
 	logf(sqlstr, wiau.WorkItemID, wiau.AssignedUser, wiau.Role)
 	rows, err := db.Query(ctx, sqlstr, wiau.WorkItemID, wiau.AssignedUser, wiau.Role)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Insert/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	newwiau, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemAssignedUser])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	*wiau = newwiau
 
@@ -221,11 +221,11 @@ func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemA
 
 	rows, err := db.Query(ctx, sqlstr, wiau.Role, wiau.WorkItemID, wiau.AssignedUser)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Update/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	newwiau, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemAssignedUser])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	*wiau = newwiau
 
@@ -246,11 +246,11 @@ func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *Wor
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item assigned user", Err: err})
 			}
 			wiau, err = wiau.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item assigned user", Err: err})
 			}
 		}
 	}
@@ -344,14 +344,14 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 	// logf(sqlstr, assignedUser, workItemID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemAssignedUser])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/pgx.CollectRows: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	return res, nil
 }
@@ -430,11 +430,11 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 	// logf(sqlstr, workItemID, assignedUser)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	wiau, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemAssignedUser])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/pgx.CollectOneRow: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 
 	return &wiau, nil
@@ -514,14 +514,14 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemAssignedUser])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/pgx.CollectRows: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	return res, nil
 }
@@ -600,14 +600,14 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 	// logf(sqlstr, assignedUser)
 	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemAssignedUser])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/pgx.CollectRows: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
 	return res, nil
 }

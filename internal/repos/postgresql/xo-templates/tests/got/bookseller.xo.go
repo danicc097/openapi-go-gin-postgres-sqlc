@@ -165,11 +165,11 @@ func (bs *BookSeller) Insert(ctx context.Context, db DB) (*BookSeller, error) {
 	logf(sqlstr, bs.BookID, bs.Seller)
 	rows, err := db.Query(ctx, sqlstr, bs.BookID, bs.Seller)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/Insert/db.Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	newbs, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookSeller])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	*bs = newbs
 
@@ -263,14 +263,14 @@ func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID int, seller uu
 	// logf(sqlstr, bookID, seller)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, seller}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/BookSellersByBookIDSeller/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/BookSellersByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookSeller])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/BookSellersByBookIDSeller/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/BookSellersByBookIDSeller/pgx.CollectRows: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	return res, nil
 }
@@ -348,11 +348,11 @@ func BookSellerByBookIDSeller(ctx context.Context, db DB, bookID int, seller uui
 	// logf(sqlstr, bookID, seller)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, seller}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_sellers/BookSellerByBookIDSeller/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("book_sellers/BookSellerByBookIDSeller/db.Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	bs, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookSeller])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_sellers/BookSellerByBookIDSeller/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("book_sellers/BookSellerByBookIDSeller/pgx.CollectOneRow: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 
 	return &bs, nil
@@ -431,14 +431,14 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 	// logf(sqlstr, bookID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookSeller])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/pgx.CollectRows: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	return res, nil
 }
@@ -516,14 +516,14 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 	// logf(sqlstr, seller)
 	rows, err := db.Query(ctx, sqlstr, append([]any{seller}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookSeller])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/BookSellerByBookIDSeller/pgx.CollectRows: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	return res, nil
 }
@@ -601,14 +601,14 @@ func BookSellersBySellerBookID(ctx context.Context, db DB, seller uuid.UUID, boo
 	// logf(sqlstr, seller, bookID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{seller, bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/BookSellersBySellerBookID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/BookSellersBySellerBookID/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookSeller])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookSeller/BookSellersBySellerBookID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookSeller/BookSellersBySellerBookID/pgx.CollectRows: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
 	return res, nil
 }

@@ -181,11 +181,11 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 
 	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	newwic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 
 	*wic = newwic
@@ -205,11 +205,11 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 
 	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Update/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	newwic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	*wic = newwic
 
@@ -230,11 +230,11 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB, params *WorkItemC
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item comment", Err: err})
 			}
 			wic, err = wic.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item comment", Err: err})
 			}
 		}
 	}
@@ -329,11 +329,11 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	return res, nil
 }
@@ -413,11 +413,11 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	return res, nil
 }
@@ -499,11 +499,11 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 	// logf(sqlstr, workItemCommentID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	wic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/pgx.CollectOneRow: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 
 	return &wic, nil
@@ -586,14 +586,14 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/pgx.CollectRows: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	return res, nil
 }

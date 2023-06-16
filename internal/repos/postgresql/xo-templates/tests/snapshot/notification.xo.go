@@ -152,11 +152,11 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 
 	rows, err := db.Query(ctx, sqlstr, n.Body, n.Sender, n.Receiver)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	newn, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 
 	*n = newn
@@ -176,11 +176,11 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 
 	rows, err := db.Query(ctx, sqlstr, n.Body, n.Sender, n.Receiver, n.NotificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Update/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	newn, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	*n = newn
 
@@ -201,11 +201,11 @@ func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCr
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Notification", Err: err})
 			}
 			n, err = n.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Notification", Err: err})
 			}
 		}
 	}
@@ -298,11 +298,11 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	return res, nil
 }
@@ -380,11 +380,11 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	return res, nil
 }
@@ -464,11 +464,11 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 	// logf(sqlstr, notificationID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	n, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/pgx.CollectOneRow: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 
 	return &n, nil
@@ -549,14 +549,14 @@ func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ..
 	// logf(sqlstr, sender)
 	rows, err := db.Query(ctx, sqlstr, append([]any{sender}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/Query: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/NotificationsBySender/pgx.CollectRows: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	return res, nil
 }

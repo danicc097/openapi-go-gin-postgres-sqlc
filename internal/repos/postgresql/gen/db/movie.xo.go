@@ -126,11 +126,11 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 
 	rows, err := db.Query(ctx, sqlstr, m.Title, m.Year, m.Synopsis)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Insert/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	newm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 
 	*m = newm
@@ -150,11 +150,11 @@ func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 
 	rows, err := db.Query(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Update/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	newm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	*m = newm
 
@@ -175,11 +175,11 @@ func (m *Movie) Upsert(ctx context.Context, db DB, params *MovieCreateParams) (*
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Movie", Err: err})
 			}
 			m, err = m.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Movie", Err: err})
 			}
 		}
 	}
@@ -260,11 +260,11 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ..
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	return res, nil
 }
@@ -330,11 +330,11 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts .
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	return res, nil
 }
@@ -402,11 +402,11 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 	// logf(sqlstr, movieID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	m, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/pgx.CollectOneRow: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 
 	return &m, nil

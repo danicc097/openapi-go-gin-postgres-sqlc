@@ -162,11 +162,11 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 
 	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Insert/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	newks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 
 	*ks = newks
@@ -186,11 +186,11 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 
 	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Update/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	newks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	*ks = newks
 
@@ -214,11 +214,11 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB, params *KanbanStepCreat
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Kanban step", Err: err})
 			}
 			ks, err = ks.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Kanban step", Err: err})
 			}
 		}
 	}
@@ -308,11 +308,11 @@ func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStep
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -387,11 +387,11 @@ func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -466,11 +466,11 @@ func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -545,11 +545,11 @@ func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanSte
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -624,11 +624,11 @@ func KanbanStepPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID in
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -703,11 +703,11 @@ func KanbanStepPaginatedByStepOrderDesc(ctx context.Context, db DB, stepOrder in
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -784,11 +784,11 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 	// logf(sqlstr, kanbanStepID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	ks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/pgx.CollectOneRow: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 
 	return &ks, nil
@@ -866,11 +866,11 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID in
 	// logf(sqlstr, projectID, name, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID, name, stepOrder}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	ks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/pgx.CollectOneRow: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 
 	return &ks, nil
@@ -948,14 +948,14 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...K
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -1032,14 +1032,14 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -1116,14 +1116,14 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 	// logf(sqlstr, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
@@ -1200,11 +1200,11 @@ func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, s
 	// logf(sqlstr, projectID, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID, stepOrder}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	ks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/pgx.CollectOneRow: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 
 	return &ks, nil

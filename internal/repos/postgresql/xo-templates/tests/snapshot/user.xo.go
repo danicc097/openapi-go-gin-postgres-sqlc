@@ -352,11 +352,11 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 
 	rows, err := db.Query(ctx, sqlstr, u.Name, u.APIKeyID, u.DeletedAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	newu, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "User", Err: err}))
 	}
 
 	*u = newu
@@ -376,11 +376,11 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 
 	rows, err := db.Query(ctx, sqlstr, u.Name, u.APIKeyID, u.DeletedAt, u.UserID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	newu, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("User/Update/pgx.CollectOneRow: %w", &XoError{Entity: "User", Err: err}))
 	}
 	*u = newu
 
@@ -400,11 +400,11 @@ func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*Us
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "User", Err: err})
 			}
 			u, err = u.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "User", Err: err})
 			}
 		}
 	}
@@ -445,7 +445,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	u.DeletedAt = nil
 	newu, err := u.Update(ctx, db)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Restore/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("User/Restore/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
 	}
 	return newu, nil
 }
@@ -560,11 +560,11 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("User/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
 	}
 	return res, nil
 }
@@ -679,11 +679,11 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("User/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
 	}
 	return res, nil
 }
@@ -800,11 +800,11 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	// logf(sqlstr, createdAt)
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/pgx.CollectOneRow: %w", &XoError{Entity: "User", Err: err}))
 	}
 
 	return &u, nil
@@ -922,11 +922,11 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("users/UserByName/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByName/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("users/UserByName/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByName/pgx.CollectOneRow: %w", &XoError{Entity: "User", Err: err}))
 	}
 
 	return &u, nil
@@ -1044,11 +1044,11 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", &XoError{Entity: "User", Err: err}))
 	}
 
 	return &u, nil

@@ -145,11 +145,11 @@ func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 
 	rows, err := db.Query(ctx, sqlstr, br.BookID, br.Reviewer)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Insert/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	newbr, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 
 	*br = newbr
@@ -169,11 +169,11 @@ func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
 
 	rows, err := db.Query(ctx, sqlstr, br.BookID, br.Reviewer, br.BookReviewID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Update/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	newbr, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	*br = newbr
 
@@ -193,11 +193,11 @@ func (br *BookReview) Upsert(ctx context.Context, db DB, params *BookReviewCreat
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Book review", Err: err})
 			}
 			br, err = br.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Book review", Err: err})
 			}
 		}
 	}
@@ -289,11 +289,11 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	return res, nil
 }
@@ -370,11 +370,11 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	return res, nil
 }
@@ -451,11 +451,11 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	return res, nil
 }
@@ -532,11 +532,11 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	return res, nil
 }
@@ -615,11 +615,11 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 	// logf(sqlstr, bookReviewID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	br, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/pgx.CollectOneRow: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 
 	return &br, nil
@@ -699,11 +699,11 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 	// logf(sqlstr, reviewer, bookID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{reviewer, bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	br, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/pgx.CollectOneRow: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 
 	return &br, nil
@@ -783,14 +783,14 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 	// logf(sqlstr, reviewer)
 	rows, err := db.Query(ctx, sqlstr, append([]any{reviewer}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/pgx.CollectRows: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	return res, nil
 }
@@ -869,14 +869,14 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 	// logf(sqlstr, bookID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/pgx.CollectRows: %w", &XoError{Entity: "Book review", Err: err}))
 	}
 	return res, nil
 }

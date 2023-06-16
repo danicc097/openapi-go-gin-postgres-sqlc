@@ -193,11 +193,11 @@ func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 	logf(sqlstr, ba.BookID, ba.AuthorID, ba.Pseudonym)
 	rows, err := db.Query(ctx, sqlstr, ba.BookID, ba.AuthorID, ba.Pseudonym)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthor/Insert/db.Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	newba, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookAuthor])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthor/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	*ba = newba
 
@@ -216,11 +216,11 @@ func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
 
 	rows, err := db.Query(ctx, sqlstr, ba.Pseudonym, ba.BookID, ba.AuthorID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthor/Update/db.Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	newba, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookAuthor])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthor/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	*ba = newba
 
@@ -241,11 +241,11 @@ func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreat
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Book author", Err: err})
 			}
 			ba, err = ba.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Book author", Err: err})
 			}
 		}
 	}
@@ -339,11 +339,11 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 	// logf(sqlstr, bookID, authorID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/db.Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	ba, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookAuthor])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/pgx.CollectOneRow: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 
 	return &ba, nil
@@ -423,14 +423,14 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 	// logf(sqlstr, bookID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthor])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/pgx.CollectRows: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	return res, nil
 }
@@ -509,14 +509,14 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 	// logf(sqlstr, authorID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthor])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthor/BookAuthorByBookIDAuthorID/pgx.CollectRows: %w", &XoError{Entity: "Book author", Err: err}))
 	}
 	return res, nil
 }

@@ -1431,19 +1431,25 @@ func (f *Funcs) camel(names ...string) string {
 	return snaker.ForceLowerCamelIdentifier(strings.Join(names, "_"))
 }
 
+func (f *Funcs) sentence_case(names ...string) string {
+	c := strings.Title(snaker.CamelToSnake(strings.Join(names, "_")))
+	return inflector.Singularize(strings.ReplaceAll(c, "_", " "))
+}
+
 // FuncMap returns the func map.
 func (f *Funcs) FuncMap() template.FuncMap {
 	return template.FuncMap{
 		// general
-		"camel":      f.camel,
-		"lowerFirst": f.lower_first,
-		"first":      f.firstfn,
-		"driver":     f.driverfn,
-		"schema":     f.schemafn,
-		"pkg":        f.pkgfn,
-		"tags":       f.tagsfn,
-		"imports":    f.importsfn,
-		"inject":     f.injectfn,
+		"sentence_case": f.sentence_case,
+		"camel":         f.camel,
+		"lowerFirst":    f.lower_first,
+		"first":         f.firstfn,
+		"driver":        f.driverfn,
+		"schema":        f.schemafn,
+		"pkg":           f.pkgfn,
+		"tags":          f.tagsfn,
+		"imports":       f.importsfn,
+		"inject":        f.injectfn,
 		// context
 		"context":         f.contextfn,
 		"context_both":    f.context_both,

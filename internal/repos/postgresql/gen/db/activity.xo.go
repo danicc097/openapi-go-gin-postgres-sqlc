@@ -167,11 +167,11 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 
 	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Insert/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	newa, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 
 	*a = newa
@@ -191,11 +191,11 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 
 	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Update/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	newa, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	*a = newa
 
@@ -217,11 +217,11 @@ func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreatePara
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Activity", Err: err})
 			}
 			a, err = a.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Activity", Err: err})
 			}
 		}
 	}
@@ -315,11 +315,11 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	return res, nil
 }
@@ -398,11 +398,11 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	return res, nil
 }
@@ -481,11 +481,11 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	return res, nil
 }
@@ -564,11 +564,11 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	return res, nil
 }
@@ -649,11 +649,11 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/pgx.CollectOneRow: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 
 	return &a, nil
@@ -735,14 +735,14 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	return res, nil
 }
@@ -823,14 +823,14 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	return res, nil
 }
@@ -911,11 +911,11 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 	// logf(sqlstr, activityID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/pgx.CollectOneRow: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 
 	return &a, nil

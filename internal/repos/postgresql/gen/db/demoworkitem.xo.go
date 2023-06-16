@@ -170,11 +170,11 @@ func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, erro
 	logf(sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened)
 	rows, err := db.Query(ctx, sqlstr, dwi.WorkItemID, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Insert/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	newdwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	*dwi = newdwi
 
@@ -193,11 +193,11 @@ func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, erro
 
 	rows, err := db.Query(ctx, sqlstr, dwi.Ref, dwi.Line, dwi.LastMessageAt, dwi.Reopened, dwi.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Update/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	newdwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	*dwi = newdwi
 
@@ -220,11 +220,11 @@ func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB, params *DemoWorkItem
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Demo work item", Err: err})
 			}
 			dwi, err = dwi.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Demo work item", Err: err})
 			}
 		}
 	}
@@ -312,11 +312,11 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	return res, nil
 }
@@ -389,11 +389,11 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	return res, nil
 }
@@ -468,11 +468,11 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	dwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/pgx.CollectOneRow: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 
 	return &dwi, nil
@@ -548,14 +548,14 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 	// logf(sqlstr, ref, line)
 	rows, err := db.Query(ctx, sqlstr, append([]any{ref, line}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/pgx.CollectRows: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	return res, nil
 }

@@ -194,11 +194,11 @@ func (bask *BookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*BookAu
 
 	rows, err := db.Query(ctx, sqlstr, bask.BookID, bask.AuthorID, bask.Pseudonym)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Insert/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	newbask, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 
 	*bask = newbask
@@ -218,11 +218,11 @@ func (bask *BookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*BookAu
 
 	rows, err := db.Query(ctx, sqlstr, bask.BookID, bask.AuthorID, bask.Pseudonym, bask.BookAuthorsSurrogateKeyID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Update/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	newbask, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	*bask = newbask
 
@@ -243,11 +243,11 @@ func (bask *BookAuthorsSurrogateKey) Upsert(ctx context.Context, db DB, params *
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Book authors surrogate key", Err: err})
 			}
 			bask, err = bask.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Book authors surrogate key", Err: err})
 			}
 		}
 	}
@@ -340,11 +340,11 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	return res, nil
 }
@@ -422,11 +422,11 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	return res, nil
 }
@@ -506,11 +506,11 @@ func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID 
 	// logf(sqlstr, bookID, authorID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	bask, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectOneRow: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 
 	return &bask, nil
@@ -591,14 +591,14 @@ func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, op
 	// logf(sqlstr, bookID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	return res, nil
 }
@@ -678,14 +678,14 @@ func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uui
 	// logf(sqlstr, authorID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	return res, nil
 }
@@ -765,11 +765,11 @@ func BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db 
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	bask, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/pgx.CollectOneRow: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 
 	return &bask, nil

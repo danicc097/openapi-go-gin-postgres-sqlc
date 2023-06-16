@@ -5,6 +5,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -233,6 +234,7 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = db.UserByName(ctx, testPool, u1.Name)
+	fmt.Printf("err: %v\n", err)
 	assert.ErrorContains(t, err, errNoRows)
 
 	// test soft delete and restore
