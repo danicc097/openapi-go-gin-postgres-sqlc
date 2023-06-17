@@ -741,7 +741,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			}
 			if newFields != nil {
 				index.Fields = newFields
-			} else {
+			} else if len(newFields) == 0 && newFields != nil {
 				index.SQLName = "[xo] base filter query"
 			}
 
@@ -773,7 +773,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			}
 			if newFields != nil {
 				index.Fields = newFields
-			} else {
+			} else if len(newFields) == 0 && newFields != nil {
 				index.SQLName = "[xo] base filter query"
 			}
 
@@ -874,7 +874,6 @@ func patchIndexFields(fields []Field, excludedColumnNames []string) []Field {
 	fmt.Printf("excludedColumnNames: %v\n", excludedColumnNames)
 
 	for _, field := range fields {
-		fmt.Printf("field.SQLName: %v\n", field.SQLName)
 		includeField := true
 		for _, columnName := range excludedColumnNames {
 			if field.SQLName == columnName {
@@ -886,8 +885,6 @@ func patchIndexFields(fields []Field, excludedColumnNames []string) []Field {
 			patchedFields = append(patchedFields, field)
 		}
 	}
-
-	fmt.Printf("patchedFields: %v\n", patchedFields)
 
 	return patchedFields
 }
@@ -1823,7 +1820,12 @@ func (f *Funcs) func_name_context(v any, suffix string) string {
 
 		// need custom Func to handle additional index creation instead of Func field
 		// https://github.com/danicc097/xo/blob/main/cmd/schema.go#L629 which originally sets i.Func
-		funcName := name + "By" + strings.Join(fields, "") + suffix
+		cond := ""
+		if len(fields) > 0 {
+			cond = "By" + strings.Join(fields, "")
+		}
+
+		funcName := name + cond + suffix
 
 		return funcName
 	}
@@ -1881,7 +1883,12 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
 	}
 	returns = append(returns, "error")
-	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(params, ", "), strings.Join(returns, ", "))
+
+	p := ""
+	if len(params) > 0 {
+		p = strings.Join(params, ", ")
+	}
+	return fmt.Sprintf("func %s(%s) (%s)", name, p, strings.Join(returns, ", "))
 }
 
 // initial_opts returns base conf for select queries.
@@ -2258,7 +2265,11 @@ func (f *Funcs) recv(name string, context bool, t Table, v any) string {
 		r = append(r, "*"+t.GoName)
 	}
 	r = append(r, "error")
-	return fmt.Sprintf("func (%s *%s) %s(%s) (%s)", short, t.GoName, name, strings.Join(p, ", "), strings.Join(r, ", "))
+	params := ""
+	if len(p) > 0 {
+		params = strings.Join(p, ", ")
+	}
+	return fmt.Sprintf("func (%s *%s) %s(%s) (%s)", short, t.GoName, name, params, strings.Join(r, ", "))
 }
 
 func fields_to_goname(fields []Field, sep string) string {
@@ -2462,7 +2473,11 @@ func (f *Funcs) logf(v any, ignore ...any) string {
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 12: %T ]]", v)
 	}
-	return fmt.Sprintf("logf(%s)", strings.Join(p, ", "))
+	x := ""
+	if len(p) > 0 {
+		x = strings.Join(p, ", ")
+	}
+	return fmt.Sprintf("logf(%s)", x)
 }
 
 func (f *Funcs) logf_update(v any) string {
@@ -2514,16 +2529,27 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 		case Index:
 			names = append(names, f.params(x.Fields, false))
 
-			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterParams...)..."
+			nn := ""
+			if len(names[2:]) > 0 {
+				nn = strings.Join(names[2:], ", ")
+			}
+			return "ctx, sqlstr, append([]any{" + nn + "}, filterParams...)..."
 		case CursorPagination:
 			names = append(names, f.params(x.Fields, false))
-
-			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterParams...)..."
+			nn := ""
+			if len(names[2:]) > 0 {
+				nn = strings.Join(names[2:], ", ")
+			}
+			return "ctx, sqlstr, append([]any{" + nn + "}, filterParams...)..."
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
 		}
 	}
-	return strings.Join(names, ", ")
+	x := ""
+	if len(names) > 0 {
+		x = strings.Join(names, ", ")
+	}
+	return x
 }
 
 func (f *Funcs) initialize_constraints(t Table, constraints []Constraint) bool {
@@ -2770,11 +2796,16 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field, order st
 			n++
 		}
 
+		ff := "true"
+		if len(filters) > 0 {
+			ff = strings.Join(filters, " AND ")
+		}
+
 		lines := []string{
 			"SELECT ",
 			strings.Join(fields, ",\n\t") + " %s ",
 			" FROM " + f.schemafn(x.SQLName) + " %s ",
-			" WHERE " + strings.Join(filters, " AND "),
+			" WHERE " + ff,
 			" %s ",
 		}
 
@@ -3125,11 +3156,16 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 			filters = append(filters, after)
 		}
 
+		ff := "true"
+		if len(filters) > 0 {
+			ff = strings.Join(filters, " AND ")
+		}
+
 		lines := []string{
 			"SELECT ",
 			strings.Join(fields, ",\n\t") + " %s ",
 			" FROM " + f.schemafn(x.Table.SQLName) + " %s ",
-			" WHERE " + strings.Join(filters, " AND "),
+			" WHERE " + ff,
 			" %s ",
 		}
 
@@ -3456,7 +3492,12 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 		}
 		p = append(p, expr)
 	}
-	return strings.Join(p, ", ")
+
+	x := ""
+	if len(p) > 0 {
+		x = strings.Join(p, ", ")
+	}
+	return x
 }
 
 // params converts a list of fields into their named Go parameters, skipping
@@ -3474,6 +3515,9 @@ func (f *Funcs) params(fields []Field, addType bool) string {
 	var vals []string
 	for _, field := range fields {
 		vals = append(vals, f.param(field, addType))
+	}
+	if len(vals) == 0 {
+		return ""
 	}
 	return strings.Join(vals, ", ")
 }

@@ -916,10 +916,10 @@ sqlstr := fmt.Sprintf(`SELECT
 }
 
 
-// WorkItemsBy retrieves a row from 'public.work_items' as a WorkItem.
+// WorkItems retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_description_idx'.
-func WorkItemsBy(ctx context.Context, db DB, , opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItems(ctx context.Context, db DB, , opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ",joins: WorkItemJoins{},filters: make(map[string][]any),
 }
 
@@ -1033,12 +1033,12 @@ sqlstr := fmt.Sprintf(`SELECT
 	work_items.updated_at,
 	work_items.deleted_at %s 
 	 FROM public.work_items %s 
-	 WHERE 
+	 WHERE true
 	 %s   AND work_items.deleted_at is %s  %s 
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-  sqlstr = "/* WorkItemsBy */\n"+sqlstr
+  sqlstr = "/* WorkItems */\n"+sqlstr
 
 	// run
 	// logf(sqlstr, )
@@ -1338,10 +1338,10 @@ sqlstr := fmt.Sprintf(`SELECT
 }
 
 
-// WorkItemsBy retrieves a row from 'public.work_items' as a WorkItem.
+// WorkItems retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_title_description_idx'.
-func WorkItemsBy(ctx context.Context, db DB, , opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItems(ctx context.Context, db DB, , opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ",joins: WorkItemJoins{},filters: make(map[string][]any),
 }
 
@@ -1455,12 +1455,12 @@ sqlstr := fmt.Sprintf(`SELECT
 	work_items.updated_at,
 	work_items.deleted_at %s 
 	 FROM public.work_items %s 
-	 WHERE 
+	 WHERE true
 	 %s   AND work_items.deleted_at is %s  %s 
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-  sqlstr = "/* WorkItemsBy */\n"+sqlstr
+  sqlstr = "/* WorkItems */\n"+sqlstr
 
 	// run
 	// logf(sqlstr, )
@@ -1620,10 +1620,10 @@ sqlstr := fmt.Sprintf(`SELECT
 }
 
 
-// WorkItemsBy retrieves a row from 'public.work_items' as a WorkItem.
+// WorkItems retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_title_idx'.
-func WorkItemsBy(ctx context.Context, db DB, , opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItems(ctx context.Context, db DB, , opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ",joins: WorkItemJoins{},filters: make(map[string][]any),
 }
 
@@ -1737,12 +1737,12 @@ sqlstr := fmt.Sprintf(`SELECT
 	work_items.updated_at,
 	work_items.deleted_at %s 
 	 FROM public.work_items %s 
-	 WHERE 
+	 WHERE true
 	 %s   AND work_items.deleted_at is %s  %s 
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-  sqlstr = "/* WorkItemsBy */\n"+sqlstr
+  sqlstr = "/* WorkItems */\n"+sqlstr
 
 	// run
 	// logf(sqlstr, )
