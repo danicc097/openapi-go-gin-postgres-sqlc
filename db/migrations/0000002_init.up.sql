@@ -319,6 +319,14 @@ create table work_items (
 
 create index on work_items (team_id);
 
+-- TODO: xo needs to generate Get<Entity>WithFilters always, which reuses index generation but without fields,
+-- so that we can use custom filters. this particular function will verify that withFilters opt is set.
+-- e.g. trigram index on multiple columns wont generate an index, so we would need this base
+-- query (instead of workarounds like using pagination queries, etc.).
+-- NOTE: instead of skipping if len fields after patching is 0, generate index with 0 fields and
+-- adapt rest of functions to handle len 0 --> name() uses WithFilters suffix, etc.
+
+
 -- TODO: xo tests for excluded indexes
 -- create index on work_items using gin (title gin_trgm_ops);
 -- create index on work_items using gin (description gin_trgm_ops);
