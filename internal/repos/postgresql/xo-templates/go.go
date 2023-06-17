@@ -741,6 +741,8 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			}
 			if newFields != nil {
 				index.Fields = newFields
+			} else {
+				index.SQLName = "[xo] base filter query"
 			}
 
 			// emit normal index
@@ -771,6 +773,8 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			}
 			if newFields != nil {
 				index.Fields = newFields
+			} else {
+				index.SQLName = "[xo] base filter query"
 			}
 
 			if index.IsUnique && len(index.Fields) > 1 {
@@ -830,7 +834,7 @@ func removeExcludedIndexTypes(index Index, excludedIndexTypes []string) ([]Field
 	excludedColumnNames := extractExcludedColumnNames(index.Definition, excludedIndexTypes)
 	if len(excludedColumnNames) == len(index.Fields) {
 		fmt.Println("skipping index where all fields are excluded index types: ", index.Definition)
-		return nil, true
+		return []Field{}, false
 	}
 	if len(excludedColumnNames) > 0 {
 		fmt.Println("patching index containing excluded index types: ", index.Definition)
@@ -890,8 +894,13 @@ func patchIndexFields(fields []Field, excludedColumnNames []string) []Field {
 
 // extractIndexIdentifier generates a unique identifier for patched index generation.
 func extractIndexIdentifier(i Index) string {
+	excludedColumnNames := extractExcludedColumnNames(i.Definition, excludedIndexTypes)
+
 	var fields []string
 	for _, field := range i.Fields {
+		if contains(excludedColumnNames, field.SQLName) {
+			continue
+		}
 		fields = append(fields, field.GoName)
 	}
 
