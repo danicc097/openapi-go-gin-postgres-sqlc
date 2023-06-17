@@ -116,6 +116,7 @@ comment on column xo_tests.notifications.receiver is '"cardinality":M2O';
 create table xo_tests.work_items (
   work_item_id bigserial primary key
   , title text
+  , description text
 );
 
 create type xo_tests.work_item_role as ENUM (

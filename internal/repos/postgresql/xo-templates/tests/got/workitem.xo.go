@@ -21,8 +21,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItem struct {
-	WorkItemID int64   `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
-	Title      *string `json:"title" db:"title" required:"true"`             // title
+	WorkItemID  int64   `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
+	Title       *string `json:"title" db:"title" required:"true"`             // title
+	Description *string `json:"description" db:"description" required:"true"` // description
 
 	DemoWorkItemJoin          *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
 	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -30,13 +31,15 @@ type WorkItem struct {
 
 // WorkItemCreateParams represents insert params for 'xo_tests.work_items'.
 type WorkItemCreateParams struct {
-	Title *string `json:"title" required:"true"` // title
+	Title       *string `json:"title" required:"true"`       // title
+	Description *string `json:"description" required:"true"` // description
 }
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
 	wi := &WorkItem{
-		Title: params.Title,
+		Title:       params.Title,
+		Description: params.Description,
 	}
 
 	return wi.Insert(ctx, db)
@@ -44,13 +47,17 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 
 // WorkItemUpdateParams represents update params for 'xo_tests.work_items'.
 type WorkItemUpdateParams struct {
-	Title **string `json:"title" required:"true"` // title
+	Title       **string `json:"title" required:"true"`       // title
+	Description **string `json:"description" required:"true"` // description
 }
 
 // SetUpdateParams updates xo_tests.work_items struct fields with the specified params.
 func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
 	if params.Title != nil {
 		wi.Title = *params.Title
+	}
+	if params.Description != nil {
+		wi.Description = *params.Description
 	}
 }
 
@@ -148,14 +155,14 @@ const workItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_item
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.work_items (
-	title
+	title, description
 	) VALUES (
-	$1
+	$1, $2
 	) RETURNING * `
 	// run
-	logf(sqlstr, wi.Title)
+	logf(sqlstr, wi.Title, wi.Description)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title)
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -173,13 +180,13 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.work_items SET 
-	title = $1 
-	WHERE work_item_id = $2 
+	title = $1, description = $2 
+	WHERE work_item_id = $3 
 	RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.WorkItemID)
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -198,6 +205,7 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 	var err error
 
 	wi.Title = params.Title
+	wi.Description = params.Description
 
 	wi, err = wi.Insert(ctx, db)
 	if err != nil {
@@ -286,7 +294,8 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s 
+	work_items.title,
+	work_items.description %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id > $1
 	 %s   %s 
@@ -366,7 +375,8 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s 
+	work_items.title,
+	work_items.description %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id < $1
 	 %s   %s 
@@ -448,7 +458,8 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s 
+	work_items.title,
+	work_items.description %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id = $1
 	 %s   %s 
