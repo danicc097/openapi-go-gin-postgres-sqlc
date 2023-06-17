@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 export type Primitive = string | number | symbol
 
-export type GenericObject = Record<Primitive, unknown>
+export type GenericObject = Record<any, any>
 
 export type Join<L extends Primitive | undefined, R extends Primitive | undefined> = L extends string | number
   ? R extends string | number
@@ -21,21 +21,22 @@ export type Union<L extends unknown | undefined, R extends unknown | undefined> 
   : L | R
 
 /**
- * NestedPaths
  * Get all the possible paths of an object
  * @example
- * type Keys = NestedPaths<{ a: { b: { c: string } }>
+ * type Keys = RecursiveKeyOf<{ a: { b: { c: string } }>
  * // 'a' | 'a.b' | 'a.b.c'
  */
-export type NestedPaths<
-  T extends GenericObject,
-  Prev extends Primitive | undefined = undefined,
-  Path extends Primitive | undefined = undefined,
-> = {
-  [K in keyof T]: T[K] extends GenericObject
-    ? NestedPaths<T[K], Union<Prev, Path>, Join<Path, K>>
-    : Union<Union<Prev, Path>, Join<Path, K>>
-}[keyof T]
+type RecursiveKeyOf<T, Cache extends Primitive = ''> = T extends PropertyKey
+  ? Cache
+  : {
+      [P in keyof T]: P extends Primitive
+        ? Cache extends ''
+          ? RecursiveKeyOf<T[P], `${P}`>
+          : Cache | RecursiveKeyOf<T[P], `${Cache}.${P}`>
+        : never
+    }[keyof T]
+
+type SubRecursiveKeys<RK extends string, PFX extends RK> = RK extends `${PFX}.${infer SubKey}` ? SubKey : never
 
 export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[]
   ? ElementType

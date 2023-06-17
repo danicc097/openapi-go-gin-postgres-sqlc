@@ -44,7 +44,7 @@ func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundWorkItemType.Name, string(models.DemoWorkItemTypesType1)) // TODO will be handled via internal/models_mappings.gen.go
+			assert.Equal(t, foundWorkItemType.Name, string(models.DemoWorkItemTypesType1))
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {

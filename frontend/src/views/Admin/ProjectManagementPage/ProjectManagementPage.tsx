@@ -29,7 +29,16 @@ import {
 } from '@elastic/eui'
 import _, { capitalize, random } from 'lodash'
 import React, { Fragment, useEffect, useReducer, useState } from 'react'
-import type { ProjectConfig, Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
+import type {
+  DbWorkItem,
+  ProjectConfig,
+  ProjectConfigField,
+  RestDemoWorkItemsResponse,
+  Scope,
+  Scopes,
+  UpdateUserAuthRequest,
+  UserResponse,
+} from 'src/gen/model'
 import { roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 import scopes from '@scopes'
@@ -40,13 +49,24 @@ import type { ValidationErrors } from 'src/client-validator/validate'
 import { useUpdateUserAuthorization } from 'src/gen/user/user'
 import { useForm, UseFormReturnType } from '@mantine/form'
 import { useUISlice } from 'src/slices/ui'
+import type { GenericObject, RecursiveKeyOf } from 'src/types/utils'
 
 const makeId = htmlIdGenerator('')
+
+export interface ExtendedProjectConfig<T> {
+  fields: ExtendedProjectConfigField<T>[]
+  header: string[]
+}
+
+export type ExtendedProjectConfigField<T extends GenericObject> = ProjectConfigField & {
+  path: RecursiveKeyOf<T>
+}
+
 /**
- * alternative: once config comes in create a `Map` from array with key `path`
- * so that we dont have to filter (though performance doesnt matter, this page will barely be used)
+ * TODO: default will be defined in frontend, since its where its used. Bakcend will simply store it per project and
+ * will merge with default. further changes are directly saved to db without any more merging.
  */
-const boardConfig: ProjectConfig = {
+const demoProjectConfig: ExtendedProjectConfig<RestDemoWorkItemsResponse> = {
   header: ['demoProject.ref', 'workItemType'],
   fields: [
     {
@@ -67,16 +87,17 @@ const boardConfig: ProjectConfig = {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
-      path: 'demoWorkItem.metadata',
+      path: 'metadata',
       name: 'Metadata',
     },
-    {
-      isEditable: true,
-      showCollapsed: true,
-      isVisible: true,
-      path: 'demoWorkItem.metadata.externalLink',
-      name: 'External link',
-    },
+    // {
+    //   // FIXME: WorkItem.Metadata is currently []byte and generated as number[]
+    //   isEditable: true,
+    //   showCollapsed: true,
+    //   isVisible: true,
+    //   path: 'demoWorkItem.metadata.externalLink',
+    //   name: 'External link',
+    // },
     {
       isEditable: true,
       showCollapsed: true,
@@ -91,39 +112,40 @@ const boardConfig: ProjectConfig = {
       path: 'demoWorkItem.line',
       name: 'Line number',
     },
+    // TODO: KPIs generic vs per workitem
+    // {
+    //   isEditable: true,
+    //   showCollapsed: true,
+    //   isVisible: true,
+    //   path: 'demoWorkItem.KPIs',
+    //   name: 'KPIs',
+    // },
+    // {
+    //   isEditable: true,
+    //   showCollapsed: true,
+    //   isVisible: true,
+    //   path: 'demoWorkItem.KPIs.name',
+    //   name: 'Name',
+    // },
+    // {
+    //   isEditable: true,
+    //   showCollapsed: true,
+    //   isVisible: true,
+    //   path: 'demoWorkItem.KPIs.complexity',
+    //   name: 'Complexity',
+    // },
+    // {
+    //   isEditable: true,
+    //   showCollapsed: true,
+    //   isVisible: true,
+    //   path: 'demoWorkItem.KPIs.tags',
+    //   name: 'Tags',
+    // },
     {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
-      path: 'demoWorkItem.KPIs',
-      name: 'KPIs',
-    },
-    {
-      isEditable: true,
-      showCollapsed: true,
-      isVisible: true,
-      path: 'demoWorkItem.KPIs.name',
-      name: 'Name',
-    },
-    {
-      isEditable: true,
-      showCollapsed: true,
-      isVisible: true,
-      path: 'demoWorkItem.KPIs.complexity',
-      name: 'Complexity',
-    },
-    {
-      isEditable: true,
-      showCollapsed: true,
-      isVisible: true,
-      path: 'demoWorkItem.KPIs.tags',
-      name: 'Tags',
-    },
-    {
-      isEditable: true,
-      showCollapsed: true,
-      isVisible: true,
-      path: 'demoWorkItem.tags',
+      path: 'workItemTags',
       name: 'Tags',
     },
   ],
@@ -135,7 +157,7 @@ export default function ProjectManagementPage() {
   const [calloutErrors, setCalloutError] = useState<ValidationErrors>(null)
 
   const form = useForm<any>({
-    initialValues: boardConfig,
+    initialValues: demoProjectConfig,
   })
 
   const getErrors = () =>
@@ -186,7 +208,7 @@ export default function ProjectManagementPage() {
 
   const columns = []
 
-  ;[boardConfig['fields'][0]].forEach((field) => {
+  ;[demoProjectConfig['fields'][0]].forEach((field) => {
     Object.entries(field).forEach(([k, v]) => {
       const column = {}
       column['field'] = k
@@ -253,7 +275,7 @@ export default function ProjectManagementPage() {
   )
 
   const generateData = () => {
-    return boardConfig.fields.map((f: any) => {
+    return demoProjectConfig.fields.map((f: any) => {
       f['id'] = f.path
       return f
     })
