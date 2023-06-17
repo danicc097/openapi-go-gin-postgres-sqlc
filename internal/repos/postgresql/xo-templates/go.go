@@ -96,6 +96,16 @@ func IsUpper(s string) bool {
 	return true
 }
 
+func removeEmptyStrings(arr []string) []string {
+	result := make([]string, 0)
+	for _, str := range arr {
+		if str != "" {
+			result = append(result, str)
+		}
+	}
+	return result
+}
+
 func IsLower(s string) bool {
 	for _, r := range s {
 		if !unicode.IsLower(r) && unicode.IsLetter(r) {
@@ -735,14 +745,17 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				return err
 			}
 
-			newFields, shouldSkip := removeExcludedIndexTypes(index, excludedIndexTypes)
-			if shouldSkip {
-				continue
-			}
+			newFields, base := removeExcludedIndexTypes(index, excludedIndexTypes)
 			if newFields != nil {
 				index.Fields = newFields
-			} else if len(newFields) == 0 && newFields != nil {
+			}
+			if base {
 				index.SQLName = "[xo] base filter query"
+			}
+
+			idxIdentifier := extractIndexIdentifier(index)
+			if contains(emittedIndexes, idxIdentifier) {
+				continue
 			}
 
 			// emit normal index
@@ -767,13 +780,11 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				return err
 			}
 
-			newFields, shouldSkip := removeExcludedIndexTypes(index, excludedIndexTypes)
-			if shouldSkip {
-				continue
-			}
+			newFields, base := removeExcludedIndexTypes(index, excludedIndexTypes)
 			if newFields != nil {
 				index.Fields = newFields
-			} else if len(newFields) == 0 && newFields != nil {
+			}
+			if base {
 				index.SQLName = "[xo] base filter query"
 			}
 
@@ -830,18 +841,18 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 }
 
 func removeExcludedIndexTypes(index Index, excludedIndexTypes []string) ([]Field, bool) {
-	shouldSkip := false
+	base := false
 	excludedColumnNames := extractExcludedColumnNames(index.Definition, excludedIndexTypes)
 	if len(excludedColumnNames) == len(index.Fields) {
 		fmt.Println("skipping index where all fields are excluded index types: ", index.Definition)
-		return []Field{}, false
+		return []Field{}, true
 	}
 	if len(excludedColumnNames) > 0 {
 		fmt.Println("patching index containing excluded index types: ", index.Definition)
 		return patchIndexFields(index.Fields, excludedColumnNames), false
 	}
 
-	return nil, shouldSkip
+	return nil, base
 }
 
 func extractExcludedColumnNames(definition string, excludedIndexTypes []string) []string {
@@ -1885,6 +1896,7 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string
 	returns = append(returns, "error")
 
 	p := ""
+	params = removeEmptyStrings(params)
 	if len(params) > 0 {
 		p = strings.Join(params, ", ")
 	}

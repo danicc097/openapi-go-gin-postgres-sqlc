@@ -24,6 +24,12 @@ import (
     name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
     at the same time
 * IMPORTANT: explain analyze to ensure dynamic sql query plans for joins dont do hash joins
+
+-- TODO: tests for excluded indexes + test trgm queries out with generic func <Entities>() WithFilters: ilike, etc.
+create index on work_items using gin (title gin_trgm_ops);
+create index on work_items using gin (description gin_trgm_ops);
+create index on work_items using gin (title gin_trgm_ops, description gin_trgm_ops);
+create index on work_items using gin (title, description gin_trgm_ops);
 */
 
 func TestCursorPagination_Timestamp(t *testing.T) {

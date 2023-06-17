@@ -109,8 +109,6 @@ comment on column user_api_keys.user_api_key_id is '"properties":private';
 --   external_id is null;
 -- composite on id, deleted_at, email, deleted_at, etc. will not improve speed
 -- create unique index on users (user_id) where deleted_at is null; -- helps if you have much more deleted rows only
-create index on users (created_at);
-
 -- create index on users (deleted_at);  - not worth the extra overhead.
 -- for finding all deleted users exclusively
 create index on users (deleted_at)
@@ -319,19 +317,16 @@ create table work_items (
 
 create index on work_items (team_id);
 
--- TODO: xo needs to generate Get<Entity>WithFilters always, which reuses index generation but without fields,
--- so that we can use custom filters. this particular function will verify that withFilters opt is set.
--- e.g. trigram index on multiple columns wont generate an index, so we would need this base
--- query (instead of workarounds like using pagination queries, etc.).
--- NOTE: instead of skipping if len fields after patching is 0, generate index with 0 fields and
--- adapt rest of functions to handle len 0 --> name() uses WithFilters suffix, etc.
-
-
--- TODO: xo tests for excluded indexes
+-- TODO: xo tests for excluded indexes + test trgm queries out with generic func <Entities>() WithFilters
 create index on work_items using gin (title gin_trgm_ops);
+
 create index on work_items using gin (description gin_trgm_ops);
-create index on work_items using gin (title gin_trgm_ops, description gin_trgm_ops);
-create index on work_items using gin (title, description gin_trgm_ops);
+
+create index on work_items using gin (title gin_trgm_ops , description gin_trgm_ops);
+
+create index on work_items using gin (title , description gin_trgm_ops);
+
+
 /*
 when a new project is required -> manual table creation with empty new fields, just
  work_item_id bigint primary key.
