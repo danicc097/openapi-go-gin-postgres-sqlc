@@ -5,6 +5,9 @@ import "golang.org/x/text/language"
 // User implements oidc-server storage.User.
 // It is used for development and testing purposes only.
 // nolint: revive
+// Still cannot access common interface fields:
+//
+//	https://go101.org/generics/888-the-status-quo-of-go-custom-generics.html
 type AuthServerUser struct {
 	ID_               string       `json:"id"` // need exported for unmarshalling
 	Username_         string       `json:"username"`
