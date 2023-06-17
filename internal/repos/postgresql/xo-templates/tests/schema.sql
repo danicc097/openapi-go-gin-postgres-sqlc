@@ -217,10 +217,10 @@ begin
   insert into xo_tests.notifications (body , receiver , sender)
     values ('body 2' , user_1_id , user_2_id);
 
-  insert into xo_tests.work_items (title)
-    values ('Work Item 1');
-  insert into xo_tests.work_items (title)
-    values ('Work Item 2');
+  insert into xo_tests.work_items (title, description)
+    values ('Work Item 1', 'Every cloud has a silver lining.');
+  insert into xo_tests.work_items (title, description)
+    values ('Work Item 2', 'When in Rome, do as the Romans do.');
   insert into xo_tests.work_items (title)
     values ('Work Item 3');
 

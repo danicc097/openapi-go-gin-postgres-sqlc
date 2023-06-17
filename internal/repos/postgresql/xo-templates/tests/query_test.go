@@ -66,6 +66,17 @@ func Test_Filters(t *testing.T) {
 	assert.Equal(t, ee[1].Name, "element -4 days")
 }
 
+func TestTrigram_Filters(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	ww, err := db.WorkItems(ctx, testPool, db.WithWorkItemFilters(map[string][]any{"description ILIKE '%rome%'": {}}))
+	assert.NoError(t, err)
+	assert.Len(t, ww, 1)
+	assert.Contains(t, *ww[0].Description, "Rome")
+}
+
 func TestM2M_SelectFilter(t *testing.T) {
 	t.Parallel()
 
