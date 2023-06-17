@@ -71,8 +71,7 @@ func TestTrigram_Filters(t *testing.T) {
 
 	ctx := context.Background()
 
-	// FIXME: replacing $i
-	ww, err := db.WorkItems(ctx, testPool, db.WithWorkItemFilters(map[string][]any{"description ILIKE '%rome%'": {}}))
+	ww, err := db.WorkItems(ctx, testPool, db.WithWorkItemFilters(map[string][]any{"description ILIKE  '%' || $1 || '%'": {"rome"}}))
 	assert.NoError(t, err)
 	assert.Len(t, ww, 1)
 	assert.Contains(t, *ww[0].Description, "Rome")
