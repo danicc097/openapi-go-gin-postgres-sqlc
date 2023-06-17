@@ -88,7 +88,7 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName 
 	default:
 		return nil, errors.New("not implemented")
 	}
-	pathKeys := structs.GetKeys(workItem, "")
+	pathKeys := structs.GetKeys("json", workItem, "")
 
 	// index ProjectConfig.Fields by path for simpler logic
 	for _, path := range pathKeys {
