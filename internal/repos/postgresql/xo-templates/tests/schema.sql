@@ -2,6 +2,10 @@ create schema if not exists extensions;
 
 create extension if not exists pg_stat_statements schema extensions;
 
+create extension if not exists pg_trgm schema extensions;
+
+create extension if not exists btree_gin schema extensions;
+
 -- ensure up to date
 drop schema if exists xo_tests cascade;
 
@@ -118,6 +122,14 @@ create table xo_tests.work_items (
   , title text
   , description text
 );
+
+create index on xo_tests.work_items using gin (title extensions.gin_trgm_ops);
+
+create index on xo_tests.work_items using gin (description extensions.gin_trgm_ops);
+
+create index on xo_tests.work_items using gin (title extensions.gin_trgm_ops , description extensions.gin_trgm_ops);
+
+create index on xo_tests.work_items using gin (title , description extensions.gin_trgm_ops);
 
 create type xo_tests.work_item_role as ENUM (
   'preparer'

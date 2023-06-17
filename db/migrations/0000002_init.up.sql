@@ -317,7 +317,6 @@ create table work_items (
 
 create index on work_items (team_id);
 
--- TODO: xo tests for excluded indexes + test trgm queries out with generic func <Entities>() WithFilters
 create index on work_items using gin (title gin_trgm_ops);
 
 create index on work_items using gin (description gin_trgm_ops);
