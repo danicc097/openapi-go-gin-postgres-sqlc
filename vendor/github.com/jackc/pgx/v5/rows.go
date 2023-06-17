@@ -28,12 +28,16 @@ type Rows interface {
 	// to call Close after rows is already closed.
 	Close()
 
-	// Err returns any error that occurred while reading.
+	// Err returns any error that occurred while reading. Err must only be called after the Rows is closed (either by
+	// calling Close or by Next returning false). If it is called early it may return nil even if there was an error
+	// executing the query.
 	Err() error
 
 	// CommandTag returns the command tag from this query. It is only available after Rows is closed.
 	CommandTag() pgconn.CommandTag
 
+	// FieldDescriptions returns the field descriptions of the columns. It may return nil. In particular this can occur
+	// when there was an error executing the query.
 	FieldDescriptions() []pgconn.FieldDescription
 
 	// Next prepares the next row for reading. It returns true if there is another
@@ -533,13 +537,11 @@ func (rs *positionalStructRowScanner) appendScanTargets(dstElemValue reflect.Val
 
 	for i := 0; i < dstElemType.NumField(); i++ {
 		sf := dstElemType.Field(i)
-		if sf.PkgPath == "" {
-			// Handle anonymous struct embedding, but do not try to handle embedded pointers.
-			if sf.Anonymous && sf.Type.Kind() == reflect.Struct {
-				scanTargets = rs.appendScanTargets(dstElemValue.Field(i), scanTargets)
-			} else {
-				scanTargets = append(scanTargets, dstElemValue.Field(i).Addr().Interface())
-			}
+		// Handle anonymous struct embedding, but do not try to handle embedded pointers.
+		if sf.Anonymous && sf.Type.Kind() == reflect.Struct {
+			scanTargets = rs.appendScanTargets(dstElemValue.Field(i), scanTargets)
+		} else if sf.PkgPath == "" {
+			scanTargets = append(scanTargets, dstElemValue.Field(i).Addr().Interface())
 		}
 	}
 

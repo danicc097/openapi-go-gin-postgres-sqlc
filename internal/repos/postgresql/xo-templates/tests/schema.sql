@@ -2,6 +2,10 @@ create schema if not exists extensions;
 
 create extension if not exists pg_stat_statements schema extensions;
 
+create extension if not exists pg_trgm schema extensions;
+
+create extension if not exists btree_gin schema extensions;
+
 -- ensure up to date
 drop schema if exists xo_tests cascade;
 
@@ -116,7 +120,16 @@ comment on column xo_tests.notifications.receiver is '"cardinality":M2O';
 create table xo_tests.work_items (
   work_item_id bigserial primary key
   , title text
+  , description text
 );
+
+create index on xo_tests.work_items using gin (title extensions.gin_trgm_ops);
+
+create index on xo_tests.work_items using gin (description extensions.gin_trgm_ops);
+
+create index on xo_tests.work_items using gin (title extensions.gin_trgm_ops , description extensions.gin_trgm_ops);
+
+create index on xo_tests.work_items using gin (title , description extensions.gin_trgm_ops);
 
 create type xo_tests.work_item_role as ENUM (
   'preparer'
@@ -204,10 +217,10 @@ begin
   insert into xo_tests.notifications (body , receiver , sender)
     values ('body 2' , user_1_id , user_2_id);
 
-  insert into xo_tests.work_items (title)
-    values ('Work Item 1');
-  insert into xo_tests.work_items (title)
-    values ('Work Item 2');
+  insert into xo_tests.work_items (title , description)
+    values ('Work Item 1' , 'Every cloud has a silver lining.');
+  insert into xo_tests.work_items (title , description)
+    values ('Work Item 2' , 'When in Rome, do as the Romans do.');
   insert into xo_tests.work_items (title)
     values ('Work Item 3');
 

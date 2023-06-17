@@ -229,11 +229,11 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 
 	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Insert/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	newte, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 
 	*te = newte
@@ -253,11 +253,11 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 
 	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Update/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	newte, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	*te = newte
 
@@ -265,7 +265,7 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 }
 
 // Upsert upserts a TimeEntry in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
 	var err error
 
@@ -282,11 +282,11 @@ func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateP
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Time entry", Err: err})
 			}
 			te, err = te.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Time entry", Err: err})
 			}
 		}
 	}
@@ -395,11 +395,11 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Asc/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	return res, nil
 }
@@ -493,11 +493,11 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Desc/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	return res, nil
 }
@@ -593,11 +593,11 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 	// logf(sqlstr, timeEntryID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	te, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/pgx.CollectOneRow: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 
 	return &te, nil
@@ -694,14 +694,14 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 	// logf(sqlstr, userID, teamID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{userID, teamID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/pgx.CollectRows: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	return res, nil
 }
@@ -797,14 +797,14 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64
 	// logf(sqlstr, workItemID, teamID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, teamID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/pgx.CollectRows: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	return res, nil
 }

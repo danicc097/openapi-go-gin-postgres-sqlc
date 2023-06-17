@@ -173,11 +173,11 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 
 	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	newwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 
 	*wit = newwit
@@ -197,11 +197,11 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error)
 
 	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Update/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	newwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	*wit = newwit
 
@@ -209,7 +209,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error)
 }
 
 // Upsert upserts a WorkItemTag in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (wit *WorkItemTag) Upsert(ctx context.Context, db DB, params *WorkItemTagCreateParams) (*WorkItemTag, error) {
 	var err error
 
@@ -223,11 +223,11 @@ func (wit *WorkItemTag) Upsert(ctx context.Context, db DB, params *WorkItemTagCr
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item tag", Err: err})
 			}
 			wit, err = wit.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item tag", Err: err})
 			}
 		}
 	}
@@ -321,11 +321,11 @@ func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItem
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	return res, nil
 }
@@ -404,11 +404,11 @@ func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID in
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	return res, nil
 }
@@ -487,11 +487,11 @@ func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workIte
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	return res, nil
 }
@@ -570,11 +570,11 @@ func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID i
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	return res, nil
 }
@@ -655,11 +655,11 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	wit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/pgx.CollectOneRow: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 
 	return &wit, nil
@@ -741,14 +741,14 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	return res, nil
 }
@@ -829,14 +829,14 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	return res, nil
 }
@@ -917,11 +917,11 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 	// logf(sqlstr, workItemTagID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	wit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/pgx.CollectOneRow: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 
 	return &wit, nil

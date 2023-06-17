@@ -5,6 +5,7 @@ import (
 )
 
 // Filterable with user-id="..."
-// In frontend we would have something unique (and not personally identifiable)
+// In frontend we would have a combination of user-id and random string
 // to each navigation to correlate user interaction, fetch and document load traces
+// from each open instance.
 const UserIDAttribute = attribute.Key("user-id")

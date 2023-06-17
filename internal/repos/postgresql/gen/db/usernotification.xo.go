@@ -155,11 +155,11 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 
 	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Insert/db.Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	newun, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 
 	*un = newun
@@ -179,11 +179,11 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 
 	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Update/db.Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	newun, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Update/pgx.CollectOneRow: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	*un = newun
 
@@ -191,7 +191,7 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 }
 
 // Upsert upserts a UserNotification in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (un *UserNotification) Upsert(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {
 	var err error
 
@@ -204,11 +204,11 @@ func (un *UserNotification) Upsert(ctx context.Context, db DB, params *UserNotif
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "User notification", Err: err})
 			}
 			un, err = un.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "User notification", Err: err})
 			}
 		}
 	}
@@ -301,11 +301,11 @@ func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{userNotificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/db.Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	return res, nil
 }
@@ -383,11 +383,11 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/db.Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	return res, nil
 }
@@ -465,11 +465,11 @@ func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db D
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{userNotificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/db.Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	return res, nil
 }
@@ -547,11 +547,11 @@ func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, n
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/db.Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	return res, nil
 }
@@ -631,11 +631,11 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 	// logf(sqlstr, notificationID, userID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID, userID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/db.Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	un, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/pgx.CollectOneRow: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 
 	return &un, nil
@@ -716,14 +716,14 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 	// logf(sqlstr, notificationID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/pgx.CollectRows: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	return res, nil
 }
@@ -803,11 +803,11 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 	// logf(sqlstr, userNotificationID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{userNotificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/db.Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	un, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/pgx.CollectOneRow: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 
 	return &un, nil
@@ -888,14 +888,14 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/Query: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/pgx.CollectRows: %w", &XoError{Entity: "User notification", Err: err}))
 	}
 	return res, nil
 }

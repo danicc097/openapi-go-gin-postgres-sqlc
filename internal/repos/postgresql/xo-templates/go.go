@@ -28,6 +28,9 @@ import (
 	"mvdan.cc/gofumpt/format"
 )
 
+// TODO configurable
+var excludedIndexTypes = []string{"gin_trgm_ops"}
+
 type cardinality string
 
 const (
@@ -91,6 +94,16 @@ func IsUpper(s string) bool {
 		}
 	}
 	return true
+}
+
+func removeEmptyStrings(arr []string) []string {
+	result := make([]string, 0)
+	for _, str := range arr {
+		if str != "" {
+			result = append(result, str)
+		}
+	}
+	return result
 }
 
 func IsLower(s string) bool {
@@ -732,6 +745,19 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				return err
 			}
 
+			newFields, base := removeExcludedIndexTypes(index, excludedIndexTypes)
+			if newFields != nil {
+				index.Fields = newFields
+			}
+			if base {
+				index.SQLName = "[xo] base filter query"
+			}
+
+			idxIdentifier := extractIndexIdentifier(index)
+			if contains(emittedIndexes, idxIdentifier) {
+				continue
+			}
+
 			// emit normal index
 			emit(xo.Template{
 				Dest:     strings.ToLower(table.GoName) + ext,
@@ -752,6 +778,14 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
 				return err
+			}
+
+			newFields, base := removeExcludedIndexTypes(index, excludedIndexTypes)
+			if newFields != nil {
+				index.Fields = newFields
+			}
+			if base {
+				index.SQLName = "[xo] base filter query"
 			}
 
 			if index.IsUnique && len(index.Fields) > 1 {
@@ -806,10 +840,75 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	return nil
 }
 
+func removeExcludedIndexTypes(index Index, excludedIndexTypes []string) ([]Field, bool) {
+	base := false
+	excludedColumnNames := extractExcludedColumnNames(index.Definition, excludedIndexTypes)
+	if len(excludedColumnNames) == len(index.Fields) {
+		fmt.Println("skipping index where all fields are excluded index types: ", index.Definition)
+		return []Field{}, true
+	}
+	if len(excludedColumnNames) > 0 {
+		fmt.Println("patching index containing excluded index types: ", index.Definition)
+		return patchIndexFields(index.Fields, excludedColumnNames), false
+	}
+
+	return nil, base
+}
+
+func extractExcludedColumnNames(definition string, excludedIndexTypes []string) []string {
+	var excludedColumnNames []string
+
+	re := regexp.MustCompile(`INDEX .*? USING .*?\((?P<columns>[\w\s.,]+)`)
+	match := re.FindStringSubmatch(definition)
+	subexpNames := re.SubexpNames()
+
+	for i, name := range subexpNames {
+		if name == "columns" && len(match) > i {
+			idxColumns := strings.Split(match[i], ",")
+			for _, idxColumn := range idxColumns {
+				column, idxTypePath, _ := strings.Cut(strings.TrimSpace(idxColumn), " ")
+				pp := strings.Split(idxTypePath, ".")
+				indexTypeName := strings.TrimSpace(pp[len(pp)-1])
+				if contains(excludedIndexTypes, indexTypeName) {
+					excludedColumnNames = append(excludedColumnNames, column)
+				}
+			}
+		}
+	}
+
+	return excludedColumnNames
+}
+
+func patchIndexFields(fields []Field, excludedColumnNames []string) []Field {
+	var patchedFields []Field
+
+	fmt.Printf("excludedColumnNames: %v\n", excludedColumnNames)
+
+	for _, field := range fields {
+		includeField := true
+		for _, columnName := range excludedColumnNames {
+			if field.SQLName == columnName {
+				includeField = false
+				break
+			}
+		}
+		if includeField {
+			patchedFields = append(patchedFields, field)
+		}
+	}
+
+	return patchedFields
+}
+
 // extractIndexIdentifier generates a unique identifier for patched index generation.
 func extractIndexIdentifier(i Index) string {
+	excludedColumnNames := extractExcludedColumnNames(i.Definition, excludedIndexTypes)
+
 	var fields []string
 	for _, field := range i.Fields {
+		if contains(excludedColumnNames, field.SQLName) {
+			continue
+		}
 		fields = append(fields, field.GoName)
 	}
 
@@ -1431,19 +1530,25 @@ func (f *Funcs) camel(names ...string) string {
 	return snaker.ForceLowerCamelIdentifier(strings.Join(names, "_"))
 }
 
+func (f *Funcs) sentence_case(names ...string) string {
+	c := strings.Title(snaker.CamelToSnake(strings.Join(names, "_")))
+	return inflector.Singularize(strings.ReplaceAll(c, "_", " "))
+}
+
 // FuncMap returns the func map.
 func (f *Funcs) FuncMap() template.FuncMap {
 	return template.FuncMap{
 		// general
-		"camel":      f.camel,
-		"lowerFirst": f.lower_first,
-		"first":      f.firstfn,
-		"driver":     f.driverfn,
-		"schema":     f.schemafn,
-		"pkg":        f.pkgfn,
-		"tags":       f.tagsfn,
-		"imports":    f.importsfn,
-		"inject":     f.injectfn,
+		"sentence_case": f.sentence_case,
+		"camel":         f.camel,
+		"lowerFirst":    f.lower_first,
+		"first":         f.firstfn,
+		"driver":        f.driverfn,
+		"schema":        f.schemafn,
+		"pkg":           f.pkgfn,
+		"tags":          f.tagsfn,
+		"imports":       f.importsfn,
+		"inject":        f.injectfn,
 		// context
 		"context":         f.contextfn,
 		"context_both":    f.context_both,
@@ -1726,7 +1831,12 @@ func (f *Funcs) func_name_context(v any, suffix string) string {
 
 		// need custom Func to handle additional index creation instead of Func field
 		// https://github.com/danicc097/xo/blob/main/cmd/schema.go#L629 which originally sets i.Func
-		funcName := name + "By" + strings.Join(fields, "") + suffix
+		cond := ""
+		if len(fields) > 0 {
+			cond = "By" + strings.Join(fields, "")
+		}
+
+		funcName := name + cond + suffix
 
 		return funcName
 	}
@@ -1784,7 +1894,13 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
 	}
 	returns = append(returns, "error")
-	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(params, ", "), strings.Join(returns, ", "))
+
+	p := ""
+	params = removeEmptyStrings(params)
+	if len(params) > 0 {
+		p = strings.Join(params, ", ")
+	}
+	return fmt.Sprintf("func %s(%s) (%s)", name, p, strings.Join(returns, ", "))
 }
 
 // initial_opts returns base conf for select queries.
@@ -2161,7 +2277,11 @@ func (f *Funcs) recv(name string, context bool, t Table, v any) string {
 		r = append(r, "*"+t.GoName)
 	}
 	r = append(r, "error")
-	return fmt.Sprintf("func (%s *%s) %s(%s) (%s)", short, t.GoName, name, strings.Join(p, ", "), strings.Join(r, ", "))
+	params := ""
+	if len(p) > 0 {
+		params = strings.Join(p, ", ")
+	}
+	return fmt.Sprintf("func (%s *%s) %s(%s) (%s)", short, t.GoName, name, params, strings.Join(r, ", "))
 }
 
 func fields_to_goname(fields []Field, sep string) string {
@@ -2365,7 +2485,11 @@ func (f *Funcs) logf(v any, ignore ...any) string {
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 12: %T ]]", v)
 	}
-	return fmt.Sprintf("logf(%s)", strings.Join(p, ", "))
+	x := ""
+	if len(p) > 0 {
+		x = strings.Join(p, ", ")
+	}
+	return fmt.Sprintf("logf(%s)", x)
 }
 
 func (f *Funcs) logf_update(v any) string {
@@ -2417,16 +2541,27 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 		case Index:
 			names = append(names, f.params(x.Fields, false))
 
-			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterParams...)..."
+			nn := ""
+			if len(names[2:]) > 0 {
+				nn = strings.Join(names[2:], ", ")
+			}
+			return "ctx, sqlstr, append([]any{" + nn + "}, filterParams...)..."
 		case CursorPagination:
 			names = append(names, f.params(x.Fields, false))
-
-			return "ctx, sqlstr, append([]any{" + strings.Join(names[2:], ", ") + "}, filterParams...)..."
+			nn := ""
+			if len(names[2:]) > 0 {
+				nn = strings.Join(names[2:], ", ")
+			}
+			return "ctx, sqlstr, append([]any{" + nn + "}, filterParams...)..."
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
 		}
 	}
-	return strings.Join(names, ", ")
+	x := ""
+	if len(names) > 0 {
+		x = strings.Join(names, ", ")
+	}
+	return x
 }
 
 func (f *Funcs) initialize_constraints(t Table, constraints []Constraint) bool {
@@ -2673,11 +2808,16 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field, order st
 			n++
 		}
 
+		ff := "true"
+		if len(filters) > 0 {
+			ff = strings.Join(filters, " AND ")
+		}
+
 		lines := []string{
 			"SELECT ",
 			strings.Join(fields, ",\n\t") + " %s ",
 			" FROM " + f.schemafn(x.SQLName) + " %s ",
-			" WHERE " + strings.Join(filters, " AND "),
+			" WHERE " + ff,
 			" %s ",
 		}
 
@@ -3028,11 +3168,16 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 			filters = append(filters, after)
 		}
 
+		ff := "true"
+		if len(filters) > 0 {
+			ff = strings.Join(filters, " AND ")
+		}
+
 		lines := []string{
 			"SELECT ",
 			strings.Join(fields, ",\n\t") + " %s ",
 			" FROM " + f.schemafn(x.Table.SQLName) + " %s ",
-			" WHERE " + strings.Join(filters, " AND "),
+			" WHERE " + ff,
 			" %s ",
 		}
 
@@ -3359,7 +3504,12 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 		}
 		p = append(p, expr)
 	}
-	return strings.Join(p, ", ")
+
+	x := ""
+	if len(p) > 0 {
+		x = strings.Join(p, ", ")
+	}
+	return x
 }
 
 // params converts a list of fields into their named Go parameters, skipping
@@ -3377,6 +3527,9 @@ func (f *Funcs) params(fields []Field, addType bool) string {
 	var vals []string
 	for _, field := range fields {
 		vals = append(vals, f.param(field, addType))
+	}
+	if len(vals) == 0 {
+		return ""
 	}
 	return strings.Join(vals, ", ")
 }
@@ -4540,7 +4693,7 @@ func addLegacyFuncs(ctx context.Context, funcs template.FuncMap) {
 	// 	}
 	// 	return expr
 	// }
-	// getstartcount returns a starting count for numbering columsn in queries
+	// getstartcount returns a starting count for numbering columns in queries
 	funcs["getstartcount"] = func(fields []*Field, pkFields []*Field) int {
 		return len(fields) - len(pkFields)
 	}

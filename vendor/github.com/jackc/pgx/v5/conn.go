@@ -178,7 +178,7 @@ func ParseConfigWithOptions(connString string, options ParseConfigOptions) (*Con
 		case "simple_protocol":
 			defaultQueryExecMode = QueryExecModeSimpleProtocol
 		default:
-			return nil, fmt.Errorf("invalid default_query_exec_mode: %v", err)
+			return nil, fmt.Errorf("invalid default_query_exec_mode: %s", s)
 		}
 	}
 
@@ -382,11 +382,9 @@ func quoteIdentifier(s string) string {
 	return `"` + strings.ReplaceAll(s, `"`, `""`) + `"`
 }
 
-// Ping executes an empty sql statement against the *Conn
-// If the sql returns without error, the database Ping is considered successful, otherwise, the error is returned.
+// Ping delegates to the underlying *pgconn.PgConn.Ping.
 func (c *Conn) Ping(ctx context.Context) error {
-	_, err := c.Exec(ctx, ";")
-	return err
+	return c.pgConn.Ping(ctx)
 }
 
 // PgConn returns the underlying *pgconn.PgConn. This is an escape hatch method that allows lower level access to the
@@ -585,8 +583,10 @@ const (
 	QueryExecModeCacheDescribe
 
 	// Get the statement description on every execution. This uses the extended protocol. Queries require two round trips
-	// to execute. It does not use prepared statements (allowing usage with most connection poolers) and is safe even
-	// when the the database schema is modified concurrently.
+	// to execute. It does not use named prepared statements. But it does use the unnamed prepared statement to get the
+	// statement description on the first round trip and then uses it to execute the query on the second round trip. This
+	// may cause problems with connection poolers that switch the underlying connection between round trips. It is safe
+	// even when the the database schema is modified concurrently.
 	QueryExecModeDescribeExec
 
 	// Assume the PostgreSQL query parameter types based on the Go type of the arguments. This uses the extended protocol
@@ -647,6 +647,9 @@ type QueryRewriter interface {
 // The returned Rows must be closed before the connection can be used again. It is safe to attempt to read from the
 // returned Rows even if an error is returned. The error will be the available in rows.Err() after rows are closed. It
 // is allowed to ignore the error returned from Query and handle it in Rows.
+//
+// It is possible for a call of FieldDescriptions on the returned Rows to return nil even if the Query call did not
+// return an error.
 //
 // It is possible for a query to return one or more rows before encountering an error. In most cases the rows should be
 // collected before processing rather than processed while receiving each row. This avoids the possibility of the
@@ -1326,6 +1329,7 @@ func (c *Conn) deallocateInvalidatedCachedStatements(ctx context.Context) error 
 
 	for _, sd := range invalidatedStatements {
 		pipeline.SendDeallocate(sd.Name)
+		delete(c.preparedStatements, sd.Name)
 	}
 
 	err := pipeline.Sync()

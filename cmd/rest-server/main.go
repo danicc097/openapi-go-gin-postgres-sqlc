@@ -6,6 +6,7 @@ import (
 	"log"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -35,14 +36,23 @@ func openBrowser(url string) {
 }
 
 func main() {
-	var env, address, specPath, scopePolicyPath, rolePolicyPath string
+	var env, specPath, scopePolicyPath, rolePolicyPath string
 
-	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
-	flag.StringVar(&address, "address", ":8090", "HTTP Server Address")
+	flag.StringVar(&env, "env", "", "Environment Variables filename")
 	flag.StringVar(&specPath, "spec-path", "openapi.yaml", "OpenAPI specification filepath")
 	flag.StringVar(&rolePolicyPath, "roles-path", "roles.json", "Roles policy JSON filepath")
 	flag.StringVar(&scopePolicyPath, "scopes-path", "scopes.json", "Scopes policy JSON filepath")
 	flag.Parse()
+
+	var errs []string
+
+	if env == "" {
+		errs = append(errs, "    - env is required but unset")
+	}
+
+	if len(errs) > 0 {
+		log.Fatalf("error: \n" + strings.Join(errs, "\n"))
+	}
 
 	// go openBrowser(url)
 
@@ -54,7 +64,7 @@ func main() {
 	prometheus.MustRegister(cpuTemp)
 	cpuTemp.Set(65.3)
 
-	errC, err := server.Run(env, address, specPath, rolePolicyPath, scopePolicyPath)
+	errC, err := server.Run(env, specPath, rolePolicyPath, scopePolicyPath)
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
 	}

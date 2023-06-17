@@ -4,6 +4,7 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -18,6 +19,7 @@ type Error struct {
 // ErrorCode defines supported error codes.
 type ErrorCode uint
 
+//go:generate stringer -type=ErrorCode -trimprefix=ErrorCode
 const (
 	ErrorCodeUnknown ErrorCode = iota
 	// ErrorCodePrivate marks an error to be hidden in response.
@@ -72,17 +74,12 @@ func (e *Error) Code() ErrorCode {
 // Cause returns the root error cause in the chain.
 func (e *Error) Cause() error {
 	var err error
-	root := e
+	err = e
 	for {
-		if err = root.Unwrap(); err == nil {
-			return root
-		}
-
-		r, ok := err.(*Error)
-		if !ok {
+		_err := errors.Unwrap(err)
+		if _err == nil {
 			return err
 		}
-
-		root = r
+		err = _err
 	}
 }

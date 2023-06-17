@@ -168,11 +168,11 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	logf(sqlstr, ut.TeamID, ut.Member)
 	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.Member)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/Insert/db.Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	newut, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	*ut = newut
 
@@ -266,14 +266,14 @@ func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...Use
 	// logf(sqlstr, member)
 	rows, err := db.Query(ctx, sqlstr, append([]any{member}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/pgx.CollectRows: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	return res, nil
 }
@@ -351,11 +351,11 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID
 	// logf(sqlstr, member, teamID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{member, teamID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/db.Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	ut, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/pgx.CollectOneRow: %w", &XoError{Entity: "User team", Err: err}))
 	}
 
 	return &ut, nil
@@ -434,14 +434,14 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 	// logf(sqlstr, teamID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/pgx.CollectRows: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	return res, nil
 }
@@ -519,14 +519,14 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid
 	// logf(sqlstr, teamID, member)
 	rows, err := db.Query(ctx, sqlstr, append([]any{teamID, member}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/pgx.CollectRows: %w", &XoError{Entity: "User team", Err: err}))
 	}
 	return res, nil
 }

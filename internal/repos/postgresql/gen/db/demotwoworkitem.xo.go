@@ -149,11 +149,11 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 	logf(sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
 	rows, err := db.Query(ctx, sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Insert/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	newdtwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoTwoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	*dtwi = newdtwi
 
@@ -172,11 +172,11 @@ func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkIte
 
 	rows, err := db.Query(ctx, sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Update/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	newdtwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoTwoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	*dtwi = newdtwi
 
@@ -184,7 +184,7 @@ func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkIte
 }
 
 // Upsert upserts a DemoTwoWorkItem in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
 	var err error
 
@@ -196,11 +196,11 @@ func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoW
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Demo two work item", Err: err})
 			}
 			dtwi, err = dtwi.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Demo two work item", Err: err})
 			}
 		}
 	}
@@ -285,11 +285,11 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Asc/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoTwoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	return res, nil
 }
@@ -359,11 +359,11 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Desc/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoTwoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	return res, nil
 }
@@ -435,11 +435,11 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 	dtwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoTwoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/pgx.CollectOneRow: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
 
 	return &dtwi, nil

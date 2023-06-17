@@ -50,6 +50,8 @@ jobs:
               project test.backend -race -count=40 --x-env=ci
           done
 
+          echo "Testing files with !race directive"
+          project test.backend -count=40 --x-env=ci
 
       - name: Test frontend
         run: |

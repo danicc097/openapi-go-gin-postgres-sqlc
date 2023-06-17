@@ -8,6 +8,8 @@ import { useUISlice } from 'src/slices/ui'
 import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
 import { useEffect } from 'react'
 import { isAuthorized } from 'src/services/authorization'
+import config from '@config'
+import { apiPath } from 'src/services/apiPaths'
 
 type ProtectedRouteProps = {
   children: JSX.Element
@@ -42,7 +44,7 @@ export default function ProtectedRoute({ children, requiredRole = null, required
   }
 
   if (!isAuthenticated && user) {
-    window.location.replace(`${import.meta.env.VITE_AUTH_SERVER}/login`)
+    window.location.replace(apiPath('/auth/myprovider/login'))
   }
 
   return <ProtectedPage isAuthorized={isAuthorized({ user, requiredRole, requiredScopes })}>{children}</ProtectedPage>

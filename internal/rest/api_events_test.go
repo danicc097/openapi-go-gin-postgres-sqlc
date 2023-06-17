@@ -6,12 +6,12 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -64,7 +64,7 @@ func TestSSEStream(t *testing.T) {
 	t.Parallel()
 
 	res := NewStreamRecorder()
-	req := httptest.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/events", nil)
+	req := httptest.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/events", resttestutil.WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo})), nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	req = req.WithContext(ctx)
@@ -94,12 +94,14 @@ func TestSSEStream(t *testing.T) {
 
 	// TODO also test 2 clients concurrently receive, and when one leaves, the other still receives.
 	// ff
-	assert.Eventually(t, func() bool {
+	if !assert.Eventually(t, func() bool {
 		body := strings.ReplaceAll(res.Body.String(), " ", "")
 
 		return strings.Count(body, "event:"+string(models.TopicsGlobalAlerts)) == 1 &&
 			strings.Count(body, "event:test-event") == 1
-	}, 10*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond) {
+		t.Fatalf("did not receive event")
+	}
 
 	cancel()
 	// handler should be stopped before reading body snapshot. to not have an arbitrary time sleep

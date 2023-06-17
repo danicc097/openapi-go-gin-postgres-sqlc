@@ -127,6 +127,7 @@ var PublicStructs = map[string]any{
 	"DbWorkItemWorkItemTagUpdateParams":     db.WorkItemWorkItemTagUpdateParams{},
 	"DbWorkItem__WIAU_User":                 db.WorkItem__WIAU_User{},
 	"DbWorkItem__WIAU_WorkItemAssignedUser": db.WorkItem__WIAU_WorkItemAssignedUser{},
+	"DbXoError":                             db.XoError{},
 
 	//
 

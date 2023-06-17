@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	errNoRows                  = "no rows in result set"
+	errNoRows                  = "not found"
 	errViolatesCheckConstraint = "violates check constraint"
 )
 

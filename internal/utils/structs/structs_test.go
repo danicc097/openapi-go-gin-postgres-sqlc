@@ -22,7 +22,7 @@ func TestGetKeys(t *testing.T) {
 			"nestedStruct.nestedStruct2.nestedKey3",
 		}
 
-		if diff := cmp.Diff(want, structs.GetKeys(ex, "")); diff != "" {
+		if diff := cmp.Diff(want, structs.GetKeys("json", ex, "")); diff != "" {
 			t.Errorf("GetKeys() mismatch (-want +got):\n%s", diff)
 		}
 	})
@@ -51,7 +51,7 @@ func TestGetKeys(t *testing.T) {
 			"nestedStruct.nestedStruct2.nestedKey3",
 		}
 
-		if diff := cmp.Diff(want, structs.GetKeys(ex, "")); diff != "" {
+		if diff := cmp.Diff(want, structs.GetKeys("json", ex, "")); diff != "" {
 			t.Errorf("GetKeys() mismatch (-want +got):\n%s", diff)
 		}
 	})
@@ -77,7 +77,7 @@ func TestGetKeys(t *testing.T) {
 			"stringArray",
 		}
 
-		if diff := cmp.Diff(want, structs.GetKeys(ex, "")); diff != "" {
+		if diff := cmp.Diff(want, structs.GetKeys("json", ex, "")); diff != "" {
 			t.Errorf("GetKeys() mismatch (-want +got):\n%s", diff)
 		}
 	})

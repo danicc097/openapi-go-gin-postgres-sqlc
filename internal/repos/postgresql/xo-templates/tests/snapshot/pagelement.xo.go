@@ -155,11 +155,11 @@ func (pe *PagElement) Insert(ctx context.Context, db DB) (*PagElement, error) {
 
 	rows, err := db.Query(ctx, sqlstr, pe.Name, pe.Dummy)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Insert/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	newpe, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[PagElement])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 
 	*pe = newpe
@@ -179,11 +179,11 @@ func (pe *PagElement) Update(ctx context.Context, db DB) (*PagElement, error) {
 
 	rows, err := db.Query(ctx, sqlstr, pe.Name, pe.Dummy, pe.PaginatedElementID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Update/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	newpe, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[PagElement])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	*pe = newpe
 
@@ -191,7 +191,7 @@ func (pe *PagElement) Update(ctx context.Context, db DB) (*PagElement, error) {
 }
 
 // Upsert upserts a PagElement in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (pe *PagElement) Upsert(ctx context.Context, db DB, params *PagElementCreateParams) (*PagElement, error) {
 	var err error
 
@@ -203,11 +203,11 @@ func (pe *PagElement) Upsert(ctx context.Context, db DB, params *PagElementCreat
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Pag element", Err: err})
 			}
 			pe, err = pe.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Pag element", Err: err})
 			}
 		}
 	}
@@ -294,11 +294,11 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[PagElement])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	return res, nil
 }
@@ -370,11 +370,11 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[PagElement])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	return res, nil
 }
@@ -448,11 +448,11 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 	// logf(sqlstr, createdAt)
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	pe, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[PagElement])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/pgx.CollectOneRow: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 
 	return &pe, nil
@@ -527,11 +527,11 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 	// logf(sqlstr, paginatedElementID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{paginatedElementID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	pe, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[PagElement])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/pgx.CollectOneRow: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 
 	return &pe, nil

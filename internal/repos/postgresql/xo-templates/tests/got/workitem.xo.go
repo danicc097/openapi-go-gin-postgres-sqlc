@@ -21,8 +21,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItem struct {
-	WorkItemID int64   `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
-	Title      *string `json:"title" db:"title" required:"true"`             // title
+	WorkItemID  int64   `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
+	Title       *string `json:"title" db:"title" required:"true"`             // title
+	Description *string `json:"description" db:"description" required:"true"` // description
 
 	DemoWorkItemJoin          *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
 	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -30,13 +31,15 @@ type WorkItem struct {
 
 // WorkItemCreateParams represents insert params for 'xo_tests.work_items'.
 type WorkItemCreateParams struct {
-	Title *string `json:"title" required:"true"` // title
+	Title       *string `json:"title" required:"true"`       // title
+	Description *string `json:"description" required:"true"` // description
 }
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
 	wi := &WorkItem{
-		Title: params.Title,
+		Title:       params.Title,
+		Description: params.Description,
 	}
 
 	return wi.Insert(ctx, db)
@@ -44,13 +47,17 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 
 // WorkItemUpdateParams represents update params for 'xo_tests.work_items'.
 type WorkItemUpdateParams struct {
-	Title **string `json:"title" required:"true"` // title
+	Title       **string `json:"title" required:"true"`       // title
+	Description **string `json:"description" required:"true"` // description
 }
 
 // SetUpdateParams updates xo_tests.work_items struct fields with the specified params.
 func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
 	if params.Title != nil {
 		wi.Title = *params.Title
+	}
+	if params.Description != nil {
+		wi.Description = *params.Description
 	}
 }
 
@@ -148,20 +155,20 @@ const workItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_item
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.work_items (
-	title
+	title, description
 	) VALUES (
-	$1
+	$1, $2
 	) RETURNING * `
 	// run
-	logf(sqlstr, wi.Title)
+	logf(sqlstr, wi.Title, wi.Description)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title)
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 
 	*wi = newwi
@@ -173,19 +180,19 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.work_items SET 
-	title = $1 
-	WHERE work_item_id = $2 
+	title = $1, description = $2 
+	WHERE work_item_id = $3 
 	RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.WorkItemID)
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	*wi = newwi
 
@@ -193,22 +200,23 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 }
 
 // Upsert upserts a WorkItem in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
 	var err error
 
 	wi.Title = params.Title
+	wi.Description = params.Description
 
 	wi, err = wi.Insert(ctx, db)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item", Err: err})
 			}
 			wi, err = wi.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item", Err: err})
 			}
 		}
 	}
@@ -286,7 +294,8 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s 
+	work_items.title,
+	work_items.description %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id > $1
 	 %s   %s 
@@ -299,11 +308,11 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }
@@ -366,7 +375,8 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s 
+	work_items.title,
+	work_items.description %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id < $1
 	 %s   %s 
@@ -379,11 +389,97 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
+	}
+	return res, nil
+}
+
+// WorkItems retrieves a row from 'xo_tests.work_items' as a WorkItem.
+//
+// Generated from index '[xo] base filter query'.
+func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 0
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_items.work_item_id,
+	work_items.title,
+	work_items.description %s 
+	 FROM xo_tests.work_items %s 
+	 WHERE true
+	 %s   %s 
+`, selects, joins, filters, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* WorkItems */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, )
+	rows, err := db.Query(ctx, sqlstr, append([]any{}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDescription/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }
@@ -448,7 +544,8 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.work_item_id,
-	work_items.title %s 
+	work_items.title,
+	work_items.description %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id = $1
 	 %s   %s 
@@ -461,12 +558,98 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	wi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 
 	return &wi, nil
+}
+
+// WorkItemsByTitle retrieves a row from 'xo_tests.work_items' as a WorkItem.
+//
+// Generated from index 'work_items_title_description_idx1'.
+func WorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_items.work_item_id,
+	work_items.title,
+	work_items.description %s 
+	 FROM xo_tests.work_items %s 
+	 WHERE work_items.title = $1
+	 %s   %s 
+`, selects, joins, filters, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* WorkItemsByTitle */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, title)
+	rows, err := db.Query(ctx, sqlstr, append([]any{title}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTitleDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTitleDescription/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
+	}
+	return res, nil
 }

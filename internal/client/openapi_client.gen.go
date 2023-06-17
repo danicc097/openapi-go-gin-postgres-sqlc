@@ -657,6 +657,11 @@ type Serial = int
 // UUID defines the model for UUID.
 type UUID = string
 
+// EventsParams defines parameters for Events.
+type EventsParams struct {
+	ProjectName Project `form:"projectName" json:"projectName"`
+}
+
 // GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
 type GetProjectWorkitemsParams struct {
 	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
@@ -767,7 +772,7 @@ type ClientInterface interface {
 	MyProviderLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// Events request
-	Events(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// OpenapiYamlGet request
 	OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -874,8 +879,8 @@ func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEdito
 	return c.Client.Do(req)
 }
 
-func (c *Client) Events(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewEventsRequest(c.Server)
+func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEventsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1268,7 +1273,7 @@ func NewMyProviderLoginRequest(server string) (*http.Request, error) {
 }
 
 // NewEventsRequest generates requests for Events
-func NewEventsRequest(server string) (*http.Request, error) {
+func NewEventsRequest(server string, params *EventsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1285,6 +1290,22 @@ func NewEventsRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryURL.Query()
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "projectName", runtime.ParamLocationQuery, params.ProjectName); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -2058,7 +2079,7 @@ type ClientWithResponsesInterface interface {
 	MyProviderLoginWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderLoginResponse, error)
 
 	// Events request
-	EventsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*EventsResponse, error)
+	EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error)
 
 	// OpenapiYamlGet request
 	OpenapiYamlGetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OpenapiYamlGetResponse, error)
@@ -2645,8 +2666,8 @@ func (c *ClientWithResponses) MyProviderLoginWithResponse(ctx context.Context, r
 }
 
 // EventsWithResponse request returning *EventsResponse
-func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*EventsResponse, error) {
-	rsp, err := c.Events(ctx, reqEditors...)
+func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error) {
+	rsp, err := c.Events(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

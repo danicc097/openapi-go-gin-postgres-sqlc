@@ -161,11 +161,11 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 
 	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 
 	*uak = newuak
@@ -185,11 +185,11 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 
 	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Update/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Update/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	*uak = newuak
 
@@ -197,7 +197,7 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 }
 
 // Upsert upserts a UserAPIKey in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (uak *UserAPIKey) Upsert(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
 	var err error
 
@@ -210,11 +210,11 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB, params *UserAPIKeyCrea
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "User api key", Err: err})
 			}
 			uak, err = uak.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "User api key", Err: err})
 			}
 		}
 	}
@@ -301,11 +301,11 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	return res, nil
 }
@@ -377,11 +377,11 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	return res, nil
 }
@@ -455,11 +455,11 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 	// logf(sqlstr, apiKey)
 	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 
 	return &uak, nil
@@ -534,11 +534,11 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 	// logf(sqlstr, userAPIKeyID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 
 	return &uak, nil
@@ -613,11 +613,11 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 
 	return &uak, nil

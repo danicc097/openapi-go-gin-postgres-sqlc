@@ -9,6 +9,8 @@ create extension if not exists pg_trgm schema extensions;
 
 create extension if not exists btree_gin schema extensions;
 
+create extension if not exists rum schema extensions;
+
 -- internal use. update whenever a project with its related workitems,
 --  etc. tables are created in migrations
 create table projects (
@@ -107,8 +109,6 @@ comment on column user_api_keys.user_api_key_id is '"properties":private';
 --   external_id is null;
 -- composite on id, deleted_at, email, deleted_at, etc. will not improve speed
 -- create unique index on users (user_id) where deleted_at is null; -- helps if you have much more deleted rows only
-create index on users (created_at);
-
 -- create index on users (deleted_at);  - not worth the extra overhead.
 -- for finding all deleted users exclusively
 create index on users (deleted_at)
@@ -316,6 +316,14 @@ create table work_items (
 );
 
 create index on work_items (team_id);
+
+create index on work_items using gin (title gin_trgm_ops);
+
+create index on work_items using gin (description gin_trgm_ops);
+
+create index on work_items using gin (title gin_trgm_ops , description gin_trgm_ops);
+
+create index on work_items using gin (title , description gin_trgm_ops);
 
 
 /*

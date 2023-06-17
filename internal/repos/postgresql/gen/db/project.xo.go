@@ -257,11 +257,11 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 
 	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	newp, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Project", Err: err}))
 	}
 
 	*p = newp
@@ -281,11 +281,11 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 
 	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.ProjectID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	newp, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	*p = newp
 
@@ -293,7 +293,7 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 }
 
 // Upsert upserts a Project in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
 	var err error
 
@@ -307,11 +307,11 @@ func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Project", Err: err})
 			}
 			p, err = p.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Project", Err: err})
 			}
 		}
 	}
@@ -425,11 +425,11 @@ func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, o
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Paginated/Asc/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	return res, nil
 }
@@ -528,11 +528,11 @@ func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, 
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Paginated/Desc/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	return res, nil
 }
@@ -633,11 +633,11 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("projects/ProjectByName/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByName/pgx.CollectOneRow: %w", &XoError{Entity: "Project", Err: err}))
 	}
 
 	return &p, nil
@@ -739,11 +739,11 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/pgx.CollectOneRow: %w", &XoError{Entity: "Project", Err: err}))
 	}
 
 	return &p, nil
@@ -845,11 +845,11 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 	// logf(sqlstr, workItemsTableName)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemsTableName}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/pgx.CollectOneRow: %w", &XoError{Entity: "Project", Err: err}))
 	}
 
 	return &p, nil

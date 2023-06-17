@@ -223,11 +223,11 @@ func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 
 	rows, err := db.Query(ctx, sqlstr, b.Name)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Insert/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	newb, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Book])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Book", Err: err}))
 	}
 
 	*b = newb
@@ -247,11 +247,11 @@ func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 
 	rows, err := db.Query(ctx, sqlstr, b.Name, b.BookID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Update/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	newb, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Book])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	*b = newb
 
@@ -259,7 +259,7 @@ func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 }
 
 // Upsert upserts a Book in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (b *Book) Upsert(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
 	var err error
 
@@ -270,11 +270,11 @@ func (b *Book) Upsert(ctx context.Context, db DB, params *BookCreateParams) (*Bo
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Book", Err: err})
 			}
 			b, err = b.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Book", Err: err})
 			}
 		}
 	}
@@ -377,11 +377,11 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Book])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	return res, nil
 }
@@ -469,11 +469,11 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Book])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	return res, nil
 }
@@ -563,11 +563,11 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 	// logf(sqlstr, bookID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	b, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Book])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("books/BookByBookID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("books/BookByBookID/pgx.CollectOneRow: %w", &XoError{Entity: "Book", Err: err}))
 	}
 
 	return &b, nil

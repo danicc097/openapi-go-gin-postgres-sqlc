@@ -512,6 +512,11 @@ export interface operations {
     };
   };
   Events: {
+    parameters: {
+      query: {
+        projectName: components["schemas"]["Project"];
+      };
+    };
     responses: {
       /** @description events */
       200: {

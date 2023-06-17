@@ -108,11 +108,11 @@ func (dj *DummyJoin) Insert(ctx context.Context, db DB) (*DummyJoin, error) {
 
 	rows, err := db.Query(ctx, sqlstr, dj.Name)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Insert/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	newdj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 
 	*dj = newdj
@@ -132,11 +132,11 @@ func (dj *DummyJoin) Update(ctx context.Context, db DB) (*DummyJoin, error) {
 
 	rows, err := db.Query(ctx, sqlstr, dj.Name, dj.DummyJoinID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Update/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	newdj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	*dj = newdj
 
@@ -144,7 +144,7 @@ func (dj *DummyJoin) Update(ctx context.Context, db DB) (*DummyJoin, error) {
 }
 
 // Upsert upserts a DummyJoin in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (dj *DummyJoin) Upsert(ctx context.Context, db DB, params *DummyJoinCreateParams) (*DummyJoin, error) {
 	var err error
 
@@ -155,11 +155,11 @@ func (dj *DummyJoin) Upsert(ctx context.Context, db DB, params *DummyJoinCreateP
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Dummy join", Err: err})
 			}
 			dj, err = dj.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Dummy join", Err: err})
 			}
 		}
 	}
@@ -238,11 +238,11 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	return res, nil
 }
@@ -306,11 +306,11 @@ func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	return res, nil
 }
@@ -376,11 +376,11 @@ func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ..
 	// logf(sqlstr, dummyJoinID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	dj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/pgx.CollectOneRow: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 
 	return &dj, nil

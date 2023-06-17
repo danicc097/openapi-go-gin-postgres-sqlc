@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// GetKeys returns a slice of json keys extracted from an initialized struct's tags.
-func GetKeys(s any, parent string) []string {
+// GetKeys returns a slice of tag values extracted from an initialized struct.
+func GetKeys(tag string, s any, parent string) []string {
 	keys := []string{}
 
 	if s == nil {
@@ -24,7 +24,7 @@ func GetKeys(s any, parent string) []string {
 	if val.Kind() == reflect.Slice || val.Kind() == reflect.Array {
 		for j := 0; j < val.Len(); j++ {
 			elem := val.Index(j).Interface()
-			subkeys := GetKeys(elem, "")
+			subkeys := GetKeys(tag, elem, "")
 			for _, subkey := range subkeys {
 				keys = append(keys, parent+"."+subkey)
 			}
@@ -34,11 +34,11 @@ func GetKeys(s any, parent string) []string {
 	if val.Kind() == reflect.Struct {
 		for idx := 0; idx < val.NumField(); idx++ {
 			typeField := val.Type().Field(idx)
-			jsonTag := typeField.Tag.Get("json")
-			if jsonTag == "" {
+			tagValue := typeField.Tag.Get(tag)
+			if tagValue == "" {
 				continue
 			}
-			key := strings.Split(jsonTag, ",")[0]
+			key := strings.Split(tagValue, ",")[0]
 
 			switch typeField.Type.Kind() {
 			case reflect.Array, reflect.Slice:
@@ -47,14 +47,14 @@ func GetKeys(s any, parent string) []string {
 				}
 				for j := 0; j < val.Field(idx).Len(); j++ {
 					elem := val.Field(idx).Index(j).Interface()
-					subkeys := GetKeys(elem, key)
+					subkeys := GetKeys(tag, elem, key)
 					for _, subkey := range subkeys {
 						keys = append(keys, key+"."+subkey)
 					}
 				}
 			case reflect.Struct:
 				keys = append(keys, key)
-				subkeys := GetKeys(val.Field(idx).Interface(), key)
+				subkeys := GetKeys(tag, val.Field(idx).Interface(), key)
 				for _, subkey := range subkeys {
 					keys = append(keys, key+"."+subkey)
 				}
@@ -63,7 +63,7 @@ func GetKeys(s any, parent string) []string {
 					continue
 				}
 				keys = append(keys, key)
-				subkeys := GetKeys(val.Field(idx).Interface(), key)
+				subkeys := GetKeys(tag, val.Field(idx).Interface(), key)
 				for _, subkey := range subkeys {
 					keys = append(keys, key+"."+subkey)
 				}

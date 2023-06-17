@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -65,8 +66,8 @@ func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 // we are not typing the update to save ourselves from manually adding a migration to change projects.board_config
 // when _any_ field changes. we generate a new config the way it must be and merge with whatever was in db's board_config there at app startup.
 // the endpoint to update it will be validated by openapi libs as usual.
-func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID int, update map[string]any) (*models.ProjectConfig, error) {
-	project, err := p.projectRepo.ByID(ctx, d, projectID)
+func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName models.Project, update map[string]any) (*models.ProjectConfig, error) {
+	project, err := p.projectRepo.ByName(ctx, d, projectName)
 	if err != nil {
 		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
 	}
@@ -76,14 +77,18 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	fmt.Printf("project.BoardConfig: %v\n", project.BoardConfig)
 
 	var workItem any
-	switch project.Name {
+	// explicitly initialize what we want to allow an admin to edit in project config ui
+	switch projectName {
 	case models.ProjectDemo:
-		// explicitly initialize what we want to allow an admin to edit in project config ui
 		workItem = &models.RestDemoWorkItemsResponse{DemoWorkItem: models.DbDemoWorkItem{}, Closed: pointers.New(time.Now())}
 		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() // we want very specific fields to be editable in config so it doesn't clutter it
 		fmt.Printf("workItem: %+v\n", workItem)
+	case models.ProjectDemoTwo:
+		fallthrough
+	default:
+		return nil, errors.New("not implemented")
 	}
-	pathKeys := structs.GetKeys(workItem, "")
+	pathKeys := structs.GetKeys("json", workItem, "")
 
 	// index ProjectConfig.Fields by path for simpler logic
 	for _, path := range pathKeys {
@@ -94,8 +99,10 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	fj, _ := json.Marshal(project.BoardConfig)
 	json.Unmarshal(fj, &boardConfigMap)
 
+	// update default config with current db config and merge updated config on top
+	// merge with default config is necessary for project init,
+	//  but merge with existing db config isn't really necessary.
 	p.mergeFieldsMap(fieldsMap, boardConfigMap)
-
 	p.mergeFieldsMap(fieldsMap, update)
 
 	project.BoardConfig.Fields = make([]models.ProjectConfigField, 0, len(fieldsMap))

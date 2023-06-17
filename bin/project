@@ -132,6 +132,7 @@ x.install-tools() {
     go install github.com/danicc097/xo@v1.0.0 &
     go install github.com/mikefarah/yq/v4@v4.27.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
+    go install golang.org/x/tools/cmd/stringer@latest &
 
     go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 &
     go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0 &
@@ -168,7 +169,7 @@ x.gen.pregen() {
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
-    # spec must always be valid before generating. Schemas to generate must already exist with the appropiate vendor extension
+    # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
     pregen -env=".env.$env" --validate-spec-only
 
     sync_db_enums_with_spec
@@ -882,7 +883,7 @@ x.test.backend.watch() {
       while read -r event_time event_file 2>/dev/null || sleep $latency; do
         clear
 
-        { APP_ENV="$env" go test -tags skipxo -count=1 "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
+        { APP_ENV="$env" go test -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
       done
   done
 }
@@ -993,7 +994,7 @@ x.recreate-shared-services() {
 x.release() {
   { { {
     search_stopship "STOPSHIP" &
-    # go mod verify & # TODO go.work issues solved in go 1.21 (https://github.com/golang/go/issues/54372)
+    GOWORK=off go mod verify & # (https://github.com/golang/go/issues/54372)
 
     wait_without_error
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1007,13 +1008,36 @@ x.dev-utils.api-keys() {
 # Setups a traefik container with predefined configuration in `install-dir`.
 # Args: install-dir
 x.setup.traefik() {
-  git clone --depth=1 https://github.com/danicc097/traefik-bootstrap.git "$1"
-  docker network create traefik-net || true
-  mkdir -p "$1"/traefik/certificates
-  cp $CERTIFICATES_DIR/* "$1"/traefik/certificates
-  cd "$1" || exit
-  ./compose-up
-  cd - >/dev/null || exit
+  { { {
+    test -z "$1" && err "installation directory is required"
+
+    x.setup.mkcert
+
+    git clone --depth=1 https://github.com/danicc097/traefik-bootstrap.git "$1"
+    docker network create traefik-net || true
+    mkdir -p "$1"/traefik/certificates
+    cp $CERTIFICATES_DIR/* "$1"/traefik/certificates
+    cd "$1" || exit
+    cp traefik/dynamic_conf.yaml.example traefik/dynamic_conf.yaml
+    echo "Adding $PWD/certificates/"
+    yq e ".tls.certificates += [{
+    \"certFile\": \"$PWD/$CERTIFICATES_DIR/localhost.pem\",
+    \"keyFile\": \"$PWD/$CERTIFICATES_DIR/localhost-key.pem\"
+  }]" -i traefik/dynamic_conf.yaml
+
+    ./compose-up
+    cd - >/dev/null || exit
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Installs mkcert local development certificates.
+x.setup.mkcert() {
+  { { {
+    cd "$CERTIFICATES_DIR" || exit
+    echo "Setting up local certificates"
+    mkcert --cert-file localhost.pem --key-file localhost-key.pem "localhost" "*.e2e.localhost" "*.local.localhost" "*.dev.localhost" "*.ci.localhost" "*.prod.localhost" "127.0.0.1" "::1" "host.docker.internal" 2>&1
+    cd -
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 ########################## migrations ##########################
@@ -1119,7 +1143,6 @@ x.db.gen.initial-data() {
 
 # Seed database.
 x.db.initial-data() {
-  # xlog eats up read -p (prompt)
   { { {
     x.db.drop
     x.migrate up
@@ -1152,7 +1175,6 @@ x.db.dump() {
 # Restore the database with the latest dump or `file` for the current environment.
 # Args: [file]
 x.db.restore() {
-  # xlog eats up read -p (prompt)
   dump_file="$1"
   if [[ -n $dump_file ]]; then
     [[ ! -f $dump_file ]] && err "$dump_file does not exist"
@@ -1186,12 +1208,14 @@ x.e2e.run() {
   { { {
     name="$PROJECT_PREFIX-e2e"
     cd e2e
-    pnpm install -r --frozen-lockfile
+    pnpm i # cannot install playwright lib
     DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker build -t "$name" .
     cd - >/dev/null
 
-    # need symlink resolution
-    docker run -i --rm \
+    # need symlink resolution for data
+
+    test -t 0 && opts="-t"
+    docker run -i $opts --rm \
       --ipc=host \
       --network host \
       -v "$(pwd)/cmd/oidc-server/data/:/cmd/oidc-server/data/" \

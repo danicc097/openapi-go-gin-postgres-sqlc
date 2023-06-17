@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -35,7 +35,7 @@ func TestAdminPingRoute(t *testing.T) {
 	defer srv.Close()
 
 	resp := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/admin/ping", nil)
+	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/admin/ping"), nil)
 	req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
 
 	srv.Handler.ServeHTTP(resp, req)

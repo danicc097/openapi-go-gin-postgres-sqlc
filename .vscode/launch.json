@@ -18,7 +18,9 @@
       "mode": "auto",
       "cwd": ".",
       "program": "cmd/rest-server/main.go",
-      "args": ["-env=.env.dev"]
+      "args": [
+        "-env=.env.dev"
+      ]
     },
     {
       "name": "Launch CLI",
@@ -27,7 +29,9 @@
       "mode": "auto",
       "cwd": ".",
       "program": "cmd/cli/main.go",
-      "args": ["-env=.env.dev"]
+      "args": [
+        "-env=.env.dev"
+      ]
     }
   ]
 }

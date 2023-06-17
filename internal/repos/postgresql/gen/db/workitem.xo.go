@@ -371,11 +371,11 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 
 	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 
 	*wi = newwi
@@ -395,11 +395,11 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 
 	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt, wi.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	*wi = newwi
 
@@ -407,7 +407,7 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 }
 
 // Upsert upserts a WorkItem in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
 	var err error
 
@@ -425,11 +425,11 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item", Err: err})
 			}
 			wi, err = wi.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item", Err: err})
 			}
 		}
 	}
@@ -470,7 +470,7 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 	wi.DeletedAt = nil
 	newwi, err := wi.Update(ctx, db)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Restore/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Restore/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return newwi, nil
 }
@@ -598,11 +598,11 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }
@@ -730,11 +730,148 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
+	}
+	return res, nil
+}
+
+// WorkItems retrieves a row from 'public.work_items' as a WorkItem.
+//
+// Generated from index '[xo] base filter query'.
+func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 0
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoTwoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
+	}
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, workItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, workItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, workItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, workItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, workItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, workItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTypeGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_items.work_item_id,
+	work_items.title,
+	work_items.description,
+	work_items.work_item_type_id,
+	work_items.metadata,
+	work_items.team_id,
+	work_items.kanban_step_id,
+	work_items.closed,
+	work_items.target_date,
+	work_items.created_at,
+	work_items.updated_at,
+	work_items.deleted_at %s 
+	 FROM public.work_items %s 
+	 WHERE true
+	 %s   AND work_items.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* WorkItems */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, )
+	rows, err := db.Query(ctx, sqlstr, append([]any{}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDescription/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }
@@ -864,14 +1001,14 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 	// logf(sqlstr, deletedAt)
 	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }
@@ -1001,11 +1138,11 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	wi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 
 	return &wi, nil
@@ -1136,14 +1273,151 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemS
 	// logf(sqlstr, teamID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
+	}
+	return res, nil
+}
+
+// WorkItemsByTitle retrieves a row from 'public.work_items' as a WorkItem.
+//
+// Generated from index 'work_items_title_description_idx1'.
+func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.DemoTwoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
+	}
+
+	if c.joins.DemoWorkItem {
+		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, workItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, workItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	}
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, workItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, workItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, workItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, workItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, workItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemTypeGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_items.work_item_id,
+	work_items.title,
+	work_items.description,
+	work_items.work_item_type_id,
+	work_items.metadata,
+	work_items.team_id,
+	work_items.kanban_step_id,
+	work_items.closed,
+	work_items.target_date,
+	work_items.created_at,
+	work_items.updated_at,
+	work_items.deleted_at %s 
+	 FROM public.work_items %s 
+	 WHERE work_items.title = $1
+	 %s   AND work_items.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* WorkItemsByTitle */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, title)
+	rows, err := db.Query(ctx, sqlstr, append([]any{title}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTitleDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTitleDescription/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }

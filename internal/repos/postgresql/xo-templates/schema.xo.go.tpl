@@ -92,11 +92,12 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 
 {{ define "index" }}
 {{- $i := .Data.Index -}}
+{{- $t := $i.Table -}}
 {{- $tables := .Data.Tables -}}
 {{- $constraints := .Data.Constraints -}}
 {{/* TODO: maybe can be init beforehand */}}
-{{- $_ := initialize_constraints $i.Table $constraints }}
-// {{ func_name_context $i "" }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
+{{- $_ := initialize_constraints $t $constraints }}
+// {{ func_name_context $i "" }} retrieves a row from '{{ schema $t.SQLName }}' as a {{ $t.GoName }}.
 //
 // Generated from index '{{ $i.SQLName }}'.
 {{ func_context $i "" "" }} {
@@ -140,28 +141,28 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- if $i.IsUnique }}
   rows, err := {{ db "Query" $i }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $i.Table.SQLName }}/{{ $i.Func }}/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.SQLName }}/{{ $i.Func }}/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
-	{{ short $i.Table }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$i.Table.GoName}}])
+	{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $i.Table.SQLName }}/{{ $i.Func }}/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.SQLName }}/{{ $i.Func }}/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 
-	{{- if $i.Table.PrimaryKeys }}
+	{{- if $t.PrimaryKeys }}
 	{{ end }}
 
-	return &{{ short $i.Table }}, nil
+	return &{{ short $t }}, nil
 {{- else }}
 	rows, err := {{ db "Query" $i }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $i.Table.GoName }}/{{ $i.Func }}/Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/{{ $i.Func }}/Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	defer rows.Close()
 	// process
   {{/* might need to use non pointer []<st> in return if we get a NumField of non-struct type*/}}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$i.Table.GoName}}])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $i.Table.GoName }}/{{ $i.Func }}/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/{{ $i.Func }}/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	return res, nil
 {{- end }}
@@ -287,11 +288,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	{{ logf $t }}
 	rows, err := {{ db_prefix "Query" false false $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 {{- else -}}
 	// insert (primary key generated and returned by database)
@@ -301,11 +302,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 	rows, err := {{ db_prefix "Query" false false $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 {{ end }}
   *{{ short $t }} = new{{ short $t }}
@@ -326,11 +327,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
   rows, err := {{ db_update "Query" $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
   *{{ short $t }} = new{{ short $t }}
 
@@ -339,7 +340,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 
 // {{ func_name_context "Upsert" "" }} upserts a {{ $t.GoName }} in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 {{ recv_context $t "Upsert" "" }}  {
 	var err error
 
@@ -352,11 +353,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-			  return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			  return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err })
 			}
 		  {{ short $t }}, err = {{ short $t }}.Update(ctx, db)
       if err != nil {
-			  return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			  return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err })
       }
 		}
 	}
@@ -417,7 +418,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	{{ short $t }}.DeletedAt = nil
 	new{{ short $t }}, err:= {{ short $t }}.Update(ctx,db)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Restore/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Restore/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	return new{{ short $t }}, nil
 }
@@ -468,11 +469,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 	rows, err := {{ db_paginated "Query" $t $cursor_fields }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	return res, nil
 }

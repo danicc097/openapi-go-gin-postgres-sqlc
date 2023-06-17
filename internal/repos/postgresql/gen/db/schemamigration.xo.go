@@ -118,11 +118,11 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 	logf(sqlstr, sm.Version, sm.Dirty)
 	rows, err := db.Query(ctx, sqlstr, sm.Version, sm.Dirty)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	newsm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	*sm = newsm
 
@@ -141,11 +141,11 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 
 	rows, err := db.Query(ctx, sqlstr, sm.Dirty, sm.Version)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Update/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Update/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	newsm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Update/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	*sm = newsm
 
@@ -153,7 +153,7 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 }
 
 // Upsert upserts a SchemaMigration in the database.
-// Requires appropiate PK(s) to be set beforehand.
+// Requires appropriate PK(s) to be set beforehand.
 func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
 	var err error
 
@@ -165,11 +165,11 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigr
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Schema migration", Err: err})
 			}
 			sm, err = sm.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Schema migration", Err: err})
 			}
 		}
 	}
@@ -248,11 +248,11 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Asc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Asc/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Asc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	return res, nil
 }
@@ -316,11 +316,11 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Desc/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Desc/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Desc/pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	return res, nil
 }
@@ -386,11 +386,11 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 	// logf(sqlstr, version)
 	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	sm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/pgx.CollectOneRow: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 
 	return &sm, nil

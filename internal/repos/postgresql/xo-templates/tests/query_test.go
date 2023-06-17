@@ -5,6 +5,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -23,6 +24,12 @@ import (
     name clash probably needs to be detected between constraints, check M2M-M2O and M2O-O2O
     at the same time
 * IMPORTANT: explain analyze to ensure dynamic sql query plans for joins dont do hash joins
+
+-- TODO: tests for excluded indexes + test trgm queries out with generic func <Entities>() WithFilters: ilike, etc.
+create index on work_items using gin (title gin_trgm_ops);
+create index on work_items using gin (description gin_trgm_ops);
+create index on work_items using gin (title gin_trgm_ops, description gin_trgm_ops);
+create index on work_items using gin (title, description gin_trgm_ops);
 */
 
 func TestCursorPagination_Timestamp(t *testing.T) {
@@ -57,6 +64,17 @@ func Test_Filters(t *testing.T) {
 	assert.Len(t, ee, 2)
 	assert.Equal(t, ee[0].Name, "element -3 days")
 	assert.Equal(t, ee[1].Name, "element -4 days")
+}
+
+func TestTrigram_Filters(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	ww, err := db.WorkItems(ctx, testPool, db.WithWorkItemFilters(map[string][]any{"description ILIKE  '%' || $1 || '%'": {"rome"}}))
+	assert.NoError(t, err)
+	assert.Len(t, ww, 1)
+	assert.Contains(t, *ww[0].Description, "Rome")
 }
 
 func TestM2M_SelectFilter(t *testing.T) {
@@ -233,6 +251,7 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = db.UserByName(ctx, testPool, u1.Name)
+	fmt.Printf("err: %v\n", err)
 	assert.ErrorContains(t, err, errNoRows)
 
 	// test soft delete and restore
