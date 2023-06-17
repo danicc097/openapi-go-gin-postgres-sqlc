@@ -319,11 +319,11 @@ create table work_items (
 
 create index on work_items (team_id);
 
-create index on work_items using gin (title gin_trgm_ops);
-
-create index on work_items using gin (description gin_trgm_ops);
-
-
+-- TODO: xo tests for excluded indexes
+-- create index on work_items using gin (title gin_trgm_ops);
+-- create index on work_items using gin (description gin_trgm_ops);
+-- create index on work_items using gin (title gin_trgm_ops, description gin_trgm_ops);
+-- create index on work_items using gin (title, description gin_trgm_ops);
 /*
 when a new project is required -> manual table creation with empty new fields, just
  work_item_id bigint primary key.

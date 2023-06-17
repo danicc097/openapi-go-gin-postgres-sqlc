@@ -28,6 +28,9 @@ import (
 	"mvdan.cc/gofumpt/format"
 )
 
+// TODO configurable
+var excludedIndexTypes = []string{"gin_trgm_ops"}
+
 type cardinality string
 
 const (
@@ -732,12 +735,12 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				return err
 			}
 
-			if strings.Contains(index.Definition, "gin_trgm_ops") {
-				// TODO: instead just skip the column with that index (regex <...>\s<excluded_index>)
-				// and if len index fields == excluded do nothing (<- has to be checked here before emit and pass
-				// the patched index to emit)
-				fmt.Printf("skipping index with trigram column (%s) - use custom filters instead\n", i.Name)
+			newFields, shouldSkip := removeExcludedIndexTypes(index, excludedIndexTypes)
+			if shouldSkip {
 				continue
+			}
+			if newFields != nil {
+				index.Fields = newFields
 			}
 
 			// emit normal index
@@ -760,6 +763,14 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
 				return err
+			}
+
+			newFields, shouldSkip := removeExcludedIndexTypes(index, excludedIndexTypes)
+			if shouldSkip {
+				continue
+			}
+			if newFields != nil {
+				index.Fields = newFields
 			}
 
 			if index.IsUnique && len(index.Fields) > 1 {
@@ -812,6 +823,69 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		}
 	}
 	return nil
+}
+
+func removeExcludedIndexTypes(index Index, excludedIndexTypes []string) ([]Field, bool) {
+	shouldSkip := false
+	excludedColumnNames := extractExcludedColumnNames(index.Definition, excludedIndexTypes)
+	if len(excludedColumnNames) == len(index.Fields) {
+		fmt.Println("skipping index where all fields are excluded index types: ", index.Definition)
+		return nil, true
+	}
+	if len(excludedColumnNames) > 0 {
+		fmt.Println("patching index containing excluded index types: ", index.Definition)
+		return patchIndexFields(index.Fields, excludedColumnNames), false
+	}
+
+	return nil, shouldSkip
+}
+
+func extractExcludedColumnNames(definition string, excludedIndexTypes []string) []string {
+	var excludedColumnNames []string
+
+	re := regexp.MustCompile(`INDEX .*? USING .*?\((?P<columns>[\w\s.,]+)`)
+	match := re.FindStringSubmatch(definition)
+	subexpNames := re.SubexpNames()
+
+	for i, name := range subexpNames {
+		if name == "columns" && len(match) > i {
+			idxColumns := strings.Split(match[i], ",")
+			for _, idxColumn := range idxColumns {
+				column, idxTypePath, _ := strings.Cut(strings.TrimSpace(idxColumn), " ")
+				pp := strings.Split(idxTypePath, ".")
+				indexTypeName := strings.TrimSpace(pp[len(pp)-1])
+				if contains(excludedIndexTypes, indexTypeName) {
+					excludedColumnNames = append(excludedColumnNames, column)
+				}
+			}
+		}
+	}
+
+	return excludedColumnNames
+}
+
+func patchIndexFields(fields []Field, excludedColumnNames []string) []Field {
+	var patchedFields []Field
+
+	fmt.Printf("excludedColumnNames: %v\n", excludedColumnNames)
+
+	for _, field := range fields {
+		fmt.Printf("field.SQLName: %v\n", field.SQLName)
+		includeField := true
+		for _, columnName := range excludedColumnNames {
+			if field.SQLName == columnName {
+				includeField = false
+				break
+			}
+		}
+		if includeField {
+			patchedFields = append(patchedFields, field)
+		}
+	}
+
+	fmt.Printf("patchedFields: %v\n", patchedFields)
+
+	return patchedFields
 }
 
 // extractIndexIdentifier generates a unique identifier for patched index generation.
