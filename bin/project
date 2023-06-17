@@ -883,7 +883,7 @@ x.test.backend.watch() {
       while read -r event_time event_file 2>/dev/null || sleep $latency; do
         clear
 
-        { APP_ENV="$env" go test -tags skipxo -count=1 "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
+        { APP_ENV="$env" go test -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
       done
   done
 }

@@ -18,30 +18,35 @@ import (
 func Test_MergeConfigFields(t *testing.T) {
 	t.Parallel()
 
-	fakeProjectRepo := &repostesting.FakeProject{}
-	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
-		return &db.Project{
-			Name: models.ProjectDemo,
-			BoardConfig: models.ProjectConfig{
-				Header: []string{"demoProject.ref", "workItemType"},
-				Fields: []models.ProjectConfigField{
-					{
-						IsEditable:    true,
-						ShowCollapsed: true,
-						IsVisible:     true,
-						Path:          "demoWorkItem",
-						Name:          "Demo project",
-					},
-					{
-						IsEditable:    true,
-						ShowCollapsed: true,
-						IsVisible:     true,
-						Path:          "demoWorkItem.ref",
-						Name:          "Reference",
-					},
+	proj := &db.Project{
+		Name: models.ProjectDemo,
+		BoardConfig: models.ProjectConfig{
+			Header: []string{"demoProject.ref", "workItemType"},
+			Fields: []models.ProjectConfigField{
+				{
+					IsEditable:    true,
+					ShowCollapsed: true,
+					IsVisible:     true,
+					Path:          "demoWorkItem",
+					Name:          "Demo project",
+				},
+				{
+					IsEditable:    true,
+					ShowCollapsed: true,
+					IsVisible:     true,
+					Path:          "demoWorkItem.ref",
+					Name:          "Reference",
 				},
 			},
-		}, nil
+		},
+	}
+
+	fakeProjectRepo := &repostesting.FakeProject{}
+	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
+		return proj, nil
+	}
+	fakeProjectRepo.ByNameStub = func(ctx context.Context, d db.DBTX, p models.Project) (*db.Project, error) {
+		return proj, nil
 	}
 	fakeTeamRepo := &repostesting.FakeTeam{}
 	p := services.NewProject(zaptest.NewLogger(t).Sugar(), fakeProjectRepo, fakeTeamRepo)
@@ -93,7 +98,7 @@ func Test_MergeConfigFields(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, 1, tc.args.update)
+			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, models.ProjectDemo, tc.args.update)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}
