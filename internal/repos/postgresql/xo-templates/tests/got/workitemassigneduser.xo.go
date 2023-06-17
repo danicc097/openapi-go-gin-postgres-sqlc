@@ -114,9 +114,8 @@ type User__WIAU_WorkItemAssignedUser struct {
 	Role NullWorkItemRole `json:"role" db:"role" required:"true" `
 }
 
-// WithWorkItemAssignedUserFilters adds the given filters, which may be parameterized with $i.
-// Filters are joined with AND.
-// NOTE: SQL injection prone.
+// WithWorkItemAssignedUserFilters adds the given filters, which can be dynamically parameterized
+// with $i to prevent SQL injection.
 // Example:
 //
 //	filters := map[string][]any{

@@ -112,9 +112,8 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	}
 }
 
-// WithActivityFilters adds the given filters, which may be parameterized with $i.
-// Filters are joined with AND.
-// NOTE: SQL injection prone.
+// WithActivityFilters adds the given filters, which can be dynamically parameterized
+// with $i to prevent SQL injection.
 // Example:
 //
 //	filters := map[string][]any{
