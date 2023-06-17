@@ -732,6 +732,14 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				return err
 			}
 
+			if strings.Contains(index.Definition, "gin_trgm_ops") {
+				// TODO: instead just skip the column with that index (regex <...>\s<excluded_index>)
+				// and if len index fields == excluded do nothing (<- has to be checked here before emit and pass
+				// the patched index to emit)
+				fmt.Printf("skipping index with trigram column (%s) - use custom filters instead\n", i.Name)
+				continue
+			}
+
 			// emit normal index
 			emit(xo.Template{
 				Dest:     strings.ToLower(table.GoName) + ext,

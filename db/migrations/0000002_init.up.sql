@@ -9,6 +9,8 @@ create extension if not exists pg_trgm schema extensions;
 
 create extension if not exists btree_gin schema extensions;
 
+create extension if not exists rum schema extensions;
+
 -- internal use. update whenever a project with its related workitems,
 --  etc. tables are created in migrations
 create table projects (
@@ -316,6 +318,10 @@ create table work_items (
 );
 
 create index on work_items (team_id);
+
+create index on work_items using gin (title gin_trgm_ops);
+
+create index on work_items using gin (description gin_trgm_ops);
 
 
 /*
