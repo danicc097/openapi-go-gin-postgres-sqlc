@@ -20,6 +20,10 @@ import type {
 } from '@tanstack/react-query'
 import type { UserResponse, UpdateUserAuthRequest, UpdateUserRequest } from '.././model'
 
+type AwaitedInput<T> = PromiseLike<T> | T
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never
+
 /**
  * @summary returns the logged in user
  */

@@ -1,6 +1,6 @@
-import { createStyles, Container, Group, ActionIcon, Image, Text, Tooltip } from '@mantine/core'
+import { createStyles, Container, Group, ActionIcon, Image, Text, Tooltip, Avatar } from '@mantine/core'
 import { IconBrandTwitter, IconBrandYoutube, IconBrandInstagram, IconBrandTwitch } from '@tabler/icons'
-
+import { Dropdown } from 'mantine-design-system'
 export const FOOTER_HEIGHT = 55
 
 const useStyles = createStyles((theme) => ({
@@ -42,14 +42,27 @@ export default function Footer() {
     <div className={classes.footer}>
       <Container className={classes.inner}>
         <Text fz="xs">
-          <Group position="left" spacing={5} noWrap>
+          <Group position="left" spacing={0} noWrap>
             <span>
               <p>Copyright © {new Date().getFullYear()}</p>
               <p>Build version: {import.meta.env.VITE_BUILD_NUMBER ?? 'DEVELOPMENT'}</p>
             </span>
           </Group>
         </Text>
-
+        <Dropdown
+          control={
+            <ActionIcon variant="transparent">
+              <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" />
+            </ActionIcon>
+          }
+        >
+          <Dropdown.Item key="user" onClick={(e) => console.log('user 1')}>
+            user 1
+          </Dropdown.Item>
+          <Dropdown.Item key="user2" onClick={(e) => console.log('user 2')}>
+            user 2
+          </Dropdown.Item>
+        </Dropdown>
         <Group spacing={0} className={classes.links} position="right" noWrap>
           <Tooltip label={`Follow us on Twitter`}>
             <ActionIcon size="lg">

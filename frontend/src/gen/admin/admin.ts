@@ -18,6 +18,10 @@ import type {
 } from '@tanstack/react-query'
 import type { HTTPValidationError } from '.././model'
 
+type AwaitedInput<T> = PromiseLike<T> | T
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never
+
 /**
  * @summary Ping pongs
  */

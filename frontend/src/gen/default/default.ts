@@ -18,6 +18,10 @@ import type {
 } from '@tanstack/react-query'
 import type { EventsParams, HTTPValidationError } from '.././model'
 
+type AwaitedInput<T> = PromiseLike<T> | T
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never
+
 export const myProviderCallback = (options?: AxiosRequestConfig): Promise<AxiosResponse<void>> => {
   return axios.get(`/auth/myprovider/callback`, options)
 }

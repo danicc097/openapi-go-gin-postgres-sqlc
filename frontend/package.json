@@ -102,6 +102,7 @@
     "happy-dom": "^8.1.0",
     "jsdom": "^20.0.3",
     "openapi-types": "^12.0.2",
+    "mantine-design-system": "github:danicc097/mantine-design-system#v0.1.0",
     "openapi-typescript-validator": "github:danicc097/openapi-typescript-validator",
     "prettier": "^2.7.1",
     "terser": "^5.15.0",

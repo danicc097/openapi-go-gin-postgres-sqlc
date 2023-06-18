@@ -29,6 +29,10 @@ import type {
   RestWorkItemTagCreateRequest,
 } from '.././model'
 
+type AwaitedInput<T> = PromiseLike<T> | T
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never
+
 /**
  * @summary creates initial data (teams, work item types, tags...) for a new project
  */
