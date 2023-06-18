@@ -1,6 +1,7 @@
 import type roles from '@roles'
 import scopes from '@scopes'
 import _ from 'lodash'
+import type { Role } from 'src/gen/model'
 
 const LIGHT_BLUE = '#4EC5F1'
 const LIGHT_GREEN = '#0DF2C8'
@@ -10,7 +11,7 @@ const LIGHT_RED = '#9C1C1C'
 const LIGHT_PURPLE = '#5E2F74'
 
 type RoleColors = {
-  [key in keyof typeof roles]: string
+  [key in Role]: string
 }
 
 const ROLE_COLORS: RoleColors = {
@@ -22,7 +23,7 @@ const ROLE_COLORS: RoleColors = {
   superAdmin: LIGHT_RED,
 }
 
-export const roleColor = (role: keyof typeof roles) => {
+export const roleColor = (role: Role) => {
   return ROLE_COLORS[role]
 }
 

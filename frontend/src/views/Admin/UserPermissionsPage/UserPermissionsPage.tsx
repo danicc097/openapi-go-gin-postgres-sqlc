@@ -1,5 +1,5 @@
 import _, { capitalize, random } from 'lodash'
-import React, { Fragment, forwardRef, useEffect, useReducer, useState } from 'react'
+import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
 import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
@@ -22,6 +22,7 @@ import { Prism } from '@mantine/prism'
 import { Modal } from 'mantine-design-system'
 import { notifications } from '@mantine/notifications'
 import { IconCheck } from '@tabler/icons'
+import RoleBadge from 'src/components/RoleBadge'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -34,8 +35,6 @@ interface ItemProps extends React.ComponentPropsWithoutRef<'div'> {
 }
 
 const Item = forwardRef<HTMLDivElement, ItemProps>(({ value, user, ...others }: ItemProps, ref) => {
-  const color = roleColor(user.role)
-
   return (
     <div ref={ref} {...others}>
       <Group noWrap spacing="lg" align="center">
@@ -47,13 +46,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(({ value, user, ...others }: 
               .join('')}
           </Avatar>
           <Space p={5} />
-          <Badge
-            size="sm"
-            radius="md"
-            style={{ backgroundColor: color, color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black' }}
-          >
-            {user.role}
-          </Badge>
+          <RoleBadge role={user.role} />
         </div>
 
         <div style={{ marginLeft: 'auto' }}>{user?.email}</div>
