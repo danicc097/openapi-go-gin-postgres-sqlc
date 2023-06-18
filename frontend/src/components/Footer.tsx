@@ -1,6 +1,7 @@
 import { createStyles, Container, Group, ActionIcon, Image, Text, Tooltip, Avatar } from '@mantine/core'
 import { IconBrandTwitter, IconBrandYoutube, IconBrandInstagram, IconBrandTwitch } from '@tabler/icons'
 import { Dropdown } from 'mantine-design-system'
+import CONFIG from 'src/config'
 export const FOOTER_HEIGHT = 55
 
 const useStyles = createStyles((theme) => ({
@@ -45,7 +46,7 @@ export default function Footer() {
           <Group position="left" spacing={0} noWrap>
             <span>
               <p>Copyright © {new Date().getFullYear()}</p>
-              <p>Build version: {import.meta.env.VITE_BUILD_NUMBER ?? 'DEVELOPMENT'}</p>
+              <p>Build version: {CONFIG.BUILD_NUMBER ?? 'DEVELOPMENT'}</p>
             </span>
           </Group>
         </Text>

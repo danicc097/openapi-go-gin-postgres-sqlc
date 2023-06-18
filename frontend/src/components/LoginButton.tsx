@@ -4,9 +4,7 @@ import { Button } from '@mantine/core'
 import { apiPath } from 'src/services/apiPaths'
 import { faSignIn } from '@fortawesome/free-solid-svg-icons'
 
-export default function LoginTwitchButton() {
-  const redirectURI = encodeURIComponent(`${import.meta.env.VITE_URL}/api/auth/twitch/callback/`)
-
+export default function LoginButton() {
   return (
     <>
       <form>

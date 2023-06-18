@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUISlice } from 'src/slices/ui'
 import { useGetCurrentUser } from 'src/gen/user/user'
 import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
-import config from 'src/config'
+import CONFIG from 'src/config'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -191,7 +191,7 @@ export default function Header({ tabs }: HeaderProps) {
                     Object.assign(document.createElement('a'), {
                       target: '_blank',
                       rel: 'noopener noreferrer',
-                      href: config.AUTH_SERVER_UI_PROFILE,
+                      href: CONFIG.AUTH_SERVER_UI_PROFILE,
                     }).click()
                   }
                   icon={<FontAwesomeIcon icon={faUser} size="xl" />}
