@@ -103,8 +103,8 @@ export default function UserPermissionsPage() {
         title: 'Submitted',
         color: 'primary',
         iconType: 'check',
-        toastLifeTimeMs: 15000,
-        text: 'Submitted',
+        autoClose: 15000,
+        message: 'Submitted',
       })
       setCalloutError(null)
     } catch (error) {

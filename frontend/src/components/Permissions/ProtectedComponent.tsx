@@ -1,8 +1,7 @@
-import { EuiEmptyPrompt } from '@elastic/eui'
 import _ from 'lodash'
 import type { ReactNode } from 'react'
 import type { Role, Scopes, UserResponse } from 'src/gen/model'
-import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
+import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { isAuthorized } from 'src/services/authorization'
 
 type ProtectedComponentProps = {

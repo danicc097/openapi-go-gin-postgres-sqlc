@@ -43,6 +43,9 @@ export default ({ mode }) => {
     },
     build: {
       minify: 'terser',
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
       terserOptions: {
         compress: {
           drop_console: true,

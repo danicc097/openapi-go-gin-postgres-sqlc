@@ -12,7 +12,7 @@
     "allowJs": false,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error",
+    "verbatimModuleSyntax": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,

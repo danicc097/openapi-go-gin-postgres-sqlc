@@ -4,9 +4,10 @@ import cloudsLight from 'src/assets/logo/two-black-clouds.svg'
 import React from 'react'
 import { RouteLoading } from './FallbackLoading.styles'
 import { useUISlice } from 'src/slices/ui'
+import { useMantineTheme } from '@mantine/styles'
 
 export default function FallbackLoading() {
-  const theme = useUISlice((state) => state?.theme)
+  const { colorScheme } = useMantineTheme()
 
   return (
     <RouteLoading>
@@ -22,7 +23,7 @@ export default function FallbackLoading() {
           },
         }}
       >
-        <img src={theme === 'dark' ? cloudsDark : cloudsLight} width="80" />
+        <img src={colorScheme === 'dark' ? cloudsDark : cloudsLight} width="80" />
       </motion.div>
       {/* // animate a boxshadow below the svg that grows and shrinks width*/}
       <motion.div

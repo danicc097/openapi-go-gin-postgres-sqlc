@@ -1,11 +1,10 @@
 import { createAvatarImageDataUrl } from 'src/utils/files'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
-import { EuiIcon, EuiText } from '@elastic/eui'
+import { notifications } from '@mantine/notifications'
+import { IconForbid } from '@tabler/icons'
 
 export const useNotificationAPI = () => {
-  const { addToast } = useUISlice()
-
   const createTestNotification = (email: string) => {
     new Notification('Hello world!', {
       body: 'Push notification.\n\nUse this to test the notification system.',
@@ -47,17 +46,13 @@ export const useNotificationAPI = () => {
   }
 
   function addNotificationAccessDeniedToast() {
-    addToast({
+    notifications.show({
       id: ToastId.NoticationAPIAccessDenied,
       title: `Notification access denied`,
       color: 'danger',
-      iconType: 'alert',
-      toastLifeTimeMs: 15000,
-      text: (
-        <>
-          <EuiText>{`Please enable it via "View site information" at the top bar 🛈 icon`}</EuiText>
-        </>
-      ),
+      icon: <IconForbid size="1.2rem" />,
+      autoClose: 15000,
+      message: `Please enable it via "View site information" at the top bar 🛈 icon`,
     })
   }
 
