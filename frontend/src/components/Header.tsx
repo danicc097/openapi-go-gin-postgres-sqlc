@@ -138,8 +138,8 @@ export default function Header({ tabs }: HeaderProps) {
     ) : user ? (
       <UnstyledButton className={cx(classes.user, { [classes.userActive]: userMenuOpened })}>
         <Group spacing={7}>
-          <Avatar alt={user.username} radius="xl" size={25} />
-          <Text className="display-name" weight={500} size="sm" sx={{ lineHeight: 1 }} mr={3}>
+          <Avatar alt={user.username} radius="xl" size={35} mt={6} mb={6} />
+          <Text className="display-name" weight={500}>
             {user.username}
           </Text>
           <IconChevronDown size={12} stroke={1.5} />
