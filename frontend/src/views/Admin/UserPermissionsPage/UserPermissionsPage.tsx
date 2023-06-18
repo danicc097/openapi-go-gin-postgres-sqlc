@@ -1,7 +1,7 @@
 import _, { capitalize, random } from 'lodash'
 import React, { Fragment, forwardRef, useEffect, useReducer, useState } from 'react'
 import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
-import { roleColor } from 'src/utils/colors'
+import { getContrastYIQ, roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 import scopes from '@scopes'
 import roles from '@roles'
@@ -33,19 +33,34 @@ interface ItemProps extends React.ComponentPropsWithoutRef<'div'> {
   user: UserResponse
 }
 
-const Item = forwardRef<HTMLDivElement, ItemProps>(({ value, user, ...others }: ItemProps, ref) => (
-  <div ref={ref} {...others}>
-    <Group noWrap>
-      <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
-        {user.fullName
-          ?.split(' ')
-          .map((n) => n[0].toUpperCase())
-          .join('')}
-      </Avatar>
-      <>{user?.email}</>
-    </Group>
-  </div>
-))
+const Item = forwardRef<HTMLDivElement, ItemProps>(({ value, user, ...others }: ItemProps, ref) => {
+  const color = roleColor(user.role)
+
+  return (
+    <div ref={ref} {...others}>
+      <Group noWrap spacing="lg" align="center">
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
+            {user.fullName
+              ?.split(' ')
+              .map((n) => n[0].toUpperCase())
+              .join('')}
+          </Avatar>
+          <Space p={5} />
+          <Badge
+            size="sm"
+            radius="md"
+            style={{ backgroundColor: color, color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black' }}
+          >
+            {user.role}
+          </Badge>
+        </div>
+
+        <div style={{ marginLeft: 'auto' }}>{user?.email}</div>
+      </Group>
+    </div>
+  )
+})
 
 export default function UserPermissionsPage() {
   const [userSelection, setUserSelection] = useState<UserResponse>(null)
@@ -63,7 +78,7 @@ export default function UserPermissionsPage() {
         allUsers
           ? allUsers.map((user) => ({
               label: user.email,
-              // append: <Badge color={roleColor(user.role)}>{user.role}</Badge>,
+
               value: user.email,
               user,
             }))
@@ -188,12 +203,12 @@ export default function UserPermissionsPage() {
   const element = (
     <>
       {getErrors()}
-      <Space></Space>
+      <Space pt={12} />
       <Title size={1}>
         <Text>Form</Text>
       </Title>
       <Prism language="json">{JSON.stringify(form, null, 4)}</Prism>
-      <Space></Space>
+      <Space pt={12} />
       <form
         onSubmit={form.onSubmit(onRoleUpdateSubmit, handleError)}
         // error={getErrors()}
@@ -219,7 +234,7 @@ export default function UserPermissionsPage() {
             onSuperSelectChange: onRoleSuperSelectChange,
           })} */}
         </Flex>
-        <Space />
+        <Space pt={12} />
         {userSelection?.email && (
           <Button
             disabled={userSelection === null}
