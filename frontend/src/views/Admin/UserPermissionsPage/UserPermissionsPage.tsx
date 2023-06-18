@@ -1,26 +1,3 @@
-import {
-  EuiBadge,
-  EuiButton,
-  EuiCallOut,
-  EuiCodeBlock,
-  EuiConfirmModal,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiForm,
-  EuiFormRow,
-  EuiHeader,
-  EuiHealth,
-  EuiIcon,
-  EuiSelectable,
-  EuiSelectableOption,
-  EuiSpacer,
-  EuiSuperSelect,
-  EuiSuperSelectOption,
-  EuiSuperSelectProps,
-  EuiText,
-  EuiTextColor,
-  EuiTitle,
-} from '@elastic/eui'
 import _, { capitalize, random } from 'lodash'
 import React, { Fragment, useEffect, useReducer, useState } from 'react'
 import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
@@ -29,19 +6,22 @@ import { joinWithAnd } from 'src/utils/format'
 import scopes from '@scopes'
 import roles from '@roles'
 import type { Role } from 'src/client-validator/gen/models'
-import PageTemplate from 'src/components/PageTemplate/PageTemplate'
+import PageTemplate from 'src/components/PageTemplate'
 import type { ValidationErrors } from 'src/client-validator/validate'
 import { useUpdateUserAuthorization } from 'src/gen/user/user'
-import { useForm, UseFormReturnType } from '@mantine/form'
+import { Form, useForm, type UseFormReturnType } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
 import { UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
 import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
-import { createLabel, renderSuperSelect } from 'src/utils/forms'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
-import UserAvatar from 'src/components/UserAvatar/UserAvatar'
 import type { RequiredKeys } from 'src/types/utils'
+import { Avatar, Badge, Button, Flex, Space, Text, Title, Select, type SelectItem } from '@mantine/core'
+import { Prism } from '@mantine/prism'
+import { Modal } from 'mantine-design-system'
+import { notifications } from '@mantine/notifications'
+import { IconCheck } from '@tabler/icons'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -49,8 +29,7 @@ const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean
 
 export default function UserPermissionsPage() {
   const [userSelection, setUserSelection] = useState<UserResponse>(null)
-  const [userOptions, setUserOptions] = useState<Array<EuiSelectableOption<any>>>(undefined)
-  const { addToast, dismissToast, theme } = useUISlice()
+  const [userOptions, setUserOptions] = useState<SelectItem[]>(undefined)
 
   const [allUsers] = useState(
     [...Array(20)].map((x, i) => {
@@ -63,15 +42,17 @@ export default function UserPermissionsPage() {
       setUserOptions(
         allUsers
           ? allUsers.map((user) => ({
-              label: (
-                <>
-                  <UserAvatar user={user} size={'s'}></UserAvatar> <>{user?.email}</>
-                </>
-              ),
-              append: <EuiBadge color={roleColor(user.role)}>{user.role}</EuiBadge>,
+              label: user.email,
+              // (
+              //   <>
+              //     <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user.username} />{' '}
+              //     <>{user?.email}</>
+              //   </>
+              // ),
+              append: <Badge color={roleColor(user.role)}>{user.role}</Badge>,
               role: user.role,
               showIcons: false,
-              value: user,
+              value: user.email,
             }))
           : undefined,
       )
@@ -98,11 +79,11 @@ export default function UserPermissionsPage() {
       const updateUserAuthRequest = UpdateUserAuthRequestDecoder.decode(form.values)
       // const payload = await updateUserAuthorization({ data: updateUserAuthRequest, id: '' })
       // console.log('fulfilled', payload)
-      addToast({
+      notifications.show({
         id: ToastId.FormSubmit,
         title: 'Submitted',
         color: 'primary',
-        iconType: 'check',
+        icon: <IconCheck size="1.2rem" />,
         autoClose: 15000,
         message: 'Submitted',
       })
@@ -164,46 +145,25 @@ export default function UserPermissionsPage() {
     showModal()
   }
 
-  const title = (
-    <div>
-      <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
-        <EuiFlexItem grow={false}>
-          <EuiIcon type="eraser" size="m" />
-        </EuiFlexItem>
-
-        <EuiFlexItem>
-          <EuiTitle size="xs">
-            <h3 style={{ color: 'dodgerblue' }}>Update user authorization</h3>
-          </EuiTitle>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-
-      <EuiText size="s">
-        <p>
-          <EuiTextColor color="subdued">{_.unescape(`Manually update a user's role and scopes.`)}</EuiTextColor>
-        </p>
-      </EuiText>
-    </div>
-  )
-
-  const roleOptions: EuiSuperSelectProps<Role>['options'] = Object.keys(roles).map((key: Role) => {
-    const name = capitalize(key.replace(/([A-Z])/g, ' $1').trim())
-    return {
-      value: key,
-      inputDisplay: (
-        <EuiHealth color={roleColor(key)} style={{ lineHeight: 'inherit' }}>
-          {name}
-        </EuiHealth>
-      ),
-      dropdownDisplay: (
-        <Fragment>
-          <EuiHealth color={roleColor(key)} style={{ lineHeight: 'inherit' }}>
-            {name}
-          </EuiHealth>
-        </Fragment>
-      ),
-    }
-  })
+  // TODO:
+  // const roleOptions: EuiSuperSelectProps<Role>['options'] = Object.keys(roles).map((key: Role) => {
+  //   const name = capitalize(key.replace(/([A-Z])/g, ' $1').trim())
+  //   return {
+  //     value: key,
+  //     inputDisplay: (
+  //       <EuiHealth color={roleColor(key)} style={{ lineHeight: 'inherit' }}>
+  //         {name}
+  //       </EuiHealth>
+  //     ),
+  //     dropdownDisplay: (
+  //       <Fragment>
+  //         <EuiHealth color={roleColor(key)} style={{ lineHeight: 'inherit' }}>
+  //           {name}
+  //         </EuiHealth>
+  //       </Fragment>
+  //     ),
+  //   }
+  // })
 
   const onRoleSuperSelectChange = (value) => {
     form.values.role = value
@@ -212,86 +172,67 @@ export default function UserPermissionsPage() {
   const getErrors = () =>
     calloutErrors ? calloutErrors?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`) : null
 
-  const renderModal = (): any => {
-    return isModalVisible ? (
-      <EuiConfirmModal
-        title={`Update auth information`}
-        onCancel={closeModal}
-        onConfirm={submitRoleUpdate}
-        cancelButtonText="Cancel"
-        confirmButtonText="Update"
-        defaultFocusedButton="confirm"
-        buttonColor="warning"
-        data-test-subj="updateUserAuthForm__confirmModal"
-      >
-        <>
-          {_.unescape(`You're about to update auth information for `)}
-          <strong>{userSelection.email}</strong>.<p>Are you sure you want to do this?</p>
-        </>
-      </EuiConfirmModal>
-    ) : null
-  }
-
   const element = (
     <>
       {getErrors()}
-      <EuiSpacer></EuiSpacer>
-      <EuiTitle size="xs">
-        <EuiText>Form</EuiText>
-      </EuiTitle>
-      <EuiCodeBlock language="json">{JSON.stringify(form, null, 4)}</EuiCodeBlock>
-      <EuiSpacer></EuiSpacer>
-      <EuiForm
-        component="form"
+      <Space></Space>
+      <Title size={1}>
+        <Text>Form</Text>
+      </Title>
+      <Prism language="json">{JSON.stringify(form, null, 4)}</Prism>
+      <Space></Space>
+      <form
         onSubmit={form.onSubmit(onRoleUpdateSubmit, handleError)}
-        isInvalid={Boolean(form.errors.length)}
-        error={getErrors()}
+        // error={getErrors()}
       >
-        <EuiFlexGroup direction="column">
-          <EuiFormRow fullWidth label="Select the user's email">
-            <EuiSelectable
-              aria-label="Searchable example"
-              data-test-subj="updateUserAuthForm__selectable"
-              searchable
-              searchProps={{
-                onChange: (searchValue, matchingOptions) => {
-                  null
-                },
-              }}
-              options={userOptions ?? []}
-              singleSelection="always"
-              onChange={onEmailSelectableChange}
-            >
-              {(list, search) => (
-                <Fragment>
-                  {search}
-                  {list}
-                </Fragment>
-              )}
-            </EuiSelectable>
-          </EuiFormRow>
-          {renderSuperSelect<UpdateUserAuthRequest, 'role'>({
+        <Flex direction="column">
+          <Select
+            aria-label="Searchable example"
+            data-test-subj="updateUserAuthForm__selectable"
+            searchable
+            filter={(value, item) =>
+              item.label?.toLowerCase().includes(value.toLowerCase().trim()) ||
+              item.description?.toLowerCase().includes(value.toLowerCase().trim())
+            }
+            data={userOptions ?? []}
+            onChange={onEmailSelectableChange}
+          />
+          {/* TODO: {renderSuperSelect<UpdateUserAuthRequest, 'role'>({
             formKey: 'role',
             form,
             options: roleOptions,
             requiredFormKeys: REQUIRED_USER_AUTH_UPDATE_KEYS,
             onSuperSelectChange: onRoleSuperSelectChange,
-          })}
-        </EuiFlexGroup>
-        <EuiSpacer />
-        <EuiButton
-          fill
-          type="submit"
-          isDisabled={userSelection === null}
-          color="primary"
-          data-test-subj="updateUserAuthForm__submit"
-        >{`Update role for ${userSelection?.email ?? '...'}`}</EuiButton>
-      </EuiForm>
-      {renderModal()}
+          })} */}
+        </Flex>
+        <Space />
+        <Button disabled={userSelection === null} data-test-subj="updateUserAuthForm__submit">{`Update role for ${
+          userSelection?.email ?? '...'
+        }`}</Button>
+      </form>
+      <Modal
+        opened={isModalVisible}
+        title={`Update auth information`}
+        onClose={closeModal}
+        data-test-subj="updateUserAuthForm__confirmModal"
+      >
+        <>
+          {_.unescape(`You're about to update auth information for `)}
+          <strong>{userSelection?.email}</strong>.<p>Are you sure you want to do this?</p>
+          <Button onClick={closeModal}>Cancel</Button>
+          <Button onClick={submitRoleUpdate}>Update</Button>
+        </>
+      </Modal>
     </>
   )
 
   return (
-    <PageTemplate header={{ children: title }} content={element} restrictWidth={'40vw'} buttons={[]} offset={100} />
+    <PageTemplate>
+      <>
+        <Title>{_.unescape(`Manually update a user's role and scopes.`)}</Title>
+        <Space />
+        {element}
+      </>
+    </PageTemplate>
   )
 }
