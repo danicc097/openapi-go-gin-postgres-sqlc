@@ -28,13 +28,15 @@ type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean> = {}
 
 interface ItemProps extends React.ComponentPropsWithoutRef<'div'> {
+  label: string
+  value: UserResponse['email']
   user: UserResponse
 }
 
-const Item = forwardRef<HTMLDivElement, ItemProps>(({ user, ...others }: ItemProps, ref) => (
+const Item = forwardRef<HTMLDivElement, ItemProps>(({ value, user, ...others }: ItemProps, ref) => (
   <div ref={ref} {...others}>
     <Group noWrap>
-      <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user.username}>
+      <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
         {user.fullName
           ?.split(' ')
           .map((n) => n[0].toUpperCase())
@@ -47,7 +49,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(({ user, ...others }: ItemPro
 
 export default function UserPermissionsPage() {
   const [userSelection, setUserSelection] = useState<UserResponse>(null)
-  const [userOptions, setUserOptions] = useState(undefined)
+  const [userOptions, setUserOptions] = useState<Array<ItemProps>>(undefined)
 
   const [allUsers] = useState(
     [...Array(20)].map((x, i) => {
@@ -62,7 +64,8 @@ export default function UserPermissionsPage() {
           ? allUsers.map((user) => ({
               label: user.email,
               // append: <Badge color={roleColor(user.role)}>{user.role}</Badge>,
-              user: user,
+              value: user.email,
+              user,
             }))
           : undefined,
       )
@@ -132,9 +135,9 @@ export default function UserPermissionsPage() {
     }
   }
 
-  const onEmailSelectableChange = (newOptions) => {
-    setUserOptions(newOptions)
-    const user = newOptions.filter((option) => !!option?.checked)[0]?.value
+  const onEmailSelectableChange = (email) => {
+    console.log(email)
+    const user = allUsers.find((user) => user.email === email)
     setUserSelection(user)
     form.values.role = user.role
   }
@@ -217,9 +220,12 @@ export default function UserPermissionsPage() {
           })} */}
         </Flex>
         <Space />
-        <Button disabled={userSelection === null} data-test-subj="updateUserAuthForm__submit">{`Update role for ${
-          userSelection?.email ?? '...'
-        }`}</Button>
+        {userSelection?.email && (
+          <Button
+            disabled={userSelection === null}
+            data-test-subj="updateUserAuthForm__submit"
+          >{`Update role for ${userSelection.email}`}</Button>
+        )}
       </form>
       <Modal
         opened={isModalVisible}
