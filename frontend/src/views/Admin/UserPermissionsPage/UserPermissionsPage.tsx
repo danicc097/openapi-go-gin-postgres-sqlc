@@ -1,5 +1,5 @@
 import _, { capitalize, random } from 'lodash'
-import React, { Fragment, useEffect, useReducer, useState } from 'react'
+import React, { Fragment, forwardRef, useEffect, useReducer, useState } from 'react'
 import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
 import { roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
@@ -17,7 +17,7 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import type { RequiredKeys } from 'src/types/utils'
-import { Avatar, Badge, Button, Flex, Space, Text, Title, Select, type SelectItem } from '@mantine/core'
+import { Avatar, Badge, Button, Flex, Space, Text, Title, Select, type SelectItem, Group } from '@mantine/core'
 import { Prism } from '@mantine/prism'
 import { Modal } from 'mantine-design-system'
 import { notifications } from '@mantine/notifications'
@@ -27,9 +27,27 @@ type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
 const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean> = {}
 
+interface ItemProps extends React.ComponentPropsWithoutRef<'div'> {
+  user: UserResponse
+}
+
+const Item = forwardRef<HTMLDivElement, ItemProps>(({ user, ...others }: ItemProps, ref) => (
+  <div ref={ref} {...others}>
+    <Group noWrap>
+      <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user.username}>
+        {user.fullName
+          ?.split(' ')
+          .map((n) => n[0].toUpperCase())
+          .join('')}
+      </Avatar>
+      <>{user?.email}</>
+    </Group>
+  </div>
+))
+
 export default function UserPermissionsPage() {
   const [userSelection, setUserSelection] = useState<UserResponse>(null)
-  const [userOptions, setUserOptions] = useState<SelectItem[]>(undefined)
+  const [userOptions, setUserOptions] = useState(undefined)
 
   const [allUsers] = useState(
     [...Array(20)].map((x, i) => {
@@ -43,16 +61,8 @@ export default function UserPermissionsPage() {
         allUsers
           ? allUsers.map((user) => ({
               label: user.email,
-              // (
-              //   <>
-              //     <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user.username} />{' '}
-              //     <>{user?.email}</>
-              //   </>
-              // ),
-              append: <Badge color={roleColor(user.role)}>{user.role}</Badge>,
-              role: user.role,
-              showIcons: false,
-              value: user.email,
+              // append: <Badge color={roleColor(user.role)}>{user.role}</Badge>,
+              user: user,
             }))
           : undefined,
       )
@@ -187,6 +197,7 @@ export default function UserPermissionsPage() {
       >
         <Flex direction="column">
           <Select
+            itemComponent={Item}
             aria-label="Searchable example"
             data-test-subj="updateUserAuthForm__selectable"
             searchable
