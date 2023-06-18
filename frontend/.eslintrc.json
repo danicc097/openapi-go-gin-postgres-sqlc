@@ -19,11 +19,13 @@
     "sourceType": "module"
   },
   "plugins": [
+    "prettier",
     "react",
     "@typescript-eslint",
     "jest-dom"
   ],
   "rules": {
+    "prettier/prettier": "error",
     "react/no-unknown-property": [
       "error",
       {

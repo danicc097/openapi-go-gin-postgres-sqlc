@@ -23,9 +23,13 @@ export enum AttributeKeys {
 }
 
 export function newFrontendSpan(name: string) {
-  const span = tracer.startSpan(name)
-  span.setAttribute(AttributeKeys.SessionID, sessionID)
-  return span
+  try {
+    const span = tracer.startSpan(name)
+    span.setAttribute(AttributeKeys.SessionID, sessionID)
+    return span
+  } catch (error) {
+    console.log('could not send span: ' + error)
+  }
 }
 
 type TraceProviderProps = {

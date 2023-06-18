@@ -8,7 +8,7 @@ import roles from '@roles'
 import type { Role } from 'src/client-validator/gen/models'
 import PageTemplate from 'src/components/PageTemplate'
 import type { ValidationErrors } from 'src/client-validator/validate'
-import { useUpdateUserAuthorization } from 'src/gen/user/user'
+import { updateUserAuthorization, useUpdateUserAuthorization } from 'src/gen/user/user'
 import { Form, useForm, type UseFormReturnType } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
 import { UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
@@ -17,9 +17,8 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import type { RequiredKeys } from 'src/types/utils'
-import { Avatar, Badge, Button, Flex, Space, Text, Title, Select, type SelectItem, Group } from '@mantine/core'
+import { Avatar, Badge, Button, Flex, Space, Text, Title, Select, type SelectItem, Group, Modal } from '@mantine/core'
 import { Prism } from '@mantine/prism'
-import { Modal } from 'mantine-design-system'
 import { notifications } from '@mantine/notifications'
 import { IconCheck } from '@tabler/icons'
 import RoleBadge from 'src/components/RoleBadge'
@@ -98,8 +97,8 @@ export default function UserPermissionsPage() {
   const fetchData = async () => {
     try {
       const updateUserAuthRequest = UpdateUserAuthRequestDecoder.decode(form.values)
-      // const payload = await updateUserAuthorization({ data: updateUserAuthRequest, id: '' })
-      // console.log('fulfilled', payload)
+      const payload = await updateUserAuthorization('', updateUserAuthRequest)
+      console.log('fulfilled', payload)
       notifications.show({
         id: ToastId.FormSubmit,
         title: 'Submitted',
@@ -157,7 +156,7 @@ export default function UserPermissionsPage() {
   const submitRoleUpdate = async () => {
     const span = newFrontendSpan('fetchData')
     await fetchData()
-    span.end()
+    span?.end()
 
     closeModal()
   }
@@ -232,20 +231,25 @@ export default function UserPermissionsPage() {
           <Button
             disabled={userSelection === null}
             data-test-subj="updateUserAuthForm__submit"
+            onClick={showModal}
           >{`Update role for ${userSelection.email}`}</Button>
         )}
       </form>
       <Modal
         opened={isModalVisible}
-        title={`Update auth information`}
+        title={<Title size={18}>Update auth information</Title>}
         onClose={closeModal}
         data-test-subj="updateUserAuthForm__confirmModal"
       >
         <>
           {_.unescape(`You're about to update auth information for `)}
           <strong>{userSelection?.email}</strong>.<p>Are you sure you want to do this?</p>
-          <Button onClick={closeModal}>Cancel</Button>
-          <Button onClick={submitRoleUpdate}>Update</Button>
+          <Group style={{ justifyContent: 'flex-end' }}>
+            <Button variant="subtle" color="orange" onClick={closeModal}>
+              Cancel
+            </Button>
+            <Button onClick={submitRoleUpdate}>Update</Button>
+          </Group>
         </>
       </Modal>
     </>
