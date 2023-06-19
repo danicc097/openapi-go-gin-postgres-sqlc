@@ -1,5 +1,6 @@
 import { defineConfig } from 'orval'
 import { faker } from '@faker-js/faker'
+import { uniqueId } from 'lodash'
 
 // for custom client see https://github.com/anymaniax/orval/blob/master/samples/react-query/custom-client/src/api/mutator/custom-client.ts#L1
 export default defineConfig({
@@ -32,10 +33,12 @@ export default defineConfig({
             'date-time': () => faker.date.past(),
           },
           properties: {
+            userID: faker.datatype.uuid(),
             email: () => faker.internet.email(),
           },
           required: true,
         },
+        mutator: { path: 'src/api/mutator.ts', name: 'customInstance' },
       },
     },
     input: {
