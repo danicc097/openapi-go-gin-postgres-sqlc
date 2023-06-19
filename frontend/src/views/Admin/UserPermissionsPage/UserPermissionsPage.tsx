@@ -97,7 +97,7 @@ export default function UserPermissionsPage() {
   const fetchData = async () => {
     try {
       const updateUserAuthRequest = UpdateUserAuthRequestDecoder.decode(form.values)
-      const payload = await updateUserAuthorization('', updateUserAuthRequest)
+      const payload = await updateUserAuthorization(userSelection.userID, updateUserAuthRequest)
       console.log('fulfilled', payload)
       notifications.show({
         id: ToastId.FormSubmit,
@@ -112,7 +112,6 @@ export default function UserPermissionsPage() {
       console.error(error)
       if (error.validationErrors) {
         setCalloutError(error.validationErrors)
-        // TODO setFormErrors instead
         console.log('error')
         return
       }
@@ -237,7 +236,11 @@ export default function UserPermissionsPage() {
       </form>
       <Modal
         opened={isModalVisible}
-        title={<Title size={18}>Update auth information</Title>}
+        title={
+          <Text weight={'bold'} size={18}>
+            Update auth information
+          </Text>
+        }
         onClose={closeModal}
         data-test-subj="updateUserAuthForm__confirmModal"
       >
