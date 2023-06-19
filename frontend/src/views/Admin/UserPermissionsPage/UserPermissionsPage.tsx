@@ -35,12 +35,13 @@ import {
   Box,
   type DefaultMantineColor,
   Grid,
+  type MultiSelectValueProps,
 } from '@mantine/core'
 import { Prism } from '@mantine/prism'
 import { notifications } from '@mantine/notifications'
 import { IconCheck } from '@tabler/icons'
 import RoleBadge from 'src/components/RoleBadge'
-import { entries } from 'src/utils/object'
+import { entries, keys } from 'src/utils/object'
 import SCOPES from '@scopes'
 import { css } from '@emotion/css'
 
@@ -54,18 +55,9 @@ interface SelectUserItemProps extends React.ComponentPropsWithoutRef<'div'> {
   user: UserResponse
 }
 
-// from roles.json keys
-interface SelectUserRoleItemProps extends React.ComponentPropsWithoutRef<'div'> {
+interface SelectRoleItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
   value: UserResponse['role']
-  user: UserResponse
-}
-
-// scopes will be dynamically generated checkboxes from scopes.json
-interface SelectUserScopesItemProps extends React.ComponentPropsWithoutRef<'div'> {
-  label: string
-  value: UserResponse['scopes']
-  user: UserResponse
 }
 
 function scopeColor(scopeName: string): DefaultMantineColor {
@@ -117,6 +109,22 @@ const CheckboxPanel = ({ title, scopes }: { title: string; scopes: Partial<typeo
   )
 }
 
+const SelectRoleValue = forwardRef<HTMLDivElement, SelectRoleItemProps>(
+  ({ value, label, ...others }: SelectRoleItemProps) => {
+    return <RoleBadge role={value} />
+  },
+)
+
+const SelectRoleItem = forwardRef<HTMLDivElement, SelectRoleItemProps>(
+  ({ value, ...others }: SelectRoleItemProps, ref) => {
+    return (
+      <div ref={ref} {...others}>
+        <RoleBadge role={value} />
+      </div>
+    )
+  },
+)
+
 const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
   ({ value, user, ...others }: SelectUserItemProps, ref) => {
     return (
@@ -142,6 +150,7 @@ const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
 
 export default function UserPermissionsPage() {
   const [userSelection, setUserSelection] = useState<UserResponse>(null)
+  const [roleSelection, setRoleSelection] = useState<Role>(null)
   const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps>>(undefined)
 
   const [allUsers] = useState(
@@ -149,6 +158,11 @@ export default function UserPermissionsPage() {
       return getGetCurrentUserMock()
     }),
   )
+
+  const roleOptions = keys(roles).map((role) => ({
+    label: role,
+    value: role,
+  }))
 
   const scopeEditPanels: Record<string, Partial<typeof scopes>> = Object.entries(scopes).reduce((acc, [key, value]) => {
     const [group, scope] = key.split(':')
@@ -165,7 +179,6 @@ export default function UserPermissionsPage() {
         allUsers
           ? allUsers.map((user) => ({
               label: user.email,
-
               value: user.email,
               user,
             }))
@@ -235,12 +248,16 @@ export default function UserPermissionsPage() {
       }
     }
   }
+  const onRoleSelectableChange = (role) => {
+    console.log(role)
+    form.setFieldValue('role', role)
+  }
 
   const onEmailSelectableChange = (email) => {
     console.log(email)
     const user = allUsers.find((user) => user.email === email)
     setUserSelection(user)
-    form.values.role = user.role
+    form.setFieldValue('role', user.role)
   }
 
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -279,10 +296,6 @@ export default function UserPermissionsPage() {
   //   }
   // })
 
-  const onRoleSuperSelectChange = (value) => {
-    form.values.role = value
-  }
-
   const getErrors = () =>
     calloutErrors ? calloutErrors?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`) : null
 
@@ -303,7 +316,6 @@ export default function UserPermissionsPage() {
           <Select
             label="Select user to update"
             itemComponent={SelectUserItem}
-            aria-label="Searchable example"
             data-test-subj="updateUserAuthForm__selectable"
             searchable
             filter={(value, item) =>
@@ -326,17 +338,12 @@ export default function UserPermissionsPage() {
           <>
             <Select
               label="Select new role"
-              itemComponent={SelectUserItem}
-              aria-label="Searchable example"
-              data-test-subj="updateUserAuthForm__selectable"
+              itemComponent={SelectRoleItem}
+              data-test-subj="updateUserAuthForm__selectable_Role"
               defaultValue={userSelection.role}
-              searchable
-              filter={(value, item) =>
-                item.label?.toLowerCase().includes(value.toLowerCase().trim()) ||
-                item.description?.toLowerCase().includes(value.toLowerCase().trim())
-              }
-              data={userOptions ?? []}
-              onChange={onEmailSelectableChange}
+              data={roleOptions ?? []}
+              value={form.values.role}
+              onChange={onRoleSelectableChange}
             />
             <Space pt={12} />
             <Title size={15} mt={4} mb={4}>
