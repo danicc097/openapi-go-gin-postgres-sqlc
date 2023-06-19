@@ -3,8 +3,8 @@ import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } fr
 import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
-import scopes from '@scopes'
-import roles from '@roles'
+import SCOPES from 'src/scopes'
+import ROLES from 'src/roles'
 import type { Role } from 'src/client-validator/gen/models'
 import PageTemplate from 'src/components/PageTemplate'
 import type { ValidationErrors } from 'src/client-validator/validate'
@@ -42,7 +42,6 @@ import { notifications } from '@mantine/notifications'
 import { IconCheck } from '@tabler/icons'
 import RoleBadge from 'src/components/RoleBadge'
 import { entries, keys } from 'src/utils/object'
-import SCOPES from '@scopes'
 import { css } from '@emotion/css'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
@@ -70,43 +69,6 @@ function scopeColor(scopeName: string): DefaultMantineColor {
     case 'delete':
       return 'red'
   }
-}
-
-const CheckboxPanel = ({ title, scopes }: { title: string; scopes: Partial<typeof SCOPES> }) => {
-  return (
-    <Box
-      mb={12}
-      sx={(theme) => ({
-        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
-        borderRadius: theme.radius.md,
-        padding: '4px 16px',
-      })}
-    >
-      <Title size={15} mt={4} mb={8}>
-        {title}
-      </Title>
-      {entries(scopes).map(([key, scope]) => {
-        const scopeName = key.split(':')[1]
-
-        return (
-          <Grid key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '2px' }}>
-            <Grid.Col span={2}>
-              <Flex direction="row">
-                <Checkbox size="xs" id={key} color="blue" />
-                <Space pl={10} />
-                <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
-                  {scopeName}
-                </Badge>
-              </Flex>
-            </Grid.Col>
-            <Grid.Col span="auto">
-              <Text size={14}>{scope.description}</Text>
-            </Grid.Col>
-          </Grid>
-        )
-      })}
-    </Box>
-  )
 }
 
 const SelectRoleValue = forwardRef<HTMLDivElement, SelectRoleItemProps>(
@@ -159,12 +121,12 @@ export default function UserPermissionsPage() {
     }),
   )
 
-  const roleOptions = keys(roles).map((role) => ({
+  const roleOptions = keys(ROLES).map((role) => ({
     label: role,
     value: role,
   }))
 
-  const scopeEditPanels: Record<string, Partial<typeof scopes>> = Object.entries(scopes).reduce((acc, [key, value]) => {
+  const scopeEditPanels: Record<string, Partial<typeof SCOPES>> = Object.entries(SCOPES).reduce((acc, [key, value]) => {
     const [group, scope] = key.split(':')
     if (!acc[group]) {
       acc[group] = {}
@@ -258,6 +220,7 @@ export default function UserPermissionsPage() {
     console.log(user)
     setUserSelection(user)
     form.setFieldValue('role', user.role)
+    form.setFieldValue('scopes', user.scopes)
   }
 
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -276,25 +239,42 @@ export default function UserPermissionsPage() {
     showModal()
   }
 
-  // TODO:
-  // const roleOptions: EuiSuperSelectProps<Role>['options'] = Object.keys(roles).map((key: Role) => {
-  //   const name = capitalize(key.replace(/([A-Z])/g, ' $1').trim())
-  //   return {
-  //     value: key,
-  //     inputDisplay: (
-  //       <EuiHealth color={roleColor(key)} style={{ lineHeight: 'inherit' }}>
-  //         {name}
-  //       </EuiHealth>
-  //     ),
-  //     dropdownDisplay: (
-  //       <Fragment>
-  //         <EuiHealth color={roleColor(key)} style={{ lineHeight: 'inherit' }}>
-  //           {name}
-  //         </EuiHealth>
-  //       </Fragment>
-  //     ),
-  //   }
-  // })
+  const CheckboxPanel = ({ title, scopes }: { title: string; scopes: Partial<typeof SCOPES> }) => {
+    return (
+      <Box
+        mb={12}
+        sx={(theme) => ({
+          backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
+          borderRadius: theme.radius.md,
+          padding: '4px 16px',
+        })}
+      >
+        <Title size={15} mt={4} mb={8}>
+          {title}
+        </Title>
+        {entries(scopes).map(([key, scope]) => {
+          const scopeName = key.split(':')[1]
+
+          return (
+            <Grid key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '2px' }}>
+              <Grid.Col span={2}>
+                <Flex direction="row">
+                  <Checkbox defaultChecked={form.values.scopes.includes(key)} size="xs" id={key} color="blue" />
+                  <Space pl={10} />
+                  <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
+                    {scopeName}
+                  </Badge>
+                </Flex>
+              </Grid.Col>
+              <Grid.Col span="auto">
+                <Text size={14}>{scope.description}</Text>
+              </Grid.Col>
+            </Grid>
+          )
+        })}
+      </Box>
+    )
+  }
 
   const getErrors = () =>
     calloutErrors ? calloutErrors?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`) : null

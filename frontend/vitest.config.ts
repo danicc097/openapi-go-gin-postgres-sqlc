@@ -22,9 +22,6 @@ const alias: Record<string, string> = {
   public: r('./public'),
   'public/': r('./public/'),
   '@': r('./src'),
-  '@roles': r('./roles.json'),
-  '@scopes': r('./scopes.json'),
-  '@config': r('./config.json'),
   '@operationAuth': r('./operationAuth.gen.json'),
 }
 

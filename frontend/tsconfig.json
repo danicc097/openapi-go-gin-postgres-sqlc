@@ -24,17 +24,8 @@
     "baseUrl": ".",
     "sourceMap": true,
     "paths": {
-      "@roles": [
-        "roles.json"
-      ],
-      "@scopes": [
-        "scopes.json"
-      ],
       "@operationAuth": [
         "operationAuth.gen.json"
-      ],
-      "@config": [
-        "config.json"
       ],
     },
   },
