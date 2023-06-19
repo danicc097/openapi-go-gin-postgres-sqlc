@@ -187,7 +187,7 @@ const (
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
 	ScopeTeamSettingsWrite    Scope = "team-settings:write"
-	ScopeTestScope            Scope = "test-scope"
+	ScopeTestScopeTest        Scope = "test-scope:test"
 	ScopeUsersRead            Scope = "users:read"
 	ScopeUsersWrite           Scope = "users:write"
 	ScopeWorkItemReview       Scope = "work-item:review"
@@ -199,7 +199,7 @@ func AllScopeValues() []Scope {
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
 		ScopeTeamSettingsWrite,
-		ScopeTestScope,
+		ScopeTestScopeTest,
 		ScopeUsersRead,
 		ScopeUsersWrite,
 		ScopeWorkItemReview,

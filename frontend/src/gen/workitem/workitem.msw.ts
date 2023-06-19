@@ -74,7 +74,7 @@ export const getCreateWorkitemCommentMock = () =>
       createdAt: (() => faker.date.past())(),
       message: faker.random.word(),
       updatedAt: (() => faker.date.past())(),
-      userID: '63289f80-9c97-4009-b895-74d3988fb547',
+      userID: '4e4799f4-b73d-4aff-b3ac-cf8f766a9b5d',
       workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
       workItemID: faker.datatype.number({ min: undefined, max: undefined }),
     },

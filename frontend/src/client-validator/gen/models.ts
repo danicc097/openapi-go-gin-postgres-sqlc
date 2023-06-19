@@ -9,7 +9,7 @@
 export type Project = 'demo' | 'demo_two'
 export type UuidUUID = string
 export type Scope =
-  | 'test-scope'
+  | 'test-scope:test'
   | 'users:read'
   | 'users:write'
   | 'scopes:write'

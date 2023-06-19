@@ -25,9 +25,7 @@
     "requiresAuthentication": false
   },
   "AdminPing": {
-    "scopes": [
-      "test-scope"
-    ],
+    "scopes": null,
     "role": "admin",
     "requiresAuthentication": true
   },
@@ -43,7 +41,6 @@
   },
   "DeleteUser": {
     "scopes": [
-      "test-scope",
       "users:write"
     ],
     "role": "admin",

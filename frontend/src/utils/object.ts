@@ -22,3 +22,21 @@ export const deepMerge = (obj, defaultObj: Record<string, any>) => {
 export function isObject(input) {
   return input !== null && typeof input === 'object' && Object.getPrototypeOf(input).isPrototypeOf(Object)
 }
+
+/**
+ * Returns an array of keys from the provided object, preserving the type information of the keys.
+ */
+export function keys<T>(obj: T): Array<keyof T> {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  return Object.keys(obj)
+}
+
+/**
+ * Returns an array of key-value pairs from the provided object, preserving the type information of the keys and   values.
+ */
+export function entries<T>(obj: T): Array<[keyof T, NonNullable<T[keyof T]>]> {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  return Object.entries(obj)
+}

@@ -123,8 +123,6 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       tags:
         - admin
-      x-required-scopes:
-        - test-scope
       x-required-role: admin
   /user/me:
     get:
@@ -179,7 +177,6 @@ paths:
       tags:
         - user
       x-required-scopes:
-        - test-scope
         - users:write
       x-required-role: admin
     patch:
@@ -1046,7 +1043,7 @@ components:
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
       enum:
-        - test-scope
+        - test-scope:test
         - users:read
         - users:write
         - scopes:write
@@ -1107,7 +1104,7 @@ components:
       example:
         role: manager
         scopes:
-          - test-scope
+          - users:read
       properties:
         role:
           $ref: '#/components/schemas/Role'

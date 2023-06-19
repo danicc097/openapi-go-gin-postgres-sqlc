@@ -289,7 +289,7 @@ export interface components {
      */
     Topics: "GlobalAlerts";
     /** @enum {string} */
-    Scope: "test-scope" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
+    Scope: "test-scope:test" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
     Scopes: (components["schemas"]["Scope"])[];
     /** @enum {string} */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
@@ -317,7 +317,7 @@ export interface components {
      * @example {
      *   "role": "manager",
      *   "scopes": [
-     *     "test-scope"
+     *     "users:read"
      *   ]
      * }
      */

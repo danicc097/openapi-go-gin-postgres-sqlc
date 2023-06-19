@@ -178,7 +178,9 @@ export default function Header({ tabs }: HeaderProps) {
               align-self: center;
             `}
           >
-            <img src={logo} height={HEADER_HEIGHT * 0.5} css={css``}></img>
+            <a href="/">
+              <img src={logo} height={HEADER_HEIGHT * 0.5} css={css``}></img>
+            </a>
             <Menu
               width={220}
               position="bottom-end"

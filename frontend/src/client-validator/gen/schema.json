@@ -821,7 +821,7 @@
     "Scope": {
       "type": "string",
       "enum": [
-        "test-scope",
+        "test-scope:test",
         "users:read",
         "users:write",
         "scopes:write",

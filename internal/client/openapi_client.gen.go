@@ -200,7 +200,7 @@ const (
 	ProjectSettingsWrite Scope = "project-settings:write"
 	ScopesWrite          Scope = "scopes:write"
 	TeamSettingsWrite    Scope = "team-settings:write"
-	TestScope            Scope = "test-scope"
+	TestScopeTest        Scope = "test-scope:test"
 	UsersRead            Scope = "users:read"
 	UsersWrite           Scope = "users:write"
 	WorkItemReview       Scope = "work-item:review"
@@ -212,7 +212,7 @@ func AllScopeValues() []Scope {
 		ProjectSettingsWrite,
 		ScopesWrite,
 		TeamSettingsWrite,
-		TestScope,
+		TestScopeTest,
 		UsersRead,
 		UsersWrite,
 		WorkItemReview,

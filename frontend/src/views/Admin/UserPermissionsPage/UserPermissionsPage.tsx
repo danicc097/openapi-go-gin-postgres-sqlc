@@ -17,52 +17,114 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import type { RequiredKeys } from 'src/types/utils'
-import { Avatar, Badge, Button, Flex, Space, Text, Title, Select, type SelectItem, Group, Modal } from '@mantine/core'
+import {
+  Avatar,
+  Badge,
+  Button,
+  Flex,
+  Space,
+  Text,
+  Title,
+  Select,
+  type SelectItem,
+  Group,
+  Modal,
+  Checkbox,
+  Container,
+  Code,
+  Card,
+  Box,
+} from '@mantine/core'
 import { Prism } from '@mantine/prism'
 import { notifications } from '@mantine/notifications'
 import { IconCheck } from '@tabler/icons'
 import RoleBadge from 'src/components/RoleBadge'
+import { entries } from 'src/utils/object'
+import SCOPES from '@scopes'
+import { css } from '@emotion/css'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
 const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean> = {}
 
-interface ItemProps extends React.ComponentPropsWithoutRef<'div'> {
+interface SelectUserItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
   value: UserResponse['email']
   user: UserResponse
 }
 
-const Item = forwardRef<HTMLDivElement, ItemProps>(({ value, user, ...others }: ItemProps, ref) => {
-  return (
-    <div ref={ref} {...others}>
-      <Group noWrap spacing="lg" align="center">
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
-            {user.fullName
-              ?.split(' ')
-              .map((n) => n[0].toUpperCase())
-              .join('')}
-          </Avatar>
-          <Space p={5} />
-          <RoleBadge role={user.role} />
-        </div>
+// from roles.json keys
+interface SelectUserRoleItemProps extends React.ComponentPropsWithoutRef<'div'> {
+  label: string
+  value: UserResponse['role']
+  user: UserResponse
+}
 
-        <div style={{ marginLeft: 'auto' }}>{user?.email}</div>
-      </Group>
-    </div>
-  )
-})
+// scopes will be dynamically generated checkboxes from scopes.json
+interface SelectUserScopesItemProps extends React.ComponentPropsWithoutRef<'div'> {
+  label: string
+  value: UserResponse['scopes']
+  user: UserResponse
+}
+
+const CheckboxPanel = ({ title, scopes }: { title: string; scopes: Partial<typeof SCOPES> }) => (
+  <>
+    <Title size={15} mt={8}>
+      {title}
+    </Title>
+    {entries(scopes).map(([key, value]) => (
+      <div key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', gap: '8px' }}>
+        <Checkbox size="xs" id={key} color="blue" />
+        <label htmlFor={key}>
+          <Code>{key.split(':')[1]}</Code>
+        </label>
+        <Text size={14}>{value.description}</Text>
+      </div>
+    ))}
+  </>
+)
+
+const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
+  ({ value, user, ...others }: SelectUserItemProps, ref) => {
+    return (
+      <div ref={ref} {...others}>
+        <Group noWrap spacing="lg" align="center">
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
+              {user.fullName
+                ?.split(' ')
+                .map((n) => n[0].toUpperCase())
+                .join('')}
+            </Avatar>
+            <Space p={5} />
+            <RoleBadge role={user.role} />
+          </div>
+
+          <div style={{ marginLeft: 'auto' }}>{user?.email}</div>
+        </Group>
+      </div>
+    )
+  },
+)
 
 export default function UserPermissionsPage() {
   const [userSelection, setUserSelection] = useState<UserResponse>(null)
-  const [userOptions, setUserOptions] = useState<Array<ItemProps>>(undefined)
+  const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps>>(undefined)
 
   const [allUsers] = useState(
     [...Array(20)].map((x, i) => {
       return getGetCurrentUserMock()
     }),
   )
+
+  const panels: Record<string, Partial<typeof scopes>> = Object.entries(scopes).reduce((acc, [key, value]) => {
+    const [group, scope] = key.split(':')
+    if (!acc[group]) {
+      acc[group] = {}
+    }
+    acc[group][key] = value
+    return acc
+  }, {})
 
   useEffect(() => {
     if (userOptions === undefined) {
@@ -195,7 +257,7 @@ export default function UserPermissionsPage() {
     <>
       {getErrors()}
       <Space pt={12} />
-      <Title size={1}>
+      <Title size={12}>
         <Text>Form</Text>
       </Title>
       <Prism language="json">{JSON.stringify(form, null, 4)}</Prism>
@@ -206,7 +268,8 @@ export default function UserPermissionsPage() {
       >
         <Flex direction="column">
           <Select
-            itemComponent={Item}
+            label="Select user to update"
+            itemComponent={SelectUserItem}
             aria-label="Searchable example"
             data-test-subj="updateUserAuthForm__selectable"
             searchable
@@ -227,11 +290,38 @@ export default function UserPermissionsPage() {
         </Flex>
         <Space pt={12} />
         {userSelection?.email && (
-          <Button
-            disabled={userSelection === null}
-            data-test-subj="updateUserAuthForm__submit"
-            onClick={showModal}
-          >{`Update role for ${userSelection.email}`}</Button>
+          <>
+            <Select
+              label="Select new role"
+              itemComponent={SelectUserItem}
+              aria-label="Searchable example"
+              data-test-subj="updateUserAuthForm__selectable"
+              defaultValue={userSelection.role}
+              searchable
+              filter={(value, item) =>
+                item.label?.toLowerCase().includes(value.toLowerCase().trim()) ||
+                item.description?.toLowerCase().includes(value.toLowerCase().trim())
+              }
+              data={userOptions ?? []}
+              onChange={onEmailSelectableChange}
+            />
+            <Space pt={12} />
+            <Card shadow="md" padding="lg" radius="md">
+              {entries(panels).map(([group, scopes]) => (
+                <CheckboxPanel
+                  key={group}
+                  title={group.replace(/-/g, ' ').replace(/^\w{1}/g, (c) => c.toUpperCase())}
+                  scopes={scopes}
+                />
+              ))}
+            </Card>
+            <Space pt={12} />
+            <Button
+              disabled={userSelection === null}
+              data-test-subj="updateUserAuthForm__submit"
+              onClick={showModal}
+            >{`Update role for ${userSelection.email}`}</Button>
+          </>
         )}
       </form>
       <Modal
