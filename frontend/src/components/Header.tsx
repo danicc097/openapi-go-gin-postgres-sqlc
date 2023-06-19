@@ -29,6 +29,8 @@ import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
 import CONFIG from 'src/config'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import logoDark from 'src/assets/logo/two-white-clouds.svg'
+import logoLight from 'src/assets/logo/two-black-clouds.svg'
 
 const useStyles = createStyles((theme) => ({
   header: {
@@ -106,6 +108,7 @@ export default function Header({ tabs }: HeaderProps) {
   const [userMenuOpened, setUserMenuOpened] = useState(false)
   const { user } = useAuthenticatedUser()
   const [loginOut, setLoginOut] = useState(false)
+  const { colorScheme } = useMantineTheme() // TODO: app logo useffect
 
   const items = tabs.map((tab) => (
     <Tabs.Tab value={tab} key={tab}>
@@ -116,6 +119,11 @@ export default function Header({ tabs }: HeaderProps) {
 
   const [notify, setNotify] = useState<boolean>(false)
   const { showTestNotification } = useNotificationAPI()
+  const [logo, setLogo] = useState<string>(colorScheme === 'dark' ? logoDark : logoLight)
+
+  useEffect(() => {
+    setLogo(colorScheme === 'dark' ? logoDark : logoLight)
+  }, [theme])
 
   useEffect(() => {
     if (user && notify) {
@@ -130,14 +138,17 @@ export default function Header({ tabs }: HeaderProps) {
   }
 
   function renderAvatarMenu() {
-    return loginOut ? (
-      <Group spacing={7} align="center">
-        <Loader size={'sm'} variant="dots"></Loader>
-        {loginOut ? 'Logging out...' : 'Logging in...'}
-      </Group>
-    ) : user ? (
+    if (loginOut)
+      return (
+        <Group spacing={7} align="center">
+          <Loader size={'sm'} variant="dots"></Loader>
+          Logging out...
+        </Group>
+      )
+
+    return user ? (
       <UnstyledButton className={cx(classes.user, { [classes.userActive]: userMenuOpened })}>
-        <Group spacing={7}>
+        <Group spacing={4} m={4}>
           <Avatar alt={user.username} radius="xl" size={35} mt={6} mb={6} />
           <Text className="display-name" weight={500}>
             {user.username}
@@ -162,10 +173,12 @@ export default function Header({ tabs }: HeaderProps) {
         <MantineHeader height={HEADER_HEIGHT} px="md" sx={{ height: '100%' }} className={classes.header}>
           <Group
             position="apart"
+            m={6}
             css={css`
               align-self: center;
             `}
           >
+            <img src={logo} height={HEADER_HEIGHT * 0.5} css={css``}></img>
             <Menu
               width={220}
               position="bottom-end"
@@ -173,6 +186,7 @@ export default function Header({ tabs }: HeaderProps) {
               onOpen={() => {
                 if (user) setUserMenuOpened(true)
               }}
+              disabled={!user}
             >
               <Menu.Target>{renderAvatarMenu()}</Menu.Target>
               <Menu.Dropdown
