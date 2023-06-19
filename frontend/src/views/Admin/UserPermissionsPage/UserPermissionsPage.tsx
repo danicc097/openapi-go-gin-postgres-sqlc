@@ -30,10 +30,11 @@ import {
   Group,
   Modal,
   Checkbox,
-  Container,
   Code,
   Card,
   Box,
+  type DefaultMantineColor,
+  Grid,
 } from '@mantine/core'
 import { Prism } from '@mantine/prism'
 import { notifications } from '@mantine/notifications'
@@ -67,22 +68,54 @@ interface SelectUserScopesItemProps extends React.ComponentPropsWithoutRef<'div'
   user: UserResponse
 }
 
-const CheckboxPanel = ({ title, scopes }: { title: string; scopes: Partial<typeof SCOPES> }) => (
-  <>
-    <Title size={15} mt={8}>
-      {title}
-    </Title>
-    {entries(scopes).map(([key, value]) => (
-      <div key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', gap: '8px' }}>
-        <Checkbox size="xs" id={key} color="blue" />
-        <label htmlFor={key}>
-          <Code>{key.split(':')[1]}</Code>
-        </label>
-        <Text size={14}>{value.description}</Text>
-      </div>
-    ))}
-  </>
-)
+function scopeColor(scopeName: string): DefaultMantineColor {
+  switch (scopeName) {
+    case 'read':
+      return 'green'
+    case 'write':
+    case 'edit':
+      return 'orange'
+    case 'delete':
+      return 'red'
+  }
+}
+
+const CheckboxPanel = ({ title, scopes }: { title: string; scopes: Partial<typeof SCOPES> }) => {
+  return (
+    <Box
+      mb={12}
+      sx={(theme) => ({
+        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
+        borderRadius: theme.radius.md,
+        padding: '4px 16px',
+      })}
+    >
+      <Title size={15} mt={4} mb={8}>
+        {title}
+      </Title>
+      {entries(scopes).map(([key, scope]) => {
+        const scopeName = key.split(':')[1]
+
+        return (
+          <Grid key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '2px' }}>
+            <Grid.Col span={2}>
+              <Flex direction="row">
+                <Checkbox size="xs" id={key} color="blue" />
+                <Space pl={10} />
+                <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
+                  {scopeName}
+                </Badge>
+              </Flex>
+            </Grid.Col>
+            <Grid.Col span="auto">
+              <Text size={14}>{scope.description}</Text>
+            </Grid.Col>
+          </Grid>
+        )
+      })}
+    </Box>
+  )
+}
 
 const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
   ({ value, user, ...others }: SelectUserItemProps, ref) => {
@@ -117,7 +150,7 @@ export default function UserPermissionsPage() {
     }),
   )
 
-  const panels: Record<string, Partial<typeof scopes>> = Object.entries(scopes).reduce((acc, [key, value]) => {
+  const scopeEditPanels: Record<string, Partial<typeof scopes>> = Object.entries(scopes).reduce((acc, [key, value]) => {
     const [group, scope] = key.split(':')
     if (!acc[group]) {
       acc[group] = {}
@@ -306,8 +339,11 @@ export default function UserPermissionsPage() {
               onChange={onEmailSelectableChange}
             />
             <Space pt={12} />
+            <Title size={15} mt={4} mb={4}>
+              Select new scopes
+            </Title>
             <Card shadow="md" padding="lg" radius="md">
-              {entries(panels).map(([group, scopes]) => (
+              {entries(scopeEditPanels).map(([group, scopes]) => (
                 <CheckboxPanel
                   key={group}
                   title={group.replace(/-/g, ' ').replace(/^\w{1}/g, (c) => c.toUpperCase())}
