@@ -254,8 +254,8 @@ export default function UserPermissionsPage() {
   }
 
   const onEmailSelectableChange = (email) => {
-    console.log(email)
     const user = allUsers.find((user) => user.email === email)
+    console.log(user)
     setUserSelection(user)
     form.setFieldValue('role', user.role)
   }
