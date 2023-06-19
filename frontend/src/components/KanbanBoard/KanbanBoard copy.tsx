@@ -162,7 +162,7 @@ export default function KanbanBoard() {
             }
             const fieldNestedObjects = getNestedObjects(nestedFields, field)
             if (Array.isArray(value) && _.isPlainObject(value[0])) {
-              const arrayFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path + '.'))
+              const arrayFields = boardConfig.fields.filter((f) => f.path.startsWith(`${field.path}.`))
               element = createCardPanel(arrayFields, fieldNestedObjects, skipFields, data, field, {
                 parentArrayPath: field.path,
               })
@@ -354,7 +354,7 @@ export default function KanbanBoard() {
         let el
         const val = _.get(data, field.path)
         if (Array.isArray(val) && _.isPlainObject(val[0])) {
-          const arrayFields = fields.filter((f) => f.path.startsWith(field.path + '.'))
+          const arrayFields = fields.filter((f) => f.path.startsWith(`${field.path}.`))
           el = createCardPanel(arrayFields, fieldNestedObjects, skipFields, data, field, {
             parentArrayPath: field.path,
           })
@@ -373,7 +373,7 @@ export default function KanbanBoard() {
         _.get(data, options?.parentArrayPath)?.forEach((element) => {
           if (_.isPlainObject(element)) {
             Object.entries(element).forEach(([k, v]) => {
-              const elementField = fields.find((f) => f.path.endsWith(options?.parentArrayPath + '.' + k))
+              const elementField = fields.find((f) => f.path.endsWith(`${options?.parentArrayPath}.${k}`))
               if (!elementField) return
               el = createCardField(v, elementField)
               el && elements.push(el)

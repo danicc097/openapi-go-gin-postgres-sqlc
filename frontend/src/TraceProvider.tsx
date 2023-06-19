@@ -28,7 +28,7 @@ export function newFrontendSpan(name: string) {
     span.setAttribute(AttributeKeys.SessionID, sessionID)
     return span
   } catch (error) {
-    console.log('could not send span: ' + error)
+    console.log(`could not send span: ${error}`)
   }
 }
 
