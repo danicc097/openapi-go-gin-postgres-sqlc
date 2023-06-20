@@ -403,14 +403,6 @@ export interface components {
       name: string;
       projectID: number;
     };
-    DbKanbanStepCreateParams: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
-      stepOrder?: number | null;
-      timeTrackable?: boolean;
-    };
     DbTeamCreateParams: {
       description: string;
       name: string;
@@ -421,12 +413,6 @@ export interface components {
       description: string;
       name: string;
       projectID: number;
-    };
-    DbWorkItemTypeCreateParams: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
     };
     DbWorkItemRole: string;
     DbWorkItem_AssignedUser: {

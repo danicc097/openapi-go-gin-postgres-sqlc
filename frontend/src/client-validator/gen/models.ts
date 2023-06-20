@@ -333,20 +333,6 @@ export interface RestWorkItemCommentCreateRequest {
   userID: UuidUUID
   workItemID: number
 }
-export interface DbKanbanStepCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-  stepOrder?: number | null
-  timeTrackable?: boolean
-}
-export interface DbWorkItemTypeCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-}
 export interface DbWorkItem_AssignedUser {
   role: WorkItemRole
   user?: DbUser

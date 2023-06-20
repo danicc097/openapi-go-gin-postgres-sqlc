@@ -43,10 +43,8 @@ import {
   RestWorkItemCommentCreateRequest,
   Project,
   DbActivityCreateParams,
-  DbKanbanStepCreateParams,
   DbTeamCreateParams,
   DbWorkItemTagCreateParams,
-  DbWorkItemTypeCreateParams,
   DbWorkItemRole,
   DbWorkItem_AssignedUser,
   NotificationType,
@@ -489,18 +487,6 @@ export const DbActivityCreateParamsDecoder: Decoder<DbActivityCreateParams> = {
     return validateJson(json, schema, DbActivityCreateParamsDecoder.definitionName)
   },
 }
-export const DbKanbanStepCreateParamsDecoder: Decoder<DbKanbanStepCreateParams> = {
-  definitionName: 'DbKanbanStepCreateParams',
-  schemaRef: '#/definitions/DbKanbanStepCreateParams',
-
-  decode(json: unknown): DbKanbanStepCreateParams {
-    const schema = ajv.getSchema(DbKanbanStepCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DbKanbanStepCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DbKanbanStepCreateParamsDecoder.definitionName)
-  },
-}
 export const DbTeamCreateParamsDecoder: Decoder<DbTeamCreateParams> = {
   definitionName: 'DbTeamCreateParams',
   schemaRef: '#/definitions/DbTeamCreateParams',
@@ -523,18 +509,6 @@ export const DbWorkItemTagCreateParamsDecoder: Decoder<DbWorkItemTagCreateParams
       throw new Error(`Schema ${DbWorkItemTagCreateParamsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemTagCreateParamsDecoder.definitionName)
-  },
-}
-export const DbWorkItemTypeCreateParamsDecoder: Decoder<DbWorkItemTypeCreateParams> = {
-  definitionName: 'DbWorkItemTypeCreateParams',
-  schemaRef: '#/definitions/DbWorkItemTypeCreateParams',
-
-  decode(json: unknown): DbWorkItemTypeCreateParams {
-    const schema = ajv.getSchema(DbWorkItemTypeCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DbWorkItemTypeCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DbWorkItemTypeCreateParamsDecoder.definitionName)
   },
 }
 export const DbWorkItemRoleDecoder: Decoder<DbWorkItemRole> = {

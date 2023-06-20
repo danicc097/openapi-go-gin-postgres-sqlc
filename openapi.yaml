@@ -1303,22 +1303,6 @@ components:
         - description
         - isProductive
       type: object
-    DbKanbanStepCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        stepOrder:
-          nullable: true
-          type: integer
-        timeTrackable:
-          type: boolean
-      type: object
     DbTeamCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
@@ -1347,17 +1331,6 @@ components:
         - name
         - description
         - color
-      type: object
-    DbWorkItemTypeCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
       type: object
     DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
       type: string

@@ -279,16 +279,6 @@ type DbKanbanStep struct {
 	TimeTrackable bool   `json:"timeTrackable"`
 }
 
-// DbKanbanStepCreateParams defines the model for DbKanbanStepCreateParams.
-type DbKanbanStepCreateParams struct {
-	Color         *string `json:"color,omitempty"`
-	Description   *string `json:"description,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	ProjectID     *int    `json:"projectID,omitempty"`
-	StepOrder     *int    `json:"stepOrder"`
-	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
-}
-
 // DbProject defines the model for DbProject.
 type DbProject struct {
 	BoardConfig ProjectConfig `json:"boardConfig"`
@@ -415,14 +405,6 @@ type DbWorkItemType struct {
 	Name           string `json:"name"`
 	ProjectID      int    `json:"projectID"`
 	WorkItemTypeID int    `json:"workItemTypeID"`
-}
-
-// DbWorkItemTypeCreateParams defines the model for DbWorkItemTypeCreateParams.
-type DbWorkItemTypeCreateParams struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
 }
 
 // DbWorkItemAssignedUser defines the model for DbWorkItem_AssignedUser.

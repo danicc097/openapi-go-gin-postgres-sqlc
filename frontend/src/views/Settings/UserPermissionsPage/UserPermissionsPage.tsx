@@ -217,6 +217,7 @@ export default function UserPermissionsPage() {
       }
     }
   }
+
   const onRoleSelectableChange = (role) => {
     console.log(role)
     form.setFieldValue('role', role)

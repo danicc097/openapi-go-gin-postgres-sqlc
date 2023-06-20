@@ -1172,33 +1172,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DbKanbanStepCreateParams": {
-      "properties": {
-        "color": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "stepOrder": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "timeTrackable": {
-          "type": "boolean"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "DbTeamCreateParams": {
       "properties": {
         "description": {
@@ -1240,24 +1213,6 @@
         "description",
         "color"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DbWorkItemTypeCreateParams": {
-      "properties": {
-        "color": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -1565,17 +1520,11 @@
     "DbActivityCreateParams": {
       "$ref": "#/definitions/DbActivityCreateParams"
     },
-    "DbKanbanStepCreateParams": {
-      "$ref": "#/definitions/DbKanbanStepCreateParams"
-    },
     "DbTeamCreateParams": {
       "$ref": "#/definitions/DbTeamCreateParams"
     },
     "DbWorkItemTagCreateParams": {
       "$ref": "#/definitions/DbWorkItemTagCreateParams"
-    },
-    "DbWorkItemTypeCreateParams": {
-      "$ref": "#/definitions/DbWorkItemTypeCreateParams"
     },
     "DbWorkItemRole": {
       "$ref": "#/definitions/DbWorkItemRole"

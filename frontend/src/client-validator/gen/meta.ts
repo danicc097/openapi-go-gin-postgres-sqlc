@@ -39,10 +39,8 @@ import {
   RestWorkItemCommentCreateRequest,
   Project,
   DbActivityCreateParams,
-  DbKanbanStepCreateParams,
   DbTeamCreateParams,
   DbWorkItemTagCreateParams,
-  DbWorkItemTypeCreateParams,
   DbWorkItemRole,
   DbWorkItem_AssignedUser,
   NotificationType,
@@ -116,18 +114,10 @@ export const schemaDefinitions = {
     'DbActivityCreateParams',
     '#/definitions/DbActivityCreateParams',
   ),
-  DbKanbanStepCreateParams: info<DbKanbanStepCreateParams>(
-    'DbKanbanStepCreateParams',
-    '#/definitions/DbKanbanStepCreateParams',
-  ),
   DbTeamCreateParams: info<DbTeamCreateParams>('DbTeamCreateParams', '#/definitions/DbTeamCreateParams'),
   DbWorkItemTagCreateParams: info<DbWorkItemTagCreateParams>(
     'DbWorkItemTagCreateParams',
     '#/definitions/DbWorkItemTagCreateParams',
-  ),
-  DbWorkItemTypeCreateParams: info<DbWorkItemTypeCreateParams>(
-    'DbWorkItemTypeCreateParams',
-    '#/definitions/DbWorkItemTypeCreateParams',
   ),
   DbWorkItemRole: info<DbWorkItemRole>('DbWorkItemRole', '#/definitions/DbWorkItemRole'),
   DbWorkItem_AssignedUser: info<DbWorkItem_AssignedUser>(
