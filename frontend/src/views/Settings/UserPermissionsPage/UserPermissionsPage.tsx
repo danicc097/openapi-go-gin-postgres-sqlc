@@ -119,10 +119,12 @@ export default function UserPermissionsPage() {
     }),
   )
 
-  const roleOptions = keys(ROLES).map((role) => ({
-    label: role,
-    value: role,
-  }))
+  const roleOptions = entries(ROLES)
+    .filter(([role, v]) => v.rank <= ROLES[user.role].rank)
+    .map(([role, v]) => ({
+      label: role,
+      value: role,
+    }))
 
   const scopeEditPanels: Record<string, Partial<typeof SCOPES>> = Object.entries(SCOPES).reduce((acc, [key, value]) => {
     const [group, scope] = key.split(':')
