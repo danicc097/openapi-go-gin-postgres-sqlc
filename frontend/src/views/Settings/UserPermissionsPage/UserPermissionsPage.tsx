@@ -17,7 +17,7 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import type { RequiredKeys } from 'src/types/utils'
-import jsonSchema from 'src/client-validator/gen/schema.json'
+import jsonSchema from 'src/client-validator/gen/dereferenced-schema.json'
 import {
   Avatar,
   Badge,
@@ -344,10 +344,10 @@ export default function UserPermissionsPage() {
 
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
   console.log(demoWorkItemCreateSchema)
+
   const element = (
     <>
       {JSON.stringify(calloutError)}
-      {JSON.stringify(RestDemoWorkItemCreateRequestDecoder.schemaRef)}
       <ErrorCallout title="Error updating user" errors={getErrors()} />
       <Space pt={12} />
       <Title size={12}>

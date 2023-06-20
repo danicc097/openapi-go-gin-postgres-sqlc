@@ -28,7 +28,7 @@ export default ({ mode }) => {
       dynamicImport({}),
     ],
     server: {
-      port: Number(Config.FRONTEND_PORT) || 5143,
+      port: Number(Config.FRONTEND_PORT) || 3020,
       strictPort: true,
       // hmr: {
       //   protocol: 'wss',

@@ -61,6 +61,7 @@
     "framer-motion": "^7.6.7",
     "idb-keyval": "^6.2.1",
     "js-cookie": "^3.0.5",
+    "json-schema-ref-parser": "^9.0.9",
     "json-schema-to-ts": "^2.9.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",

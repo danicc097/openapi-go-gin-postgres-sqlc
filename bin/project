@@ -631,7 +631,7 @@ x.gen.frontend() {
       rm -rf frontend/src/gen
 
       {
-        node frontend/generate-client-validator.js
+        node frontend/scripts/generate-client-validator.js
         # TODO allow custom validate.ts baked into fork
         rm -f frontend/src/client-validator/gen/validate.ts
         find frontend/src/client-validator/gen/ -type f -exec \
