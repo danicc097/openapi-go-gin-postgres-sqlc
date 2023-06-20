@@ -2,25 +2,24 @@ import { createStyles, Container, Group, ActionIcon, Image, Text, Tooltip, Avata
 import { IconBrandTwitter, IconBrandYoutube, IconBrandInstagram, IconBrandTwitch } from '@tabler/icons'
 import { Dropdown } from 'mantine-design-system'
 import CONFIG from 'src/config'
+
 export const FOOTER_HEIGHT = 55
 
 const useStyles = createStyles((theme) => ({
   footer: {
     borderTop: `1px solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[2]}`,
     backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.white,
-    position: 'sticky',
-    // [theme.fn.smallerThan('md')]: {
-    //   position: 'absolute',
-    //   bottom: 0,
-    // },
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    zIndex: 999,
   },
 
   inner: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: theme.spacing.xs,
-    paddingBottom: theme.spacing.xs,
     minWidth: '95vw',
     minHeight: FOOTER_HEIGHT,
 
@@ -43,14 +42,13 @@ export default function Footer() {
     <div className={classes.footer}>
       <Container className={classes.inner}>
         <Text fz="xs">
-          <Group position="left" spacing={0} noWrap>
-            <span>
-              <p>Copyright © {new Date().getFullYear()}</p>
-              <p>Build version: {CONFIG.BUILD_NUMBER ?? 'DEVELOPMENT'}</p>
-            </span>
+          <Group position="left" noWrap>
+            <p>Copyright © {new Date().getFullYear()}</p>
+            <p>Build version: {CONFIG.BUILD_NUMBER ?? 'DEVELOPMENT'}</p>
           </Group>
         </Text>
         <Dropdown
+          position="top"
           control={
             <ActionIcon variant="transparent">
               <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" />
