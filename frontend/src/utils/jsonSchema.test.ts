@@ -114,7 +114,7 @@ describe('extractFieldTypes', () => {
 
     expect(fieldTypes).toEqual({
       base: { isArray: false, required: true, type: 'object' },
-      'base.closed': { type: 'date-time', required: false, isArray: false },
+      'base.closed': { type: 'date-time', required: true, isArray: false },
       'base.description': { type: 'string', required: true, isArray: false },
       'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
       'base.metadata': { type: 'integer', required: true, isArray: true },
