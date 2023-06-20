@@ -35,7 +35,7 @@ export default function useAuthenticatedUser() {
     deletedAt: null,
 
     role: 'user',
-    scopes: ['users:read'],
+    scopes: ['users:read', 'project-settings:write', 'team-settings:write', 'users:read', 'users:write'],
 
     apiKey: null,
     teams: null,

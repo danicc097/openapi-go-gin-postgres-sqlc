@@ -36,6 +36,7 @@ import {
   type DefaultMantineColor,
   Grid,
   type MultiSelectValueProps,
+  Tooltip,
 } from '@mantine/core'
 import { Prism } from '@mantine/prism'
 import { notifications } from '@mantine/notifications'
@@ -44,6 +45,7 @@ import RoleBadge from 'src/components/RoleBadge'
 import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
 import ROLES from 'src/roles'
+import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -109,6 +111,7 @@ export default function UserPermissionsPage() {
   const [userSelection, setUserSelection] = useState<UserResponse>(null)
   const [roleSelection, setRoleSelection] = useState<Role>(null)
   const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps>>(undefined)
+  const { user } = useAuthenticatedUser()
 
   const [allUsers] = useState(
     [...Array(20)].map((x, i) => {
@@ -234,7 +237,14 @@ export default function UserPermissionsPage() {
     showModal()
   }
 
-  const CheckboxPanel = ({ title, scopes }: { title: string; scopes: Partial<typeof SCOPES> }) => {
+  interface CheckboxPanelProps {
+    title: string
+    scopes: Partial<typeof SCOPES>
+  }
+
+  const CheckboxPanel = ({ title, scopes }: CheckboxPanelProps) => {
+    const [disabledScopes, setDisabledScopes] = useState<string[]>([])
+
     const handleCheckboxChange = (key: Scope, checked: boolean) => {
       if (checked) {
         form.setFieldValue('scopes', [...form.values.scopes, key])
@@ -244,6 +254,10 @@ export default function UserPermissionsPage() {
           form.values.scopes.filter((scope) => scope !== key),
         )
       }
+    }
+
+    const isScopeDisabled = (scope: Scope) => {
+      return ROLES[user.role].rank < ROLES.admin.rank && !user.scopes.includes(scope)
     }
 
     return (
@@ -260,28 +274,48 @@ export default function UserPermissionsPage() {
         </Title>
         {entries(scopes).map(([key, scope]) => {
           const scopeName = key.split(':')[1]
+          const isDisabled = isScopeDisabled(key)
+          const isChecked = form.values.scopes.includes(key)
 
           return (
-            <Grid key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '2px' }}>
-              <Grid.Col span={2}>
-                <Flex direction="row">
-                  <Checkbox
-                    defaultChecked={form.values.scopes.includes(key)}
-                    size="xs"
-                    id={key}
-                    color="blue"
-                    onChange={(e) => handleCheckboxChange(key, e.target.checked)}
-                  />
-                  <Space pl={10} />
-                  <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
-                    {scopeName}
-                  </Badge>
-                </Flex>
-              </Grid.Col>
-              <Grid.Col span="auto">
-                <Text size={14}>{scope.description}</Text>
-              </Grid.Col>
-            </Grid>
+            <div key={key}>
+              <Tooltip
+                label={<Text size={10}>You do not have this scope</Text>}
+                position="left"
+                withArrow
+                disabled={!isDisabled}
+                withinPortal
+              >
+                <Grid
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '2px',
+                    filter: isDisabled && 'grayscale(0.8)',
+                  }}
+                >
+                  <Grid.Col span={2}>
+                    <Flex direction="row">
+                      <Checkbox
+                        checked={isChecked}
+                        size="xs"
+                        id={key}
+                        color="blue"
+                        disabled={isDisabled}
+                        onChange={(e) => handleCheckboxChange(key, e.target.checked)}
+                      />
+                      <Space pl={10} />
+                      <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
+                        {scopeName}
+                      </Badge>
+                    </Flex>
+                  </Grid.Col>
+                  <Grid.Col span="auto">
+                    <Text size={14}>{scope.description}</Text>
+                  </Grid.Col>
+                </Grid>
+              </Tooltip>
+            </div>
           )
         })}
       </Box>
