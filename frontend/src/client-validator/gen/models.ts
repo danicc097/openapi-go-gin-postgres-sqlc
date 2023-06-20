@@ -44,7 +44,6 @@ export type Topics = 'GlobalAlerts'
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-export type ModelsWorkItemRole = string
 export type DbWorkItemRole = string
 /**
  * represents a database 'notification_type'
@@ -57,6 +56,7 @@ export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work i
 export type DemoTwoKanbanSteps = 'Received'
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
+export type ModelsWorkItemRole = string
 
 export interface DbActivity {
   activityID: number
@@ -325,7 +325,7 @@ export interface DbDemoWorkItemCreateParams {
   workItemID: number
 }
 export interface ServicesMember {
-  role: ModelsWorkItemRole
+  role: WorkItemRole
   userID: UuidUUID
 }
 export interface RestWorkItemCommentCreateRequest {

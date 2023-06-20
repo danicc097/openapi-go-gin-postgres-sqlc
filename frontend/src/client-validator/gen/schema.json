@@ -1400,7 +1400,7 @@
     "ServicesMember": {
       "properties": {
         "role": {
-          "$ref": "#/definitions/ModelsWorkItemRole"
+          "$ref": "#/definitions/WorkItemRole"
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"

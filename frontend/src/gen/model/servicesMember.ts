@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { ModelsWorkItemRole } from './modelsWorkItemRole'
+import type { WorkItemRole } from './workItemRole'
 import type { UuidUUID } from './uuidUUID'
 
 export interface ServicesMember {
-  role: ModelsWorkItemRole
+  role: WorkItemRole
   userID: UuidUUID
 }

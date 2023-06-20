@@ -1456,7 +1456,7 @@ components:
     ServicesMember: # Generated from internal structs. DO NOT EDIT.
       properties:
         role:
-          $ref: '#/components/schemas/ModelsWorkItemRole'
+          $ref: '#/components/schemas/WorkItemRole'
         userID:
           $ref: '#/components/schemas/UuidUUID'
       required:

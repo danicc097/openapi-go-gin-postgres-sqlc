@@ -460,7 +460,7 @@ export interface components {
     };
     ModelsWorkItemRole: string;
     ServicesMember: {
-      role: components["schemas"]["ModelsWorkItemRole"];
+      role: components["schemas"]["WorkItemRole"];
       userID: components["schemas"]["UuidUUID"];
     };
   };

@@ -547,8 +547,9 @@ type Scopes = []Scope
 
 // ServicesMember defines the model for ServicesMember.
 type ServicesMember struct {
-	Role   ModelsWorkItemRole `json:"role"`
-	UserID UuidUUID           `json:"userID"`
+	// Role represents a database 'work_item_role'
+	Role   WorkItemRole `json:"role"`
+	UserID UuidUUID     `json:"userID"`
 }
 
 // Topics string identifiers for SSE event listeners.
