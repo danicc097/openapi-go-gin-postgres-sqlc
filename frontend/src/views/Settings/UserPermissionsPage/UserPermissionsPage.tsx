@@ -50,6 +50,7 @@ import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import ErrorCallout from 'src/components/ErrorCallout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
+import { isAuthorized } from 'src/services/authorization'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -124,7 +125,7 @@ export default function UserPermissionsPage() {
   )
 
   const roleOptions = entries(ROLES)
-    .filter(([role, v]) => v.rank <= ROLES[user.role].rank)
+    .filter(([role, v]) => isAuthorized({ user, requiredRole: role }))
     .map(([role, v]) => ({
       label: role,
       value: role,
@@ -256,8 +257,8 @@ export default function UserPermissionsPage() {
       }
     }
 
-    const isScopeDisabled = (scope: Scope) => {
-      return ROLES[user.role].rank < ROLES.admin.rank && !user.scopes.includes(scope)
+    const scopeChangeAllowed = (scope: Scope) => {
+      return isAuthorized({ user, requiredRole: 'admin' }) || isAuthorized({ user, requiredScopes: [scope] })
     }
 
     return (
@@ -274,7 +275,7 @@ export default function UserPermissionsPage() {
         </Title>
         {entries(scopes).map(([key, scope]) => {
           const scopeName = key.split(':')[1]
-          const isDisabled = isScopeDisabled(key)
+          const isDisabled = !scopeChangeAllowed(key)
           const isChecked = form.values.scopes.includes(key)
 
           return (
@@ -377,7 +378,7 @@ export default function UserPermissionsPage() {
           <>
             <Divider m={8} />
 
-            {ROLES[user.role].rank >= ROLES[userSelection.role].rank && (
+            {isAuthorized({ user, requiredRole: userSelection.role }) && (
               <>
                 <Select
                   label={
