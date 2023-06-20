@@ -375,7 +375,11 @@ export default function UserPermissionsPage() {
         {userSelection?.email && (
           <>
             <Select
-              label="Select new role"
+              label={
+                <Title size={15} mt={4} mb={4}>
+                  Select new role
+                </Title>
+              }
               disabled={ROLES[userSelection.role].rank > ROLES[user.role].rank}
               itemComponent={SelectRoleItem}
               data-test-subj="updateUserAuthForm__selectable_Role"
@@ -388,7 +392,7 @@ export default function UserPermissionsPage() {
             <Title size={15} mt={4} mb={4}>
               Select new scopes
             </Title>
-            <Card shadow="md" padding="lg" radius="md">
+            <Card shadow="md" padding="lg" radius="md" withBorder>
               {entries(scopeEditPanels).map(([group, scopes]) => (
                 <CheckboxPanel
                   key={group}
@@ -397,7 +401,7 @@ export default function UserPermissionsPage() {
                 />
               ))}
             </Card>
-            <Space pt={12} />
+            <Space pt={24} />
             <Button disabled={userSelection === null} data-test-subj="updateUserAuthForm__submit" onClick={showModal}>
               Update authorization settings
             </Button>
