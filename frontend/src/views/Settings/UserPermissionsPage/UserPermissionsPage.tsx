@@ -37,6 +37,7 @@ import {
   Grid,
   type MultiSelectValueProps,
   Tooltip,
+  Divider,
 } from '@mantine/core'
 import { Prism } from '@mantine/prism'
 import { notifications } from '@mantine/notifications'
@@ -374,23 +375,28 @@ export default function UserPermissionsPage() {
         <Space pt={12} />
         {userSelection?.email && (
           <>
-            <Select
-              label={
-                <Title size={15} mt={4} mb={4}>
-                  Select new role
-                </Title>
-              }
-              disabled={ROLES[userSelection.role].rank > ROLES[user.role].rank}
-              itemComponent={SelectRoleItem}
-              data-test-subj="updateUserAuthForm__selectable_Role"
-              defaultValue={userSelection.role}
-              data={roleOptions ?? []}
-              value={form.values.role}
-              onChange={onRoleSelectableChange}
-            />
-            <Space pt={12} />
+            <Divider m={8} />
+
+            {ROLES[user.role].rank >= ROLES[userSelection.role].rank && (
+              <>
+                <Select
+                  label={
+                    <Title size={15} mt={4} mb={4}>
+                      Update role
+                    </Title>
+                  }
+                  itemComponent={SelectRoleItem}
+                  data-test-subj="updateUserAuthForm__selectable_Role"
+                  defaultValue={userSelection.role}
+                  data={roleOptions ?? []}
+                  value={form.values.role}
+                  onChange={onRoleSelectableChange}
+                />
+                <Space pt={12} />
+              </>
+            )}
             <Title size={15} mt={4} mb={4}>
-              Select new scopes
+              Update scopes
             </Title>
             <Card shadow="md" padding="lg" radius="md" withBorder>
               {entries(scopeEditPanels).map(([group, scopes]) => (
