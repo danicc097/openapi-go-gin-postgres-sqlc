@@ -154,7 +154,7 @@ export default function UserPermissionsPage() {
     }
   }, [allUsers, userOptions])
 
-  const [calloutErrors, setCalloutError] = useState<ValidationErrors | ApiError<AxiosError>>(null)
+  const [calloutError, setCalloutError] = useState<AppError>(null)
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
@@ -323,20 +323,23 @@ export default function UserPermissionsPage() {
 
   // TODO: export to generic helper. should have custom error just for api calls, see mutator.ts
   const getErrors = () => {
-    if (!calloutErrors) return
+    if (!calloutError) return []
 
-    // TODO: instead construct based on api custom httperror with loc, etc, see FastAPI template
-    if (calloutErrors instanceof ApiError) return [calloutErrors.message]
+    // TODO: instead construct based on api custom which could be validation error with loc, etc, see FastAPI template
+    // or a regular error with message, title, detail, status...
+    // will need to have regular error in spec as HttpError, so that ApiError can also be instance of HttpVlaidationError or HttpError
+    // and construct appropriately
+    if (calloutError instanceof ApiError) return [calloutError.message]
 
     // external call error
-    if (calloutErrors instanceof AxiosError) return [calloutErrors.message]
+    if (calloutError instanceof AxiosError) return [calloutError.message]
 
     // client side validation
-    return calloutErrors?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
+    return calloutError?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
   }
   const element = (
     <>
-      {JSON.stringify(calloutErrors)}
+      {JSON.stringify(calloutError)}
       <ErrorCallout title="Error updating user" errors={getErrors()} />
       <Space pt={12} />
       <Title size={12}>
