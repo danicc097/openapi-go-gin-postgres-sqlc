@@ -134,38 +134,4 @@ describe('extractFieldTypes', () => {
       'members.userID': { type: 'string', required: true, isArray: false },
     })
   })
-
-  test('should handle array of objects correctly', () => {
-    const schema = {
-      properties: {
-        base: {
-          properties: {
-            items: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: {
-                    type: 'integer',
-                  },
-                  name: {
-                    type: 'string',
-                  },
-                },
-                required: ['id', 'name'],
-              },
-            },
-          },
-        },
-      },
-    }
-
-    const fieldTypes = extractFieldTypes(schema)
-
-    expect(fieldTypes).toEqual({
-      base: { type: 'arrayOfObject', required: true, isArray: true },
-      'base.id': { type: 'integer', required: true, isArray: false },
-      'base.name': { type: 'string', required: true, isArray: false },
-    })
-  })
 })

@@ -625,7 +625,7 @@ x.gen.frontend() {
         echo "Skipping generation (cached). Force regen with --x-force-regen"
         exit 0
       fi
-      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/package.json &
+      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/scripts/* frontend/package.json &
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen

@@ -22,17 +22,15 @@ export function extractFieldTypes(schema: JsonSchemaField): {
     const isParentRequired = parentRequired || requiredFields.size > 0
 
     if (currentPath !== '') {
-      if (field.type && (typeof field.type === 'string' || Array.isArray(field.type))) {
-        const type = Array.isArray(field.type) ? field.type[0] : field.type
-        const isArray = Array.isArray(field.type) || parentArray
-
-        const isFieldRequired = isParentRequired && !requiredFields.has(currentPath)
-        result[currentPath] = { type, required: isFieldRequired, isArray }
-      }
-
       if (field.format) {
         const isFieldRequired = isParentRequired && !requiredFields.has(currentPath)
         result[currentPath] = { type: field.format, required: isFieldRequired, isArray: parentArray }
+      } else if (field.type) {
+        const types = Array.isArray(field.type) ? field.type.filter((type) => type !== 'null') : [field.type]
+        const type = types.filter((t) => t !== 'null')[0]
+        const isArray = Array.isArray(field.type) || parentArray
+        const isFieldRequired = isParentRequired && !requiredFields.has(currentPath)
+        result[currentPath] = { type, required: isFieldRequired, isArray }
       }
     }
 
@@ -43,9 +41,10 @@ export function extractFieldTypes(schema: JsonSchemaField): {
       }
     }
 
-    if (field.items) {
+    if (field.items && field.items.type === 'object') {
       const newPath = currentPath
       traverseSchema(field.items, newPath, isParentRequired, true)
+      result[newPath] = { type: 'arrayOfObject', required: isParentRequired, isArray: true }
     }
   }
 
