@@ -325,9 +325,8 @@ export default function UserPermissionsPage() {
   const getErrors = () => {
     if (!calloutError) return []
 
-    // TODO: instead construct based on api custom which could be validation error with loc, etc, see FastAPI template
+    // TODO: instead construct based on spec HTTPError which internally could have validationError array with loc, etc, see FastAPI template
     // or a regular error with message, title, detail, status...
-    // will need to have regular error in spec as HttpError, so that ApiError can also be instance of HttpVlaidationError or HttpError
     // and construct appropriately
     if (calloutError instanceof ApiError) return [calloutError.message]
 

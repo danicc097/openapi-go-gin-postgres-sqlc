@@ -26,6 +26,7 @@ import {
   RestProjectBoardResponse,
   UserResponse,
   HTTPValidationError,
+  HTTPError,
   Topics,
   Scope,
   Scopes,
@@ -34,7 +35,6 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
-  HttpErrorType,
   UuidUUID,
   PgtypeJSONB,
   DbWorkItem,
@@ -285,6 +285,18 @@ export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
     return validateJson(json, schema, HTTPValidationErrorDecoder.definitionName)
   },
 }
+export const HTTPErrorDecoder: Decoder<HTTPError> = {
+  definitionName: 'HTTPError',
+  schemaRef: '#/definitions/HTTPError',
+
+  decode(json: unknown): HTTPError {
+    const schema = ajv.getSchema(HTTPErrorDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${HTTPErrorDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, HTTPErrorDecoder.definitionName)
+  },
+}
 export const TopicsDecoder: Decoder<Topics> = {
   definitionName: 'Topics',
   schemaRef: '#/definitions/Topics',
@@ -379,18 +391,6 @@ export const ValidationErrorDecoder: Decoder<ValidationError> = {
       throw new Error(`Schema ${ValidationErrorDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ValidationErrorDecoder.definitionName)
-  },
-}
-export const HttpErrorTypeDecoder: Decoder<HttpErrorType> = {
-  definitionName: 'HttpErrorType',
-  schemaRef: '#/definitions/HttpErrorType',
-
-  decode(json: unknown): HttpErrorType {
-    const schema = ajv.getSchema(HttpErrorTypeDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${HttpErrorTypeDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, HttpErrorTypeDecoder.definitionName)
   },
 }
 export const UuidUUIDDecoder: Decoder<UuidUUID> = {

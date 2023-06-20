@@ -810,6 +810,38 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "HTTPError": {
+      "description": "represents an error message response.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "validationError": {
+          "$ref": "#/definitions/HTTPValidationError"
+        }
+      },
+      "required": [
+        "title",
+        "detail",
+        "status",
+        "error",
+        "type"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "Topics": {
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
@@ -821,12 +853,14 @@
     "Scope": {
       "type": "string",
       "enum": [
-        "test-scope:test",
         "users:read",
         "users:write",
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
+        "work-item-tag:create",
+        "work-item-tag:edit",
+        "work-item-tag:delete",
         "work-item:review"
       ],
       "x-generated": "-",
@@ -898,8 +932,7 @@
       "required": [
         "loc",
         "msg",
-        "detail",
-        "type"
+        "detail"
       ],
       "type": "object",
       "properties": {
@@ -915,9 +948,6 @@
           "title": "Message",
           "description": "should always be shown to the user",
           "type": "string"
-        },
-        "type": {
-          "$ref": "#/definitions/HttpErrorType"
         },
         "detail": {
           "description": "verbose details of the error",
@@ -941,15 +971,6 @@
           "type": "object"
         }
       },
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "HttpErrorType": {
-      "type": "string",
-      "enum": [
-        "response_validation",
-        "request_validation",
-        "unknown"
-      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UuidUUID": {
@@ -1493,6 +1514,9 @@
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
     },
+    "HTTPError": {
+      "$ref": "#/definitions/HTTPError"
+    },
     "Topics": {
       "$ref": "#/definitions/Topics"
     },
@@ -1516,9 +1540,6 @@
     },
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"
-    },
-    "HttpErrorType": {
-      "$ref": "#/definitions/HttpErrorType"
     },
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"

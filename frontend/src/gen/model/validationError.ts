@@ -5,7 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { HttpErrorType } from './httpErrorType'
 import type { ValidationErrorDetail } from './validationErrorDetail'
 import type { ValidationErrorCtx } from './validationErrorCtx'
 
@@ -14,7 +13,6 @@ export interface ValidationError {
   loc: string[]
   /** should always be shown to the user */
   msg: string
-  type: HttpErrorType
   /** verbose details of the error */
   detail: ValidationErrorDetail
   ctx?: ValidationErrorCtx

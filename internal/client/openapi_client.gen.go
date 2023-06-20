@@ -129,22 +129,6 @@ func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
 	}
 }
 
-// Defines values for HttpErrorType.
-const (
-	RequestValidation  HttpErrorType = "request_validation"
-	ResponseValidation HttpErrorType = "response_validation"
-	Unknown            HttpErrorType = "unknown"
-)
-
-// AllHttpErrorTypeValues returns all possible values for HttpErrorType.
-func AllHttpErrorTypeValues() []HttpErrorType {
-	return []HttpErrorType{
-		RequestValidation,
-		ResponseValidation,
-		Unknown,
-	}
-}
-
 // Defines values for NotificationType.
 const (
 	Global   NotificationType = "global"
@@ -200,10 +184,12 @@ const (
 	ProjectSettingsWrite Scope = "project-settings:write"
 	ScopesWrite          Scope = "scopes:write"
 	TeamSettingsWrite    Scope = "team-settings:write"
-	TestScopeTest        Scope = "test-scope:test"
 	UsersRead            Scope = "users:read"
 	UsersWrite           Scope = "users:write"
 	WorkItemReview       Scope = "work-item:review"
+	WorkItemTagCreate    Scope = "work-item-tag:create"
+	WorkItemTagDelete    Scope = "work-item-tag:delete"
+	WorkItemTagEdit      Scope = "work-item-tag:edit"
 )
 
 // AllScopeValues returns all possible values for Scope.
@@ -212,10 +198,12 @@ func AllScopeValues() []Scope {
 		ProjectSettingsWrite,
 		ScopesWrite,
 		TeamSettingsWrite,
-		TestScopeTest,
 		UsersRead,
 		UsersWrite,
 		WorkItemReview,
+		WorkItemTagCreate,
+		WorkItemTagDelete,
+		WorkItemTagEdit,
 	}
 }
 
@@ -465,6 +453,16 @@ type DemoTwoWorkItemTypes string
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
 type DemoWorkItemTypes string
 
+// HTTPError represents an error message response.
+type HTTPError struct {
+	Detail          string               `json:"detail"`
+	Error           string               `json:"error"`
+	Status          int                  `json:"status"`
+	Title           string               `json:"title"`
+	Type            string               `json:"type"`
+	ValidationError *HTTPValidationError `json:"validationError,omitempty"`
+}
+
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
 	// Detail Additional details for validation errors
@@ -473,9 +471,6 @@ type HTTPValidationError struct {
 	// Messages Descriptive error messages to show in a callout
 	Messages []string `json:"messages"`
 }
-
-// HttpErrorType defines the model for HttpErrorType.
-type HttpErrorType string
 
 // InitializeProjectRequest defines the model for InitializeProjectRequest.
 type InitializeProjectRequest struct {
@@ -641,8 +636,7 @@ type ValidationError struct {
 	Loc []string `json:"loc"`
 
 	// Msg should always be shown to the user
-	Msg  string        `json:"msg"`
-	Type HttpErrorType `json:"type"`
+	Msg string `json:"msg"`
 }
 
 // WorkItemRole represents a database 'work_item_role'
@@ -2153,7 +2147,7 @@ type ClientWithResponsesInterface interface {
 type AdminPingResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON422      *HTTPValidationError
+	JSON4XX      *HTTPError
 }
 
 // Status returns HTTPResponse.Status
@@ -2260,7 +2254,7 @@ func (r OpenapiYamlGetResponse) StatusCode() int {
 type PingResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON422      *HTTPValidationError
+	JSON4XX      *HTTPError
 }
 
 // Status returns HTTPResponse.Status
@@ -2906,12 +2900,12 @@ func ParseAdminPingResponse(rsp *http.Response) (*AdminPingResponse, error) {
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest HTTPValidationError
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON422 = &dest
+		response.JSON4XX = &dest
 
 	}
 
@@ -3006,12 +3000,12 @@ func ParsePingResponse(rsp *http.Response) (*PingResponse, error) {
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest HTTPValidationError
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON422 = &dest
+		response.JSON4XX = &dest
 
 	}
 

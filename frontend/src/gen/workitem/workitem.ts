@@ -23,7 +23,6 @@ import type {
   RestWorkItemCommentCreateRequest,
 } from '.././model'
 import { customInstance } from '../../api/mutator'
-import type { ErrorType } from '../../api/mutator'
 
 type AwaitedInput<T> = PromiseLike<T> | T
 
@@ -50,7 +49,7 @@ export const createWorkitem = (
   )
 }
 
-export const getCreateWorkitemMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getCreateWorkitemMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitem>>,
     TError,
@@ -80,9 +79,9 @@ export const getCreateWorkitemMutationOptions = <TError = ErrorType<unknown>, TC
 
 export type CreateWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
 export type CreateWorkitemMutationBody = RestDemoWorkItemCreateRequest
-export type CreateWorkitemMutationError = ErrorType<unknown>
+export type CreateWorkitemMutationError = unknown
 
-export const useCreateWorkitem = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useCreateWorkitem = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitem>>,
     TError,
@@ -104,10 +103,7 @@ export const getWorkitem = (id: number, options?: SecondParameter<typeof customI
 
 export const getGetWorkitemQueryKey = (id: number) => [`/workitem/${id}/`] as const
 
-export const getGetWorkitemInfiniteQueryOptions = <
-  TData = Awaited<ReturnType<typeof getWorkitem>>,
-  TError = ErrorType<unknown>,
->(
+export const getGetWorkitemInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = unknown>(
   id: number,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkitem>>, TError, TData>
@@ -125,9 +121,9 @@ export const getGetWorkitemInfiniteQueryOptions = <
 }
 
 export type GetWorkitemInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkitem>>>
-export type GetWorkitemInfiniteQueryError = ErrorType<unknown>
+export type GetWorkitemInfiniteQueryError = unknown
 
-export const useGetWorkitemInfinite = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = ErrorType<unknown>>(
+export const useGetWorkitemInfinite = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = unknown>(
   id: number,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkitem>>, TError, TData>
@@ -143,10 +139,7 @@ export const useGetWorkitemInfinite = <TData = Awaited<ReturnType<typeof getWork
   return query
 }
 
-export const getGetWorkitemQueryOptions = <
-  TData = Awaited<ReturnType<typeof getWorkitem>>,
-  TError = ErrorType<unknown>,
->(
+export const getGetWorkitemQueryOptions = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = unknown>(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkitem>>, TError, TData>
@@ -164,9 +157,9 @@ export const getGetWorkitemQueryOptions = <
 }
 
 export type GetWorkitemQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkitem>>>
-export type GetWorkitemQueryError = ErrorType<unknown>
+export type GetWorkitemQueryError = unknown
 
-export const useGetWorkitem = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = ErrorType<unknown>>(
+export const useGetWorkitem = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = unknown>(
   id: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkitem>>, TError, TData>
@@ -189,7 +182,7 @@ export const updateWorkitem = (id: number, options?: SecondParameter<typeof cust
   return customInstance<DbWorkItem>({ url: `/workitem/${id}/`, method: 'patch' }, options)
 }
 
-export const getUpdateWorkitemMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getUpdateWorkitemMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { id: number }, TContext>
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { id: number }, TContext> => {
@@ -206,9 +199,9 @@ export const getUpdateWorkitemMutationOptions = <TError = ErrorType<unknown>, TC
 
 export type UpdateWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkitem>>>
 
-export type UpdateWorkitemMutationError = ErrorType<unknown>
+export type UpdateWorkitemMutationError = unknown
 
-export const useUpdateWorkitem = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useUpdateWorkitem = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { id: number }, TContext>
   request?: SecondParameter<typeof customInstance>
 }) => {
@@ -223,7 +216,7 @@ export const deleteWorkitem = (id: number, options?: SecondParameter<typeof cust
   return customInstance<void>({ url: `/workitem/${id}/`, method: 'delete' }, options)
 }
 
-export const getDeleteWorkitemMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getDeleteWorkitemMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { id: number }, TContext>
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { id: number }, TContext> => {
@@ -240,9 +233,9 @@ export const getDeleteWorkitemMutationOptions = <TError = ErrorType<unknown>, TC
 
 export type DeleteWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof deleteWorkitem>>>
 
-export type DeleteWorkitemMutationError = ErrorType<unknown>
+export type DeleteWorkitemMutationError = unknown
 
-export const useDeleteWorkitem = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useDeleteWorkitem = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { id: number }, TContext>
   request?: SecondParameter<typeof customInstance>
 }) => {
@@ -269,7 +262,7 @@ export const createWorkitemComment = (
   )
 }
 
-export const getCreateWorkitemCommentMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getCreateWorkitemCommentMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitemComment>>,
     TError,
@@ -299,9 +292,9 @@ export const getCreateWorkitemCommentMutationOptions = <TError = ErrorType<unkno
 
 export type CreateWorkitemCommentMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitemComment>>>
 export type CreateWorkitemCommentMutationBody = RestWorkItemCommentCreateRequest
-export type CreateWorkitemCommentMutationError = ErrorType<unknown>
+export type CreateWorkitemCommentMutationError = unknown
 
-export const useCreateWorkitemComment = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useCreateWorkitemComment = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitemComment>>,
     TError,

@@ -14,9 +14,8 @@ import type {
   UseInfiniteQueryResult,
   QueryKey,
 } from '@tanstack/react-query'
-import type { EventsParams, HTTPValidationError } from '.././model'
+import type { EventsParams, HTTPError } from '.././model'
 import { customInstance } from '../../api/mutator'
-import type { ErrorType } from '../../api/mutator'
 
 type AwaitedInput<T> = PromiseLike<T> | T
 
@@ -33,7 +32,7 @@ export const getMyProviderCallbackQueryKey = () => [`/auth/myprovider/callback`]
 
 export const getMyProviderCallbackInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof myProviderCallback>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -49,11 +48,11 @@ export const getMyProviderCallbackInfiniteQueryOptions = <
 }
 
 export type MyProviderCallbackInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
-export type MyProviderCallbackInfiniteQueryError = ErrorType<unknown>
+export type MyProviderCallbackInfiniteQueryError = unknown
 
 export const useMyProviderCallbackInfinite = <
   TData = Awaited<ReturnType<typeof myProviderCallback>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -69,7 +68,7 @@ export const useMyProviderCallbackInfinite = <
 
 export const getMyProviderCallbackQueryOptions = <
   TData = Awaited<ReturnType<typeof myProviderCallback>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -85,11 +84,11 @@ export const getMyProviderCallbackQueryOptions = <
 }
 
 export type MyProviderCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
-export type MyProviderCallbackQueryError = ErrorType<unknown>
+export type MyProviderCallbackQueryError = unknown
 
 export const useMyProviderCallback = <
   TData = Awaited<ReturnType<typeof myProviderCallback>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -111,7 +110,7 @@ export const getMyProviderLoginQueryKey = () => [`/auth/myprovider/login`] as co
 
 export const getMyProviderLoginInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof myProviderLogin>>,
-  TError = ErrorType<void>,
+  TError = void,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -127,11 +126,11 @@ export const getMyProviderLoginInfiniteQueryOptions = <
 }
 
 export type MyProviderLoginInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>
-export type MyProviderLoginInfiniteQueryError = ErrorType<void>
+export type MyProviderLoginInfiniteQueryError = void
 
 export const useMyProviderLoginInfinite = <
   TData = Awaited<ReturnType<typeof myProviderLogin>>,
-  TError = ErrorType<void>,
+  TError = void,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -147,7 +146,7 @@ export const useMyProviderLoginInfinite = <
 
 export const getMyProviderLoginQueryOptions = <
   TData = Awaited<ReturnType<typeof myProviderLogin>>,
-  TError = ErrorType<void>,
+  TError = void,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -163,12 +162,9 @@ export const getMyProviderLoginQueryOptions = <
 }
 
 export type MyProviderLoginQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>
-export type MyProviderLoginQueryError = ErrorType<void>
+export type MyProviderLoginQueryError = void
 
-export const useMyProviderLogin = <
-  TData = Awaited<ReturnType<typeof myProviderLogin>>,
-  TError = ErrorType<void>,
->(options?: {
+export const useMyProviderLogin = <TData = Awaited<ReturnType<typeof myProviderLogin>>, TError = void>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -191,7 +187,7 @@ export const events = (
 
 export const getEventsQueryKey = (params: EventsParams) => [`/events`, ...(params ? [params] : [])] as const
 
-export const getEventsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = ErrorType<unknown>>(
+export const getEventsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = unknown>(
   params: EventsParams,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
@@ -209,9 +205,9 @@ export const getEventsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof 
 }
 
 export type EventsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
-export type EventsInfiniteQueryError = ErrorType<unknown>
+export type EventsInfiniteQueryError = unknown
 
-export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TError = ErrorType<unknown>>(
+export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TError = unknown>(
   params: EventsParams,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
@@ -227,7 +223,7 @@ export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TE
   return query
 }
 
-export const getEventsQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = ErrorType<unknown>>(
+export const getEventsQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = unknown>(
   params: EventsParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
@@ -245,9 +241,9 @@ export const getEventsQueryOptions = <TData = Awaited<ReturnType<typeof events>>
 }
 
 export type EventsQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
-export type EventsQueryError = ErrorType<unknown>
+export type EventsQueryError = unknown
 
-export const useEvents = <TData = Awaited<ReturnType<typeof events>>, TError = ErrorType<unknown>>(
+export const useEvents = <TData = Awaited<ReturnType<typeof events>>, TError = unknown>(
   params: EventsParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
@@ -272,10 +268,7 @@ export const ping = (options?: SecondParameter<typeof customInstance>, signal?: 
 
 export const getPingQueryKey = () => [`/ping`] as const
 
-export const getPingInfiniteQueryOptions = <
-  TData = Awaited<ReturnType<typeof ping>>,
-  TError = ErrorType<HTTPValidationError>,
->(options?: {
+export const getPingInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = HTTPError>(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData> & { queryKey: QueryKey } => {
@@ -289,12 +282,9 @@ export const getPingInfiniteQueryOptions = <
 }
 
 export type PingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof ping>>>
-export type PingInfiniteQueryError = ErrorType<HTTPValidationError>
+export type PingInfiniteQueryError = HTTPError
 
-export const usePingInfinite = <
-  TData = Awaited<ReturnType<typeof ping>>,
-  TError = ErrorType<HTTPValidationError>,
->(options?: {
+export const usePingInfinite = <TData = Awaited<ReturnType<typeof ping>>, TError = HTTPError>(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -307,10 +297,7 @@ export const usePingInfinite = <
   return query
 }
 
-export const getPingQueryOptions = <
-  TData = Awaited<ReturnType<typeof ping>>,
-  TError = ErrorType<HTTPValidationError>,
->(options?: {
+export const getPingQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = HTTPError>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData> & { queryKey: QueryKey } => {
@@ -324,9 +311,9 @@ export const getPingQueryOptions = <
 }
 
 export type PingQueryResult = NonNullable<Awaited<ReturnType<typeof ping>>>
-export type PingQueryError = ErrorType<HTTPValidationError>
+export type PingQueryError = HTTPError
 
-export const usePing = <TData = Awaited<ReturnType<typeof ping>>, TError = ErrorType<HTTPValidationError>>(options?: {
+export const usePing = <TData = Awaited<ReturnType<typeof ping>>, TError = HTTPError>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -350,7 +337,7 @@ export const getOpenapiYamlGetQueryKey = () => [`/openapi.yaml`] as const
 
 export const getOpenapiYamlGetInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof openapiYamlGet>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -366,11 +353,11 @@ export const getOpenapiYamlGetInfiniteQueryOptions = <
 }
 
 export type OpenapiYamlGetInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof openapiYamlGet>>>
-export type OpenapiYamlGetInfiniteQueryError = ErrorType<unknown>
+export type OpenapiYamlGetInfiniteQueryError = unknown
 
 export const useOpenapiYamlGetInfinite = <
   TData = Awaited<ReturnType<typeof openapiYamlGet>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -386,7 +373,7 @@ export const useOpenapiYamlGetInfinite = <
 
 export const getOpenapiYamlGetQueryOptions = <
   TData = Awaited<ReturnType<typeof openapiYamlGet>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -402,12 +389,9 @@ export const getOpenapiYamlGetQueryOptions = <
 }
 
 export type OpenapiYamlGetQueryResult = NonNullable<Awaited<ReturnType<typeof openapiYamlGet>>>
-export type OpenapiYamlGetQueryError = ErrorType<unknown>
+export type OpenapiYamlGetQueryError = unknown
 
-export const useOpenapiYamlGet = <
-  TData = Awaited<ReturnType<typeof openapiYamlGet>>,
-  TError = ErrorType<unknown>,
->(options?: {
+export const useOpenapiYamlGet = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = unknown>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {

@@ -18,7 +18,6 @@ import type {
 } from '@tanstack/react-query'
 import type { UserResponse, UpdateUserAuthRequest, UpdateUserRequest } from '.././model'
 import { customInstance } from '../../api/mutator'
-import type { ErrorType } from '../../api/mutator'
 
 type AwaitedInput<T> = PromiseLike<T> | T
 
@@ -38,7 +37,7 @@ export const getGetCurrentUserQueryKey = () => [`/user/me`] as const
 
 export const getGetCurrentUserInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof getCurrentUser>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -54,11 +53,11 @@ export const getGetCurrentUserInfiniteQueryOptions = <
 }
 
 export type GetCurrentUserInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
-export type GetCurrentUserInfiniteQueryError = ErrorType<unknown>
+export type GetCurrentUserInfiniteQueryError = unknown
 
 export const useGetCurrentUserInfinite = <
   TData = Awaited<ReturnType<typeof getCurrentUser>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -74,7 +73,7 @@ export const useGetCurrentUserInfinite = <
 
 export const getGetCurrentUserQueryOptions = <
   TData = Awaited<ReturnType<typeof getCurrentUser>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -90,12 +89,9 @@ export const getGetCurrentUserQueryOptions = <
 }
 
 export type GetCurrentUserQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
-export type GetCurrentUserQueryError = ErrorType<unknown>
+export type GetCurrentUserQueryError = unknown
 
-export const useGetCurrentUser = <
-  TData = Awaited<ReturnType<typeof getCurrentUser>>,
-  TError = ErrorType<unknown>,
->(options?: {
+export const useGetCurrentUser = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -127,7 +123,7 @@ export const updateUserAuthorization = (
   )
 }
 
-export const getUpdateUserAuthorizationMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getUpdateUserAuthorizationMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUserAuthorization>>,
     TError,
@@ -157,9 +153,9 @@ export const getUpdateUserAuthorizationMutationOptions = <TError = ErrorType<unk
 
 export type UpdateUserAuthorizationMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserAuthorization>>>
 export type UpdateUserAuthorizationMutationBody = UpdateUserAuthRequest
-export type UpdateUserAuthorizationMutationError = ErrorType<unknown>
+export type UpdateUserAuthorizationMutationError = unknown
 
-export const useUpdateUserAuthorization = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useUpdateUserAuthorization = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUserAuthorization>>,
     TError,
@@ -179,7 +175,7 @@ export const deleteUser = (id: string, options?: SecondParameter<typeof customIn
   return customInstance<unknown>({ url: `/user/${id}`, method: 'delete' }, options)
 }
 
-export const getDeleteUserMutationOptions = <TError = ErrorType<void>, TContext = unknown>(options?: {
+export const getDeleteUserMutationOptions = <TError = void, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext>
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext> => {
@@ -196,9 +192,9 @@ export const getDeleteUserMutationOptions = <TError = ErrorType<void>, TContext 
 
 export type DeleteUserMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>
 
-export type DeleteUserMutationError = ErrorType<void>
+export type DeleteUserMutationError = void
 
-export const useDeleteUser = <TError = ErrorType<void>, TContext = unknown>(options?: {
+export const useDeleteUser = <TError = void, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext>
   request?: SecondParameter<typeof customInstance>
 }) => {
@@ -220,7 +216,7 @@ export const updateUser = (
   )
 }
 
-export const getUpdateUserMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getUpdateUserMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUser>>,
     TError,
@@ -250,9 +246,9 @@ export const getUpdateUserMutationOptions = <TError = ErrorType<unknown>, TConte
 
 export type UpdateUserMutationResult = NonNullable<Awaited<ReturnType<typeof updateUser>>>
 export type UpdateUserMutationBody = UpdateUserRequest
-export type UpdateUserMutationError = ErrorType<unknown>
+export type UpdateUserMutationError = unknown
 
-export const useUpdateUser = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useUpdateUser = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUser>>,
     TError,

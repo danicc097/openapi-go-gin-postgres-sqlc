@@ -27,7 +27,6 @@ import type {
   RestWorkItemTagCreateRequest,
 } from '.././model'
 import { customInstance } from '../../api/mutator'
-import type { ErrorType } from '../../api/mutator'
 
 type AwaitedInput<T> = PromiseLike<T> | T
 
@@ -55,7 +54,7 @@ export const initializeProject = (
   )
 }
 
-export const getInitializeProjectMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getInitializeProjectMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof initializeProject>>,
     TError,
@@ -85,9 +84,9 @@ export const getInitializeProjectMutationOptions = <TError = ErrorType<unknown>,
 
 export type InitializeProjectMutationResult = NonNullable<Awaited<ReturnType<typeof initializeProject>>>
 export type InitializeProjectMutationBody = InitializeProjectRequest
-export type InitializeProjectMutationError = ErrorType<unknown>
+export type InitializeProjectMutationError = unknown
 
-export const useInitializeProject = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useInitializeProject = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof initializeProject>>,
     TError,
@@ -113,10 +112,7 @@ export const getProject = (
 
 export const getGetProjectQueryKey = (projectName: 'demo' | 'demo_two') => [`/project/${projectName}/`] as const
 
-export const getGetProjectInfiniteQueryOptions = <
-  TData = Awaited<ReturnType<typeof getProject>>,
-  TError = ErrorType<unknown>,
->(
+export const getGetProjectInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProject>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>
@@ -134,9 +130,9 @@ export const getGetProjectInfiniteQueryOptions = <
 }
 
 export type GetProjectInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
-export type GetProjectInfiniteQueryError = ErrorType<unknown>
+export type GetProjectInfiniteQueryError = unknown
 
-export const useGetProjectInfinite = <TData = Awaited<ReturnType<typeof getProject>>, TError = ErrorType<unknown>>(
+export const useGetProjectInfinite = <TData = Awaited<ReturnType<typeof getProject>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>
@@ -152,7 +148,7 @@ export const useGetProjectInfinite = <TData = Awaited<ReturnType<typeof getProje
   return query
 }
 
-export const getGetProjectQueryOptions = <TData = Awaited<ReturnType<typeof getProject>>, TError = ErrorType<unknown>>(
+export const getGetProjectQueryOptions = <TData = Awaited<ReturnType<typeof getProject>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>
@@ -170,9 +166,9 @@ export const getGetProjectQueryOptions = <TData = Awaited<ReturnType<typeof getP
 }
 
 export type GetProjectQueryResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
-export type GetProjectQueryError = ErrorType<unknown>
+export type GetProjectQueryError = unknown
 
-export const useGetProject = <TData = Awaited<ReturnType<typeof getProject>>, TError = ErrorType<unknown>>(
+export const useGetProject = <TData = Awaited<ReturnType<typeof getProject>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>
@@ -204,7 +200,7 @@ export const getGetProjectConfigQueryKey = (projectName: 'demo' | 'demo_two') =>
 
 export const getGetProjectConfigInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof getProjectConfig>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(
   projectName: 'demo' | 'demo_two',
   options?: {
@@ -223,12 +219,9 @@ export const getGetProjectConfigInfiniteQueryOptions = <
 }
 
 export type GetProjectConfigInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
-export type GetProjectConfigInfiniteQueryError = ErrorType<unknown>
+export type GetProjectConfigInfiniteQueryError = unknown
 
-export const useGetProjectConfigInfinite = <
-  TData = Awaited<ReturnType<typeof getProjectConfig>>,
-  TError = ErrorType<unknown>,
->(
+export const useGetProjectConfigInfinite = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>
@@ -244,10 +237,7 @@ export const useGetProjectConfigInfinite = <
   return query
 }
 
-export const getGetProjectConfigQueryOptions = <
-  TData = Awaited<ReturnType<typeof getProjectConfig>>,
-  TError = ErrorType<unknown>,
->(
+export const getGetProjectConfigQueryOptions = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>
@@ -265,9 +255,9 @@ export const getGetProjectConfigQueryOptions = <
 }
 
 export type GetProjectConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
-export type GetProjectConfigQueryError = ErrorType<unknown>
+export type GetProjectConfigQueryError = unknown
 
-export const useGetProjectConfig = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = ErrorType<unknown>>(
+export const useGetProjectConfig = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>
@@ -302,7 +292,7 @@ export const updateProjectConfig = (
   )
 }
 
-export const getUpdateProjectConfigMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getUpdateProjectConfigMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateProjectConfig>>,
     TError,
@@ -332,9 +322,9 @@ export const getUpdateProjectConfigMutationOptions = <TError = ErrorType<unknown
 
 export type UpdateProjectConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateProjectConfig>>>
 export type UpdateProjectConfigMutationBody = ProjectConfig
-export type UpdateProjectConfigMutationError = ErrorType<unknown>
+export type UpdateProjectConfigMutationError = unknown
 
-export const useUpdateProjectConfig = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useUpdateProjectConfig = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateProjectConfig>>,
     TError,
@@ -366,7 +356,7 @@ export const getGetProjectBoardQueryKey = (projectName: 'demo' | 'demo_two') =>
 
 export const getGetProjectBoardInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof getProjectBoard>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(
   projectName: 'demo' | 'demo_two',
   options?: {
@@ -385,12 +375,9 @@ export const getGetProjectBoardInfiniteQueryOptions = <
 }
 
 export type GetProjectBoardInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
-export type GetProjectBoardInfiniteQueryError = ErrorType<unknown>
+export type GetProjectBoardInfiniteQueryError = unknown
 
-export const useGetProjectBoardInfinite = <
-  TData = Awaited<ReturnType<typeof getProjectBoard>>,
-  TError = ErrorType<unknown>,
->(
+export const useGetProjectBoardInfinite = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>
@@ -406,10 +393,7 @@ export const useGetProjectBoardInfinite = <
   return query
 }
 
-export const getGetProjectBoardQueryOptions = <
-  TData = Awaited<ReturnType<typeof getProjectBoard>>,
-  TError = ErrorType<unknown>,
->(
+export const getGetProjectBoardQueryOptions = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>
@@ -427,9 +411,9 @@ export const getGetProjectBoardQueryOptions = <
 }
 
 export type GetProjectBoardQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
-export type GetProjectBoardQueryError = ErrorType<unknown>
+export type GetProjectBoardQueryError = unknown
 
-export const useGetProjectBoard = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = ErrorType<unknown>>(
+export const useGetProjectBoard = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>
@@ -465,7 +449,7 @@ export const getGetProjectWorkitemsQueryKey = (projectName: 'demo' | 'demo_two',
 
 export const getGetProjectWorkitemsInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof getProjectWorkitems>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(
   projectName: 'demo' | 'demo_two',
   params?: GetProjectWorkitemsParams,
@@ -485,11 +469,11 @@ export const getGetProjectWorkitemsInfiniteQueryOptions = <
 }
 
 export type GetProjectWorkitemsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
-export type GetProjectWorkitemsInfiniteQueryError = ErrorType<unknown>
+export type GetProjectWorkitemsInfiniteQueryError = unknown
 
 export const useGetProjectWorkitemsInfinite = <
   TData = Awaited<ReturnType<typeof getProjectWorkitems>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(
   projectName: 'demo' | 'demo_two',
   params?: GetProjectWorkitemsParams,
@@ -509,7 +493,7 @@ export const useGetProjectWorkitemsInfinite = <
 
 export const getGetProjectWorkitemsQueryOptions = <
   TData = Awaited<ReturnType<typeof getProjectWorkitems>>,
-  TError = ErrorType<unknown>,
+  TError = unknown,
 >(
   projectName: 'demo' | 'demo_two',
   params?: GetProjectWorkitemsParams,
@@ -529,12 +513,9 @@ export const getGetProjectWorkitemsQueryOptions = <
 }
 
 export type GetProjectWorkitemsQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
-export type GetProjectWorkitemsQueryError = ErrorType<unknown>
+export type GetProjectWorkitemsQueryError = unknown
 
-export const useGetProjectWorkitems = <
-  TData = Awaited<ReturnType<typeof getProjectWorkitems>>,
-  TError = ErrorType<unknown>,
->(
+export const useGetProjectWorkitems = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = unknown>(
   projectName: 'demo' | 'demo_two',
   params?: GetProjectWorkitemsParams,
   options?: {
@@ -570,7 +551,7 @@ export const createWorkitemTag = (
   )
 }
 
-export const getCreateWorkitemTagMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const getCreateWorkitemTagMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitemTag>>,
     TError,
@@ -600,9 +581,9 @@ export const getCreateWorkitemTagMutationOptions = <TError = ErrorType<unknown>,
 
 export type CreateWorkitemTagMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitemTag>>>
 export type CreateWorkitemTagMutationBody = RestWorkItemTagCreateRequest
-export type CreateWorkitemTagMutationError = ErrorType<unknown>
+export type CreateWorkitemTagMutationError = unknown
 
-export const useCreateWorkitemTag = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useCreateWorkitemTag = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitemTag>>,
     TError,

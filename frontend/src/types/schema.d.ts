@@ -283,13 +283,22 @@ export interface components {
        */
       messages: (string)[];
     };
+    /** @description represents an error message response. */
+    HTTPError: {
+      title: string;
+      detail: string;
+      status: number;
+      error: string;
+      type: string;
+      validationError?: components["schemas"]["HTTPValidationError"];
+    };
     /**
      * @description string identifiers for SSE event listeners. 
      * @enum {string}
      */
     Topics: "GlobalAlerts";
     /** @enum {string} */
-    Scope: "test-scope:test" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
+    Scope: "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
     Scopes: (components["schemas"]["Scope"])[];
     /** @enum {string} */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
@@ -337,7 +346,6 @@ export interface components {
        * @description should always be shown to the user
        */
       msg: string;
-      type: components["schemas"]["HttpErrorType"];
       /**
        * Error details 
        * @description verbose details of the error
@@ -349,8 +357,6 @@ export interface components {
       /** Contextual information */
       ctx?: Record<string, never>;
     };
-    /** @enum {string} */
-    HttpErrorType: "response_validation" | "request_validation" | "unknown";
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
     DbWorkItem: {
@@ -535,10 +541,10 @@ export interface operations {
           "text/plain": string;
         };
       };
-      /** @description Validation Error */
-      422: {
+      /** @description Error response */
+      "4XX": {
         content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };
@@ -563,10 +569,10 @@ export interface operations {
           "text/plain": string;
         };
       };
-      /** @description Validation Error */
-      422: {
+      /** @description Error response */
+      "4XX": {
         content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };

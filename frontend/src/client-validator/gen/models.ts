@@ -9,12 +9,14 @@
 export type Project = 'demo' | 'demo_two'
 export type UuidUUID = string
 export type Scope =
-  | 'test-scope:test'
   | 'users:read'
   | 'users:write'
   | 'scopes:write'
   | 'team-settings:write'
   | 'project-settings:write'
+  | 'work-item-tag:create'
+  | 'work-item-tag:edit'
+  | 'work-item-tag:delete'
   | 'work-item:review'
 export type Scopes = Scope[]
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
@@ -26,7 +28,6 @@ export type Location = string[]
  * should always be shown to the user
  */
 export type Message = string
-export type HttpErrorType = 'response_validation' | 'request_validation' | 'unknown'
 /**
  * Additional details for validation errors
  */
@@ -237,7 +238,6 @@ export interface HTTPValidationError {
 export interface ValidationError {
   loc: Location
   msg: Message
-  type: HttpErrorType
   detail: ErrorDetails
   ctx?: ContextualInformation
 }
@@ -249,6 +249,17 @@ export interface ErrorDetails {
   value: string
 }
 export interface ContextualInformation {}
+/**
+ * represents an error message response.
+ */
+export interface HTTPError {
+  title: string
+  detail: string
+  status: number
+  error: string
+  type: string
+  validationError?: HTTPValidationError
+}
 /**
  * represents User data to update
  */

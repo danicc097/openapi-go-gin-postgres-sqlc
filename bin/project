@@ -695,9 +695,11 @@ x.gen() {
     #   restart_pid $pid &
     # done
 
-    x.lint
-    x.gen.frontend
+    x.lint.sql &
+    x.lint.go &
+    wait
 
+    x.gen.frontend
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
