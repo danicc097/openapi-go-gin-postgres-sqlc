@@ -46,6 +46,9 @@ import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
 import ROLES from 'src/roles'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
+import ErrorCallout from 'src/components/ErrorCallout/ErrorCallout'
+import { ApiError } from 'src/api/mutator'
+import { AxiosError } from 'axios'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -151,7 +154,7 @@ export default function UserPermissionsPage() {
     }
   }, [allUsers, userOptions])
 
-  const [calloutErrors, setCalloutError] = useState<ValidationErrors>(null)
+  const [calloutErrors, setCalloutError] = useState<ValidationErrors | ApiError<AxiosError>>(null)
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
@@ -164,7 +167,8 @@ export default function UserPermissionsPage() {
     },
   })
 
-  const fetchData = async () => {
+  const submitRoleUpdate = async () => {
+    const span = newFrontendSpan('submitRoleUpdate')
     try {
       const updateUserAuthRequest = UpdateUserAuthRequestDecoder.decode(form.values)
       const payload = await updateUserAuthorization(userSelection.userID, updateUserAuthRequest)
@@ -187,6 +191,7 @@ export default function UserPermissionsPage() {
       }
       setCalloutError(error)
     }
+    span?.end()
   }
 
   const handleError = (errors: typeof form.errors) => {
@@ -226,14 +231,6 @@ export default function UserPermissionsPage() {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const closeModal = () => setIsModalVisible(false)
   const showModal = () => setIsModalVisible(true)
-
-  const submitRoleUpdate = async () => {
-    const span = newFrontendSpan('fetchData')
-    await fetchData()
-    span?.end()
-
-    closeModal()
-  }
 
   const onRoleUpdateSubmit = async () => {
     showModal()
@@ -293,7 +290,7 @@ export default function UserPermissionsPage() {
                     display: 'flex',
                     alignItems: 'center',
                     marginBottom: '2px',
-                    filter: isDisabled && 'grayscale(0.8)',
+                    filter: isDisabled && 'grayscale(1)',
                   }}
                 >
                   <Grid.Col span={2}>
@@ -324,12 +321,23 @@ export default function UserPermissionsPage() {
     )
   }
 
-  const getErrors = () =>
-    calloutErrors ? calloutErrors?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`) : null
+  // TODO: export to generic helper. should have custom error just for api calls, see mutator.ts
+  const getErrors = () => {
+    if (!calloutErrors) return
 
+    // TODO: instead construct based on api custom httperror with loc, etc, see FastAPI template
+    if (calloutErrors instanceof ApiError) return [calloutErrors.message]
+
+    // external call error
+    if (calloutErrors instanceof AxiosError) return [calloutErrors.message]
+
+    // client side validation
+    return calloutErrors?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
+  }
   const element = (
     <>
-      {getErrors()}
+      {JSON.stringify(calloutErrors)}
+      <ErrorCallout title="Error updating user" errors={getErrors()} />
       <Space pt={12} />
       <Title size={12}>
         <Text>Form</Text>
@@ -366,6 +374,7 @@ export default function UserPermissionsPage() {
           <>
             <Select
               label="Select new role"
+              disabled={ROLES[userSelection.role].rank > ROLES[user.role].rank}
               itemComponent={SelectRoleItem}
               data-test-subj="updateUserAuthForm__selectable_Role"
               defaultValue={userSelection.role}
@@ -410,7 +419,14 @@ export default function UserPermissionsPage() {
             <Button variant="subtle" color="orange" onClick={closeModal}>
               Cancel
             </Button>
-            <Button onClick={submitRoleUpdate}>Update</Button>
+            <Button
+              onClick={async () => {
+                await submitRoleUpdate()
+                closeModal()
+              }}
+            >
+              Update
+            </Button>
           </Group>
         </>
       </Modal>

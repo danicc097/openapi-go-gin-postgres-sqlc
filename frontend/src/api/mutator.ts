@@ -2,9 +2,17 @@ import Axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 import CONFIG from 'src/config'
 import { apiPath } from 'src/services/apiPaths'
 
-export const AXIOS_INSTANCE = Axios.create({ baseURL: '<BACKEND URL>' }) // use your own URL here or environment variable
+export const AXIOS_INSTANCE = Axios.create({ baseURL: '<BACKEND URL>' })
 
-// add a second `options` argument here if you want to pass extra options to each generated query
+export class ApiError extends Error {
+  response?: AxiosError['response']
+  constructor(message: string, response?: AxiosError['response']) {
+    super(message)
+    this.name = 'ApiError'
+    this.response = response
+  }
+}
+
 export const customInstance = <T>(config: AxiosRequestConfig, options?: AxiosRequestConfig): Promise<T> => {
   const source = Axios.CancelToken.source()
   const promise = AXIOS_INSTANCE({
@@ -12,7 +20,11 @@ export const customInstance = <T>(config: AxiosRequestConfig, options?: AxiosReq
     ...options,
     cancelToken: source.token,
     baseURL: apiPath(null),
-  }).then(({ data }) => data)
+  })
+    .then(({ data }) => data)
+    .catch((error: AxiosError) => {
+      throw new ApiError(error.message, error.response as any)
+    })
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -22,6 +34,3 @@ export const customInstance = <T>(config: AxiosRequestConfig, options?: AxiosReq
 
   return promise
 }
-
-// In some case with react-query and swr you want to be able to override the return error type so you can also do it here like this
-export type ErrorType<Error> = AxiosError<Error>
