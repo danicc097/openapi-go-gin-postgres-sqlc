@@ -66,10 +66,12 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		case internal.ErrorCodeRequestValidation:
 			resp.Status = http.StatusBadRequest
 			resp.Detail = "OpenAPI request validation failed"
+			resp.Error = "" // will use validationError
 			resp.ValidationError = extractValidationError(err, "request")
 		case internal.ErrorCodeResponseValidation:
 			resp.Status = http.StatusInternalServerError
 			resp.Detail = "OpenAPI response validation failed"
+			resp.Error = "" // will use validationError
 			resp.ValidationError = extractValidationError(err, "response")
 		case internal.ErrorCodeAlreadyExists:
 			resp.Status = http.StatusConflict

@@ -7,7 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
@@ -46,9 +48,30 @@ func TestValidationErrorsResponse(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/validation_errors", nil)
 		engine.ServeHTTP(resp, req)
 
-		jsonErr := "{\"detail\":\"OpenAPI response validation failed\",\"error\":\"OpenAPI response validation failed: response body doesn't match schema: $$$${\\\"detail\\\":{\\\"schema\\\":{\\\"type\\\":\\\"integer\\\"},\\\"value\\\":\\\"\\\\\\\"a_wrong_id\\\\\\\"\\\"},\\\"loc\\\":[\\\"id\\\"],\\\"msg\\\":\\\"value must be an integer\\\"}\",\"status\":500,\"title\":\"invalid response\",\"type\":\"ResponseValidation\",\"validationError\":{\"detail\":[{\"detail\":{\"schema\":{\"type\":\"integer\"},\"value\":\"\\\"a_wrong_id\\\"\"},\"loc\":[\"id\"],\"msg\":\"value must be an integer\"}],\"messages\":[\"response body error\"]}}"
+		var gotResp *models.HTTPError
+		json.Unmarshal(resp.Body.Bytes(), &gotResp)
 
-		assert.Equal(t, jsonErr, resp.Body.String())
+		wantResp := models.HTTPError{
+			Detail: "OpenAPI response validation failed",
+			Status: 500,
+			Title:  "invalid response",
+			Type:   "ResponseValidation",
+			ValidationError: &models.HTTPValidationError{
+				Detail: &[]models.ValidationError{{
+					Detail: struct {
+						Schema map[string]any "json:\"schema\""
+						Value  string         "json:\"value\""
+					}{Schema: map[string]any{"type": string("integer")}, Value: `"a_wrong_id"`},
+					Loc: []string{"id"},
+					Msg: "value must be an integer",
+				}},
+				Messages: []string{"response body error"},
+			},
+		}
+
+		if diff := cmp.Diff(wantResp, *gotResp); diff != "" {
+			t.Errorf("HTTPError mismatch (-want +got):\n%s", diff)
+		}
 		assert.Equal(t, http.StatusInternalServerError, resp.Code)
 	})
 
@@ -90,9 +113,58 @@ func TestValidationErrorsResponse(t *testing.T) {
 		req.Header.Add("Content-Type", "application/json")
 		engine.ServeHTTP(resp, req)
 
-		jsonErr := "{\"detail\":\"OpenAPI request validation failed\",\"error\":\"OpenAPI request validation failed: validation errors encountered: request body has an error: doesn't match schema: $$$${\\\"detail\\\":{\\\"schema\\\":{\\\"type\\\":\\\"integer\\\"},\\\"value\\\":\\\"\\\\\\\"a_wrong_id\\\\\\\"\\\"},\\\"loc\\\":[\\\"id\\\"],\\\"msg\\\":\\\"value must be an integer\\\"} | $$$${\\\"detail\\\":{\\\"schema\\\":{\\\"type\\\":\\\"string\\\"},\\\"value\\\":\\\"1234\\\"},\\\"loc\\\":[\\\"name\\\"],\\\"msg\\\":\\\"value must be a string\\\"} | $$$${\\\"detail\\\":{\\\"schema\\\":{\\\"properties\\\":{\\\"color\\\":{\\\"type\\\":\\\"string\\\"},\\\"nestedProperty\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"nestedProperty\\\"],\\\"type\\\":\\\"object\\\"},\\\"value\\\":\\\"{\\\\\\\"color\\\\\\\":\\\\\\\"color\\\\\\\"}\\\"},\\\"loc\\\":[\\\"nested\\\",\\\"nestedProperty\\\"],\\\"msg\\\":\\\"property \\\\\\\"nestedProperty\\\\\\\" is missing\\\"}\",\"status\":400,\"title\":\"invalid request\",\"type\":\"RequestValidation\",\"validationError\":{\"detail\":[{\"detail\":{\"schema\":{\"type\":\"integer\"},\"value\":\"\\\"a_wrong_id\\\"\"},\"loc\":[\"id\"],\"msg\":\"value must be an integer\"},{\"detail\":{\"schema\":{\"type\":\"string\"},\"value\":\"1234\"},\"loc\":[\"name\"],\"msg\":\"value must be a string\"},{\"detail\":{\"schema\":{\"properties\":{\"color\":{\"type\":\"string\"},\"nestedProperty\":{\"type\":\"string\"}},\"required\":[\"nestedProperty\"],\"type\":\"object\"},\"value\":\"{\\\"color\\\":\\\"color\\\"}\"},\"loc\":[\"nested\",\"nestedProperty\"],\"msg\":\"property \\\"nestedProperty\\\" is missing\"}],\"messages\":[\"request body has an error: doesn't match schema\"]}}"
+		var gotResp *models.HTTPError
+		json.Unmarshal(resp.Body.Bytes(), &gotResp)
 
-		assert.Equal(t, jsonErr, resp.Body.String())
+		wantResp := models.HTTPError{
+			Detail: "OpenAPI request validation failed",
+			Status: 400,
+			Title:  "invalid request",
+			Type:   "RequestValidation",
+			ValidationError: &models.HTTPValidationError{
+				Detail: &[]models.ValidationError{
+					{
+						Detail: struct {
+							Schema map[string]any "json:\"schema\""
+							Value  string         "json:\"value\""
+						}{Schema: map[string]any{"type": string("integer")}, Value: `"a_wrong_id"`},
+						Loc: []string{"id"},
+						Msg: "value must be an integer",
+					},
+					{
+						Detail: struct {
+							Schema map[string]any "json:\"schema\""
+							Value  string         "json:\"value\""
+						}{Schema: map[string]any{"type": string("string")}, Value: "1234"},
+						Loc: []string{"name"},
+						Msg: "value must be a string",
+					},
+					{
+						Detail: struct {
+							Schema map[string]any "json:\"schema\""
+							Value  string         "json:\"value\""
+						}{
+							Schema: map[string]any{
+								"properties": map[string]any{
+									"color":          map[string]any{"type": string("string")},
+									"nestedProperty": map[string]any{"type": string("string")},
+								},
+								"required": []any{string("nestedProperty")},
+								"type":     string("object"),
+							},
+							Value: `{"color":"color"}`,
+						},
+						Loc: []string{"nested", "nestedProperty"},
+						Msg: `property "nestedProperty" is missing`,
+					},
+				},
+				Messages: []string{"request body has an error: doesn't match schema"},
+			},
+		}
+
+		if diff := cmp.Diff(wantResp, *gotResp); diff != "" {
+			t.Errorf("HTTPError mismatch (-want +got):\n%s", diff)
+		}
 		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
 }
