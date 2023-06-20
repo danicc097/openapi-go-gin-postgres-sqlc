@@ -1,7 +1,7 @@
 import ProtectedPage from './ProtectedPage'
 import { Navigate } from 'react-router-dom'
 import type { Role, Scopes } from 'src/gen/model'
-import roles from '@roles'
+import ROLES from 'src/roles'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'

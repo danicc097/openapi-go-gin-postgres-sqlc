@@ -1,5 +1,5 @@
 import type roles from '@roles'
-import scopes from '@scopes'
+import SCOPES from 'src/scopes'
 import _ from 'lodash'
 import type { Role } from 'src/gen/model'
 

@@ -4,7 +4,7 @@ import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 import SCOPES from 'src/scopes'
-import ROLES from 'src/roles'
+
 import type { Role } from 'src/client-validator/gen/models'
 import PageTemplate from 'src/components/PageTemplate'
 import type { ValidationErrors } from 'src/client-validator/validate'
@@ -43,6 +43,7 @@ import { IconCheck } from '@tabler/icons'
 import RoleBadge from 'src/components/RoleBadge'
 import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
+import ROLES from 'src/roles'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
