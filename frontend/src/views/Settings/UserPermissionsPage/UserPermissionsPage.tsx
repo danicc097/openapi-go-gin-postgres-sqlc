@@ -402,7 +402,7 @@ export default function UserPermissionsPage() {
         data-test-subj="updateUserAuthForm__confirmModal"
       >
         <>
-          {_.unescape(`You're about to update auth information for `)}
+          {`You're about to update auth information for `}
           <strong>{userSelection?.email}</strong>.<p>Are you sure you want to do this?</p>
           <Group style={{ justifyContent: 'flex-end' }}>
             <Button variant="subtle" color="orange" onClick={closeModal}>
@@ -416,9 +416,9 @@ export default function UserPermissionsPage() {
   )
 
   return (
-    <PageTemplate>
+    <PageTemplate minWidth={800}>
       <>
-        <Title>{_.unescape(`Manually update a user's role and scopes.`)}</Title>
+        <Title>User permissions</Title>
         <Space />
         {element}
       </>

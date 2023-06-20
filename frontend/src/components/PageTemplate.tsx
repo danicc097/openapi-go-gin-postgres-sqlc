@@ -3,11 +3,12 @@ import { Container, Paper } from '@mantine/core'
 
 type PageTemplateProps = {
   children: ReactElement
+  minWidth?: string | number
 }
 
-const PageTemplate = ({ children }: PageTemplateProps) => {
+const PageTemplate = ({ children, minWidth }: PageTemplateProps) => {
   return (
-    <Container size="sm" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
+    <Container size="sm" style={{ paddingTop: '2rem', paddingBottom: '2rem', minWidth }}>
       <Paper p="md" shadow="sm">
         {children}
       </Paper>
