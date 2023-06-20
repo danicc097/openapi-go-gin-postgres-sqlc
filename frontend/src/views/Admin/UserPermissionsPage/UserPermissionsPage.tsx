@@ -72,12 +72,6 @@ function scopeColor(scopeName: string): DefaultMantineColor {
   }
 }
 
-const SelectRoleValue = forwardRef<HTMLDivElement, SelectRoleItemProps>(
-  ({ value, label, ...others }: SelectRoleItemProps) => {
-    return <RoleBadge role={value} />
-  },
-)
-
 const SelectRoleItem = forwardRef<HTMLDivElement, SelectRoleItemProps>(
   ({ value, ...others }: SelectRoleItemProps, ref) => {
     return (
@@ -357,11 +351,9 @@ export default function UserPermissionsPage() {
               ))}
             </Card>
             <Space pt={12} />
-            <Button
-              disabled={userSelection === null}
-              data-test-subj="updateUserAuthForm__submit"
-              onClick={showModal}
-            >{`Update role for ${userSelection.email}`}</Button>
+            <Button disabled={userSelection === null} data-test-subj="updateUserAuthForm__submit" onClick={showModal}>
+              Update authorization settings
+            </Button>
           </>
         )}
       </form>
