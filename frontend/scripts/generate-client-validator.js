@@ -33,6 +33,7 @@ $RefParser
   .dereference(jsonSchemaFilePath)
   .then((schema) => {
     const schemaString = JSON.stringify(schema, null, 2)
+
     fs.writeFile(outputFilePath, schemaString, (err) => {
       if (err) {
         console.error('Error saving dereferenced schema:', err)
