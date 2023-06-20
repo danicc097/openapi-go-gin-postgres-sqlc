@@ -16,7 +16,7 @@ import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
-import type { RequiredKeys } from 'src/types/utils'
+import type { TypeOf, RecursiveKeyOf, RequiredKeys } from 'src/types/utils'
 import jsonSchema from 'src/client-validator/gen/dereferenced-schema.json'
 import {
   Avatar,
@@ -53,6 +53,7 @@ import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
 import { asConst } from 'json-schema-to-ts'
+import type { components, schemas } from 'src/types/schema'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -344,6 +345,51 @@ export default function UserPermissionsPage() {
 
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
   console.log(demoWorkItemCreateSchema)
+
+  type Paths = RecursiveKeyOf<schemas['RestDemoWorkItemCreateRequest']>
+
+  const a: Paths = 'base.kanbanStepID'
+
+  // Example types
+  type RestDemoWorkItemCreateRequest = {
+    base: {
+      nested: {
+        kanbanStepID: number
+      }
+    }
+  }
+
+  type KanbanStepID = TypeOf<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'>
+
+  /* TODO: allow generate form customization per path, e.g. for kanbanStepID  ->
+   // add optional schema["DbKanbanStep"] if defaultValues are
+    generateForm<RestDemoWorkItemCreateRequest, schema["DbKanbanStep"]``R``>(
+      RestDemoWorkItemCreateForm,
+      {
+      override: {
+        'base.kanbanStepID': {
+          // so we can show kanban step name instead of ID in a dropdown, for instance
+          // accessor must satisfy (...args: any) => <U> where U is TypeOf<typeof RestDemoWorkItemCreateForm, 'base.kanbanStepID'>
+          // which is as far as we can get to ensure we're returning the right form value
+          // accesor and display fns are required if optional type arg is passed (schema["DbKanbanStep"])
+          accessor: (kanbanStep: <R>): <T> => {
+            // ... any modifications
+            return kanbanStep.kanbanStepID
+          },
+          // display in dropdown, multiselect...
+           display: (kanbanStep: <R>): <T> => {
+            // ... any modifications
+            return (<Badge radius={4} size="xs" color={kanbanStep.color}>
+                      {kanbanStep.name}
+                    </Badge>)
+          },
+          // pool of options for dropdown, multiselect... must be an array of passsed arg <R>
+          options: customKanbanStepsOptions // []schema["DbKanbanStep"] // may be all, filtered based on some param...
+        }
+      },
+      )
+  }
+  */
 
   const element = (
     <>

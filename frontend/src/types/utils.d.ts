@@ -21,12 +21,34 @@ export type Union<L extends unknown | undefined, R extends unknown | undefined> 
   : L | R
 
 /**
- * Get all the possible paths of an object
+ * Access underlying types by dot notation.
+
+ * @example
+    type RestDemoWorkItemCreateRequest = {
+        base: {
+          nested: {
+            kanbanStepID: number
+          }
+        }
+      }
+
+    TypeOf<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
+ */
+type TypeOf<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer Rest}`
+  ? First extends keyof T
+    ? TypeOf<T[First], Rest>
+    : unknown
+  : U extends keyof T
+  ? T[U]
+  : unknown
+
+/**
+ * Get all the possible nested paths of an object
  * @example
  * type Keys = RecursiveKeyOf<{ a: { b: { c: string } }>
  * // 'a' | 'a.b' | 'a.b.c'
  */
-type RecursiveKeyOf<T, Cache extends Primitive = ''> = T extends PropertyKey
+export type RecursiveKeyOf<T, Cache extends Primitive = ''> = T extends PropertyKey
   ? Cache
   : {
       [P in keyof T]: P extends Primitive
