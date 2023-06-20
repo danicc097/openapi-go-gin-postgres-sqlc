@@ -11,12 +11,13 @@ import type { ValidationErrors } from 'src/client-validator/validate'
 import { updateUserAuthorization, useUpdateUserAuthorization } from 'src/gen/user/user'
 import { Form, useForm, type UseFormReturnType } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
-import { UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
+import { RestDemoWorkItemCreateRequestDecoder, UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
 import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import type { RequiredKeys } from 'src/types/utils'
+import jsonSchema from 'src/client-validator/gen/schema.json'
 import {
   Avatar,
   Badge,
@@ -51,6 +52,7 @@ import ErrorCallout from 'src/components/ErrorCallout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
+import { asConst } from 'json-schema-to-ts'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -339,9 +341,13 @@ export default function UserPermissionsPage() {
     // client side validation
     return calloutError?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
   }
+
+  const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
+  console.log(demoWorkItemCreateSchema)
   const element = (
     <>
       {JSON.stringify(calloutError)}
+      {JSON.stringify(RestDemoWorkItemCreateRequestDecoder.schemaRef)}
       <ErrorCallout title="Error updating user" errors={getErrors()} />
       <Space pt={12} />
       <Title size={12}>
