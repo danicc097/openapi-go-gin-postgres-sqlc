@@ -65,7 +65,7 @@ export const persister = createIDBPersister()
 
 const Layout = React.lazy(() => import('./components/Layout/Layout'))
 const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
-const UserPermissionsPage = React.lazy(() => import('src/views/Admin/UserPermissionsPage/UserPermissionsPage'))
+const UserPermissionsPage = React.lazy(() => import('src/views/Settings/UserPermissionsPage/UserPermissionsPage'))
 const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectManagementPage/ProjectManagementPage'))
 
 export default function App() {
@@ -125,7 +125,7 @@ export default function App() {
                       }
                     />
                     <Route
-                      path="/admin/user-permissions-management"
+                      path="/settings/user-permissions-management"
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
                           <ProtectedRoute>
