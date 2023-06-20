@@ -241,6 +241,17 @@ export default function UserPermissionsPage() {
   }
 
   const CheckboxPanel = ({ title, scopes }: { title: string; scopes: Partial<typeof SCOPES> }) => {
+    const handleCheckboxChange = (key: Scope, checked: boolean) => {
+      if (checked) {
+        form.setFieldValue('scopes', [...form.values.scopes, key])
+      } else {
+        form.setFieldValue(
+          'scopes',
+          form.values.scopes.filter((scope) => scope !== key),
+        )
+      }
+    }
+
     return (
       <Box
         mb={12}
@@ -260,7 +271,13 @@ export default function UserPermissionsPage() {
             <Grid key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '2px' }}>
               <Grid.Col span={2}>
                 <Flex direction="row">
-                  <Checkbox defaultChecked={form.values.scopes.includes(key)} size="xs" id={key} color="blue" />
+                  <Checkbox
+                    defaultChecked={form.values.scopes.includes(key)}
+                    size="xs"
+                    id={key}
+                    color="blue"
+                    onChange={(e) => handleCheckboxChange(key, e.target.checked)}
+                  />
                   <Space pl={10} />
                   <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
                     {scopeName}
