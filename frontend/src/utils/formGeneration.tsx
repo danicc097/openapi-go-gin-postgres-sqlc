@@ -59,39 +59,37 @@ const DynamicForm = <T extends string, U extends GenericObject>({
     }))
   }
 
+  const generateComponent = (fieldType: SchemaField['type'], props: any) => {
+    switch (fieldType) {
+      case 'string':
+        return <TextInput {...props} />
+      case 'boolean':
+        return <Checkbox {...props} />
+      case 'date-time':
+        return <DateInput {...props} />
+      case 'integer':
+        return <NumberInput {...props} />
+      default:
+        return null
+    }
+  }
+
   const generateFormFields = (fields: DynamicFormProps<T, U>['schemaFields'], prefix = '') => {
     return entries(fields).map(([key, field]) => {
       const fieldKey = prefix ? `${prefix}.${key}` : key
       const value = formData[fieldKey] || optionsOverride[fieldKey].defaultValue || ''
 
       if (field.isArray && field.type !== 'object') {
+        const componentProps = {
+          required: field.required,
+          value: value,
+          onChange: (event: any) => handleChange(event.currentTarget.value, fieldKey),
+        }
+
         return (
           <Group key={fieldKey}>
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
-              {field.type === 'string' && (
-                <TextInput
-                  required={field.required}
-                  value={value}
-                  onChange={(event) => handleChange(event.currentTarget.value, fieldKey)}
-                />
-              )}
-              {field.type === 'boolean' && (
-                <Checkbox
-                  required={field.required}
-                  checked={value}
-                  onChange={(event) => handleChange(event.currentTarget.checked, fieldKey)}
-                />
-              )}
-              {field.type === 'date-time' && (
-                <DateInput required={field.required} value={value} onChange={(date) => handleChange(date, fieldKey)} />
-              )}
-              {field.type === 'integer' && (
-                <NumberInput
-                  required={field.required}
-                  value={value}
-                  onChange={(event) => handleChange(Number(event), fieldKey)}
-                />
-              )}
+              {generateComponent(field.type, componentProps)}
               <Button
                 onClick={() => handleAddNestedField(fieldKey)}
                 style={{ marginLeft: theme.spacing.sm }}
@@ -100,34 +98,11 @@ const DynamicForm = <T extends string, U extends GenericObject>({
             </div>
             {formData[fieldKey]?.map((_nestedValue: any, index: number) => (
               <div key={index} style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
-                {field.type === 'string' && (
-                  <TextInput
-                    required={field.required}
-                    value={formData[fieldKey]?.[index] || ''}
-                    onChange={(event) => handleNestedChange(event.currentTarget.value, fieldKey, index)}
-                  />
-                )}
-                {field.type === 'boolean' && (
-                  <Checkbox
-                    required={field.required}
-                    checked={formData[fieldKey]?.[index] || false}
-                    onChange={(event) => handleNestedChange(event.currentTarget.checked, fieldKey, index)}
-                  />
-                )}
-                {field.type === 'date-time' && (
-                  <DateInput
-                    required={field.required}
-                    value={formData[fieldKey]?.[index] || ''}
-                    onChange={(date) => handleNestedChange(date, fieldKey, index)}
-                  />
-                )}
-                {field.type === 'integer' && (
-                  <NumberInput
-                    required={field.required}
-                    value={formData[fieldKey]?.[index] || ''}
-                    onChange={(event) => handleNestedChange(Number(event), fieldKey, index)}
-                  />
-                )}
+                {generateComponent(field.type, {
+                  ...componentProps,
+                  value: formData[fieldKey]?.[index] || '',
+                  onChange: (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
+                })}
                 <Button
                   onClick={() => handleRemoveNestedField(fieldKey, index)}
                   style={{ marginLeft: theme.spacing.sm }}
