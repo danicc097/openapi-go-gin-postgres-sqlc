@@ -23,7 +23,7 @@ import type { GenericObject, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 
-type OptionsOverride<T extends string, U extends GenericObject> = {
+type options<T extends string, U extends GenericObject> = {
   defaultValue: Partial<{
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
@@ -34,13 +34,13 @@ type OptionsOverride<T extends string, U extends GenericObject> = {
 type DynamicFormProps<T extends string, U extends GenericObject> = {
   form: UseFormReturnType<U, (values: U) => U>
   schemaFields: Record<T, SchemaField>
-  optionsOverride: OptionsOverride<T, U>
+  options: options<T, U>
 }
 
 export const DynamicForm = <T extends string, U extends GenericObject>({
   form,
   schemaFields,
-  optionsOverride,
+  options,
 }: DynamicFormProps<T, U>) => {
   const theme = useMantineTheme()
 
@@ -98,7 +98,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       // }
 
       const fieldKey = prefix ? `${prefix}.${key}` : key
-      const value = form.values[fieldKey] || optionsOverride[fieldKey]?.defaultValue || ''
+      const value = form.values[fieldKey] || options[fieldKey]?.defaultValue || ''
 
       const componentProps = {
         css: css`

@@ -103,6 +103,12 @@ export default function App() {
     FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
 
   const demoWorkItemCreateForm = useForm<RestDemoWorkItemCreateRequest>({
+    // TODO: simple function to initialize top level with empty object if property type === object
+    // now that we have json schema dereferenced
+    initialValues: {
+      base: {},
+      demoProject: {},
+    } as any,
     validateInputOnChange: true,
     validate: {
       // TODO: should be able to validate whole nested objects at once.
@@ -148,6 +154,7 @@ export default function App() {
                           {/* <LandingPage /> */}
                           <DynamicForm<RestDemoWorkItemCreateRequestFormField, RestDemoWorkItemCreateRequest>
                             form={demoWorkItemCreateForm}
+                            // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
                             schemaFields={{
                               base: { isArray: false, required: true, type: 'object' },
                               'base.closed': { type: 'date-time', required: true, isArray: false },
@@ -169,7 +176,7 @@ export default function App() {
                               'members.userID': { type: 'string', required: true, isArray: false },
                               tagIDs: { type: 'integer', required: true, isArray: true },
                             }}
-                            optionsOverride={{
+                            options={{
                               defaultValue: {
                                 'demoProject.line': '534543523', // should fail due to TypeOf
                                 members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
