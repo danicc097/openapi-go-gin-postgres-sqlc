@@ -67,6 +67,7 @@ export type RecursiveKeyOf<T, Cache extends PropertyKey = ''> = T extends Proper
               : Cache | RecursiveKeyOf<T[P], `${Cache}.${P}`>
             : never
         }[keyof T]
+      | RecursiveKeyOf<T[keyof T], `${Cache}.${keyof T}`>
 
 export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[]
   ? ElementType

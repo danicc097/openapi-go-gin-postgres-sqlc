@@ -118,7 +118,7 @@ describe('parseSchemaFields', () => {
     const b: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role' // OK
     const c: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role.role' // should giveError: Type '"members.role.role"' is not assignable to type '"members.role"'
     const d: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'base.metadata' // FIXME: should be ok
-    const e: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'demoProject.reopened' // FIXME: should be
+    const e: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'demoProject.reopened' // FIXME: should be ok
 
     const wantFields: Record<RecursiveKeyOf<RestDemoWorkItemCreateRequest>, SchemaField> = {
       base: { isArray: false, required: true, type: 'object' },
