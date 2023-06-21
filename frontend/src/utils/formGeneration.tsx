@@ -78,17 +78,18 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       const fieldKey = prefix ? `${prefix}.${key}` : key
       const value = formData[fieldKey] || optionsOverride[fieldKey]?.defaultValue || ''
 
+      const componentProps = {
+        required: field.required,
+        value: value,
+        onChange:
+          field.type === 'integer'
+            ? (val: any) => handleChange(val, fieldKey)
+            : (event: any) => handleChange(event.currentTarget.value, fieldKey),
+      }
+
       if (field.isArray && field.type !== 'object') {
         // TODO: form.getInputProps instead.
         // form.getInputProps('base.<nested>', {type: "checkbox | input"})
-        const componentProps = {
-          required: field.required,
-          value: value,
-          onChange:
-            field.type === 'integer'
-              ? (val: any) => handleChange(val, fieldKey)
-              : (event: any) => handleChange(event.currentTarget.value, fieldKey),
-        }
 
         return (
           <Group key={fieldKey}>
@@ -151,12 +152,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           {field.type !== 'object' ? (
             <>
               <Text>{key}</Text>
-              <TextInput
-                id={fieldKey}
-                required={field.required}
-                value={value}
-                onChange={(event) => handleChange(event.currentTarget.value, fieldKey)}
-              />
+              {generateComponent(field.type, componentProps)}
             </>
           ) : (
             <>
