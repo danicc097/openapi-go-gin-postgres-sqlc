@@ -11,6 +11,7 @@ import {
   Text,
   type InputProps,
   ActionIcon,
+  Card,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
@@ -62,7 +63,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const handleAddNestedField = (field: string) => {
     form.setValues((currentValues) => ({
       ...currentValues,
-      [field]: [...(currentValues[field] || []), ''],
+      [field]: [...(currentValues[field] || []), ''], // TODO: for array of objects needs to append to form.values with {} containing initialData
     }))
   }
 
@@ -155,20 +156,20 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       if (field.isArray && field.type === 'object') {
         // array of objects
         return (
-          <Group key={fieldKey}>
-            {JSON.stringify({ fieldKey, type: field.type })}
+          <Card key={fieldKey} mt={24}>
             <ActionIcon onClick={() => handleAddNestedField(fieldKey)} variant="filled" color={'green'}>
               <IconPlus size="1rem" />
             </ActionIcon>
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => (
               <div key={index} style={{ marginBottom: theme.spacing.sm }}>
+                <p>{`${fieldKey}[${index}]`}</p>
                 <Group>{generateFormFields(fields[key] as any, fieldKey)}</Group>
                 <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'red'}>
                   <IconMinus size="1rem" />
                 </ActionIcon>
               </div>
             ))}
-          </Group>
+          </Card>
         )
       }
 
