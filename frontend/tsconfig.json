@@ -23,6 +23,8 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "sourceMap": true,
+    "noUncheckedIndexedAccess": true,
+    "suppressImplicitAnyIndexErrors": false,
     "paths": {
       "@operationAuth": [
         "operationAuth.gen.json"

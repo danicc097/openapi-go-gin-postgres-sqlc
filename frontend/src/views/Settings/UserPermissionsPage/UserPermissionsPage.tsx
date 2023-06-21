@@ -1,6 +1,6 @@
 import _, { capitalize, random } from 'lodash'
 import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
-import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
+import type { RestDemoWorkItemCreateRequest, Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 import SCOPES from 'src/scopes'
@@ -346,20 +346,11 @@ export default function UserPermissionsPage() {
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
   console.log(demoWorkItemCreateSchema)
 
-  type Paths = RecursiveKeyOf<schemas['RestDemoWorkItemCreateRequest']>
+  type Paths = RecursiveKeyOf<RestDemoWorkItemCreateRequest>
 
   const a: Paths = 'base.kanbanStepID'
 
-  // Example types
-  type RestDemoWorkItemCreateRequest = {
-    base: {
-      nested: {
-        kanbanStepID: number
-      }
-    }
-  }
-
-  type KanbanStepID = TypeOf<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'>
+  type KanbanStepID = TypeOf<RestDemoWorkItemCreateRequest, 'base.kanbanStepID'>
 
   /* TODO: allow generate form customization per path, e.g. for kanbanStepID  ->
    // add optional schema["DbKanbanStep"] if defaultValues are

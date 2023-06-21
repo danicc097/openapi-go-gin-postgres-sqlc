@@ -1,21 +1,24 @@
-interface JsonSchemaField {
-  type?: string | string[]
-  format?: string
+import type { Primitive, RecursiveKeyOf } from 'src/types/utils'
+
+export interface JsonSchemaField {
+  type?: Type | Type[]
+  format?: Format
   items?: JsonSchemaField
   properties?: { [key: string]: JsonSchemaField }
   required?: string[]
 }
 
-type FieldTypes = {
-  [fieldName: string]: {
-    type: string
-    required: boolean
-    isArray: boolean
-  }
+export type SchemaField = {
+  type: Type | Format
+  required: boolean
+  isArray: boolean
 }
 
-export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
-  const fieldTypes: FieldTypes = {}
+export type Format = 'date-time'
+export type Type = 'boolean' | 'integer' | 'object' | 'string' | 'array' | 'null'
+
+export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, SchemaField> {
+  const schemaFields = {}
 
   function traverseSchema(obj: JsonSchemaField, path: string[] = [], parent: JsonSchemaField | null = null) {
     const isArrayOfObj = extractType(obj) === 'object' && !!obj.type?.includes('array') && obj.items?.properties
@@ -31,7 +34,7 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
       for (const key in properties) {
         const newPath = [...path, key]
         const property = properties[key]
-        fieldTypes[newPath.join('.')] = {
+        schemaFields[newPath.join('.')] = {
           type: extractType(property),
           required: extractIsRequired(obj, parent, key),
           isArray: !!property.type?.includes('array'),
@@ -43,7 +46,7 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
 
   traverseSchema(schema)
 
-  return fieldTypes
+  return schemaFields as Record<Primitive, SchemaField>
 }
 
 function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null, key: string): boolean {
@@ -58,7 +61,7 @@ function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null,
   return Array.isArray(parent?.required) ? parent.required.includes(key) : false
 }
 
-function extractType(obj: JsonSchemaField): string {
+function extractType(obj: JsonSchemaField): Type | Format {
   const type = _type(obj.type)
   if (type === 'array') {
     if (obj?.items?.type === 'object') {
@@ -70,7 +73,7 @@ function extractType(obj: JsonSchemaField): string {
 
   return obj.format ?? type
 
-  function _type(x: string | string[]) {
+  function _type(x: JsonSchemaField['type']): Type {
     return Array.isArray(x) ? x.filter((t) => t !== 'null')[0] : x
   }
 }

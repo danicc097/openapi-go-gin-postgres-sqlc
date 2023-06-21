@@ -1,7 +1,9 @@
-import { extractFieldTypes } from 'src/utils/jsonSchema'
+import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
+import type { RecursiveKeyOf } from 'src/types/utils'
+import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
 
-describe('extractFieldTypes', () => {
+describe('parseSchemaFields', () => {
   test('should extract field types correctly from a JSON schema', () => {
     const schema = {
       properties: {
@@ -108,11 +110,19 @@ describe('extractFieldTypes', () => {
       type: 'object',
       'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
       $schema: 'http://json-schema.org/draft-04/schema#',
-    }
+    } as JsonSchemaField
 
-    const fieldTypes = extractFieldTypes(schema)
+    const schemaFields = parseSchemaFields(schema)
 
-    expect(fieldTypes).toEqual({
+    /**
+
+    form generator will use these keys. to generate multiple forms when is array we just check
+    if parent (split by . and keep up to len-2) isArray (members) or the child itself isArray (tagIDs)
+
+    it doesnt seem to be easy to get typed keys for these when arrays are involved.
+    */
+
+    expect(schemaFields).toEqual({
       base: { isArray: false, required: true, type: 'object' },
       'base.closed': { type: 'date-time', required: true, isArray: false },
       'base.description': { type: 'string', required: true, isArray: false },
