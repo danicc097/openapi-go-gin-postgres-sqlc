@@ -18,7 +18,10 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
   const fieldTypes: FieldTypes = {}
 
   function traverseSchema(obj: JsonSchemaField, path: string[] = [], parent: JsonSchemaField | null = null) {
-    if (obj.properties) {
+    const isArrayOfObj = extractType(obj) === 'object' && !!obj.type?.includes('array') && obj.items?.properties
+    const isObj = obj.properties && extractType(obj) === 'object'
+
+    if (isObj) {
       for (const key in obj.properties) {
         const newPath = [...path, key]
         const property = obj.properties[key]
@@ -29,7 +32,7 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
         }
         traverseSchema(property, newPath, property)
       }
-    } else if (extractType(obj) === 'arrayOfObject' && obj.items?.properties) {
+    } else if (isArrayOfObj) {
       for (const key in obj.items.properties) {
         const newPath = [...path, key]
         const property = obj.items.properties[key]
@@ -60,7 +63,7 @@ function extractType(obj: JsonSchemaField): string {
   const type = _type(obj.type)
   if (type === 'array') {
     if (obj?.items?.type === 'object') {
-      return 'arrayOfObject'
+      return 'object'
     } else {
       return _type(obj?.items?.type)
     }

@@ -129,7 +129,7 @@ describe('extractFieldTypes', () => {
       'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
       'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
       tagIDs: { type: 'integer', required: true, isArray: true },
-      members: { type: 'arrayOfObject', required: true, isArray: true },
+      members: { type: 'object', required: true, isArray: true },
       'members.role': { type: 'string', required: true, isArray: false },
       'members.userID': { type: 'string', required: true, isArray: false },
     })
