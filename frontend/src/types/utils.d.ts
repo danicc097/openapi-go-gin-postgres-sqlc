@@ -50,14 +50,14 @@ type TypeOf<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer 
  * type Keys = RecursiveKeyOf<{ a: { b: { c: string } }>
  * // 'a' | 'a.b' | 'a.b.c'
  */
-// FIXME: arrays of objects fields not here
+// FIXME: arrays of objects fields have extra inexistent paths
 export type RecursiveKeyOf<T, Cache extends PropertyKey = ''> = T extends PropertyKey
   ? Cache
   : T extends (infer Item)[]
   ? Item extends object
     ? Cache extends ''
-      ? RecursiveKeyOf<Item, ''> | `${number & keyof Item}`
-      : Cache | RecursiveKeyOf<Item, `${Cache}.${number}`> | `${Cache}.${number & keyof Item}`
+      ? RecursiveKeyOf<Item, `.${Exclude<keyof Item, keyof any[]> & string}`>
+      : Cache | RecursiveKeyOf<Item, `${Cache}.${Exclude<keyof Item, keyof any[]> & string}`>
     : never
   : {
       [P in keyof T]: P extends PropertyKey

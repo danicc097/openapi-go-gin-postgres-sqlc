@@ -114,7 +114,10 @@ describe('parseSchemaFields', () => {
 
     const schemaFields = parseSchemaFields(schema)
 
-    const a: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.1.userID' // FIXME: want members.userID
+    const a: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members' // OK
+    const b: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role' // OK
+    const c: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role.role' // Error: Type '"members.role.role"' is not assignable to type '"members.role"'
+
     /**
 
     form generator will use these keys. to generate multiple forms when is array we just check
