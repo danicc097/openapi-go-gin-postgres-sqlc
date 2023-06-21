@@ -50,14 +50,14 @@ type TypeOf<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer 
  * type Keys = RecursiveKeyOf<{ a: { b: { c: string } }>
  * // 'a' | 'a.b' | 'a.b.c'
  */
-// FIXME: arrays of objects fields have extra inexistent paths
+// FIXME: arrays of objects fields have extra inexistent paths. Using react-hook-form FieldPath as workaround
 export type RecursiveKeyOf<T, Cache extends PropertyKey = ''> = T extends PropertyKey
   ? Cache
   : T extends (infer Item)[]
   ? Item extends object
     ? Cache extends ''
-      ? RecursiveKeyOf<Item, `.${Exclude<keyof Item, keyof any[]> & string}`>
-      : Cache | RecursiveKeyOf<Item, `${Cache}`>
+      ? RecursiveKeyOf<Item, `${Exclude<keyof Item, keyof any[]> & string}`>
+      : RecursiveKeyOf<Item, `${Cache}`>
     : never
   :
       | {
@@ -68,7 +68,7 @@ export type RecursiveKeyOf<T, Cache extends PropertyKey = ''> = T extends Proper
                   [P in keyof T]: P extends PropertyKey
                     ? Cache extends ''
                       ? RecursiveKeyOf<T[P], `${P}`>
-                      : Cache | RecursiveKeyOf<T[P], `${Cache}.${P}`>
+                      : Cache
                     : never
                 }[keyof T]
             : never

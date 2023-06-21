@@ -1,3 +1,4 @@
+import type { FieldPath } from 'react-hook-form'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import type { RecursiveKeyOf } from 'src/types/utils'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
@@ -114,14 +115,11 @@ describe('parseSchemaFields', () => {
 
     const schemaFields = parseSchemaFields(schema)
 
-    const a: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members' // OK
-    const b: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role' // OK
-    const c1: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = '.tagIDs' // FIXME: should giveError:
-    const c: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role.role' // should giveError: Type '"members.role.role"' is not assignable to type '"members.role"'
-    const d: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'base.metadata' // ok
-    const e: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'demoProject.reopened' // ok
+    type RestDemoWorkItemCreateRequestFormField =
+      // hack to use 'members.role' instead of 'members.??.role'
+      FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOf<RestDemoWorkItemCreateRequest['members'], 'members'>
 
-    const wantFields: Record<RecursiveKeyOf<RestDemoWorkItemCreateRequest>, SchemaField> = {
+    const wantFields: Record<RestDemoWorkItemCreateRequestFormField, SchemaField> = {
       base: { isArray: false, required: true, type: 'object' },
       'base.closed': { type: 'date-time', required: true, isArray: false },
       'base.description': { type: 'string', required: true, isArray: false },
@@ -137,10 +135,10 @@ describe('parseSchemaFields', () => {
       'demoProject.ref': { type: 'string', required: true, isArray: false },
       'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
       'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
-      tagIDs: { type: 'integer', required: true, isArray: true },
       members: { type: 'object', required: true, isArray: true },
       'members.role': { type: 'string', required: true, isArray: false },
       'members.userID': { type: 'string', required: true, isArray: false },
+      tagIDs: { type: 'integer', required: true, isArray: true },
     }
     /**
 
