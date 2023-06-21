@@ -63,7 +63,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const handleAddNestedField = (field: string) => {
     form.setValues((currentValues) => ({
       ...currentValues,
-      [field]: [...(currentValues[field] || []), ''], // TODO: for array of objects needs to append to form.values with {} containing initialData
+      [field]: [
+        ...(currentValues[field] || []),
+        null, // TODO: nested components not generated
+      ],
     }))
   }
 
@@ -129,11 +132,12 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
         return (
           <Group key={fieldKey}>
+            {JSON.stringify(form.values[fieldKey])}
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
-              {generateComponent(field.type, componentProps, fieldKey)}
               <ActionIcon onClick={() => handleAddNestedField(fieldKey)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
               </ActionIcon>
+              {generateComponent(field.type, componentProps, fieldKey)}
             </div>
             {/* existing array fields, if any */}
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
@@ -168,18 +172,21 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
+            {JSON.stringify({ [fieldKey]: form.values[fieldKey] })}
             <ActionIcon onClick={() => handleAddNestedField(fieldKey)} variant="filled" color={'green'}>
               <IconPlus size="1rem" />
             </ActionIcon>
-            {form.values[fieldKey]?.map((_nestedValue: any, index: number) => (
-              <div key={index} style={{ marginBottom: theme.spacing.sm }}>
-                <p>{`${fieldKey}[${index}]`}</p>
-                <Group>{generateFormFields(fields[key] as any, fieldKey)}</Group>
-                <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'red'}>
-                  <IconMinus size="1rem" />
-                </ActionIcon>
-              </div>
-            ))}
+            {form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
+              return (
+                <div key={index} style={{ marginBottom: theme.spacing.sm }}>
+                  <p>{`${fieldKey}[${index}]`}</p>
+                  <Group>{generateFormFields(fields[key] as any, fieldKey)}</Group>
+                  <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'red'}>
+                    <IconMinus size="1rem" />
+                  </ActionIcon>
+                </div>
+              )
+            })}
           </Card>
         )
       }
