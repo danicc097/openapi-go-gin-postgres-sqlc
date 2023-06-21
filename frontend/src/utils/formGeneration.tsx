@@ -1,10 +1,11 @@
-import { Group, TextInput, NumberInput, Checkbox, Button } from '@mantine/core'
+import { Group, TextInput, NumberInput, Checkbox, Button, Title, Space, Divider, Text } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { Form } from '@mantine/form'
 import { useMantineTheme } from '@mantine/styles'
 import { IconMinus, IconPlus } from '@tabler/icons'
 import { useState } from 'react'
 import type { FieldPath } from 'react-hook-form'
+import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import type { GenericObject, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
 import type { SchemaField } from 'src/utils/jsonSchema'
@@ -78,6 +79,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       const value = formData[fieldKey] || optionsOverride[fieldKey]?.defaultValue || ''
 
       if (field.isArray && field.type !== 'object') {
+        // TODO: form.getInputProps instead.
+        // form.getInputProps('base.<nested>', {type: "checkbox | input"})
         const componentProps = {
           required: field.required,
           value: value,
@@ -89,6 +92,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
         return (
           <Group key={fieldKey}>
+            <label htmlFor={fieldKey}>{key}</label>
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
               {generateComponent(field.type, componentProps)}
               <Button
@@ -121,6 +125,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       if (field.isArray && field.type === 'object') {
         return (
           <Group key={fieldKey}>
+            <label htmlFor={fieldKey}>{key}</label>
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
               <button onClick={() => handleAddNestedField(fieldKey)} style={{ marginLeft: theme.spacing.sm }}>
                 +
@@ -142,15 +147,31 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
 
       return (
-        <TextInput
-          key={fieldKey}
-          required={field.required}
-          value={value}
-          onChange={(event) => handleChange(event.currentTarget.value, fieldKey)}
-        />
+        <Group key={fieldKey} align="center">
+          {field.type !== 'object' ? (
+            <>
+              <Text>{key}</Text>
+              <TextInput
+                id={fieldKey}
+                required={field.required}
+                value={value}
+                onChange={(event) => handleChange(event.currentTarget.value, fieldKey)}
+              />
+            </>
+          ) : (
+            <>
+              <Title size={18}>{key}</Title>
+              <Space p={8} />
+            </>
+          )}
+        </Group>
       )
     })
   }
 
-  return <form>{generateFormFields(schemaFields)}</form>
+  return (
+    <PageTemplate minWidth={800}>
+      <form>{generateFormFields(schemaFields)}</form>
+    </PageTemplate>
+  )
 }
