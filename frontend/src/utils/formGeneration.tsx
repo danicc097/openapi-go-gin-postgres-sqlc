@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import { Group, TextInput, NumberInput, Checkbox, Button, Title, Space, Divider, Text } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { Form } from '@mantine/form'
@@ -65,7 +66,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       case 'boolean':
         return <Checkbox {...props} />
       case 'date-time':
-        return <DateInput {...props} />
+        return <DateInput placeholder="Date input" {...props} />
       case 'integer':
         return <NumberInput {...props} />
       default:
@@ -79,10 +80,14 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       const value = formData[fieldKey] || optionsOverride[fieldKey]?.defaultValue || ''
 
       const componentProps = {
+        css: css`
+          min-width: 100%;
+        `,
+        label: key,
         required: field.required,
         value: value,
         onChange:
-          field.type === 'integer'
+          field.type === 'integer' || field.type === 'date-time'
             ? (val: any) => handleChange(val, fieldKey)
             : (event: any) => handleChange(event.currentTarget.value, fieldKey),
       }
@@ -93,7 +98,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
         return (
           <Group key={fieldKey}>
-            <label htmlFor={fieldKey}>{key}</label>
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
               {generateComponent(field.type, componentProps)}
               <Button
@@ -108,7 +112,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                   ...componentProps,
                   value: formData[fieldKey]?.[index] || '',
                   onChange:
-                    field.type === 'integer'
+                    field.type === 'integer' || field.type === 'date-time'
                       ? (val: any) => handleNestedChange(val, fieldKey, index)
                       : (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
                 })}
@@ -126,7 +130,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       if (field.isArray && field.type === 'object') {
         return (
           <Group key={fieldKey}>
-            <label htmlFor={fieldKey}>{key}</label>
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
               <button onClick={() => handleAddNestedField(fieldKey)} style={{ marginLeft: theme.spacing.sm }}>
                 +
@@ -150,10 +153,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       return (
         <Group key={fieldKey} align="center">
           {field.type !== 'object' ? (
-            <>
-              <Text>{key}</Text>
-              {generateComponent(field.type, componentProps)}
-            </>
+            <>{generateComponent(field.type, componentProps)}</>
           ) : (
             <>
               <Title size={18}>{key}</Title>
@@ -167,7 +167,13 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
   return (
     <PageTemplate minWidth={800}>
-      <form>{generateFormFields(schemaFields)}</form>
+      <form
+        css={css`
+          min-width: 100%;
+        `}
+      >
+        {generateFormFields(schemaFields)}
+      </form>
     </PageTemplate>
   )
 }
