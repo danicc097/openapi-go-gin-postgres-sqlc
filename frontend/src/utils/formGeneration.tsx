@@ -81,7 +81,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         const componentProps = {
           required: field.required,
           value: value,
-          onChange: (event: any) => handleChange(event.currentTarget.value, fieldKey),
+          onChange:
+            field.type === 'integer'
+              ? (val: any) => handleChange(val, fieldKey)
+              : (event: any) => handleChange(event.currentTarget.value, fieldKey),
         }
 
         return (
@@ -99,7 +102,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                 {generateComponent(field.type, {
                   ...componentProps,
                   value: formData[fieldKey]?.[index] || '',
-                  onChange: (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
+                  onChange:
+                    field.type === 'integer'
+                      ? (val: any) => handleNestedChange(val, fieldKey, index)
+                      : (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
                 })}
                 <Button
                   onClick={() => handleRemoveNestedField(fieldKey, index)}
