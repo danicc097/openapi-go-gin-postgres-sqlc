@@ -56,6 +56,22 @@ export type RecursiveKeyOf<T, Cache extends PropertyKey = ''> = T extends Proper
   : T extends (infer Item)[]
   ? Item extends object
     ? Cache extends ''
+      ? RecursiveKeyOf<Item, ''> | `${number & keyof Item}`
+      : Cache | RecursiveKeyOf<Item, `${Cache}.${number}`> | `${Cache}.${number & keyof Item}`
+    : never
+  : {
+      [P in keyof T]: P extends PropertyKey
+        ? Cache extends ''
+          ? RecursiveKeyOf<T[P], `${P}`>
+          : Cache | RecursiveKeyOf<T[P], `${Cache}.${P}`>
+        : never
+    }[keyof T]
+
+export type RecursiveKeyOfArray<T, Cache extends PropertyKey = ''> = T extends PropertyKey
+  ? Cache
+  : T extends (infer Item)[]
+  ? Item extends object
+    ? Cache extends ''
       ? RecursiveKeyOf<Item, `${Exclude<keyof Item, keyof any[]> & string}`>
       : RecursiveKeyOf<Item, `${Cache}`>
     : never

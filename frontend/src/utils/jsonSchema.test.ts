@@ -1,6 +1,6 @@
 import type { FieldPath } from 'react-hook-form'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
-import type { RecursiveKeyOf } from 'src/types/utils'
+import type { RecursiveKeyOf, RecursiveKeyOfArray } from 'src/types/utils'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
 
@@ -117,7 +117,8 @@ describe('parseSchemaFields', () => {
 
     type RestDemoWorkItemCreateRequestFormField =
       // hack to use 'members.role' instead of 'members.??.role'
-      FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOf<RestDemoWorkItemCreateRequest['members'], 'members'>
+      | FieldPath<RestDemoWorkItemCreateRequest>
+      | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
 
     const wantFields: Record<RestDemoWorkItemCreateRequestFormField, SchemaField> = {
       base: { isArray: false, required: true, type: 'object' },
