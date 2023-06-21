@@ -78,7 +78,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     }))
   }
 
-  const generateFormFields = (fields: DynamicFormProps<T, U>['schemaFields'], prefix = '') => {
+  const generateFormFields = (fields: DynamicFormProps<T, U>['schemaFields'], { prefix = '', index = null }) => {
     const generateComponent = (fieldType: SchemaField['type'], props: any, field: string, index = null) => {
       const paths = field.split('.')
       const parent = paths.slice(0, paths.length - 1).join('.')
@@ -140,7 +140,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               <ActionIcon onClick={() => handleAddNestedField(fieldKey)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
               </ActionIcon>
-              {generateComponent(field.type, componentProps, fieldKey)}
+              {generateComponent(field.type, componentProps, fieldKey, index)}
             </div>
             {/* existing array fields, if any */}
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
@@ -185,8 +185,12 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               return (
                 <div key={index} style={{ marginBottom: theme.spacing.sm }}>
                   <p>{`${fieldKey}[${index}]`}</p>
-                  {/** generateFormFields needs index as well (convert to options {prefix string, index: number}), to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/ */}
-                  <Group>{generateFormFields(fields, fieldKey)}</Group>
+                  {/**
+                   * TODO: handlers should be shared for nested paths, simply have index opt and if not null construct index access on last path
+                   * generateFormFields needs index as well (convert to options {prefix string, index: number}), to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/
+                   * we can use form.removeListItem for handleRemove
+                   * */}
+                  <Group>{generateFormFields(fields, { prefix: fieldKey, index })}</Group>
                   <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'red'}>
                     <IconMinus size="1rem" />
                   </ActionIcon>
@@ -219,7 +223,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           min-width: 100%;
         `}
       >
-        {generateFormFields(schemaFields)}
+        {generateFormFields(schemaFields, {})}
       </form>
     </PageTemplate>
   )
