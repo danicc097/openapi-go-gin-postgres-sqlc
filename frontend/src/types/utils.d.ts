@@ -59,13 +59,14 @@ export type RecursiveKeyOf<T, Cache extends PropertyKey = ''> = T extends Proper
       ? RecursiveKeyOf<Item, `.${Exclude<keyof Item, keyof any[]> & string}`>
       : Cache | RecursiveKeyOf<Item, `${Cache}`>
     : never
-  : {
-      [P in keyof T]: P extends PropertyKey
-        ? Cache extends ''
-          ? RecursiveKeyOf<T[P], `${P}`>
-          : Cache | RecursiveKeyOf<T[P], `${Cache}.${P}`>
-        : never
-    }[keyof T]
+  :
+      | {
+          [P in keyof T]: P extends PropertyKey
+            ? Cache extends ''
+              ? RecursiveKeyOf<T[P], `${P}`>
+              : Cache | RecursiveKeyOf<T[P], `${Cache}.${P}`>
+            : never
+        }[keyof T]
 
 export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[]
   ? ElementType

@@ -116,14 +116,16 @@ describe('parseSchemaFields', () => {
 
     const a: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members' // OK
     const b: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role' // OK
-    const c: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role.role' // Error: Type '"members.role.role"' is not assignable to type '"members.role"'
+    const c: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role.role' // should giveError: Type '"members.role.role"' is not assignable to type '"members.role"'
+    const d: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'base.metadata' // FIXME: should be ok
+    const e: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'demoProject.reopened' // FIXME: should be
 
     const wantFields: Record<RecursiveKeyOf<RestDemoWorkItemCreateRequest>, SchemaField> = {
       base: { isArray: false, required: true, type: 'object' },
       'base.closed': { type: 'date-time', required: true, isArray: false },
       'base.description': { type: 'string', required: true, isArray: false },
       'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-      'base.metadata': { type: 'integer', required: true, isArray: true },
+      'base.metadata': { type: 'integer', required: true, isArray: true }, // FIXME:
       'base.targetDate': { type: 'date-time', required: true, isArray: false },
       'base.teamID': { type: 'integer', required: true, isArray: false },
       'base.title': { type: 'string', required: true, isArray: false },
@@ -132,7 +134,7 @@ describe('parseSchemaFields', () => {
       'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
       'demoProject.line': { type: 'string', required: true, isArray: false },
       'demoProject.ref': { type: 'string', required: true, isArray: false },
-      'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
+      'demoProject.reopened': { type: 'boolean', required: true, isArray: false }, // FIXME:
       'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
       tagIDs: { type: 'integer', required: true, isArray: true },
       members: { type: 'object', required: true, isArray: true },
