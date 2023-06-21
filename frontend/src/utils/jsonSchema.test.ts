@@ -118,15 +118,7 @@ describe('parseSchemaFields', () => {
     const b: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role' // OK
     const c: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.role.role' // Error: Type '"members.role.role"' is not assignable to type '"members.role"'
 
-    /**
-
-    form generator will use these keys. to generate multiple forms when is array we just check
-    if parent (split by . and keep up to len-2) isArray (members) or the child itself isArray (tagIDs)
-
-    it doesnt seem to be easy to get typed keys for these when arrays are involved.
-    */
-
-    expect(schemaFields).toEqual({
+    const wantFields: Record<RecursiveKeyOf<RestDemoWorkItemCreateRequest>, SchemaField> = {
       base: { isArray: false, required: true, type: 'object' },
       'base.closed': { type: 'date-time', required: true, isArray: false },
       'base.description': { type: 'string', required: true, isArray: false },
@@ -146,6 +138,15 @@ describe('parseSchemaFields', () => {
       members: { type: 'object', required: true, isArray: true },
       'members.role': { type: 'string', required: true, isArray: false },
       'members.userID': { type: 'string', required: true, isArray: false },
-    })
+    }
+    /**
+
+    form generator will use these keys. to generate multiple forms when is array we just check
+    if parent (split by . and keep up to len-2) isArray (members) or the child itself isArray (tagIDs)
+
+    it doesnt seem to be easy to get typed keys for these when arrays are involved.
+    */
+
+    expect(schemaFields).toEqual(wantFields)
   })
 })

@@ -21,6 +21,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "noErrorTruncation": true,
     "baseUrl": ".",
     "sourceMap": true,
     "noUncheckedIndexedAccess": true,

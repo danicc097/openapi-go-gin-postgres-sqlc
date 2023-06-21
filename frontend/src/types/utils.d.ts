@@ -57,7 +57,7 @@ export type RecursiveKeyOf<T, Cache extends PropertyKey = ''> = T extends Proper
   ? Item extends object
     ? Cache extends ''
       ? RecursiveKeyOf<Item, `.${Exclude<keyof Item, keyof any[]> & string}`>
-      : Cache | RecursiveKeyOf<Item, `${Cache}.${Exclude<keyof Item, keyof any[]> & string}`>
+      : Cache | RecursiveKeyOf<Item, `${Cache}`>
     : never
   : {
       [P in keyof T]: P extends PropertyKey
