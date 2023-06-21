@@ -65,7 +65,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       ...currentValues,
       [field]: [
         ...(currentValues[field] || []),
-        null, // TODO: nested components not generated
+        null,
+        // { role: 'preparer', userID: 'rsfsese' }, // should have initial object generated based on path if type === object, else it will attempt setting on null
       ],
     }))
   }
@@ -100,6 +101,9 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     }
 
     return entries(fields).map(([key, field]) => {
+      if (prefix !== '' && !key.startsWith(prefix)) {
+        return
+      }
       // TODO: check if parent is isArray, in which case return early and do nothing, since
       // children have already been generated.
       // console.log(prefix)
@@ -108,7 +112,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       //   return null
       // }
 
-      const fieldKey = prefix ? `${prefix}.${key}` : key
+      const fieldKey = prefix !== '' ? `${prefix}.${key}` : key
       const value = form.values[fieldKey] || options[fieldKey]?.defaultValue || ''
 
       const componentProps = {
@@ -180,7 +184,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               return (
                 <div key={index} style={{ marginBottom: theme.spacing.sm }}>
                   <p>{`${fieldKey}[${index}]`}</p>
-                  <Group>{generateFormFields(fields[key] as any, fieldKey)}</Group>
+                  <Group>{generateFormFields(fields, fieldKey)}</Group>
                   <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'red'}>
                     <IconMinus size="1rem" />
                   </ActionIcon>
