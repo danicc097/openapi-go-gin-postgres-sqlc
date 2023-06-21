@@ -54,10 +54,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   }
 
   const handleNestedChange = (value: any, field: string, index: number) => {
-    form.setValues((currentValues) => ({
-      ...currentValues,
-      [field]: currentValues[field].map((item: any, i: number) => (i === index ? value : item)),
-    }))
+    const paths = field.split('.')
+    const arrayElementPath = [...paths.slice(0, paths.length - 2), index, paths[paths.length - 1]].join('.')
+    console.log(arrayElementPath)
+    form.setFieldValue(arrayElementPath, value)
   }
 
   const handleAddNestedField = (field: string) => {
@@ -65,8 +65,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       ...currentValues,
       [field]: [
         ...(currentValues[field] || []),
-        null,
-        // { role: 'preparer', userID: 'rsfsese' }, // should have initial object generated based on path if type === object, else it will attempt setting on null
+        // null,
+        { role: 'preparer', userID: 'rsfsese' }, // should have initial object generated based on path if type === object, else it will attempt setting on null
       ],
     }))
   }
@@ -147,6 +147,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
               return (
                 <div key={index} style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
+                  {JSON.stringify({ [fieldKey]: index })}
                   {generateComponent(
                     field.type,
                     {
@@ -184,7 +185,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               return (
                 <div key={index} style={{ marginBottom: theme.spacing.sm }}>
                   <p>{`${fieldKey}[${index}]`}</p>
-                  <Group>{generateFormFields(fields, fieldKey)}</Group>
+                  {/** generateFormFields needs index as well, to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/ */}
+                  <Group>{generateFormFields(fields, fieldKey)}</Group>{' '}
                   <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'red'}>
                     <IconMinus size="1rem" />
                   </ActionIcon>
