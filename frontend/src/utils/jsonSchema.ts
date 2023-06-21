@@ -21,21 +21,16 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
     const isArrayOfObj = extractType(obj) === 'object' && !!obj.type?.includes('array') && obj.items?.properties
     const isObj = obj.properties && extractType(obj) === 'object'
 
-    if (isObj) {
-      for (const key in obj.properties) {
+    if (isArrayOfObj) {
+      extract(obj.items.properties)
+    } else if (isObj) {
+      extract(obj.properties)
+    }
+
+    function extract(properties: JsonSchemaField['properties']) {
+      for (const key in properties) {
         const newPath = [...path, key]
-        const property = obj.properties[key]
-        fieldTypes[newPath.join('.')] = {
-          type: extractType(property),
-          required: extractIsRequired(obj, parent, key),
-          isArray: !!property.type?.includes('array'),
-        }
-        traverseSchema(property, newPath, property)
-      }
-    } else if (isArrayOfObj) {
-      for (const key in obj.items.properties) {
-        const newPath = [...path, key]
-        const property = obj.items.properties[key]
+        const property = properties[key]
         fieldTypes[newPath.join('.')] = {
           type: extractType(property),
           required: extractIsRequired(obj, parent, key),
@@ -57,7 +52,7 @@ function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null,
   }
 
   if (parent.items) {
-    return extractIsRequired(obj, parent?.items, key)
+    return extractIsRequired(obj, parent.items, key)
   }
 
   return Array.isArray(parent?.required) ? parent.required.includes(key) : false
