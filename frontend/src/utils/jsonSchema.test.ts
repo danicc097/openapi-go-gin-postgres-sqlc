@@ -114,6 +114,7 @@ describe('parseSchemaFields', () => {
 
     const schemaFields = parseSchemaFields(schema)
 
+    const a: RecursiveKeyOf<RestDemoWorkItemCreateRequest> = 'members.1.userID' // FIXME: want members.userID
     /**
 
     form generator will use these keys. to generate multiple forms when is array we just check
