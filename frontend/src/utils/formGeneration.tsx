@@ -32,8 +32,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const theme = useMantineTheme()
   const [formData, setFormData] = useState<any>({})
 
-  optionsOverride.defaultValue['members.role']
-
   const handleChange = (value: any, field: string) => {
     setFormData((prevData) => ({ ...prevData, [field]: value }))
   }
@@ -77,7 +75,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const generateFormFields = (fields: DynamicFormProps<T, U>['schemaFields'], prefix = '') => {
     return entries(fields).map(([key, field]) => {
       const fieldKey = prefix ? `${prefix}.${key}` : key
-      const value = formData[fieldKey] || optionsOverride[fieldKey].defaultValue || ''
+      const value = formData[fieldKey] || optionsOverride[fieldKey]?.defaultValue || ''
 
       if (field.isArray && field.type !== 'object') {
         const componentProps = {

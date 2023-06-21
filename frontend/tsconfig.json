@@ -24,6 +24,7 @@
     "noErrorTruncation": true,
     "baseUrl": ".",
     "sourceMap": true,
+    "allowUnreachableCode": true,
     "noUncheckedIndexedAccess": true,
     "suppressImplicitAnyIndexErrors": false,
     "paths": {
