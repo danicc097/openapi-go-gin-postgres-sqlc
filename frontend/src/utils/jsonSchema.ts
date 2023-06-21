@@ -20,49 +20,69 @@ type FormGeneratorFields = {
   }
 }
 
-export function extractFieldTypes(schema: JsonSchemaField): FormGeneratorFields {
-  const result: { [key: string]: SchemaType } = {}
+type FieldTypes = {
+  [fieldName: string]: {
+    type: string
+    required: boolean
+    isArray: boolean
+  }
+}
 
-  function traverseSchema(field: JsonSchemaField, currentPath: string, parentArray = false, parent?: JsonSchemaField) {
-    const requiredFields = new Set(field.required || [])
+export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
+  const fieldTypes: FieldTypes = {}
 
-    const isFieldRequired = !requiredFields.has(currentPath)
-    if (currentPath !== '') {
-      if (field.format) {
-        result[currentPath] = { type: field.format, required: isFieldRequired, isArray: parentArray }
-      } else if (field.type) {
-        const type = filterType(field)
-        const isArray = Array.isArray(field.type) || parentArray
-        result[currentPath] = { type, required: isFieldRequired, isArray }
+  function traverseSchema(obj: JsonSchemaField, path: string[] = [], parent: JsonSchemaField | null = null) {
+    if (obj.properties) {
+      // Object with "properties" object
+      for (const key in obj.properties) {
+        const newPath = [...path, key]
+        const property = obj.properties[key]
+        if (property.type && property.type !== 'object') {
+          fieldTypes[newPath.join('.')] = {
+            type: extractType(property),
+            required: extractIsRequired(obj, parent, key),
+            isArray: !!property.type?.includes('array'),
+          }
+        } else {
+          fieldTypes[newPath.join('.')] = {
+            type: 'object',
+            required: extractIsRequired(obj, parent, key),
+            isArray: !!property.type?.includes('array'),
+          }
+          traverseSchema(property, newPath, property)
+        }
       }
-    }
-
-    if (field.properties) {
-      for (const key in field.properties) {
-        const newPath = currentPath ? `${currentPath}.${key}` : key
-        traverseSchema(field.properties[key], newPath, false, field)
+    } else if (extractType(obj) === 'array' && obj.items) {
+      const key = path[path.length - 1]
+      fieldTypes[path.join('.')] = {
+        type: extractType(obj),
+        required: extractIsRequired(obj, parent, key),
+        isArray: true,
       }
-    }
-
-    if (field.items && field.items.type === 'object') {
-      const newPath = currentPath
-      traverseSchema(field.items, newPath, true, field)
-      result[newPath] = { type: 'arrayOfObject', required: isFieldRequired, isArray: true }
-    }
-
-    if (parent?.type === 'array' && field.items?.type && !field.items.properties) {
-      const newPath = currentPath
-      const isArray = true
-      const type = filterType(field.items)
-      result[newPath] = { type, required: isFieldRequired, isArray }
+      traverseSchema(obj.items, [...path], obj)
     }
   }
 
-  traverseSchema(schema, '', false)
+  traverseSchema(schema)
 
-  return result
+  return fieldTypes
 }
-function filterType(field: JsonSchemaField) {
-  // TODO return format if exists
-  return Array.isArray(field.type) ? field.type.filter((type) => type !== 'null')[0] : field.type
+
+function extractIsRequired(obj: any, parent: any, key: string) {
+  if (!parent) {
+    return obj.required?.includes(key)
+  }
+  return Array.isArray(parent?.required) ? parent.required.includes(key) : false
+}
+
+function extractType(obj: any): string {
+  if ((Array.isArray(obj.type) ? obj.type.filter((t) => t !== 'null')[0] : obj.type) === 'array') {
+    if (obj?.items?.type === 'object') {
+      return 'arrayOfObject'
+    } else {
+      return obj?.items?.type
+    }
+  }
+
+  return obj.format || (Array.isArray(obj.type) ? obj.type.filter((t) => t !== 'null')[0] : obj.type)
 }
