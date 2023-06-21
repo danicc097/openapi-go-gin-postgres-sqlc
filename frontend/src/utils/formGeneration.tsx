@@ -76,6 +76,12 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
   const generateFormFields = (fields: DynamicFormProps<T, U>['schemaFields'], prefix = '') => {
     const generateComponent = (fieldType: SchemaField['type'], props: any, field: string) => {
+      const paths = field.split('.')
+      const parent = paths.slice(0, paths.length - 1).join('.')
+      if (fields[parent]?.isArray) {
+        return null
+      }
+
       switch (fieldType) {
         case 'string':
           return <TextInput {...{ ...props, ...form.getInputProps(field) }} />
@@ -130,30 +136,35 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               </ActionIcon>
             </div>
             {/* existing array fields, if any */}
-            {form.values[fieldKey]?.map((_nestedValue: any, index: number) => (
-              <div key={index} style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
-                {generateComponent(
-                  field.type,
-                  {
-                    ...componentProps,
-                    value: form.values[fieldKey]?.[index] || '',
-                    onChange:
-                      field.type === 'integer' || field.type === 'date-time'
-                        ? (val: any) => handleNestedChange(val, fieldKey, index)
-                        : (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
-                  },
-                  fieldKey,
-                )}
-                <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'green'}>
-                  <IconMinus size="1rem" />
-                </ActionIcon>
-              </div>
-            ))}
+            {form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
+              return (
+                <div key={index} style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
+                  {generateComponent(
+                    field.type,
+                    {
+                      ...componentProps,
+                      value: form.values[fieldKey]?.[index] || '',
+                      onChange:
+                        field.type === 'integer' || field.type === 'date-time'
+                          ? (val: any) => handleNestedChange(val, fieldKey, index)
+                          : (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
+                    },
+                    fieldKey,
+                  )}
+                  <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'green'}>
+                    <IconMinus size="1rem" />
+                  </ActionIcon>
+                </div>
+              )
+            })}
           </Group>
         )
       }
 
       if (field.isArray && field.type === 'object') {
+        if (fields[prefix]?.isArray) {
+          return null
+        }
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
