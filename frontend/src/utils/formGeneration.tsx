@@ -25,6 +25,8 @@ import { entries } from 'src/utils/object'
 
 type OptionsOverride<T extends string, U extends GenericObject> = {
   defaultValue: Partial<{
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     [key in T]: TypeOf<U, key>
   }>
 }
@@ -41,49 +43,51 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   optionsOverride,
 }: DynamicFormProps<T, U>) => {
   const theme = useMantineTheme()
-  const [formData, setFormData] = useState<any>({})
 
   const handleChange = (value: any, field: string) => {
-    setFormData((prevData) => ({ ...prevData, [field]: value }))
+    form.setValues((currentValues) => ({
+      ...currentValues,
+      [field]: value,
+    }))
   }
 
   const handleNestedChange = (value: any, field: string, index: number) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [field]: prevData[field].map((item: any, i: number) => (i === index ? value : item)),
+    form.setValues((currentValues) => ({
+      ...currentValues,
+      [field]: currentValues[field].map((item: any, i: number) => (i === index ? value : item)),
     }))
   }
 
   const handleAddNestedField = (field: string) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [field]: [...(prevData[field] || []), ''],
+    form.setValues((currentValues) => ({
+      ...currentValues,
+      [field]: [...(currentValues[field] || []), ''],
     }))
   }
 
   const handleRemoveNestedField = (field: string, index: number) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [field]: prevData[field].filter((_item: any, i: number) => i !== index),
+    form.setValues((currentValues) => ({
+      ...currentValues,
+      [field]: currentValues[field].filter((_item: any, i: number) => i !== index),
     }))
   }
 
-  const generateComponent = (fieldType: SchemaField['type'], props: any) => {
-    switch (fieldType) {
-      case 'string':
-        return <TextInput {...props} />
-      case 'boolean':
-        return <Checkbox {...props} />
-      case 'date-time':
-        return <DateInput placeholder="Date input" {...props} />
-      case 'integer':
-        return <NumberInput {...props} />
-      default:
-        return null
-    }
-  }
-
   const generateFormFields = (fields: DynamicFormProps<T, U>['schemaFields'], prefix = '') => {
+    const generateComponent = (fieldType: SchemaField['type'], props: any, field: string) => {
+      switch (fieldType) {
+        case 'string':
+          return <TextInput {...{ ...props, ...form.getInputProps(field) }} />
+        case 'boolean':
+          return <Checkbox {...{ ...props, ...form.getInputProps(field) }} />
+        case 'date-time':
+          return <DateInput placeholder="Date input" {...{ ...props, ...form.getInputProps(field) }} />
+        case 'integer':
+          return <NumberInput {...{ ...props, ...form.getInputProps(field) }} />
+        default:
+          return null
+      }
+    }
+
     return entries(fields).map(([key, field]) => {
       // TODO: check if parent is isArray, in which case return early and do nothing, since
       // children have already been generated.
@@ -94,7 +98,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       // }
 
       const fieldKey = prefix ? `${prefix}.${key}` : key
-      const value = formData[fieldKey] || optionsOverride[fieldKey]?.defaultValue || ''
+      const value = form.values[fieldKey] || optionsOverride[fieldKey]?.defaultValue || ''
 
       const componentProps = {
         css: css`
@@ -118,23 +122,27 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         return (
           <Group key={fieldKey}>
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
-              {generateComponent(field.type, componentProps)}
+              {generateComponent(field.type, componentProps, fieldKey)}
               <Button
                 onClick={() => handleAddNestedField(fieldKey)}
                 style={{ marginLeft: theme.spacing.sm }}
                 leftIcon={<IconPlus />}
               ></Button>
             </div>
-            {formData[fieldKey]?.map((_nestedValue: any, index: number) => (
+            {form.values[fieldKey]?.map((_nestedValue: any, index: number) => (
               <div key={index} style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
-                {generateComponent(field.type, {
-                  ...componentProps,
-                  value: formData[fieldKey]?.[index] || '',
-                  onChange:
-                    field.type === 'integer' || field.type === 'date-time'
-                      ? (val: any) => handleNestedChange(val, fieldKey, index)
-                      : (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
-                })}
+                {generateComponent(
+                  field.type,
+                  {
+                    ...componentProps,
+                    value: form.values[fieldKey]?.[index] || '',
+                    onChange:
+                      field.type === 'integer' || field.type === 'date-time'
+                        ? (val: any) => handleNestedChange(val, fieldKey, index)
+                        : (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
+                  },
+                  fieldKey,
+                )}
                 <Button
                   onClick={() => handleRemoveNestedField(fieldKey, index)}
                   style={{ marginLeft: theme.spacing.sm }}
@@ -155,7 +163,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                 +
               </button>
             </div>
-            {formData[fieldKey]?.map((_nestedValue: any, index: number) => (
+            {form.values[fieldKey]?.map((_nestedValue: any, index: number) => (
               <div key={index} style={{ marginBottom: theme.spacing.sm }}>
                 <Group>{generateFormFields(fields[key] as any, fieldKey)}</Group>
                 <button
@@ -173,7 +181,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       return (
         <Group key={fieldKey} align="center">
           {field.type !== 'object' ? (
-            <>{generateComponent(field.type, componentProps)}</>
+            <>{generateComponent(field.type, componentProps, fieldKey)}</>
           ) : (
             <>
               <Title size={18}>{key}</Title>

@@ -25,6 +25,7 @@ import type { RecursiveKeyOfArray } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
 import { useForm } from '@mantine/form'
+import DemoWorkItemForm from 'src/components/forms/DemoProjectWorkItemForm'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -109,6 +110,10 @@ export default function App() {
       // members: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv), // TODO: foreach validate
     },
   })
+
+  useEffect(() => {
+    console.log(demoWorkItemCreateForm)
+  }, [demoWorkItemCreateForm])
 
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
