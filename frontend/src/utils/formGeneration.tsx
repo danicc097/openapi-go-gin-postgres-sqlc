@@ -1,20 +1,27 @@
 import { css } from '@emotion/react'
-import { Group, TextInput, NumberInput, Checkbox, Button, Title, Space, Divider, Text } from '@mantine/core'
+import {
+  Group,
+  TextInput,
+  NumberInput,
+  Checkbox,
+  Button,
+  Title,
+  Space,
+  Divider,
+  Text,
+  type InputProps,
+} from '@mantine/core'
 import { DateInput } from '@mantine/dates'
-import { Form } from '@mantine/form'
+import { Form, type UseFormReturnType } from '@mantine/form'
 import { useMantineTheme } from '@mantine/styles'
 import { IconMinus, IconPlus } from '@tabler/icons'
-import { useState } from 'react'
+import { useState, type ComponentProps } from 'react'
 import type { FieldPath } from 'react-hook-form'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import type { GenericObject, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
-
-type RestDemoWorkItemCreateRequestFormField =
-  // hack to use 'members.role' instead of 'members.??.role'
-  FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
 
 type OptionsOverride<T extends string, U extends GenericObject> = {
   defaultValue: Partial<{
@@ -23,11 +30,13 @@ type OptionsOverride<T extends string, U extends GenericObject> = {
 }
 
 type DynamicFormProps<T extends string, U extends GenericObject> = {
+  form: UseFormReturnType<U, (values: U) => U>
   schemaFields: Record<T, SchemaField>
   optionsOverride: OptionsOverride<T, U>
 }
 
 export const DynamicForm = <T extends string, U extends GenericObject>({
+  form,
   schemaFields,
   optionsOverride,
 }: DynamicFormProps<T, U>) => {
@@ -76,6 +85,14 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
   const generateFormFields = (fields: DynamicFormProps<T, U>['schemaFields'], prefix = '') => {
     return entries(fields).map(([key, field]) => {
+      // TODO: check if parent is isArray, in which case return early and do nothing, since
+      // children have already been generated.
+      // console.log(prefix)
+      // // Skip generating fields for array items
+      // if (fields[prefix]?.isArray) {
+      //   return null
+      // }
+
       const fieldKey = prefix ? `${prefix}.${key}` : key
       const value = formData[fieldKey] || optionsOverride[fieldKey]?.defaultValue || ''
 
@@ -93,6 +110,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
 
       if (field.isArray && field.type !== 'object') {
+        // array of primitives
+
         // TODO: form.getInputProps instead.
         // form.getInputProps('base.<nested>', {type: "checkbox | input"})
 
@@ -128,6 +147,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
 
       if (field.isArray && field.type === 'object') {
+        // array of objects
         return (
           <Group key={fieldKey}>
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>

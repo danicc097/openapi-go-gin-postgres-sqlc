@@ -20,8 +20,11 @@ import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
 import { DynamicForm } from 'src/utils/formGeneration'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
-import type { FieldPath } from 'react-hook-form'
+import { type FieldPath } from 'react-hook-form'
 import type { RecursiveKeyOfArray } from 'src/types/utils'
+import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
+import { validateField } from 'src/utils/validation'
+import { useForm } from '@mantine/form'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -98,6 +101,15 @@ export default function App() {
     // hack to use 'members.role' instead of 'members.??.role'
     FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
 
+  const demoWorkItemCreateForm = useForm<RestDemoWorkItemCreateRequest>({
+    validateInputOnChange: true,
+    validate: {
+      // TODO: should be able to validate whole nested objects at once.
+      base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
+      // members: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv), // TODO: foreach validate
+    },
+  })
+
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
       <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
@@ -130,6 +142,7 @@ export default function App() {
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
                           <DynamicForm<RestDemoWorkItemCreateRequestFormField, RestDemoWorkItemCreateRequest>
+                            form={demoWorkItemCreateForm}
                             schemaFields={{
                               base: { isArray: false, required: true, type: 'object' },
                               'base.closed': { type: 'date-time', required: true, isArray: false },
