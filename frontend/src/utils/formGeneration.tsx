@@ -56,7 +56,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const handleNestedChange = (value: any, field: string, index: number) => {
     const paths = field.split('.')
     const arrayElementPath = [...paths.slice(0, paths.length - 2), index, paths[paths.length - 1]].join('.')
-    console.log(arrayElementPath)
+    console.log({ arrayElementPath })
     form.setFieldValue(arrayElementPath, value)
   }
 
@@ -79,22 +79,28 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   }
 
   const generateFormFields = (fields: DynamicFormProps<T, U>['schemaFields'], prefix = '') => {
-    const generateComponent = (fieldType: SchemaField['type'], props: any, field: string) => {
+    const generateComponent = (fieldType: SchemaField['type'], props: any, field: string, index = null) => {
       const paths = field.split('.')
       const parent = paths.slice(0, paths.length - 1).join('.')
       if (fields[parent]?.isArray) {
         return null
       }
 
+      let _field = field
+      if (index) {
+        _field = [parent, index, paths[paths.length - 1]].join('.')
+      }
+
+      /* TODO:if (index): ...form.getInputProps(`<..>.${index}.<...>`, */
       switch (fieldType) {
         case 'string':
-          return <TextInput {...{ ...props, ...form.getInputProps(field) }} />
+          return <TextInput {...{ ...props, ...form.getInputProps(_field) }} />
         case 'boolean':
-          return <Checkbox {...{ ...props, ...form.getInputProps(field) }} />
+          return <Checkbox {...{ ...props, ...form.getInputProps(_field) }} />
         case 'date-time':
-          return <DateInput placeholder="Date input" {...{ ...props, ...form.getInputProps(field) }} />
+          return <DateInput placeholder="Date input" {...{ ...props, ...form.getInputProps(_field) }} />
         case 'integer':
-          return <NumberInput {...{ ...props, ...form.getInputProps(field) }} />
+          return <NumberInput {...{ ...props, ...form.getInputProps(_field) }} />
         default:
           return null
       }
@@ -104,13 +110,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       if (prefix !== '' && !key.startsWith(prefix)) {
         return
       }
-      // TODO: check if parent is isArray, in which case return early and do nothing, since
-      // children have already been generated.
-      // console.log(prefix)
-      // // Skip generating fields for array items
-      // if (fields[prefix]?.isArray) {
-      //   return null
-      // }
 
       const fieldKey = prefix !== '' ? `${prefix}.${key}` : key
       const value = form.values[fieldKey] || options[fieldKey]?.defaultValue || ''
@@ -159,6 +158,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                           : (event: any) => handleNestedChange(event.currentTarget.value, fieldKey, index),
                     },
                     fieldKey,
+                    index,
                   )}
                   <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'green'}>
                     <IconMinus size="1rem" />
@@ -185,8 +185,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               return (
                 <div key={index} style={{ marginBottom: theme.spacing.sm }}>
                   <p>{`${fieldKey}[${index}]`}</p>
-                  {/** generateFormFields needs index as well, to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/ */}
-                  <Group>{generateFormFields(fields, fieldKey)}</Group>{' '}
+                  {/** generateFormFields needs index as well (convert to options {prefix string, index: number}), to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/ */}
+                  <Group>{generateFormFields(fields, fieldKey)}</Group>
                   <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'red'}>
                     <IconMinus size="1rem" />
                   </ActionIcon>
