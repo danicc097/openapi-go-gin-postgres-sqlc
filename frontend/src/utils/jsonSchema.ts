@@ -38,7 +38,7 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
         const property = obj.items.properties[key]
         fieldTypes[newPath.join('.')] = {
           type: extractType(property),
-          required: extractIsRequired(obj, parent.items, key),
+          required: extractIsRequired(obj, parent, key),
           isArray: !!property.type?.includes('array'),
         }
         traverseSchema(property, newPath, property)
@@ -54,6 +54,10 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
 function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null, key: string): boolean {
   if (!parent) {
     return obj.required?.includes(key)
+  }
+
+  if (parent.items) {
+    return extractIsRequired(obj, parent?.items, key)
   }
 
   return Array.isArray(parent?.required) ? parent.required.includes(key) : false
