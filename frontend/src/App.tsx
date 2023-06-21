@@ -26,6 +26,7 @@ import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/d
 import { validateField } from 'src/utils/validation'
 import { useForm } from '@mantine/form'
 import DemoWorkItemForm from 'src/components/forms/DemoProjectWorkItemForm'
+import dayjs from 'dayjs'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -106,9 +107,11 @@ export default function App() {
     // TODO: simple function to initialize top level with empty object if property type === object
     // now that we have json schema dereferenced
     initialValues: {
-      base: {},
+      base: {
+        closed: dayjs().toDate(),
+      },
       demoProject: {},
-    } as any,
+    } as RestDemoWorkItemCreateRequest,
     validateInputOnChange: true,
     validate: {
       // TODO: should be able to validate whole nested objects at once.

@@ -129,6 +129,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                 leftIcon={<IconPlus />}
               ></Button>
             </div>
+            {/* existing array fields, if any */}
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => (
               <div key={index} style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
                 {generateComponent(
