@@ -10,6 +10,7 @@ import {
   Divider,
   Text,
   type InputProps,
+  ActionIcon,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
@@ -123,11 +124,9 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           <Group key={fieldKey}>
             <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
               {generateComponent(field.type, componentProps, fieldKey)}
-              <Button
-                onClick={() => handleAddNestedField(fieldKey)}
-                style={{ marginLeft: theme.spacing.sm }}
-                leftIcon={<IconPlus />}
-              ></Button>
+              <ActionIcon onClick={() => handleAddNestedField(fieldKey)} variant="filled" color={'green'}>
+                <IconPlus size="1rem" />
+              </ActionIcon>
             </div>
             {/* existing array fields, if any */}
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => (
@@ -144,11 +143,9 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                   },
                   fieldKey,
                 )}
-                <Button
-                  onClick={() => handleRemoveNestedField(fieldKey, index)}
-                  style={{ marginLeft: theme.spacing.sm }}
-                  leftIcon={<IconMinus />}
-                ></Button>
+                <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'green'}>
+                  <IconMinus size="1rem" />
+                </ActionIcon>
               </div>
             ))}
           </Group>
@@ -159,20 +156,16 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // array of objects
         return (
           <Group key={fieldKey}>
-            <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
-              <button onClick={() => handleAddNestedField(fieldKey)} style={{ marginLeft: theme.spacing.sm }}>
-                +
-              </button>
-            </div>
+            {JSON.stringify({ fieldKey, type: field.type })}
+            <ActionIcon onClick={() => handleAddNestedField(fieldKey)} variant="filled" color={'green'}>
+              <IconPlus size="1rem" />
+            </ActionIcon>
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => (
               <div key={index} style={{ marginBottom: theme.spacing.sm }}>
                 <Group>{generateFormFields(fields[key] as any, fieldKey)}</Group>
-                <button
-                  onClick={() => handleRemoveNestedField(fieldKey, index)}
-                  style={{ marginLeft: theme.spacing.sm }}
-                >
-                  -
-                </button>
+                <ActionIcon onClick={() => handleRemoveNestedField(fieldKey, index)} variant="filled" color={'red'}>
+                  <IconMinus size="1rem" />
+                </ActionIcon>
               </div>
             ))}
           </Group>
