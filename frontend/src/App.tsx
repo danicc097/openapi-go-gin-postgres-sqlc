@@ -18,6 +18,10 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Notifications } from '@mantine/notifications'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
+import { DynamicForm } from 'src/utils/formGeneration'
+import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
+import type { FieldPath } from 'react-hook-form'
+import type { RecursiveKeyOfArray } from 'src/types/utils'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,6 +94,10 @@ export default function App() {
     }
   }, [verifyNotificationPermission, notificationWarningSent])
 
+  type RestDemoWorkItemCreateRequestFormField =
+    // hack to use 'members.role' instead of 'members.??.role'
+    FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
+
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
       <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
@@ -120,7 +128,36 @@ export default function App() {
                       path="/"
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
-                          <LandingPage />
+                          {/* <LandingPage /> */}
+                          <DynamicForm<RestDemoWorkItemCreateRequestFormField, RestDemoWorkItemCreateRequest>
+                            schemaFields={{
+                              base: { isArray: false, required: true, type: 'object' },
+                              'base.closed': { type: 'date-time', required: true, isArray: false },
+                              'base.description': { type: 'string', required: true, isArray: false },
+                              'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
+                              'base.metadata': { type: 'integer', required: true, isArray: true },
+                              'base.targetDate': { type: 'date-time', required: true, isArray: false },
+                              'base.teamID': { type: 'integer', required: true, isArray: false },
+                              'base.title': { type: 'string', required: true, isArray: false },
+                              'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
+                              demoProject: { isArray: false, required: true, type: 'object' },
+                              'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
+                              'demoProject.line': { type: 'string', required: true, isArray: false },
+                              'demoProject.ref': { type: 'string', required: true, isArray: false },
+                              'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
+                              'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
+                              members: { type: 'object', required: true, isArray: true },
+                              'members.role': { type: 'string', required: true, isArray: false },
+                              'members.userID': { type: 'string', required: true, isArray: false },
+                              tagIDs: { type: 'integer', required: true, isArray: true },
+                            }}
+                            optionsOverride={{
+                              defaultValue: {
+                                'demoProject.line': '534543523', // should fail due to TypeOf
+                                members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
+                              },
+                            }}
+                          />
                         </React.Suspense>
                       }
                     />

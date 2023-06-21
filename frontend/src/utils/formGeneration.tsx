@@ -25,7 +25,7 @@ type DynamicFormProps<T extends string, U extends GenericObject> = {
   optionsOverride: OptionsOverride<T, U>
 }
 
-const DynamicForm = <T extends string, U extends GenericObject>({
+export const DynamicForm = <T extends string, U extends GenericObject>({
   schemaFields,
   optionsOverride,
 }: DynamicFormProps<T, U>) => {
@@ -150,33 +150,3 @@ const DynamicForm = <T extends string, U extends GenericObject>({
 
   return <form>{generateFormFields(schemaFields)}</form>
 }
-
-DynamicForm<RestDemoWorkItemCreateRequestFormField, RestDemoWorkItemCreateRequest>({
-  schemaFields: {
-    base: { isArray: false, required: true, type: 'object' },
-    'base.closed': { type: 'date-time', required: true, isArray: false },
-    'base.description': { type: 'string', required: true, isArray: false },
-    'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-    'base.metadata': { type: 'integer', required: true, isArray: true },
-    'base.targetDate': { type: 'date-time', required: true, isArray: false },
-    'base.teamID': { type: 'integer', required: true, isArray: false },
-    'base.title': { type: 'string', required: true, isArray: false },
-    'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
-    demoProject: { isArray: false, required: true, type: 'object' },
-    'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
-    'demoProject.line': { type: 'string', required: true, isArray: false },
-    'demoProject.ref': { type: 'string', required: true, isArray: false },
-    'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
-    'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
-    members: { type: 'object', required: true, isArray: true },
-    'members.role': { type: 'string', required: true, isArray: false },
-    'members.userID': { type: 'string', required: true, isArray: false },
-    tagIDs: { type: 'integer', required: true, isArray: true },
-  },
-  optionsOverride: {
-    defaultValue: {
-      'demoProject.line': '534543523', // should fail due to TypeOf
-      members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
-    },
-  },
-})
