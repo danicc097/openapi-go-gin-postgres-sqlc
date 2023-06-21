@@ -6,20 +6,6 @@ interface JsonSchemaField {
   required?: string[]
 }
 
-type SchemaType = {
-  type: string
-  required: boolean
-  isArray?: boolean
-}
-
-type FormGeneratorFields = {
-  [key: string]: {
-    type: string
-    required: boolean
-    isArray?: boolean
-  }
-}
-
 type FieldTypes = {
   [fieldName: string]: {
     type: string
@@ -33,7 +19,6 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
 
   function traverseSchema(obj: JsonSchemaField, path: string[] = [], parent: JsonSchemaField | null = null) {
     if (obj.properties) {
-      // Object with "properties" object
       for (const key in obj.properties) {
         const newPath = [...path, key]
         const property = obj.properties[key]
@@ -44,17 +29,17 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
         }
         traverseSchema(property, newPath, property)
       }
-    } else if (extractType(obj) === 'array' && obj.items?.properties) {
-      console.log(obj)
-      const key = path[path.length - 1]
-      fieldTypes[path.join('.')] = {
-        type: extractType(obj),
-        required: extractIsRequired(obj, parent, key),
-        isArray: true,
+    } else if (extractType(obj) === 'arrayOfObject' && obj.items?.properties) {
+      for (const key in obj.items.properties) {
+        const newPath = [...path, key]
+        const property = obj.items.properties[key]
+        fieldTypes[newPath.join('.')] = {
+          type: extractType(property),
+          required: extractIsRequired(obj, parent.items, key),
+          isArray: !!property.type?.includes('array'),
+        }
+        traverseSchema(property, newPath, property)
       }
-      traverseSchema(obj.items, [...path], obj)
-    } else {
-      console.log(obj)
     }
   }
 
@@ -63,10 +48,11 @@ export function extractFieldTypes(schema: JsonSchemaField): FieldTypes {
   return fieldTypes
 }
 
-function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null, key: string) {
+function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null, key: string): boolean {
   if (!parent) {
     return obj.required?.includes(key)
   }
+
   return Array.isArray(parent?.required) ? parent.required.includes(key) : false
 }
 
