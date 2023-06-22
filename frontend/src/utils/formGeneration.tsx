@@ -72,6 +72,15 @@ function generateComponent<T>({ form, fieldType, props, formField }: GenerateCom
   }
 }
 
+function renderTitle(key: string) {
+  return (
+    <>
+      <Title size={18}>{key}</Title>
+      <Space p={8} />
+    </>
+  )
+}
+
 export const DynamicForm = <T extends string, U extends GenericObject>({
   form,
   schemaFields,
@@ -79,14 +88,14 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 }: DynamicFormProps<T, U>) => {
   const theme = useMantineTheme()
 
-  const addNestedField = (field: string) => {
+  const addNestedField = (field: string, initialValue: any) => {
     console.log({ addNestedField: field })
     form.setValues((currentValues) => ({
       ...currentValues,
       [field]: [
         ...(currentValues[field] || []), // can't use insertListItem directly if not initialized so just do it at once
         // TODO: maybe will need initialValue based on type from schema
-        {}, //  mantine form  does not support array of nonobjects validation
+        initialValue, //  mantine form  does not support array of nonobjects validation
       ],
     }))
   }
@@ -123,10 +132,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           <Card key={fieldKey} mt={24}>
             {JSON.stringify(_.get(form.values, formKey))}
             <div>
-              <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
+              {renderTitle(key)}
+              <ActionIcon onClick={() => addNestedField(fieldKey, null)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
               </ActionIcon>
-              <Title size={18}>{key}</Title>
             </div>
             {/* existing array fields, if any */}
             {_.get(form.values, formKey)?.map((_nestedValue: any, index: number) => {
@@ -159,7 +168,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
-            <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
+            {renderTitle(key)}
+            <ActionIcon onClick={() => addNestedField(fieldKey, {})} variant="filled" color={'green'}>
               <IconPlus size="1rem" />
             </ActionIcon>
             {_.get(form.values, formKey)?.map((_nestedValue: any, index: number) => {
@@ -184,10 +194,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           {field.type !== 'object' ? (
             <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formKey })}</>
           ) : (
-            <>
-              <Title size={18}>{key}</Title>
-              <Space p={8} />
-            </>
+            <>{renderTitle(key)}</>
           )}
         </Group>
       )
