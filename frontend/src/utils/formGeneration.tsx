@@ -47,14 +47,14 @@ type GenerateComponentProps<T> = {
   form: UseFormReturnType<T>
   fieldType: SchemaField['type']
   props: any
-  field: string
+  formField: string
 }
 
 // IMPORTANT: field dot notation requires indexes for arrays. e.g. `members.0.role`.
-function generateComponent<T>({ form, fieldType, props, field }: GenerateComponentProps<T>) {
+function generateComponent<T>({ form, fieldType, props, formField }: GenerateComponentProps<T>) {
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
-    ...form.getInputProps(field),
+    ...form.getInputProps(formField),
     ...props,
   }
   switch (fieldType) {
@@ -85,10 +85,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       [field]: [
         ...(currentValues[field] || []), // can't use insertListItem directly if not initialized so just do it at once
         // TODO: maybe will need initialValue based on type from schema
-        // null,
-        // 0,
-        {}, // mantine form  does not support array of nonobjects validation
-        // { role: 'preparer', userID: 'rsfsese' }, // should have initial object generated based on path if type === object, else it will attempt setting on null
+        {}, //  mantine form  does not support array of nonobjects validation
       ],
     }))
   }
@@ -106,12 +103,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
       const parentKey = parentPathPrefix.replace(/\.*$/, '')
 
-      let indexSuffix = ''
-      if (index !== undefined) {
-        indexSuffix = `.${index}`
-      }
       const fieldKey = String(key)
-      const formKey = String(key) + indexSuffix // TODO: pass to everything that uses `form` instead
+      const formKey = constructFormKey(fieldKey, index)
       console.log({ formValue: _.get(form.values, formKey), formKey })
 
       const componentProps = {
@@ -146,7 +139,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                   {generateComponent({
                     form,
                     fieldType: field.type,
-                    field: fieldKey,
+                    formField: formKey,
                     props: componentProps,
                   })}
                   <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'green'}>
@@ -166,7 +159,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
-            {JSON.stringify({ [fieldKey]: form.values[fieldKey] })}
             <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
               <IconPlus size="1rem" />
             </ActionIcon>
@@ -176,13 +168,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         )
       }
 
-      const paths = key.split('.')
-      const parent = paths.slice(0, paths.length - 1).join('.')
-
       return (
         <Group key={fieldKey} align="center">
           {field.type !== 'object' ? (
-            <>{generateComponent({ form, fieldType: field.type, props: componentProps, field: fieldKey })}</>
+            <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formKey })}</>
           ) : (
             <>
               <Title size={18}>{key}</Title>
@@ -206,7 +195,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                  * generateFormFields needs index as well (convert to options {parentPathPrefix string, index: number}), to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/
                  * we can use form.removeListItem for handleRemove
                  * */}
-                {JSON.stringify({ [fieldKey]: schemaFields[fieldKey] })}
                 <Group>{generateFormFields({ parentPathPrefix: fieldKey, index })}</Group>
                 <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'red'}>
                   <IconMinus size="1rem" />
@@ -233,4 +221,16 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       </form>
     </PageTemplate>
   )
+}
+
+/**
+ * Construct form accessor based on dot notation path and index (in case of array element).
+ */
+function constructFormKey(key: string, index?: number) {
+  const formPaths = key.split('.')
+  const formKey =
+    index !== undefined
+      ? [...formPaths.slice(0, formPaths.length - 1), index, formPaths[formPaths.length - 1]].join('.')
+      : String(key)
+  return formKey
 }
