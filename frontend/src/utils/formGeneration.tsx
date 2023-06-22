@@ -93,8 +93,22 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 }: DynamicFormProps<T, U>) => {
   const theme = useMantineTheme()
 
-  const addNestedField = (field: string, initialValue: any) => {
-    console.log({ addNestedField: field })
+  function initialValueByField(field: T) {
+    switch (schemaFields[field].type) {
+      case 'boolean':
+        return false
+      case 'integer':
+        return 0
+      case 'object':
+        return {}
+      default:
+        return ''
+    }
+  }
+
+  const addNestedField = (field: T) => {
+    const initialValue = initialValueByField(field)
+    console.log({ addNestedField: field, initialValue })
     form.setValues((currentValues) => ({
       ...currentValues,
       [field]: [
@@ -121,17 +135,16 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   }
 
   const generateFormInputs = ({ parentPathPrefix = '', index }: { parentPathPrefix?: string; index?: number }) => {
-    return entries(schemaFields).map(([key, field]) => {
-      if (parentPathPrefix !== '' && !key.startsWith(parentPathPrefix)) {
+    return entries(schemaFields).map(([fieldKey, field]) => {
+      if (parentPathPrefix !== '' && !fieldKey.startsWith(parentPathPrefix)) {
         return null
       }
 
-      const pp = key.split('.')
+      const pp = fieldKey.split('.')
       const parentKey = parentPathPrefix.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
 
       if (schemaFields[parentKey]?.isArray && parentPathPrefix === '') return null
 
-      const fieldKey = String(key)
       const formField = constructFormKey(fieldKey, index)
       // console.log({ formValue: _.get(form.values, formField), formField })
 
@@ -139,7 +152,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         css: css`
           min-width: 100%;
         `,
-        label: key,
+        label: fieldKey,
         required: field.required,
       }
 
@@ -149,8 +162,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           <Card key={fieldKey} mt={24}>
             {JSON.stringify(_.get(form.values, formField))}
             <div>
-              {renderTitle(key)}
-              <ActionIcon onClick={() => addNestedField(fieldKey, null)} variant="filled" color={'green'}>
+              {renderTitle(fieldKey)}
+              <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
               </ActionIcon>
             </div>
@@ -167,7 +180,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                     formField: `${formField}.${index}`,
                     props: componentProps,
                   })}
-                  {renderRemoveNestedFieldButton(`${formField}.${index}`, index)}
+                  {renderRemoveNestedFieldButton(formField, index)}
                 </div>
               )
             })}
@@ -186,9 +199,9 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
-            {renderTitle(key)}
+            {renderTitle(fieldKey)}
             {parentPathPrefix === '' && (
-              <ActionIcon onClick={() => addNestedField(fieldKey, {})} variant="filled" color={'green'}>
+              <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
               </ActionIcon>
             )}
@@ -211,7 +224,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           {field.type !== 'object' ? (
             <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formField })}</>
           ) : (
-            <>{renderTitle(key)}</>
+            <>{renderTitle(fieldKey)}</>
           )}
         </Group>
       )

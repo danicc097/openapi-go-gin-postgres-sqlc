@@ -146,7 +146,7 @@ export default function App() {
         ref: '312321',
         workItemID: 1,
       },
-      tagIDs: [0, 1, 2],
+      // tagIDs: [0, 1, 2],
       // members: [{ role: 'preparer', userID: 'fesfse' }],
     } as RestDemoWorkItemCreateRequest,
     validateInputOnChange: true,
