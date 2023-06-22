@@ -47,6 +47,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const theme = useMantineTheme()
 
   const handleChange = (value: any, field: string) => {
+    console.log({ handleChange: field })
     form.setValues((currentValues) => ({
       ...currentValues,
       [field]: value,
@@ -56,11 +57,12 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const handleNestedChange = (value: any, field: string, index: number) => {
     const paths = field.split('.')
     const arrayElementPath = [...paths.slice(0, paths.length - 2), index, paths[paths.length - 1]].join('.')
-    console.log({ arrayElementPath })
+    console.log({ handleNestedChange: arrayElementPath })
     form.setFieldValue(arrayElementPath, value)
   }
 
   const handleAddNestedField = (field: string) => {
+    console.log({ handleAddNestedField: field })
     form.setValues((currentValues) => ({
       ...currentValues,
       [field]: [
@@ -72,6 +74,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   }
 
   const handleRemoveNestedField = (field: string, index: number) => {
+    console.log({ handleRemoveNestedField: field })
     form.setValues((currentValues) => ({
       ...currentValues,
       [field]: currentValues[field].filter((_item: any, i: number) => i !== index),
@@ -86,12 +89,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         return null
       }
 
-      let _field = field
-      if (index) {
-        _field = [parent, index, paths[paths.length - 1]].join('.')
-      }
+      const _field = index ? [parent, index, paths[paths.length - 1]].join('.') : field
 
-      /* TODO:if (index): ...form.getInputProps(`<..>.${index}.<...>`, */
       switch (fieldType) {
         case 'string':
           return <TextInput {...{ ...props, ...form.getInputProps(_field) }} />
