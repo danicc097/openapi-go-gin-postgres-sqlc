@@ -95,14 +95,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
   function initialValueByField(field: T) {
     switch (schemaFields[field].type) {
-      case 'boolean':
-        return false
-      case 'integer':
-        return 0
       case 'object':
         return {}
       default:
-        return ''
+        return undefined
     }
   }
 
@@ -199,11 +195,13 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
-            {renderTitle(fieldKey)}
             {parentPathPrefix === '' && (
-              <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
-                <IconPlus size="1rem" />
-              </ActionIcon>
+              <>
+                {renderTitle(fieldKey)}
+                <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
+                  <IconPlus size="1rem" />
+                </ActionIcon>
+              </>
             )}
             {_.get(form.values, formField)?.map((_nestedValue: any, index: number) => {
               console.log({ nestedArrayOfObjectsIndex: index })
