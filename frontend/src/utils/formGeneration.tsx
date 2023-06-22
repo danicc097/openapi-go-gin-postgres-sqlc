@@ -157,16 +157,17 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
             {/* existing array fields, if any */}
             {console.log({ nestedArray: formField, formValue: _.get(form.values, formField) })}
             {_.get(form.values, formField)?.map((_nestedValue: any, index: number) => {
+              console.log({ _nestedValue, index })
               return (
                 <div key={index}>
                   {JSON.stringify({ [fieldKey]: index })}
                   {generateComponent({
                     form,
                     fieldType: field.type,
-                    formField: formField,
+                    formField: `${formField}.${index}`,
                     props: componentProps,
                   })}
-                  {renderRemoveNestedFieldButton(formField, index)}
+                  {renderRemoveNestedFieldButton(`${formField}.${index}`, index)}
                 </div>
               )
             })}
