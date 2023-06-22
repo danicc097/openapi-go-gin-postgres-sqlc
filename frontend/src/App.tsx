@@ -115,7 +115,7 @@ export default function App() {
   }, [verifyNotificationPermission, notificationWarningSent])
 
   type RestDemoWorkItemCreateRequestFormField =
-    // hack to use 'members.role' instead of 'members.??.role'
+    // hack to use e.g. 'members.role' instead of 'members.??.role' to define common options for all props of members
     FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
 
   const demoWorkItemCreateForm = useForm<RestDemoWorkItemCreateRequest>({
@@ -124,9 +124,20 @@ export default function App() {
     initialValues: {
       base: {
         closed: dayjs().toDate(),
+        targetDate: dayjs().toDate(),
+        description: 'some text',
+        kanbanStepID: 1,
+        teamID: 1,
+        title: 'some text',
+        workItemTypeID: 1,
       },
       // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
-      demoProject: {},
+      demoProject: {
+        lastMessageAt: dayjs().toDate(),
+        line: '3e3e2',
+        ref: '312321',
+        workItemID: 1,
+      },
     } as RestDemoWorkItemCreateRequest,
     validateInputOnChange: true,
     validate: {
@@ -139,18 +150,22 @@ export default function App() {
       // original object and setError appropiately in the field using index + default key instead of just by index.
 
       base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
-      // members: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv), // TODO: foreach validate
+      demoProject: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
+      members: (v, vv, path) => {
+        console.log(`would have validated ${path}. value: ${v}`)
+        return true
+      }, // TODO: foreach validate
     },
   })
 
-  useEffect(() => {
-    console.log(demoWorkItemCreateForm.values)
-    try {
-      RestDemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
-    } catch (error) {
-      console.error(JSON.stringify(error.validationErrors.errors))
-    }
-  }, [demoWorkItemCreateForm])
+  // useEffect(() => {
+  //   console.log(demoWorkItemCreateForm.values)
+  //   try {
+  //     RestDemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
+  //   } catch (error) {
+  //     console.error(JSON.stringify(error.validationErrors.errors))
+  //   }
+  // }, [demoWorkItemCreateForm])
 
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
