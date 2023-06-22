@@ -15,6 +15,7 @@ import {
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
+import type { UseForm } from '@mantine/form/lib/types'
 import { useMantineTheme } from '@mantine/styles'
 import { IconMinus, IconPlus } from '@tabler/icons'
 import { useState, type ComponentProps } from 'react'
@@ -39,6 +40,34 @@ type DynamicFormProps<T extends string, U extends GenericObject> = {
   options: options<T, U>
 }
 
+type GenerateComponentProps<T> = {
+  form: UseFormReturnType<T>
+  fieldType: SchemaField['type']
+  props: any
+  field: string
+}
+
+// IMPORTANT: field dot notation requires indexes for arrays. e.g. `members.0.role`.
+function generateComponent<T>({ form, fieldType, props, field }: GenerateComponentProps<T>) {
+  // TODO: multiselect and select early check (if found in options.components override)
+  const _props = {
+    ...form.getInputProps(field),
+    ...props,
+  }
+  switch (fieldType) {
+    case 'string':
+      return <TextInput {..._props} />
+    case 'boolean':
+      return <Checkbox {..._props} />
+    case 'date-time':
+      return <DateInput placeholder="Select date" {..._props} />
+    case 'integer':
+      return <NumberInput {..._props} />
+    default:
+      return null
+  }
+}
+
 export const DynamicForm = <T extends string, U extends GenericObject>({
   form,
   schemaFields,
@@ -46,24 +75,17 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 }: DynamicFormProps<T, U>) => {
   const theme = useMantineTheme()
 
-  const handleFieldChange = (value: any, field: string, index?: number) => {
-    const paths = field.split('.')
-    const path =
-      index !== undefined ? [...paths.slice(0, paths.length - 2), index, paths[paths.length - 1]].join('.') : field
-    console.log({ path, value })
-    form.setFieldValue(path, value)
-  }
-
   const addNestedField = (field: string) => {
     console.log({ addNestedField: field })
     form.setValues((currentValues) => ({
       ...currentValues,
       [field]: [
-        ...(currentValues[field] || []),
+        ...(currentValues[field] || []), // can't use insertListItem directly if not initialized so just do it at once
         // TODO: maybe will need initialValue based on type from schema
         // null,
         // 0,
-        { role: 'preparer', userID: 'rsfsese' }, // should have initial object generated based on path if type === object, else it will attempt setting on null
+        {}, // mantine form  does not support array of nonobjects validation
+        // { role: 'preparer', userID: 'rsfsese' }, // should have initial object generated based on path if type === object, else it will attempt setting on null
       ],
     }))
   }
@@ -78,53 +100,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     fields: DynamicFormProps<T, U>['schemaFields'],
     { prefix = '', index }: { prefix?: string; index?: number },
   ) => {
-    const generateComponent = (fieldType: SchemaField['type'], props: any, field: string, index?: number) => {
-      const paths = field.split('.')
-      const parent = paths.slice(0, paths.length - 1).join('.')
-      if (fields[parent]?.isArray) {
-        return null
-      }
-
-      const _field = index !== undefined ? [parent, index, paths[paths.length - 1]].join('.') : field
-
-      console.log({ val: form.getInputProps(_field).value, onchange: form.getInputProps(_field).onChange })
-
-      switch (fieldType) {
-        // FIXME: wrong form.getInputProps, bad fieldKey when indexes involved
-        case 'string':
-          return (
-            <TextInput
-              {...{
-                ...form.getInputProps(_field),
-                ...props,
-              }}
-            />
-          )
-        case 'boolean':
-          return (
-            <Checkbox
-              {...{
-                ...form.getInputProps(_field),
-                ...props,
-              }}
-            />
-          )
-        case 'date-time':
-          return <DateInput placeholder="Date input" {...{ ...form.getInputProps(_field), ...props }} />
-        case 'integer':
-          return (
-            <NumberInput
-              {...{
-                ...form.getInputProps(_field),
-                ...props,
-              }}
-            />
-          )
-        default:
-          return null
-      }
-    }
-
     return entries(fields).map(([key, field]) => {
       if (prefix !== '' && !key.startsWith(prefix)) {
         return
@@ -159,26 +134,19 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
               </ActionIcon>
-              {generateComponent(field.type, componentProps, fieldKey, index)}
+              {generateComponent({ form, fieldType: field.type, props: componentProps, field: fieldKey })}
             </div>
             {/* existing array fields, if any */}
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
               return (
                 <div key={index} style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
                   {JSON.stringify({ [fieldKey]: index })}
-                  {generateComponent(
-                    field.type,
-                    {
-                      ...componentProps,
-                      value: form.values[fieldKey]?.[index] || '',
-                      onChange:
-                        field.type === 'integer' || field.type === 'date-time'
-                          ? (val: any) => handleFieldChange(val, fieldKey, index)
-                          : (event: any) => handleFieldChange(event.currentTarget.value, fieldKey, index),
-                    },
-                    fieldKey,
-                    index,
-                  )}
+                  {generateComponent({
+                    form,
+                    fieldType: field.type,
+                    field: fieldKey,
+                    props: componentProps,
+                  })}
                   <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'green'}>
                     <IconMinus size="1rem" />
                   </ActionIcon>
@@ -206,10 +174,13 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         )
       }
 
+      const paths = key.split('.')
+      const parent = paths.slice(0, paths.length - 1).join('.')
+
       return (
         <Group key={fieldKey} align="center">
           {field.type !== 'object' ? (
-            <>{generateComponent(field.type, componentProps, fieldKey)}</>
+            <>{generateComponent({ form, fieldType: field.type, props: componentProps, field: fieldKey })}</>
           ) : (
             <>
               <Title size={18}>{key}</Title>

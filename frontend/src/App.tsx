@@ -130,6 +130,13 @@ export default function App() {
     validateInputOnChange: true,
     validate: {
       // TODO: should be able to validate whole nested objects at once.
+      // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
+      // will need adhoc validateForm func that validates fields where (isArray && type !== object)
+      // or better yet, convert arrays of nonobjects to arrays of objects, indexed by whatever default key,
+      // and we convert them back with an adapter before making the request.
+      // we would need to exclude these fields from validate, and call client-validator's validateField with the
+      // original object and setError appropiately in the field using index + default key instead of just by index.
+
       base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
       // members: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv), // TODO: foreach validate
     },
