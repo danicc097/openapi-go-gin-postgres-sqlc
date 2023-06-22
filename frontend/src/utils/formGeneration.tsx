@@ -58,6 +58,9 @@ function generateComponent<T>({ form, fieldType, props, formField }: GenerateCom
     ...form.getInputProps(formField),
     ...props,
   }
+
+  console.log(formField)
+
   switch (fieldType) {
     case 'string':
       return <TextInput {..._props} />
@@ -100,13 +103,22 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     }))
   }
 
-  const removeNestedField = (field: string, index: number) => {
-    console.log({ removeNestedField: `${field}[${index}]` })
-
-    form.removeListItem(field, index)
+  function renderRemoveNestedFieldButton(formField: string, index: number) {
+    return (
+      <ActionIcon
+        onClick={(e) => {
+          console.log({ removeNestedField: `${formField}[${index}]` })
+          form.removeListItem(formField, index)
+        }}
+        variant="filled"
+        color={'red'}
+      >
+        <IconMinus size="1rem" />
+      </ActionIcon>
+    )
   }
 
-  const generateFormFields = ({ parentPathPrefix = '', index }: { parentPathPrefix?: string; index?: number }) => {
+  const generateFormInputs = ({ parentPathPrefix = '', index }: { parentPathPrefix?: string; index?: number }) => {
     return entries(schemaFields).map(([key, field]) => {
       if (parentPathPrefix !== '' && !key.startsWith(parentPathPrefix)) {
         return
@@ -115,8 +127,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       const parentKey = parentPathPrefix.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
 
       const fieldKey = String(key)
-      const formKey = constructFormKey(fieldKey, index)
-      // console.log({ formValue: _.get(form.values, formKey), formKey })
+      const formField = constructFormKey(fieldKey, index)
+      // console.log({ formValue: _.get(form.values, formField), formField })
 
       const componentProps = {
         css: css`
@@ -130,7 +142,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // nested array objects generation
         return (
           <Card key={fieldKey} mt={24}>
-            {JSON.stringify(_.get(form.values, formKey))}
+            {JSON.stringify(_.get(form.values, formField))}
             <div>
               {renderTitle(key)}
               <ActionIcon onClick={() => addNestedField(fieldKey, null)} variant="filled" color={'green'}>
@@ -138,19 +150,18 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               </ActionIcon>
             </div>
             {/* existing array fields, if any */}
-            {_.get(form.values, formKey)?.map((_nestedValue: any, index: number) => {
+            {console.log({ nestedArray: formField })}
+            {_.get(form.values, formField)?.map((_nestedValue: any, index: number) => {
               return (
                 <div key={index}>
                   {JSON.stringify({ [fieldKey]: index })}
                   {generateComponent({
                     form,
                     fieldType: field.type,
-                    formField: formKey,
+                    formField: formField,
                     props: componentProps,
                   })}
-                  <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'red'}>
-                    <IconMinus size="1rem" />
-                  </ActionIcon>
+                  {renderRemoveNestedFieldButton(formField, index)}
                 </div>
               )
             })}
@@ -159,12 +170,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
 
       if (field.isArray && field.type === 'object') {
-        // FIXME: should not generate nested, same as with members.*
-        // array of primitives
-        console.log({ parentKey, parentPathPrefix })
-        if (schemaFields[parentKey]?.isArray) {
-          return null
-        }
+        console.log({ nestedArrayOfObjects: formField })
+
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
@@ -172,14 +179,12 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
             <ActionIcon onClick={() => addNestedField(fieldKey, {})} variant="filled" color={'green'}>
               <IconPlus size="1rem" />
             </ActionIcon>
-            {_.get(form.values, formKey)?.map((_nestedValue: any, index: number) => {
+            {_.get(form.values, formField)?.map((_nestedValue: any, index: number) => {
               return (
                 <div key={index} style={{ marginBottom: theme.spacing.sm }}>
                   <p>{`${fieldKey}[${index}]`}</p>
-                  <Group>{generateFormFields({ parentPathPrefix: fieldKey, index })}</Group>
-                  <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'red'}>
-                    <IconMinus size="1rem" />
-                  </ActionIcon>
+                  <Group>{generateFormInputs({ parentPathPrefix: fieldKey, index })}</Group>
+                  {renderRemoveNestedFieldButton(formField, index)}
                 </div>
               )
             })}
@@ -192,7 +197,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       return (
         <Group key={fieldKey} align="center">
           {field.type !== 'object' ? (
-            <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formKey })}</>
+            <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formField })}</>
           ) : (
             <>{renderTitle(key)}</>
           )}
@@ -208,7 +213,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           min-width: 100%;
         `}
       >
-        {generateFormFields({})}
+        {generateFormInputs({})}
       </form>
     </PageTemplate>
   )
@@ -219,9 +224,9 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
  */
 function constructFormKey(key: string, index?: number) {
   const formPaths = key.split('.')
-  const formKey =
+  const formField =
     index !== undefined
       ? [...formPaths.slice(0, formPaths.length - 1), index, formPaths[formPaths.length - 1]].join('.')
       : String(key)
-  return formKey
+  return formField
 }

@@ -153,9 +153,10 @@ export default function App() {
       base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
       demoProject: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
       members: (v, vv, path) => {
-        console.log(`would have validated members. value: ${JSON.stringify(v)}`)
+        // console.log(`would have validated members. value: ${JSON.stringify(v)}`)
+        // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
         return true
-      }, // TODO: foreach validate
+      },
     },
   })
 
