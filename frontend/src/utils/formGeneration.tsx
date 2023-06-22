@@ -12,12 +12,15 @@ import {
   type InputProps,
   ActionIcon,
   Card,
+  Container,
+  Box,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
 import type { UseForm } from '@mantine/form/lib/types'
 import { useMantineTheme } from '@mantine/styles'
 import { IconMinus, IconPlus } from '@tabler/icons'
+import _ from 'lodash'
 import { useState, type ComponentProps } from 'react'
 import type { FieldPath } from 'react-hook-form'
 import PageTemplate from 'src/components/PageTemplate'
@@ -96,21 +99,20 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     form.removeListItem(field, index)
   }
 
-  const generateFormFields = (
-    fields: DynamicFormProps<T, U>['schemaFields'],
-    { prefix = '', index }: { prefix?: string; index?: number },
-  ) => {
-    return entries(fields).map(([key, field]) => {
-      if (prefix !== '' && !key.startsWith(prefix)) {
+  const generateFormFields = ({ parentPathPrefix = '', index }: { parentPathPrefix?: string; index?: number }) => {
+    return entries(schemaFields).map(([key, field]) => {
+      if (parentPathPrefix !== '' && !key.startsWith(parentPathPrefix)) {
         return
       }
+      const parentKey = parentPathPrefix.replace(/\.*$/, '')
 
-      let fieldKey = prefix !== '' ? `${prefix}.${key}` : key
+      let indexSuffix = ''
       if (index !== undefined) {
-        fieldKey = `${fieldKey}.${index}`
+        indexSuffix = `.${index}`
       }
-      const value = form.values[fieldKey] || options[fieldKey]?.defaultValue || ''
-      console.log({ value, fieldKey })
+      const fieldKey = String(key)
+      const formKey = String(key) + indexSuffix // TODO: pass to everything that uses `form` instead
+      console.log({ formValue: _.get(form.values, formKey), formKey })
 
       const componentProps = {
         css: css`
@@ -128,13 +130,13 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // form.getInputProps('base.<nested>', {type: "checkbox | input"})
 
         return (
-          <Group key={fieldKey}>
+          <Card key={fieldKey} mt={24}>
             {JSON.stringify(form.values[fieldKey])}
-            <div style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
+            <div>
               <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
               </ActionIcon>
-              {generateComponent({ form, fieldType: field.type, props: componentProps, field: fieldKey })}
+              <Title size={18}>{key}</Title>
             </div>
             {/* existing array fields, if any */}
             {form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
@@ -153,12 +155,12 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                 </div>
               )
             })}
-          </Group>
+          </Card>
         )
       }
 
       if (field.isArray && field.type === 'object') {
-        if (fields[prefix]?.isArray) {
+        if (schemaFields[parentKey]?.isArray) {
           return null
         }
         // array of objects
@@ -201,11 +203,11 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                 <p>{`${fieldKey}[${index}]`}</p>
                 {/**
                  * TODO: handlers should be shared for nested paths, simply have index opt and if not null construct index access on last path
-                 * generateFormFields needs index as well (convert to options {prefix string, index: number}), to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/
+                 * generateFormFields needs index as well (convert to options {parentPathPrefix string, index: number}), to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/
                  * we can use form.removeListItem for handleRemove
                  * */}
-                {JSON.stringify({ [fieldKey]: fields[fieldKey] })}
-                <Group>{generateFormFields(fields, { prefix: fieldKey, index })}</Group>
+                {JSON.stringify({ [fieldKey]: schemaFields[fieldKey] })}
+                <Group>{generateFormFields({ parentPathPrefix: fieldKey, index })}</Group>
                 <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'red'}>
                   <IconMinus size="1rem" />
                 </ActionIcon>
@@ -227,7 +229,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           min-width: 100%;
         `}
       >
-        {generateFormFields(schemaFields, {})}
+        {generateFormFields({})}
       </form>
     </PageTemplate>
   )
