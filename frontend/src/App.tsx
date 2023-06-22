@@ -125,6 +125,7 @@ export default function App() {
       base: {
         closed: dayjs().toDate(),
       },
+      // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
       demoProject: {},
     } as RestDemoWorkItemCreateRequest,
     validateInputOnChange: true,
@@ -144,6 +145,11 @@ export default function App() {
 
   useEffect(() => {
     console.log(demoWorkItemCreateForm.values)
+    try {
+      RestDemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
+    } catch (error) {
+      console.error(JSON.stringify(error.validationErrors.errors))
+    }
   }, [demoWorkItemCreateForm])
 
   return (
