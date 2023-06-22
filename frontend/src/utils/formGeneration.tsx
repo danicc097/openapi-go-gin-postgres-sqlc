@@ -105,14 +105,12 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const addNestedField = (field: T) => {
     const initialValue = initialValueByField(field)
     console.log({ addNestedField: field, initialValue })
-    form.setValues((currentValues) => ({
-      ...currentValues,
-      [field]: [
-        ...(currentValues[field] || []), // can't use insertListItem directly if not initialized so just do it at once
-        // TODO: maybe will need initialValue based on type from schema
-        initialValue, //  mantine form  does not support array of nonobjects validation
-      ],
-    }))
+
+    const newValues = _.cloneDeep(form.values)
+
+    _.set(newValues, field, [...(_.get(newValues, field, []) || []), initialValue])
+
+    form.setValues((currentValues) => newValues)
   }
 
   function renderRemoveNestedFieldButton(formField: string, index: number) {
@@ -169,7 +167,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               console.log({ _nestedValue, _index })
               return (
                 <div key={_index}>
-                  {JSON.stringify({ [fieldKey]: _index })}
                   {generateComponent({
                     form,
                     fieldType: field.type,
