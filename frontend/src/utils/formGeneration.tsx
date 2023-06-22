@@ -92,13 +92,34 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       switch (fieldType) {
         // FIXME: wrong form.getInputProps, bad fieldKey when indexes involved
         case 'string':
-          return <TextInput {...{ ...props, ...form.getInputProps(_field) }} />
+          return (
+            <TextInput
+              {...{
+                ...form.getInputProps(_field),
+                ...props,
+              }}
+            />
+          )
         case 'boolean':
-          return <Checkbox {...{ ...props, ...form.getInputProps(_field) }} />
+          return (
+            <Checkbox
+              {...{
+                ...form.getInputProps(_field),
+                ...props,
+              }}
+            />
+          )
         case 'date-time':
-          return <DateInput placeholder="Date input" {...{ ...props, ...form.getInputProps(_field) }} />
+          return <DateInput placeholder="Date input" {...{ ...form.getInputProps(_field), ...props }} />
         case 'integer':
-          return <NumberInput {...{ ...props, ...form.getInputProps(_field) }} />
+          return (
+            <NumberInput
+              {...{
+                ...form.getInputProps(_field),
+                ...props,
+              }}
+            />
+          )
         default:
           return null
       }
@@ -122,12 +143,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         `,
         label: key,
         required: field.required,
-        value: value,
-        onChange:
-          field.type === 'integer' || field.type === 'date-time'
-            ? // TODO: needs index
-              (val: any) => handleFieldChange(val, fieldKey, index)
-            : (event: any) => handleFieldChange(event.currentTarget.value, fieldKey, index),
       }
 
       if (field.isArray && field.type !== 'object') {
