@@ -61,6 +61,8 @@ function generateComponent<T>({ form, fieldType, props, formField }: GenerateCom
 
   console.log(formField)
 
+  // TODO: helpText is `description` prop in mantine
+
   switch (fieldType) {
     case 'string':
       return <TextInput {..._props} />
@@ -121,10 +123,13 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
   const generateFormInputs = ({ parentPathPrefix = '', index }: { parentPathPrefix?: string; index?: number }) => {
     return entries(schemaFields).map(([key, field]) => {
       if (parentPathPrefix !== '' && !key.startsWith(parentPathPrefix)) {
-        return
+        return null
       }
+
       const pp = key.split('.')
       const parentKey = parentPathPrefix.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
+
+      if (schemaFields[parentKey]?.isArray && parentPathPrefix === '') return null
 
       const fieldKey = String(key)
       const formField = constructFormKey(fieldKey, index)
@@ -139,7 +144,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
 
       if (field.isArray && field.type !== 'object') {
-        // nested array objects generation
+        // nested array of nonbjects generation
         return (
           <Card key={fieldKey} mt={24}>
             {JSON.stringify(_.get(form.values, formField))}
@@ -150,7 +155,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               </ActionIcon>
             </div>
             {/* existing array fields, if any */}
-            {console.log({ nestedArray: formField })}
+            {console.log({ nestedArray: formField, formValue: _.get(form.values, formField) })}
             {_.get(form.values, formField)?.map((_nestedValue: any, index: number) => {
               return (
                 <div key={index}>
@@ -172,14 +177,22 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       if (field.isArray && field.type === 'object') {
         console.log({ nestedArrayOfObjects: formField })
 
+        /**
+         *
+         * FIXME: is not using index to access form (cause of toFixed not a function)
+         */
+
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
             {renderTitle(key)}
-            <ActionIcon onClick={() => addNestedField(fieldKey, {})} variant="filled" color={'green'}>
-              <IconPlus size="1rem" />
-            </ActionIcon>
+            {parentPathPrefix === '' && (
+              <ActionIcon onClick={() => addNestedField(fieldKey, {})} variant="filled" color={'green'}>
+                <IconPlus size="1rem" />
+              </ActionIcon>
+            )}
             {_.get(form.values, formField)?.map((_nestedValue: any, index: number) => {
+              console.log({ nestedArrayOfObjectsIndex: index })
               return (
                 <div key={index} style={{ marginBottom: theme.spacing.sm }}>
                   <p>{`${fieldKey}[${index}]`}</p>
@@ -191,8 +204,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           </Card>
         )
       }
-
-      if (schemaFields[parentKey]?.isArray && parentPathPrefix === '') return null
 
       return (
         <Group key={fieldKey} align="center">
