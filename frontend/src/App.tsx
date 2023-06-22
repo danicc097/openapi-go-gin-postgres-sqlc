@@ -28,6 +28,7 @@ import { useForm } from '@mantine/form'
 import DemoWorkItemForm from 'src/components/forms/DemoProjectWorkItemForm'
 import dayjs from 'dayjs'
 import { ErrorBoundary } from 'react-error-boundary'
+import { Prism } from '@mantine/prism'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -135,7 +136,7 @@ export default function App() {
   })
 
   useEffect(() => {
-    console.log(demoWorkItemCreateForm)
+    console.log(demoWorkItemCreateForm.values)
   }, [demoWorkItemCreateForm])
 
   return (
@@ -169,6 +170,7 @@ export default function App() {
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
+                          <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
                           <DynamicForm<RestDemoWorkItemCreateRequestFormField, RestDemoWorkItemCreateRequest>
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
@@ -195,7 +197,7 @@ export default function App() {
                             }}
                             options={{
                               defaultValue: {
-                                'demoProject.line': '534543523', // should fail due to TypeOf
+                                'demoProject.line': '534543523',
                                 members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
                               },
                             }}
