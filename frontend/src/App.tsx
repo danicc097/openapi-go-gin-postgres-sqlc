@@ -138,6 +138,7 @@ export default function App() {
         ref: '312321',
         workItemID: 1,
       },
+      // members: [{ role: 'preparer', userID: 'fesfse' }],
     } as RestDemoWorkItemCreateRequest,
     validateInputOnChange: true,
     validate: {
@@ -152,7 +153,7 @@ export default function App() {
       base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
       demoProject: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
       members: (v, vv, path) => {
-        console.log(`would have validated ${path}. value: ${v}`)
+        console.log(`would have validated members. value: ${JSON.stringify(v)}`)
         return true
       }, // TODO: foreach validate
     },

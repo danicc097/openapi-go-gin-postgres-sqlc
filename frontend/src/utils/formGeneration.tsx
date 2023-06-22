@@ -105,7 +105,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
       const fieldKey = String(key)
       const formKey = constructFormKey(fieldKey, index)
-      console.log({ formValue: _.get(form.values, formKey), formKey })
+      // console.log({ formValue: _.get(form.values, formKey), formKey })
 
       const componentProps = {
         css: css`
@@ -116,15 +116,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
 
       if (field.isArray && field.type !== 'object') {
-        // FIXME: should not generate, same as with members.*
-        // array of primitives
-
-        // TODO: form.getInputProps instead.
-        // form.getInputProps('base.<nested>', {type: "checkbox | input"})
-
+        // nested array objects generation
         return (
           <Card key={fieldKey} mt={24}>
-            {JSON.stringify(form.values[fieldKey])}
+            {JSON.stringify(_.get(form.values, formKey))}
             <div>
               <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
@@ -132,9 +127,9 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
               <Title size={18}>{key}</Title>
             </div>
             {/* existing array fields, if any */}
-            {form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
+            {_.get(form.values, formKey)?.map((_nestedValue: any, index: number) => {
               return (
-                <div key={index} style={{ display: 'flex', marginBottom: theme.spacing.xs }}>
+                <div key={index}>
                   {JSON.stringify({ [fieldKey]: index })}
                   {generateComponent({
                     form,
@@ -142,7 +137,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                     formField: formKey,
                     props: componentProps,
                   })}
-                  <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'green'}>
+                  <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'red'}>
                     <IconMinus size="1rem" />
                   </ActionIcon>
                 </div>
@@ -153,6 +148,9 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
 
       if (field.isArray && field.type === 'object') {
+        // FIXME: should not generate nested, same as with members.*
+        // array of primitives
+        console.log({ parentKey, parentPathPrefix })
         if (schemaFields[parentKey]?.isArray) {
           return null
         }
@@ -162,8 +160,17 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
             <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
               <IconPlus size="1rem" />
             </ActionIcon>
-
-            {renderNestedArrayOfObjects()}
+            {_.get(form.values, formKey)?.map((_nestedValue: any, index: number) => {
+              return (
+                <div key={index} style={{ marginBottom: theme.spacing.sm }}>
+                  <p>{`${fieldKey}[${index}]`}</p>
+                  <Group>{generateFormFields({ parentPathPrefix: fieldKey, index })}</Group>
+                  <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'red'}>
+                    <IconMinus size="1rem" />
+                  </ActionIcon>
+                </div>
+              )
+            })}
           </Card>
         )
       }
@@ -180,33 +187,6 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           )}
         </Group>
       )
-
-      function renderNestedArrayOfObjects() {
-        /* // TODO: IF LEN form.values[fieldKey] instead need to get all nested objects values with keys that start with fieldKey,
-          e.g. "members" ---> startswith "members." will return schema for those map. DO NOT MAP FROM FORM ITSELF.
-          */
-        try {
-          return form.values[fieldKey]?.map((_nestedValue: any, index: number) => {
-            return (
-              <div key={index} style={{ marginBottom: theme.spacing.sm }}>
-                <p>{`${fieldKey}[${index}]`}</p>
-                {/**
-                 * TODO: handlers should be shared for nested paths, simply have index opt and if not null construct index access on last path
-                 * generateFormFields needs index as well (convert to options {parentPathPrefix string, index: number}), to handle changes as form.values.<path>.<index>.<...> as per https://mantine.dev/form/nested/
-                 * we can use form.removeListItem for handleRemove
-                 * */}
-                <Group>{generateFormFields({ parentPathPrefix: fieldKey, index })}</Group>
-                <ActionIcon onClick={() => removeNestedField(fieldKey, index)} variant="filled" color={'red'}>
-                  <IconMinus size="1rem" />
-                </ActionIcon>
-              </div>
-            )
-          })
-        } catch (error) {
-          console.log(`renderNestedArrayOfObjects error: ${error}`)
-          return null
-        }
-      }
     })
   }
 
