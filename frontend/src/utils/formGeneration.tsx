@@ -165,18 +165,18 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
             </div>
             {/* existing array fields, if any */}
             {console.log({ nestedArray: formField, formValue: _.get(form.values, formField) })}
-            {_.get(form.values, formField)?.map((_nestedValue: any, index: number) => {
-              console.log({ _nestedValue, index })
+            {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
+              console.log({ _nestedValue, _index })
               return (
-                <div key={index}>
-                  {JSON.stringify({ [fieldKey]: index })}
+                <div key={_index}>
+                  {JSON.stringify({ [fieldKey]: _index })}
                   {generateComponent({
                     form,
                     fieldType: field.type,
-                    formField: `${formField}.${index}`,
+                    formField: `${formField}.${_index}`,
                     props: componentProps,
                   })}
-                  {renderRemoveNestedFieldButton(formField, index)}
+                  {renderRemoveNestedFieldButton(formField, _index)}
                 </div>
               )
             })}
@@ -203,13 +203,14 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                 </ActionIcon>
               </>
             )}
-            {_.get(form.values, formField)?.map((_nestedValue: any, index: number) => {
-              console.log({ nestedArrayOfObjectsIndex: index })
+            {/* FIXME: bad gen array is nested - removenested and form inputs wrong. (base.metadata vs tagIDs working fine) */}
+            {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
+              console.log({ nestedArrayOfObjectsIndex: _index })
               return (
-                <div key={index} style={{ marginBottom: theme.spacing.sm }}>
-                  <p>{`${fieldKey}[${index}]`}</p>
-                  <Group>{generateFormInputs({ parentPathPrefix: fieldKey, index })}</Group>
-                  {renderRemoveNestedFieldButton(formField, index)}
+                <div key={_index} style={{ marginBottom: theme.spacing.sm }}>
+                  <p>{`${fieldKey}[${_index}]`}</p>
+                  <Group>{generateFormInputs({ parentPathPrefix: fieldKey, index: _index })}</Group>
+                  {renderRemoveNestedFieldButton(formField, _index)}
                 </div>
               )
             })}
