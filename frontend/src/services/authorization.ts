@@ -1,5 +1,5 @@
-import roles from '@roles'
-import scopes from '@scopes'
+import ROLES from 'src/roles'
+import SCOPES from 'src/scopes'
 import type { Role, Scopes, UserResponse } from 'src/gen/model'
 
 interface IsAuthorizedParams {
@@ -10,7 +10,7 @@ interface IsAuthorizedParams {
 
 export function isAuthorized({ user, requiredRole = null, requiredScopes = null }: IsAuthorizedParams): boolean {
   if (requiredRole !== null) {
-    if (roles[user.role].rank < roles[requiredRole].rank) {
+    if (ROLES[user.role].rank < ROLES[requiredRole].rank) {
       return false
     }
   }

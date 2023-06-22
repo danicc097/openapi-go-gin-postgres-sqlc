@@ -215,9 +215,8 @@ type User__WIAU_WorkItem struct {
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// WithWorkItemFilters adds the given filters, which may be parameterized with $i.
-// Filters are joined with AND.
-// NOTE: SQL injection prone.
+// WithWorkItemFilters adds the given filters, which can be dynamically parameterized
+// with $i to prevent SQL injection.
 // Example:
 //
 //	filters := map[string][]any{

@@ -5,8 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import axios from 'axios'
-import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import type {
   UseQueryOptions,
@@ -16,43 +14,48 @@ import type {
   UseInfiniteQueryResult,
   QueryKey,
 } from '@tanstack/react-query'
-import type { HTTPValidationError } from '.././model'
+import type { HTTPError } from '.././model'
+import { customInstance } from '../../api/mutator'
+
+type AwaitedInput<T> = PromiseLike<T> | T
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never
+
+// eslint-disable-next-line
+type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
 
 /**
  * @summary Ping pongs
  */
-export const adminPing = (options?: AxiosRequestConfig): Promise<AxiosResponse<string>> => {
-  return axios.get(`/admin/ping`, options)
+export const adminPing = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
+  return customInstance<string>({ url: `/admin/ping`, method: 'get', signal }, options)
 }
 
 export const getAdminPingQueryKey = () => [`/admin/ping`] as const
 
 export const getAdminPingInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof adminPing>>,
-  TError = AxiosError<HTTPValidationError>,
+  TError = HTTPError,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData> & { queryKey: QueryKey } => {
-  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+  const { query: queryOptions, request: requestOptions } = options ?? {}
 
   const queryKey = queryOptions?.queryKey ?? getAdminPingQueryKey()
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof adminPing>>> = ({ signal }) =>
-    adminPing({ signal, ...axiosOptions })
+    adminPing(requestOptions, signal)
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions }
 }
 
 export type AdminPingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof adminPing>>>
-export type AdminPingInfiniteQueryError = AxiosError<HTTPValidationError>
+export type AdminPingInfiniteQueryError = HTTPError
 
-export const useAdminPingInfinite = <
-  TData = Awaited<ReturnType<typeof adminPing>>,
-  TError = AxiosError<HTTPValidationError>,
->(options?: {
+export const useAdminPingInfinite = <TData = Awaited<ReturnType<typeof adminPing>>, TError = HTTPError>(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getAdminPingInfiniteQueryOptions(options)
 
@@ -63,32 +66,26 @@ export const useAdminPingInfinite = <
   return query
 }
 
-export const getAdminPingQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminPing>>,
-  TError = AxiosError<HTTPValidationError>,
->(options?: {
+export const getAdminPingQueryOptions = <TData = Awaited<ReturnType<typeof adminPing>>, TError = HTTPError>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData> & { queryKey: QueryKey } => {
-  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+  const { query: queryOptions, request: requestOptions } = options ?? {}
 
   const queryKey = queryOptions?.queryKey ?? getAdminPingQueryKey()
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof adminPing>>> = ({ signal }) =>
-    adminPing({ signal, ...axiosOptions })
+    adminPing(requestOptions, signal)
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions }
 }
 
 export type AdminPingQueryResult = NonNullable<Awaited<ReturnType<typeof adminPing>>>
-export type AdminPingQueryError = AxiosError<HTTPValidationError>
+export type AdminPingQueryError = HTTPError
 
-export const useAdminPing = <
-  TData = Awaited<ReturnType<typeof adminPing>>,
-  TError = AxiosError<HTTPValidationError>,
->(options?: {
+export const useAdminPing = <TData = Awaited<ReturnType<typeof adminPing>>, TError = HTTPError>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getAdminPingQueryOptions(options)
 

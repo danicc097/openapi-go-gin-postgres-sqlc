@@ -28,7 +28,7 @@ export default ({ mode }) => {
       dynamicImport({}),
     ],
     server: {
-      port: Number(Config.FRONTEND_PORT) || 5143,
+      port: Number(Config.FRONTEND_PORT) || 3020,
       strictPort: true,
       // hmr: {
       //   protocol: 'wss',
@@ -43,6 +43,9 @@ export default ({ mode }) => {
     },
     build: {
       minify: 'terser',
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
       terserOptions: {
         compress: {
           drop_console: true,

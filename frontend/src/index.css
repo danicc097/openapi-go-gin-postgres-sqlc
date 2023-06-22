@@ -9,3 +9,7 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 }
+
+body {
+  background-color: black; /** no flashes, thank you very much. will remove at first render */
+}

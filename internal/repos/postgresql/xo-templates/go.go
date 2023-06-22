@@ -2196,9 +2196,8 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-// With%[1]sFilters adds the given filters, which may be parameterized with $i.
-// Filters are joined with AND.
-// NOTE: SQL injection prone.
+// With%[1]sFilters adds the given filters, which can be dynamically parameterized
+// with $i to prevent SQL injection.
 // Example:
 //filters := map[string][]any{
 //	"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},

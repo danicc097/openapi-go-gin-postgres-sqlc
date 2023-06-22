@@ -9,12 +9,14 @@
 export type Project = 'demo' | 'demo_two'
 export type UuidUUID = string
 export type Scope =
-  | 'test-scope'
   | 'users:read'
   | 'users:write'
   | 'scopes:write'
   | 'team-settings:write'
   | 'project-settings:write'
+  | 'work-item-tag:create'
+  | 'work-item-tag:edit'
+  | 'work-item-tag:delete'
   | 'work-item:review'
 export type Scopes = Scope[]
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
@@ -26,7 +28,6 @@ export type Location = string[]
  * should always be shown to the user
  */
 export type Message = string
-export type HttpErrorType = 'response_validation' | 'request_validation' | 'unknown'
 /**
  * Additional details for validation errors
  */
@@ -43,7 +44,6 @@ export type Topics = 'GlobalAlerts'
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-export type ModelsWorkItemRole = string
 export type DbWorkItemRole = string
 /**
  * represents a database 'notification_type'
@@ -56,6 +56,7 @@ export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work i
 export type DemoTwoKanbanSteps = 'Received'
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
+export type ModelsWorkItemRole = string
 
 export interface DbActivity {
   activityID: number
@@ -237,7 +238,6 @@ export interface HTTPValidationError {
 export interface ValidationError {
   loc: Location
   msg: Message
-  type: HttpErrorType
   detail: ErrorDetails
   ctx?: ContextualInformation
 }
@@ -249,6 +249,17 @@ export interface ErrorDetails {
   value: string
 }
 export interface ContextualInformation {}
+/**
+ * represents an error message response.
+ */
+export interface HTTPError {
+  title: string
+  detail: string
+  status: number
+  error: string
+  type: string
+  validationError?: HTTPValidationError
+}
 /**
  * represents User data to update
  */
@@ -314,27 +325,13 @@ export interface DbDemoWorkItemCreateParams {
   workItemID: number
 }
 export interface ServicesMember {
-  role: ModelsWorkItemRole
+  role: WorkItemRole
   userID: UuidUUID
 }
 export interface RestWorkItemCommentCreateRequest {
   message: string
   userID: UuidUUID
   workItemID: number
-}
-export interface DbKanbanStepCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-  stepOrder?: number | null
-  timeTrackable?: boolean
-}
-export interface DbWorkItemTypeCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
 }
 export interface DbWorkItem_AssignedUser {
   role: WorkItemRole

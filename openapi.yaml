@@ -82,12 +82,12 @@ paths:
               schema:
                 type: string
                 example: pong
-        "422":
-          description: Validation Error
+        4XX:
+          description: Error response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/HTTPError'
   /openapi.yaml:
     get:
       summary: Returns this very OpenAPI spec.
@@ -115,16 +115,14 @@ paths:
               schema:
                 type: string
                 example: pong
-        "422":
-          description: Validation Error
+        4XX:
+          description: Error response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/HTTPError'
       tags:
         - admin
-      x-required-scopes:
-        - test-scope
       x-required-role: admin
   /user/me:
     get:
@@ -179,7 +177,6 @@ paths:
       tags:
         - user
       x-required-scopes:
-        - test-scope
         - users:write
       x-required-role: admin
     patch:
@@ -1029,6 +1026,29 @@ components:
           type: array
           items:
             type: string
+    HTTPError:
+      description: represents an error message response.
+      type: object
+      properties:
+        title:
+          type: string
+        detail:
+          type: string
+        status:
+          type: integer
+        error:
+          type: string
+        # see internal/errors.go ErrorCode
+        type:
+          type: string
+        validationError:
+          $ref: '#/components/schemas/HTTPValidationError'
+      required:
+        - title
+        - detail
+        - status
+        - error
+        - type
     Topics:
       description: string identifiers for SSE event listeners.
       type: string
@@ -1046,12 +1066,14 @@ components:
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
       enum:
-        - test-scope
         - users:read
         - users:write
         - scopes:write
         - team-settings:write
         - project-settings:write
+        - work-item-tag:create
+        - work-item-tag:edit
+        - work-item-tag:delete
         - work-item:review
       x-generated: '-'
     Scopes: # workaround for openapi-go gen
@@ -1107,7 +1129,7 @@ components:
       example:
         role: manager
         scopes:
-          - test-scope
+          - users:read
       properties:
         role:
           $ref: '#/components/schemas/Role'
@@ -1134,8 +1156,6 @@ components:
           title: Message
           description: should always be shown to the user
           type: string
-        type:
-          $ref: '#/components/schemas/HttpErrorType'
         detail:
           description: verbose details of the error
           title: Error details
@@ -1151,12 +1171,6 @@ components:
         ctx:
           title: Contextual information
           type: object
-    HttpErrorType:
-      type: string
-      enum:
-        - response_validation
-        - request_validation
-        - unknown
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string
     PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
@@ -1289,22 +1303,6 @@ components:
         - description
         - isProductive
       type: object
-    DbKanbanStepCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        stepOrder:
-          nullable: true
-          type: integer
-        timeTrackable:
-          type: boolean
-      type: object
     DbTeamCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
@@ -1333,17 +1331,6 @@ components:
         - name
         - description
         - color
-      type: object
-    DbWorkItemTypeCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
       type: object
     DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
       type: string
@@ -1469,7 +1456,7 @@ components:
     ServicesMember: # Generated from internal structs. DO NOT EDIT.
       properties:
         role:
-          $ref: '#/components/schemas/ModelsWorkItemRole'
+          $ref: '#/components/schemas/WorkItemRole'
         userID:
           $ref: '#/components/schemas/UuidUUID'
       required:

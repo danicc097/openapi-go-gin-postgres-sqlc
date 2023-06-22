@@ -1,8 +1,8 @@
 import type { SetStateAction } from 'react'
-import roles from '@roles'
+import ROLES from 'src/roles'
 
 export function validateRole(role: string): boolean {
-  return Object.keys(roles).includes(role)
+  return Object.keys(ROLES).includes(role)
 }
 
 export function _getFormErrors(

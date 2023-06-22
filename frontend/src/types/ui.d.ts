@@ -5,3 +5,5 @@ type FormErrors<Form> = Partial<
     form: string
   }
 >
+
+type AppError = ValidationErrors | ApiError | AxiosError

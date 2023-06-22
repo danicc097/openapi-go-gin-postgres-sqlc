@@ -13,20 +13,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ErrorResponse represents a response containing an error message.
-type ErrorResponse struct {
-	Title           string                      `json:"title"`
-	Detail          string                      `json:"detail"`
-	Status          int                         `json:"status"`
-	Error           string                      `json:"error"`
-	Type            string                      `json:"type"`
-	ValidationError *models.HTTPValidationError `json:"validationError,omitempty"`
-}
-
 // renderErrorResponse writes an error response from title and error.
 // Inspired by https://www.rfc-editor.org/rfc/rfc7807.
 func renderErrorResponse(c *gin.Context, title string, err error) {
-	resp := ErrorResponse{
+	resp := models.HTTPError{
 		Title: title, Error: err.Error(),
 		Type:   internal.ErrorCodeUnknown.String(),
 		Status: http.StatusInternalServerError,
@@ -76,10 +66,12 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		case internal.ErrorCodeRequestValidation:
 			resp.Status = http.StatusBadRequest
 			resp.Detail = "OpenAPI request validation failed"
+			resp.Error = "" // will use validationError
 			resp.ValidationError = extractValidationError(err, "request")
 		case internal.ErrorCodeResponseValidation:
 			resp.Status = http.StatusInternalServerError
 			resp.Detail = "OpenAPI response validation failed"
+			resp.Error = "" // will use validationError
 			resp.ValidationError = extractValidationError(err, "response")
 		case internal.ErrorCodeAlreadyExists:
 			resp.Status = http.StatusConflict
@@ -88,7 +80,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		case internal.ErrorCodeUnauthenticated:
 			resp.Status = http.StatusUnauthorized
 		case internal.ErrorCodePrivate:
-			resp = ErrorResponse{Title: "internal error", Detail: "internal error"}
+			resp = models.HTTPError{Title: "internal error", Detail: "internal error"}
 
 			fallthrough
 		case internal.ErrorCodeUnknown:
@@ -166,13 +158,6 @@ func extractValidationError(err error, typ string) *models.HTTPValidationError {
 			continue
 		} else {
 			origErrs = append(origErrs, origErr)
-		}
-
-		switch typ {
-		case "request":
-			vErr.Type = models.HttpErrorTypeRequestValidation
-		case "response":
-			vErr.Type = models.HttpErrorTypeResponseValidation
 		}
 
 		vErrs = append(vErrs, vErr)

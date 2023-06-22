@@ -1,5 +1,6 @@
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
-import { ZoneContextManager } from '@opentelemetry/context-zone-peer-dep'
+import { ZoneContextManager } from '@opentelemetry/context-zone'
+// import { ZoneContextManager } from '@opentelemetry/context-zone-peer-dep'
 import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch'
 import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
@@ -23,9 +24,13 @@ export enum AttributeKeys {
 }
 
 export function newFrontendSpan(name: string) {
-  const span = tracer.startSpan(name)
-  span.setAttribute(AttributeKeys.SessionID, sessionID)
-  return span
+  try {
+    const span = tracer.startSpan(name)
+    span.setAttribute(AttributeKeys.SessionID, sessionID)
+    return span
+  } catch (error) {
+    console.log(`could not send span: ${error}`)
+  }
 }
 
 type TraceProviderProps = {

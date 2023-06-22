@@ -436,9 +436,8 @@ func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
 	_ = json.Unmarshal(s, &schema)
 
 	ve := &models.ValidationError{
-		Loc:  err.JSONPointer(),
-		Msg:  err.Reason,
-		Type: models.HttpErrorTypeUnknown, // no way to distinguish here yet
+		Loc: err.JSONPointer(),
+		Msg: err.Reason,
 		Detail: struct {
 			Schema map[string]interface{} "json:\"schema\""
 			Value  string                 "json:\"value\""

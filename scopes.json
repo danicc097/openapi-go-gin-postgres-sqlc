@@ -1,7 +1,4 @@
 {
-  "test-scope": {
-    "description": "A test scope."
-  },
   "users:read": {
     "description": "Can read other users data."
   },
@@ -16,6 +13,15 @@
   },
   "project-settings:write": {
     "description": "Can change project settings for all underlying teams."
+  },
+  "work-item-tag:create": {
+    "description": "Can create work item tags."
+  },
+  "work-item-tag:edit": {
+    "description": "Can update work item tags."
+  },
+  "work-item-tag:delete": {
+    "description": "Can delete work item tags."
   },
   "work-item:review": {
     "description": "Can be part of a work item with reviewer role."

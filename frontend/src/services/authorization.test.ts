@@ -1,5 +1,5 @@
-import roles from '@roles'
-import scopes from '@scopes'
+import ROLES from 'src/roles'
+import SCOPES from 'src/scopes'
 import type { UserResponse } from 'src/gen/model'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import { isAuthorized } from 'src/services/authorization'

@@ -1,0 +1,5034 @@
+{
+  "type": "object",
+  "title": "Schema",
+  "definitions": {
+    "DbActivity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbActivity",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbKanbanStep": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "stepOrder": {
+          "type": "integer"
+        },
+        "timeTrackable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kanbanStepID",
+        "projectID",
+        "stepOrder",
+        "name",
+        "description",
+        "color",
+        "timeTrackable"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbKanbanStep",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProject": {
+      "properties": {
+        "boardConfig": {
+          "properties": {
+            "fields": {
+              "items": {
+                "properties": {
+                  "isEditable": {
+                    "type": "boolean"
+                  },
+                  "isVisible": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "showCollapsed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "isEditable",
+                  "showCollapsed",
+                  "isVisible",
+                  "path",
+                  "name"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "type": "array"
+            },
+            "header": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "header",
+            "fields"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "enum": [
+            "demo",
+            "demo_two"
+          ],
+          "type": "string",
+          "x-generated": "-",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "boardConfig",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbProject",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTeam": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbTeam",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTag": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItemTag",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemType": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItemType",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoWorkItem": {
+      "properties": {
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "ref": {
+          "pattern": "^[0-9]{8}$",
+          "type": "string"
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbDemoWorkItem",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserAPIKey": {
+      "properties": {
+        "apiKey": {
+          "type": "string"
+        },
+        "expiresOn": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "apiKey",
+        "expiresOn",
+        "userID"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbUserAPIKey",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUser": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "users:read",
+              "users:write",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review"
+            ],
+            "x-generated": "-",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "scopes",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbUser",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTimeEntry": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "timeEntryID",
+        "workItemID",
+        "activityID",
+        "teamID",
+        "userID",
+        "comment",
+        "start",
+        "durationMinutes"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbTimeEntry",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemComment": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItemComment",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "properties": {
+              "isEditable": {
+                "type": "boolean"
+              },
+              "isVisible": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "showCollapsed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isEditable",
+              "showCollapsed",
+              "isVisible",
+              "path",
+              "name"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": "array"
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "header",
+        "fields"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "isEditable",
+        "showCollapsed",
+        "isVisible",
+        "path",
+        "name"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestDemoWorkItemsResponse": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "demoWorkItem": {
+          "properties": {
+            "lastMessageAt": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "line": {
+              "type": "string"
+            },
+            "ref": {
+              "pattern": "^[0-9]{8}$",
+              "type": "string"
+            },
+            "reopened": {
+              "type": "boolean"
+            },
+            "workItemID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemID",
+            "ref",
+            "line",
+            "lastMessageAt",
+            "reopened"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbDemoWorkItem",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "deletedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": "string"
+              },
+              "firstName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fullName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hasGlobalNotifications": {
+                "type": "boolean"
+              },
+              "hasPersonalNotifications": {
+                "type": "boolean"
+              },
+              "lastName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "users:read",
+                    "users:write",
+                    "scopes:write",
+                    "team-settings:write",
+                    "project-settings:write",
+                    "work-item-tag:create",
+                    "work-item-tag:edit",
+                    "work-item-tag:delete",
+                    "work-item:review"
+                  ],
+                  "x-generated": "-",
+                  "$schema": "http://json-schema.org/draft-04/schema#"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "userID": {
+                "type": "string",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "username": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "userID",
+              "username",
+              "email",
+              "firstName",
+              "lastName",
+              "fullName",
+              "scopes",
+              "hasPersonalNotifications",
+              "hasGlobalNotifications",
+              "createdAt",
+              "deletedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbUser",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "properties": {
+              "activityID": {
+                "type": "integer"
+              },
+              "comment": {
+                "type": "string"
+              },
+              "durationMinutes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "start": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "teamID": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "timeEntryID": {
+                "type": "integer"
+              },
+              "userID": {
+                "type": "string",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "workItemID": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "timeEntryID",
+              "workItemID",
+              "activityID",
+              "teamID",
+              "userID",
+              "comment",
+              "start",
+              "durationMinutes"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbTimeEntry",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemComments": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userID": {
+                "type": "string",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "workItemCommentID": {
+                "type": "integer"
+              },
+              "workItemID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemCommentID",
+              "workItemID",
+              "userID",
+              "message",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemComment",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "workItemTagID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemTagID",
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemTag",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "projectID": {
+              "type": "integer"
+            },
+            "workItemTypeID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemTypeID",
+            "projectID",
+            "name",
+            "description",
+            "color"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbWorkItemType",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "deletedAt",
+        "demoWorkItem"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoWorkItemsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "InitializeProjectRequest": {
+      "properties": {
+        "activities": {
+          "items": {
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "isProductive": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description",
+              "isProductive"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teams": {
+          "items": {
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTags": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestProjectBoardCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestProjectBoardResponse": {
+      "properties": {
+        "activities": {
+          "items": {
+            "properties": {
+              "activityID": {
+                "type": "integer"
+              },
+              "description": {
+                "type": "string"
+              },
+              "isProductive": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "activityID",
+              "projectID",
+              "name",
+              "description",
+              "isProductive"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbActivity",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "boardConfig": {
+          "properties": {
+            "fields": {
+              "items": {
+                "properties": {
+                  "isEditable": {
+                    "type": "boolean"
+                  },
+                  "isVisible": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "showCollapsed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "isEditable",
+                  "showCollapsed",
+                  "isVisible",
+                  "path",
+                  "name"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "type": "array"
+            },
+            "header": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "header",
+            "fields"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanSteps": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "kanbanStepID": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "stepOrder": {
+                "type": "integer"
+              },
+              "timeTrackable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kanbanStepID",
+              "projectID",
+              "stepOrder",
+              "name",
+              "description",
+              "color",
+              "timeTrackable"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbKanbanStep",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "name": {
+          "enum": [
+            "demo",
+            "demo_two"
+          ],
+          "type": "string",
+          "x-generated": "-",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teams": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "teamID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "teamID",
+              "projectID",
+              "name",
+              "description",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbTeam",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemTags": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "workItemTagID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemTagID",
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemTag",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTypes": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "workItemTypeID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemTypeID",
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemType",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "boardConfig",
+        "createdAt",
+        "updatedAt",
+        "activities",
+        "kanbanSteps",
+        "teams",
+        "workItemTags",
+        "workItemTypes"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestProjectBoardResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UserResponse": {
+      "properties": {
+        "apiKey": {
+          "properties": {
+            "apiKey": {
+              "type": "string"
+            },
+            "expiresOn": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "userID": {
+              "type": "string",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            }
+          },
+          "required": [
+            "apiKey",
+            "expiresOn",
+            "userID"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbUserAPIKey",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "projects": {
+          "items": {
+            "properties": {
+              "boardConfig": {
+                "properties": {
+                  "fields": {
+                    "items": {
+                      "properties": {
+                        "isEditable": {
+                          "type": "boolean"
+                        },
+                        "isVisible": {
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "showCollapsed": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "isEditable",
+                        "showCollapsed",
+                        "isVisible",
+                        "path",
+                        "name"
+                      ],
+                      "type": "object",
+                      "$schema": "http://json-schema.org/draft-04/schema#"
+                    },
+                    "type": "array"
+                  },
+                  "header": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "header",
+                  "fields"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "enum": [
+                  "demo",
+                  "demo_two"
+                ],
+                "type": "string",
+                "x-generated": "-",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description",
+              "boardConfig",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbProject",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-generated": "-",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "users:read",
+              "users:write",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review"
+            ],
+            "x-generated": "-",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "teams": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "teamID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "teamID",
+              "projectID",
+              "name",
+              "description",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbTeam",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "scopes",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt",
+        "role"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestUserResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "HTTPValidationError": {
+      "title": "HTTPValidationError",
+      "type": "object",
+      "required": [
+        "messages"
+      ],
+      "properties": {
+        "detail": {
+          "title": "Detail",
+          "description": "Additional details for validation errors",
+          "type": "array",
+          "items": {
+            "title": "ValidationError",
+            "required": [
+              "loc",
+              "msg",
+              "detail"
+            ],
+            "type": "object",
+            "properties": {
+              "loc": {
+                "title": "Location",
+                "description": "location in body path, if any",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "msg": {
+                "title": "Message",
+                "description": "should always be shown to the user",
+                "type": "string"
+              },
+              "detail": {
+                "description": "verbose details of the error",
+                "title": "Error details",
+                "type": "object",
+                "required": [
+                  "schema",
+                  "value"
+                ],
+                "properties": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "ctx": {
+                "title": "Contextual information",
+                "type": "object"
+              }
+            },
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          }
+        },
+        "messages": {
+          "title": "Messages",
+          "description": "Descriptive error messages to show in a callout",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "HTTPError": {
+      "description": "represents an error message response.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "validationError": {
+          "title": "HTTPValidationError",
+          "type": "object",
+          "required": [
+            "messages"
+          ],
+          "properties": {
+            "detail": {
+              "title": "Detail",
+              "description": "Additional details for validation errors",
+              "type": "array",
+              "items": {
+                "title": "ValidationError",
+                "required": [
+                  "loc",
+                  "msg",
+                  "detail"
+                ],
+                "type": "object",
+                "properties": {
+                  "loc": {
+                    "title": "Location",
+                    "description": "location in body path, if any",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "msg": {
+                    "title": "Message",
+                    "description": "should always be shown to the user",
+                    "type": "string"
+                  },
+                  "detail": {
+                    "description": "verbose details of the error",
+                    "title": "Error details",
+                    "type": "object",
+                    "required": [
+                      "schema",
+                      "value"
+                    ],
+                    "properties": {
+                      "schema": {
+                        "type": "object"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "ctx": {
+                    "title": "Contextual information",
+                    "type": "object"
+                  }
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              }
+            },
+            "messages": {
+              "title": "Messages",
+              "description": "Descriptive error messages to show in a callout",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "title",
+        "detail",
+        "status",
+        "error",
+        "type"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Topics": {
+      "description": "string identifiers for SSE event listeners.",
+      "type": "string",
+      "enum": [
+        "GlobalAlerts"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "users:read",
+        "users:write",
+        "scopes:write",
+        "team-settings:write",
+        "project-settings:write",
+        "work-item-tag:create",
+        "work-item-tag:edit",
+        "work-item-tag:delete",
+        "work-item:review"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "users:read",
+          "users:write",
+          "scopes:write",
+          "team-settings:write",
+          "project-settings:write",
+          "work-item-tag:create",
+          "work-item-tag:edit",
+          "work-item-tag:delete",
+          "work-item:review"
+        ],
+        "x-generated": "-",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Role": {
+      "type": "string",
+      "enum": [
+        "guest",
+        "user",
+        "advancedUser",
+        "manager",
+        "admin",
+        "superAdmin"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemRole": {
+      "title": "WorkItem role",
+      "type": "string",
+      "x-generated": "-",
+      "enum": [
+        "preparer",
+        "reviewer"
+      ],
+      "description": "represents a database 'work_item_role'",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UpdateUserRequest": {
+      "description": "represents User data to update",
+      "properties": {
+        "firstName": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[\\p{L} '-]+$"
+        },
+        "lastName": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[\\p{L} '-]+$"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UpdateUserAuthRequest": {
+      "description": "represents User authorization data to update",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-generated": "-",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "users:read",
+              "users:write",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review"
+            ],
+            "x-generated": "-",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ValidationError": {
+      "title": "ValidationError",
+      "required": [
+        "loc",
+        "msg",
+        "detail"
+      ],
+      "type": "object",
+      "properties": {
+        "loc": {
+          "title": "Location",
+          "description": "location in body path, if any",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "msg": {
+          "title": "Message",
+          "description": "should always be shown to the user",
+          "type": "string"
+        },
+        "detail": {
+          "description": "verbose details of the error",
+          "title": "Error details",
+          "type": "object",
+          "required": [
+            "schema",
+            "value"
+          ],
+          "properties": {
+            "schema": {
+              "type": "object"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        "ctx": {
+          "title": "Contextual information",
+          "type": "object"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UuidUUID": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "PgtypeJSONB": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItem": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "metadata": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "deletedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItem",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestWorkItemTagCreateRequest": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTagCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestDemoWorkItemCreateRequest": {
+      "properties": {
+        "base": {
+          "properties": {
+            "closed": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": {
+              "type": "string"
+            },
+            "kanbanStepID": {
+              "type": "integer"
+            },
+            "metadata": {
+              "items": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "targetDate": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "teamID": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "workItemTypeID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "title",
+            "description",
+            "workItemTypeID",
+            "metadata",
+            "teamID",
+            "kanbanStepID",
+            "closed",
+            "targetDate"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "demoProject": {
+          "properties": {
+            "lastMessageAt": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "line": {
+              "type": "string"
+            },
+            "ref": {
+              "pattern": "^[0-9]{8}$",
+              "type": "string"
+            },
+            "reopened": {
+              "type": "boolean"
+            },
+            "workItemID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemID",
+            "ref",
+            "line",
+            "lastMessageAt",
+            "reopened"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "members": {
+          "items": {
+            "properties": {
+              "role": {
+                "title": "WorkItem role",
+                "type": "string",
+                "x-generated": "-",
+                "enum": [
+                  "preparer",
+                  "reviewer"
+                ],
+                "description": "represents a database 'work_item_role'",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "userID": {
+                "type": "string",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              }
+            },
+            "required": [
+              "userID",
+              "role"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "tagIDs": {
+          "items": {
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "demoProject",
+        "base",
+        "tagIDs",
+        "members"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoWorkItemCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestWorkItemCommentCreateRequest": {
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "userID",
+        "message"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemCommentCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Project": {
+      "enum": [
+        "demo",
+        "demo_two"
+      ],
+      "type": "string",
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbActivityCreateParams": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTeamCreateParams": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTagCreateParams": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItem_AssignedUser": {
+      "properties": {
+        "role": {
+          "title": "WorkItem role",
+          "type": "string",
+          "x-generated": "-",
+          "enum": [
+            "preparer",
+            "reviewer"
+          ],
+          "description": "represents a database 'work_item_role'",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "user": {
+          "properties": {
+            "createdAt": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "deletedAt": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "email": {
+              "type": "string"
+            },
+            "firstName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fullName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hasGlobalNotifications": {
+              "type": "boolean"
+            },
+            "hasPersonalNotifications": {
+              "type": "boolean"
+            },
+            "lastName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "users:read",
+                  "users:write",
+                  "scopes:write",
+                  "team-settings:write",
+                  "project-settings:write",
+                  "work-item-tag:create",
+                  "work-item-tag:edit",
+                  "work-item-tag:delete",
+                  "work-item:review"
+                ],
+                "x-generated": "-",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "userID": {
+              "type": "string",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "username": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "userID",
+            "username",
+            "email",
+            "firstName",
+            "lastName",
+            "fullName",
+            "scopes",
+            "hasPersonalNotifications",
+            "hasGlobalNotifications",
+            "createdAt",
+            "deletedAt"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbUser",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "NotificationType": {
+      "description": "represents a database 'notification_type'",
+      "type": "string",
+      "x-generated": "-",
+      "enum": [
+        "personal",
+        "global"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoProjectKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoProject2KanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Demo2WorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1",
+        "Type 2",
+        "Another type"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoWorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1",
+        "Type 2",
+        "Another type"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoWorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoWorkItemCreateParams": {
+      "properties": {
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "ref": {
+          "pattern": "^[0-9]{8}$",
+          "type": "string"
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemCreateParams": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "metadata": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsWorkItemRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ServicesMember": {
+      "properties": {
+        "role": {
+          "title": "WorkItem role",
+          "type": "string",
+          "x-generated": "-",
+          "enum": [
+            "preparer",
+            "reviewer"
+          ],
+          "description": "represents a database 'work_item_role'",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "userID",
+        "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    }
+  },
+  "properties": {
+    "DbActivity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbActivity",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbKanbanStep": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "stepOrder": {
+          "type": "integer"
+        },
+        "timeTrackable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kanbanStepID",
+        "projectID",
+        "stepOrder",
+        "name",
+        "description",
+        "color",
+        "timeTrackable"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbKanbanStep",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProject": {
+      "properties": {
+        "boardConfig": {
+          "properties": {
+            "fields": {
+              "items": {
+                "properties": {
+                  "isEditable": {
+                    "type": "boolean"
+                  },
+                  "isVisible": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "showCollapsed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "isEditable",
+                  "showCollapsed",
+                  "isVisible",
+                  "path",
+                  "name"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "type": "array"
+            },
+            "header": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "header",
+            "fields"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "enum": [
+            "demo",
+            "demo_two"
+          ],
+          "type": "string",
+          "x-generated": "-",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "boardConfig",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbProject",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTeam": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbTeam",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTag": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItemTag",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemType": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItemType",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoWorkItem": {
+      "properties": {
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "ref": {
+          "pattern": "^[0-9]{8}$",
+          "type": "string"
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbDemoWorkItem",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserAPIKey": {
+      "properties": {
+        "apiKey": {
+          "type": "string"
+        },
+        "expiresOn": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "apiKey",
+        "expiresOn",
+        "userID"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbUserAPIKey",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUser": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "users:read",
+              "users:write",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review"
+            ],
+            "x-generated": "-",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "scopes",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbUser",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTimeEntry": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "timeEntryID",
+        "workItemID",
+        "activityID",
+        "teamID",
+        "userID",
+        "comment",
+        "start",
+        "durationMinutes"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbTimeEntry",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemComment": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItemComment",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "properties": {
+              "isEditable": {
+                "type": "boolean"
+              },
+              "isVisible": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "showCollapsed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isEditable",
+              "showCollapsed",
+              "isVisible",
+              "path",
+              "name"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": "array"
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "header",
+        "fields"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "isEditable",
+        "showCollapsed",
+        "isVisible",
+        "path",
+        "name"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestDemoWorkItemsResponse": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "demoWorkItem": {
+          "properties": {
+            "lastMessageAt": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "line": {
+              "type": "string"
+            },
+            "ref": {
+              "pattern": "^[0-9]{8}$",
+              "type": "string"
+            },
+            "reopened": {
+              "type": "boolean"
+            },
+            "workItemID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemID",
+            "ref",
+            "line",
+            "lastMessageAt",
+            "reopened"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbDemoWorkItem",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "deletedAt": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": "string"
+              },
+              "firstName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fullName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hasGlobalNotifications": {
+                "type": "boolean"
+              },
+              "hasPersonalNotifications": {
+                "type": "boolean"
+              },
+              "lastName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "users:read",
+                    "users:write",
+                    "scopes:write",
+                    "team-settings:write",
+                    "project-settings:write",
+                    "work-item-tag:create",
+                    "work-item-tag:edit",
+                    "work-item-tag:delete",
+                    "work-item:review"
+                  ],
+                  "x-generated": "-",
+                  "$schema": "http://json-schema.org/draft-04/schema#"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "userID": {
+                "type": "string",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "username": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "userID",
+              "username",
+              "email",
+              "firstName",
+              "lastName",
+              "fullName",
+              "scopes",
+              "hasPersonalNotifications",
+              "hasGlobalNotifications",
+              "createdAt",
+              "deletedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbUser",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "properties": {
+              "activityID": {
+                "type": "integer"
+              },
+              "comment": {
+                "type": "string"
+              },
+              "durationMinutes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "start": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "teamID": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "timeEntryID": {
+                "type": "integer"
+              },
+              "userID": {
+                "type": "string",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "workItemID": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "timeEntryID",
+              "workItemID",
+              "activityID",
+              "teamID",
+              "userID",
+              "comment",
+              "start",
+              "durationMinutes"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbTimeEntry",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemComments": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userID": {
+                "type": "string",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "workItemCommentID": {
+                "type": "integer"
+              },
+              "workItemID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemCommentID",
+              "workItemID",
+              "userID",
+              "message",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemComment",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "workItemTagID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemTagID",
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemTag",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "projectID": {
+              "type": "integer"
+            },
+            "workItemTypeID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemTypeID",
+            "projectID",
+            "name",
+            "description",
+            "color"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbWorkItemType",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "deletedAt",
+        "demoWorkItem"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoWorkItemsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "InitializeProjectRequest": {
+      "properties": {
+        "activities": {
+          "items": {
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "isProductive": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description",
+              "isProductive"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teams": {
+          "items": {
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTags": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestProjectBoardCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestProjectBoardResponse": {
+      "properties": {
+        "activities": {
+          "items": {
+            "properties": {
+              "activityID": {
+                "type": "integer"
+              },
+              "description": {
+                "type": "string"
+              },
+              "isProductive": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "activityID",
+              "projectID",
+              "name",
+              "description",
+              "isProductive"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbActivity",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "boardConfig": {
+          "properties": {
+            "fields": {
+              "items": {
+                "properties": {
+                  "isEditable": {
+                    "type": "boolean"
+                  },
+                  "isVisible": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "showCollapsed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "isEditable",
+                  "showCollapsed",
+                  "isVisible",
+                  "path",
+                  "name"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "type": "array"
+            },
+            "header": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "header",
+            "fields"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanSteps": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "kanbanStepID": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "stepOrder": {
+                "type": "integer"
+              },
+              "timeTrackable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kanbanStepID",
+              "projectID",
+              "stepOrder",
+              "name",
+              "description",
+              "color",
+              "timeTrackable"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbKanbanStep",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "name": {
+          "enum": [
+            "demo",
+            "demo_two"
+          ],
+          "type": "string",
+          "x-generated": "-",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teams": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "teamID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "teamID",
+              "projectID",
+              "name",
+              "description",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbTeam",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemTags": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "workItemTagID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemTagID",
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemTag",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTypes": {
+          "items": {
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "workItemTypeID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemTypeID",
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemType",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "boardConfig",
+        "createdAt",
+        "updatedAt",
+        "activities",
+        "kanbanSteps",
+        "teams",
+        "workItemTags",
+        "workItemTypes"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestProjectBoardResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UserResponse": {
+      "properties": {
+        "apiKey": {
+          "properties": {
+            "apiKey": {
+              "type": "string"
+            },
+            "expiresOn": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "userID": {
+              "type": "string",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            }
+          },
+          "required": [
+            "apiKey",
+            "expiresOn",
+            "userID"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbUserAPIKey",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "projects": {
+          "items": {
+            "properties": {
+              "boardConfig": {
+                "properties": {
+                  "fields": {
+                    "items": {
+                      "properties": {
+                        "isEditable": {
+                          "type": "boolean"
+                        },
+                        "isVisible": {
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "showCollapsed": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "isEditable",
+                        "showCollapsed",
+                        "isVisible",
+                        "path",
+                        "name"
+                      ],
+                      "type": "object",
+                      "$schema": "http://json-schema.org/draft-04/schema#"
+                    },
+                    "type": "array"
+                  },
+                  "header": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "header",
+                  "fields"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "enum": [
+                  "demo",
+                  "demo_two"
+                ],
+                "type": "string",
+                "x-generated": "-",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description",
+              "boardConfig",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbProject",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-generated": "-",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "users:read",
+              "users:write",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review"
+            ],
+            "x-generated": "-",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "teams": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "teamID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "teamID",
+              "projectID",
+              "name",
+              "description",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbTeam",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "scopes",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt",
+        "role"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestUserResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "HTTPValidationError": {
+      "title": "HTTPValidationError",
+      "type": "object",
+      "required": [
+        "messages"
+      ],
+      "properties": {
+        "detail": {
+          "title": "Detail",
+          "description": "Additional details for validation errors",
+          "type": "array",
+          "items": {
+            "title": "ValidationError",
+            "required": [
+              "loc",
+              "msg",
+              "detail"
+            ],
+            "type": "object",
+            "properties": {
+              "loc": {
+                "title": "Location",
+                "description": "location in body path, if any",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "msg": {
+                "title": "Message",
+                "description": "should always be shown to the user",
+                "type": "string"
+              },
+              "detail": {
+                "description": "verbose details of the error",
+                "title": "Error details",
+                "type": "object",
+                "required": [
+                  "schema",
+                  "value"
+                ],
+                "properties": {
+                  "schema": {
+                    "type": "object"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "ctx": {
+                "title": "Contextual information",
+                "type": "object"
+              }
+            },
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          }
+        },
+        "messages": {
+          "title": "Messages",
+          "description": "Descriptive error messages to show in a callout",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "HTTPError": {
+      "description": "represents an error message response.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "validationError": {
+          "title": "HTTPValidationError",
+          "type": "object",
+          "required": [
+            "messages"
+          ],
+          "properties": {
+            "detail": {
+              "title": "Detail",
+              "description": "Additional details for validation errors",
+              "type": "array",
+              "items": {
+                "title": "ValidationError",
+                "required": [
+                  "loc",
+                  "msg",
+                  "detail"
+                ],
+                "type": "object",
+                "properties": {
+                  "loc": {
+                    "title": "Location",
+                    "description": "location in body path, if any",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "msg": {
+                    "title": "Message",
+                    "description": "should always be shown to the user",
+                    "type": "string"
+                  },
+                  "detail": {
+                    "description": "verbose details of the error",
+                    "title": "Error details",
+                    "type": "object",
+                    "required": [
+                      "schema",
+                      "value"
+                    ],
+                    "properties": {
+                      "schema": {
+                        "type": "object"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "ctx": {
+                    "title": "Contextual information",
+                    "type": "object"
+                  }
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              }
+            },
+            "messages": {
+              "title": "Messages",
+              "description": "Descriptive error messages to show in a callout",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "title",
+        "detail",
+        "status",
+        "error",
+        "type"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Topics": {
+      "description": "string identifiers for SSE event listeners.",
+      "type": "string",
+      "enum": [
+        "GlobalAlerts"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "users:read",
+        "users:write",
+        "scopes:write",
+        "team-settings:write",
+        "project-settings:write",
+        "work-item-tag:create",
+        "work-item-tag:edit",
+        "work-item-tag:delete",
+        "work-item:review"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "users:read",
+          "users:write",
+          "scopes:write",
+          "team-settings:write",
+          "project-settings:write",
+          "work-item-tag:create",
+          "work-item-tag:edit",
+          "work-item-tag:delete",
+          "work-item:review"
+        ],
+        "x-generated": "-",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Role": {
+      "type": "string",
+      "enum": [
+        "guest",
+        "user",
+        "advancedUser",
+        "manager",
+        "admin",
+        "superAdmin"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemRole": {
+      "title": "WorkItem role",
+      "type": "string",
+      "x-generated": "-",
+      "enum": [
+        "preparer",
+        "reviewer"
+      ],
+      "description": "represents a database 'work_item_role'",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UpdateUserRequest": {
+      "description": "represents User data to update",
+      "properties": {
+        "firstName": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[\\p{L} '-]+$"
+        },
+        "lastName": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[\\p{L} '-]+$"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UpdateUserAuthRequest": {
+      "description": "represents User authorization data to update",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-generated": "-",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "users:read",
+              "users:write",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review"
+            ],
+            "x-generated": "-",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ValidationError": {
+      "title": "ValidationError",
+      "required": [
+        "loc",
+        "msg",
+        "detail"
+      ],
+      "type": "object",
+      "properties": {
+        "loc": {
+          "title": "Location",
+          "description": "location in body path, if any",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "msg": {
+          "title": "Message",
+          "description": "should always be shown to the user",
+          "type": "string"
+        },
+        "detail": {
+          "description": "verbose details of the error",
+          "title": "Error details",
+          "type": "object",
+          "required": [
+            "schema",
+            "value"
+          ],
+          "properties": {
+            "schema": {
+              "type": "object"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        "ctx": {
+          "title": "Contextual information",
+          "type": "object"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UuidUUID": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "PgtypeJSONB": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItem": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "metadata": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "deletedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItem",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestWorkItemTagCreateRequest": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTagCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestDemoWorkItemCreateRequest": {
+      "properties": {
+        "base": {
+          "properties": {
+            "closed": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": {
+              "type": "string"
+            },
+            "kanbanStepID": {
+              "type": "integer"
+            },
+            "metadata": {
+              "items": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "targetDate": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "teamID": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "workItemTypeID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "title",
+            "description",
+            "workItemTypeID",
+            "metadata",
+            "teamID",
+            "kanbanStepID",
+            "closed",
+            "targetDate"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "demoProject": {
+          "properties": {
+            "lastMessageAt": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "line": {
+              "type": "string"
+            },
+            "ref": {
+              "pattern": "^[0-9]{8}$",
+              "type": "string"
+            },
+            "reopened": {
+              "type": "boolean"
+            },
+            "workItemID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemID",
+            "ref",
+            "line",
+            "lastMessageAt",
+            "reopened"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "members": {
+          "items": {
+            "properties": {
+              "role": {
+                "title": "WorkItem role",
+                "type": "string",
+                "x-generated": "-",
+                "enum": [
+                  "preparer",
+                  "reviewer"
+                ],
+                "description": "represents a database 'work_item_role'",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "userID": {
+                "type": "string",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              }
+            },
+            "required": [
+              "userID",
+              "role"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "tagIDs": {
+          "items": {
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "demoProject",
+        "base",
+        "tagIDs",
+        "members"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoWorkItemCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestWorkItemCommentCreateRequest": {
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "userID",
+        "message"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemCommentCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Project": {
+      "enum": [
+        "demo",
+        "demo_two"
+      ],
+      "type": "string",
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbActivityCreateParams": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTeamCreateParams": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTagCreateParams": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItem_AssignedUser": {
+      "properties": {
+        "role": {
+          "title": "WorkItem role",
+          "type": "string",
+          "x-generated": "-",
+          "enum": [
+            "preparer",
+            "reviewer"
+          ],
+          "description": "represents a database 'work_item_role'",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "user": {
+          "properties": {
+            "createdAt": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "deletedAt": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "email": {
+              "type": "string"
+            },
+            "firstName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fullName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hasGlobalNotifications": {
+              "type": "boolean"
+            },
+            "hasPersonalNotifications": {
+              "type": "boolean"
+            },
+            "lastName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "users:read",
+                  "users:write",
+                  "scopes:write",
+                  "team-settings:write",
+                  "project-settings:write",
+                  "work-item-tag:create",
+                  "work-item-tag:edit",
+                  "work-item-tag:delete",
+                  "work-item:review"
+                ],
+                "x-generated": "-",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "userID": {
+              "type": "string",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "username": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "userID",
+            "username",
+            "email",
+            "firstName",
+            "lastName",
+            "fullName",
+            "scopes",
+            "hasPersonalNotifications",
+            "hasGlobalNotifications",
+            "createdAt",
+            "deletedAt"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbUser",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "NotificationType": {
+      "description": "represents a database 'notification_type'",
+      "type": "string",
+      "x-generated": "-",
+      "enum": [
+        "personal",
+        "global"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoProjectKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoProject2KanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Demo2WorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1",
+        "Type 2",
+        "Another type"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoWorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1",
+        "Type 2",
+        "Another type"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoWorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoWorkItemCreateParams": {
+      "properties": {
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "ref": {
+          "pattern": "^[0-9]{8}$",
+          "type": "string"
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemCreateParams": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "metadata": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsWorkItemRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ServicesMember": {
+      "properties": {
+        "role": {
+          "title": "WorkItem role",
+          "type": "string",
+          "x-generated": "-",
+          "enum": [
+            "preparer",
+            "reviewer"
+          ],
+          "description": "represents a database 'work_item_role'",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "userID": {
+          "type": "string",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "userID",
+        "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    }
+  }
+}

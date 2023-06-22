@@ -1,17 +1,16 @@
-import { makeHighContrastColor } from '@elastic/eui'
-import type roles from '@roles'
-import scopes from '@scopes'
+import SCOPES from 'src/scopes'
 import _ from 'lodash'
+import type { Role } from 'src/gen/model'
 
-const LIGHT_BLUE = 'rgb(78, 197, 241)'
-const LIGHT_GREEN = 'rgb(13, 242, 200)'
-const LIGHT_ORANGE = 'rgb(192, 114, 218)'
-const LIGHT_GREY = 'rgb(186, 181, 181)'
-const LIGHT_RED = 'rgb(156, 28, 28)'
-const LIGHT_PURPLE = 'rgb(94, 47, 116)'
+const LIGHT_BLUE = '#4EC5F1'
+const LIGHT_GREEN = '#0DF2C8'
+const LIGHT_ORANGE = '#C072DA'
+const LIGHT_GREY = '#BAB5B5'
+const LIGHT_RED = '#9C1C1C'
+const LIGHT_PURPLE = '#5E2F74'
 
 type RoleColors = {
-  [key in keyof typeof roles]: string
+  [key in Role]: string
 }
 
 const ROLE_COLORS: RoleColors = {
@@ -23,7 +22,7 @@ const ROLE_COLORS: RoleColors = {
   superAdmin: LIGHT_RED,
 }
 
-export const roleColor = (role: keyof typeof roles) => {
+export const roleColor = (role: Role) => {
   return ROLE_COLORS[role]
 }
 
@@ -61,11 +60,14 @@ export const COLORS = [
 
 export const COLOR_BLIND_PALETTE = ['#999999', '#E69F00', '#56B4E9', '#009E73', '#0072B2', '#D55E00', '#CC79A7']
 
-export const getContrastYIQ = (hc) => {
-  const [r, g, b] = [0, 2, 4].map((p) => parseInt(hc.substr(p, 2), 16))
-  return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? 'black' : 'white'
-}
+export function getContrastYIQ(hexColor) {
+  const hex = hexColor.replace('#', '')
+  const [r, g, b] = hex.match(/.{2}/g).map((val) => parseInt(val, 16))
 
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000
+
+  return yiq >= 128 ? 'white' : 'black'
+}
 export function generateColor(str: string): string {
   if (str === '' || !str) {
     return '#aaa'

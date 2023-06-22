@@ -12,7 +12,7 @@
     "allowJs": false,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error",
+    "verbatimModuleSyntax": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
@@ -21,20 +21,15 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "noErrorTruncation": true,
     "baseUrl": ".",
     "sourceMap": true,
+    "allowUnreachableCode": true,
+    "noUncheckedIndexedAccess": true,
+    "suppressImplicitAnyIndexErrors": false,
     "paths": {
-      "@roles": [
-        "roles.json"
-      ],
-      "@scopes": [
-        "scopes.json"
-      ],
       "@operationAuth": [
         "operationAuth.gen.json"
-      ],
-      "@config": [
-        "config.json"
       ],
     },
   },

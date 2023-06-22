@@ -1,28 +1,26 @@
-import { capitalize } from 'lodash'
-import { useMemo } from 'react'
-import { COLOR_BLIND_PALETTE, generateColor } from 'src/utils/colors'
-import roles from '@roles'
-import scopes from '@scopes'
+import { QueryClient, useQueryClient } from '@tanstack/react-query'
+import Cookies from 'js-cookie'
+import { useEffect, useRef } from 'react'
+import { persister } from 'src/App'
 import type { UserResponse } from 'src/gen/model'
-import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+import { useGetCurrentUser } from 'src/gen/user/user'
+import { ACCESS_TOKEN_COOKIE, UI_SLICE_PERSIST_KEY } from 'src/slices/ui'
+import { useIsFirstRender } from 'usehooks-ts'
 
-export const useAuthenticatedUser = () => {
-  // TODO for app_env dev, remove Authorization header and comes from backend via x-api-key header
-  // or have fallthorugh if authentication failed instead - would need multierror
-  // const user: UserResponse = {
-  //   hasGlobalNotifications: true,
-  //   hasPersonalNotifications: true,
-  //   role: 'admin',
-  //   userID: crypto.randomUUID(),
-  //   email: 'admin@mail.com',
-  //   firstName: 'John',
-  //   lastName: 'Doe',
-  //   fullName: 'John Doe',
-  //   username: 'john.doe',
-  //   scopes: ['users:read', 'test-scope', 'scopes:write'],
-  //   createdAt: new Date(),
-  //   deletedAt: null,
-  // }
+export default function useAuthenticatedUser() {
+  const mountedRef = useMountedRef()
+  const queryClient = useQueryClient()
+  const currentUser = useGetCurrentUser()
+  const isFirstRender = useIsFirstRender()
+
+  const isAuthenticated = !!currentUser.data?.data?.userID
+
+  useEffect(() => {
+    if (mountedRef.current && isFirstRender) {
+      console.log('would have triggered useAuthenticatedUser useEffect')
+      // if (!twitchValidateToken.isLoading) twitchValidateToken.refetch()
+    }
+  }, [currentUser.data, isFirstRender])
 
   const user: UserResponse = {
     userID: 'c7fd2433-dbb7-4612-ab13-ddb0d3404728',
@@ -37,19 +35,47 @@ export const useAuthenticatedUser = () => {
     deletedAt: null,
 
     role: 'user',
-    scopes: ['users:read'],
+    scopes: ['users:read', 'project-settings:write', 'team-settings:write', 'users:read', 'users:write'],
 
     apiKey: null,
     teams: null,
     projects: null,
   }
 
-  const logUserOut = () => {
-    null
-  }
-
   return {
+    isAuthenticated,
     user,
-    logUserOut,
   }
+}
+
+// TODO doesnt seem to clear react query
+export async function logUserOut(queryClient: QueryClient) {
+  await persister.removeClient() // delete indexed db
+  await queryClient.cancelQueries()
+  await queryClient.invalidateQueries()
+  queryClient.clear()
+  Cookies.remove(ACCESS_TOKEN_COOKIE, {
+    expires: 365,
+    sameSite: 'none',
+    secure: true,
+  })
+  localStorage.removeItem(UI_SLICE_PERSIST_KEY)
+  window.location.reload()
+}
+
+/**
+ * To ensure a useEffect is only called once for shared hooks.
+ */
+const useMountedRef = () => {
+  const mountedRef = useRef(false)
+
+  useEffect(() => {
+    setTimeout(() => {
+      mountedRef.current = true
+    })
+
+    return () => (mountedRef.current = null)
+  }, [])
+
+  return mountedRef
 }

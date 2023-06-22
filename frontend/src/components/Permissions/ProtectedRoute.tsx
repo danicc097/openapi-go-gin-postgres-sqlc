@@ -1,15 +1,14 @@
-import { EuiLoadingSpinner } from '@elastic/eui'
 import ProtectedPage from './ProtectedPage'
 import { Navigate } from 'react-router-dom'
 import type { Role, Scopes } from 'src/gen/model'
-import roles from '@roles'
+import ROLES from 'src/roles'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
-import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
+import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { useEffect } from 'react'
 import { isAuthorized } from 'src/services/authorization'
-import config from '@config'
 import { apiPath } from 'src/services/apiPaths'
+import { notifications } from '@mantine/notifications'
 
 type ProtectedRouteProps = {
   children: JSX.Element
@@ -22,20 +21,20 @@ type ProtectedRouteProps = {
  */
 export default function ProtectedRoute({ children, requiredRole = null, requiredScopes = null }: ProtectedRouteProps) {
   const { user } = useAuthenticatedUser()
-  const { addToast } = useUISlice()
 
   useEffect(() => {
     if (!user) {
-      addToast({
+      notifications.show({
         id: ToastId.AuthRedirect,
         title: 'Access Denied',
         color: 'warning',
-        iconType: 'alert',
-        toastLifeTimeMs: 15000,
-        text: 'Authenticated users only. Log in here or create a new account to view that page',
+        variant: 'alert',
+        withCloseButton: true,
+        autoClose: 15000,
+        message: 'Authenticated users only. Log in here or create a new account to view that page',
       })
     }
-  }, [addToast, user])
+  }, [user])
 
   const isAuthenticated = true
 

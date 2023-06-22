@@ -33,7 +33,6 @@ type (
 var (
 	userScopes = models.Scopes{
 		models.ScopeUsersRead,
-		models.ScopeTestScope,
 	}
 	managerScopes = append(userScopes, models.ScopeWorkItemReview)
 	adminScopes   = append(managerScopes, models.ScopeUsersWrite)

@@ -116,22 +116,6 @@ func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
 	}
 }
 
-// Defines values for HttpErrorType.
-const (
-	HttpErrorTypeRequestValidation  HttpErrorType = "request_validation"
-	HttpErrorTypeResponseValidation HttpErrorType = "response_validation"
-	HttpErrorTypeUnknown            HttpErrorType = "unknown"
-)
-
-// AllHttpErrorTypeValues returns all possible values for HttpErrorType.
-func AllHttpErrorTypeValues() []HttpErrorType {
-	return []HttpErrorType{
-		HttpErrorTypeRequestValidation,
-		HttpErrorTypeResponseValidation,
-		HttpErrorTypeUnknown,
-	}
-}
-
 // Defines values for NotificationType.
 const (
 	NotificationTypeGlobal   NotificationType = "global"
@@ -187,10 +171,12 @@ const (
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
 	ScopeTeamSettingsWrite    Scope = "team-settings:write"
-	ScopeTestScope            Scope = "test-scope"
 	ScopeUsersRead            Scope = "users:read"
 	ScopeUsersWrite           Scope = "users:write"
 	ScopeWorkItemReview       Scope = "work-item:review"
+	ScopeWorkItemTagCreate    Scope = "work-item-tag:create"
+	ScopeWorkItemTagDelete    Scope = "work-item-tag:delete"
+	ScopeWorkItemTagEdit      Scope = "work-item-tag:edit"
 )
 
 // AllScopeValues returns all possible values for Scope.
@@ -199,10 +185,12 @@ func AllScopeValues() []Scope {
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
 		ScopeTeamSettingsWrite,
-		ScopeTestScope,
 		ScopeUsersRead,
 		ScopeUsersWrite,
 		ScopeWorkItemReview,
+		ScopeWorkItemTagCreate,
+		ScopeWorkItemTagDelete,
+		ScopeWorkItemTagEdit,
 	}
 }
 
@@ -276,16 +264,6 @@ type DbKanbanStep struct {
 	ProjectID     int    `json:"projectID"`
 	StepOrder     int    `json:"stepOrder"`
 	TimeTrackable bool   `json:"timeTrackable"`
-}
-
-// DbKanbanStepCreateParams defines the model for DbKanbanStepCreateParams.
-type DbKanbanStepCreateParams struct {
-	Color         *string `json:"color,omitempty"`
-	Description   *string `json:"description,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	ProjectID     *int    `json:"projectID,omitempty"`
-	StepOrder     *int    `json:"stepOrder"`
-	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
 }
 
 // DbProject defines the model for DbProject.
@@ -416,14 +394,6 @@ type DbWorkItemType struct {
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
-// DbWorkItemTypeCreateParams defines the model for DbWorkItemTypeCreateParams.
-type DbWorkItemTypeCreateParams struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
-}
-
 // DbWorkItemAssignedUser defines the model for DbWorkItem_AssignedUser.
 type DbWorkItemAssignedUser struct {
 	// Role represents a database 'work_item_role'
@@ -452,6 +422,16 @@ type DemoTwoWorkItemTypes string
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
 type DemoWorkItemTypes string
 
+// HTTPError represents an error message response.
+type HTTPError struct {
+	Detail          string               `json:"detail"`
+	Error           string               `json:"error"`
+	Status          int                  `json:"status"`
+	Title           string               `json:"title"`
+	Type            string               `json:"type"`
+	ValidationError *HTTPValidationError `json:"validationError,omitempty"`
+}
+
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
 	// Detail Additional details for validation errors
@@ -460,9 +440,6 @@ type HTTPValidationError struct {
 	// Messages Descriptive error messages to show in a callout
 	Messages []string `json:"messages"`
 }
-
-// HttpErrorType defines the model for HttpErrorType.
-type HttpErrorType string
 
 // InitializeProjectRequest defines the model for InitializeProjectRequest.
 type InitializeProjectRequest struct {
@@ -570,8 +547,9 @@ type Scopes = []Scope
 
 // ServicesMember defines the model for ServicesMember.
 type ServicesMember struct {
-	Role   ModelsWorkItemRole `json:"role"`
-	UserID UuidUUID           `json:"userID"`
+	// Role represents a database 'work_item_role'
+	Role   WorkItemRole `json:"role"`
+	UserID UuidUUID     `json:"userID"`
 }
 
 // Topics string identifiers for SSE event listeners.
@@ -628,8 +606,7 @@ type ValidationError struct {
 	Loc []string `json:"loc"`
 
 	// Msg should always be shown to the user
-	Msg  string        `json:"msg"`
-	Type HttpErrorType `json:"type"`
+	Msg string `json:"msg"`
 }
 
 // WorkItemRole represents a database 'work_item_role'

@@ -2,15 +2,17 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 export type Primitive = string | number | symbol
 
-export type GenericObject = Record<Primitive, unknown>
+export type GenericObject = Record<any, any>
 
-export type Join<L extends Primitive | undefined, R extends Primitive | undefined> = L extends string | number
-  ? R extends string | number
-    ? `${L}.${R}`
-    : L
-  : R extends string | number
-  ? R
-  : undefined
+export type Join<T extends string[], D extends string> = T extends []
+  ? never
+  : T extends [infer F]
+  ? F
+  : T extends [infer F, ...infer R]
+  ? F extends string
+    ? `${F}${D}${Join<Extract<R, string[]>, D>}`
+    : never
+  : string
 
 export type Union<L extends unknown | undefined, R extends unknown | undefined> = L extends undefined
   ? R extends undefined
@@ -21,21 +23,73 @@ export type Union<L extends unknown | undefined, R extends unknown | undefined> 
   : L | R
 
 /**
- * NestedPaths
- * Get all the possible paths of an object
+ * Access underlying types by dot notation.
+
  * @example
- * type Keys = NestedPaths<{ a: { b: { c: string } }>
+    type RestDemoWorkItemCreateRequest = {
+        base: {
+          nested: {
+            kanbanStepID: number
+          }
+        }
+      }
+
+    TypeOf<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
+ */
+type TypeOf<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer Rest}`
+  ? First extends keyof T
+    ? TypeOf<T[First], Rest>
+    : unknown
+  : U extends keyof T
+  ? T[U]
+  : unknown
+
+/**
+ * Get all the possible nested paths of an object
+ * @example
+ * type Keys = RecursiveKeyOf<{ a: { b: { c: string } }>
  * // 'a' | 'a.b' | 'a.b.c'
  */
-export type NestedPaths<
-  T extends GenericObject,
-  Prev extends Primitive | undefined = undefined,
-  Path extends Primitive | undefined = undefined,
-> = {
-  [K in keyof T]: T[K] extends GenericObject
-    ? NestedPaths<T[K], Union<Prev, Path>, Join<Path, K>>
-    : Union<Union<Prev, Path>, Join<Path, K>>
-}[keyof T]
+// FIXME: arrays of objects fields have extra inexistent paths. Using react-hook-form FieldPath as workaround
+export type RecursiveKeyOf<T, Cache extends PropertyKey = ''> = T extends PropertyKey
+  ? Cache
+  : T extends (infer Item)[]
+  ? Item extends object
+    ? Cache extends ''
+      ? RecursiveKeyOf<Item, ''> | `${number & keyof Item}`
+      : Cache | RecursiveKeyOf<Item, `${Cache}.${number}`> | `${Cache}.${number & keyof Item}`
+    : never
+  : {
+      [P in keyof T]: P extends PropertyKey
+        ? Cache extends ''
+          ? RecursiveKeyOf<T[P], `${P}`>
+          : Cache | RecursiveKeyOf<T[P], `${Cache}.${P}`>
+        : never
+    }[keyof T]
+
+export type RecursiveKeyOfArray<T, Cache extends PropertyKey = ''> = T extends PropertyKey
+  ? Cache
+  : T extends (infer Item)[]
+  ? Item extends object
+    ? Cache extends ''
+      ? RecursiveKeyOf<Item, `${Exclude<keyof Item, keyof any[]> & string}`>
+      : RecursiveKeyOf<Item, `${Cache}`>
+    : never
+  :
+      | {
+          [P in keyof T]: P extends PropertyKey
+            ? Cache extends ''
+              ? RecursiveKeyOf<T[P], `${P}`>
+              : {
+                  [P in keyof T]: P extends PropertyKey
+                    ? Cache extends ''
+                      ? RecursiveKeyOf<T[P], `${P}`>
+                      : Cache
+                    : never
+                }[keyof T]
+            : never
+        }[keyof T]
+      | RecursiveKeyOf<T[keyof T], `${Cache}.${keyof T}`>
 
 export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[]
   ? ElementType

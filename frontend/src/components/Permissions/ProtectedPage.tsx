@@ -1,7 +1,8 @@
-import { EuiEmptyPrompt } from '@elastic/eui'
 import _ from 'lodash'
 import React from 'react'
+import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import type { Role, Scopes } from 'src/gen/model'
+import HttpStatus from 'src/utils/httpStatus'
 
 type ProtectedPageProps = {
   children: JSX.Element
@@ -10,14 +11,7 @@ type ProtectedPageProps = {
 
 export default function ProtectedPage({ children, isAuthorized }: ProtectedPageProps) {
   if (!isAuthorized) {
-    return (
-      <EuiEmptyPrompt
-        iconType="securityApp"
-        iconColor={null}
-        title={<h2 className="eui-textInheritColor">Access Denied</h2>}
-        body={<p>{`You don't have the required permissions to access this content.`}</p>}
-      />
-    )
+    return <ErrorPage status={HttpStatus.FORBIDDEN_403} />
   }
 
   return children

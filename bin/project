@@ -625,13 +625,13 @@ x.gen.frontend() {
         echo "Skipping generation (cached). Force regen with --x-force-regen"
         exit 0
       fi
-      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/package.json &
+      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/scripts/* frontend/package.json &
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
 
       {
-        node frontend/generate-client-validator.js
+        node frontend/scripts/generate-client-validator.js
         # TODO allow custom validate.ts baked into fork
         rm -f frontend/src/client-validator/gen/validate.ts
         find frontend/src/client-validator/gen/ -type f -exec \
@@ -695,9 +695,11 @@ x.gen() {
     #   restart_pid $pid &
     # done
 
-    x.lint
-    x.gen.frontend
+    x.lint.sql &
+    x.lint.go &
+    wait
 
+    x.gen.frontend
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -1739,9 +1741,9 @@ source ".env.$env"
 set +a
 
 trap 'show_tracebacks' ERR
-trap killgroup SIGINT
+trap killgroup EXIT HUP INT TERM
 trap errtrap SIGUSR1
-trap 'exit-cleanup $LINENO' 0 # EXIT (0) executed on exit from the shell
+trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
 
 exit-cleanup() {
   if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then

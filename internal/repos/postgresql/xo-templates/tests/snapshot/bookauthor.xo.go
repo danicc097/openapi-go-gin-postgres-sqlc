@@ -114,9 +114,8 @@ type User__BA_BookAuthor struct {
 	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// WithBookAuthorFilters adds the given filters, which may be parameterized with $i.
-// Filters are joined with AND.
-// NOTE: SQL injection prone.
+// WithBookAuthorFilters adds the given filters, which can be dynamically parameterized
+// with $i to prevent SQL injection.
 // Example:
 //
 //	filters := map[string][]any{

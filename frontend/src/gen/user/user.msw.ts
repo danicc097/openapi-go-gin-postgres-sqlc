@@ -48,7 +48,7 @@ export const getGetCurrentUserMock = () => ({
     teamID: faker.datatype.number({ min: undefined, max: undefined }),
     updatedAt: (() => faker.date.past())(),
   })),
-  userID: faker.random.word(),
+  userID: (() => faker.datatype.uuid())(),
   username: faker.random.word(),
 })
 
@@ -91,7 +91,7 @@ export const getUpdateUserMock = () => ({
     teamID: faker.datatype.number({ min: undefined, max: undefined }),
     updatedAt: (() => faker.date.past())(),
   })),
-  userID: faker.random.word(),
+  userID: (() => faker.datatype.uuid())(),
   username: faker.random.word(),
 })
 

@@ -1,34 +1,31 @@
-import type { Toast } from '@elastic/eui/src/components/toast/global_toast_list'
-import { create } from 'zustand'
+import Cookies from 'js-cookie'
+import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-export type Theme = 'dark' | 'light'
+export const ACCESS_TOKEN_COOKIE = 'myAppAccessToken'
+
+export const UI_SLICE_PERSIST_KEY = 'ui-slice'
 
 interface UIState {
-  theme: Theme
-  toastList: Toast[]
-  addToast: (toast: Toast) => void
-  removeToastByID: (toastID: string) => void
-  dismissToast: (toast: Toast) => void
-  setTheme: (theme: Theme) => void
+  twitchToken: string
+  setAccessToken: (token: string) => void
+  burgerOpened: boolean
+  setBurgerOpened: (opened: boolean) => void
 }
 
 const useUISlice = create<UIState>()(
   devtools(
-    // persist(
-    (set) => {
-      const theme = (localStorage.getItem('theme') ?? 'light') as Theme
-      return {
-        theme: theme,
-        toastList: [],
-        addToast: (toast: Toast) => set(addToast(toast), false, `addToast-${toast.id}`),
-        removeToastByID: (toastID: string) => set(removeToastByID(toastID), false, `removeToastByID-${toastID}`),
-        dismissToast: (toast: Toast) => set(dismissToast(toast.id), false, `dismissToast-${toast.id}`),
-        setTheme: (theme: Theme) => set(setTheme(theme), false, `setTheme-${theme}`),
-      }
-    },
-    //   { version: 2, name: 'ui-slice' },
-    // ),
+    persist(
+      (set) => {
+        return {
+          twitchToken: Cookies.get(ACCESS_TOKEN_COOKIE),
+          setAccessToken: (token: string) => set(setAccessToken(token), false, `setAccessToken`),
+          burgerOpened: false,
+          setBurgerOpened: (opened: boolean) => set(setBurgerOpened(opened), false, `setBurgerOpened`),
+        }
+      },
+      { version: 2, name: UI_SLICE_PERSIST_KEY },
+    ),
     { enabled: true },
   ),
 )
@@ -37,35 +34,23 @@ export { useUISlice }
 
 type UIAction = (...args: any[]) => Partial<UIState>
 
-function setTheme(theme: Theme): UIAction {
+function setAccessToken(token: string): UIAction {
   return (state: UIState) => {
-    localStorage.setItem('theme', theme)
+    Cookies.set(ACCESS_TOKEN_COOKIE, token, {
+      expires: 365,
+      sameSite: 'none',
+      secure: true,
+    })
     return {
-      theme: theme,
+      twitchToken: token,
     }
   }
 }
 
-function removeToastByID(toastID: string): UIAction {
+function setBurgerOpened(opened: boolean): UIAction {
   return (state: UIState) => {
     return {
-      toastList: state.toastList.filter((toast) => toast.id !== toastID),
-    }
-  }
-}
-
-function dismissToast(id: string): UIAction {
-  return (state: UIState) => {
-    return {
-      toastList: state.toastList.filter((toast) => toast.id !== id),
-    }
-  }
-}
-function addToast(toast: Toast): UIAction {
-  return (state: UIState) => {
-    state.toastList.push(toast)
-    return {
-      toastList: state.toastList,
+      burgerOpened: opened,
     }
   }
 }

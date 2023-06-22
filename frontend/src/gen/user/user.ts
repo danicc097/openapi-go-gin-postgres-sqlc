@@ -5,8 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import axios from 'axios'
-import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { useQuery, useInfiniteQuery, useMutation } from '@tanstack/react-query'
 import type {
   UseQueryOptions,
@@ -19,42 +17,50 @@ import type {
   QueryKey,
 } from '@tanstack/react-query'
 import type { UserResponse, UpdateUserAuthRequest, UpdateUserRequest } from '.././model'
+import { customInstance } from '../../api/mutator'
+
+type AwaitedInput<T> = PromiseLike<T> | T
+
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never
+
+// eslint-disable-next-line
+type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
 
 /**
  * @summary returns the logged in user
  */
-export const getCurrentUser = (options?: AxiosRequestConfig): Promise<AxiosResponse<UserResponse>> => {
-  return axios.get(`/user/me`, options)
+export const getCurrentUser = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
+  return customInstance<UserResponse>({ url: `/user/me`, method: 'get', signal }, options)
 }
 
 export const getGetCurrentUserQueryKey = () => [`/user/me`] as const
 
 export const getGetCurrentUserInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof getCurrentUser>>,
-  TError = AxiosError<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData> & { queryKey: QueryKey } => {
-  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+  const { query: queryOptions, request: requestOptions } = options ?? {}
 
   const queryKey = queryOptions?.queryKey ?? getGetCurrentUserQueryKey()
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentUser>>> = ({ signal }) =>
-    getCurrentUser({ signal, ...axiosOptions })
+    getCurrentUser(requestOptions, signal)
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions }
 }
 
 export type GetCurrentUserInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
-export type GetCurrentUserInfiniteQueryError = AxiosError<unknown>
+export type GetCurrentUserInfiniteQueryError = unknown
 
 export const useGetCurrentUserInfinite = <
   TData = Awaited<ReturnType<typeof getCurrentUser>>,
-  TError = AxiosError<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetCurrentUserInfiniteQueryOptions(options)
 
@@ -67,30 +73,27 @@ export const useGetCurrentUserInfinite = <
 
 export const getGetCurrentUserQueryOptions = <
   TData = Awaited<ReturnType<typeof getCurrentUser>>,
-  TError = AxiosError<unknown>,
+  TError = unknown,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData> & { queryKey: QueryKey } => {
-  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+  const { query: queryOptions, request: requestOptions } = options ?? {}
 
   const queryKey = queryOptions?.queryKey ?? getGetCurrentUserQueryKey()
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentUser>>> = ({ signal }) =>
-    getCurrentUser({ signal, ...axiosOptions })
+    getCurrentUser(requestOptions, signal)
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions }
 }
 
 export type GetCurrentUserQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
-export type GetCurrentUserQueryError = AxiosError<unknown>
+export type GetCurrentUserQueryError = unknown
 
-export const useGetCurrentUser = <
-  TData = Awaited<ReturnType<typeof getCurrentUser>>,
-  TError = AxiosError<unknown>,
->(options?: {
+export const useGetCurrentUser = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
   const queryOptions = getGetCurrentUserQueryOptions(options)
 
@@ -107,26 +110,34 @@ export const useGetCurrentUser = <
 export const updateUserAuthorization = (
   id: string,
   updateUserAuthRequest: UpdateUserAuthRequest,
-  options?: AxiosRequestConfig,
-): Promise<AxiosResponse<void>> => {
-  return axios.patch(`/user/${id}/authorization`, updateUserAuthRequest, options)
+  options?: SecondParameter<typeof customInstance>,
+) => {
+  return customInstance<void>(
+    {
+      url: `/user/${id}/authorization`,
+      method: 'patch',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateUserAuthRequest,
+    },
+    options,
+  )
 }
 
-export const getUpdateUserAuthorizationMutationOptions = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+export const getUpdateUserAuthorizationMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUserAuthorization>>,
     TError,
     { id: string; data: UpdateUserAuthRequest },
     TContext
   >
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateUserAuthorization>>,
   TError,
   { id: string; data: UpdateUserAuthRequest },
   TContext
 > => {
-  const { mutation: mutationOptions, axios: axiosOptions } = options ?? {}
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateUserAuthorization>>,
@@ -134,7 +145,7 @@ export const getUpdateUserAuthorizationMutationOptions = <TError = AxiosError<un
   > = (props) => {
     const { id, data } = props ?? {}
 
-    return updateUserAuthorization(id, data, axiosOptions)
+    return updateUserAuthorization(id, data, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -142,16 +153,16 @@ export const getUpdateUserAuthorizationMutationOptions = <TError = AxiosError<un
 
 export type UpdateUserAuthorizationMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserAuthorization>>>
 export type UpdateUserAuthorizationMutationBody = UpdateUserAuthRequest
-export type UpdateUserAuthorizationMutationError = AxiosError<unknown>
+export type UpdateUserAuthorizationMutationError = unknown
 
-export const useUpdateUserAuthorization = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+export const useUpdateUserAuthorization = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUserAuthorization>>,
     TError,
     { id: string; data: UpdateUserAuthRequest },
     TContext
   >
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }) => {
   const mutationOptions = getUpdateUserAuthorizationMutationOptions(options)
 
@@ -160,20 +171,20 @@ export const useUpdateUserAuthorization = <TError = AxiosError<unknown>, TContex
 /**
  * @summary deletes the user by id
  */
-export const deleteUser = (id: string, options?: AxiosRequestConfig): Promise<AxiosResponse<unknown>> => {
-  return axios.delete(`/user/${id}`, options)
+export const deleteUser = (id: string, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<unknown>({ url: `/user/${id}`, method: 'delete' }, options)
 }
 
-export const getDeleteUserMutationOptions = <TError = AxiosError<void>, TContext = unknown>(options?: {
+export const getDeleteUserMutationOptions = <TError = void, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext> => {
-  const { mutation: mutationOptions, axios: axiosOptions } = options ?? {}
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUser>>, { id: string }> = (props) => {
     const { id } = props ?? {}
 
-    return deleteUser(id, axiosOptions)
+    return deleteUser(id, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -181,11 +192,11 @@ export const getDeleteUserMutationOptions = <TError = AxiosError<void>, TContext
 
 export type DeleteUserMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>
 
-export type DeleteUserMutationError = AxiosError<void>
+export type DeleteUserMutationError = void
 
-export const useDeleteUser = <TError = AxiosError<void>, TContext = unknown>(options?: {
+export const useDeleteUser = <TError = void, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext>
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }) => {
   const mutationOptions = getDeleteUserMutationOptions(options)
 
@@ -197,26 +208,29 @@ export const useDeleteUser = <TError = AxiosError<void>, TContext = unknown>(opt
 export const updateUser = (
   id: string,
   updateUserRequest: UpdateUserRequest,
-  options?: AxiosRequestConfig,
-): Promise<AxiosResponse<UserResponse>> => {
-  return axios.patch(`/user/${id}`, updateUserRequest, options)
+  options?: SecondParameter<typeof customInstance>,
+) => {
+  return customInstance<UserResponse>(
+    { url: `/user/${id}`, method: 'patch', headers: { 'Content-Type': 'application/json' }, data: updateUserRequest },
+    options,
+  )
 }
 
-export const getUpdateUserMutationOptions = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+export const getUpdateUserMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUser>>,
     TError,
     { id: string; data: UpdateUserRequest },
     TContext
   >
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateUser>>,
   TError,
   { id: string; data: UpdateUserRequest },
   TContext
 > => {
-  const { mutation: mutationOptions, axios: axiosOptions } = options ?? {}
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateUser>>,
@@ -224,7 +238,7 @@ export const getUpdateUserMutationOptions = <TError = AxiosError<unknown>, TCont
   > = (props) => {
     const { id, data } = props ?? {}
 
-    return updateUser(id, data, axiosOptions)
+    return updateUser(id, data, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -232,16 +246,16 @@ export const getUpdateUserMutationOptions = <TError = AxiosError<unknown>, TCont
 
 export type UpdateUserMutationResult = NonNullable<Awaited<ReturnType<typeof updateUser>>>
 export type UpdateUserMutationBody = UpdateUserRequest
-export type UpdateUserMutationError = AxiosError<unknown>
+export type UpdateUserMutationError = unknown
 
-export const useUpdateUser = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+export const useUpdateUser = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUser>>,
     TError,
     { id: string; data: UpdateUserRequest },
     TContext
   >
-  axios?: AxiosRequestConfig
+  request?: SecondParameter<typeof customInstance>
 }) => {
   const mutationOptions = getUpdateUserMutationOptions(options)
 

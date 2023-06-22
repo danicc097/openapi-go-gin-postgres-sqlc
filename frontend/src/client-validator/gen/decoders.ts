@@ -26,6 +26,7 @@ import {
   RestProjectBoardResponse,
   UserResponse,
   HTTPValidationError,
+  HTTPError,
   Topics,
   Scope,
   Scopes,
@@ -34,7 +35,6 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
-  HttpErrorType,
   UuidUUID,
   PgtypeJSONB,
   DbWorkItem,
@@ -43,10 +43,8 @@ import {
   RestWorkItemCommentCreateRequest,
   Project,
   DbActivityCreateParams,
-  DbKanbanStepCreateParams,
   DbTeamCreateParams,
   DbWorkItemTagCreateParams,
-  DbWorkItemTypeCreateParams,
   DbWorkItemRole,
   DbWorkItem_AssignedUser,
   NotificationType,
@@ -285,6 +283,18 @@ export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
     return validateJson(json, schema, HTTPValidationErrorDecoder.definitionName)
   },
 }
+export const HTTPErrorDecoder: Decoder<HTTPError> = {
+  definitionName: 'HTTPError',
+  schemaRef: '#/definitions/HTTPError',
+
+  decode(json: unknown): HTTPError {
+    const schema = ajv.getSchema(HTTPErrorDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${HTTPErrorDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, HTTPErrorDecoder.definitionName)
+  },
+}
 export const TopicsDecoder: Decoder<Topics> = {
   definitionName: 'Topics',
   schemaRef: '#/definitions/Topics',
@@ -379,18 +389,6 @@ export const ValidationErrorDecoder: Decoder<ValidationError> = {
       throw new Error(`Schema ${ValidationErrorDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ValidationErrorDecoder.definitionName)
-  },
-}
-export const HttpErrorTypeDecoder: Decoder<HttpErrorType> = {
-  definitionName: 'HttpErrorType',
-  schemaRef: '#/definitions/HttpErrorType',
-
-  decode(json: unknown): HttpErrorType {
-    const schema = ajv.getSchema(HttpErrorTypeDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${HttpErrorTypeDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, HttpErrorTypeDecoder.definitionName)
   },
 }
 export const UuidUUIDDecoder: Decoder<UuidUUID> = {
@@ -489,18 +487,6 @@ export const DbActivityCreateParamsDecoder: Decoder<DbActivityCreateParams> = {
     return validateJson(json, schema, DbActivityCreateParamsDecoder.definitionName)
   },
 }
-export const DbKanbanStepCreateParamsDecoder: Decoder<DbKanbanStepCreateParams> = {
-  definitionName: 'DbKanbanStepCreateParams',
-  schemaRef: '#/definitions/DbKanbanStepCreateParams',
-
-  decode(json: unknown): DbKanbanStepCreateParams {
-    const schema = ajv.getSchema(DbKanbanStepCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DbKanbanStepCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DbKanbanStepCreateParamsDecoder.definitionName)
-  },
-}
 export const DbTeamCreateParamsDecoder: Decoder<DbTeamCreateParams> = {
   definitionName: 'DbTeamCreateParams',
   schemaRef: '#/definitions/DbTeamCreateParams',
@@ -523,18 +509,6 @@ export const DbWorkItemTagCreateParamsDecoder: Decoder<DbWorkItemTagCreateParams
       throw new Error(`Schema ${DbWorkItemTagCreateParamsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemTagCreateParamsDecoder.definitionName)
-  },
-}
-export const DbWorkItemTypeCreateParamsDecoder: Decoder<DbWorkItemTypeCreateParams> = {
-  definitionName: 'DbWorkItemTypeCreateParams',
-  schemaRef: '#/definitions/DbWorkItemTypeCreateParams',
-
-  decode(json: unknown): DbWorkItemTypeCreateParams {
-    const schema = ajv.getSchema(DbWorkItemTypeCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DbWorkItemTypeCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DbWorkItemTypeCreateParamsDecoder.definitionName)
   },
 }
 export const DbWorkItemRoleDecoder: Decoder<DbWorkItemRole> = {
