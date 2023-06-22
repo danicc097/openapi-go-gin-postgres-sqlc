@@ -54,6 +54,7 @@ type GenerateComponentProps<T> = {
 function generateComponent<T>({ form, fieldType, props, formField }: GenerateComponentProps<T>) {
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
+    mb: 4,
     ...form.getInputProps(formField),
     ...props,
   }
@@ -101,7 +102,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       if (parentPathPrefix !== '' && !key.startsWith(parentPathPrefix)) {
         return
       }
-      const parentKey = parentPathPrefix.replace(/\.*$/, '')
+      const pp = key.split('.')
+      const parentKey = parentPathPrefix.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
 
       const fieldKey = String(key)
       const formKey = constructFormKey(fieldKey, index)
@@ -177,14 +179,14 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
       return (
         <Group key={fieldKey} align="center">
-          {field.type !== 'object' ? (
+          {field.type !== 'object' && !schemaFields[parentKey]?.isArray ? (
             <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formKey })}</>
-          ) : (
+          ) : !schemaFields[parentKey]?.isArray ? (
             <>
               <Title size={18}>{key}</Title>
               <Space p={8} />
             </>
-          )}
+          ) : null}
         </Group>
       )
     })
