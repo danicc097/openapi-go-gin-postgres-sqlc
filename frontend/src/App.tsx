@@ -136,7 +136,7 @@ export default function App() {
         description: 'some text',
         kanbanStepID: 1,
         teamID: 1,
-        title: 'some text',
+        // title: {},
         workItemTypeID: 1,
       },
       // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
@@ -221,7 +221,12 @@ export default function App() {
                               'base.metadata': { type: 'integer', required: true, isArray: true },
                               'base.targetDate': { type: 'date-time', required: true, isArray: false },
                               'base.teamID': { type: 'integer', required: true, isArray: false },
-                              'base.title': { type: 'string', required: true, isArray: false },
+                              'base.title': { type: 'object', required: true, isArray: true },
+                              'base.title.name': { type: 'string', required: true, isArray: false },
+                              // FIXME: bad addNested :
+                              // formGeneration.tsx:185  {nestedArrayOfObjects: 'base.0.title'}
+                              // formGeneration.tsx:165 {nestedArray: 'base.title.0.items', formValue: undefined}
+                              'base.title.items': { type: 'string', required: true, isArray: true },
                               'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
                               demoProject: { isArray: false, required: true, type: 'object' },
                               'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
