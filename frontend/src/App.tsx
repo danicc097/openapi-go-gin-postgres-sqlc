@@ -118,6 +118,14 @@ export default function App() {
     // hack to use e.g. 'members.role' instead of 'members.??.role' to define common options for all props of members
     FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
 
+  /**
+   * TODO: transformers: e.g. initialValues.members = USERS.map =>(userToMemberTransformer(user: UserResponse): ServiceMember)
+   * but we will not set this manually. instead we have a wrapper before form creation where initialData = {"members": USERS} (so now []UserResponse instead of ServiceMember)
+   * and transformer be used in options.transformers = {"members": (users: []UserResponse) => users.map(u => userToMemberTransformer(u))}.
+   * transformer function must match signature inferred from initialData wrapper and form itself so its fully typed.
+   * The same principle needs to be used for custom components, e.g. multiselect and select.
+   */
+
   const demoWorkItemCreateForm = useForm<RestDemoWorkItemCreateRequest>({
     // TODO: simple function to initialize top level with empty object if property type === object
     // now that we have json schema dereferenced
@@ -138,7 +146,7 @@ export default function App() {
         ref: '312321',
         workItemID: 1,
       },
-      tagIDs: [0],
+      tagIDs: [0, 1, 2],
       // members: [{ role: 'preparer', userID: 'fesfse' }],
     } as RestDemoWorkItemCreateRequest,
     validateInputOnChange: true,
