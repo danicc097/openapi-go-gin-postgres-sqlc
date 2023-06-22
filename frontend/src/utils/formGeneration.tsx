@@ -177,16 +177,18 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         )
       }
 
+      if (schemaFields[parentKey]?.isArray && parentPathPrefix === '') return null
+
       return (
         <Group key={fieldKey} align="center">
-          {field.type !== 'object' && !schemaFields[parentKey]?.isArray ? (
+          {field.type !== 'object' ? (
             <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formKey })}</>
-          ) : !schemaFields[parentKey]?.isArray ? (
+          ) : (
             <>
               <Title size={18}>{key}</Title>
               <Space p={8} />
             </>
-          ) : null}
+          )}
         </Group>
       )
     })
