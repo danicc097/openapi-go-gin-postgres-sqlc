@@ -15,7 +15,7 @@ import {
   Container,
   Box,
 } from '@mantine/core'
-import { DateInput } from '@mantine/dates'
+import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
 import type { UseForm } from '@mantine/form/lib/types'
 import { useMantineTheme } from '@mantine/styles'
@@ -68,8 +68,10 @@ function generateComponent<T>({ form, fieldType, props, formField }: GenerateCom
       return <TextInput {..._props} />
     case 'boolean':
       return <Checkbox {..._props} />
-    case 'date-time':
+    case 'date':
       return <DateInput placeholder="Select date" {..._props} />
+    case 'date-time':
+      return <DateTimePicker placeholder="Select date and time" {..._props} />
     case 'integer':
       return <NumberInput {..._props} />
     default:
