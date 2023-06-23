@@ -5,7 +5,7 @@ import 'src/assets/css/overrides.css'
 import 'src/assets/css/pulsate.css'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
-import { ColorSchemeProvider, type ColorScheme, MantineProvider } from '@mantine/core'
+import { ColorSchemeProvider, type ColorScheme, MantineProvider, Title } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
@@ -209,6 +209,7 @@ export default function App() {
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
+                          <Title size={20}>This form has been automatically generated from an openapi spec</Title>
                           <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
                           <DynamicForm<RestDemoWorkItemCreateRequestFormField, RestDemoWorkItemCreateRequest>
                             form={demoWorkItemCreateForm}

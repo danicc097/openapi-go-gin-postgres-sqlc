@@ -14,6 +14,7 @@ import {
   Card,
   Container,
   Box,
+  Flex,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
@@ -111,13 +112,13 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     }
   }
 
-  const addNestedField = (field: T) => {
+  const addNestedField = (field: T, formField: string) => {
     const initialValue = initialValueByField(field)
-    console.log({ addNestedField: field, initialValue })
+    console.log({ addNestedFieldField: field, addNestedFieldFormField: formField, initialValue })
 
     const newValues = _.cloneDeep(form.values)
 
-    _.set(newValues, field, [...(_.get(newValues, field, []) || []), initialValue])
+    _.set(newValues, formField, [...(_.get(newValues, field, []) || []), initialValue])
 
     form.setValues((currentValues) => newValues)
   }
@@ -139,6 +140,25 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
   const generateFormInputs = ({ parentFieldKey = '', parentFormField = '' }: GenerateFormInputsProps) => {
     return entries(schemaFields).map(([fieldKey, field]) => {
+      function renderNestedHeader() {
+        return (
+          <div>
+            {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>}
+            <Flex direction="row">
+              {renderTitle(formField)}
+              <Button
+                size="xs"
+                p={4}
+                leftIcon={<IconPlus size="1rem" />}
+                onClick={() => addNestedField(fieldKey, formField)}
+                variant="filled"
+                color={'green'}
+              >{`Add ${formField}`}</Button>
+            </Flex>
+          </div>
+        )
+      }
+
       if (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) {
         return null
       }
@@ -166,13 +186,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // nested array of nonbjects generation
         return (
           <Card key={fieldKey} mt={24}>
-            {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>}
-            <div>
-              {renderTitle(formField)}
-              <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
-                <IconPlus size="1rem" />
-              </ActionIcon>
-            </div>
+            {renderNestedHeader()}
             {/* existing array fields, if any */}
             {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
               console.log({ _nestedValue, _index })
@@ -206,15 +220,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
-            {parentFieldKey === '' && (
-              <>
-                {renderTitle(formField)}
-                <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
-                  <IconPlus size="1rem" />
-                </ActionIcon>
-                {<Prism language="json">{JSON.stringify({ formValue: _.get(form.values, formField) }, null, 4)}</Prism>}
-              </>
-            )}
+            {parentFieldKey === '' && <>{renderNestedHeader()}</>}
             {/* FIXME: bad gen array is nested - removenested and form inputs wrong. (base.metadata vs tagIDs working fine) */}
             {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
               console.log({ nestedArrayOfObjectsIndex: _index })
@@ -261,9 +267,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 }
 
 /**
- * Construct form accessor based on dot notation path and index (in case of array element).
+ * Construct form accessor based on current schema field key and parent form field.
  */
 function constructFormKey(key: string, parentFormField: string) {
-  console.log({ key, parentFormField })
-  return parentFormField !== '' ? `${parentFormField}.${key.split('.').slice(-1)[0]}` : String(key)
+  const currentFieldName = key.split('.').slice(-1)[0]
+
+  return parentFormField !== '' ? `${parentFormField}.${currentFieldName}` : key
 }
