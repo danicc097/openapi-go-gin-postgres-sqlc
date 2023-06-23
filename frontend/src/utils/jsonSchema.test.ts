@@ -1,5 +1,4 @@
 import type { FieldPath } from 'react-hook-form'
-import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import type { RecursiveKeyOf, RecursiveKeyOfArray } from 'src/types/utils'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
@@ -35,7 +34,24 @@ describe('parseSchemaFields', () => {
               type: 'integer',
             },
             title: {
-              type: 'string',
+              items: {
+                properties: {
+                  items: {
+                    items: {
+                      type: 'string',
+                    },
+                    type: ['array', 'null'],
+                  },
+                  name: {
+                    type: 'string',
+                    $schema: 'http://json-schema.org/draft-04/schema#',
+                  },
+                },
+                required: ['items', 'name'],
+                type: 'object',
+                $schema: 'http://json-schema.org/draft-04/schema#',
+              },
+              type: ['array', 'null'],
             },
             workItemTypeID: {
               type: 'integer',
@@ -117,8 +133,8 @@ describe('parseSchemaFields', () => {
 
     type RestDemoWorkItemCreateRequestFormField =
       // hack to use 'members.role' instead of 'members.??.role'
-      | FieldPath<RestDemoWorkItemCreateRequest>
-      | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
+      | FieldPath<TestTypes.RestDemoWorkItemCreateRequest>
+      | RecursiveKeyOfArray<TestTypes.RestDemoWorkItemCreateRequest['members'], 'members'>
 
     const wantFields: Record<RestDemoWorkItemCreateRequestFormField, SchemaField> = {
       base: { isArray: false, required: true, type: 'object' },
@@ -128,7 +144,9 @@ describe('parseSchemaFields', () => {
       'base.metadata': { type: 'integer', required: true, isArray: true },
       'base.targetDate': { type: 'date-time', required: true, isArray: false },
       'base.teamID': { type: 'integer', required: true, isArray: false },
-      'base.title': { type: 'string', required: true, isArray: false },
+      'base.title': { type: 'object', required: true, isArray: true },
+      'base.title.name': { type: 'string', required: true, isArray: false },
+      'base.title.items': { type: 'string', required: true, isArray: true },
       'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
       demoProject: { isArray: false, required: true, type: 'object' },
       'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
