@@ -18,6 +18,7 @@ import {
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
 import type { UseForm } from '@mantine/form/lib/types'
+import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
 import { IconMinus, IconPlus } from '@tabler/icons'
 import _ from 'lodash'
@@ -59,8 +60,6 @@ function generateComponent<T>({ form, fieldType, props, formField }: GenerateCom
     ...props,
   }
 
-  console.log(formField)
-
   // TODO: helpText is `description` prop in mantine
 
   switch (fieldType) {
@@ -89,7 +88,7 @@ function renderTitle(key: string) {
 }
 
 type GenerateFormInputsProps = {
-  parentPathPrefix?: string
+  parentFieldKey?: string
   index?: number
   parentFormField?: string
 }
@@ -105,6 +104,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     switch (schemaFields[field].type) {
       case 'object':
         return {}
+      case 'array':
+        return []
       default:
         return undefined
     }
@@ -136,23 +137,22 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     )
   }
 
-  const generateFormInputs = ({ parentPathPrefix = '', parentFormField = '', index }: GenerateFormInputsProps) => {
+  const generateFormInputs = ({ parentFieldKey = '', parentFormField = '' }: GenerateFormInputsProps) => {
     return entries(schemaFields).map(([fieldKey, field]) => {
-      if (parentPathPrefix !== '' && !fieldKey.startsWith(parentPathPrefix)) {
+      if (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) {
         return null
       }
 
       const pp = fieldKey.split('.')
-      const parentKey = parentPathPrefix.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
+      const parentKey = parentFieldKey.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
 
-      if (schemaFields[parentKey]?.isArray && parentPathPrefix === '') return null
+      if (schemaFields[parentKey]?.isArray && parentFieldKey === '') return null
 
-      const formField = constructFormKey(fieldKey, index)
+      const formField = constructFormKey(fieldKey, parentFormField)
       if (parentFormField !== '') {
         console.log({ parentFormField })
-        // formField = `${parentFormField}.${pp.slice(-1)[0]}`
       }
-      // console.log({ formValue: _.get(form.values, formField), formField })
+      console.log({ formValue: _.get(form.values, formField), formField })
 
       const componentProps = {
         css: css`
@@ -166,7 +166,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // nested array of nonbjects generation
         return (
           <Card key={fieldKey} mt={24}>
-            {JSON.stringify(_.get(form.values, formField))}
+            {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>}
             <div>
               {renderTitle(formField)}
               <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
@@ -196,7 +196,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       // FIXME: need to check if there are isArray in existing field, e.g. base.title.items -->
       // need to check if base or base.title is already arrayofobject or array! and we need to pass what we will call parentFormField option, e.g. "base.title.2.items",
       // parentFormField keeps accumulating form field access with index when we do `generateFormInputs`:
-      // generateFormInputs({ parentPathPrefix: fieldKey, index: _index, parentFormField: `${formField}.${index}` }
+      // generateFormInputs({ parentFieldKey: fieldKey, index: _index, parentFormField: `${formField}.${index}` }
       // apart from just "base.title.items" to construct index access on deeply nested generation doing some string wrangling
       // (same reasoning as constructFormKey)
 
@@ -206,13 +206,13 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
-            {parentPathPrefix === '' && (
+            {parentFieldKey === '' && (
               <>
                 {renderTitle(formField)}
                 <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
                   <IconPlus size="1rem" />
                 </ActionIcon>
-                {JSON.stringify({ formValue: _.get(form.values, formField) })}
+                {<Prism language="json">{JSON.stringify({ formValue: _.get(form.values, formField) }, null, 4)}</Prism>}
               </>
             )}
             {/* FIXME: bad gen array is nested - removenested and form inputs wrong. (base.metadata vs tagIDs working fine) */}
@@ -223,9 +223,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                   <p>{`${fieldKey}[${_index}]`}</p>
                   <Group>
                     {generateFormInputs({
-                      parentPathPrefix: fieldKey,
-                      index: _index,
-                      parentFormField: constructFormKey(formField, _index),
+                      parentFieldKey: fieldKey,
+                      parentFormField: `${formField}.${_index}`,
                     })}
                   </Group>
                   {renderRemoveNestedFieldButton(formField, _index)}
@@ -264,11 +263,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 /**
  * Construct form accessor based on dot notation path and index (in case of array element).
  */
-function constructFormKey(key: string, index?: number) {
-  const formPaths = key.split('.')
-  const formField =
-    index !== undefined
-      ? [...formPaths.slice(0, formPaths.length - 1), index, formPaths[formPaths.length - 1]].join('.')
-      : String(key)
-  return formField
+function constructFormKey(key: string, parentFormField: string) {
+  console.log({ key, parentFormField })
+  return parentFormField !== '' ? `${parentFormField}.${key.split('.').slice(-1)[0]}` : String(key)
 }
