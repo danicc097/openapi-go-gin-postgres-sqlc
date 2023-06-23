@@ -142,6 +142,8 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         return null
       }
 
+      if (parentFormField !== '') console.log({ parentFormField })
+
       const pp = fieldKey.split('.')
       const parentKey = parentPathPrefix.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
 
@@ -218,7 +220,11 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                 <div key={_index} style={{ marginBottom: theme.spacing.sm }}>
                   <p>{`${fieldKey}[${_index}]`}</p>
                   <Group>
-                    {generateFormInputs({ parentPathPrefix: fieldKey, index: _index, parentFormField: formField })}
+                    {generateFormInputs({
+                      parentPathPrefix: fieldKey,
+                      index: _index,
+                      parentFormField: constructFormKey(formField, _index),
+                    })}
                   </Group>
                   {renderRemoveNestedFieldButton(formField, _index)}
                 </div>
