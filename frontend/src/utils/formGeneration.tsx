@@ -143,7 +143,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       function renderNestedHeader() {
         return (
           <div>
-            {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>}
+            {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
             <Flex direction="row">
               {renderTitle(formField)}
               <Button
