@@ -118,7 +118,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
     const newValues = _.cloneDeep(form.values)
 
-    _.set(newValues, formField, [...(_.get(newValues, field, []) || []), initialValue])
+    _.set(newValues, formField, [...(_.get(newValues, formField, []) || []), initialValue])
 
     form.setValues((currentValues) => newValues)
   }
@@ -172,7 +172,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       if (parentFormField !== '') {
         console.log({ parentFormField })
       }
-      console.log({ formValue: _.get(form.values, formField), formField })
+      // console.log({ formValue: _.get(form.values, formField), formField })
 
       const componentProps = {
         css: css`
