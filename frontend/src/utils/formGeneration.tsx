@@ -156,6 +156,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
             background-color: #7c1a1a;
           `}
           size="sm"
+          data-testid={`form-field-remove-button-${formField}`}
         >
           <IconMinus size="1rem" />
         </ActionIcon>
@@ -182,6 +183,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
                 onClick={() => addNestedField(fieldKey, formField)}
                 variant="filled"
                 color={'green'}
+                data-testid={`form-field-add-button-${formField}`}
               >{`Add ${formField}`}</Button>
             </Flex>
           </div>
@@ -215,6 +217,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         `,
         ...(!field.isArray && { label: formField }),
         required: field.required,
+        'data-testid': `form-field-${formField}`,
       }
 
       if (field.isArray && field.type !== 'object') {
