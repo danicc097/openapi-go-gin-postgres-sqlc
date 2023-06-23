@@ -114,11 +114,11 @@ type GenerateFormInputsProps = {
   removeButton?: JSX.Element
 }
 
-export const DynamicForm = <T extends string, U extends GenericObject>({
+export default function DynamicForm<T extends string, U extends GenericObject>({
   form,
   schemaFields,
   options,
-}: DynamicFormProps<T, U>) => {
+}: DynamicFormProps<T, U>) {
   const theme = useMantineTheme()
 
   function initialValueByField(field: T) {
