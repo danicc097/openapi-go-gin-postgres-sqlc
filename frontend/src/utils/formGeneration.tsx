@@ -183,13 +183,16 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         )
       }
 
+      // fix deeply nested
+      // FIXME: need to check if there are isArray in existing field, e.g. base.title.items -->
+      // need to check if base or base.title is already arrayofobject or array! and we need to pass what we will call formFieldParent option, e.g. "base.title.2.items",
+      // formFieldParent keeps accumulating form field access with index when we do `generateFormInputs`:
+      // generateFormInputs({ parentPathPrefix: fieldKey, index: _index, formFieldParent: `${formField}.${index}` }
+      // apart from just "base.title.items" to construct index access on deeply nested generation doing some string wrangling
+      // (same reasoning as constructFormKey)
+
       if (field.isArray && field.type === 'object') {
         console.log({ nestedArrayOfObjects: formField })
-
-        /**
-         *
-         * FIXME: is not using index to access form (cause of toFixed not a function)
-         */
 
         // array of objects
         return (
