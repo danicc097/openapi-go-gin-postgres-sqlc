@@ -15,13 +15,14 @@ import {
   Container,
   Box,
   Flex,
+  Tooltip,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
 import type { UseForm } from '@mantine/form/lib/types'
 import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
-import { IconMinus, IconPlus } from '@tabler/icons'
+import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _ from 'lodash'
 import { useState, type ComponentProps } from 'react'
 import type { FieldPath } from 'react-hook-form'
@@ -48,35 +49,53 @@ type DynamicFormProps<T extends string, U extends GenericObject> = {
 type GenerateComponentProps<T> = {
   form: UseFormReturnType<T>
   fieldType: SchemaField['type']
-  props: any
+  props?: {
+    input?: any
+    container?: any
+  }
   formField: string
+  removeButton?: JSX.Element
 }
 
 // IMPORTANT: field dot notation requires indexes for arrays. e.g. `members.0.role`.
-function generateComponent<T>({ form, fieldType, props, formField }: GenerateComponentProps<T>) {
+function generateComponent<T>({ form, fieldType, props, formField, removeButton }: GenerateComponentProps<T>) {
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
     mb: 4,
     ...form.getInputProps(formField),
-    ...props,
+    ...props?.input,
+    ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
   }
 
-  // TODO: helpText is `description` prop in mantine
+  // TODO: helpText is `description` prop in mantine.
+  // will accecss these via options[field (not formField since its shared for array elements)].<description|label|formValueTransformer|...>
 
+  let el = null
   switch (fieldType) {
     case 'string':
-      return <TextInput {..._props} />
+      el = <TextInput {..._props} />
+      break
     case 'boolean':
-      return <Checkbox {..._props} />
+      el = <Checkbox {..._props} />
+      break
     case 'date':
-      return <DateInput placeholder="Select date" {..._props} />
+      el = <DateInput placeholder="Select date" {..._props} />
+      break
     case 'date-time':
-      return <DateTimePicker placeholder="Select date and time" {..._props} />
+      el = <DateTimePicker placeholder="Select date and time" {..._props} />
+      break
     case 'integer':
-      return <NumberInput {..._props} />
+      el = <NumberInput {..._props} />
+      break
     default:
-      return null
+      break
   }
+
+  return (
+    <Flex align="center" {...props?.container}>
+      {el}
+    </Flex>
+  )
 }
 
 function renderTitle(key: string) {
@@ -92,6 +111,7 @@ type GenerateFormInputsProps = {
   parentFieldKey?: string
   index?: number
   parentFormField?: string
+  removeButton?: JSX.Element
 }
 
 export const DynamicForm = <T extends string, U extends GenericObject>({
@@ -125,20 +145,29 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 
   function renderRemoveNestedFieldButton(formField: string, index: number) {
     return (
-      <ActionIcon
-        onClick={(e) => {
-          console.log({ removeNestedField: `${formField}[${index}]` })
-          form.removeListItem(formField, index)
-        }}
-        variant="filled"
-        color={'red'}
-      >
-        <IconMinus size="1rem" />
-      </ActionIcon>
+      <Tooltip label="Remove item" position="top-end" withArrow>
+        <ActionIcon
+          onClick={(e) => {
+            console.log({ removeNestedField: `${formField}[${index}]` })
+            form.removeListItem(formField, index)
+          }}
+          // variant="filled"
+          css={css`
+            background-color: #7c1a1a;
+          `}
+          size="sm"
+        >
+          <IconMinus size="1rem" />
+        </ActionIcon>
+      </Tooltip>
     )
   }
 
-  const generateFormInputs = ({ parentFieldKey = '', parentFormField = '' }: GenerateFormInputsProps) => {
+  const generateFormInputs = ({
+    parentFieldKey = '',
+    parentFormField = '',
+    removeButton = null,
+  }: GenerateFormInputsProps) => {
     return entries(schemaFields).map(([fieldKey, field]) => {
       function renderNestedHeader() {
         return (
@@ -174,11 +203,17 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       }
       // console.log({ formValue: _.get(form.values, formField), formField })
 
-      const componentProps = {
+      const containerProps = {
         css: css`
-          min-width: 100%;
+          width: 100%;
         `,
-        label: formField,
+      }
+
+      const inputProps = {
+        css: css`
+          width: 100%;
+        `,
+        ...(!field.isArray && { label: formField }),
         required: field.required,
       }
 
@@ -191,28 +226,20 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
             {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
               console.log({ _nestedValue, _index })
               return (
-                <div key={_index}>
+                <Flex key={_index}>
                   {generateComponent({
                     form,
                     fieldType: field.type,
                     formField: `${formField}.${_index}`,
-                    props: componentProps,
+                    props: { input: inputProps, container: containerProps },
+                    removeButton: renderRemoveNestedFieldButton(formField, _index),
                   })}
-                  {renderRemoveNestedFieldButton(formField, _index)}
-                </div>
+                </Flex>
               )
             })}
           </Card>
         )
       }
-
-      // fix deeply nested
-      // FIXME: need to check if there are isArray in existing field, e.g. base.title.items -->
-      // need to check if base or base.title is already arrayofobject or array! and we need to pass what we will call parentFormField option, e.g. "base.title.2.items",
-      // parentFormField keeps accumulating form field access with index when we do `generateFormInputs`:
-      // generateFormInputs({ parentFieldKey: fieldKey, index: _index, parentFormField: `${formField}.${index}` }
-      // apart from just "base.title.items" to construct index access on deeply nested generation doing some string wrangling
-      // (same reasoning as constructFormKey)
 
       if (field.isArray && field.type === 'object') {
         console.log({ nestedArrayOfObjects: formField })
@@ -221,19 +248,19 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         return (
           <Card key={fieldKey} mt={24}>
             {parentFieldKey === '' && <>{renderNestedHeader()}</>}
-            {/* FIXME: bad gen array is nested - removenested and form inputs wrong. (base.metadata vs tagIDs working fine) */}
             {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
               console.log({ nestedArrayOfObjectsIndex: _index })
               return (
-                <div key={_index} style={{ marginBottom: theme.spacing.sm }}>
+                <div key={_index}>
                   <p>{`${fieldKey}[${_index}]`}</p>
+                  {renderRemoveNestedFieldButton(formField, _index)}
                   <Group>
                     {generateFormInputs({
                       parentFieldKey: fieldKey,
                       parentFormField: `${formField}.${_index}`,
+                      removeButton: null,
                     })}
                   </Group>
-                  {renderRemoveNestedFieldButton(formField, _index)}
                 </div>
               )
             })}
@@ -244,7 +271,16 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       return (
         <Group key={fieldKey} align="center">
           {field.type !== 'object' ? (
-            <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formField })}</>
+            <>
+              {removeButton}
+              {generateComponent({
+                form,
+                fieldType: field.type,
+                props: { input: inputProps, container: containerProps },
+                formField: formField,
+                removeButton: null,
+              })}
+            </>
           ) : (
             <>{renderTitle(formField)}</>
           )}
@@ -253,6 +289,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
     })
   }
 
+  // TODO: will also need sorting schemaFields beforehand and then generate normally.
   return (
     <PageTemplate minWidth={800}>
       <form
