@@ -142,21 +142,23 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
         return null
       }
 
-      if (parentFormField !== '') console.log({ parentFormField })
-
       const pp = fieldKey.split('.')
       const parentKey = parentPathPrefix.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
 
       if (schemaFields[parentKey]?.isArray && parentPathPrefix === '') return null
 
       const formField = constructFormKey(fieldKey, index)
+      if (parentFormField !== '') {
+        console.log({ parentFormField })
+        // formField = `${parentFormField}.${pp.slice(-1)[0]}`
+      }
       // console.log({ formValue: _.get(form.values, formField), formField })
 
       const componentProps = {
         css: css`
           min-width: 100%;
         `,
-        label: fieldKey,
+        label: formField,
         required: field.required,
       }
 
@@ -166,13 +168,12 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           <Card key={fieldKey} mt={24}>
             {JSON.stringify(_.get(form.values, formField))}
             <div>
-              {renderTitle(fieldKey)}
+              {renderTitle(formField)}
               <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
                 <IconPlus size="1rem" />
               </ActionIcon>
             </div>
             {/* existing array fields, if any */}
-            {console.log({ nestedArray: formField, formValue: _.get(form.values, formField) })}
             {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
               console.log({ _nestedValue, _index })
               return (
@@ -207,10 +208,11 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           <Card key={fieldKey} mt={24}>
             {parentPathPrefix === '' && (
               <>
-                {renderTitle(fieldKey)}
+                {renderTitle(formField)}
                 <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
                   <IconPlus size="1rem" />
                 </ActionIcon>
+                {JSON.stringify({ formValue: _.get(form.values, formField) })}
               </>
             )}
             {/* FIXME: bad gen array is nested - removenested and form inputs wrong. (base.metadata vs tagIDs working fine) */}
@@ -239,7 +241,7 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
           {field.type !== 'object' ? (
             <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formField })}</>
           ) : (
-            <>{renderTitle(fieldKey)}</>
+            <>{renderTitle(formField)}</>
           )}
         </Group>
       )
