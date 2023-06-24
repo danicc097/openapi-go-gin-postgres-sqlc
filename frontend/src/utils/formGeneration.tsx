@@ -56,7 +56,6 @@ type GenerateComponentProps<U> = {
   removeButton?: JSX.Element
 }
 
-// IMPORTANT: field dot notation requires indexes for arrays. e.g. `members.0.role`.
 function generateComponent<U>({ form, fieldType, props, formField, removeButton }: GenerateComponentProps<U>) {
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
