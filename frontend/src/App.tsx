@@ -116,12 +116,13 @@ export default function App() {
 
   type RestDemoWorkItemCreateRequestFormField =
     // hack to use e.g. 'members.role' instead of 'members.??.role' to define common options for all props of members
-    FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
+    | FieldPath<TestTypes.RestDemoWorkItemCreateRequest>
+    | RecursiveKeyOfArray<TestTypes.RestDemoWorkItemCreateRequest['members'], 'members'>
 
   /**
-   * TODO: transformers: e.g. initialValues.members = USERS.map =>(userToMemberTransformer(user: UserResponse): ServiceMember)
-   * but we will not set this manually. instead we have a wrapper before form creation where initialData = {"members": USERS} (so now []UserResponse instead of ServiceMember)
-   * and transformer be used in options.transformers = {"members": (users: []UserResponse) => users.map(u => userToMemberTransformer(u))}.
+   * TODO: transformers: e.g. initialValues.members = USERS.map =>(userToMemberTransformer(user: User): ServiceMember)
+   * but we will not set this manually. instead we have a wrapper before form creation where initialData = {"members": USERS} (so now []User instead of ServiceMember)
+   * and transformer be used in options.transformers = {"members": (users: []User) => users.map(u => userToMemberTransformer(u))}.
    * transformer function must match signature inferred from initialData wrapper and form itself so its fully typed.
    * The same principle needs to be used for custom components, e.g. multiselect and select.
    */
@@ -211,7 +212,7 @@ export default function App() {
                           {/* <LandingPage /> */}
                           <Title size={20}>This form has been automatically generated from an openapi spec</Title>
                           <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
-                          <DynamicForm<RestDemoWorkItemCreateRequestFormField, RestDemoWorkItemCreateRequest>
+                          <DynamicForm<RestDemoWorkItemCreateRequestFormField, TestTypes.RestDemoWorkItemCreateRequest>
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
                             schemaFields={{

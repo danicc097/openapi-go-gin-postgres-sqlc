@@ -24,7 +24,7 @@ import {
   RestDemoWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
-  UserResponse,
+  User,
   HTTPValidationError,
   HTTPError,
   Topics,
@@ -259,16 +259,16 @@ export const RestProjectBoardResponseDecoder: Decoder<RestProjectBoardResponse> 
     return validateJson(json, schema, RestProjectBoardResponseDecoder.definitionName)
   },
 }
-export const UserResponseDecoder: Decoder<UserResponse> = {
-  definitionName: 'UserResponse',
-  schemaRef: '#/definitions/UserResponse',
+export const UserDecoder: Decoder<User> = {
+  definitionName: 'User',
+  schemaRef: '#/definitions/User',
 
-  decode(json: unknown): UserResponse {
-    const schema = ajv.getSchema(UserResponseDecoder.schemaRef)
+  decode(json: unknown): User {
+    const schema = ajv.getSchema(UserDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${UserResponseDecoder.definitionName} not found`)
+      throw new Error(`Schema ${UserDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, UserResponseDecoder.definitionName)
+    return validateJson(json, schema, UserDecoder.definitionName)
   },
 }
 export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {

@@ -50,7 +50,7 @@ func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 	// 	return
 	// }
 
-	// res := UserResponse{UserPublic: user.ToPublic(), Role: role.Name, Scopes: user.Scopes}
+	// res := User{UserPublic: user.ToPublic(), Role: role.Name, Scopes: user.Scopes}
 
 	// c.JSON(http.StatusOK, res)
 }

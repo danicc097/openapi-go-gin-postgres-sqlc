@@ -34,7 +34,7 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-	res := UserResponse{User: *user, Role: role.Name}
+	res := User{User: *user, Role: role.Name}
 
 	c.JSON(http.StatusOK, res)
 }
@@ -93,7 +93,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 		return
 	}
 
-	res := UserResponse{User: *user, Role: role.Name}
+	res := User{User: *user, Role: role.Name}
 
 	renderResponse(c, res, http.StatusOK)
 }

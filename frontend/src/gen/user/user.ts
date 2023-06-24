@@ -16,7 +16,7 @@ import type {
   UseInfiniteQueryResult,
   QueryKey,
 } from '@tanstack/react-query'
-import type { UserResponse, UpdateUserAuthRequest, UpdateUserRequest } from '.././model'
+import type { User, UpdateUserAuthRequest, UpdateUserRequest } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 type AwaitedInput<T> = PromiseLike<T> | T
@@ -30,7 +30,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  * @summary returns the logged in user
  */
 export const getCurrentUser = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<UserResponse>({ url: `/user/me`, method: 'get', signal }, options)
+  return customInstance<User>({ url: `/user/me`, method: 'get', signal }, options)
 }
 
 export const getGetCurrentUserQueryKey = () => [`/user/me`] as const
@@ -210,7 +210,7 @@ export const updateUser = (
   updateUserRequest: UpdateUserRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<UserResponse>(
+  return customInstance<User>(
     { url: `/user/${id}`, method: 'patch', headers: { 'Content-Type': 'application/json' }, data: updateUserRequest },
     options,
   )

@@ -1285,7 +1285,7 @@
       "x-postgen-struct": "RestProjectBoardResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "UserResponse": {
+    "User": {
       "properties": {
         "apiKey": {
           "properties": {
@@ -1536,7 +1536,7 @@
         "role"
       ],
       "type": "object",
-      "x-postgen-struct": "RestUserResponse",
+      "x-postgen-struct": "RestUser",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "HTTPValidationError": {
@@ -3800,7 +3800,7 @@
       "x-postgen-struct": "RestProjectBoardResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "UserResponse": {
+    "User": {
       "properties": {
         "apiKey": {
           "properties": {
@@ -4051,7 +4051,7 @@
         "role"
       ],
       "type": "object",
-      "x-postgen-struct": "RestUserResponse",
+      "x-postgen-struct": "RestUser",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "HTTPValidationError": {

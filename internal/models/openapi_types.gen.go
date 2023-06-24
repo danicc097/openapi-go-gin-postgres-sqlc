@@ -570,8 +570,8 @@ type UpdateUserRequest struct {
 	LastName *string `json:"lastName,omitempty"`
 }
 
-// UserResponse defines the model for UserResponse.
-type UserResponse struct {
+// User defines the model for User.
+type User struct {
 	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
 	CreatedAt                time.Time     `json:"createdAt"`
 	DeletedAt                *time.Time    `json:"deletedAt"`

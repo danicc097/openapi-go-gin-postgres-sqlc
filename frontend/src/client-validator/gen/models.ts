@@ -214,7 +214,7 @@ export interface RestProjectBoardResponse {
   workItemTags: DbWorkItemTag[] | null
   workItemTypes: DbWorkItemType[] | null
 }
-export interface UserResponse {
+export interface User {
   apiKey?: DbUserAPIKey
   createdAt: string
   deletedAt: string | null

@@ -251,7 +251,7 @@ export interface components {
       workItemTags: (components["schemas"]["DbWorkItemTag"])[] | null;
       workItemTypes: (components["schemas"]["DbWorkItemType"])[] | null;
     };
-    UserResponse: {
+    User: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
       createdAt: string;
@@ -569,7 +569,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserResponse"];
+          "application/json": components["schemas"]["User"];
         };
       };
     };
@@ -621,7 +621,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserResponse"];
+          "application/json": components["schemas"]["User"];
         };
       };
     };

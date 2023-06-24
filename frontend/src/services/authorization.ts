@@ -1,9 +1,9 @@
 import ROLES from 'src/roles'
 import SCOPES from 'src/scopes'
-import type { Role, Scopes, UserResponse } from 'src/gen/model'
+import type { Role, Scopes, User } from 'src/gen/model'
 
 interface IsAuthorizedParams {
-  user: UserResponse
+  user: User
   requiredRole?: Role
   requiredScopes?: Scopes
 }

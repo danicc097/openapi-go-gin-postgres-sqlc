@@ -1,12 +1,12 @@
 import ROLES from 'src/roles'
 import SCOPES from 'src/scopes'
-import type { UserResponse } from 'src/gen/model'
+import type { User } from 'src/gen/model'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import { isAuthorized } from 'src/services/authorization'
 import { describe, expect, it, test } from 'vitest'
 
 describe('roles and scopes', async () => {
-  const user = getGetCurrentUserMock() as UserResponse
+  const user = getGetCurrentUserMock() as User
   test('role', () => {
     user.role = 'user'
     expect(isAuthorized({ user, requiredRole: 'admin' })).toBe(false)
