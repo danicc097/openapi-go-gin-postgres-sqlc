@@ -2223,111 +2223,6 @@
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DbWorkItem_AssignedUser": {
-      "properties": {
-        "role": {
-          "title": "WorkItem role",
-          "type": "string",
-          "x-generated": "-",
-          "enum": [
-            "preparer",
-            "reviewer"
-          ],
-          "description": "represents a database 'work_item_role'",
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        },
-        "user": {
-          "properties": {
-            "createdAt": {
-              "format": "date-time",
-              "type": "string"
-            },
-            "deletedAt": {
-              "format": "date-time",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "email": {
-              "type": "string"
-            },
-            "firstName": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "fullName": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "hasGlobalNotifications": {
-              "type": "boolean"
-            },
-            "hasPersonalNotifications": {
-              "type": "boolean"
-            },
-            "lastName": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "scopes": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "users:read",
-                  "users:write",
-                  "scopes:write",
-                  "team-settings:write",
-                  "project-settings:write",
-                  "work-item-tag:create",
-                  "work-item-tag:edit",
-                  "work-item-tag:delete",
-                  "work-item:review"
-                ],
-                "x-generated": "-",
-                "$schema": "http://json-schema.org/draft-04/schema#"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
-            },
-            "userID": {
-              "type": "string",
-              "$schema": "http://json-schema.org/draft-04/schema#"
-            },
-            "username": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "userID",
-            "username",
-            "email",
-            "firstName",
-            "lastName",
-            "fullName",
-            "scopes",
-            "hasPersonalNotifications",
-            "hasGlobalNotifications",
-            "createdAt",
-            "deletedAt"
-          ],
-          "type": "object",
-          "x-postgen-struct": "DbUser",
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        }
-      },
-      "required": [
-        "role"
-      ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "NotificationType": {
       "description": "represents a database 'notification_type'",
       "type": "string",
@@ -2484,10 +2379,6 @@
         "targetDate"
       ],
       "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsWorkItemRole": {
-      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ServicesMember": {
@@ -4738,111 +4629,6 @@
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DbWorkItem_AssignedUser": {
-      "properties": {
-        "role": {
-          "title": "WorkItem role",
-          "type": "string",
-          "x-generated": "-",
-          "enum": [
-            "preparer",
-            "reviewer"
-          ],
-          "description": "represents a database 'work_item_role'",
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        },
-        "user": {
-          "properties": {
-            "createdAt": {
-              "format": "date-time",
-              "type": "string"
-            },
-            "deletedAt": {
-              "format": "date-time",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "email": {
-              "type": "string"
-            },
-            "firstName": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "fullName": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "hasGlobalNotifications": {
-              "type": "boolean"
-            },
-            "hasPersonalNotifications": {
-              "type": "boolean"
-            },
-            "lastName": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "scopes": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "users:read",
-                  "users:write",
-                  "scopes:write",
-                  "team-settings:write",
-                  "project-settings:write",
-                  "work-item-tag:create",
-                  "work-item-tag:edit",
-                  "work-item-tag:delete",
-                  "work-item:review"
-                ],
-                "x-generated": "-",
-                "$schema": "http://json-schema.org/draft-04/schema#"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
-            },
-            "userID": {
-              "type": "string",
-              "$schema": "http://json-schema.org/draft-04/schema#"
-            },
-            "username": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "userID",
-            "username",
-            "email",
-            "firstName",
-            "lastName",
-            "fullName",
-            "scopes",
-            "hasPersonalNotifications",
-            "hasGlobalNotifications",
-            "createdAt",
-            "deletedAt"
-          ],
-          "type": "object",
-          "x-postgen-struct": "DbUser",
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        }
-      },
-      "required": [
-        "role"
-      ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "NotificationType": {
       "description": "represents a database 'notification_type'",
       "type": "string",
@@ -4999,10 +4785,6 @@
         "targetDate"
       ],
       "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsWorkItemRole": {
-      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ServicesMember": {

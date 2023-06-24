@@ -46,7 +46,6 @@ import {
   DbTeamCreateParams,
   DbWorkItemTagCreateParams,
   DbWorkItemRole,
-  DbWorkItem_AssignedUser,
   NotificationType,
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
@@ -57,7 +56,6 @@ import {
   DemoWorkItemTypes,
   DbDemoWorkItemCreateParams,
   DbWorkItemCreateParams,
-  ModelsWorkItemRole,
   ServicesMember,
 } from './models'
 import jsonSchema from './schema.json'
@@ -523,18 +521,6 @@ export const DbWorkItemRoleDecoder: Decoder<DbWorkItemRole> = {
     return validateJson(json, schema, DbWorkItemRoleDecoder.definitionName)
   },
 }
-export const DbWorkItem_AssignedUserDecoder: Decoder<DbWorkItem_AssignedUser> = {
-  definitionName: 'DbWorkItem_AssignedUser',
-  schemaRef: '#/definitions/DbWorkItem_AssignedUser',
-
-  decode(json: unknown): DbWorkItem_AssignedUser {
-    const schema = ajv.getSchema(DbWorkItem_AssignedUserDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DbWorkItem_AssignedUserDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DbWorkItem_AssignedUserDecoder.definitionName)
-  },
-}
 export const NotificationTypeDecoder: Decoder<NotificationType> = {
   definitionName: 'NotificationType',
   schemaRef: '#/definitions/NotificationType',
@@ -653,18 +639,6 @@ export const DbWorkItemCreateParamsDecoder: Decoder<DbWorkItemCreateParams> = {
       throw new Error(`Schema ${DbWorkItemCreateParamsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemCreateParamsDecoder.definitionName)
-  },
-}
-export const ModelsWorkItemRoleDecoder: Decoder<ModelsWorkItemRole> = {
-  definitionName: 'ModelsWorkItemRole',
-  schemaRef: '#/definitions/ModelsWorkItemRole',
-
-  decode(json: unknown): ModelsWorkItemRole {
-    const schema = ajv.getSchema(ModelsWorkItemRoleDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsWorkItemRoleDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsWorkItemRoleDecoder.definitionName)
   },
 }
 export const ServicesMemberDecoder: Decoder<ServicesMember> = {

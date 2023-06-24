@@ -1220,21 +1220,6 @@
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DbWorkItem_AssignedUser": {
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/WorkItemRole"
-        },
-        "user": {
-          "$ref": "#/definitions/DbUser"
-        }
-      },
-      "required": [
-        "role"
-      ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "NotificationType": {
       "description": "represents a database 'notification_type'",
       "type": "string",
@@ -1393,10 +1378,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ModelsWorkItemRole": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "ServicesMember": {
       "properties": {
         "role": {
@@ -1529,9 +1510,6 @@
     "DbWorkItemRole": {
       "$ref": "#/definitions/DbWorkItemRole"
     },
-    "DbWorkItem_AssignedUser": {
-      "$ref": "#/definitions/DbWorkItem_AssignedUser"
-    },
     "NotificationType": {
       "$ref": "#/definitions/NotificationType"
     },
@@ -1561,9 +1539,6 @@
     },
     "DbWorkItemCreateParams": {
       "$ref": "#/definitions/DbWorkItemCreateParams"
-    },
-    "ModelsWorkItemRole": {
-      "$ref": "#/definitions/ModelsWorkItemRole"
     },
     "ServicesMember": {
       "$ref": "#/definitions/ServicesMember"
