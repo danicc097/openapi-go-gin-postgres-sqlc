@@ -310,8 +310,8 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
 /**
  * Construct form accessor based on current schema field key and parent form field.
  */
-function constructFormKey(key: string, parentFormField: string) {
-  const currentFieldName = key.split('.').slice(-1)[0]
+export function constructFormKey(fieldKey: string, parentFormField: string) {
+  const currentFieldName = fieldKey.split('.').slice(-1)[0]
 
-  return parentFormField !== '' ? `${parentFormField}.${currentFieldName}` : key
+  return parentFormField !== '' ? `${parentFormField}.${currentFieldName}` : fieldKey
 }

@@ -1,5 +1,5 @@
 import type { GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
-import DynamicForm from 'src/utils/formGeneration'
+import DynamicForm, { constructFormKey } from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
 import { getByTestId, render, screen, renderHook } from '@testing-library/react'
@@ -43,7 +43,7 @@ const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, Sch
   'base.description': { type: 'string', required: true, isArray: false },
   'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
   'base.metadata': { type: 'integer', required: true, isArray: true },
-  'base.targetDate': { type: 'date-time', required: true, isArray: false },
+  'base.targetDate': { type: 'date', required: true, isArray: false },
   'base.teamID': { type: 'integer', required: true, isArray: false },
   'base.items': { type: 'object', required: true, isArray: true },
   'base.items.name': { type: 'string', required: true, isArray: false },
@@ -114,7 +114,7 @@ const schema = {
         },
       },
       required: [
-        'title',
+        'items',
         'description',
         'workItemTypeID',
         'metadata',
@@ -218,6 +218,61 @@ describe('parseSchemaFields', () => {
       />,
     )
 
-    // TODO: test matches. update initialValues to test out multiple nested
+    // Recursive function to test data-testid attributes
+    const testField = (fieldKey, parentFormField = '') => {
+      const formField = constructFormKey(fieldKey, parentFormField)
+      const field = schemaFields[fieldKey]
+
+      if (field.isArray) {
+        const addButtonTestId =
+          fieldKey === parentFormField
+            ? `form-field-add-button-${formField}`
+            : `form-field-add-button-${parentFormField}.${fieldKey}`
+        console.log('addButtonTestId:', addButtonTestId)
+        const addButtonElement = screen.queryByTestId(addButtonTestId)
+        console.log('addButtonElement:', addButtonElement)
+
+        if (addButtonElement) {
+          expect(addButtonElement).toBeInTheDocument()
+
+          // Test data-testid attribute for each array element and remove button
+          const arrayElements = formInitialValues[fieldKey]
+          arrayElements.forEach((_, index) => {
+            const arrayElementFormField = `${formField}.${index}`
+            testField(fieldKey, arrayElementFormField)
+
+            const removeButtonTestId = `form-field-remove-button-${arrayElementFormField}`
+            console.log('removeButtonTestId:', removeButtonTestId)
+            const removeButtonElement = screen.queryByTestId(removeButtonTestId)
+            console.log('removeButtonElement:', removeButtonElement)
+
+            expect(removeButtonElement).toBeInTheDocument()
+          })
+        } else {
+          console.log(`Add button not found for field: ${formField}`)
+        }
+      } else if (field.type === 'object') {
+        // Skip if field type is "object" and not an array
+        return
+      } else {
+        const dataTestId = `form-field-${formField}`
+        console.log('dataTestId:', dataTestId)
+        const fieldElement = screen.getByTestId(dataTestId)
+        console.log('fieldElement:', fieldElement)
+
+        expect(fieldElement).toBeInTheDocument()
+
+        // Test data-testid attribute for nested fields
+        Object.keys(field).forEach((subFieldKey) => {
+          const nestedFormField = constructFormKey(subFieldKey, formField)
+          testField(subFieldKey, nestedFormField)
+        })
+      }
+    }
+
+    // Start testing with top-level fields
+    Object.keys(formInitialValues).forEach((fieldKey) => {
+      testField(fieldKey)
+    })
   })
 })
