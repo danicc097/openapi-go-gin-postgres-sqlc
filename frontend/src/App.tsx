@@ -208,7 +208,7 @@ export default function App() {
                           <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
                           <DynamicForm<
                             GetKeys<TestTypes.RestDemoWorkItemCreateRequest>,
-                            TestTypes.RestDemoWorkItemCreateRequest
+                            TestTypes.RestDemoWorkItemCreateRequest // todo u = getkeys<t>
                           >
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
@@ -220,10 +220,11 @@ export default function App() {
                               'base.metadata': { type: 'integer', required: true, isArray: true },
                               'base.targetDate': { type: 'date-time', required: true, isArray: false },
                               'base.teamID': { type: 'integer', required: true, isArray: false },
-                              // FIXME: broken when name is items: base.items
-                              'base.title': { type: 'object', required: true, isArray: true },
-                              'base.title.name': { type: 'string', required: true, isArray: false },
-                              'base.title.items': { type: 'string', required: true, isArray: true },
+                              // FIXME: broken when 2 consecutive keys are the same e.g. -> base.items.items.
+                              // theres a bug somehwere not building schemaField or formField properly from parent
+                              'base.tttt': { type: 'object', required: true, isArray: true },
+                              'base.tttt.name': { type: 'string', required: true, isArray: false },
+                              'base.tttt.tttt': { type: 'string', required: true, isArray: true },
                               'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
                               demoProject: { isArray: false, required: true, type: 'object' },
                               'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },

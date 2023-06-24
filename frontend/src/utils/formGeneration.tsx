@@ -25,7 +25,6 @@ import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _ from 'lodash'
 import { useState, type ComponentProps } from 'react'
-import type { FieldPath } from 'react-hook-form'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import type { GenericObject, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
@@ -190,6 +189,10 @@ export default function DynamicForm<T extends string, U extends GenericObject>({
         )
       }
 
+      // FIXME: when 2 consecutive arrays keys have the same name it generates the parent twice when
+      // clicking addNested (+) on the deeply nested one (base.tttt.?.tttt)
+      // 'base.tttt': { type: 'object', required: true, isArray: true },
+      // 'base.tttt.tttt': { type: 'string', required: true, isArray: true },
       if (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) {
         return null
       }
@@ -294,7 +297,7 @@ export default function DynamicForm<T extends string, U extends GenericObject>({
 
   // TODO: will also need sorting schemaFields beforehand and then generate normally.
   return (
-    <PageTemplate minWidth={800}>
+    <PageTemplate minWidth={1000}>
       <form
         css={css`
           min-width: 100%;
