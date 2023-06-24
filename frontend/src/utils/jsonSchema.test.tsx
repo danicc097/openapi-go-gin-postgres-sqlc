@@ -7,6 +7,36 @@ import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { useForm } from '@mantine/form'
 
+export const formInitialValues = {
+  base: {
+    items: [
+      { items: ['0001', '0002'], name: 'item-1' },
+      { items: ['0011', '0012'], name: 'item-2' },
+    ],
+    closed: dayjs('2022-02-22').toDate(),
+    targetDate: dayjs('2023-02-22').toDate(),
+    description: 'some text',
+    kanbanStepID: 1,
+    teamID: 1,
+    // title: {},
+    workItemTypeID: 1,
+  },
+  // TODO: need to check runtime type, else all fails catastrophically.
+  // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
+  // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+  demoProject: {
+    lastMessageAt: dayjs('2022-02-22').toDate(),
+    line: '3e3e2',
+    ref: '312321',
+    workItemID: 1,
+  },
+  tagIDs: [0, 1, 2],
+  members: [
+    { role: 'preparer', userID: 'user 1' },
+    { role: 'preparer', userID: 'user 2' },
+  ],
+} as TestTypes.RestDemoWorkItemCreateRequest
+
 const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
   'base.closed': { type: 'date-time', required: true, isArray: false },
@@ -173,30 +203,7 @@ describe('parseSchemaFields', () => {
   test('should render form fields and buttons', () => {
     const { result } = renderHook(() =>
       useForm({
-        initialValues: {
-          base: {
-            closed: dayjs('20-2-2020').toDate(),
-            targetDate: dayjs('20-2-2020').toDate(),
-            description: 'some text',
-            kanbanStepID: 1,
-            teamID: 1,
-            items: {},
-            workItemTypeID: 1,
-          },
-          // TODO: test validation error callout for generated form
-          // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
-          demoProject: {
-            lastMessageAt: dayjs().toDate(),
-            line: '3e3e2',
-            ref: '312321',
-            workItemID: 1,
-          },
-          tagIDs: [0, 1, 2],
-          members: [
-            { role: 'preparer', userID: 'user 1' },
-            { role: 'reviewer', userID: 'user 2' },
-          ],
-        } as TestTypes.RestDemoWorkItemCreateRequest,
+        initialValues: formInitialValues,
       }),
     )
 
