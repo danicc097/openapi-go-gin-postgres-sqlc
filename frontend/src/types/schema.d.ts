@@ -251,7 +251,7 @@ export interface components {
       workItemTags: (components["schemas"]["DbWorkItemTag"])[] | null;
       workItemTypes: (components["schemas"]["DbWorkItemType"])[] | null;
     };
-    UserResponse: {
+    User: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
       createdAt: string;
@@ -415,10 +415,6 @@ export interface components {
       projectID: number;
     };
     DbWorkItemRole: string;
-    DbWorkItem_AssignedUser: {
-      role: components["schemas"]["WorkItemRole"];
-      user?: components["schemas"]["DbUser"];
-    };
     /**
      * @description represents a database 'notification_type' 
      * @enum {string}
@@ -458,7 +454,6 @@ export interface components {
       title: string;
       workItemTypeID: number;
     };
-    ModelsWorkItemRole: string;
     ServicesMember: {
       role: components["schemas"]["WorkItemRole"];
       userID: components["schemas"]["UuidUUID"];
@@ -569,7 +564,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserResponse"];
+          "application/json": components["schemas"]["User"];
         };
       };
     };
@@ -621,7 +616,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserResponse"];
+          "application/json": components["schemas"]["User"];
         };
       };
     };

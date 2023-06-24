@@ -8,8 +8,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
 
-// UserResponse represents an OpenAPI schema response for a User.
-type UserResponse struct {
+// User represents an OpenAPI schema response for a User.
+type User struct {
 	db.User
 	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 

@@ -2,7 +2,7 @@ import { QueryClient, useQueryClient } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
 import { useEffect, useRef } from 'react'
 import { persister } from 'src/App'
-import type { UserResponse } from 'src/gen/model'
+import type { User } from 'src/gen/model'
 import { useGetCurrentUser } from 'src/gen/user/user'
 import { ACCESS_TOKEN_COOKIE, UI_SLICE_PERSIST_KEY } from 'src/slices/ui'
 import { useIsFirstRender } from 'usehooks-ts'
@@ -22,7 +22,7 @@ export default function useAuthenticatedUser() {
     }
   }, [currentUser.data, isFirstRender])
 
-  const user: UserResponse = {
+  const user: User = {
     userID: 'c7fd2433-dbb7-4612-ab13-ddb0d3404728',
     username: 'user_2',
     email: 'user_2@email.com',

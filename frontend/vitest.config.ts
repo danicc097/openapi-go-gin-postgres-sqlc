@@ -44,12 +44,14 @@ export default mergeConfig(
           console: true,
         },
       },
-      environment: 'happy-dom',
+      environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
       coverage: {
+        provider: 'c8',
         reporter: ['text', 'html'],
         exclude: ['node_modules/', 'src/setupTests.ts'],
       },
+      css: false,
       // transformMode: {
       //   web: [/\.[jt]sx$/],
       // },

@@ -12,7 +12,7 @@ import type { Scopes } from './scopes'
 import type { DbTeam } from './dbTeam'
 import type { UuidUUID } from './uuidUUID'
 
-export interface UserResponse {
+export interface User {
   apiKey?: DbUserAPIKey
   createdAt: Date
   deletedAt: Date | null

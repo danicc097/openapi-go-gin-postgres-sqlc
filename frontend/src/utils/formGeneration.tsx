@@ -14,12 +14,15 @@ import {
   Card,
   Container,
   Box,
+  Flex,
+  Tooltip,
 } from '@mantine/core'
-import { DateInput } from '@mantine/dates'
+import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
 import type { UseForm } from '@mantine/form/lib/types'
+import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
-import { IconMinus, IconPlus } from '@tabler/icons'
+import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _ from 'lodash'
 import { useState, type ComponentProps } from 'react'
 import type { FieldPath } from 'react-hook-form'
@@ -46,35 +49,53 @@ type DynamicFormProps<T extends string, U extends GenericObject> = {
 type GenerateComponentProps<T> = {
   form: UseFormReturnType<T>
   fieldType: SchemaField['type']
-  props: any
+  props?: {
+    input?: any
+    container?: any
+  }
   formField: string
+  removeButton?: JSX.Element
 }
 
 // IMPORTANT: field dot notation requires indexes for arrays. e.g. `members.0.role`.
-function generateComponent<T>({ form, fieldType, props, formField }: GenerateComponentProps<T>) {
+function generateComponent<T>({ form, fieldType, props, formField, removeButton }: GenerateComponentProps<T>) {
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
     mb: 4,
     ...form.getInputProps(formField),
-    ...props,
+    ...props?.input,
+    ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
   }
 
-  console.log(formField)
+  // TODO: helpText is `description` prop in mantine.
+  // will accecss these via options[field (not formField since its shared for array elements)].<description|label|formValueTransformer|...>
 
-  // TODO: helpText is `description` prop in mantine
-
+  let el = null
   switch (fieldType) {
     case 'string':
-      return <TextInput {..._props} />
+      el = <TextInput {..._props} />
+      break
     case 'boolean':
-      return <Checkbox {..._props} />
+      el = <Checkbox {..._props} />
+      break
+    case 'date':
+      el = <DateInput placeholder="Select date" {..._props} />
+      break
     case 'date-time':
-      return <DateInput placeholder="Select date" {..._props} />
+      el = <DateTimePicker placeholder="Select date and time" {..._props} />
+      break
     case 'integer':
-      return <NumberInput {..._props} />
+      el = <NumberInput {..._props} />
+      break
     default:
-      return null
+      break
   }
+
+  return (
+    <Flex align="center" {...props?.container}>
+      {el}
+    </Flex>
+  )
 }
 
 function renderTitle(key: string) {
@@ -86,95 +107,137 @@ function renderTitle(key: string) {
   )
 }
 
-export const DynamicForm = <T extends string, U extends GenericObject>({
+type GenerateFormInputsProps = {
+  parentFieldKey?: string
+  index?: number
+  parentFormField?: string
+  removeButton?: JSX.Element
+}
+
+export default function DynamicForm<T extends string, U extends GenericObject>({
   form,
   schemaFields,
   options,
-}: DynamicFormProps<T, U>) => {
+}: DynamicFormProps<T, U>) {
   const theme = useMantineTheme()
 
   function initialValueByField(field: T) {
     switch (schemaFields[field].type) {
       case 'object':
         return {}
+      case 'array':
+        return []
       default:
         return undefined
     }
   }
 
-  const addNestedField = (field: T) => {
+  const addNestedField = (field: T, formField: string) => {
     const initialValue = initialValueByField(field)
-    console.log({ addNestedField: field, initialValue })
+    console.log({ addNestedFieldField: field, addNestedFieldFormField: formField, initialValue })
 
     const newValues = _.cloneDeep(form.values)
 
-    _.set(newValues, field, [...(_.get(newValues, field, []) || []), initialValue])
+    _.set(newValues, formField, [...(_.get(newValues, formField, []) || []), initialValue])
 
     form.setValues((currentValues) => newValues)
   }
 
   function renderRemoveNestedFieldButton(formField: string, index: number) {
     return (
-      <ActionIcon
-        onClick={(e) => {
-          console.log({ removeNestedField: `${formField}[${index}]` })
-          form.removeListItem(formField, index)
-        }}
-        variant="filled"
-        color={'red'}
-      >
-        <IconMinus size="1rem" />
-      </ActionIcon>
+      <Tooltip label="Remove item" position="top-end" withArrow>
+        <ActionIcon
+          onClick={(e) => {
+            console.log({ removeNestedField: `${formField}[${index}]` })
+            form.removeListItem(formField, index)
+          }}
+          // variant="filled"
+          css={css`
+            background-color: #7c1a1a;
+          `}
+          size="sm"
+          data-testid={`form-field-remove-button-${formField}`}
+        >
+          <IconMinus size="1rem" />
+        </ActionIcon>
+      </Tooltip>
     )
   }
 
-  const generateFormInputs = ({ parentPathPrefix = '', index }: { parentPathPrefix?: string; index?: number }) => {
+  const generateFormInputs = ({
+    parentFieldKey = '',
+    parentFormField = '',
+    removeButton = null,
+  }: GenerateFormInputsProps) => {
     return entries(schemaFields).map(([fieldKey, field]) => {
-      if (parentPathPrefix !== '' && !fieldKey.startsWith(parentPathPrefix)) {
+      function renderNestedHeader() {
+        return (
+          <div>
+            {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
+            <Flex direction="row">
+              {renderTitle(formField)}
+              <Button
+                size="xs"
+                p={4}
+                leftIcon={<IconPlus size="1rem" />}
+                onClick={() => addNestedField(fieldKey, formField)}
+                variant="filled"
+                color={'green'}
+                data-testid={`form-field-add-button-${formField}`}
+              >{`Add ${formField}`}</Button>
+            </Flex>
+          </div>
+        )
+      }
+
+      if (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) {
         return null
       }
 
       const pp = fieldKey.split('.')
-      const parentKey = parentPathPrefix.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
+      const parentKey = parentFieldKey.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
 
-      if (schemaFields[parentKey]?.isArray && parentPathPrefix === '') return null
+      if (schemaFields[parentKey]?.isArray && parentFieldKey === '') return null
 
-      const formField = constructFormKey(fieldKey, index)
+      const formField = constructFormKey(fieldKey, parentFormField)
+      if (parentFormField !== '') {
+        console.log({ parentFormField })
+      }
       // console.log({ formValue: _.get(form.values, formField), formField })
 
-      const componentProps = {
+      const containerProps = {
         css: css`
-          min-width: 100%;
+          width: 100%;
         `,
-        label: fieldKey,
+      }
+
+      const inputProps = {
+        css: css`
+          width: 100%;
+        `,
+        ...(!field.isArray && { label: formField }),
         required: field.required,
+        'data-testid': `form-field-${formField}`,
       }
 
       if (field.isArray && field.type !== 'object') {
         // nested array of nonbjects generation
         return (
           <Card key={fieldKey} mt={24}>
-            {JSON.stringify(_.get(form.values, formField))}
-            <div>
-              {renderTitle(fieldKey)}
-              <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
-                <IconPlus size="1rem" />
-              </ActionIcon>
-            </div>
+            {renderNestedHeader()}
             {/* existing array fields, if any */}
-            {console.log({ nestedArray: formField, formValue: _.get(form.values, formField) })}
             {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
               console.log({ _nestedValue, _index })
               return (
-                <div key={_index}>
+                <Flex key={_index}>
                   {generateComponent({
                     form,
                     fieldType: field.type,
                     formField: `${formField}.${_index}`,
-                    props: componentProps,
+                    props: { input: inputProps, container: containerProps },
+                    removeButton: renderRemoveNestedFieldButton(formField, _index),
                   })}
-                  {renderRemoveNestedFieldButton(formField, _index)}
-                </div>
+                </Flex>
               )
             })}
           </Card>
@@ -184,30 +247,23 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       if (field.isArray && field.type === 'object') {
         console.log({ nestedArrayOfObjects: formField })
 
-        /**
-         *
-         * FIXME: is not using index to access form (cause of toFixed not a function)
-         */
-
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
-            {parentPathPrefix === '' && (
-              <>
-                {renderTitle(fieldKey)}
-                <ActionIcon onClick={() => addNestedField(fieldKey)} variant="filled" color={'green'}>
-                  <IconPlus size="1rem" />
-                </ActionIcon>
-              </>
-            )}
-            {/* FIXME: bad gen array is nested - removenested and form inputs wrong. (base.metadata vs tagIDs working fine) */}
+            {parentFieldKey === '' && <>{renderNestedHeader()}</>}
             {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
               console.log({ nestedArrayOfObjectsIndex: _index })
               return (
-                <div key={_index} style={{ marginBottom: theme.spacing.sm }}>
+                <div key={_index}>
                   <p>{`${fieldKey}[${_index}]`}</p>
-                  <Group>{generateFormInputs({ parentPathPrefix: fieldKey, index: _index })}</Group>
                   {renderRemoveNestedFieldButton(formField, _index)}
+                  <Group>
+                    {generateFormInputs({
+                      parentFieldKey: fieldKey,
+                      parentFormField: `${formField}.${_index}`,
+                      removeButton: null,
+                    })}
+                  </Group>
                 </div>
               )
             })}
@@ -218,15 +274,25 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
       return (
         <Group key={fieldKey} align="center">
           {field.type !== 'object' ? (
-            <>{generateComponent({ form, fieldType: field.type, props: componentProps, formField: formField })}</>
+            <>
+              {removeButton}
+              {generateComponent({
+                form,
+                fieldType: field.type,
+                props: { input: inputProps, container: containerProps },
+                formField: formField,
+                removeButton: null,
+              })}
+            </>
           ) : (
-            <>{renderTitle(fieldKey)}</>
+            <>{renderTitle(formField)}</>
           )}
         </Group>
       )
     })
   }
 
+  // TODO: will also need sorting schemaFields beforehand and then generate normally.
   return (
     <PageTemplate minWidth={800}>
       <form
@@ -241,13 +307,10 @@ export const DynamicForm = <T extends string, U extends GenericObject>({
 }
 
 /**
- * Construct form accessor based on dot notation path and index (in case of array element).
+ * Construct form accessor based on current schema field key and parent form field.
  */
-function constructFormKey(key: string, index?: number) {
-  const formPaths = key.split('.')
-  const formField =
-    index !== undefined
-      ? [...formPaths.slice(0, formPaths.length - 1), index, formPaths[formPaths.length - 1]].join('.')
-      : String(key)
-  return formField
+function constructFormKey(key: string, parentFormField: string) {
+  const currentFieldName = key.split('.').slice(-1)[0]
+
+  return parentFormField !== '' ? `${parentFormField}.${currentFieldName}` : key
 }

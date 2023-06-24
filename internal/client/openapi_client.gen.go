@@ -159,23 +159,23 @@ func AllProjectValues() []Project {
 
 // Defines values for Role.
 const (
-	Admin        Role = "admin"
-	AdvancedUser Role = "advancedUser"
-	Guest        Role = "guest"
-	Manager      Role = "manager"
-	SuperAdmin   Role = "superAdmin"
-	User         Role = "user"
+	RoleAdmin        Role = "admin"
+	RoleAdvancedUser Role = "advancedUser"
+	RoleGuest        Role = "guest"
+	RoleManager      Role = "manager"
+	RoleSuperAdmin   Role = "superAdmin"
+	RoleUser         Role = "user"
 )
 
 // AllRoleValues returns all possible values for Role.
 func AllRoleValues() []Role {
 	return []Role{
-		Admin,
-		AdvancedUser,
-		Guest,
-		Manager,
-		SuperAdmin,
-		User,
+		RoleAdmin,
+		RoleAdvancedUser,
+		RoleGuest,
+		RoleManager,
+		RoleSuperAdmin,
+		RoleUser,
 	}
 }
 
@@ -407,13 +407,6 @@ type DbWorkItemType struct {
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
-// DbWorkItemAssignedUser defines the model for DbWorkItem_AssignedUser.
-type DbWorkItemAssignedUser struct {
-	// Role represents a database 'work_item_role'
-	Role WorkItemRole `json:"role"`
-	User *DbUser      `json:"user,omitempty"`
-}
-
 // Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
 type Demo2WorkItemTypes string
 
@@ -461,9 +454,6 @@ type InitializeProjectRequest struct {
 	Teams        *[]DbTeamCreateParams        `json:"teams"`
 	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
 }
-
-// ModelsWorkItemRole defines the model for ModelsWorkItemRole.
-type ModelsWorkItemRole = string
 
 // NotificationType represents a database 'notification_type'
 type NotificationType string
@@ -583,8 +573,8 @@ type UpdateUserRequest struct {
 	LastName *string `json:"lastName,omitempty"`
 }
 
-// UserResponse defines the model for UserResponse.
-type UserResponse struct {
+// User defines the model for User.
+type User struct {
 	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
 	CreatedAt                time.Time     `json:"createdAt"`
 	DeletedAt                *time.Time    `json:"deletedAt"`
@@ -2415,7 +2405,7 @@ func (r GetProjectWorkitemsResponse) StatusCode() int {
 type GetCurrentUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *UserResponse
+	JSON200      *User
 }
 
 // Status returns HTTPResponse.Status
@@ -2458,7 +2448,7 @@ func (r DeleteUserResponse) StatusCode() int {
 type UpdateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *UserResponse
+	JSON200      *User
 }
 
 // Status returns HTTPResponse.Status
@@ -3176,7 +3166,7 @@ func ParseGetCurrentUserResponse(rsp *http.Response) (*GetCurrentUserResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest UserResponse
+		var dest User
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -3218,7 +3208,7 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest UserResponse
+		var dest User
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

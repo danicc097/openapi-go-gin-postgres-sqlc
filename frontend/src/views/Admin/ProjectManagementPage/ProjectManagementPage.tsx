@@ -37,7 +37,7 @@ import type {
   Scope,
   Scopes,
   UpdateUserAuthRequest,
-  UserResponse,
+  User,
 } from 'src/gen/model'
 import { roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'

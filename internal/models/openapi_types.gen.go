@@ -394,13 +394,6 @@ type DbWorkItemType struct {
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
-// DbWorkItemAssignedUser defines the model for DbWorkItem_AssignedUser.
-type DbWorkItemAssignedUser struct {
-	// Role represents a database 'work_item_role'
-	Role WorkItemRole `json:"role"`
-	User *DbUser      `json:"user,omitempty"`
-}
-
 // Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
 type Demo2WorkItemTypes string
 
@@ -448,9 +441,6 @@ type InitializeProjectRequest struct {
 	Teams        *[]DbTeamCreateParams        `json:"teams"`
 	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
 }
-
-// ModelsWorkItemRole defines the model for ModelsWorkItemRole.
-type ModelsWorkItemRole = string
 
 // NotificationType represents a database 'notification_type'
 type NotificationType string
@@ -570,8 +560,8 @@ type UpdateUserRequest struct {
 	LastName *string `json:"lastName,omitempty"`
 }
 
-// UserResponse defines the model for UserResponse.
-type UserResponse struct {
+// User defines the model for User.
+type User struct {
 	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
 	CreatedAt                time.Time     `json:"createdAt"`
 	DeletedAt                *time.Time    `json:"deletedAt"`

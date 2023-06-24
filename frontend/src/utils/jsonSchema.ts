@@ -14,7 +14,7 @@ export type SchemaField = {
   isArray: boolean
 }
 
-export type Format = 'date-time'
+export type Format = 'date-time' | 'date'
 export type Type = 'boolean' | 'integer' | 'object' | 'string' | 'array' | 'null'
 
 export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, SchemaField> {

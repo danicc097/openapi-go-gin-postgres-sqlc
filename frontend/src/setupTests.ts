@@ -1,10 +1,34 @@
 import 'regenerator-runtime/runtime'
+import { expect, afterEach, vi } from 'vitest'
+import { cleanup } from '@testing-library/react'
 
-// TODO find equivalent in vitest
-// configure({ testIdAttribute: 'data-test-subj' })
+import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers'
+import matchers from '@testing-library/jest-dom/matchers'
+
+declare module 'vitest' {
+  interface Assertion<T = any> extends jest.Matchers<void, T>, TestingLibraryMatchers<T, void> {}
+}
+
+expect.extend(matchers)
+
+// runs a cleanup after each test case
+afterEach(() => {
+  cleanup() // clean jsdom
+})
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 window.URL.createObjectURL = (() => {}) as any
+
+window.matchMedia = (query) => ({
+  matches: false,
+  media: query,
+  onchange: null,
+  addListener: vi.fn(), // deprecated
+  removeListener: vi.fn(), // deprecated
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+})
 
 export default class EventSourceSetup {
   eventSource

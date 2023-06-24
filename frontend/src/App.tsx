@@ -5,7 +5,7 @@ import 'src/assets/css/overrides.css'
 import 'src/assets/css/pulsate.css'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
-import { ColorSchemeProvider, type ColorScheme, MantineProvider } from '@mantine/core'
+import { ColorSchemeProvider, type ColorScheme, MantineProvider, Title } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
@@ -18,7 +18,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Notifications } from '@mantine/notifications'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
-import { DynamicForm } from 'src/utils/formGeneration'
+import DynamicForm from 'src/utils/formGeneration'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import { type FieldPath } from 'react-hook-form'
 import type { RecursiveKeyOfArray } from 'src/types/utils'
@@ -116,17 +116,18 @@ export default function App() {
 
   type RestDemoWorkItemCreateRequestFormField =
     // hack to use e.g. 'members.role' instead of 'members.??.role' to define common options for all props of members
-    FieldPath<RestDemoWorkItemCreateRequest> | RecursiveKeyOfArray<RestDemoWorkItemCreateRequest['members'], 'members'>
+    | FieldPath<TestTypes.RestDemoWorkItemCreateRequest>
+    | RecursiveKeyOfArray<TestTypes.RestDemoWorkItemCreateRequest['members'], 'members'>
 
   /**
-   * TODO: transformers: e.g. initialValues.members = USERS.map =>(userToMemberTransformer(user: UserResponse): ServiceMember)
-   * but we will not set this manually. instead we have a wrapper before form creation where initialData = {"members": USERS} (so now []UserResponse instead of ServiceMember)
-   * and transformer be used in options.transformers = {"members": (users: []UserResponse) => users.map(u => userToMemberTransformer(u))}.
+   * TODO: transformers: e.g. initialValues.members = USERS.map =>(userToMemberTransformer(user: User): ServiceMember)
+   * but we will not set this manually. instead we have a wrapper before form creation where initialData = {"members": USERS} (so now []User instead of ServiceMember)
+   * and transformer be used in options.transformers = {"members": (users: []User) => users.map(u => userToMemberTransformer(u))}.
    * transformer function must match signature inferred from initialData wrapper and form itself so its fully typed.
    * The same principle needs to be used for custom components, e.g. multiselect and select.
    */
 
-  const demoWorkItemCreateForm = useForm<RestDemoWorkItemCreateRequest>({
+  const demoWorkItemCreateForm = useForm({
     // TODO: simple function to initialize top level with empty object if property type === object
     // now that we have json schema dereferenced
     initialValues: {
@@ -136,7 +137,7 @@ export default function App() {
         description: 'some text',
         kanbanStepID: 1,
         teamID: 1,
-        title: 'some text',
+        // title: {},
         workItemTypeID: 1,
       },
       // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
@@ -148,7 +149,7 @@ export default function App() {
       },
       // tagIDs: [0, 1, 2],
       // members: [{ role: 'preparer', userID: 'fesfse' }],
-    } as RestDemoWorkItemCreateRequest,
+    } as TestTypes.RestDemoWorkItemCreateRequest,
     validateInputOnChange: true,
     validate: {
       // TODO: should be able to validate whole nested objects at once.
@@ -209,8 +210,9 @@ export default function App() {
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
+                          <Title size={20}>This form has been automatically generated from an openapi spec</Title>
                           <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
-                          <DynamicForm<RestDemoWorkItemCreateRequestFormField, RestDemoWorkItemCreateRequest>
+                          <DynamicForm<RestDemoWorkItemCreateRequestFormField, TestTypes.RestDemoWorkItemCreateRequest>
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
                             schemaFields={{
@@ -221,7 +223,12 @@ export default function App() {
                               'base.metadata': { type: 'integer', required: true, isArray: true },
                               'base.targetDate': { type: 'date-time', required: true, isArray: false },
                               'base.teamID': { type: 'integer', required: true, isArray: false },
-                              'base.title': { type: 'string', required: true, isArray: false },
+                              'base.title': { type: 'object', required: true, isArray: true },
+                              'base.title.name': { type: 'string', required: true, isArray: false },
+                              // FIXME: bad addNested :
+                              // formGeneration.tsx:185  {nestedArrayOfObjects: 'base.0.title'}
+                              // formGeneration.tsx:165 {nestedArray: 'base.title.0.items', formValue: undefined}
+                              'base.title.items': { type: 'string', required: true, isArray: true },
                               'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
                               demoProject: { isArray: false, required: true, type: 'object' },
                               'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },

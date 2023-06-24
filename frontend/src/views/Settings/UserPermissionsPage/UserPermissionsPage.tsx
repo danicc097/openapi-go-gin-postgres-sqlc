@@ -1,6 +1,6 @@
 import _, { capitalize, random } from 'lodash'
 import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
-import type { RestDemoWorkItemCreateRequest, Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
+import type { RestDemoWorkItemCreateRequest, Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 import SCOPES from 'src/scopes'
@@ -61,13 +61,13 @@ const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean
 
 interface SelectUserItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
-  value: UserResponse['email']
-  user: UserResponse
+  value: User['email']
+  user: User
 }
 
 interface SelectRoleItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
-  value: UserResponse['role']
+  value: User['role']
 }
 
 function scopeColor(scopeName: string): DefaultMantineColor {
@@ -116,7 +116,7 @@ const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
 )
 
 export default function UserPermissionsPage() {
-  const [userSelection, setUserSelection] = useState<UserResponse>(null)
+  const [userSelection, setUserSelection] = useState<User>(null)
   const [roleSelection, setRoleSelection] = useState<Role>(null)
   const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps>>(undefined)
   const { user } = useAuthenticatedUser()
@@ -163,8 +163,8 @@ export default function UserPermissionsPage() {
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
-  const form = useForm<UpdateUserAuthRequest>({
-    initialValues: {},
+  const form = useForm({
+    initialValues: {} as UpdateUserAuthRequest,
     validateInputOnChange: true,
     validate: {
       role: (v, vv, path) => validateField(UpdateUserAuthRequestDecoder, path, vv),
