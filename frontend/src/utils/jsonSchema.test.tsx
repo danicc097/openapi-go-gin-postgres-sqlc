@@ -7,6 +7,7 @@ import { getByTestId, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { useForm } from '@mantine/form'
+import { renderHook } from '@testing-library/react-hooks'
 
 type RestDemoWorkItemCreateRequestFormField =
   // hack to use 'members.role' instead of 'members.??.role'
@@ -175,32 +176,35 @@ describe('parseSchemaFields', () => {
   })
 
   test('should render form fields and buttons', () => {
-    const demoWorkItemCreateForm = useForm({
-      initialValues: {
-        base: {
-          closed: dayjs().toDate(),
-          targetDate: dayjs().toDate(),
-          description: 'some text',
-          kanbanStepID: 1,
-          teamID: 1,
-          // title: {},
-          workItemTypeID: 1,
-        },
-        // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
-        demoProject: {
-          lastMessageAt: dayjs().toDate(),
-          line: '3e3e2',
-          ref: '312321',
-          workItemID: 1,
-        },
-        // tagIDs: [0, 1, 2],
-        // members: [{ role: 'preparer', userID: 'fesfse' }],
-      } as TestTypes.RestDemoWorkItemCreateRequest,
-    })
+    const { result } = renderHook(() =>
+      useForm({
+        initialValues: {
+          base: {
+            closed: dayjs().toDate(),
+            targetDate: dayjs().toDate(),
+            description: 'some text',
+            kanbanStepID: 1,
+            teamID: 1,
+            // title: {},
+            workItemTypeID: 1,
+          },
+          // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+          demoProject: {
+            lastMessageAt: dayjs().toDate(),
+            line: '3e3e2',
+            ref: '312321',
+            workItemID: 1,
+          },
+          // tagIDs: [0, 1, 2],
+          // members: [{ role: 'preparer', userID: 'fesfse' }],
+        } as TestTypes.RestDemoWorkItemCreateRequest,
+      }),
+    )
+
     render(
       <DynamicForm
         schemaFields={schemaFields}
-        form={demoWorkItemCreateForm}
+        form={result.current}
         options={{
           defaultValue: {
             'demoProject.line': '534543523',
@@ -209,5 +213,7 @@ describe('parseSchemaFields', () => {
         }}
       />,
     )
+
+    // TODO: test matches
   })
 })

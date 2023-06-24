@@ -44,7 +44,7 @@ export default mergeConfig(
           console: true,
         },
       },
-      environment: 'happy-dom',
+      environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
       coverage: {
         provider: 'c8',

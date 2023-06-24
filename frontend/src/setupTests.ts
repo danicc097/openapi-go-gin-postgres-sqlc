@@ -1,5 +1,5 @@
 import 'regenerator-runtime/runtime'
-import { expect, afterEach } from 'vitest'
+import { expect, afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
 import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers'
@@ -21,6 +21,17 @@ afterEach(() => {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 window.URL.createObjectURL = (() => {}) as any
+
+window.matchMedia = (query) => ({
+  matches: false,
+  media: query,
+  onchange: null,
+  addListener: vi.fn(), // deprecated
+  removeListener: vi.fn(), // deprecated
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+})
 
 export default class EventSourceSetup {
   eventSource
