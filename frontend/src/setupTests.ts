@@ -11,13 +11,10 @@ declare module 'vitest' {
 
 expect.extend(matchers)
 
-// runs a cleanup after each test case (e.g. clearing jsdom)
+// runs a cleanup after each test case
 afterEach(() => {
-  cleanup()
+  cleanup() // clean jsdom
 })
-
-// TODO find equivalent in vitest
-// configure({ testIdAttribute: 'data-test-subj' })
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 window.URL.createObjectURL = (() => {}) as any

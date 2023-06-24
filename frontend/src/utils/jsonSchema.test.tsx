@@ -3,11 +3,10 @@ import type { RecursiveKeyOf, RecursiveKeyOfArray } from 'src/types/utils'
 import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
-import { getByTestId, render, screen } from '@testing-library/react'
+import { getByTestId, render, screen, renderHook } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { useForm } from '@mantine/form'
-import { renderHook } from '@testing-library/react-hooks'
 
 type RestDemoWorkItemCreateRequestFormField =
   // hack to use 'members.role' instead of 'members.??.role'
