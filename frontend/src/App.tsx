@@ -148,7 +148,7 @@ export default function App() {
       },
       // tagIDs: [0, 1, 2],
       // members: [{ role: 'preparer', userID: 'fesfse' }],
-    } as RestDemoWorkItemCreateRequest,
+    } as TestTypes.RestDemoWorkItemCreateRequest,
     validateInputOnChange: true,
     validate: {
       // TODO: should be able to validate whole nested objects at once.

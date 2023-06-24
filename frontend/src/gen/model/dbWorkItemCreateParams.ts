@@ -13,9 +13,6 @@ export interface DbWorkItemCreateParams {
   metadata: number[] | null
   targetDate: Date
   teamID: number
-  title: {
-    name: string
-    items: string[]
-  }
+  title: string
   workItemTypeID: number
 }
