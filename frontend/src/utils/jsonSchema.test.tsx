@@ -1,10 +1,12 @@
-import type { FieldPath } from 'react-hook-form'
+import { type FieldPath } from 'react-hook-form'
 import type { RecursiveKeyOf, RecursiveKeyOfArray } from 'src/types/utils'
 import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
 import { getByTestId, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
+import dayjs from 'dayjs'
+import { useForm } from '@mantine/form'
 
 type RestDemoWorkItemCreateRequestFormField =
   // hack to use 'members.role' instead of 'members.??.role'
@@ -172,9 +174,40 @@ describe('parseSchemaFields', () => {
     expect(parseSchemaFields(schema)).toEqual(schemaFields)
   })
 
-  // TODO: test('should render form fields and buttons', () => {
-  //   render(<DynamicForm schemaFields={schemaFields} />)
-  //   // expect().foo
-  //
-  // })
+  test('should render form fields and buttons', () => {
+    const demoWorkItemCreateForm = useForm({
+      initialValues: {
+        base: {
+          closed: dayjs().toDate(),
+          targetDate: dayjs().toDate(),
+          description: 'some text',
+          kanbanStepID: 1,
+          teamID: 1,
+          // title: {},
+          workItemTypeID: 1,
+        },
+        // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+        demoProject: {
+          lastMessageAt: dayjs().toDate(),
+          line: '3e3e2',
+          ref: '312321',
+          workItemID: 1,
+        },
+        // tagIDs: [0, 1, 2],
+        // members: [{ role: 'preparer', userID: 'fesfse' }],
+      } as TestTypes.RestDemoWorkItemCreateRequest,
+    })
+    render(
+      <DynamicForm
+        schemaFields={schemaFields}
+        form={demoWorkItemCreateForm}
+        options={{
+          defaultValue: {
+            'demoProject.line': '534543523',
+            members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
+          },
+        }}
+      />,
+    )
+  })
 })

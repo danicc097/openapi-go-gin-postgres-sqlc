@@ -163,8 +163,8 @@ export default function UserPermissionsPage() {
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
-  const form = useForm<UpdateUserAuthRequest>({
-    initialValues: {},
+  const form = useForm({
+    initialValues: {} as UpdateUserAuthRequest,
     validateInputOnChange: true,
     validate: {
       role: (v, vv, path) => validateField(UpdateUserAuthRequestDecoder, path, vv),

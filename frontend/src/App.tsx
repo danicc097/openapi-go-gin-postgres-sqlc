@@ -126,7 +126,7 @@ export default function App() {
    * The same principle needs to be used for custom components, e.g. multiselect and select.
    */
 
-  const demoWorkItemCreateForm = useForm<RestDemoWorkItemCreateRequest>({
+  const demoWorkItemCreateForm = useForm({
     // TODO: simple function to initialize top level with empty object if property type === object
     // now that we have json schema dereferenced
     initialValues: {
