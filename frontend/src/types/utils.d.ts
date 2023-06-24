@@ -22,6 +22,22 @@ export type Union<L extends unknown | undefined, R extends unknown | undefined> 
   ? L
   : L | R
 
+type Dot<T extends string, U extends string> = '' extends U ? T : `${T}.${U}`
+
+type StopTypes = number | string | boolean | symbol | bigint | Date | ((...args: any) => unknown)
+
+/**
+ * Get dot notation of all nested entries, ignoring array indexes.
+ * https://stackoverflow.com/questions/76546335
+ */
+export type GetKeys<T> = T extends StopTypes
+  ? ''
+  : T extends readonly unknown[]
+  ? GetKeys<T[number]>
+  : {
+      [K in keyof T & string]: T[K] extends StopTypes ? K : K | Dot<K, GetKeys<T[K]>>
+    }[keyof T & string]
+
 /**
  * Access underlying types by dot notation.
 

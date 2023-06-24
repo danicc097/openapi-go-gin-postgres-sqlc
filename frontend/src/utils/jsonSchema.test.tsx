@@ -1,5 +1,4 @@
-import { type FieldPath, type PathValue } from 'react-hook-form'
-import type { RecursiveKeyOf, RecursiveKeyOfArray } from 'src/types/utils'
+import type { GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
 import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
@@ -8,12 +7,7 @@ import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { useForm } from '@mantine/form'
 
-type RestDemoWorkItemCreateRequestFormField =
-  // hack to use 'members.role' instead of 'members.??.role'
-  | FieldPath<TestTypes.RestDemoWorkItemCreateRequest>
-  | RecursiveKeyOfArray<TestTypes.RestDemoWorkItemCreateRequest['members'], 'members'>
-
-const schemaFields: Record<RestDemoWorkItemCreateRequestFormField, SchemaField> = {
+const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
   'base.closed': { type: 'date-time', required: true, isArray: false },
   'base.description': { type: 'string', required: true, isArray: false },
@@ -21,14 +15,9 @@ const schemaFields: Record<RestDemoWorkItemCreateRequestFormField, SchemaField> 
   'base.metadata': { type: 'integer', required: true, isArray: true },
   'base.targetDate': { type: 'date-time', required: true, isArray: false },
   'base.teamID': { type: 'integer', required: true, isArray: false },
-  'base.packs': { type: 'object', required: true, isArray: true },
-  // FIXME: FieldPath allows 'base.packs.<i>.name' only.
-  // need to remove TupleKeys from allowed path indexing
-  // maybe just bring that code over and update
-  // NOTE: WORKAROUND: or maybe could have convention to use .0 indexing and  update parseSchemaFields to include that `.0` those (or simply replaceAll `.0` with "" and leave parseSchemaFields as is).
-  // although in that case we get no keys autocomplete for nested array elements
-  'base.packs.name': { type: 'string', required: true, isArray: false },
-  'base.packs.items': { type: 'string', required: true, isArray: true },
+  'base.items': { type: 'object', required: true, isArray: true },
+  'base.items.name': { type: 'string', required: true, isArray: false },
+  'base.items.items': { type: 'string', required: true, isArray: true },
   'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
   demoProject: { isArray: false, required: true, type: 'object' },
   'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
@@ -42,7 +31,7 @@ const schemaFields: Record<RestDemoWorkItemCreateRequestFormField, SchemaField> 
   tagIDs: { type: 'integer', required: true, isArray: true },
 }
 
-type a = PathValue<TestTypes.RestDemoWorkItemCreateRequest, 'base.packs'>
+type a = TypeOf<TestTypes.RestDemoWorkItemCreateRequest, 'base.items'>
 
 const schema = {
   properties: {
@@ -72,7 +61,7 @@ const schema = {
         teamID: {
           type: 'integer',
         },
-        packs: {
+        items: {
           items: {
             properties: {
               items: {
@@ -191,7 +180,7 @@ describe('parseSchemaFields', () => {
             description: 'some text',
             kanbanStepID: 1,
             teamID: 1,
-            packs: {},
+            items: {},
             workItemTypeID: 1,
           },
           // TODO: test validation error callout for generated form

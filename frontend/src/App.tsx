@@ -20,8 +20,7 @@ import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
 import DynamicForm from 'src/utils/formGeneration'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
-import { type FieldPath } from 'react-hook-form'
-import type { RecursiveKeyOfArray } from 'src/types/utils'
+import type { GetKeys, RecursiveKeyOfArray } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
 import { useForm } from '@mantine/form'
@@ -113,11 +112,6 @@ export default function App() {
       setNotificationWarningSent(true)
     }
   }, [verifyNotificationPermission, notificationWarningSent])
-
-  type RestDemoWorkItemCreateRequestFormField =
-    // hack to use e.g. 'members.role' instead of 'members.??.role' to define common options for all props of members
-    | FieldPath<TestTypes.RestDemoWorkItemCreateRequest>
-    | RecursiveKeyOfArray<TestTypes.RestDemoWorkItemCreateRequest['members'], 'members'>
 
   /**
    * TODO: transformers: e.g. initialValues.members = USERS.map =>(userToMemberTransformer(user: User): ServiceMember)
@@ -212,7 +206,10 @@ export default function App() {
                           {/* <LandingPage /> */}
                           <Title size={20}>This form has been automatically generated from an openapi spec</Title>
                           <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
-                          <DynamicForm<RestDemoWorkItemCreateRequestFormField, TestTypes.RestDemoWorkItemCreateRequest>
+                          <DynamicForm<
+                            GetKeys<TestTypes.RestDemoWorkItemCreateRequest>,
+                            TestTypes.RestDemoWorkItemCreateRequest
+                          >
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
                             schemaFields={{
@@ -223,11 +220,9 @@ export default function App() {
                               'base.metadata': { type: 'integer', required: true, isArray: true },
                               'base.targetDate': { type: 'date-time', required: true, isArray: false },
                               'base.teamID': { type: 'integer', required: true, isArray: false },
+                              // FIXME: broken when name is items: base.items
                               'base.title': { type: 'object', required: true, isArray: true },
                               'base.title.name': { type: 'string', required: true, isArray: false },
-                              // FIXME: bad addNested :
-                              // formGeneration.tsx:185  {nestedArrayOfObjects: 'base.0.title'}
-                              // formGeneration.tsx:165 {nestedArray: 'base.title.0.items', formValue: undefined}
                               'base.title.items': { type: 'string', required: true, isArray: true },
                               'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
                               demoProject: { isArray: false, required: true, type: 'object' },

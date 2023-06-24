@@ -193,9 +193,6 @@ dependencies:
   react-helmet:
     specifier: ^6.1.0
     version: 6.1.0(react@18.2.0)
-  react-hook-form:
-    specifier: ^7.45.0
-    version: 7.45.0(react@18.2.0)
   react-router-dom:
     specifier: ^6.6.1
     version: 6.6.1(react-dom@18.2.0)(react@18.2.0)
@@ -285,9 +282,6 @@ devDependencies:
   jsdom:
     specifier: ^20.0.3
     version: 20.0.3
-  mantine-design-system:
-    specifier: github:danicc097/mantine-design-system#v0.1.0
-    version: github.com/danicc097/mantine-design-system/e0f7c3007de830c1ba94d1e91d646a0ffda490a1(react@18.2.0)
   openapi-types:
     specifier: ^12.0.2
     version: 12.0.2
@@ -6770,24 +6764,6 @@ packages:
       react-side-effect: 2.1.2(react@18.2.0)
     dev: false
 
-  /react-hook-form@7.43.9(react@18.2.0):
-    resolution: {integrity: sha512-AUDN3Pz2NSeoxQ7Hs6OhQhDr6gtF9YRuutGDwPQqhSUAHJSgGl2VeY3qN19MG0SucpjgDiuMJ4iC5T5uB+eaNQ==}
-    engines: {node: '>=12.22.0'}
-    peerDependencies:
-      react: ^16.8.0 || ^17 || ^18
-    dependencies:
-      react: 18.2.0
-    dev: true
-
-  /react-hook-form@7.45.0(react@18.2.0):
-    resolution: {integrity: sha512-AbHeZ4ad+0dEIknSW9dBgIwcvRDfZ1O97sgj75WaMdOX0eg8TBiUf9wxzVkIjZbk76BBIE9lmFOzyD4PN80ZQg==}
-    engines: {node: '>=12.22.0'}
-    peerDependencies:
-      react: ^16.8.0 || ^17 || ^18
-    dependencies:
-      react: 18.2.0
-    dev: false
-
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -6886,14 +6862,6 @@ packages:
       tslib: 2.5.0
     dev: false
 
-  /react-table@7.8.0(react@18.2.0):
-    resolution: {integrity: sha512-hNaz4ygkZO4bESeFfnfOft73iBUj8K5oKi1EcSHPAibEydfsX2MyU6Z8KCr3mv3C9Kqqh71U+DhZkFvibbnPbA==}
-    peerDependencies:
-      react: ^16.8.3 || ^17.0.0-0 || ^18.0.0
-    dependencies:
-      react: 18.2.0
-    dev: true
-
   /react-textarea-autosize@8.3.4(@types/react@18.0.26)(react@18.2.0):
     resolution: {integrity: sha512-CdtmP8Dc19xL8/R6sWvtknD/eCXkQr30dtvC4VmGInhRsfF8X/ihXCq6+9l9qbxmKRiq407/7z5fxE7cVWQNgQ==}
     engines: {node: '>=10'}
@@ -6927,6 +6895,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
+    dev: false
 
   /readable-stream@1.1.14:
     resolution: {integrity: sha512-+MeVjFf4L44XUkhM1eYbD8fyEsxcV81pqMSR5gblfcLCHfZvbrqy4/qYHE+/R5HoBUT11WV5O08Cr1n3YXkWVQ==}
@@ -8311,18 +8280,6 @@ packages:
       react: 18.2.0
       use-sync-external-store: 1.2.0(react@18.2.0)
     dev: false
-
-  github.com/danicc097/mantine-design-system/e0f7c3007de830c1ba94d1e91d646a0ffda490a1(react@18.2.0):
-    resolution: {tarball: https://codeload.github.com/danicc097/mantine-design-system/tar.gz/e0f7c3007de830c1ba94d1e91d646a0ffda490a1}
-    id: github.com/danicc097/mantine-design-system/e0f7c3007de830c1ba94d1e91d646a0ffda490a1
-    name: novuhq-design-system
-    version: 0.0.0
-    dependencies:
-      react-hook-form: 7.43.9(react@18.2.0)
-      react-table: 7.8.0(react@18.2.0)
-    transitivePeerDependencies:
-      - react
-    dev: true
 
   github.com/danicc097/openapi-typescript-validator/2227323cb4343d16a3e7d316c6bf4861ae8a52d0(ajv-formats@2.1.1)(ajv@8.11.0):
     resolution: {tarball: https://codeload.github.com/danicc097/openapi-typescript-validator/tar.gz/2227323cb4343d16a3e7d316c6bf4861ae8a52d0}

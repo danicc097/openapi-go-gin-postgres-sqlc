@@ -27,10 +27,10 @@ declare namespace TestTypes {
     metadata: number[] | null
     targetDate: Date
     teamID: number
-    packs: Array<{
+    items: {
       name: string
       items: string[]
-    }>
+    }[]
     workItemTypeID: number
   }
 }
