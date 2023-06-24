@@ -1,4 +1,4 @@
-import { type FieldPath } from 'react-hook-form'
+import { type FieldPath, type PathValue } from 'react-hook-form'
 import type { RecursiveKeyOf, RecursiveKeyOfArray } from 'src/types/utils'
 import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
@@ -21,9 +21,14 @@ const schemaFields: Record<RestDemoWorkItemCreateRequestFormField, SchemaField> 
   'base.metadata': { type: 'integer', required: true, isArray: true },
   'base.targetDate': { type: 'date-time', required: true, isArray: false },
   'base.teamID': { type: 'integer', required: true, isArray: false },
-  'base.title': { type: 'object', required: true, isArray: true },
-  'base.title.name': { type: 'string', required: true, isArray: false },
-  'base.title.items': { type: 'string', required: true, isArray: true },
+  'base.packs': { type: 'object', required: true, isArray: true },
+  // FIXME: FieldPath allows 'base.packs.<i>.name' only.
+  // need to remove TupleKeys from allowed path indexing
+  // maybe just bring that code over and update
+  // NOTE: WORKAROUND: or maybe could have convention to use .0 indexing and  update parseSchemaFields to include that `.0` those (or simply replaceAll `.0` with "" and leave parseSchemaFields as is).
+  // although in that case we get no keys autocomplete for nested array elements
+  'base.packs.name': { type: 'string', required: true, isArray: false },
+  'base.packs.items': { type: 'string', required: true, isArray: true },
   'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
   demoProject: { isArray: false, required: true, type: 'object' },
   'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
@@ -36,6 +41,8 @@ const schemaFields: Record<RestDemoWorkItemCreateRequestFormField, SchemaField> 
   'members.userID': { type: 'string', required: true, isArray: false },
   tagIDs: { type: 'integer', required: true, isArray: true },
 }
+
+type a = PathValue<TestTypes.RestDemoWorkItemCreateRequest, 'base.packs'>
 
 const schema = {
   properties: {
@@ -65,7 +72,7 @@ const schema = {
         teamID: {
           type: 'integer',
         },
-        title: {
+        packs: {
           items: {
             properties: {
               items: {
@@ -179,14 +186,15 @@ describe('parseSchemaFields', () => {
       useForm({
         initialValues: {
           base: {
-            closed: dayjs().toDate(),
-            targetDate: dayjs().toDate(),
+            closed: dayjs('20-2-2020').toDate(),
+            targetDate: dayjs('20-2-2020').toDate(),
             description: 'some text',
             kanbanStepID: 1,
             teamID: 1,
-            // title: {},
+            packs: {},
             workItemTypeID: 1,
           },
+          // TODO: test validation error callout for generated form
           // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
           demoProject: {
             lastMessageAt: dayjs().toDate(),
@@ -194,8 +202,11 @@ describe('parseSchemaFields', () => {
             ref: '312321',
             workItemID: 1,
           },
-          // tagIDs: [0, 1, 2],
-          // members: [{ role: 'preparer', userID: 'fesfse' }],
+          tagIDs: [0, 1, 2],
+          members: [
+            { role: 'preparer', userID: 'user 1' },
+            { role: 'reviewer', userID: 'user 2' },
+          ],
         } as TestTypes.RestDemoWorkItemCreateRequest,
       }),
     )
@@ -213,6 +224,6 @@ describe('parseSchemaFields', () => {
       />,
     )
 
-    // TODO: test matches
+    // TODO: test matches. update initialValues to test out multiple nested
   })
 })
