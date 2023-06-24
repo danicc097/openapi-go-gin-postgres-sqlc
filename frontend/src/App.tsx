@@ -217,10 +217,7 @@ export default function App() {
                           {/* <LandingPage /> */}
                           <Title size={20}>This form has been automatically generated from an openapi spec</Title>
                           <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
-                          <DynamicForm<
-                            GetKeys<TestTypes.RestDemoWorkItemCreateRequest>,
-                            TestTypes.RestDemoWorkItemCreateRequest // todo u = getkeys<t>
-                          >
+                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
                             schemaFields={{

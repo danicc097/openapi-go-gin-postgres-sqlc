@@ -61,8 +61,6 @@ const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, Sch
   tagIDs: { type: 'integer', required: true, isArray: true },
 }
 
-type a = TypeOf<TestTypes.RestDemoWorkItemCreateRequest, 'base.items'>
-
 const schema = {
   properties: {
     base: {
@@ -208,7 +206,7 @@ describe('parseSchemaFields', () => {
     )
 
     render(
-      <DynamicForm
+      <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
         schemaFields={schemaFields}
         form={result.current}
         options={{

@@ -27,26 +27,26 @@ import _ from 'lodash'
 import { useState, type ComponentProps } from 'react'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
-import type { GenericObject, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
+import type { GenericObject, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 
-type options<T extends string, U extends GenericObject> = {
+type options<T extends object> = {
   defaultValue: Partial<{
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
-    [key in T]: TypeOf<U, key>
+    [key in T]: TypeOf<T, key>
   }>
 }
 
-type DynamicFormProps<T extends string, U extends GenericObject> = {
-  form: UseFormReturnType<U, (values: U) => U>
-  schemaFields: Record<T, SchemaField>
-  options: options<T, U>
+type DynamicFormProps<T extends object, U extends string = GetKeys<T>> = {
+  form: UseFormReturnType<T, (values: T) => T>
+  schemaFields: Record<U, SchemaField>
+  options: options<T>
 }
 
-type GenerateComponentProps<T> = {
-  form: UseFormReturnType<T>
+type GenerateComponentProps<U> = {
+  form: UseFormReturnType<U>
   fieldType: SchemaField['type']
   props?: {
     input?: any
@@ -57,7 +57,7 @@ type GenerateComponentProps<T> = {
 }
 
 // IMPORTANT: field dot notation requires indexes for arrays. e.g. `members.0.role`.
-function generateComponent<T>({ form, fieldType, props, formField, removeButton }: GenerateComponentProps<T>) {
+function generateComponent<U>({ form, fieldType, props, formField, removeButton }: GenerateComponentProps<U>) {
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
     mb: 4,
@@ -113,14 +113,14 @@ type GenerateFormInputsProps = {
   removeButton?: JSX.Element
 }
 
-export default function DynamicForm<T extends string, U extends GenericObject>({
+export default function DynamicForm<T extends object, U extends string = GetKeys<T>>({
   form,
   schemaFields,
   options,
 }: DynamicFormProps<T, U>) {
   const theme = useMantineTheme()
 
-  function initialValueByField(field: T) {
+  function initialValueByField(field: U) {
     switch (schemaFields[field].type) {
       case 'object':
         return {}
@@ -131,13 +131,13 @@ export default function DynamicForm<T extends string, U extends GenericObject>({
     }
   }
 
-  const addNestedField = (field: T, formField: string) => {
+  const addNestedField = (field: U, formField: string) => {
     const initialValue = initialValueByField(field)
     console.log({ addNestedFieldField: field, addNestedFieldFormField: formField, initialValue })
 
     const newValues = _.cloneDeep(form.values)
 
-    _.set(newValues, formField, [...(_.get(newValues, formField, []) || []), initialValue])
+    _.set(newValues, formField, [...(_.get(newValues, formField) || []), initialValue])
 
     form.setValues((currentValues) => newValues)
   }
