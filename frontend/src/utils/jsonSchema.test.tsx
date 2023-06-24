@@ -3,7 +3,8 @@ import type { RecursiveKeyOf, RecursiveKeyOfArray } from 'src/types/utils'
 import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { getByTestId, render, screen } from '@testing-library/react'
+import '@testing-library/jest-dom'
 
 type RestDemoWorkItemCreateRequestFormField =
   // hack to use 'members.role' instead of 'members.??.role'
@@ -171,9 +172,9 @@ describe('parseSchemaFields', () => {
     expect(parseSchemaFields(schema)).toEqual(schemaFields)
   })
 
-  test('should render form fields and buttons', () => {
-    render(<DynamicForm schemaFields={schemaFields} />)
-
-    // TODO:
-  })
+  // TODO: test('should render form fields and buttons', () => {
+  //   render(<DynamicForm schemaFields={schemaFields} />)
+  //   // expect().foo
+  //
+  // })
 })

@@ -47,9 +47,11 @@ export default mergeConfig(
       environment: 'happy-dom',
       setupFiles: './src/setupTests.ts',
       coverage: {
+        provider: 'c8',
         reporter: ['text', 'html'],
         exclude: ['node_modules/', 'src/setupTests.ts'],
       },
+      css: false,
       // transformMode: {
       //   web: [/\.[jt]sx$/],
       // },

@@ -1,9 +1,14 @@
 import 'regenerator-runtime/runtime'
 import { expect, afterEach } from 'vitest'
 import { cleanup } from '@testing-library/react'
+
+import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers'
 import matchers from '@testing-library/jest-dom/matchers'
 
-// extends Vitest's expect method with methods from react-testing-library
+declare module 'vitest' {
+  interface Assertion<T = any> extends jest.Matchers<void, T>, TestingLibraryMatchers<T, void> {}
+}
+
 expect.extend(matchers)
 
 // runs a cleanup after each test case (e.g. clearing jsdom)
