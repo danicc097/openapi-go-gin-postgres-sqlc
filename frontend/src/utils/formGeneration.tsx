@@ -189,11 +189,10 @@ export default function DynamicForm<T extends string, U extends GenericObject>({
         )
       }
 
-      // FIXME: when 2 consecutive arrays keys have the same name it generates the parent twice when
-      // clicking addNested (+) on the deeply nested one (base.tttt.?.tttt)
-      // 'base.tttt': { type: 'object', required: true, isArray: true },
-      // 'base.tttt.tttt': { type: 'string', required: true, isArray: true },
-      if (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) {
+      if (
+        (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) ||
+        parentFieldKey === fieldKey // fix when parent key has the same name and both are arrays
+      ) {
         return null
       }
 
