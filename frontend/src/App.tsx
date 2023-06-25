@@ -252,12 +252,12 @@ export default function App() {
                                 members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
                               },
                               selectOptionsBuilder: {
-                                'demoProject.line': {
-                                  values: [getGetCurrentUserMock()],
-                                  type: 'select',
-                                  formValueTransformer: (el) => '4343',
-                                  componentTransformer: (el) => <></>,
-                                } as SelectOptions<TypeOf<TestTypes.RestDemoWorkItemCreateRequest, 'demoProject.line'>>,
+                                'demoProject.line': selectOptionsBuilder(
+                                  [getGetCurrentUserMock()],
+                                  'select',
+                                  (el) => '1',
+                                  (el) => <></>,
+                                ),
                               },
                             }}
                           />

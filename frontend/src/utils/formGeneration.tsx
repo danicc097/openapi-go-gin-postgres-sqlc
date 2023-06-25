@@ -46,7 +46,7 @@ export const selectOptionsBuilder = <V, Return>(
   type: SelectOptionsTypes,
   formValueTransformer: (el: V) => Return,
   componentTransformer: (el: V) => JSX.Element,
-): SelectOptions<V, Return> => ({
+): SelectOptions<Return, V> => ({
   values,
   type,
   componentTransformer,
@@ -63,7 +63,7 @@ type options<T extends object, U extends string = GetKeys<T>> = {
   // more recent version: https://stackoverflow.com/questions/74618270/how-to-make-an-object-property-depend-on-another-one-in-a-generic-type
   // TODO: inputComponent field, e.g. for color picker. if inputComponent === undefined, then switch on schema format as usual
   selectOptionsBuilder?: Partial<{
-    [key in U]: ReturnType<typeof selectOptionsBuilder>
+    [key in U]: ReturnType<typeof selectOptionsBuilder<unknown, TypeOf<T, key>>>
   }>
 }
 
