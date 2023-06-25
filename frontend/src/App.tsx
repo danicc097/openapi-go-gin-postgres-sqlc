@@ -5,7 +5,7 @@ import 'src/assets/css/overrides.css'
 import 'src/assets/css/pulsate.css'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
-import { ColorSchemeProvider, type ColorScheme, MantineProvider, Title, ColorInput } from '@mantine/core'
+import { ColorSchemeProvider, type ColorScheme, MantineProvider, Title, ColorInput, Accordion } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
@@ -218,7 +218,14 @@ export default function App() {
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
                           <Title size={20}>This form has been automatically generated from an openapi spec</Title>
-                          <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
+                          <Accordion>
+                            <Accordion.Item value="form">
+                              <Accordion.Control>See form</Accordion.Control>
+                              <Accordion.Panel>
+                                <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
+                              </Accordion.Panel>
+                            </Accordion.Item>
+                          </Accordion>
                           <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
                             name="demoWorkItemCreateForm"
                             form={demoWorkItemCreateForm}
@@ -272,13 +279,17 @@ export default function App() {
                                       disallowInput
                                       withPicker={false}
                                       swatches={colorBlindPalette}
+                                      styles={{ root: { width: '100%' } }}
                                     />
                                   ),
                                 },
                               },
                               // these should probably be all required later, to ensure formField is never used.
-                              label: {
-                                'demoProject.ref': 'Reference',
+                              propsOverride: {
+                                'demoProject.ref': {
+                                  label: 'Reference',
+                                  description: 'This is some help text for reference.',
+                                },
                               },
                             }}
                           />

@@ -111,8 +111,11 @@ type options<T extends object, U extends string = GetKeys<T>> = {
       >
     >
   }>
-  label?: Partial<{
-    [key in U]: string
+  propsOverride?: Partial<{
+    [key in U]: {
+      label?: string
+      description?: string
+    }
   }>
 }
 
@@ -161,7 +164,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
   const theme = useMantineTheme()
 
   function generateComponent<U>({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps<U>) {
-    const label = options.label?.[fieldKey as string] // FIXME: key constraint
+    const propsOverride = options.propsOverride?.[fieldKey as string] // FIXME: key constraint
 
     // TODO: multiselect and select early check (if found in options.components override)
     const _props = {
@@ -169,11 +172,8 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
       ...form.getInputProps(formField),
       ...props?.input,
       ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
-      ...(label && { label }),
+      ...(propsOverride && propsOverride),
     }
-
-    // TODO: helpText is `description` prop in mantine.
-    // will accecss these via options[field].<description|label|formValueTransformer|...>
 
     let el = null
     const component: JSX.Element = options.input?.[fieldKey as string]?.component // FIXME: key constraint
