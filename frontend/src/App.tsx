@@ -245,7 +245,7 @@ export default function App() {
                               tagIDs: { type: 'integer', required: true, isArray: true },
                             }}
                             options={{
-                              defaultValue: {
+                              defaultValues: {
                                 'demoProject.line': '534543523',
                                 members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
                               },

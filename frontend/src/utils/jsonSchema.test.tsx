@@ -214,7 +214,7 @@ describe('parseSchemaFields', () => {
         schemaFields={schemaFields}
         form={result.current}
         options={{
-          defaultValue: {
+          defaultValues: {
             'demoProject.line': '43121234',
             members: [
               { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
@@ -300,7 +300,7 @@ describe('parseSchemaFields', () => {
     })
 
     test('should update form with default values', () => {
-      // defaultValue: {
+      // defaultValues: {
       //   'demoProject.line': '43121234',
       //   members: [
       //     { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
