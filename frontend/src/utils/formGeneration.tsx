@@ -41,16 +41,20 @@ export interface SelectOptions<Return, E = unknown> {
   componentTransformer: <V extends E>(el: V & E) => JSX.Element
 }
 
+interface SelectOptionsTransformer<V, Return> {
+  formValueTransformer: (el: V) => Return
+  componentTransformer: (el: V) => JSX.Element
+}
+
 export const selectOptionsBuilder = <V, Return>(
-  values: V[],
   type: SelectOptionsTypes,
-  formValueTransformer: (el: V) => Return,
-  componentTransformer: (el: V) => JSX.Element,
+  values: V[],
+  transformers: SelectOptionsTransformer<V, Return>,
 ): SelectOptions<Return, V> => ({
-  values,
   type,
-  componentTransformer,
-  formValueTransformer,
+  values,
+  componentTransformer: transformers.componentTransformer,
+  formValueTransformer: transformers.formValueTransformer,
 })
 
 type options<T extends object, U extends string = GetKeys<T>> = {

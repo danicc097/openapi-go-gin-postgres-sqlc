@@ -252,12 +252,14 @@ export default function App() {
                                 members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
                               },
                               selectOptionsBuilder: {
-                                'demoProject.line': selectOptionsBuilder(
-                                  [getGetCurrentUserMock()],
-                                  'select',
-                                  (el) => '1',
-                                  (el) => <></>,
-                                ),
+                                'demoProject.line': selectOptionsBuilder('select', [getGetCurrentUserMock()], {
+                                  componentTransformer(el) {
+                                    return <></>
+                                  },
+                                  formValueTransformer(el) {
+                                    return el.email
+                                  },
+                                }),
                               },
                             }}
                           />
