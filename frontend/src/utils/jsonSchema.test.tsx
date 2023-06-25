@@ -207,6 +207,7 @@ describe('parseSchemaFields', () => {
 
     render(
       <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
+        name="demoWorkItemCreateForm"
         schemaFields={schemaFields}
         form={result.current}
         options={{

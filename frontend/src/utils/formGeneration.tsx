@@ -43,6 +43,7 @@ type DynamicFormProps<T extends object, U extends string = GetKeys<T>> = {
   form: UseFormReturnType<T, (values: T) => T>
   schemaFields: Record<U, SchemaField>
   options: options<T>
+  name: string
 }
 
 type GenerateComponentProps<U> = {
@@ -113,6 +114,7 @@ type GenerateFormInputsProps = {
 }
 
 export default function DynamicForm<T extends object, U extends string = GetKeys<T>>({
+  name,
   form,
   schemaFields,
   options,
@@ -154,7 +156,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
             background-color: #7c1a1a;
           `}
           size="sm"
-          data-testid={`form-field-remove-button-${formField}`}
+          id={`${name}-${formField}-remove-button`}
         >
           <IconMinus size="1rem" />
         </ActionIcon>
@@ -181,7 +183,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
                 onClick={() => addNestedField(fieldKey, formField)}
                 variant="filled"
                 color={'green'}
-                data-testid={`form-field-add-button-${formField}`}
+                id={`${name}-${formField}-add-button`}
               >{`Add ${formField}`}</Button>
             </Flex>
           </div>
@@ -218,7 +220,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
         `,
         ...(!field.isArray && { label: formField }),
         required: field.required,
-        'data-testid': `form-field-${formField}`,
+        id: `${name}-${formField}`,
       }
 
       if (field.isArray && field.type !== 'object') {
