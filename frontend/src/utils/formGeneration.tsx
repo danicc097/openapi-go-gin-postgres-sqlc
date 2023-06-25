@@ -38,14 +38,14 @@ import type {
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 
-export type SelectOptionsTypes = 'select' | 'multiselect'
+export type SelectOptionsTypes = 'select' | 'multiselect' | 'colorSwatch'
 
 export interface SelectOptions<Return, E = unknown> {
   values: E[]
   type: SelectOptionsTypes
-  formValueTransformer: <V extends E>(el: V & E) => Return
+  formValueTransformer?: <V extends E>(el: V & E) => Return
   // TODO: via mantine componentValue
-  componentTransformer: <V extends E>(el: V & E) => JSX.Element
+  componentTransformer?: <V extends E>(el: V & E) => JSX.Element
 }
 
 export const selectOptionsBuilder = <Return, V>({
@@ -77,6 +77,32 @@ type options<T extends object, U extends string = GetKeys<T>> = {
   // more recent version: https://stackoverflow.com/questions/74618270/how-to-make-an-object-property-depend-on-another-one-in-a-generic-type
   // TODO: inputComponent field, e.g. for color picker. if inputComponent === undefined, then switch on schema format as usual
   selectOptions?: Partial<{
+    [key in U]: ReturnType<
+      typeof selectOptionsBuilder<
+        PathType<
+          T,
+          //@ts-ignore
+          key
+        >,
+        unknown
+      >
+    >
+  }>
+  /**
+   * TODO: should allow input like:
+   *  <ColorInput
+      placeholder="Pick color"
+      label="Your favorite color"
+      disallowInput
+      withPicker={false}
+      swatches={[
+        ...DEFAULT_THEME.colors.red,
+        ...DEFAULT_THEME.colors.green,
+        ...DEFAULT_THEME.colors.blue,
+      ]}
+    />
+   */
+  inputComponent?: Partial<{
     [key in U]: ReturnType<
       typeof selectOptionsBuilder<
         PathType<

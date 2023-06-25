@@ -5,7 +5,7 @@ import 'src/assets/css/overrides.css'
 import 'src/assets/css/pulsate.css'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
-import { ColorSchemeProvider, type ColorScheme, MantineProvider, Title } from '@mantine/core'
+import { ColorSchemeProvider, type ColorScheme, MantineProvider, Title, ColorInput } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
@@ -30,6 +30,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { Prism } from '@mantine/prism'
 import { initial } from 'lodash'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+import { colorBlindPalette } from 'src/utils/colors'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -217,12 +218,22 @@ export default function App() {
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
+                          {/* TODO: if schema is string allow for  input component override */}
+                          <ColorInput
+                            placeholder="Pick color"
+                            label="Your favorite color"
+                            disallowInput
+                            withPicker={false}
+                            swatches={colorBlindPalette}
+                            {...demoWorkItemCreateForm.getInputProps('base.title')}
+                          />
                           <Title size={20}>This form has been automatically generated from an openapi spec</Title>
                           <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
                           <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
                             name="demoWorkItemCreateForm"
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
+                            // using this hardcoded for testing purposes
                             schemaFields={{
                               base: { isArray: false, required: true, type: 'object' },
                               'base.closed': { type: 'date-time', required: true, isArray: false },
@@ -261,6 +272,10 @@ export default function App() {
                                   formValueTransformer(el) {
                                     return el.email
                                   },
+                                }),
+                                'demoProject.ref': selectOptionsBuilder({
+                                  type: 'colorSwatch',
+                                  values: colorBlindPalette,
                                 }),
                               },
                             }}
