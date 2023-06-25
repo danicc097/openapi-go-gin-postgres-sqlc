@@ -31,7 +31,7 @@ import type { DeepPartial, GenericObject, GetKeys, RecursiveKeyOf, RecursiveKeyO
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 
-type SelectOptionsTypes = 'select' | 'multiselect'
+export type SelectOptionsTypes = 'select' | 'multiselect'
 
 export interface SelectOptions<Return, E = unknown> {
   values: E[]
@@ -41,20 +41,16 @@ export interface SelectOptions<Return, E = unknown> {
   componentTransformer: <V extends E>(el: V & E) => JSX.Element
 }
 
-interface SelectOptionsTransformer<Return, V> {
-  formValueTransformer: (el: V) => Return
-  componentTransformer: (el: V) => JSX.Element
-}
-
-export const selectOptionsBuilder = <Return, V>(
-  type: SelectOptionsTypes,
-  values: V[],
-  transformers: SelectOptionsTransformer<Return, V>,
-): SelectOptions<Return, V> => ({
+export const selectOptionsBuilder = <Return, V>({
   type,
   values,
-  componentTransformer: transformers.componentTransformer,
-  formValueTransformer: transformers.formValueTransformer,
+  formValueTransformer,
+  componentTransformer,
+}: SelectOptions<Return, V>): SelectOptions<Return, V> => ({
+  type,
+  values,
+  componentTransformer,
+  formValueTransformer,
 })
 
 type options<T extends object, U extends string = GetKeys<T>> = {

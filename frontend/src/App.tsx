@@ -252,7 +252,9 @@ export default function App() {
                                 members: [{ role: 'preparer' }],
                               },
                               selectOptions: {
-                                'demoProject.line': selectOptionsBuilder('select', [getGetCurrentUserMock()], {
+                                'demoProject.line': selectOptionsBuilder({
+                                  type: 'select',
+                                  values: [getGetCurrentUserMock()],
                                   componentTransformer(el) {
                                     return <></>
                                   },

@@ -285,7 +285,7 @@ describe('parseSchemaFields', () => {
       expect(el).toBeInTheDocument()
     })
 
-    // [...document.querySelectorAll('[data-test-id]')].map(e => (e.getAttribute('data-test-id')))
+    // [...document.querySelectorAll('[data-testid]')].map(e => (e.getAttribute('data-testid')))
     const titleDataTestIds = [
       'base-title',
       'base.metadata-title',
