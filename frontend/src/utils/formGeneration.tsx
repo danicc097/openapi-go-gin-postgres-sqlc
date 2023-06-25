@@ -27,7 +27,7 @@ import _ from 'lodash'
 import { useState, type ComponentProps } from 'react'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
-import type { GenericObject, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
+import type { DeepPartial, GenericObject, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 
@@ -60,7 +60,7 @@ export const selectOptionsBuilder = <Return, V>(
 type options<T extends object, U extends string = GetKeys<T>> = {
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
-    [key in U]: TypeOf<T, key>
+    [key in U]: DeepPartial<TypeOf<T, key>>
   }>
   //  list of options used for Select and MultiSelect
   // TODO: someone had the exact same idea: https://stackoverflow.com/questions/69254779/infer-type-based-on-the-generic-type-of-a-sibling-property-in-typescript

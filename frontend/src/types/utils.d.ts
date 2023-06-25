@@ -64,6 +64,10 @@ type TypeOf<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer 
   ? T[U]
   : unknown
 
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
+
 /**
  * Get all the possible nested paths of an object
  * @example
