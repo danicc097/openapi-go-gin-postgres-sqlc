@@ -100,7 +100,9 @@ function generateComponent<U>({ form, fieldType, props, formField, removeButton 
 function renderTitle(key: string) {
   return (
     <>
-      <Title size={18}>{key}</Title>
+      <Title data-test-id={`${key}-title`} size={18}>
+        {key}
+      </Title>
       <Space p={8} />
     </>
   )
@@ -156,7 +158,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
             background-color: #7c1a1a;
           `}
           size="sm"
-          id={`${name}-${formField}-remove-button`}
+          id={`${name}-${formField}-remove-button-${index}`}
         >
           <IconMinus size="1rem" />
         </ActionIcon>
@@ -237,7 +239,10 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
                     form,
                     fieldType: field.type,
                     formField: `${formField}.${_index}`,
-                    props: { input: inputProps, container: containerProps },
+                    props: {
+                      input: { ...inputProps, id: `${name}-${formField}-${_index}` },
+                      container: containerProps,
+                    },
                     removeButton: renderRemoveNestedFieldButton(formField, _index),
                   })}
                 </Flex>
@@ -302,6 +307,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
         css={css`
           min-width: 100%;
         `}
+        id={name}
       >
         {generateFormInputs({})}
       </form>
