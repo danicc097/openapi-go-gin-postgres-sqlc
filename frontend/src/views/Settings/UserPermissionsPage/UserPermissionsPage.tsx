@@ -16,7 +16,7 @@ import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
-import type { TypeOf, RecursiveKeyOf, RequiredKeys } from 'src/types/utils'
+import type { PathType, RecursiveKeyOf, RequiredKeys } from 'src/types/utils'
 import jsonSchema from 'src/client-validator/gen/dereferenced-schema.json'
 import {
   Avatar,
@@ -350,7 +350,7 @@ export default function UserPermissionsPage() {
 
   const a: Paths = 'base.kanbanStepID'
 
-  type KanbanStepID = TypeOf<RestDemoWorkItemCreateRequest, 'base.kanbanStepID'>
+  type KanbanStepID = PathType<RestDemoWorkItemCreateRequest, 'base.kanbanStepID'>
 
   /* TODO: allow generate form customization per path, e.g. for kanbanStepID  ->
    // add optional schema["DbKanbanStep"] if defaultValues are
@@ -360,7 +360,7 @@ export default function UserPermissionsPage() {
       override: {
         'base.kanbanStepID': {
           // so we can show kanban step name instead of ID in a dropdown, for instance
-          // accessor must satisfy (...args: any) => <U> where U is TypeOf<typeof RestDemoWorkItemCreateForm, 'base.kanbanStepID'>
+          // accessor must satisfy (...args: any) => <U> where U is PathType<typeof RestDemoWorkItemCreateForm, 'base.kanbanStepID'>
           // which is as far as we can get to ensure we're returning the right form value
           // accesor and display fns are required if optional type arg is passed (schema["DbKanbanStep"])
           accessor: (kanbanStep: <R>): <T> => {

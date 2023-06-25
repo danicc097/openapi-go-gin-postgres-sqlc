@@ -1,4 +1,4 @@
-import type { GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
+import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import DynamicForm, { constructFormKey } from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
@@ -156,7 +156,7 @@ const formInitialValues = {
   },
   tagIDs: [0, 1, 2],
   members: [
-    { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
+    { role: null, userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' }, // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values
     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
   ],
 } as TestTypes.RestDemoWorkItemCreateRequest
@@ -215,11 +215,10 @@ describe('parseSchemaFields', () => {
         options={{
           defaultValues: {
             'demoProject.line': '43121234',
-            members: [
-              { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
-              { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
-            ],
+            // FIXME: does not infer return type like selectOptions does. this should fail
+            'members.role': 'prepadrer',
           },
+          selectOptions: {},
         }}
       />,
     )

@@ -43,7 +43,7 @@ export type GetKeys<T> = T extends StopTypes
         : K | Dot<K, GetKeys<T[K]>>
     }[keyof T & string]
 /**
- * Access underlying types by dot notation.
+ * Access underlying types by dot notation path.
 
  * @example
     type RestDemoWorkItemCreateRequest = {
@@ -54,11 +54,11 @@ export type GetKeys<T> = T extends StopTypes
         }
       }
 
-    TypeOf<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
+    PathType<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
  */
-type TypeOf<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer Rest}`
+type PathType<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer Rest}`
   ? First extends keyof T
-    ? TypeOf<T[First], Rest>
+    ? PathType<T[First], Rest>
     : unknown
   : U extends keyof T
   ? T[U]
