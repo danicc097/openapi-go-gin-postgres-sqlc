@@ -18,7 +18,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Notifications } from '@mantine/notifications'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
-import DynamicForm, { selectOptionsBuilder } from 'src/utils/formGeneration'
+import DynamicForm, { selectOptionsBuilder, type SelectOptions } from 'src/utils/formGeneration'
 import type { RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
@@ -252,12 +252,12 @@ export default function App() {
                                 members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
                               },
                               selectOptionsBuilder: {
-                                'demoProject.line': selectOptionsBuilder(
-                                  [getGetCurrentUserMock()],
-                                  'select',
-                                  (el) => el.email,
-                                  (el) => <></>,
-                                ),
+                                'demoProject.line': {
+                                  values: [getGetCurrentUserMock()],
+                                  type: 'select',
+                                  formValueTransformer: (el) => '4343',
+                                  componentTransformer: (el) => <></>,
+                                } as SelectOptions<TypeOf<TestTypes.RestDemoWorkItemCreateRequest, 'demoProject.line'>>,
                               },
                             }}
                           />

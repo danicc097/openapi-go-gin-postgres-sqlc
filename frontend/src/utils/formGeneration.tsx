@@ -33,7 +33,7 @@ import { entries } from 'src/utils/object'
 
 type SelectOptionsTypes = 'select' | 'multiselect'
 
-interface SelectOptions<E, Return> {
+export interface SelectOptions<Return, E = unknown> {
   values: E[]
   type: SelectOptionsTypes
   formValueTransformer: <V extends E>(el: V & E) => Return
@@ -63,7 +63,7 @@ type options<T extends object, U extends string = GetKeys<T>> = {
   // more recent version: https://stackoverflow.com/questions/74618270/how-to-make-an-object-property-depend-on-another-one-in-a-generic-type
   // TODO: inputComponent field, e.g. for color picker. if inputComponent === undefined, then switch on schema format as usual
   selectOptionsBuilder?: Partial<{
-    [key in U]: typeof selectOptionsBuilder
+    [key in U]: ReturnType<typeof selectOptionsBuilder>
   }>
 }
 
