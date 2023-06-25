@@ -156,10 +156,10 @@ const formInitialValues = {
     workItemID: 1,
   },
   tagIDs: [0, 1, 2],
-  members: [
-    { role: 'preparer', userID: 'user 1' },
-    { role: 'preparer', userID: 'user 2' },
-  ],
+  // members: [
+  //   { role: 'preparer', userID: 'user 1' },
+  //   { role: 'preparer', userID: 'user 2' },
+  // ],
 } as TestTypes.RestDemoWorkItemCreateRequest
 
 const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
@@ -215,8 +215,11 @@ describe('parseSchemaFields', () => {
         form={result.current}
         options={{
           defaultValue: {
-            'demoProject.line': '534543523',
-            members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
+            'demoProject.line': '43121234',
+            members: [
+              { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
+              { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
+            ],
           },
         }}
       />,
@@ -294,6 +297,17 @@ describe('parseSchemaFields', () => {
     ]
     titleDataTestIds.forEach((id) => {
       expect(view.getByTestId(id)).toBeInTheDocument()
+    })
+
+    test('should update form with default values', () => {
+      // defaultValue: {
+      //   'demoProject.line': '43121234',
+      //   members: [
+      //     { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
+      //     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
+      //   ],
+      // },
+      // TODO: get input by id
     })
   })
 })

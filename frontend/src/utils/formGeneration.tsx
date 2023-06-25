@@ -31,18 +31,18 @@ import type { GenericObject, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, TypeO
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 
-type options<T extends object> = {
+type options<T extends object, U extends string = GetKeys<T>> = {
   defaultValue: Partial<{
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
-    [key in T]: TypeOf<T, key>
+    [key in U]: TypeOf<T, key>
   }>
 }
 
 type DynamicFormProps<T extends object, U extends string = GetKeys<T>> = {
   form: UseFormReturnType<T, (values: T) => T>
   schemaFields: Record<U, SchemaField>
-  options: options<T>
+  options: options<T, U>
   name: string
 }
 
