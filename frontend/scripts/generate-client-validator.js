@@ -22,7 +22,7 @@ generate({
     parser: 'typescript',
   },
   addFormats: true,
-  formatOptions: { formats: ['int64', 'int32', 'binary', 'date-time'] },
+  formatOptions: { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] },
   ajvOptions: { strict: false, allErrors: true },
 })
 

@@ -61,7 +61,7 @@ import {
 import jsonSchema from './schema.json'
 
 const ajv = new Ajv({ strict: false, allErrors: true })
-addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time'] })
+addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
 ajv.compile(jsonSchema)
 
 // Decoders

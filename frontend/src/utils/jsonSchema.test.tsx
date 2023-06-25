@@ -129,7 +129,6 @@ const schema = {
   required: ['demoProject', 'base', 'tagIDs', 'members'],
   type: 'object',
   'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
-  $schema: 'http://json-schema.org/draft-04/schema#',
 } as JsonSchemaField
 
 const formInitialValues = {

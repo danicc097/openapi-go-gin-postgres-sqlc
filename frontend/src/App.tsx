@@ -5,7 +5,15 @@ import 'src/assets/css/overrides.css'
 import 'src/assets/css/pulsate.css'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
-import { ColorSchemeProvider, type ColorScheme, MantineProvider, Title, ColorInput, Accordion } from '@mantine/core'
+import {
+  ColorSchemeProvider,
+  type ColorScheme,
+  MantineProvider,
+  Title,
+  ColorInput,
+  Accordion,
+  Button,
+} from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
@@ -24,13 +32,138 @@ import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
 import { useForm } from '@mantine/form'
-import DemoWorkItemForm from 'src/components/forms/DemoProjectWorkItemForm'
 import dayjs from 'dayjs'
 import { ErrorBoundary } from 'react-error-boundary'
 import { Prism } from '@mantine/prism'
 import { initial } from 'lodash'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import { colorBlindPalette } from 'src/utils/colors'
+import { validateJson } from 'src/client-validator/validate'
+import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
+
+const schema = {
+  properties: {
+    base: {
+      properties: {
+        closed: {
+          format: 'date-time',
+          type: ['string', 'null'],
+        },
+        description: {
+          type: 'string',
+        },
+        kanbanStepID: {
+          type: 'integer',
+        },
+        metadata: {
+          items: {
+            minimum: 0,
+            type: 'integer',
+          },
+          type: ['array', 'null'],
+        },
+        targetDate: {
+          format: 'date',
+          type: 'string',
+        },
+        teamID: {
+          type: 'integer',
+        },
+        items: {
+          items: {
+            properties: {
+              items: {
+                items: {
+                  type: 'string',
+                },
+                type: ['array', 'null'],
+              },
+              name: {
+                type: 'string',
+                $schema: 'http://json-schema.org/draft-04/schema#',
+              },
+            },
+            required: ['items', 'name'],
+            type: 'object',
+            $schema: 'http://json-schema.org/draft-04/schema#',
+          },
+          type: ['array', 'null'],
+        },
+        workItemTypeID: {
+          type: 'integer',
+        },
+      },
+      required: [
+        'items',
+        'description',
+        'workItemTypeID',
+        'metadata',
+        'teamID',
+        'kanbanStepID',
+        'closed',
+        'targetDate',
+      ],
+      type: 'object',
+      $schema: 'http://json-schema.org/draft-04/schema#',
+    },
+    demoProject: {
+      properties: {
+        lastMessageAt: {
+          format: 'date-time',
+          type: 'string',
+        },
+        line: {
+          type: 'string',
+        },
+        ref: {
+          pattern: '^[0-9]{8}$',
+          type: 'string',
+        },
+        reopened: {
+          type: 'boolean',
+        },
+        workItemID: {
+          type: 'integer',
+        },
+      },
+      required: ['workItemID', 'ref', 'line', 'lastMessageAt', 'reopened'],
+      type: 'object',
+      $schema: 'http://json-schema.org/draft-04/schema#',
+    },
+    members: {
+      items: {
+        properties: {
+          role: {
+            title: 'WorkItem role',
+            type: 'string',
+            'x-generated': '-',
+            enum: ['preparer', 'reviewer'],
+            description: "represents a database 'work_item_role'",
+            $schema: 'http://json-schema.org/draft-04/schema#',
+          },
+          userID: {
+            type: 'string',
+            $schema: 'http://json-schema.org/draft-04/schema#',
+          },
+        },
+        required: ['userID', 'role'],
+        type: 'object',
+        $schema: 'http://json-schema.org/draft-04/schema#',
+      },
+      type: ['array', 'null'],
+    },
+    tagIDs: {
+      items: {
+        type: 'integer',
+      },
+      type: ['array', 'null'],
+    },
+  },
+  required: ['demoProject', 'base', 'tagIDs', 'members'],
+  type: 'object',
+  'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -185,6 +318,7 @@ export default function App() {
   //     console.error(JSON.stringify(error.validationErrors.errors))
   //   }
   // }, [demoWorkItemCreateForm])
+  const ajv = new Ajv({ strict: false, allErrors: true })
 
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
@@ -226,6 +360,24 @@ export default function App() {
                               </Accordion.Panel>
                             </Accordion.Item>
                           </Accordion>
+                          <Button
+                            onClick={(e) => {
+                              try {
+                                const r = demoWorkItemCreateForm.validate()
+                                console.log({ r })
+
+                                addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
+                                const a = ajv.validate(schema, demoWorkItemCreateForm.values)
+                                console.log(ajv.errors)
+                              } catch (error) {
+                                console.error(error)
+                                console.error(ajv.errors)
+                                console.error(JSON.stringify(error?.validationErrors?.errors))
+                              }
+                            }}
+                          >
+                            Validate form
+                          </Button>
                           <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
                             name="demoWorkItemCreateForm"
                             form={demoWorkItemCreateForm}
