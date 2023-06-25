@@ -163,6 +163,9 @@ function generateComponent<U>({ form, fieldType, props, formField, removeButton 
     case 'integer':
       el = <NumberInput {..._props} />
       break
+    case 'number':
+      el = <NumberInput precision={2} {..._props} />
+      break
     default:
       break
   }
