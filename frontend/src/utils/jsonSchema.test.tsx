@@ -6,6 +6,7 @@ import { getByTestId, render, screen, renderHook } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { useForm } from '@mantine/form'
+import { entries, keys } from 'src/utils/object'
 
 const formInitialValues = {
   base: {
@@ -205,9 +206,11 @@ describe('parseSchemaFields', () => {
       }),
     )
 
-    render(
+    const formName = 'demoWorkItemCreateForm'
+
+    const view = render(
       <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
-        name="demoWorkItemCreateForm"
+        name={formName}
         schemaFields={schemaFields}
         form={result.current}
         options={{
@@ -219,51 +222,41 @@ describe('parseSchemaFields', () => {
       />,
     )
 
-    // Recursive function to test data-testid attributes
     const testField = (fieldKey, parentFormField = '') => {
       const formField = constructFormKey(fieldKey, parentFormField)
       const field = schemaFields[fieldKey]
 
       if (field.isArray) {
-        const addButtonTestId =
-          fieldKey === parentFormField
-            ? `form-field-add-button-${formField}`
-            : `form-field-add-button-${parentFormField}.${fieldKey}`
-        console.log('addButtonTestId:', addButtonTestId)
-        const addButtonElement = screen.queryByTestId(addButtonTestId)
-        console.log('addButtonElement:', addButtonElement)
+        const addButtonId =
+          parentFormField === ''
+            ? `${formName}-${formField}-add-button`
+            : `${formName}-${parentFormField}.${fieldKey}-add-button`
+        console.log('addButtonId:', addButtonId)
+        const addButtonElement = document.getElementById(addButtonId)
 
-        if (addButtonElement) {
-          expect(addButtonElement).toBeInTheDocument()
+        expect(addButtonElement).toBeInTheDocument()
 
-          // Test data-testid attribute for each array element and remove button
-          const arrayElements = formInitialValues[fieldKey]
-          arrayElements.forEach((_, index) => {
-            const arrayElementFormField = `${formField}.${index}`
-            testField(fieldKey, arrayElementFormField)
+        const arrayElements = formInitialValues[fieldKey]
+        arrayElements.forEach((_, index) => {
+          const arrayElementFormField = `${formName}-${formField}.${index}`
+          testField(fieldKey, arrayElementFormField)
 
-            const removeButtonTestId = `form-field-remove-button-${arrayElementFormField}`
-            console.log('removeButtonTestId:', removeButtonTestId)
-            const removeButtonElement = screen.queryByTestId(removeButtonTestId)
-            console.log('removeButtonElement:', removeButtonElement)
+          const removeButtonId = `${formName}-${arrayElementFormField}-remove-button`
+          console.log('removeButtonId:', removeButtonId)
+          const removeButtonElement = document.getElementById(removeButtonId)
 
-            expect(removeButtonElement).toBeInTheDocument()
-          })
-        } else {
-          console.log(`Add button not found for field: ${formField}`)
-        }
+          expect(removeButtonElement).toBeInTheDocument()
+        })
       } else if (field.type === 'object') {
-        // Skip if field type is "object" and not an array
+        // will just have a title (need data-test-id for title test)
         return
       } else {
-        const dataTestId = `form-field-${formField}`
-        console.log('dataTestId:', dataTestId)
-        const fieldElement = screen.getByTestId(dataTestId)
-        console.log('fieldElement:', fieldElement)
+        const dataId = `${formName}-${formField}`
+        console.log('dataId:', dataId)
+        const fieldElement = document.getElementById(dataId)
 
         expect(fieldElement).toBeInTheDocument()
 
-        // Test data-testid attribute for nested fields
         Object.keys(field).forEach((subFieldKey) => {
           const nestedFormField = constructFormKey(subFieldKey, formField)
           testField(subFieldKey, nestedFormField)
@@ -271,8 +264,7 @@ describe('parseSchemaFields', () => {
       }
     }
 
-    // Start testing with top-level fields
-    Object.keys(formInitialValues).forEach((fieldKey) => {
+    keys(formInitialValues).forEach((fieldKey) => {
       testField(fieldKey)
     })
   })
