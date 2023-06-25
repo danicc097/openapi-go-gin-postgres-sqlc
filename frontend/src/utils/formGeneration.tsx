@@ -24,7 +24,7 @@ import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _ from 'lodash'
-import { useState, type ComponentProps } from 'react'
+import React, { useState, type ComponentProps } from 'react'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import type {
@@ -48,6 +48,10 @@ export interface SelectOptions<Return, E = unknown> {
   componentTransformer?: <V extends E>(el: V & E) => JSX.Element
 }
 
+export interface InputOptions<Return, E = unknown> {
+  component: JSX.Element
+}
+
 export const selectOptionsBuilder = <Return, V>({
   type,
   values,
@@ -58,6 +62,10 @@ export const selectOptionsBuilder = <Return, V>({
   values,
   componentTransformer,
   formValueTransformer,
+})
+
+export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>): InputOptions<Return, V> => ({
+  component,
 })
 
 type options<T extends object, U extends string = GetKeys<T>> = {
@@ -89,22 +97,11 @@ type options<T extends object, U extends string = GetKeys<T>> = {
     >
   }>
   /**
-   * TODO: should allow input like:
-   *  <ColorInput
-      placeholder="Pick color"
-      label="Your favorite color"
-      disallowInput
-      withPicker={false}
-      swatches={[
-        ...DEFAULT_THEME.colors.red,
-        ...DEFAULT_THEME.colors.green,
-        ...DEFAULT_THEME.colors.blue,
-      ]}
-    />
+   * override default input component.
    */
-  inputComponent?: Partial<{
+  input?: Partial<{
     [key in U]: ReturnType<
-      typeof selectOptionsBuilder<
+      typeof inputBuilder<
         PathType<
           T,
           //@ts-ignore
@@ -113,6 +110,9 @@ type options<T extends object, U extends string = GetKeys<T>> = {
         unknown
       >
     >
+  }>
+  label?: Partial<{
+    [key in U]: string
   }>
 }
 
@@ -124,7 +124,7 @@ type DynamicFormProps<T extends object, U extends string = GetKeys<T>> = {
 }
 
 type GenerateComponentProps<U> = {
-  form: UseFormReturnType<U>
+  fieldKey: U
   fieldType: SchemaField['type']
   props?: {
     input?: any
@@ -132,49 +132,6 @@ type GenerateComponentProps<U> = {
   }
   formField: string
   removeButton?: JSX.Element
-}
-
-function generateComponent<U>({ form, fieldType, props, formField, removeButton }: GenerateComponentProps<U>) {
-  // TODO: multiselect and select early check (if found in options.components override)
-  const _props = {
-    mb: 4,
-    ...form.getInputProps(formField),
-    ...props?.input,
-    ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
-  }
-
-  // TODO: helpText is `description` prop in mantine.
-  // will accecss these via options[field (not formField since its shared for array elements)].<description|label|formValueTransformer|...>
-
-  let el = null
-  switch (fieldType) {
-    case 'string':
-      el = <TextInput {..._props} />
-      break
-    case 'boolean':
-      el = <Checkbox {..._props} />
-      break
-    case 'date':
-      el = <DateInput placeholder="Select date" {..._props} />
-      break
-    case 'date-time':
-      el = <DateTimePicker placeholder="Select date and time" {..._props} />
-      break
-    case 'integer':
-      el = <NumberInput {..._props} />
-      break
-    case 'number':
-      el = <NumberInput precision={2} {..._props} />
-      break
-    default:
-      break
-  }
-
-  return (
-    <Flex align="center" {...props?.container}>
-      {el}
-    </Flex>
-  )
 }
 
 function renderTitle(key: string) {
@@ -202,6 +159,60 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
   options,
 }: DynamicFormProps<T, U>) {
   const theme = useMantineTheme()
+
+  function generateComponent<U>({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps<U>) {
+    const label = options.label?.[fieldKey as string] // FIXME: key constraint
+
+    // TODO: multiselect and select early check (if found in options.components override)
+    const _props = {
+      mb: 4,
+      ...form.getInputProps(formField),
+      ...props?.input,
+      ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
+      ...(label && { label }),
+    }
+
+    // TODO: helpText is `description` prop in mantine.
+    // will accecss these via options[field].<description|label|formValueTransformer|...>
+
+    let el = null
+    const component: JSX.Element = options.input?.[fieldKey as string]?.component // FIXME: key constraint
+    if (component) {
+      el = React.cloneElement(component, {
+        ..._props,
+        ...component.props, // allow user override
+      })
+    } else {
+      switch (fieldType) {
+        case 'string':
+          el = <TextInput {..._props} />
+          break
+        case 'boolean':
+          el = <Checkbox {..._props} />
+          break
+        case 'date':
+          el = <DateInput placeholder="Select date" {..._props} />
+          break
+        case 'date-time':
+          el = <DateTimePicker placeholder="Select date and time" {..._props} />
+          break
+        case 'integer':
+          el = <NumberInput {..._props} />
+          break
+        case 'number':
+          el = <NumberInput precision={2} {..._props} />
+          break
+        default:
+          break
+      }
+    }
+
+    return (
+      <Flex align="center" {...props?.container}>
+        {el}
+      </Flex>
+    )
+  }
 
   function initialValueByField(field: U) {
     switch (schemaFields[field].type) {
@@ -316,7 +327,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
               return (
                 <Flex key={_index}>
                   {generateComponent({
-                    form,
+                    fieldKey,
                     fieldType: field.type,
                     formField: `${formField}.${_index}`,
                     props: {
@@ -365,7 +376,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
             <>
               {removeButton}
               {generateComponent({
-                form,
+                fieldKey,
                 fieldType: field.type,
                 props: { input: inputProps, container: containerProps },
                 formField: formField,

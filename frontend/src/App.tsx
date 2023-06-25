@@ -136,7 +136,6 @@ export default function App() {
     demoProject: {
       lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
       line: '3e3e2',
-      ref: '312321',
       workItemID: 1,
     },
     tagIDs: [0, 1, 2],
@@ -218,15 +217,6 @@ export default function App() {
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
-                          {/* TODO: if schema is string allow for  input component override */}
-                          <ColorInput
-                            placeholder="Pick color"
-                            label="Your favorite color"
-                            disallowInput
-                            withPicker={false}
-                            swatches={colorBlindPalette}
-                            {...demoWorkItemCreateForm.getInputProps('base.title')}
-                          />
                           <Title size={20}>This form has been automatically generated from an openapi spec</Title>
                           <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
                           <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
@@ -273,10 +263,22 @@ export default function App() {
                                     return el.email
                                   },
                                 }),
-                                'demoProject.ref': selectOptionsBuilder({
-                                  type: 'colorSwatch',
-                                  values: colorBlindPalette,
-                                }),
+                              },
+                              input: {
+                                'demoProject.ref': {
+                                  component: (
+                                    <ColorInput
+                                      placeholder="Pick color"
+                                      disallowInput
+                                      withPicker={false}
+                                      swatches={colorBlindPalette}
+                                    />
+                                  ),
+                                },
+                              },
+                              // these should probably be all required later, to ensure formField is never used.
+                              label: {
+                                'demoProject.ref': 'Reference',
                               },
                             }}
                           />

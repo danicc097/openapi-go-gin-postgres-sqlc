@@ -223,20 +223,6 @@ describe('parseSchemaFields', () => {
       />,
     )
 
-    // function getAllElementIds(parentElement) {
-    //   let elements = parentElement.querySelectorAll('*'); // Select all elements within the parentElement
-    //   let ids = [];
-    //   for (let i = 0; i < elements.length; i++) {
-    //     let element = elements[i];
-    //     if (element.id) {
-    //       ids.push(element.id); // Add the ID to the array
-    //     }
-    //   }
-    //   return ids;
-    // }
-    // let parentElement = document.getElementById('demoWorkItemCreateForm');
-    // let ids = getAllElementIds(parentElement);
-    // ids.filter(i => i.startsWith("demo") && !i.endsWith("-label"))
     const ids = [
       'demoWorkItemCreateForm-base.description',
       'demoWorkItemCreateForm-base.kanbanStepID',
@@ -284,7 +270,6 @@ describe('parseSchemaFields', () => {
       expect(el).toBeInTheDocument()
     })
 
-    // [...document.querySelectorAll('[data-testid]')].map(e => (e.getAttribute('data-testid')))
     const titleDataTestIds = [
       'base-title',
       'base.metadata-title',
