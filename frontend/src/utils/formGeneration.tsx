@@ -63,14 +63,30 @@ export const selectOptionsBuilder = <Return, V>({
 type options<T extends object, U extends string = GetKeys<T>> = {
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
-    [key in U]: DeepPartial<PathType<T, key>>
+    [key in U]: DeepPartial<
+      PathType<
+        T,
+        // can fix key constraint error with U extends RecursiveKeyOf<T, ''> but not worth it due to cpu usage, just ignore
+        //@ts-ignore
+        key
+      >
+    >
   }>
   //  list of options used for Select and MultiSelect
   // TODO: someone had the exact same idea: https://stackoverflow.com/questions/69254779/infer-type-based-on-the-generic-type-of-a-sibling-property-in-typescript
   // more recent version: https://stackoverflow.com/questions/74618270/how-to-make-an-object-property-depend-on-another-one-in-a-generic-type
   // TODO: inputComponent field, e.g. for color picker. if inputComponent === undefined, then switch on schema format as usual
   selectOptions?: Partial<{
-    [key in U]: ReturnType<typeof selectOptionsBuilder<PathType<T, key>, unknown>>
+    [key in U]: ReturnType<
+      typeof selectOptionsBuilder<
+        PathType<
+          T,
+          //@ts-ignore
+          key
+        >,
+        unknown
+      >
+    >
   }>
 }
 
