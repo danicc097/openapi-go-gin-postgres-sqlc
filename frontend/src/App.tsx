@@ -18,9 +18,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Notifications } from '@mantine/notifications'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
-import DynamicForm from 'src/utils/formGeneration'
-import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
-import type { GetKeys, RecursiveKeyOfArray } from 'src/types/utils'
+import DynamicForm, { selectOptionsBuilder } from 'src/utils/formGeneration'
+import type { RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
+import type { GetKeys, RecursiveKeyOfArray, TypeOf } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
 import { useForm } from '@mantine/form'
@@ -28,6 +28,8 @@ import DemoWorkItemForm from 'src/components/forms/DemoProjectWorkItemForm'
 import dayjs from 'dayjs'
 import { ErrorBoundary } from 'react-error-boundary'
 import { Prism } from '@mantine/prism'
+import { initial } from 'lodash'
+import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -248,6 +250,14 @@ export default function App() {
                               defaultValues: {
                                 'demoProject.line': '534543523',
                                 members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
+                              },
+                              selectOptionsBuilder: {
+                                'demoProject.line': selectOptionsBuilder(
+                                  [getGetCurrentUserMock()],
+                                  'select',
+                                  (el) => el.email,
+                                  (el) => <></>,
+                                ),
                               },
                             }}
                           />
