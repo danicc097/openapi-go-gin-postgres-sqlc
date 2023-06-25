@@ -66,7 +66,7 @@ type options<T extends object, U extends string = GetKeys<T>> = {
   // TODO: someone had the exact same idea: https://stackoverflow.com/questions/69254779/infer-type-based-on-the-generic-type-of-a-sibling-property-in-typescript
   // more recent version: https://stackoverflow.com/questions/74618270/how-to-make-an-object-property-depend-on-another-one-in-a-generic-type
   // TODO: inputComponent field, e.g. for color picker. if inputComponent === undefined, then switch on schema format as usual
-  selectOptionsBuilder?: Partial<{
+  selectOptions?: Partial<{
     [key in U]: ReturnType<typeof selectOptionsBuilder<unknown, TypeOf<T, key>>>
   }>
 }
@@ -132,7 +132,7 @@ function generateComponent<U>({ form, fieldType, props, formField, removeButton 
 function renderTitle(key: string) {
   return (
     <>
-      <Title data-test-id={`${key}-title`} size={18}>
+      <Title data-testid={`${key}-title`} size={18}>
         {key}
       </Title>
       <Space p={8} />

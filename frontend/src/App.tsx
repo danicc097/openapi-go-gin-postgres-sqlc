@@ -251,7 +251,7 @@ export default function App() {
                                 'demoProject.line': '534543523',
                                 members: [{ role: 'preparer', userID: 'c446259c-1083-4212-98fe-bd080c41e7d7' }],
                               },
-                              selectOptionsBuilder: {
+                              selectOptions: {
                                 'demoProject.line': selectOptionsBuilder('select', [getGetCurrentUserMock()], {
                                   componentTransformer(el) {
                                     return <></>

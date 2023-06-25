@@ -143,7 +143,6 @@ const formInitialValues = {
     description: 'some text',
     kanbanStepID: 1,
     teamID: 1,
-    // title: {},
     workItemTypeID: 1,
   },
   // TODO: need to check runtime type, else all fails catastrophically.
@@ -156,10 +155,10 @@ const formInitialValues = {
     workItemID: 1,
   },
   tagIDs: [0, 1, 2],
-  // members: [
-  //   { role: 'preparer', userID: 'user 1' },
-  //   { role: 'preparer', userID: 'user 2' },
-  // ],
+  members: [
+    { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
+    { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
+  ],
 } as TestTypes.RestDemoWorkItemCreateRequest
 
 const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
@@ -281,7 +280,9 @@ describe('parseSchemaFields', () => {
     ]
 
     ids.forEach((id) => {
-      expect(document.getElementById(id)).toBeInTheDocument()
+      const el = document.getElementById(id)
+      expect(el, `${id} not found`).toBeTruthy()
+      expect(el).toBeInTheDocument()
     })
 
     // [...document.querySelectorAll('[data-test-id]')].map(e => (e.getAttribute('data-test-id')))
