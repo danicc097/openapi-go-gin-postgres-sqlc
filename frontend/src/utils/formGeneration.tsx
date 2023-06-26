@@ -16,6 +16,7 @@ import {
   Box,
   Flex,
   Tooltip,
+  Accordion,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Form, type UseFormReturnType } from '@mantine/form'
@@ -115,6 +116,12 @@ type options<T extends object, U extends string = GetKeys<T>> = {
     [key in U]: {
       label?: string
       description?: string
+    }
+  }>
+  accordion?: Partial<{
+    [key in U]: {
+      defaultOpen?: boolean
+      title?: JSX.Element
     }
   }>
 }
@@ -227,7 +234,6 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
 
   const addNestedField = (field: U, formField: string) => {
     const initialValue = initialValueByField(field)
-    console.log({ addNestedFieldField: field, addNestedFieldFormField: formField, initialValue })
 
     const newValues = _.cloneDeep(form.values)
 
@@ -241,7 +247,6 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
       <Tooltip label="Remove item" position="top-end" withArrow>
         <ActionIcon
           onClick={(e) => {
-            console.log({ removeNestedField: `${formField}[${index}]` })
             form.removeListItem(formField, index)
           }}
           // variant="filled"
@@ -296,10 +301,8 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
       if (schemaFields[parentKey]?.isArray && parentFieldKey === '') return null
 
       const formField = constructFormKey(fieldKey, parentFormField)
-      if (parentFormField !== '') {
-        console.log({ parentFormField })
-      }
-      // console.log({ formValue: _.get(form.values, formField), formField })
+
+      const accordion = options.accordion?.[fieldKey as string] // FIXME: key constraint
 
       const containerProps = {
         css: css`
@@ -320,52 +323,31 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
         // nested array of nonbjects generation
         return (
           <Card key={fieldKey} mt={24}>
-            {renderNestedHeader()}
             {/* existing array fields, if any */}
-            {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
-              console.log({ _nestedValue, _index })
-              return (
-                <Flex key={_index}>
-                  {generateComponent({
-                    fieldKey,
-                    fieldType: field.type,
-                    formField: `${formField}.${_index}`,
-                    props: {
-                      input: { ...inputProps, id: `${name}-${formField}-${_index}` },
-                      container: containerProps,
-                    },
-                    removeButton: renderRemoveNestedFieldButton(formField, _index),
-                  })}
-                </Flex>
-              )
-            })}
+            {accordion ? (
+              renderAccordion(renderArrayChildren())
+            ) : (
+              <>
+                {renderNestedHeader()}
+                {renderArrayChildren()}
+              </>
+            )}
           </Card>
         )
       }
 
       if (field.isArray && field.type === 'object') {
-        console.log({ nestedArrayOfObjects: formField })
-
         // array of objects
         return (
           <Card key={fieldKey} mt={24}>
-            {parentFieldKey === '' && <>{renderNestedHeader()}</>}
-            {_.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
-              console.log({ nestedArrayOfObjectsIndex: _index })
-              return (
-                <div key={_index}>
-                  <p>{`${fieldKey}[${_index}]`}</p>
-                  {renderRemoveNestedFieldButton(formField, _index)}
-                  <Group>
-                    {generateFormInputs({
-                      parentFieldKey: fieldKey,
-                      parentFormField: `${formField}.${_index}`,
-                      removeButton: null,
-                    })}
-                  </Group>
-                </div>
-              )
-            })}
+            {accordion ? (
+              renderAccordion(renderArrayOfObjectsChildren())
+            ) : (
+              <>
+                {parentFieldKey === '' && <>{renderNestedHeader()}</>}
+                {renderArrayOfObjectsChildren()}
+              </>
+            )}
           </Card>
         )
       }
@@ -388,6 +370,54 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
           )}
         </Group>
       )
+
+      function renderAccordion(children: React.ReactNode): React.ReactNode {
+        return (
+          <Accordion styles={{ control: { padding: 0, maxHeight: '28px' } }} {...containerProps}>
+            <Accordion.Item value={`${fieldKey}-accordion`}>
+              <Accordion.Control>{accordion?.title ?? `${fieldKey}`}</Accordion.Control>
+              <Accordion.Panel>{children}</Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
+        )
+      }
+
+      function renderArrayChildren(): React.ReactNode {
+        return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
+          return (
+            <Flex key={_index}>
+              {generateComponent({
+                fieldKey,
+                fieldType: field.type,
+                formField: `${formField}.${_index}`,
+                props: {
+                  input: { ...inputProps, id: `${name}-${formField}-${_index}` },
+                  container: containerProps,
+                },
+                removeButton: renderRemoveNestedFieldButton(formField, _index),
+              })}
+            </Flex>
+          )
+        })
+      }
+
+      function renderArrayOfObjectsChildren(): React.ReactNode {
+        return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
+          return (
+            <div key={_index}>
+              <p>{`${fieldKey}[${_index}]`}</p>
+              {renderRemoveNestedFieldButton(formField, _index)}
+              <Group>
+                {generateFormInputs({
+                  parentFieldKey: fieldKey,
+                  parentFormField: `${formField}.${_index}`,
+                  removeButton: null,
+                })}
+              </Group>
+            </div>
+          )
+        })
+      }
     })
   }
 

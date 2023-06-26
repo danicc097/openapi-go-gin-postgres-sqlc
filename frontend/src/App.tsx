@@ -13,6 +13,7 @@ import {
   ColorInput,
   Accordion,
   Button,
+  Text,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
@@ -393,6 +394,9 @@ export default function App() {
                               tagIDs: { type: 'integer', required: true, isArray: true },
                             }}
                             options={{
+                              accordion: {
+                                'base.items': { defaultOpen: true, title: <Text size={'md'}>Items</Text> },
+                              },
                               defaultValues: {
                                 'demoProject.line': '534543523',
                                 members: [{ role: 'preparer' }],
