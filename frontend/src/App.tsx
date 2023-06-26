@@ -379,6 +379,7 @@ export default function App() {
                               base: { isArray: false, required: true, type: 'object' },
                               'base.closed': { type: 'date-time', required: true, isArray: false },
                               'base.description': { type: 'string', required: true, isArray: false },
+                              'base.metadata': { type: 'integer', required: true, isArray: false },
                               'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
                               'base.targetDate': { type: 'date-time', required: true, isArray: false },
                               'base.teamID': { type: 'integer', required: true, isArray: false },
@@ -397,8 +398,31 @@ export default function App() {
                               'members.userID': { type: 'string', required: true, isArray: false },
                               tagIDs: { type: 'integer', required: true, isArray: true },
                             }}
+                            // FIXME: intellisense broken if type check fails. would need builder pattern for options probably
                             options={{
-                              labels: {},
+                              labels: {
+                                base: 'base',
+                                'base.closed': 'closed',
+                                'base.description': 'description',
+                                'base.metadata': 'metadata',
+                                'base.kanbanStepID': 'kanbanStepID',
+                                'base.targetDate': 'targetDate',
+                                'base.teamID': 'teamID',
+                                'base.items': 'items',
+                                'base.items.name': 'name',
+                                'base.items.items': 'items',
+                                'base.workItemTypeID': 'workItemTypeID',
+                                demoProject: 'demoProject',
+                                'demoProject.lastMessageAt': 'lastMessageAt',
+                                'demoProject.line': 'line',
+                                'demoProject.ref': 'ref',
+                                'demoProject.reopened': 'reopened',
+                                'demoProject.workItemID': 'workItemID',
+                                members: 'members',
+                                'members.role': 'role',
+                                'members.userID': 'userID',
+                                tagIDs: 'tagIDs',
+                              },
                               accordion: {
                                 'base.items': {
                                   defaultOpen: true,

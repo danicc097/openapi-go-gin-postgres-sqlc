@@ -24,7 +24,7 @@ declare namespace TestTypes {
     closed: Date | null
     description: string
     kanbanStepID: number
-    metadata: number[] | null
+    metadata: {} | null
     targetDate: Date
     teamID: number
     items: {
