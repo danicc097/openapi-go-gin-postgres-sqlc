@@ -244,7 +244,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
 
   function renderRemoveNestedFieldButton(formField: string, index: number) {
     return (
-      <Tooltip label="Remove item" position="top-end" withArrow>
+      <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
         <ActionIcon
           onClick={(e) => {
             form.removeListItem(formField, index)
