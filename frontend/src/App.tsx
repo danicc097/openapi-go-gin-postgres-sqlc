@@ -258,6 +258,7 @@ export default function App() {
       description: 'some text',
       kanbanStepID: 1,
       teamID: 1,
+      metadata: {},
       // title: {},
       workItemTypeID: 1,
     },
@@ -268,6 +269,7 @@ export default function App() {
       lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
       line: '3e3e2',
       workItemID: 1,
+      reopened: false, // for create will ignore field for form gen
     },
     tagIDs: [0, 1, 2],
     members: [
@@ -303,7 +305,7 @@ export default function App() {
       members: (v, vv, path) => {
         // console.log(`would have validated members. value: ${JSON.stringify(v)}`)
         // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
-        return true
+        return null
       },
     },
   })
@@ -379,7 +381,7 @@ export default function App() {
                               base: { isArray: false, required: true, type: 'object' },
                               'base.closed': { type: 'date-time', required: true, isArray: false },
                               'base.description': { type: 'string', required: true, isArray: false },
-                              'base.metadata': { type: 'integer', required: true, isArray: false },
+                              'base.metadata': { type: 'object', required: true, isArray: false },
                               'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
                               'base.targetDate': { type: 'date-time', required: true, isArray: false },
                               'base.teamID': { type: 'integer', required: true, isArray: false },
@@ -398,8 +400,9 @@ export default function App() {
                               'members.userID': { type: 'string', required: true, isArray: false },
                               tagIDs: { type: 'integer', required: true, isArray: true },
                             }}
-                            // FIXME: intellisense broken if type check fails. would need builder pattern for options probably
                             options={{
+                              // TODO: remove keys from rest of type inference if they're in ignore
+                              // ignore: ['base.metadata', 'demoProject.reopened'],
                               labels: {
                                 base: null,
                                 'base.closed': 'closed',

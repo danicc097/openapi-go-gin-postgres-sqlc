@@ -26,6 +26,7 @@ import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _ from 'lodash'
 import React, { useState, type ComponentProps } from 'react'
+import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import type {
@@ -69,7 +70,7 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
   component,
 })
 
-export type DynamicFormOptions<T extends object, U extends string = GetKeys<T>> = {
+export type DynamicFormOptions<T extends object, U extends PropertyKey = GetKeys<T>> = {
   labels: {
     [key in U]: string | null
   }
@@ -129,9 +130,9 @@ export type DynamicFormOptions<T extends object, U extends string = GetKeys<T>> 
   }>
 }
 
-type DynamicFormProps<T extends object, U extends string = GetKeys<T>> = {
+type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>> = {
   form: UseFormReturnType<T, (values: T) => T>
-  schemaFields: Record<U, SchemaField>
+  schemaFields: Record<U & string, SchemaField>
   options: DynamicFormOptions<T, U>
   name: string
 }
@@ -165,7 +166,7 @@ type GenerateFormInputsProps = {
   removeButton?: JSX.Element
 }
 
-export default function DynamicForm<T extends object, U extends string = GetKeys<T>>({
+export default function DynamicForm<T extends object, U extends PropertyKey = GetKeys<T>>({
   name,
   form,
   schemaFields,
@@ -173,8 +174,8 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
 }: DynamicFormProps<T, U>) {
   const theme = useMantineTheme()
 
-  function generateComponent<U>({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps<U>) {
-    const propsOverride = options.propsOverride?.[fieldKey as string] // FIXME: key constraint (maybe satisfies keyword somewhere does the trick)
+  function generateComponent({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps<U>) {
+    const propsOverride = options.propsOverride?.[fieldKey]
 
     // TODO: multiselect and select early check (if found in options.components override)
     const _props = {
@@ -186,7 +187,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
     }
 
     let el = null
-    const component: JSX.Element = options.input?.[fieldKey as string]?.component // FIXME: key constraint
+    const component: JSX.Element = options.input?.[fieldKey]?.component
     if (component) {
       el = React.cloneElement(component, {
         ..._props,
@@ -224,7 +225,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
     )
   }
 
-  function initialValueByField(field: U) {
+  function initialValueByField(field: U & string) {
     switch (schemaFields[field].type) {
       case 'object':
         return {}
@@ -235,7 +236,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
     }
   }
 
-  const addNestedField = (field: U, formField: string) => {
+  const addNestedField = (field: U & string, formField: string) => {
     const initialValue = initialValueByField(field)
 
     const newValues = _.cloneDeep(form.values)
@@ -305,7 +306,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
 
       const formField = constructFormKey(fieldKey, parentFormField)
 
-      const accordion = options.accordion?.[fieldKey as string] // FIXME: key constraint
+      const accordion = options.accordion?.[fieldKey]
 
       const containerProps = {
         css: css`
