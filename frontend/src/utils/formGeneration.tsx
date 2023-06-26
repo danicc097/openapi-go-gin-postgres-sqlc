@@ -195,7 +195,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
           el = <TextInput {..._props} />
           break
         case 'boolean':
-          el = <Checkbox {..._props} />
+          el = <Checkbox pt={10} pb={4} {..._props} />
           break
         case 'date':
           el = <DateInput placeholder="Select date" {..._props} />
@@ -325,7 +325,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
           <Card key={fieldKey} mt={24}>
             {/* existing array fields, if any */}
             {accordion ? (
-              renderAccordion(renderArrayChildren())
+              <FormAccordion>{renderArrayChildren()}</FormAccordion>
             ) : (
               <>
                 {renderNestedHeader()}
@@ -341,7 +341,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
         return (
           <Card key={fieldKey} mt={24}>
             {accordion ? (
-              renderAccordion(renderArrayOfObjectsChildren())
+              <FormAccordion>{renderArrayOfObjectsChildren()}</FormAccordion>
             ) : (
               <>
                 {parentFieldKey === '' && <>{renderNestedHeader()}</>}
@@ -371,18 +371,24 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
         </Group>
       )
 
-      function renderAccordion(children: React.ReactNode): React.ReactNode {
+      function FormAccordion({ children }): JSX.Element {
+        const value = `${fieldKey}-accordion`
+
         return (
-          <Accordion styles={{ control: { padding: 0, maxHeight: '28px' } }} {...containerProps}>
-            <Accordion.Item value={`${fieldKey}-accordion`}>
-              <Accordion.Control>{accordion?.title ?? `${fieldKey}`}</Accordion.Control>
+          <Accordion
+            defaultValue={accordion.defaultOpen ? value : null}
+            styles={{ control: { padding: 0, maxHeight: '28px' } }}
+            {...containerProps}
+          >
+            <Accordion.Item value={value}>
+              <Accordion.Control>{accordion.title ?? `${fieldKey}`}</Accordion.Control>
               <Accordion.Panel>{children}</Accordion.Panel>
             </Accordion.Item>
           </Accordion>
         )
       }
 
-      function renderArrayChildren(): React.ReactNode {
+      function renderArrayChildren(): JSX.Element {
         return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
           return (
             <Flex key={_index}>
@@ -401,7 +407,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
         })
       }
 
-      function renderArrayOfObjectsChildren(): React.ReactNode {
+      function renderArrayOfObjectsChildren(): JSX.Element {
         return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
           return (
             <div key={_index}>

@@ -14,6 +14,7 @@ import {
   Accordion,
   Button,
   Text,
+  Flex,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
@@ -42,6 +43,7 @@ import { colorBlindPalette } from 'src/utils/colors'
 import { validateJson } from 'src/client-validator/validate'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
+import { IconTag } from '@tabler/icons'
 
 const schema = {
   properties: {
@@ -395,7 +397,15 @@ export default function App() {
                             }}
                             options={{
                               accordion: {
-                                'base.items': { defaultOpen: true, title: <Text size={'md'}>Items</Text> },
+                                'base.items': {
+                                  defaultOpen: true,
+                                  title: (
+                                    <Flex align="center" gap={10}>
+                                      <IconTag size={16} />
+                                      <Text size={'md'}>Items</Text>{' '}
+                                    </Flex>
+                                  ),
+                                },
                               },
                               defaultValues: {
                                 'demoProject.line': '534543523',
