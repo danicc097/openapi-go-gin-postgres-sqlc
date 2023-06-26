@@ -401,18 +401,18 @@ export default function App() {
                             // FIXME: intellisense broken if type check fails. would need builder pattern for options probably
                             options={{
                               labels: {
-                                base: 'base',
+                                base: null,
                                 'base.closed': 'closed',
                                 'base.description': 'description',
                                 'base.metadata': 'metadata',
-                                'base.kanbanStepID': 'kanbanStepID',
+                                'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
                                 'base.targetDate': 'targetDate',
                                 'base.teamID': 'teamID',
                                 'base.items': 'items',
                                 'base.items.name': 'name',
                                 'base.items.items': 'items',
                                 'base.workItemTypeID': 'workItemTypeID',
-                                demoProject: 'demoProject',
+                                demoProject: null,
                                 'demoProject.lastMessageAt': 'lastMessageAt',
                                 'demoProject.line': 'line',
                                 'demoProject.ref': 'ref',
@@ -420,7 +420,7 @@ export default function App() {
                                 'demoProject.workItemID': 'workItemID',
                                 members: 'members',
                                 'members.role': 'role',
-                                'members.userID': 'userID',
+                                'members.userID': 'User',
                                 tagIDs: 'tagIDs',
                               },
                               accordion: {
@@ -441,14 +441,16 @@ export default function App() {
                                 members: [{ role: 'preparer' }],
                               },
                               selectOptions: {
-                                'demoProject.line': selectOptionsBuilder({
+                                'members.userID': selectOptionsBuilder({
                                   type: 'select',
-                                  values: [getGetCurrentUserMock()],
+                                  values: [...Array(20)].map((x, i) => {
+                                    return getGetCurrentUserMock()
+                                  }),
                                   componentTransformer(el) {
-                                    return <></>
+                                    return <>{el.email}</>
                                   },
                                   formValueTransformer(el) {
-                                    return el.email
+                                    return el.userID
                                   },
                                 }),
                               },
