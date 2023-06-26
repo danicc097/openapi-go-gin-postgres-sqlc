@@ -70,6 +70,9 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
 })
 
 type options<T extends object, U extends string = GetKeys<T>> = {
+  labels: {
+    [key in U]: string
+  }
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
     [key in U]: DeepPartial<

@@ -398,6 +398,7 @@ export default function App() {
                               tagIDs: { type: 'integer', required: true, isArray: true },
                             }}
                             options={{
+                              labels: {},
                               accordion: {
                                 'base.items': {
                                   defaultOpen: true,
