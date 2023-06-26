@@ -107,6 +107,7 @@ x.bootstrap() {
   { { {
     git submodule update --init --recursive # sync later on with git `git submodule update --force --recursive --remote`
     x.check-build-deps
+    x.backend.sync-deps
     x.install-tools
     x.setup.swagger-ui
     x.gen.build-tools

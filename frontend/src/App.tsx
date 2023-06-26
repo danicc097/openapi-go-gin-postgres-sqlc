@@ -56,13 +56,6 @@ const schema = {
         kanbanStepID: {
           type: 'integer',
         },
-        metadata: {
-          items: {
-            minimum: 0,
-            type: 'integer',
-          },
-          type: ['array', 'null'],
-        },
         targetDate: {
           format: 'date',
           type: 'object',
@@ -318,7 +311,6 @@ export default function App() {
   //     console.error(JSON.stringify(error.validationErrors.errors))
   //   }
   // }, [demoWorkItemCreateForm])
-  const ajv = new Ajv({ strict: false, allErrors: true })
 
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
@@ -365,13 +357,8 @@ export default function App() {
                               try {
                                 const r = demoWorkItemCreateForm.validate()
                                 console.log({ r })
-
-                                addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
-                                const a = ajv.validate(schema, demoWorkItemCreateForm.values)
-                                console.log(ajv.errors)
+                                // RestDemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
                               } catch (error) {
-                                console.error(error)
-                                console.error(ajv.errors)
                                 console.error(JSON.stringify(error?.validationErrors?.errors))
                               }
                             }}
@@ -388,7 +375,6 @@ export default function App() {
                               'base.closed': { type: 'date-time', required: true, isArray: false },
                               'base.description': { type: 'string', required: true, isArray: false },
                               'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-                              'base.metadata': { type: 'integer', required: true, isArray: true },
                               'base.targetDate': { type: 'date-time', required: true, isArray: false },
                               'base.teamID': { type: 'integer', required: true, isArray: false },
                               'base.items': { type: 'object', required: true, isArray: true },
