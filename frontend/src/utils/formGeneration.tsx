@@ -69,7 +69,7 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
   component,
 })
 
-type options<T extends object, U extends string = GetKeys<T>> = {
+export type DynamicFormOptions<T extends object, U extends string = GetKeys<T>> = {
   labels: {
     [key in U]: string
   }
@@ -132,7 +132,7 @@ type options<T extends object, U extends string = GetKeys<T>> = {
 type DynamicFormProps<T extends object, U extends string = GetKeys<T>> = {
   form: UseFormReturnType<T, (values: T) => T>
   schemaFields: Record<U, SchemaField>
-  options: options<T, U>
+  options: DynamicFormOptions<T, U>
   name: string
 }
 
@@ -174,7 +174,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
   const theme = useMantineTheme()
 
   function generateComponent<U>({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps<U>) {
-    const propsOverride = options.propsOverride?.[fieldKey as string] // FIXME: key constraint
+    const propsOverride = options.propsOverride?.[fieldKey as string] // FIXME: key constraint (maybe satisfies keyword somewhere does the trick)
 
     // TODO: multiselect and select early check (if found in options.components override)
     const _props = {

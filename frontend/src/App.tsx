@@ -29,7 +29,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Notifications } from '@mantine/notifications'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
-import DynamicForm, { selectOptionsBuilder, type SelectOptions } from 'src/utils/formGeneration'
+import DynamicForm, { selectOptionsBuilder, type SelectOptions, type DynamicFormOptions } from 'src/utils/formGeneration'
 import type { RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
@@ -472,7 +472,7 @@ export default function App() {
                                   description: 'This is some help text for reference.',
                                 },
                               },
-                            }}
+                            } satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest>}
                           />
                         </React.Suspense>
                       }
