@@ -15,6 +15,7 @@ import {
   Button,
   Text,
   Flex,
+  useMantineTheme,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
@@ -220,6 +221,7 @@ const UserPermissionsPage = React.lazy(() => import('src/views/Settings/UserPerm
 const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectManagementPage/ProjectManagementPage'))
 
 export default function App() {
+  const theme = useMantineTheme()
   const [colorScheme, setColorScheme] = useState<ColorScheme>(
     localStorage.getItem('theme') === 'dark' ? 'dark' : 'light',
   )
@@ -402,7 +404,9 @@ export default function App() {
                                   title: (
                                     <Flex align="center" gap={10}>
                                       <IconTag size={16} />
-                                      <Text size={'md'}>Items</Text>{' '}
+                                      <Text weight={700} size={'md'} color={theme.primaryColor}>
+                                        Items
+                                      </Text>{' '}
                                     </Flex>
                                   ),
                                 },

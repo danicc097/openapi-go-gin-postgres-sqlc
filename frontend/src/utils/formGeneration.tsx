@@ -322,7 +322,7 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
       if (field.isArray && field.type !== 'object') {
         // nested array of nonbjects generation
         return (
-          <Card key={fieldKey} mt={24}>
+          <Card key={fieldKey} mt={12} mb={12} withBorder>
             {/* existing array fields, if any */}
             {accordion ? (
               <FormAccordion>{renderArrayChildren()}</FormAccordion>
@@ -339,7 +339,8 @@ export default function DynamicForm<T extends object, U extends string = GetKeys
       if (field.isArray && field.type === 'object') {
         // array of objects
         return (
-          <Card key={fieldKey} mt={24}>
+          // TODO: background color based on depth
+          <Card key={fieldKey} mt={12} mb={12} withBorder>
             {accordion ? (
               <FormAccordion>{renderArrayOfObjectsChildren()}</FormAccordion>
             ) : (
