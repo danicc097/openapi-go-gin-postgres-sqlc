@@ -8,7 +8,7 @@
 import type { DbWorkItemCreateParamsMetadata } from './dbWorkItemCreateParamsMetadata'
 
 export interface DbWorkItemCreateParams {
-  closed: Date | null
+  closedAt: Date | null
   description: string
   kanbanStepID: number
   metadata: DbWorkItemCreateParamsMetadata

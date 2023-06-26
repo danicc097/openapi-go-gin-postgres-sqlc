@@ -158,7 +158,7 @@ export interface DbWorkItemComment {
   workItemID: number
 }
 export interface RestDemoWorkItemsResponse {
-  closed: string | null
+  closedAt: string | null
   createdAt: string
   deletedAt: string | null
   demoWorkItem: DbDemoWorkItem
@@ -281,7 +281,7 @@ export interface UpdateUserAuthRequest {
 }
 export interface PgtypeJSONB {}
 export interface DbWorkItem {
-  closed: string | null
+  closedAt: string | null
   createdAt: string
   deletedAt: string | null
   description: string
@@ -307,7 +307,7 @@ export interface RestDemoWorkItemCreateRequest {
   tagIDs: number[] | null
 }
 export interface DbWorkItemCreateParams {
-  closed: string | null
+  closedAt: string | null
   description: string
   kanbanStepID: number
   metadata: {} | null

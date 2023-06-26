@@ -16,7 +16,7 @@ func RandomWorkItemCreateParams(t *testing.T, kanbanStepID, workItemTypeID, team
 		Title:          testutil.RandomNameIdentifier(3, "-"),
 		Description:    "Description",
 		Metadata:       map[string]any{"key": testutil.RandomString(10)},
-		Closed:         nil,
+		ClosedAt:       nil,
 		TargetDate:     testutil.RandomDate(),
 		KanbanStepID:   kanbanStepID,
 		WorkItemTypeID: workItemTypeID,

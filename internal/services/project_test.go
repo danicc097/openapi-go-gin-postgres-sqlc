@@ -88,7 +88,7 @@ func Test_MergeConfigFields(t *testing.T) {
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.reopened", Name: "reopened"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.lastMessageAt", Name: "lastMessageAt"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.line", Name: "line"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "closed", Name: "closed"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "closedAt", Name: "closedAt"},
 				},
 			},
 		},

@@ -8,7 +8,7 @@
 import type { DbWorkItemMetadata } from './dbWorkItemMetadata'
 
 export interface DbWorkItem {
-  closed: Date | null
+  closedAt: Date | null
   createdAt: Date
   deletedAt: Date | null
   description: string

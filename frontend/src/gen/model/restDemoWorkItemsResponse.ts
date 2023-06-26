@@ -14,7 +14,7 @@ import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
 
 export interface RestDemoWorkItemsResponse {
-  closed: Date | null
+  closedAt: Date | null
   createdAt: Date
   deletedAt: Date | null
   demoWorkItem: DbDemoWorkItem

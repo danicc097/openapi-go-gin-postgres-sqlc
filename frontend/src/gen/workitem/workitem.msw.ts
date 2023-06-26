@@ -11,7 +11,7 @@ import { faker } from '@faker-js/faker'
 export const getCreateWorkitemMock = () =>
   faker.helpers.arrayElement([
     {
-      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+      closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),
@@ -29,7 +29,7 @@ export const getCreateWorkitemMock = () =>
 export const getGetWorkitemMock = () =>
   faker.helpers.arrayElement([
     {
-      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+      closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),
@@ -47,7 +47,7 @@ export const getGetWorkitemMock = () =>
 export const getUpdateWorkitemMock = () =>
   faker.helpers.arrayElement([
     {
-      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+      closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),

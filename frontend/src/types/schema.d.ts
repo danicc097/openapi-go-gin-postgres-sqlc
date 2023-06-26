@@ -207,7 +207,7 @@ export interface components {
     };
     RestDemoWorkItemsResponse: {
       /** Format: date-time */
-      closed: string | null;
+      closedAt: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -363,7 +363,7 @@ export interface components {
     PgtypeJSONB: Record<string, never>;
     DbWorkItem: {
       /** Format: date-time */
-      closed: string | null;
+      closedAt: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -448,7 +448,7 @@ export interface components {
     };
     DbWorkItemCreateParams: {
       /** Format: date-time */
-      closed: string | null;
+      closedAt: string | null;
       description: string;
       kanbanStepID: number;
       metadata: {

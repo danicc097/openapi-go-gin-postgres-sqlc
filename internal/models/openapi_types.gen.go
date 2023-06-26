@@ -329,7 +329,7 @@ type DbUserAPIKey struct {
 
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
-	Closed         *time.Time              `json:"closed"`
+	ClosedAt       *time.Time              `json:"closedAt"`
 	CreatedAt      time.Time               `json:"createdAt"`
 	DeletedAt      *time.Time              `json:"deletedAt"`
 	Description    string                  `json:"description"`
@@ -355,7 +355,7 @@ type DbWorkItemComment struct {
 
 // DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
 type DbWorkItemCreateParams struct {
-	Closed         *time.Time              `json:"closed"`
+	ClosedAt       *time.Time              `json:"closedAt"`
 	Description    string                  `json:"description"`
 	KanbanStepID   int                     `json:"kanbanStepID"`
 	Metadata       *map[string]interface{} `json:"metadata"`
@@ -476,7 +476,7 @@ type RestDemoWorkItemCreateRequest struct {
 
 // RestDemoWorkItemsResponse defines the model for RestDemoWorkItemsResponse.
 type RestDemoWorkItemsResponse struct {
-	Closed           *time.Time              `json:"closed"`
+	ClosedAt         *time.Time              `json:"closedAt"`
 	CreatedAt        time.Time               `json:"createdAt"`
 	DeletedAt        *time.Time              `json:"deletedAt"`
 	DemoWorkItem     DbDemoWorkItem          `json:"demoWorkItem"`

@@ -798,7 +798,7 @@ components:
       type: object
     RestDemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
-        closed:
+        closedAt:
           format: date-time
           nullable: true
           type: string
@@ -863,7 +863,7 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closed
+        - closedAt
         - targetDate
         - createdAt
         - updatedAt
@@ -1175,7 +1175,7 @@ components:
       type: object
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
-        closed:
+        closedAt:
           format: date-time
           nullable: true
           type: string
@@ -1216,7 +1216,7 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closed
+        - closedAt
         - targetDate
         - createdAt
         - updatedAt
@@ -1405,7 +1405,7 @@ components:
       type: object
     DbWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
-        closed:
+        closedAt:
           format: date-time
           nullable: true
           type: string
@@ -1433,7 +1433,7 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closed
+        - closedAt
         - targetDate
       type: object
     ServicesMember: # Generated from internal structs. DO NOT EDIT.

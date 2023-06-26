@@ -30,7 +30,7 @@ type WorkItem struct {
 	Metadata       map[string]any `json:"metadata" db:"metadata" required:"true"`                // metadata
 	TeamID         int            `json:"teamID" db:"team_id" required:"true"`                   // team_id
 	KanbanStepID   int            `json:"kanbanStepID" db:"kanban_step_id" required:"true"`      // kanban_step_id
-	Closed         *time.Time     `json:"closed" db:"closed" required:"true"`                    // closed
+	ClosedAt       *time.Time     `json:"closedAt" db:"closed_at" required:"true"`               // closed_at
 	TargetDate     time.Time      `json:"targetDate" db:"target_date" required:"true"`           // target_date
 	CreatedAt      time.Time      `json:"createdAt" db:"created_at" required:"true"`             // created_at
 	UpdatedAt      time.Time      `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
@@ -56,7 +56,7 @@ type WorkItemCreateParams struct {
 	Metadata       map[string]any `json:"metadata" required:"true"`       // metadata
 	TeamID         int            `json:"teamID" required:"true"`         // team_id
 	KanbanStepID   int            `json:"kanbanStepID" required:"true"`   // kanban_step_id
-	Closed         *time.Time     `json:"closed" required:"true"`         // closed
+	ClosedAt       *time.Time     `json:"closedAt" required:"true"`       // closed_at
 	TargetDate     time.Time      `json:"targetDate" required:"true"`     // target_date
 }
 
@@ -69,7 +69,7 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 		Metadata:       params.Metadata,
 		TeamID:         params.TeamID,
 		KanbanStepID:   params.KanbanStepID,
-		Closed:         params.Closed,
+		ClosedAt:       params.ClosedAt,
 		TargetDate:     params.TargetDate,
 	}
 
@@ -84,7 +84,7 @@ type WorkItemUpdateParams struct {
 	Metadata       *map[string]any `json:"metadata" required:"true"`       // metadata
 	TeamID         *int            `json:"teamID" required:"true"`         // team_id
 	KanbanStepID   *int            `json:"kanbanStepID" required:"true"`   // kanban_step_id
-	Closed         **time.Time     `json:"closed" required:"true"`         // closed
+	ClosedAt       **time.Time     `json:"closedAt" required:"true"`       // closed_at
 	TargetDate     *time.Time      `json:"targetDate" required:"true"`     // target_date
 }
 
@@ -108,8 +108,8 @@ func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
 	if params.KanbanStepID != nil {
 		wi.KanbanStepID = *params.KanbanStepID
 	}
-	if params.Closed != nil {
-		wi.Closed = *params.Closed
+	if params.ClosedAt != nil {
+		wi.ClosedAt = *params.ClosedAt
 	}
 	if params.TargetDate != nil {
 		wi.TargetDate = *params.TargetDate
@@ -144,10 +144,10 @@ func WithDeletedWorkItemOnly() WorkItemSelectConfigOption {
 type WorkItemOrderBy string
 
 const (
-	WorkItemClosedDescNullsFirst     WorkItemOrderBy = " closed DESC NULLS FIRST "
-	WorkItemClosedDescNullsLast      WorkItemOrderBy = " closed DESC NULLS LAST "
-	WorkItemClosedAscNullsFirst      WorkItemOrderBy = " closed ASC NULLS FIRST "
-	WorkItemClosedAscNullsLast       WorkItemOrderBy = " closed ASC NULLS LAST "
+	WorkItemClosedAtDescNullsFirst   WorkItemOrderBy = " closed_at DESC NULLS FIRST "
+	WorkItemClosedAtDescNullsLast    WorkItemOrderBy = " closed_at DESC NULLS LAST "
+	WorkItemClosedAtAscNullsFirst    WorkItemOrderBy = " closed_at ASC NULLS FIRST "
+	WorkItemClosedAtAscNullsLast     WorkItemOrderBy = " closed_at ASC NULLS LAST "
 	WorkItemTargetDateDescNullsFirst WorkItemOrderBy = " target_date DESC NULLS FIRST "
 	WorkItemTargetDateDescNullsLast  WorkItemOrderBy = " target_date DESC NULLS LAST "
 	WorkItemTargetDateAscNullsFirst  WorkItemOrderBy = " target_date ASC NULLS FIRST "
@@ -361,14 +361,14 @@ const workItemTableWorkItemTypeGroupBySQL = `_work_items_work_item_type_id.work_
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_items (
-	title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at
+	title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed_at, target_date, deleted_at
 	) VALUES (
 	$1, $2, $3, $4, $5, $6, $7, $8, $9
 	) RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.ClosedAt, wi.TargetDate, wi.DeletedAt)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.ClosedAt, wi.TargetDate, wi.DeletedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -386,13 +386,13 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET 
-	title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, deleted_at = $9 
+	title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed_at = $7, target_date = $8, deleted_at = $9 
 	WHERE work_item_id = $10 
 	RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.ClosedAt, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt, wi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.ClosedAt, wi.TargetDate, wi.DeletedAt, wi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -416,7 +416,7 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 	wi.Metadata = params.Metadata
 	wi.TeamID = params.TeamID
 	wi.KanbanStepID = params.KanbanStepID
-	wi.Closed = params.Closed
+	wi.ClosedAt = params.ClosedAt
 	wi.TargetDate = params.TargetDate
 
 	wi, err = wi.Insert(ctx, db)
@@ -580,7 +580,7 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 	work_items.metadata,
 	work_items.team_id,
 	work_items.kanban_step_id,
-	work_items.closed,
+	work_items.closed_at,
 	work_items.target_date,
 	work_items.created_at,
 	work_items.updated_at,
@@ -712,7 +712,7 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 	work_items.metadata,
 	work_items.team_id,
 	work_items.kanban_step_id,
-	work_items.closed,
+	work_items.closed_at,
 	work_items.target_date,
 	work_items.created_at,
 	work_items.updated_at,
@@ -846,7 +846,7 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 	work_items.metadata,
 	work_items.team_id,
 	work_items.kanban_step_id,
-	work_items.closed,
+	work_items.closed_at,
 	work_items.target_date,
 	work_items.created_at,
 	work_items.updated_at,
@@ -983,7 +983,7 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 	work_items.metadata,
 	work_items.team_id,
 	work_items.kanban_step_id,
-	work_items.closed,
+	work_items.closed_at,
 	work_items.target_date,
 	work_items.created_at,
 	work_items.updated_at,
@@ -1120,7 +1120,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	work_items.metadata,
 	work_items.team_id,
 	work_items.kanban_step_id,
-	work_items.closed,
+	work_items.closed_at,
 	work_items.target_date,
 	work_items.created_at,
 	work_items.updated_at,
@@ -1255,7 +1255,7 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemS
 	work_items.metadata,
 	work_items.team_id,
 	work_items.kanban_step_id,
-	work_items.closed,
+	work_items.closed_at,
 	work_items.target_date,
 	work_items.created_at,
 	work_items.updated_at,
@@ -1392,7 +1392,7 @@ func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItem
 	work_items.metadata,
 	work_items.team_id,
 	work_items.kanban_step_id,
-	work_items.closed,
+	work_items.closed_at,
 	work_items.target_date,
 	work_items.created_at,
 	work_items.updated_at,

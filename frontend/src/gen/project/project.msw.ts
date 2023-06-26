@@ -103,7 +103,7 @@ export const getGetProjectBoardMock = () => ({
 export const getGetProjectWorkitemsMock = () =>
   faker.helpers.arrayElement([
     {
-      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+      closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       demoWorkItem: {
