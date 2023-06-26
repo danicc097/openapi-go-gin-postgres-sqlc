@@ -37,6 +37,9 @@ export default defineConfig({
           properties: {
             userID: () => faker.datatype.uuid(),
             email: () => faker.internet.email(),
+            metadata: () => ({
+              key: faker.color.hsl(),
+            }),
           },
           required: true,
         },

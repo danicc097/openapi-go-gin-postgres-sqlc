@@ -16,9 +16,7 @@ export const getCreateWorkitemMock = () =>
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),
       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-      metadata: {
-        cljckpdbq0001gnmncq2bdzex: {},
-      },
+      metadata: faker.helpers.arrayElement([(() => ({ key: faker.color.hsl() }))(), null]),
       targetDate: (() => faker.date.past())(),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
@@ -36,9 +34,7 @@ export const getGetWorkitemMock = () =>
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),
       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-      metadata: {
-        cljckpdbx0002gnmn7nc139ir: {},
-      },
+      metadata: faker.helpers.arrayElement([(() => ({ key: faker.color.hsl() }))(), null]),
       targetDate: (() => faker.date.past())(),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
@@ -56,9 +52,7 @@ export const getUpdateWorkitemMock = () =>
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),
       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-      metadata: {
-        cljckpdbx0003gnmnb7u9fawi: {},
-      },
+      metadata: faker.helpers.arrayElement([(() => ({ key: faker.color.hsl() }))(), null]),
       targetDate: (() => faker.date.past())(),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
