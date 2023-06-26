@@ -7,6 +7,7 @@
  */
 import type { DbDemoWorkItem } from './dbDemoWorkItem'
 import type { DbUser } from './dbUser'
+import type { RestDemoWorkItemsResponseMetadata } from './restDemoWorkItemsResponseMetadata'
 import type { DbTimeEntry } from './dbTimeEntry'
 import type { DbWorkItemComment } from './dbWorkItemComment'
 import type { DbWorkItemTag } from './dbWorkItemTag'
@@ -20,7 +21,7 @@ export interface RestDemoWorkItemsResponse {
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
-  metadata: number[] | null
+  metadata: RestDemoWorkItemsResponseMetadata
   targetDate: Date
   teamID: number
   timeEntries?: DbTimeEntry[] | null

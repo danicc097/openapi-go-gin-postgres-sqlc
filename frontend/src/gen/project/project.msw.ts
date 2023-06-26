@@ -128,9 +128,9 @@ export const getGetProjectWorkitemsMock = () =>
         userID: faker.random.word(),
         username: faker.random.word(),
       })),
-      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.datatype.number({ min: 0, max: undefined }),
-      ),
+      metadata: {
+        cljckpdbk0000gnmn2s5od5lf: {},
+      },
       targetDate: (() => faker.date.past())(),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       timeEntries: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({

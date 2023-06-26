@@ -5,6 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { DbWorkItemMetadata } from './dbWorkItemMetadata'
 
 export interface DbWorkItem {
   closed: Date | null
@@ -12,7 +13,7 @@ export interface DbWorkItem {
   deletedAt: Date | null
   description: string
   kanbanStepID: number
-  metadata: number[] | null
+  metadata: DbWorkItemMetadata
   targetDate: Date
   teamID: number
   title: string

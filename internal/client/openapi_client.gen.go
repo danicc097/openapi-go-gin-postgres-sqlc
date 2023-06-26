@@ -342,18 +342,18 @@ type DbUserAPIKey struct {
 
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
-	Closed         *time.Time `json:"closed"`
-	CreatedAt      time.Time  `json:"createdAt"`
-	DeletedAt      *time.Time `json:"deletedAt"`
-	Description    string     `json:"description"`
-	KanbanStepID   int        `json:"kanbanStepID"`
-	Metadata       *[]int     `json:"metadata"`
-	TargetDate     time.Time  `json:"targetDate"`
-	TeamID         int        `json:"teamID"`
-	Title          string     `json:"title"`
-	UpdatedAt      time.Time  `json:"updatedAt"`
-	WorkItemID     int        `json:"workItemID"`
-	WorkItemTypeID int        `json:"workItemTypeID"`
+	Closed         *time.Time              `json:"closed"`
+	CreatedAt      time.Time               `json:"createdAt"`
+	DeletedAt      *time.Time              `json:"deletedAt"`
+	Description    string                  `json:"description"`
+	KanbanStepID   int                     `json:"kanbanStepID"`
+	Metadata       *map[string]interface{} `json:"metadata"`
+	TargetDate     time.Time               `json:"targetDate"`
+	TeamID         int                     `json:"teamID"`
+	Title          string                  `json:"title"`
+	UpdatedAt      time.Time               `json:"updatedAt"`
+	WorkItemID     int                     `json:"workItemID"`
+	WorkItemTypeID int                     `json:"workItemTypeID"`
 }
 
 // DbWorkItemComment defines the model for DbWorkItemComment.
@@ -368,14 +368,14 @@ type DbWorkItemComment struct {
 
 // DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
 type DbWorkItemCreateParams struct {
-	Closed         *time.Time `json:"closed"`
-	Description    string     `json:"description"`
-	KanbanStepID   int        `json:"kanbanStepID"`
-	Metadata       *[]int     `json:"metadata"`
-	TargetDate     time.Time  `json:"targetDate"`
-	TeamID         int        `json:"teamID"`
-	Title          string     `json:"title"`
-	WorkItemTypeID int        `json:"workItemTypeID"`
+	Closed         *time.Time              `json:"closed"`
+	Description    string                  `json:"description"`
+	KanbanStepID   int                     `json:"kanbanStepID"`
+	Metadata       *map[string]interface{} `json:"metadata"`
+	TargetDate     time.Time               `json:"targetDate"`
+	TeamID         int                     `json:"teamID"`
+	Title          string                  `json:"title"`
+	WorkItemTypeID int                     `json:"workItemTypeID"`
 }
 
 // DbWorkItemRole defines the model for DbWorkItemRole.
@@ -489,24 +489,24 @@ type RestDemoWorkItemCreateRequest struct {
 
 // RestDemoWorkItemsResponse defines the model for RestDemoWorkItemsResponse.
 type RestDemoWorkItemsResponse struct {
-	Closed           *time.Time           `json:"closed"`
-	CreatedAt        time.Time            `json:"createdAt"`
-	DeletedAt        *time.Time           `json:"deletedAt"`
-	DemoWorkItem     DbDemoWorkItem       `json:"demoWorkItem"`
-	Description      string               `json:"description"`
-	KanbanStepID     int                  `json:"kanbanStepID"`
-	Members          *[]DbUser            `json:"members"`
-	Metadata         *[]int               `json:"metadata"`
-	TargetDate       time.Time            `json:"targetDate"`
-	TeamID           int                  `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
-	Title            string               `json:"title"`
-	UpdatedAt        time.Time            `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
-	WorkItemID       int                  `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                  `json:"workItemTypeID"`
+	Closed           *time.Time              `json:"closed"`
+	CreatedAt        time.Time               `json:"createdAt"`
+	DeletedAt        *time.Time              `json:"deletedAt"`
+	DemoWorkItem     DbDemoWorkItem          `json:"demoWorkItem"`
+	Description      string                  `json:"description"`
+	KanbanStepID     int                     `json:"kanbanStepID"`
+	Members          *[]DbUser               `json:"members"`
+	Metadata         *map[string]interface{} `json:"metadata"`
+	TargetDate       time.Time               `json:"targetDate"`
+	TeamID           int                     `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
+	Title            string                  `json:"title"`
+	UpdatedAt        time.Time               `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
+	WorkItemID       int                     `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                     `json:"workItemTypeID"`
 }
 
 // RestProjectBoardResponse defines the model for RestProjectBoardResponse.

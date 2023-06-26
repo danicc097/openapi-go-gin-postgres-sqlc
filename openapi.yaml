@@ -821,11 +821,9 @@ components:
           nullable: true
           type: array
         metadata:
-          items:
-            minimum: 0
-            type: integer
+          additionalProperties: {}
           nullable: true
-          type: array
+          type: object
         targetDate:
           format: date-time
           type: string
@@ -1193,11 +1191,9 @@ components:
         kanbanStepID:
           type: integer
         metadata:
-          items:
-            minimum: 0
-            type: integer
+          additionalProperties: {}
           nullable: true
-          type: array
+          type: object
         targetDate:
           format: date-time
           type: string
@@ -1418,11 +1414,9 @@ components:
         kanbanStepID:
           type: integer
         metadata:
-          items:
-            minimum: 0
-            type: integer
+          additionalProperties: {}
           nullable: true
-          type: array
+          type: object
         targetDate:
           format: date-time
           type: string

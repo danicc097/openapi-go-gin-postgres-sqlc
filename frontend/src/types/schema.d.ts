@@ -216,7 +216,9 @@ export interface components {
       description: string;
       kanbanStepID: number;
       members?: (components["schemas"]["DbUser"])[] | null;
-      metadata: (number)[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -368,7 +370,9 @@ export interface components {
       deletedAt: string | null;
       description: string;
       kanbanStepID: number;
-      metadata: (number)[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -447,7 +451,9 @@ export interface components {
       closed: string | null;
       description: string;
       kanbanStepID: number;
-      metadata: (number)[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
       /** Format: date-time */
       targetDate: string;
       teamID: number;

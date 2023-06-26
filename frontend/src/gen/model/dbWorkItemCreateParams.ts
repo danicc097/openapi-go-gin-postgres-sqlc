@@ -5,12 +5,13 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { DbWorkItemCreateParamsMetadata } from './dbWorkItemCreateParamsMetadata'
 
 export interface DbWorkItemCreateParams {
   closed: Date | null
   description: string
   kanbanStepID: number
-  metadata: number[] | null
+  metadata: DbWorkItemCreateParamsMetadata
   targetDate: Date
   teamID: number
   title: string

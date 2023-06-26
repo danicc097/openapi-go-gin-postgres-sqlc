@@ -165,7 +165,7 @@ export interface RestDemoWorkItemsResponse {
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
-  metadata: number[] | null
+  metadata: {} | null
   targetDate: string
   teamID: number
   timeEntries?: DbTimeEntry[] | null
@@ -286,7 +286,7 @@ export interface DbWorkItem {
   deletedAt: string | null
   description: string
   kanbanStepID: number
-  metadata: number[] | null
+  metadata: {} | null
   targetDate: string
   teamID: number
   title: string
@@ -310,7 +310,7 @@ export interface DbWorkItemCreateParams {
   closed: string | null
   description: string
   kanbanStepID: number
-  metadata: number[] | null
+  metadata: {} | null
   targetDate: string
   teamID: number
   title: string

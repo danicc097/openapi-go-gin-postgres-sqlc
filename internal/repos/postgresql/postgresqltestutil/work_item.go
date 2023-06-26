@@ -1,7 +1,6 @@
 package postgresqltestutil
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
@@ -16,7 +15,7 @@ func RandomWorkItemCreateParams(t *testing.T, kanbanStepID, workItemTypeID, team
 	return &db.WorkItemCreateParams{
 		Title:          testutil.RandomNameIdentifier(3, "-"),
 		Description:    "Description",
-		Metadata:       []byte(fmt.Sprintf(`{"key":"%s"}`, testutil.RandomString(10))),
+		Metadata:       map[string]any{"key": testutil.RandomString(10)},
 		Closed:         nil,
 		TargetDate:     testutil.RandomDate(),
 		KanbanStepID:   kanbanStepID,

@@ -241,7 +241,7 @@ func main() {
 					// steporder could also be generated just like idByName and viceversa
 					KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
 					TargetDate:   time.Now().Add(time.Duration(i) * day),
-					Metadata:     []byte(`{}`),
+					Metadata:     map[string]any{"key": true},
 				},
 				DemoProject: db.DemoWorkItemCreateParams{
 					LastMessageAt: time.Now().Add(time.Duration(-i) * day),
