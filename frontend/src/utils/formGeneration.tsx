@@ -294,7 +294,8 @@ export default function DynamicForm<
 
       if (
         (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) ||
-        parentFieldKey === fieldKey // fix when parent key has the same name and both are arrays
+        parentFieldKey === fieldKey || // fix when parent key has the same name and both are arrays
+        !options.labels.hasOwnProperty(fieldKey) // labels are mandatory unless form field was excluded
       ) {
         return null
       }
