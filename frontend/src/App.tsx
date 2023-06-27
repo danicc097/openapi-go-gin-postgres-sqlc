@@ -401,13 +401,13 @@ export default function App() {
                               tagIDs: { type: 'integer', required: true, isArray: true },
                             }}
                             options={{
-                              // TODO: remove keys from rest of type inference if they're in ignore
-                              ignore: ['base.metadata', 'demoProject.reopened'],
+                              // since labels is mandatory, instead of duplicating with ignore: U[] just
+                              // check if labels hasOwnProperty fieldKey and if not exclude from form.
                               labels: {
                                 base: null,
                                 'base.closed': 'closed',
                                 'base.description': 'description',
-                                'base.metadata': 'metadata',
+                                // 'base.metadata': 'metadata',
                                 'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
                                 'base.targetDate': 'targetDate',
                                 'base.teamID': 'teamID',
@@ -419,7 +419,6 @@ export default function App() {
                                 'demoProject.lastMessageAt': 'lastMessageAt',
                                 'demoProject.line': 'line',
                                 'demoProject.ref': 'ref',
-                                'demoProject.reopened': 'reopened',
                                 'demoProject.workItemID': 'workItemID',
                                 members: 'members',
                                 'members.role': 'role',
@@ -477,7 +476,7 @@ export default function App() {
                                   description: 'This is some help text for reference.',
                                 },
                               },
-                            } satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest>}
+                            } satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, "base.metadata" | 'demoProject.reopened'>}
                           />
                         </React.Suspense>
                       }
