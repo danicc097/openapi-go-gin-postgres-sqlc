@@ -174,56 +174,60 @@ export default function DynamicForm<
     removeButton?: JSX.Element
   }
 
-  function generateComponent({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) {
-    const propsOverride = options.propsOverride?.[fieldKey]
+  const GeneratedInput = React.useMemo(
+    () =>
+      ({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) => {
+        const propsOverride = options.propsOverride?.[fieldKey]
 
-    // TODO: multiselect and select early check (if found in options.components override)
-    const _props = {
-      mb: 4,
-      ...form.getInputProps(formField),
-      ...props?.input,
-      ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
-      ...(propsOverride && propsOverride),
-    }
+        // TODO: multiselect and select early check (if found in options.components override)
+        const _props = {
+          mb: 4,
+          ...form.getInputProps(formField),
+          ...props?.input,
+          ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
+          ...(propsOverride && propsOverride),
+        }
 
-    let el = null
-    const component: JSX.Element = options.input?.[fieldKey]?.component
-    if (component) {
-      el = React.cloneElement(component, {
-        ..._props,
-        ...component.props, // allow user override
-      })
-    } else {
-      switch (fieldType) {
-        case 'string':
-          el = <TextInput {..._props} />
-          break
-        case 'boolean':
-          el = <Checkbox pt={10} pb={4} {..._props} />
-          break
-        case 'date':
-          el = <DateInput placeholder="Select date" {..._props} />
-          break
-        case 'date-time':
-          el = <DateTimePicker placeholder="Select date and time" {..._props} />
-          break
-        case 'integer':
-          el = <NumberInput {..._props} />
-          break
-        case 'number':
-          el = <NumberInput precision={2} {..._props} />
-          break
-        default:
-          break
-      }
-    }
+        let el = null
+        const component: JSX.Element = options.input?.[fieldKey]?.component
+        if (component) {
+          el = React.cloneElement(component, {
+            ..._props,
+            ...component.props, // allow user override
+          })
+        } else {
+          switch (fieldType) {
+            case 'string':
+              el = <TextInput {..._props} />
+              break
+            case 'boolean':
+              el = <Checkbox pt={10} pb={4} {..._props} />
+              break
+            case 'date':
+              el = <DateInput placeholder="Select date" {..._props} />
+              break
+            case 'date-time':
+              el = <DateTimePicker placeholder="Select date and time" {..._props} />
+              break
+            case 'integer':
+              el = <NumberInput {..._props} />
+              break
+            case 'number':
+              el = <NumberInput precision={2} {..._props} />
+              break
+            default:
+              break
+          }
+        }
 
-    return (
-      <Flex align="center" {...props?.container}>
-        {el}
-      </Flex>
-    )
-  }
+        return (
+          <Flex align="center" {...props?.container}>
+            {el}
+          </Flex>
+        )
+      },
+    [],
+  )
 
   function initialValueByField(field: U & string) {
     switch (schemaFields[field].type) {
@@ -363,13 +367,13 @@ export default function DynamicForm<
           {field.type !== 'object' ? (
             <>
               {removeButton}
-              {generateComponent({
-                fieldKey,
-                fieldType: field.type,
-                props: { input: inputProps, container: containerProps },
-                formField: formField,
-                removeButton: null,
-              })}
+              <GeneratedInput
+                fieldKey={fieldKey}
+                fieldType={field.type}
+                props={{ input: inputProps, container: containerProps }}
+                formField={formField}
+                removeButton={null}
+              />
             </>
           ) : (
             <>{renderTitle(formField)}</>
@@ -398,16 +402,13 @@ export default function DynamicForm<
         return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
           return (
             <Flex key={_index}>
-              {generateComponent({
-                fieldKey,
-                fieldType: field.type,
-                formField: `${formField}.${_index}`,
-                props: {
-                  input: { ...inputProps, id: `${name}-${formField}-${_index}` },
-                  container: containerProps,
-                },
-                removeButton: renderRemoveNestedFieldButton(formField, _index),
-              })}
+              <GeneratedInput
+                fieldKey={fieldKey}
+                fieldType={field.type}
+                props={{ input: { ...inputProps, id: `${name}-${formField}-${_index}` }, container: containerProps }}
+                formField={`${formField}.${_index}`}
+                removeButton={renderRemoveNestedFieldButton(formField, _index)}
+              />
             </Flex>
           )
         })
@@ -447,7 +448,6 @@ export default function DynamicForm<
     </PageTemplate>
   )
 }
-
 /**
  * Construct form accessor based on current schema field key and parent form field.
  */
