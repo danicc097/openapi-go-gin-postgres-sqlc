@@ -25,7 +25,7 @@ import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _ from 'lodash'
-import React, { useState, type ComponentProps } from 'react'
+import React, { useState, type ComponentProps, useMemo } from 'react'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
@@ -174,58 +174,6 @@ export default function DynamicForm<
     removeButton?: JSX.Element
   }
 
-  // FIXME: useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
-  function generateComponent({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) {
-    const propsOverride = options.propsOverride?.[fieldKey]
-
-    // TODO: multiselect and select early check (if found in options.components override)
-    const _props = {
-      mb: 4,
-      ...form.getInputProps(formField),
-      ...props?.input,
-      ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
-      ...(propsOverride && propsOverride),
-    }
-
-    let el = null
-    const component: JSX.Element = options.input?.[fieldKey]?.component
-    if (component) {
-      el = React.cloneElement(component, {
-        ..._props,
-        ...component.props, // allow user override
-      })
-    } else {
-      switch (fieldType) {
-        case 'string':
-          el = <TextInput {..._props} />
-          break
-        case 'boolean':
-          el = <Checkbox pt={10} pb={4} {..._props} />
-          break
-        case 'date':
-          el = <DateInput placeholder="Select date" {..._props} />
-          break
-        case 'date-time':
-          el = <DateTimePicker placeholder="Select date and time" {..._props} />
-          break
-        case 'integer':
-          el = <NumberInput {..._props} />
-          break
-        case 'number':
-          el = <NumberInput precision={2} {..._props} />
-          break
-        default:
-          break
-      }
-    }
-
-    return (
-      <Flex align="center" {...props?.container}>
-        {el}
-      </Flex>
-    )
-  }
-
   function initialValueByField(field: U & string) {
     switch (schemaFields[field].type) {
       case 'object':
@@ -309,6 +257,65 @@ export default function DynamicForm<
       if (schemaFields[parentKey]?.isArray && parentFieldKey === '') return null
 
       const formField = constructFormKey(fieldKey, parentFormField)
+
+      const formValue = JSON.stringify(_.get(form.values, formField))
+      console.log(formValue)
+      // FIXME: useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
+      // + memo for headers, panels, etc.
+      const generateComponent = useMemo(
+        () =>
+          ({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) => {
+            const propsOverride = options.propsOverride?.[fieldKey]
+
+            // TODO: multiselect and select early check (if found in options.components override)
+            const _props = {
+              mb: 4,
+              ...form.getInputProps(formField),
+              ...props?.input,
+              ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
+              ...(propsOverride && propsOverride),
+            }
+
+            let el = null
+            const component: JSX.Element = options.input?.[fieldKey]?.component
+            if (component) {
+              el = React.cloneElement(component, {
+                ..._props,
+                ...component.props, // allow user override
+              })
+            } else {
+              switch (fieldType) {
+                case 'string':
+                  el = <TextInput {..._props} />
+                  break
+                case 'boolean':
+                  el = <Checkbox pt={10} pb={4} {..._props} />
+                  break
+                case 'date':
+                  el = <DateInput placeholder="Select date" {..._props} />
+                  break
+                case 'date-time':
+                  el = <DateTimePicker placeholder="Select date and time" {..._props} />
+                  break
+                case 'integer':
+                  el = <NumberInput {..._props} />
+                  break
+                case 'number':
+                  el = <NumberInput precision={2} {..._props} />
+                  break
+                default:
+                  break
+              }
+            }
+
+            return (
+              <Flex align="center" {...props?.container}>
+                {el}
+              </Flex>
+            )
+          },
+        [formValue],
+      )
 
       const accordion = options.accordion?.[fieldKey]
 
