@@ -174,6 +174,7 @@ export default function DynamicForm<
     removeButton?: JSX.Element
   }
 
+  // FIXME: useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
   function generateComponent({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) {
     const propsOverride = options.propsOverride?.[fieldKey]
 
