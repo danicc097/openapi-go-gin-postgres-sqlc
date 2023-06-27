@@ -29,7 +29,11 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Notifications } from '@mantine/notifications'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
-import DynamicForm, { selectOptionsBuilder, type SelectOptions, type DynamicFormOptions } from 'src/utils/formGeneration'
+import DynamicForm, {
+  selectOptionsBuilder,
+  type SelectOptions,
+  type DynamicFormOptions,
+} from 'src/utils/formGeneration'
 import type { RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
@@ -319,6 +323,8 @@ export default function App() {
   //   }
   // }, [demoWorkItemCreateForm])
 
+  type ExcludedFormKeys = 'base.metadata' | 'demoProject.reopened'
+
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
       <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
@@ -372,7 +378,7 @@ export default function App() {
                           >
                             Validate form
                           </Button>
-                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, "base.metadata" | 'demoProject.reopened'>
+                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
                             name="demoWorkItemCreateForm"
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
@@ -407,7 +413,7 @@ export default function App() {
                                 base: null,
                                 'base.closed': 'closed',
                                 'base.description': 'description',
-                                // 'base.metadata': 'metadata',
+                                // 'base.metadata': 'metadata', // ignored -> not a key
                                 'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
                                 'base.targetDate': 'targetDate',
                                 'base.teamID': 'teamID',
@@ -476,7 +482,7 @@ export default function App() {
                                   description: 'This is some help text for reference.',
                                 },
                               },
-                            } satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest>}
+                            }} // satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
                           />
                         </React.Suspense>
                       }

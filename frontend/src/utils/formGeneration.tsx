@@ -71,9 +71,9 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
 })
 
 export type DynamicFormOptions<T extends object, ExcludeKeys extends U, U extends PropertyKey = GetKeys<T>> = {
-  // FIXME: Exclude<u, ExcludeKeys> breaks indexing type inference - but does exclude
+  // FIXME: Exclude<U, ExcludeKeys> breaks indexing type inference - but does exclude
   labels: {
-    [key in U]: string | null
+    [key in Exclude<U, ExcludeKeys>]: string | null
   }
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
@@ -158,8 +158,8 @@ type GenerateFormInputsProps = {
 
 export default function DynamicForm<
   T extends object,
-  U extends PropertyKey = GetKeys<T>,
   ExcludeKeys extends U = null,
+  U extends PropertyKey = GetKeys<T>,
 >({ name, form, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
   const theme = useMantineTheme()
 
