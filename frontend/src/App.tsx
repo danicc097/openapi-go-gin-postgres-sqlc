@@ -402,7 +402,7 @@ export default function App() {
                             }}
                             options={{
                               // TODO: remove keys from rest of type inference if they're in ignore
-                              // ignore: ['base.metadata', 'demoProject.reopened'],
+                              ignore: ['base.metadata', 'demoProject.reopened'],
                               labels: {
                                 base: null,
                                 'base.closed': 'closed',

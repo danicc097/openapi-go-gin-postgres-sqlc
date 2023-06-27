@@ -71,6 +71,7 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
 })
 
 export type DynamicFormOptions<T extends object, U extends PropertyKey = GetKeys<T>> = {
+  ignore: Array<U>
   labels: {
     [key in U]: string | null
   }
