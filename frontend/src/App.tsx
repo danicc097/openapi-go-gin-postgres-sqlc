@@ -372,7 +372,7 @@ export default function App() {
                           >
                             Validate form
                           </Button>
-                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
+                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, "base.metadata" | 'demoProject.reopened'>
                             name="demoWorkItemCreateForm"
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
@@ -476,7 +476,7 @@ export default function App() {
                                   description: 'This is some help text for reference.',
                                 },
                               },
-                            } satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, "base.metadata" | 'demoProject.reopened'>}
+                            } satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest>}
                           />
                         </React.Suspense>
                       }
