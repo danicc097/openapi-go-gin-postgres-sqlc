@@ -24,7 +24,7 @@ import type { UseForm } from '@mantine/form/lib/types'
 import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
-import _ from 'lodash'
+import _, { memoize } from 'lodash'
 import React, { useState, type ComponentProps, useMemo } from 'react'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
@@ -174,7 +174,7 @@ export default function DynamicForm<
     removeButton?: JSX.Element
   }
 
-  function initialValueByField(field: U & string) {
+  const initialValueByField = (field: U & string) => {
     switch (schemaFields[field].type) {
       case 'object':
         return {}
@@ -195,7 +195,7 @@ export default function DynamicForm<
     form.setValues((currentValues) => newValues)
   }
 
-  function renderRemoveNestedFieldButton(formField: string, index: number) {
+  const renderRemoveNestedFieldButton = memoize((formField: string, index: number) => {
     return (
       <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
         <ActionIcon
@@ -213,7 +213,7 @@ export default function DynamicForm<
         </ActionIcon>
       </Tooltip>
     )
-  }
+  })
 
   const generateFormInputs = ({
     parentFieldKey = '',
@@ -221,7 +221,7 @@ export default function DynamicForm<
     removeButton = null,
   }: GenerateFormInputsProps) => {
     return entries(schemaFields).map(([fieldKey, field]) => {
-      function renderNestedHeader() {
+      const renderNestedHeader = memoize(() => {
         if (parentFieldKey === '') return null
 
         return (
@@ -241,7 +241,7 @@ export default function DynamicForm<
             </Flex>
           </div>
         )
-      }
+      })
 
       if (
         (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) ||
@@ -277,7 +277,7 @@ export default function DynamicForm<
             }
 
             let el = null
-            const component: JSX.Element = options.input?.[fieldKey]?.component
+            const component = options.input?.[fieldKey]?.component
             if (component) {
               el = React.cloneElement(component, {
                 ..._props,
@@ -410,7 +410,7 @@ export default function DynamicForm<
         )
       }
 
-      function renderArrayChildren(): JSX.Element {
+      function renderArrayChildren(): JSX.Element[] {
         return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
           return (
             <Flex key={_index}>
@@ -429,7 +429,7 @@ export default function DynamicForm<
         })
       }
 
-      function renderArrayOfObjectsChildren(): JSX.Element {
+      function renderArrayOfObjectsChildren(): JSX.Element[] {
         return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
           return (
             <div key={_index}>
