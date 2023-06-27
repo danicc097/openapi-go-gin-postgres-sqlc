@@ -273,11 +273,13 @@ export default function DynamicForm<
   }: GenerateFormInputsProps) => {
     return entries(schemaFields).map(([fieldKey, field]) => {
       function renderNestedHeader() {
+        if (parentFieldKey === '') return null
+
         return (
           <div>
             {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
             <Flex direction="row">
-              {renderTitle(formField)}
+              {!accordion && renderTitle(formField)}
               <Button
                 size="xs"
                 p={4}
@@ -330,7 +332,10 @@ export default function DynamicForm<
           <Card key={fieldKey} mt={12} mb={12} withBorder>
             {/* existing array fields, if any */}
             {accordion ? (
-              <FormAccordion>{renderArrayChildren()}</FormAccordion>
+              <FormAccordion>
+                {renderNestedHeader()}
+                {renderArrayChildren()}
+              </FormAccordion>
             ) : (
               <>
                 {renderNestedHeader()}
@@ -347,10 +352,13 @@ export default function DynamicForm<
           // TODO: background color based on depth
           <Card key={fieldKey} mt={12} mb={12} withBorder>
             {accordion ? (
-              <FormAccordion>{renderArrayOfObjectsChildren()}</FormAccordion>
+              <FormAccordion>
+                {renderNestedHeader()}
+                {renderArrayOfObjectsChildren()}
+              </FormAccordion>
             ) : (
               <>
-                {parentFieldKey === '' && <>{renderNestedHeader()}</>}
+                {renderNestedHeader()}
                 {renderArrayOfObjectsChildren()}
               </>
             )}
