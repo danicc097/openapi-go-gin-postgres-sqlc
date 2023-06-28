@@ -258,8 +258,9 @@ export default function DynamicForm<
 
       const formValue = JSON.stringify(_.get(form.values, formField))
       console.log(formValue)
-      // FIXME: useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
-      // + memo for headers, panels, etc.
+      // useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
+      // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
+      // for builtin support for uncontrolled input
       const generateComponent = ({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) => {
         const propsOverride = options.propsOverride?.[fieldKey]
 
