@@ -326,11 +326,7 @@ export default function App() {
   //   },
   // })
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, defaultValues },
-  } = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
+  const form = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {
       strict: false,
       formats: {
@@ -343,6 +339,12 @@ export default function App() {
     }),
     defaultValues: formInitialValues,
   })
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, defaultValues },
+  } = form
 
   // useEffect(() => {
   //   console.log(demoWorkItemCreateForm.values)
@@ -391,7 +393,7 @@ export default function App() {
                             <Accordion.Item value="form">
                               <Accordion.Control>See form</Accordion.Control>
                               <Accordion.Panel>
-                                {/* <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism> */}
+                                <Prism language="json">{JSON.stringify(form.getValues(), null, 2)}</Prism>
                               </Accordion.Panel>
                             </Accordion.Item>
                           </Accordion>
@@ -409,7 +411,7 @@ export default function App() {
                           >
                             Validate form
                           </Button>
-                          <form
+                          {/* <form
                             onSubmit={(e) => {
                               e.preventDefault()
                               handleSubmit(
@@ -419,17 +421,12 @@ export default function App() {
                             }}
                           >
                             <input {...register('demoProject.ref')} />
-                            {/* dot notation works as wlel */}
                             <input {...register('base.items.1.name')} />
-                            {/* {JSON.stringify(errors?.demoProject)} */}
-                            {/* {errors['demoProject.ref'] && <span>{`${errors['demoProject.ref'].message}`}</span>} */}
-                            {/* <input {...register('password')} />
-                            {errors.password && <span>{errors.password.message}</span>} */}
                             <button type="submit">submit</button>
-                          </form>
-                          {/* <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
+                          </form> */}
+                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
                             name="demoWorkItemCreateForm"
-                            form={demoWorkItemCreateForm}
+                            form={form}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
                             // using this hardcoded for testing purposes
                             schemaFields={{
@@ -532,7 +529,7 @@ export default function App() {
                                 },
                               },
                             }} // satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
-                          /> */}
+                          />
                         </React.Suspense>
                       }
                     />

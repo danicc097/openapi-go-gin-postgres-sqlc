@@ -11,6 +11,7 @@
     "skipLibCheck": true,
     "allowJs": false,
     "strict": false,
+    // react-hook-form
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,

@@ -1,11 +1,10 @@
 import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
-import DynamicForm, { constructFormKey } from 'src/utils/formGeneration'
+import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
 import { getByTestId, render, screen, renderHook } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
-import { useForm } from '@mantine/form'
 import { entries, keys } from 'src/utils/object'
 
 const schema = {

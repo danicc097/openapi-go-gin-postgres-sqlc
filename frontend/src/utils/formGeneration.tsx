@@ -24,6 +24,7 @@ import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _, { memoize } from 'lodash'
 import React, { useState, type ComponentProps, useMemo } from 'react'
+import type { Path, UseFormReturn } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
@@ -68,7 +69,7 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
   component,
 })
 
-export type DynamicFormOptions<T extends object, ExcludeKeys extends U, U extends PropertyKey = GetKeys<T>> = {
+export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   // FIXME: Exclude<U, ExcludeKeys> breaks indexing type inference - but does exclude
   labels: {
     [key in Exclude<U, ExcludeKeys>]: string | null
@@ -129,9 +130,8 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U, U extend
   }>
 }
 
-type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U = null> = {
-  //@ts-ignore
-  form: UseFormReturnType<T, (values: T) => T>
+type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U | null = null> = {
+  form: UseFormReturn<T, any, undefined>
   schemaFields: Record<U & string, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
   name: string
@@ -148,29 +148,20 @@ function renderTitle(key: string) {
   )
 }
 
-type GenerateFormInputsProps = {
-  parentFieldKey?: string
-  index?: number
-  parentFormField?: string
-  removeButton?: JSX.Element
-}
-
 export default function DynamicForm<
   T extends object,
-  ExcludeKeys extends U = null,
+  ExcludeKeys extends U | null = null,
   U extends PropertyKey = GetKeys<T>,
 >({ name, form, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
   const theme = useMantineTheme()
 
-  type GenerateComponentProps = {
-    fieldKey: U & string
-    fieldType: SchemaField['type']
-    props?: {
-      input?: any
-      container?: any
-    }
-    formField: string
-    removeButton?: JSX.Element
+  /**
+   * Construct form accessor based on current schema field key and parent form field.
+   */
+  const constructFormKey = (fieldKey: string, parentFormField: Path<T> | null): Path<T> => {
+    const currentFieldName = fieldKey.split('.').slice(-1)[0]
+
+    return (parentFormField ? `${parentFormField}.${currentFieldName}` : fieldKey) as Path<T>
   }
 
   const initialValueByField = (field: U & string) => {
@@ -184,22 +175,26 @@ export default function DynamicForm<
     }
   }
 
-  const addNestedField = (field: U & string, formField: string) => {
+  const addNestedField = (field: U & string, formField: Path<T>) => {
     const initialValue = initialValueByField(field)
 
-    const newValues = _.cloneDeep(form.values)
+    const newValues = _.cloneDeep(form.getValues())
 
-    _.set(newValues, formField, [...(_.get(newValues, formField) || []), initialValue])
+    _.set(newValues, formField, [...(form.getValues(formField) || []), initialValue])
 
-    form.setValues((currentValues) => newValues)
+    form.setValue(formField, [...(form.getValues(formField) || []), initialValue] as any)
   }
 
-  const renderRemoveNestedFieldButton = memoize((formField: string, index: number) => {
+  const removeListItem = (formField: Path<T>, index: number) => {
+    form.getValues(formField)
+  }
+
+  const renderRemoveNestedFieldButton = memoize((formField: Path<T>, index: number) => {
     return (
       <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
         <ActionIcon
           onClick={(e) => {
-            form.removeListItem(formField, index)
+            removeListItem(formField, index)
           }}
           // variant="filled"
           css={css`
@@ -214,9 +209,16 @@ export default function DynamicForm<
     )
   })
 
+  type GenerateFormInputsProps = {
+    parentFieldKey?: string
+    index?: number
+    parentFormField?: Path<T> | null
+    removeButton?: JSX.Element | null
+  }
+
   const generateFormInputs = ({
     parentFieldKey = '',
-    parentFormField = '',
+    parentFormField = null,
     removeButton = null,
   }: GenerateFormInputsProps) => {
     return entries(schemaFields).map(([fieldKey, field]) => {
@@ -255,26 +257,37 @@ export default function DynamicForm<
 
       const formField = constructFormKey(fieldKey, parentFormField)
 
-      const formValue = JSON.stringify(_.get(form.values, formField))
+      const formValue = JSON.stringify(form.getValues(formField))
       console.log(formValue)
+
+      type GenerateComponentProps = {
+        fieldKey: U & string
+        fieldType: SchemaField['type']
+        props?: {
+          input?: any
+          container?: any
+        }
+        formField: Path<T>
+        removeButton?: JSX.Element | null
+      }
+
       // useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
       // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
       // for builtin support for uncontrolled input
       const generateComponent = ({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) => {
         const propsOverride = options.propsOverride?.[fieldKey]
-        console.log(form.getInputProps(formField))
 
         // TODO: multiselect and select early check (if found in options.components override)
         const _props = {
           mb: 4,
-          ...form.getInputProps(formField),
+          ...form.register(formField),
           ...props?.input,
           ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
           ...(propsOverride && propsOverride),
           withAsterisk: schemaFields[fieldKey].required,
         }
 
-        let el = null
+        let el: JSX.Element | null = null
         const component = options.input?.[fieldKey]?.component
         if (component) {
           el = React.cloneElement(component, {
@@ -389,7 +402,9 @@ export default function DynamicForm<
         </Group>
       )
 
-      function FormAccordion({ children }): JSX.Element {
+      function FormAccordion({ children }): JSX.Element | null {
+        if (!accordion) return null
+
         const value = `${fieldKey}-accordion`
 
         return (
@@ -407,13 +422,13 @@ export default function DynamicForm<
       }
 
       function renderArrayChildren(): JSX.Element[] {
-        return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
+        return (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
           return (
             <Flex key={_index}>
               {generateComponent({
                 fieldKey,
                 fieldType: field.type,
-                formField: `${formField}.${_index}`,
+                formField: `${formField}.${_index}` as Path<T>,
                 props: {
                   input: { ...inputProps, id: `${name}-${formField}-${_index}` },
                   container: containerProps,
@@ -426,7 +441,7 @@ export default function DynamicForm<
       }
 
       function renderArrayOfObjectsChildren(): JSX.Element[] {
-        return _.get(form.values, formField)?.map((_nestedValue: any, _index: number) => {
+        return (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
           return (
             <div key={_index}>
               <p>{`${fieldKey}[${_index}]`}</p>
@@ -434,7 +449,7 @@ export default function DynamicForm<
               <Group>
                 {generateFormInputs({
                   parentFieldKey: fieldKey,
-                  parentFormField: `${formField}.${_index}`,
+                  parentFormField: `${formField}.${_index}` as Path<T>,
                   removeButton: null,
                 })}
               </Group>
@@ -458,13 +473,4 @@ export default function DynamicForm<
       </form>
     </PageTemplate>
   )
-}
-
-/**
- * Construct form accessor based on current schema field key and parent form field.
- */
-export function constructFormKey(fieldKey: string, parentFormField: string) {
-  const currentFieldName = fieldKey.split('.').slice(-1)[0]
-
-  return parentFormField !== '' ? `${parentFormField}.${currentFieldName}` : fieldKey
 }
