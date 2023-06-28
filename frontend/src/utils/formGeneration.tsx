@@ -19,8 +19,6 @@ import {
   Accordion,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
-import { Form, type UseFormReturnType } from '@mantine/form'
-import type { UseForm } from '@mantine/form/lib/types'
 import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
@@ -132,6 +130,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U, U extend
 }
 
 type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U = null> = {
+  //@ts-ignore
   form: UseFormReturnType<T, (values: T) => T>
   schemaFields: Record<U & string, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
@@ -164,7 +163,7 @@ export default function DynamicForm<
   const theme = useMantineTheme()
 
   type GenerateComponentProps = {
-    fieldKey: U
+    fieldKey: U & string
     fieldType: SchemaField['type']
     props?: {
       input?: any
@@ -263,7 +262,6 @@ export default function DynamicForm<
       // for builtin support for uncontrolled input
       const generateComponent = ({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) => {
         const propsOverride = options.propsOverride?.[fieldKey]
-
         console.log(form.getInputProps(formField))
 
         // TODO: multiselect and select early check (if found in options.components override)
@@ -273,6 +271,7 @@ export default function DynamicForm<
           ...props?.input,
           ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
           ...(propsOverride && propsOverride),
+          withAsterisk: schemaFields[fieldKey].required,
         }
 
         let el = null

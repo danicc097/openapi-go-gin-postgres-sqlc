@@ -38,7 +38,8 @@ import type { RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
-import { useForm } from '@mantine/form'
+import { useForm } from 'react-hook-form'
+import { ajvResolver } from '@hookform/resolvers/ajv'
 import dayjs from 'dayjs'
 import { ErrorBoundary } from 'react-error-boundary'
 import { Prism } from '@mantine/prism'
@@ -49,6 +50,7 @@ import { validateJson } from 'src/client-validator/validate'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { IconTag } from '@tabler/icons'
+import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 
 const schema = {
   properties: {
@@ -290,28 +292,56 @@ export default function App() {
    * The same principle needs to be used for custom components, e.g. multiselect and select.
    */
 
-  const demoWorkItemCreateForm = useForm({
-    // TODO: simple function to initialize top level with empty object if property type === object
-    // now that we have json schema dereferenced
-    initialValues: formInitialValues,
-    validateInputOnChange: true,
-    validate: {
-      // TODO: should be able to validate whole nested objects at once.
-      // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
-      // will need adhoc validateForm func that validates fields where (isArray && type !== object)
-      // or better yet, convert arrays of nonobjects to arrays of objects, indexed by whatever default key,
-      // and we convert them back with an adapter before making the request.
-      // we would need to exclude these fields from validate, and call client-validator's validateField with the
-      // original object and setError appropiately in the field using index + default key instead of just by index.
+  /*
 
-      base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
-      demoProject: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
-      members: (v, vv, path) => {
-        // console.log(`would have validated members. value: ${JSON.stringify(v)}`)
-        // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
-        return null
+  TODO:
+
+  const ajv = new Ajv({ strict: false, allErrors: true })
+  addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
+  const schema = ajv.getSchema(RestDemoWorkItemCreateRequestDecoder.schemaRef)
+
+  and then react hook form : resolver: ajvResolver(schema)
+  */
+  // const demoWorkItemCreateForm = useForm({
+  //   // TODO: simple function to initialize top level with empty object if property type === object
+  //   // now that we have json schema dereferenced
+  //   initialValues: formInitialValues,
+  //   validateInputOnChange: true,
+  //   validate: {
+  //     // TODO: should be able to validate whole nested objects at once.
+  //     // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
+  //     // will need adhoc validateForm func that validates fields where (isArray && type !== object)
+  //     // or better yet, convert arrays of nonobjects to arrays of objects, indexed by whatever default key,
+  //     // and we convert them back with an adapter before making the request.
+  //     // we would need to exclude these fields from validate, and call client-validator's validateField with the
+  //     // original object and setError appropiately in the field using index + default key instead of just by index.
+
+  //     base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
+  //     demoProject: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
+  //     members: (v, vv, path) => {
+  //       // console.log(`would have validated members. value: ${JSON.stringify(v)}`)
+  //       // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
+  //       return null
+  //     },
+  //   },
+  // })
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, defaultValues },
+  } = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
+    resolver: ajvResolver(schema as any, {
+      strict: false,
+      formats: {
+        int64: 'int64',
+        int32: 'int32',
+        binary: 'binary',
+        'date-time': 'date-time',
+        date: 'date',
       },
-    },
+    }),
+    defaultValues: formInitialValues,
   })
 
   // useEffect(() => {
@@ -361,15 +391,16 @@ export default function App() {
                             <Accordion.Item value="form">
                               <Accordion.Control>See form</Accordion.Control>
                               <Accordion.Panel>
-                                <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism>
+                                {/* <Prism language="json">{JSON.stringify(demoWorkItemCreateForm.values, null, 2)}</Prism> */}
                               </Accordion.Panel>
                             </Accordion.Item>
                           </Accordion>
                           <Button
                             onClick={(e) => {
                               try {
-                                const r = demoWorkItemCreateForm.validate()
-                                console.log({ r })
+                                console.log(errors?.demoProject)
+                                // const r = demoWorkItemCreateForm.validate()
+                                // console.log({ r })
                                 // RestDemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
                               } catch (error) {
                                 console.error(JSON.stringify(error?.validationErrors?.errors))
@@ -378,7 +409,25 @@ export default function App() {
                           >
                             Validate form
                           </Button>
-                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault()
+                              handleSubmit(
+                                (data) => console.log({ data }),
+                                (errors) => console.log({ errors }),
+                              )(e)
+                            }}
+                          >
+                            <input {...register('demoProject.ref')} />
+                            {/* dot notation works as wlel */}
+                            <input {...register('base.items.1.name')} />
+                            {/* {JSON.stringify(errors?.demoProject)} */}
+                            {/* {errors['demoProject.ref'] && <span>{`${errors['demoProject.ref'].message}`}</span>} */}
+                            {/* <input {...register('password')} />
+                            {errors.password && <span>{errors.password.message}</span>} */}
+                            <button type="submit">submit</button>
+                          </form>
+                          {/* <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
                             name="demoWorkItemCreateForm"
                             form={demoWorkItemCreateForm}
                             // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
@@ -483,7 +532,7 @@ export default function App() {
                                 },
                               },
                             }} // satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
-                          />
+                          /> */}
                         </React.Suspense>
                       }
                     />

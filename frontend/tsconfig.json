@@ -11,6 +11,7 @@
     "skipLibCheck": true,
     "allowJs": false,
     "strict": false,
+    "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,
     "module": "ESNext",
