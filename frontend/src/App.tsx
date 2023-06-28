@@ -337,6 +337,7 @@ export default function App() {
         date: 'date',
       },
     }),
+    mode: 'onChange',
     defaultValues: formInitialValues,
   })
 

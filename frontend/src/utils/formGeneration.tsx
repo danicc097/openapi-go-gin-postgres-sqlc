@@ -178,9 +178,11 @@ export default function DynamicForm<
   const addNestedField = (field: U & string, formField: Path<T>) => {
     const initialValue = initialValueByField(field)
 
-    const newValues = _.cloneDeep(form.getValues())
+    // const newValues = _.cloneDeep(form.getValues())
 
-    _.set(newValues, formField, [...(form.getValues(formField) || []), initialValue])
+    // _.set(newValues, formField, [...(form.getValues(formField) || []), initialValue])
+
+    console.log([...(form.getValues(formField) || []), initialValue] as any)
 
     form.setValue(formField, [...(form.getValues(formField) || []), initialValue] as any)
   }
@@ -258,8 +260,7 @@ export default function DynamicForm<
       const formField = constructFormKey(fieldKey, parentFormField)
 
       const formValue = JSON.stringify(form.getValues(formField))
-      console.log(formValue)
-
+      console.log({ formField, formValue })
       type GenerateComponentProps = {
         fieldKey: U & string
         fieldType: SchemaField['type']
@@ -277,10 +278,18 @@ export default function DynamicForm<
       const generateComponent = ({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) => {
         const propsOverride = options.propsOverride?.[fieldKey]
 
+        const type = schemaFields[fieldKey].type
         // TODO: multiselect and select early check (if found in options.components override)
         const _props = {
           mb: 4,
-          ...form.register(formField),
+          ...form.register(formField, {
+            ...(type === 'date' || type === 'date-time'
+              ? { valueAsDate: true }
+              : type === 'integer' || type === 'number'
+              ? { valueAsNumber: true }
+              : null),
+            required: schemaFields[fieldKey].required,
+          }),
           ...props?.input,
           ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
           ...(propsOverride && propsOverride),
@@ -463,14 +472,24 @@ export default function DynamicForm<
   // TODO: will also need sorting schemaFields beforehand and then generate normally.
   return (
     <PageTemplate minWidth={1000}>
-      <form
-        css={css`
-          min-width: 100%;
-        `}
-        id={name}
-      >
-        {generateFormInputs({})}
-      </form>
+      <>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit(
+              (data) => console.log({ data }),
+              (errors) => console.log({ errors }),
+            )(e)
+          }}
+          css={css`
+            min-width: 100%;
+          `}
+          id={name}
+        >
+          <button type="submit">submit</button>
+          {generateFormInputs({})}
+        </form>
+      </>
     </PageTemplate>
   )
 }
