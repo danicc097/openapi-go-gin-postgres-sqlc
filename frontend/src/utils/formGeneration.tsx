@@ -324,10 +324,10 @@ export default function DynamicForm<
           el = React.cloneElement(component, {
             ..._props,
             ...component.props, // allow user override
+            // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
+            onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
           })
         } else {
-          // TODO: use controllers instead of uncontrolled input. we can still prevent rerenders elsewhere, but
-          // numbers, date, etc. will work fine.
           switch (fieldType) {
             case 'string':
               el = <TextInput {..._props} />
