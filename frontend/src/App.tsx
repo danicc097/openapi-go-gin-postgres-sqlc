@@ -38,7 +38,7 @@ import type { RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
-import { useForm } from 'react-hook-form'
+import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import dayjs from 'dayjs'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -51,6 +51,7 @@ import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { IconTag } from '@tabler/icons'
 import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
+import useRenders from 'src/hooks/utils/useRenders'
 
 const schema = {
   properties: {
@@ -337,13 +338,15 @@ export default function App() {
         date: 'date',
       },
     }),
-    mode: 'onChange',
-    defaultValues: formInitialValues,
+    mode: 'all',
+    defaultValues: formInitialValues ?? {},
+    // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, defaultValues },
   } = form
 
@@ -357,6 +360,8 @@ export default function App() {
   // }, [demoWorkItemCreateForm])
 
   type ExcludedFormKeys = 'base.metadata' | 'demoProject.reopened'
+
+  const renders = useRenders()
 
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
@@ -394,7 +399,7 @@ export default function App() {
                             <Accordion.Item value="form">
                               <Accordion.Control>See form</Accordion.Control>
                               <Accordion.Panel>
-                                <Prism language="json">{JSON.stringify(form.getValues(), null, 2)}</Prism>
+                                {/* <Prism language="json">{JSON.stringify(myFormData, null, 2)}</Prism> */}
                               </Accordion.Panel>
                             </Accordion.Item>
                           </Accordion>
@@ -425,112 +430,116 @@ export default function App() {
                             <input {...register('base.items.1.name')} />
                             <button type="submit">submit</button>
                           </form> */}
-                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
-                            name="demoWorkItemCreateForm"
-                            form={form}
-                            // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
-                            // using this hardcoded for testing purposes
-                            schemaFields={{
-                              base: { isArray: false, required: true, type: 'object' },
-                              'base.closed': { type: 'date-time', required: true, isArray: false },
-                              'base.description': { type: 'string', required: true, isArray: false },
-                              'base.metadata': { type: 'object', required: true, isArray: false },
-                              'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-                              'base.targetDate': { type: 'date-time', required: true, isArray: false },
-                              'base.teamID': { type: 'integer', required: true, isArray: false },
-                              'base.items': { type: 'object', required: true, isArray: true },
-                              'base.items.name': { type: 'string', required: true, isArray: false },
-                              'base.items.items': { type: 'string', required: true, isArray: true },
-                              'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
-                              demoProject: { isArray: false, required: true, type: 'object' },
-                              'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
-                              'demoProject.line': { type: 'string', required: true, isArray: false },
-                              'demoProject.ref': { type: 'string', required: true, isArray: false },
-                              'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
-                              'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
-                              members: { type: 'object', required: true, isArray: true },
-                              'members.role': { type: 'string', required: true, isArray: false },
-                              'members.userID': { type: 'string', required: true, isArray: false },
-                              tagIDs: { type: 'integer', required: true, isArray: true },
-                            }}
-                            options={{
-                              // since labels is mandatory, instead of duplicating with ignore: U[] just
-                              // check if labels hasOwnProperty fieldKey and if not exclude from form.
-                              labels: {
-                                base: null,
-                                'base.closed': 'closed',
-                                'base.description': 'description',
-                                // 'base.metadata': 'metadata', // ignored -> not a key
-                                'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
-                                'base.targetDate': 'targetDate',
-                                'base.teamID': 'teamID',
-                                'base.items': 'items',
-                                'base.items.name': 'name',
-                                'base.items.items': 'items',
-                                'base.workItemTypeID': 'workItemTypeID',
-                                demoProject: null,
-                                'demoProject.lastMessageAt': 'lastMessageAt',
-                                'demoProject.line': 'line',
-                                'demoProject.ref': 'ref',
-                                'demoProject.workItemID': 'workItemID',
-                                members: 'members',
-                                'members.role': 'role',
-                                'members.userID': 'User',
-                                tagIDs: 'tagIDs',
-                              },
-                              accordion: {
-                                'base.items': {
-                                  defaultOpen: true,
-                                  title: (
-                                    <Flex align="center" gap={10}>
-                                      <IconTag size={16} />
-                                      <Text weight={700} size={'md'} color={theme.primaryColor}>
-                                        Items
-                                      </Text>{' '}
-                                    </Flex>
-                                  ),
+                          <legend>
+                            Content <code>(renders: {renders})</code>
+                          </legend>
+                          <FormProvider {...form}>
+                            <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
+                              name="demoWorkItemCreateForm"
+                              // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
+                              // using this hardcoded for testing purposes
+                              schemaFields={{
+                                base: { isArray: false, required: true, type: 'object' },
+                                'base.closed': { type: 'date-time', required: true, isArray: false },
+                                'base.description': { type: 'string', required: true, isArray: false },
+                                'base.metadata': { type: 'object', required: true, isArray: false },
+                                'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
+                                'base.targetDate': { type: 'date-time', required: true, isArray: false },
+                                'base.teamID': { type: 'integer', required: true, isArray: false },
+                                'base.items': { type: 'object', required: true, isArray: true },
+                                'base.items.name': { type: 'string', required: true, isArray: false },
+                                'base.items.items': { type: 'string', required: true, isArray: true },
+                                'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
+                                demoProject: { isArray: false, required: true, type: 'object' },
+                                'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
+                                'demoProject.line': { type: 'string', required: true, isArray: false },
+                                'demoProject.ref': { type: 'string', required: true, isArray: false },
+                                'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
+                                'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
+                                members: { type: 'object', required: true, isArray: true },
+                                'members.role': { type: 'string', required: true, isArray: false },
+                                'members.userID': { type: 'string', required: true, isArray: false },
+                                tagIDs: { type: 'integer', required: true, isArray: true },
+                              }}
+                              options={{
+                                // since labels is mandatory, instead of duplicating with ignore: U[] just
+                                // check if labels hasOwnProperty fieldKey and if not exclude from form.
+                                labels: {
+                                  base: null,
+                                  'base.closed': 'closed',
+                                  'base.description': 'description',
+                                  // 'base.metadata': 'metadata', // ignored -> not a key
+                                  'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
+                                  'base.targetDate': 'targetDate',
+                                  'base.teamID': 'teamID',
+                                  'base.items': 'items',
+                                  'base.items.name': 'name',
+                                  'base.items.items': 'items',
+                                  'base.workItemTypeID': 'workItemTypeID',
+                                  demoProject: null,
+                                  'demoProject.lastMessageAt': 'lastMessageAt',
+                                  'demoProject.line': 'line',
+                                  'demoProject.ref': 'ref',
+                                  'demoProject.workItemID': 'workItemID',
+                                  members: 'members',
+                                  'members.role': 'role',
+                                  'members.userID': 'User',
+                                  tagIDs: 'tagIDs',
                                 },
-                              },
-                              defaultValues: {
-                                'demoProject.line': '534543523',
-                                members: [{ role: 'preparer' }],
-                              },
-                              selectOptions: {
-                                'members.userID': selectOptionsBuilder({
-                                  type: 'select',
-                                  values: [...Array(20)].map((x, i) => {
-                                    return getGetCurrentUserMock()
+                                accordion: {
+                                  'base.items': {
+                                    defaultOpen: true,
+                                    title: (
+                                      <Flex align="center" gap={10}>
+                                        <IconTag size={16} />
+                                        <Text weight={700} size={'md'} color={theme.primaryColor}>
+                                          Items
+                                        </Text>{' '}
+                                      </Flex>
+                                    ),
+                                  },
+                                },
+                                defaultValues: {
+                                  'demoProject.line': '534543523',
+                                  members: [{ role: 'preparer' }],
+                                },
+                                selectOptions: {
+                                  'members.userID': selectOptionsBuilder({
+                                    type: 'select',
+                                    values: [...Array(20)].map((x, i) => {
+                                      return getGetCurrentUserMock()
+                                    }),
+                                    componentTransformer(el) {
+                                      return <>{el.email}</>
+                                    },
+                                    formValueTransformer(el) {
+                                      return el.userID
+                                    },
                                   }),
-                                  componentTransformer(el) {
-                                    return <>{el.email}</>
-                                  },
-                                  formValueTransformer(el) {
-                                    return el.userID
-                                  },
-                                }),
-                              },
-                              input: {
-                                'demoProject.ref': {
-                                  component: (
-                                    <ColorInput
-                                      placeholder="Pick color"
-                                      disallowInput
-                                      withPicker={false}
-                                      swatches={colorBlindPalette}
-                                      styles={{ root: { width: '100%' } }}
-                                    />
-                                  ),
                                 },
-                              },
-                              // these should probably be all required later, to ensure formField is never used.
-                              propsOverride: {
-                                'demoProject.ref': {
-                                  label: 'Reference',
-                                  description: 'This is some help text for reference.',
+                                input: {
+                                  'demoProject.ref': {
+                                    component: (
+                                      <ColorInput
+                                        placeholder="Pick color"
+                                        disallowInput
+                                        withPicker={false}
+                                        swatches={colorBlindPalette}
+                                        styles={{ root: { width: '100%' } }}
+                                      />
+                                    ),
+                                  },
                                 },
-                              },
-                            }} // satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
-                          />
+                                // these should probably be all required later, to ensure formField is never used.
+                                propsOverride: {
+                                  'demoProject.ref': {
+                                    label: 'Reference',
+                                    description: 'This is some help text for reference.',
+                                  },
+                                },
+                              }} // satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
+                            />
+                          </FormProvider>
                         </React.Suspense>
                       }
                     />

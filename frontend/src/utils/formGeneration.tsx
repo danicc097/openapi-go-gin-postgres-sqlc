@@ -24,10 +24,11 @@ import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _, { memoize } from 'lodash'
 import React, { useState, type ComponentProps, useMemo } from 'react'
-import type { Path, UseFormReturn } from 'react-hook-form'
+import { useFormContext, type Path, type UseFormReturn, FormProvider, useWatch } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
+import useRenders from 'src/hooks/utils/useRenders'
 import type {
   DeepPartial,
   GenericObject,
@@ -36,6 +37,7 @@ import type {
   RecursiveKeyOfArray,
   PathType,
 } from 'src/types/utils'
+import { removeElementByIndex } from 'src/utils/array'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 
@@ -131,7 +133,6 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
 }
 
 type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U | null = null> = {
-  form: UseFormReturn<T, any, undefined>
   schemaFields: Record<U & string, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
   name: string
@@ -152,8 +153,9 @@ export default function DynamicForm<
   T extends object,
   ExcludeKeys extends U | null = null,
   U extends PropertyKey = GetKeys<T>,
->({ name, form, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
+>({ name, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
   const theme = useMantineTheme()
+  const form = useFormContext()
 
   /**
    * Construct form accessor based on current schema field key and parent form field.
@@ -188,10 +190,12 @@ export default function DynamicForm<
   }
 
   const removeListItem = (formField: Path<T>, index: number) => {
-    form.getValues(formField)
+    const listItems = removeElementByIndex(form.getValues(formField), index)
+    form.setValue(formField, listItems as any)
+    console.log(listItems)
   }
 
-  const renderRemoveNestedFieldButton = memoize((formField: Path<T>, index: number) => {
+  const renderRemoveNestedFieldButton = (formField: Path<T>, index: number) => {
     return (
       <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
         <ActionIcon
@@ -209,7 +213,7 @@ export default function DynamicForm<
         </ActionIcon>
       </Tooltip>
     )
-  })
+  }
 
   type GenerateFormInputsProps = {
     parentFieldKey?: string
@@ -224,11 +228,15 @@ export default function DynamicForm<
     removeButton = null,
   }: GenerateFormInputsProps) => {
     return entries(schemaFields).map(([fieldKey, field]) => {
-      const renderNestedHeader = memoize(() => {
+      const renders = useRenders()
+      const renderNestedHeader = () => {
         return (
           <div>
             {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
             <Flex direction="row">
+              <legend>
+                <code>(renders: {renders})</code>
+              </legend>
               {!accordion && renderTitle(formField)}
               <Button
                 size="xs"
@@ -242,7 +250,7 @@ export default function DynamicForm<
             </Flex>
           </div>
         )
-      })
+      }
 
       if (
         (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) ||
@@ -260,7 +268,8 @@ export default function DynamicForm<
       const formField = constructFormKey(fieldKey, parentFormField)
 
       const formValue = JSON.stringify(form.getValues(formField))
-      console.log({ formField, formValue })
+      // console.log({ formField, formValue })
+
       type GenerateComponentProps = {
         fieldKey: U & string
         fieldType: SchemaField['type']
@@ -277,7 +286,8 @@ export default function DynamicForm<
       // for builtin support for uncontrolled input
       const generateComponent = ({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) => {
         const propsOverride = options.propsOverride?.[fieldKey]
-
+        const _form = useFormContext()
+        console.log({ _form: _form?.getValues() })
         const type = schemaFields[fieldKey].type
         // TODO: multiselect and select early check (if found in options.components override)
         const _props = {
@@ -330,6 +340,7 @@ export default function DynamicForm<
 
         return (
           <Flex align="center" {...props?.container}>
+            <code style={{ fontSize: 12 }}>(renders: {renders})</code>
             {el}
           </Flex>
         )
@@ -360,12 +371,12 @@ export default function DynamicForm<
             {accordion ? (
               <FormAccordion>
                 {renderNestedHeader()}
-                {renderArrayChildren()}
+                <ArrayChildren />
               </FormAccordion>
             ) : (
               <>
                 {renderNestedHeader()}
-                {renderArrayChildren()}
+                <ArrayChildren />
               </>
             )}
           </Card>
@@ -380,12 +391,12 @@ export default function DynamicForm<
             {accordion ? (
               <FormAccordion>
                 {renderNestedHeader()}
-                {renderArrayOfObjectsChildren()}
+                <ArrayOfObjectsChildren />
               </FormAccordion>
             ) : (
               <>
                 {renderNestedHeader()}
-                {renderArrayOfObjectsChildren()}
+                <ArrayOfObjectsChildren />
               </>
             )}
           </Card>
@@ -430,8 +441,10 @@ export default function DynamicForm<
         )
       }
 
-      function renderArrayChildren(): JSX.Element[] {
-        return (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
+      function ArrayChildren() {
+        useWatch({ name: formField })
+
+        const children = (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
           return (
             <Flex key={_index}>
               {generateComponent({
@@ -447,10 +460,14 @@ export default function DynamicForm<
             </Flex>
           )
         })
+
+        return <>{children}</>
       }
 
-      function renderArrayOfObjectsChildren(): JSX.Element[] {
-        return (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
+      function ArrayOfObjectsChildren() {
+        useWatch({ name: formField })
+
+        const children = (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
           return (
             <div key={_index}>
               <p>{`${fieldKey}[${_index}]`}</p>
@@ -465,6 +482,8 @@ export default function DynamicForm<
             </div>
           )
         })
+
+        return <>{children}</>
       }
     })
   }
@@ -473,6 +492,7 @@ export default function DynamicForm<
   return (
     <PageTemplate minWidth={1000}>
       <>
+        <FormData />
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -491,5 +511,20 @@ export default function DynamicForm<
         </form>
       </>
     </PageTemplate>
+  )
+}
+
+function FormData() {
+  const myFormData = useWatch({}) // needs to be jsx component, not regular function ({renderXXX()})
+
+  return (
+    <Accordion>
+      <Accordion.Item value="form">
+        <Accordion.Control>See form</Accordion.Control>
+        <Accordion.Panel>
+          <Prism language="json">{JSON.stringify(myFormData, null, 2)}</Prism>
+        </Accordion.Panel>
+      </Accordion.Item>
+    </Accordion>
   )
 }

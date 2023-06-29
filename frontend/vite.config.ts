@@ -35,6 +35,9 @@ export default ({ mode }) => {
       //   clientPort: 9443,
       // },
     },
+    optimizeDeps: {
+      exclude: ['react-hook-form'],
+    },
     define: {
       'process.env.NODE_ENV': `"${mode}"`,
     },
