@@ -294,9 +294,11 @@ export default function DynamicForm<
 
         const registerOpts = {
           ...(type === 'date' || type === 'date-time'
-            ? { valueAsDate: true }
-            : type === 'integer' || type === 'number'
-            ? { valueAsNumber: true }
+            ? { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
+            : type === 'integer'
+            ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
+            : type === 'number'
+            ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
             : null),
           required: schemaFields[fieldKey].required,
         }
