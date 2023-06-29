@@ -293,10 +293,7 @@ export default function DynamicForm<
         const propsOverride = options.propsOverride?.[fieldKey]
         const type = schemaFields[fieldKey].type
 
-        // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
-        // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
-        // value modified back to normal
-        const registerOpts = {
+        const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
           ...(type === 'date' || type === 'date-time'
             ? { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
             : type === 'integer'
@@ -305,12 +302,16 @@ export default function DynamicForm<
             ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
             : null),
           required: schemaFields[fieldKey].required,
-        }
+        })
+
+        // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
+        // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
+        // value modified back to normal
 
         // TODO: multiselect and select early check (if found in options.components override)
         const _props = {
           mb: 4,
-          ...form.register(formField, registerOpts),
+          ...registerProps,
           ...props?.input,
           ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
           ...(propsOverride && propsOverride),
@@ -341,10 +342,21 @@ export default function DynamicForm<
               el = <DateTimePicker placeholder="Select date and time" {..._props} />
               break
             case 'integer':
-              el = <NumberInput {..._props} />
+              el = (
+                <NumberInput
+                  onChange={(e) => registerOnChange({ target: { name: formField, value: e } })}
+                  {..._props}
+                />
+              )
               break
             case 'number':
-              el = <NumberInput precision={2} {..._props} />
+              el = (
+                <NumberInput
+                  onChange={(e) => registerOnChange({ target: { name: formField, value: e } })}
+                  precision={2}
+                  {..._props}
+                />
+              )
               break
             default:
               break
