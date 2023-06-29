@@ -23,8 +23,8 @@ import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
 import _, { memoize } from 'lodash'
-import React, { useState, type ComponentProps, useMemo } from 'react'
-import { useFormContext, type Path, type UseFormReturn, FormProvider, useWatch } from 'react-hook-form'
+import React, { useState, type ComponentProps, useMemo, type MouseEventHandler } from 'react'
+import { useFormContext, type Path, type UseFormReturn, FormProvider, useWatch, useFieldArray } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
@@ -195,13 +195,11 @@ export default function DynamicForm<
     console.log(listItems)
   }
 
-  const renderRemoveNestedFieldButton = (formField: Path<T>, index: number) => {
+  const renderRemoveNestedFieldButton = (formField: Path<T>, index: number, removeFn: MouseEventHandler) => {
     return (
       <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
         <ActionIcon
-          onClick={(e) => {
-            removeListItem(formField, index)
-          }}
+          onClick={removeFn}
           // variant="filled"
           css={css`
             background-color: #7c1a1a;
@@ -480,22 +478,41 @@ export default function DynamicForm<
       }
 
       function ArrayChildren() {
-        useWatch({ name: formField })
+        const fieldArray = useFieldArray({
+          control: form.control,
+          name: formField,
+        })
         // TODO: for both arrays need to use useFieldArray https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr (v6...)
         // https://react-hook-form.com/docs/usefieldarray
         // else react cannot render
-        const children = (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
+        const children = fieldArray.fields.map((item: any, k: number) => {
           return (
-            <Flex key={_index}>
+            <Flex key={item.id}>
               <GeneratedInput
                 fieldKey={fieldKey}
                 fieldType={field.type}
-                formField={`${formField}.${_index}` as Path<T>}
+                formField={`${formField}.${k}` as Path<T>}
                 props={{
-                  input: { ...inputProps, id: `${name}-${formField}-${_index}` },
+                  input: { ...inputProps, id: `${name}-${formField}-${k}` },
                   container: containerProps,
                 }}
-                removeButton={renderRemoveNestedFieldButton(formField, _index)}
+                removeButton={
+                  <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
+                    <ActionIcon
+                      onClick={(e) => {
+                        fieldArray.remove(k)
+                      }}
+                      // variant="filled"
+                      css={css`
+                        background-color: #7c1a1a;
+                      `}
+                      size="sm"
+                      id={`${name}-${formField}-remove-button-${k}`}
+                    >
+                      <IconMinus size="1rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                }
               />
             </Flex>
           )
@@ -505,17 +522,34 @@ export default function DynamicForm<
       }
 
       function ArrayOfObjectsChildren() {
-        useWatch({ name: formField })
+        const fieldArray = useFieldArray({
+          control: form.control,
+          name: formField,
+        })
 
-        const children = (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
+        const children = fieldArray.fields.map((item: any, k: number) => {
           return (
-            <div key={_index}>
-              <p>{`${fieldKey}[${_index}]`}</p>
-              {renderRemoveNestedFieldButton(formField, _index)}
+            <div key={item.id}>
+              <p>{`${fieldKey}[${k}]`}</p>
+              <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
+                <ActionIcon
+                  onClick={(e) => {
+                    fieldArray.remove(k)
+                  }}
+                  // variant="filled"
+                  css={css`
+                    background-color: #7c1a1a;
+                  `}
+                  size="sm"
+                  id={`${name}-${formField}-remove-button-${k}`}
+                >
+                  <IconMinus size="1rem" />
+                </ActionIcon>
+              </Tooltip>
               <Group>
                 <GeneratedInputs
                   parentFieldKey={fieldKey}
-                  parentFormField={`${formField}.${_index}` as Path<T>}
+                  parentFormField={`${formField}.${k}` as Path<T>}
                   removeButton={null}
                 />
               </Group>
