@@ -215,21 +215,23 @@ export default function DynamicForm<
     )
   }
 
-  type GenerateFormInputsProps = {
+  type GeneratedInputsProps = {
     parentFieldKey?: string
     index?: number
     parentFormField?: Path<T> | null
     removeButton?: JSX.Element | null
   }
 
-  const generateFormInputs = ({
+  const GeneratedInputs = ({
     parentFieldKey = '',
     parentFormField = null,
     removeButton = null,
-  }: GenerateFormInputsProps) => {
-    return entries(schemaFields).map(([fieldKey, field]) => {
+  }: GeneratedInputsProps) => {
+    // useWatch({ name: parentFormField ?? '' })
+
+    const children = entries(schemaFields).map(([fieldKey, field]) => {
       const renders = useRenders()
-      const renderNestedHeader = () => {
+      const NestedHeader = () => {
         return (
           <div>
             {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
@@ -270,7 +272,7 @@ export default function DynamicForm<
       const formValue = JSON.stringify(form.getValues(formField))
       // console.log({ formField, formValue })
 
-      type GenerateComponentProps = {
+      type GeneratedInputProps = {
         fieldKey: U & string
         fieldType: SchemaField['type']
         props?: {
@@ -284,22 +286,25 @@ export default function DynamicForm<
       // useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
       // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
       // for builtin support for uncontrolled input
-      const generateComponent = ({ fieldType, fieldKey, props, formField, removeButton }: GenerateComponentProps) => {
+      const GeneratedInput = ({ fieldType, fieldKey, props, formField, removeButton }: GeneratedInputProps) => {
         const propsOverride = options.propsOverride?.[fieldKey]
         const _form = useFormContext()
-        console.log({ _form: _form?.getValues() })
+        console.log(_form?.getValues(formField))
         const type = schemaFields[fieldKey].type
+
+        const registerOpts = {
+          ...(type === 'date' || type === 'date-time'
+            ? { valueAsDate: true }
+            : type === 'integer' || type === 'number'
+            ? { valueAsNumber: true }
+            : null),
+          required: schemaFields[fieldKey].required,
+        }
+
         // TODO: multiselect and select early check (if found in options.components override)
         const _props = {
           mb: 4,
-          ...form.register(formField, {
-            ...(type === 'date' || type === 'date-time'
-              ? { valueAsDate: true }
-              : type === 'integer' || type === 'number'
-              ? { valueAsNumber: true }
-              : null),
-            required: schemaFields[fieldKey].required,
-          }),
+          ...form.register(formField, registerOpts),
           ...props?.input,
           ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
           ...(propsOverride && propsOverride),
@@ -314,6 +319,8 @@ export default function DynamicForm<
             ...component.props, // allow user override
           })
         } else {
+          // TODO: use controllers instead of uncontrolled input. we can still prevent rerenders elsewhere, but
+          // numbers, date, etc. will work fine.
           switch (fieldType) {
             case 'string':
               el = <TextInput {..._props} />
@@ -370,12 +377,12 @@ export default function DynamicForm<
             {/* existing array fields, if any */}
             {accordion ? (
               <FormAccordion>
-                {renderNestedHeader()}
+                <NestedHeader />
                 <ArrayChildren />
               </FormAccordion>
             ) : (
               <>
-                {renderNestedHeader()}
+                <NestedHeader />
                 <ArrayChildren />
               </>
             )}
@@ -390,12 +397,12 @@ export default function DynamicForm<
           <Card key={fieldKey} mt={12} mb={12} withBorder>
             {accordion ? (
               <FormAccordion>
-                {renderNestedHeader()}
+                <NestedHeader />
                 <ArrayOfObjectsChildren />
               </FormAccordion>
             ) : (
               <>
-                {renderNestedHeader()}
+                <NestedHeader />
                 <ArrayOfObjectsChildren />
               </>
             )}
@@ -408,13 +415,13 @@ export default function DynamicForm<
           {field.type !== 'object' ? (
             <>
               {removeButton}
-              {generateComponent({
-                fieldKey,
-                fieldType: field.type,
-                props: { input: inputProps, container: containerProps },
-                formField: formField,
-                removeButton: null,
-              })}
+              <GeneratedInput
+                fieldKey={fieldKey}
+                fieldType={field.type}
+                formField={formField}
+                props={{ input: inputProps, container: containerProps }}
+                removeButton={null}
+              />
             </>
           ) : (
             <>{renderTitle(formField)}</>
@@ -447,16 +454,16 @@ export default function DynamicForm<
         const children = (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
           return (
             <Flex key={_index}>
-              {generateComponent({
-                fieldKey,
-                fieldType: field.type,
-                formField: `${formField}.${_index}` as Path<T>,
-                props: {
+              <GeneratedInput
+                fieldKey={fieldKey}
+                fieldType={field.type}
+                formField={`${formField}.${_index}` as Path<T>}
+                props={{
                   input: { ...inputProps, id: `${name}-${formField}-${_index}` },
                   container: containerProps,
-                },
-                removeButton: renderRemoveNestedFieldButton(formField, _index),
-              })}
+                }}
+                removeButton={renderRemoveNestedFieldButton(formField, _index)}
+              />
             </Flex>
           )
         })
@@ -473,11 +480,11 @@ export default function DynamicForm<
               <p>{`${fieldKey}[${_index}]`}</p>
               {renderRemoveNestedFieldButton(formField, _index)}
               <Group>
-                {generateFormInputs({
-                  parentFieldKey: fieldKey,
-                  parentFormField: `${formField}.${_index}` as Path<T>,
-                  removeButton: null,
-                })}
+                <GeneratedInputs
+                  parentFieldKey={fieldKey}
+                  parentFormField={`${formField}.${_index}` as Path<T>}
+                  removeButton={null}
+                />
               </Group>
             </div>
           )
@@ -486,6 +493,8 @@ export default function DynamicForm<
         return <>{children}</>
       }
     })
+
+    return <>{children}</>
   }
 
   // TODO: will also need sorting schemaFields beforehand and then generate normally.
@@ -507,7 +516,7 @@ export default function DynamicForm<
           id={name}
         >
           <button type="submit">submit</button>
-          {generateFormInputs({})}
+          <GeneratedInputs />
         </form>
       </>
     </PageTemplate>
@@ -515,7 +524,7 @@ export default function DynamicForm<
 }
 
 function FormData() {
-  const myFormData = useWatch({}) // needs to be jsx component, not regular function ({renderXXX()})
+  const myFormData = useWatch() // needs to be jsx component to use hooks, not regular function ({renderXXX()})
 
   return (
     <Accordion>
