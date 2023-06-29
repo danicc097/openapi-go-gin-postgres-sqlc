@@ -481,7 +481,8 @@ export default function DynamicForm<
 
       function ArrayChildren() {
         useWatch({ name: formField })
-        // TODO: for both arrays need to use useFieldArray https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr
+        // TODO: for both arrays need to use useFieldArray https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr (v6...)
+        // https://react-hook-form.com/docs/usefieldarray
         // else react cannot render
         const children = (form.getValues(formField) as any[])?.map((_nestedValue: any, _index: number) => {
           return (

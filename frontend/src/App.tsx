@@ -274,7 +274,7 @@ export default function App() {
     // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
     demoProject: {
       lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-      line: '3e3e2',
+      ref: '12341234',
       workItemID: 1,
       reopened: false, // for create will ignore field for form gen
     },
@@ -518,7 +518,7 @@ export default function App() {
                                   }),
                                 },
                                 input: {
-                                  'demoProject.ref': {
+                                  'demoProject.line': {
                                     component: (
                                       <ColorInput
                                         placeholder="Pick color"
@@ -532,9 +532,9 @@ export default function App() {
                                 },
                                 // these should probably be all required later, to ensure formField is never used.
                                 propsOverride: {
-                                  'demoProject.ref': {
-                                    label: 'Reference',
-                                    description: 'This is some help text for reference.',
+                                  'demoProject.line': {
+                                    label: 'Line',
+                                    description: 'This is some help text.',
                                   },
                                 },
                               }} // satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
