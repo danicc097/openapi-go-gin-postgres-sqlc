@@ -287,11 +287,15 @@ export default function DynamicForm<
       // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
       // for builtin support for uncontrolled input
       const GeneratedInput = ({ fieldType, fieldKey, props, formField, removeButton }: GeneratedInputProps) => {
+        const { control } = useFormContext()
+        useWatch({ control, name: formField })
+
         const propsOverride = options.propsOverride?.[fieldKey]
-        const _form = useFormContext()
-        console.log(_form?.getValues(formField))
         const type = schemaFields[fieldKey].type
 
+        // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
+        // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
+        // value modified back to normal
         const registerOpts = {
           ...(type === 'date' || type === 'date-time'
             ? { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
