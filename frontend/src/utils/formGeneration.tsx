@@ -336,10 +336,22 @@ export default function DynamicForm<
               el = <Checkbox pt={10} pb={4} {..._props} />
               break
             case 'date':
-              el = <DateInput placeholder="Select date" {..._props} />
+              el = (
+                <DateInput
+                  onChange={(e) => registerOnChange({ target: { name: formField, value: e?.toISOString() } })}
+                  placeholder="Select date"
+                  {..._props}
+                />
+              )
               break
             case 'date-time':
-              el = <DateTimePicker placeholder="Select date and time" {..._props} />
+              el = (
+                <DateTimePicker
+                  onChange={(e) => registerOnChange({ target: { name: formField, value: e?.toISOString() } })}
+                  placeholder="Select date and time"
+                  {..._props}
+                />
+              )
               break
             case 'integer':
               el = (
