@@ -287,7 +287,7 @@ export default function DynamicForm<
       // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
       // for builtin support for uncontrolled input
       const GeneratedInput = ({ fieldType, fieldKey, props, formField, removeButton }: GeneratedInputProps) => {
-        const { control } = useFormContext()
+        const { control, getFieldState, getValues } = useFormContext()
         useWatch({ control, name: formField })
 
         const propsOverride = options.propsOverride?.[fieldKey]
@@ -311,11 +311,12 @@ export default function DynamicForm<
         // TODO: multiselect and select early check (if found in options.components override)
         const _props = {
           mb: 4,
+          withAsterisk: schemaFields[fieldKey].required,
           ...registerProps,
           ...props?.input,
           ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
           ...(propsOverride && propsOverride),
-          withAsterisk: schemaFields[fieldKey].required,
+          ...(!getFieldState(formField).isDirty && { defaultValue: getValues(formField) }),
         }
 
         let el: JSX.Element | null = null

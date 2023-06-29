@@ -3,11 +3,11 @@ export function removeElementByIndex(arr: any[], index: number) {
     return arr
   }
 
-  if (index < 0 || index >= arr.length) {
+  if (index >= arr.length) {
     return arr
   }
 
-  if (index === arr.length - 1) {
+  if (index === arr.length - 1 || index === -1) {
     arr.pop()
   } else {
     arr.splice(index, 1)
