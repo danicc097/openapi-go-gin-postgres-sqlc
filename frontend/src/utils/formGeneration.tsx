@@ -40,6 +40,7 @@ import type {
 import { removeElementByIndex } from 'src/utils/array'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
+import { sentenceCase } from 'src/utils/strings'
 
 export type SelectOptionsTypes = 'select' | 'multiselect' | 'colorSwatch'
 
@@ -283,6 +284,7 @@ export default function DynamicForm<
           required: schemaFields[fieldKey].required,
         })
 
+        const error = getFieldState(formField).error
         // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
         // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
         // value modified back to normal
@@ -296,6 +298,7 @@ export default function DynamicForm<
           ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
           ...(propsOverride && propsOverride),
           ...(!getFieldState(formField).isDirty && { defaultValue: getValues(formField) }),
+          ...(error && { error: sentenceCase(error?.message) }),
         }
 
         let el: JSX.Element | null = null
