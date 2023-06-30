@@ -177,40 +177,21 @@ export default function DynamicForm<
     }
   }
 
+  // do not use useFieldArray append, cannot append undefined, it simply ignores...
   const addNestedField = (field: U & string, formField: Path<T>) => {
     const initialValue = initialValueByField(field)
 
-    // const newValues = _.cloneDeep(form.getValues())
+    const vals = form.getValues(formField) || []
 
-    // _.set(newValues, formField, [...(form.getValues(formField) || []), initialValue])
+    console.log([...vals, initialValue] as any)
 
-    console.log([...(form.getValues(formField) || []), initialValue] as any)
-
-    form.setValue(formField, [...(form.getValues(formField) || []), initialValue] as any)
+    form.setValue(formField, [...vals, initialValue] as any)
   }
 
   const removeListItem = (formField: Path<T>, index: number) => {
     const listItems = removeElementByIndex(form.getValues(formField), index)
     form.setValue(formField, listItems as any)
     console.log(listItems)
-  }
-
-  const renderRemoveNestedFieldButton = (formField: Path<T>, index: number, removeFn: MouseEventHandler) => {
-    return (
-      <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
-        <ActionIcon
-          onClick={removeFn}
-          // variant="filled"
-          css={css`
-            background-color: #7c1a1a;
-          `}
-          size="sm"
-          id={`${name}-${formField}-remove-button-${index}`}
-        >
-          <IconMinus size="1rem" />
-        </ActionIcon>
-      </Tooltip>
-    )
   }
 
   type GeneratedInputsProps = {
