@@ -388,6 +388,8 @@ export default function DynamicForm<
           control: form.control,
           name: formField,
         })
+
+        // nested arrays or arrays (v6) https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr?file=/src/nestedFieldArray.js:877-883
         // TODO: for both arrays need to use useFieldArray https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr (v6...)
         // https://react-hook-form.com/docs/usefieldarray
         // else react cannot render
