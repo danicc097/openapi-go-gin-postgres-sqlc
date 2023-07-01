@@ -41,6 +41,7 @@ import { removeElementByIndex } from 'src/utils/array'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
+import type { U } from 'vitest/dist/types-b7007192'
 
 export type SelectOptionsTypes = 'select' | 'multiselect' | 'colorSwatch'
 
@@ -150,12 +151,66 @@ function renderTitle(key: string) {
   )
 }
 
+const removeListItem = (formField: string, index: number) => {
+  const form = useFormContext()
+
+  const listItems = removeElementByIndex(form.getValues(formField), index)
+  form.setValue(formField, listItems as any)
+  console.log(listItems)
+}
+
 export default function DynamicForm<
   T extends object,
   ExcludeKeys extends U | null = null,
   U extends PropertyKey = GetKeys<T>,
 >({ name, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
   const theme = useMantineTheme()
+  const form = useFormContext()
+
+  // TODO: will also need sorting schemaFields beforehand and then generate normally.
+  return (
+    <PageTemplate minWidth={1000}>
+      <>
+        <FormData />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit(
+              (data) => console.log({ data }),
+              (errors) => console.log({ errors }),
+            )(e)
+          }}
+          css={css`
+            min-width: 100%;
+          `}
+          id={name}
+        >
+          <button type="submit">submit</button>
+          <GeneratedInputs schemaFields={schemaFields} name={name} options={options} />
+        </form>
+      </>
+    </PageTemplate>
+  )
+}
+
+type GeneratedInputsProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+  parentFieldKey?: string
+  index?: number
+  parentFormField?: Path<T> | null
+  removeButton?: JSX.Element | null
+  schemaFields: Record<U & string, SchemaField>
+  name: string
+  options: DynamicFormOptions<T, ExcludeKeys, U>
+}
+
+function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
+  parentFieldKey = '',
+  parentFormField = null,
+  removeButton = null,
+  schemaFields,
+  name,
+  options,
+}: GeneratedInputsProps<T, ExcludeKeys, U>) {
   const form = useFormContext()
 
   /**
@@ -189,395 +244,293 @@ export default function DynamicForm<
     form.setValue(formField, [...vals, initialValue] as any)
   }
 
-  const removeListItem = (formField: Path<T>, index: number) => {
-    const listItems = removeElementByIndex(form.getValues(formField), index)
-    form.setValue(formField, listItems as any)
-    console.log(listItems)
-  }
-
-  type GeneratedInputsProps = {
-    parentFieldKey?: string
-    index?: number
-    parentFormField?: Path<T> | null
-    removeButton?: JSX.Element | null
-  }
-
-  const GeneratedInputs = ({
-    parentFieldKey = '',
-    parentFormField = null,
-    removeButton = null,
-  }: GeneratedInputsProps) => {
-    // useWatch({ name: parentFormField ?? '' })
-
-    const children = entries(schemaFields).map(([fieldKey, field]) => {
-      const renders = useRenders()
-      const NestedHeader = () => {
-        return (
-          <div>
-            {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
-            <Flex direction="row">
-              <legend>
-                <code>(renders: {renders})</code>
-              </legend>
-              {!accordion && renderTitle(formField)}
-              <Button
-                size="xs"
-                p={4}
-                leftIcon={<IconPlus size="1rem" />}
-                onClick={() => addNestedField(fieldKey, formField)}
-                variant="filled"
-                color={'green'}
-                id={`${name}-${formField}-add-button`}
-              >{`Add ${formField}`}</Button>
-            </Flex>
-          </div>
-        )
-      }
-
-      if (
-        (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) ||
-        parentFieldKey === fieldKey || // fix when parent key has the same name and both are arrays
-        !options.labels.hasOwnProperty(fieldKey) // labels are mandatory unless form field was excluded
-      ) {
-        return null
-      }
-
-      const pp = fieldKey.split('.')
-      const parentKey = parentFieldKey.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
-
-      if (schemaFields[parentKey]?.isArray && parentFieldKey === '') return null
-
-      const formField = constructFormKey(fieldKey, parentFormField)
-
-      const formValue = JSON.stringify(form.getValues(formField))
-      // console.log({ formField, formValue })
-
-      type GeneratedInputProps = {
-        fieldKey: U & string
-        fieldType: SchemaField['type']
-        props?: {
-          input?: any
-          container?: any
-        }
-        formField: Path<T>
-        removeButton?: JSX.Element | null
-      }
-
-      // useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
-      // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
-      // for builtin support for uncontrolled input
-      const GeneratedInput = ({ fieldType, fieldKey, props, formField, removeButton }: GeneratedInputProps) => {
-        const { control, getFieldState, getValues } = useFormContext()
-        useWatch({ control, name: formField })
-
-        const propsOverride = options.propsOverride?.[fieldKey]
-        const type = schemaFields[fieldKey].type
-
-        const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
-          ...(type === 'date' || type === 'date-time'
-            ? { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
-            : type === 'integer'
-            ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
-            : type === 'number'
-            ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
-            : null),
-          required: schemaFields[fieldKey].required,
-        })
-
-        const error = getFieldState(formField).error
-        // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
-        // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
-        // value modified back to normal
-
-        // TODO: multiselect and select early check (if found in options.components override)
-        const _props = {
-          mb: 4,
-          withAsterisk: schemaFields[fieldKey].required,
-          ...registerProps,
-          ...props?.input,
-          ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
-          ...(propsOverride && propsOverride),
-          ...(!getFieldState(formField).isDirty && { defaultValue: getValues(formField) }),
-          ...(error && { error: sentenceCase(error?.message) }),
-        }
-
-        let el: JSX.Element | null = null
-        const component = options.input?.[fieldKey]?.component
-        if (component) {
-          el = React.cloneElement(component, {
-            ..._props,
-            ...component.props, // allow user override
-            // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
-            onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
-          })
-        } else {
-          switch (fieldType) {
-            case 'string':
-              el = <TextInput {..._props} />
-              break
-            case 'boolean':
-              el = <Checkbox pt={10} pb={4} {..._props} />
-              break
-            case 'date':
-              el = (
-                <DateInput
-                  onChange={(e) => registerOnChange({ target: { name: formField, value: e?.toISOString() } })}
-                  placeholder="Select date"
-                  {..._props}
-                />
-              )
-              break
-            case 'date-time':
-              el = (
-                <DateTimePicker
-                  onChange={(e) => registerOnChange({ target: { name: formField, value: e?.toISOString() } })}
-                  placeholder="Select date and time"
-                  {..._props}
-                />
-              )
-              break
-            case 'integer':
-              el = (
-                <NumberInput
-                  onChange={(e) => registerOnChange({ target: { name: formField, value: e } })}
-                  {..._props}
-                />
-              )
-              break
-            case 'number':
-              el = (
-                <NumberInput
-                  onChange={(e) => registerOnChange({ target: { name: formField, value: e } })}
-                  precision={2}
-                  {..._props}
-                />
-              )
-              break
-            default:
-              break
-          }
-        }
-
-        return (
-          <Flex align="center" {...props?.container}>
-            <code style={{ fontSize: 12 }}>(renders: {renders})</code>
-            {el}
-          </Flex>
-        )
-      }
-
-      const accordion = options.accordion?.[fieldKey]
-
-      const containerProps = {
-        css: css`
-          width: 100%;
-        `,
-      }
-
-      const inputProps = {
-        css: css`
-          width: 100%;
-        `,
-        ...(!field.isArray && { label: formField }),
-        required: field.required,
-        id: `${name}-${formField}`,
-      }
-
-      const ArrayChildren = () => {
-        const fieldArray = useFieldArray({
-          control: form.control,
-          name: formField,
-        })
-
-        // nested arrays or arrays (v6) https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr?file=/src/nestedFieldArray.js:877-883
-        // TODO: for both arrays need to use useFieldArray https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr (v6...)
-        // https://react-hook-form.com/docs/usefieldarray
-        // else react cannot render
-        // useWatch({name: `${formField}`, control: form.control}) // inf rerendering
-        const children = fieldArray.fields.map((item: any, k: number) => {
-          return (
-            <Flex key={item.id}>
-              <GeneratedInput
-                fieldKey={fieldKey}
-                fieldType={field.type}
-                formField={`${formField}.${k}` as Path<T>}
-                props={{
-                  input: { ...inputProps, id: `${name}-${formField}-${k}` },
-                  container: containerProps,
-                }}
-                removeButton={
-                  <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
-                    <ActionIcon
-                      onClick={(e) => {
-                        // fieldArray.remove(k) // will remove all undefined
-                        removeListItem(formField, k)
-                      }}
-                      // variant="filled"
-                      css={css`
-                        background-color: #7c1a1a;
-                      `}
-                      size="sm"
-                      id={`${name}-${formField}-remove-button-${k}`}
-                    >
-                      <IconMinus size="1rem" />
-                    </ActionIcon>
-                  </Tooltip>
-                }
-              />
-            </Flex>
-          )
-        })
-
-        return <>{children}</>
-      }
-
-      const ArrayOfObjectsChildren = () => {
-        const fieldArray = useFieldArray({
-          control: form.control,
-          name: formField,
-        })
-        // useWatch({name: `${formField}`, control: form.control}) // inf rerendering
-        const children = fieldArray.fields.map((item: any, k: number) => {
-          return (
-            <div key={item.id}>
-              <Text weight={800}>{`${formField}.${k}`}</Text>
-              <Card mt={12} mb={12} withBorder>
-                <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
-                  <ActionIcon
-                    onClick={(e) => {
-                      fieldArray.remove(k)
-                    }}
-                    // variant="filled"
-                    css={css`
-                      background-color: #7c1a1a;
-                    `}
-                    size="sm"
-                    id={`${name}-${formField}-remove-button-${k}`}
-                  >
-                    <IconMinus size="1rem" />
-                  </ActionIcon>
-                </Tooltip>
-                <Group>
-                  <GeneratedInputs
-                    parentFieldKey={fieldKey}
-                    parentFormField={`${formField}.${k}` as Path<T>}
-                    removeButton={null}
-                  />
-                </Group>
-              </Card>
-            </div>
-          )
-        })
-
-        return <>{children}</>
-      }
-
-      if (field.isArray && field.type !== 'object') {
-        // nested array of nonbjects generation
-        return (
-          <Card key={fieldKey} mt={12} mb={12} withBorder>
-            {/* existing array fields, if any */}
-            {accordion ? (
-              <FormAccordion>
-                <NestedHeader />
-                <ArrayChildren />
-              </FormAccordion>
-            ) : (
-              <>
-                <NestedHeader />
-                <ArrayChildren />
-              </>
-            )}
-          </Card>
-        )
-      }
-
-      if (field.isArray && field.type === 'object') {
-        // array of objects
-        return (
-          // TODO: background color based on depth
-          <Card key={fieldKey} mt={12} mb={12} withBorder>
-            {accordion ? (
-              <FormAccordion>
-                <NestedHeader />
-                <ArrayOfObjectsChildren />
-              </FormAccordion>
-            ) : (
-              <>
-                <NestedHeader />
-                <ArrayOfObjectsChildren />
-              </>
-            )}
-          </Card>
-        )
-      }
-
+  // useWatch({ name: parentFormField ?? '' })
+  const children = entries(schemaFields).map(([fieldKey, field]) => {
+    const renders = useRenders()
+    const NestedHeader = () => {
       return (
-        <Group key={fieldKey} align="center">
-          {field.type !== 'object' ? (
-            <>
-              {removeButton}
-              <GeneratedInput
-                fieldKey={fieldKey}
-                fieldType={field.type}
+        <div>
+          {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
+          <Flex direction="row">
+            <legend>
+              <code>(renders: {renders})</code>
+            </legend>
+            {!accordion && renderTitle(formField)}
+            <Button
+              size="xs"
+              p={4}
+              leftIcon={<IconPlus size="1rem" />}
+              onClick={() => addNestedField(fieldKey, formField)}
+              variant="filled"
+              color={'green'}
+              id={`${name}-${formField}-add-button`}
+            >{`Add ${formField}`}</Button>
+          </Flex>
+        </div>
+      )
+    }
+
+    if (
+      (parentFieldKey !== '' && !fieldKey.startsWith(parentFieldKey)) ||
+      parentFieldKey === fieldKey || // fix when parent key has the same name and both are arrays
+      !options.labels.hasOwnProperty(fieldKey) // labels are mandatory unless form field was excluded
+    ) {
+      return null
+    }
+
+    const pp = fieldKey.split('.')
+    const parentKey = parentFieldKey.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
+
+    if (schemaFields[parentKey]?.isArray && parentFieldKey === '') return null
+
+    const formField = constructFormKey(fieldKey, parentFormField)
+
+    const formValue = JSON.stringify(form.getValues(formField))
+    // console.log({ formField, formValue })
+    const accordion = options.accordion?.[fieldKey]
+
+    const containerProps = {
+      css: css`
+        width: 100%;
+      `,
+    }
+
+    const inputProps = {
+      css: css`
+        width: 100%;
+      `,
+      ...(!field.isArray && { label: formField }),
+      required: field.required,
+      id: `${name}-${formField}`,
+    }
+
+    if (field.isArray && field.type !== 'object') {
+      // nested array of nonbjects generation
+      return (
+        <Card key={fieldKey} mt={12} mb={12} withBorder>
+          {/* existing array fields, if any */}
+          {accordion ? (
+            <FormAccordion>
+              <NestedHeader />
+              <ArrayChildren<T, U>
                 formField={formField}
-                props={{ input: inputProps, container: containerProps }}
-                removeButton={null}
+                fieldKey={fieldKey}
+                field={field}
+                inputProps={inputProps}
+                name={name}
+                containerProps={containerProps}
+                options={options}
+                schemaFields={schemaFields}
+              />
+            </FormAccordion>
+          ) : (
+            <>
+              <NestedHeader />
+              <ArrayChildren<T, U>
+                formField={formField}
+                fieldKey={fieldKey}
+                field={field}
+                inputProps={inputProps}
+                name={name}
+                containerProps={containerProps}
+                options={options}
+                schemaFields={schemaFields}
               />
             </>
-          ) : (
-            <>{renderTitle(formField)}</>
           )}
-        </Group>
+        </Card>
       )
+    }
 
-      function FormAccordion({ children }): JSX.Element | null {
-        if (!accordion) return null
+    if (field.isArray && field.type === 'object') {
+      // array of objects
+      return (
+        // TODO: background color based on depth
+        <Card key={fieldKey} mt={12} mb={12} withBorder>
+          {accordion ? (
+            <FormAccordion>
+              <NestedHeader />
+              <ArrayOfObjectsChildren
+                formField={formField}
+                name={name}
+                fieldKey={fieldKey}
+                options={options}
+                schemaFields={schemaFields}
+              />
+            </FormAccordion>
+          ) : (
+            <>
+              <NestedHeader />
+              <ArrayOfObjectsChildren
+                formField={formField}
+                name={name}
+                fieldKey={fieldKey}
+                options={options}
+                schemaFields={schemaFields}
+              />
+            </>
+          )}
+        </Card>
+      )
+    }
 
-        const value = `${fieldKey}-accordion`
+    return (
+      <Group key={fieldKey} align="center">
+        {field.type !== 'object' ? (
+          <>
+            {removeButton}
+            <GeneratedInput
+              fieldKey={fieldKey}
+              fieldType={field.type}
+              formField={formField}
+              props={{ input: inputProps, container: containerProps }}
+              removeButton={null}
+              options={options}
+              schemaFields={schemaFields}
+            />
+          </>
+        ) : (
+          <>{renderTitle(formField)}</>
+        )}
+      </Group>
+    )
 
-        return (
-          <Accordion
-            defaultValue={accordion.defaultOpen ? value : null}
-            styles={{ control: { padding: 0, maxHeight: '28px' } }}
-            {...containerProps}
-          >
-            <Accordion.Item value={value}>
-              <Accordion.Control>{accordion.title ?? `${fieldKey}`}</Accordion.Control>
-              <Accordion.Panel>{children}</Accordion.Panel>
-            </Accordion.Item>
-          </Accordion>
-        )
-      }
-    })
+    function FormAccordion({ children }): JSX.Element | null {
+      if (!accordion) return null
 
-    return <>{children}</>
-  }
+      const value = `${fieldKey}-accordion`
 
-  // TODO: will also need sorting schemaFields beforehand and then generate normally.
-  return (
-    <PageTemplate minWidth={1000}>
-      <>
-        <FormData />
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            form.handleSubmit(
-              (data) => console.log({ data }),
-              (errors) => console.log({ errors }),
-            )(e)
-          }}
-          css={css`
-            min-width: 100%;
-          `}
-          id={name}
+      return (
+        <Accordion
+          defaultValue={accordion.defaultOpen ? value : null}
+          styles={{ control: { padding: 0, maxHeight: '28px' } }}
+          {...containerProps}
         >
-          <button type="submit">submit</button>
-          <GeneratedInputs />
-        </form>
-      </>
-    </PageTemplate>
-  )
+          <Accordion.Item value={value}>
+            <Accordion.Control>{accordion.title ?? `${fieldKey}`}</Accordion.Control>
+            <Accordion.Panel>{children}</Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
+      )
+    }
+  })
+
+  return <>{children}</>
+}
+
+function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, options, schemaFields }) {
+  const form = useFormContext()
+  const fieldArray = useFieldArray({
+    control: form.control,
+    name: formField,
+  })
+  // useWatch({name: `${formField}`, control: form.control}) // inf rerendering
+  const children = fieldArray.fields.map((item: any, k: number) => {
+    return (
+      <div key={item.id}>
+        <Text weight={800}>{`${formField}.${k}`}</Text>
+        <Card mt={12} mb={12} withBorder>
+          <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
+            <ActionIcon
+              onClick={(e) => {
+                removeListItem(formField, k)
+              }}
+              // variant="filled"
+              css={css`
+                background-color: #7c1a1a;
+              `}
+              size="sm"
+              id={`${name}-${formField}-remove-button-${k}`}
+            >
+              <IconMinus size="1rem" />
+            </ActionIcon>
+          </Tooltip>
+          <Group>
+            <GeneratedInputs
+              parentFieldKey={fieldKey}
+              parentFormField={`${formField}.${k}` as Path<T>}
+              removeButton={null}
+              schemaFields={schemaFields}
+              name={name}
+              options={options}
+            />
+          </Group>
+        </Card>
+      </div>
+    )
+  })
+
+  return <>{children}</>
+}
+
+type ArrayChildrenProps = {
+  formField: string
+  fieldKey: U & string
+  field: NonNullable<Record<U & string, SchemaField>[U & string]>
+  inputProps: any
+  name: string
+  containerProps: any
+}
+
+function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
+  formField,
+  fieldKey,
+  field,
+  inputProps,
+  name,
+  containerProps,
+  options,
+  schemaFields,
+}: ArrayChildrenProps) {
+  const form = useFormContext()
+
+  const fieldArray = useFieldArray({
+    control: form.control,
+    name: formField,
+  })
+
+  // nested arrays or arrays (v6) https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr?file=/src/nestedFieldArray.js:877-883
+  // TODO: for both arrays need to use useFieldArray https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr (v6...)
+  // https://react-hook-form.com/docs/usefieldarray
+  // else react cannot render
+  // useWatch({name: `${formField}`, control: form.control}) // inf rerendering
+  const children = fieldArray.fields.map((item: any, k: number) => {
+    return (
+      <Flex key={item.id}>
+        <GeneratedInput
+          fieldKey={fieldKey}
+          fieldType={field.type}
+          formField={`${formField}.${k}` as Path<T>}
+          props={{
+            input: { ...inputProps, id: `${name}-${formField}-${k}` },
+            container: containerProps,
+          }}
+          options={options}
+          schemaFields={schemaFields}
+          removeButton={
+            <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
+              <ActionIcon
+                onClick={(e) => {
+                  // fieldArray.remove(k) // will remove all undefined
+                  removeListItem(formField, k)
+                }}
+                // variant="filled"
+                css={css`
+                  background-color: #7c1a1a;
+                `}
+                size="sm"
+                id={`${name}-${formField}-remove-button-${k}`}
+              >
+                <IconMinus size="1rem" />
+              </ActionIcon>
+            </Tooltip>
+          }
+        />
+      </Flex>
+    )
+  })
+
+  return <>{children}</>
 }
 
 function FormData() {
@@ -592,5 +545,126 @@ function FormData() {
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
+  )
+}
+
+type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+  fieldKey: U & string
+  fieldType: SchemaField['type']
+  props?: {
+    input?: any
+    container?: any
+  }
+  formField: Path<T>
+  removeButton?: JSX.Element | null
+  schemaFields: Record<U & string, SchemaField>
+  options: DynamicFormOptions<T, ExcludeKeys, U>
+}
+
+// useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
+// TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
+// for builtin support for uncontrolled input
+const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
+  fieldType, // TODO: no prop drilling (schemaFields[fieldKey])
+  fieldKey, // TODO: no prop drilling
+  props,
+  formField, // TODO: no prop drilling
+  removeButton,
+  options, // TODO: no prop drilling
+  schemaFields, // TODO: no prop drilling
+}: GeneratedInputProps<T, ExcludeKeys, U>) => {
+  const form = useFormContext()
+  useWatch({ control: form.control, name: formField })
+
+  const propsOverride = options.propsOverride?.[fieldKey]
+  const type = schemaFields[fieldKey].type
+
+  const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
+    ...(type === 'date' || type === 'date-time'
+      ? { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
+      : type === 'integer'
+      ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
+      : type === 'number'
+      ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
+      : null),
+    required: schemaFields[fieldKey].required,
+  })
+
+  const error = form.getFieldState(formField).error
+  // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
+  // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
+  // value modified back to normal
+
+  // TODO: multiselect and select early check (if found in options.components override)
+  const _props = {
+    mb: 4,
+    withAsterisk: schemaFields[fieldKey].required,
+    ...registerProps,
+    ...props?.input,
+    ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
+    ...(propsOverride && propsOverride),
+    ...(!form.getFieldState(formField).isDirty && { defaultValue: form.getValues(formField) }),
+    ...(error && { error: sentenceCase(error?.message) }),
+  }
+
+  let el: JSX.Element | null = null
+  const component = options.input?.[fieldKey]?.component
+  if (component) {
+    el = React.cloneElement(component, {
+      ..._props,
+      ...component.props, // allow user override
+      // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
+      onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
+    })
+  } else {
+    switch (fieldType) {
+      case 'string':
+        el = <TextInput {..._props} />
+        break
+      case 'boolean':
+        el = <Checkbox pt={10} pb={4} {..._props} />
+        break
+      case 'date':
+        el = (
+          <DateInput
+            onChange={(e) => registerOnChange({ target: { name: formField, value: e?.toISOString() } })}
+            placeholder="Select date"
+            {..._props}
+          />
+        )
+        break
+      case 'date-time':
+        el = (
+          <DateTimePicker
+            onChange={(e) => registerOnChange({ target: { name: formField, value: e?.toISOString() } })}
+            placeholder="Select date and time"
+            {..._props}
+          />
+        )
+        break
+      case 'integer':
+        el = <NumberInput onChange={(e) => registerOnChange({ target: { name: formField, value: e } })} {..._props} />
+        break
+      case 'number':
+        el = (
+          <NumberInput
+            onChange={(e) => registerOnChange({ target: { name: formField, value: e } })}
+            precision={2}
+            {..._props}
+          />
+        )
+        break
+      default:
+        break
+    }
+  }
+
+  const renders = useRenders()
+
+  return (
+    <Flex align="center" {...props?.container}>
+      <code style={{ fontSize: 12 }}>(renders: {renders})</code>
+      {el}
+    </Flex>
   )
 }
