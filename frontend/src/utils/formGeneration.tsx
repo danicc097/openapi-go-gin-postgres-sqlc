@@ -570,6 +570,8 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
       : type === 'number'
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
+      : type === 'boolean'
+      ? { setValueAs: (v) => (v === '' ? undefined : v === 'true') }
       : null),
     required: schemaFields[fieldKey].required,
   })
@@ -609,10 +611,22 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   } else {
     switch (fieldType) {
       case 'string':
-        el = <TextInput {..._props} />
+        el = (
+          <TextInput
+            onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.value } })}
+            {..._props}
+          />
+        )
         break
       case 'boolean':
-        el = <Checkbox pt={10} pb={4} {..._props} />
+        el = (
+          <Checkbox
+            onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.checked } })}
+            pt={10}
+            pb={4}
+            {..._props}
+          />
+        )
         break
       case 'date':
         el = (

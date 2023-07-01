@@ -359,7 +359,7 @@ export default function App() {
   //   }
   // }, [demoWorkItemCreateForm])
 
-  type ExcludedFormKeys = 'base.metadata' | 'demoProject.reopened'
+  type ExcludedFormKeys = 'base.metadata'
 
   const renders = useRenders()
 
@@ -463,6 +463,7 @@ export default function App() {
                                   // 'base.metadata': 'metadata', // ignored -> not a key
                                   'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
                                   'base.targetDate': 'targetDate',
+                                  'demoProject.reopened': 'reopened',
                                   'base.teamID': 'teamID',
                                   'base.items': 'items',
                                   'base.items.name': 'name',
