@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const root = path.resolve(__dirname, '..')
 
-generate({
+await generate({
   schemaFile: join(root, '../openapi.yaml'),
   schemaType: 'yaml',
   directory: join(root, 'src/client-validator/gen'),
@@ -29,7 +29,7 @@ generate({
 const jsonSchemaFilePath = join(root, 'src/client-validator/gen/schema.json')
 
 const schema = readSchemaFromFile(jsonSchemaFilePath)
-modifyDateFormats(schema)
+// modifyDateFormats(schema)
 saveSchemaToFile(schema, jsonSchemaFilePath)
 
 const outputFilePath = join(root, 'src/client-validator/gen/dereferenced-schema.json')

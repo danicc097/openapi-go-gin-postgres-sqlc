@@ -75,9 +75,7 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -90,9 +88,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         }
       },
       "required": [
@@ -111,9 +107,7 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -129,9 +123,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         }
       },
       "required": [
@@ -208,9 +200,7 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "line": {
           "type": "string"
@@ -244,9 +234,7 @@
         },
         "expiresOn": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
@@ -265,14 +253,13 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "email": {
@@ -345,9 +332,7 @@
         },
         "start": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": [
@@ -386,18 +371,14 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "message": {
           "type": "string"
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
@@ -473,22 +454,22 @@
     },
     "RestDemoWorkItemsResponse": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "demoWorkItem": {
@@ -510,20 +491,15 @@
           ]
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -542,9 +518,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemComments": {
           "items": {
@@ -582,7 +556,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
@@ -646,9 +620,7 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -679,9 +651,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemTags": {
           "items": {
@@ -726,14 +696,13 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "email": {
@@ -1011,22 +980,22 @@
     },
     "DbWorkItem": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "description": {
@@ -1036,20 +1005,15 @@
           "type": "integer"
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -1059,9 +1023,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemID": {
           "type": "integer"
@@ -1078,7 +1040,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
@@ -1332,9 +1294,7 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "line": {
           "type": "string"
@@ -1362,10 +1322,11 @@
     },
     "DbWorkItemCreateParams": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "description": {
@@ -1375,20 +1336,15 @@
           "type": "integer"
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -1407,7 +1363,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate"
       ],
       "type": "object",

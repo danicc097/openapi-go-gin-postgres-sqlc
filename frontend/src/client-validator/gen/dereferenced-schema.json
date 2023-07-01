@@ -119,9 +119,7 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -140,9 +138,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         }
       },
       "required": [
@@ -161,9 +157,7 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -179,9 +173,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         }
       },
       "required": [
@@ -258,9 +250,7 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "line": {
           "type": "string"
@@ -294,9 +284,7 @@
         },
         "expiresOn": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "userID": {
           "type": "string",
@@ -316,14 +304,13 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "email": {
@@ -414,9 +401,7 @@
         },
         "start": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": [
@@ -456,18 +441,14 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "message": {
           "type": "string"
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "userID": {
           "type": "string",
@@ -569,31 +550,29 @@
     },
     "RestDemoWorkItemsResponse": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "demoWorkItem": {
           "properties": {
             "lastMessageAt": {
               "format": "date-time",
-              "type": [
-                "object"
-              ]
+              "type": "string"
             },
             "line": {
               "type": "string"
@@ -631,14 +610,13 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "deletedAt": {
                 "format": "date-time",
                 "type": [
-                  "object"
+                  "string",
+                  "null"
                 ]
               },
               "email": {
@@ -719,20 +697,15 @@
           ]
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -754,9 +727,7 @@
               },
               "start": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "teamID": {
                 "type": [
@@ -802,27 +773,21 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemComments": {
           "items": {
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "message": {
                 "type": "string"
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "userID": {
                 "type": "string",
@@ -931,7 +896,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
@@ -1124,9 +1089,7 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -1191,9 +1154,7 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "description": {
                 "type": "string"
@@ -1209,9 +1170,7 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               }
             },
             "required": [
@@ -1233,9 +1192,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemTags": {
           "items": {
@@ -1334,9 +1291,7 @@
             },
             "expiresOn": {
               "format": "date-time",
-              "type": [
-                "object"
-              ]
+              "type": "string"
             },
             "userID": {
               "type": "string",
@@ -1354,14 +1309,13 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "email": {
@@ -1443,9 +1397,7 @@
               },
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "description": {
                 "type": "string"
@@ -1464,9 +1416,7 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               }
             },
             "required": [
@@ -1524,9 +1474,7 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "description": {
                 "type": "string"
@@ -1542,9 +1490,7 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               }
             },
             "required": [
@@ -1938,22 +1884,22 @@
     },
     "DbWorkItem": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "description": {
@@ -1963,20 +1909,15 @@
           "type": "integer"
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -1986,9 +1927,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemID": {
           "type": "integer"
@@ -2005,7 +1944,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
@@ -2044,10 +1983,11 @@
       "properties": {
         "base": {
           "properties": {
-            "closed": {
+            "closedAt": {
               "format": "date-time",
               "type": [
-                "object"
+                "string",
+                "null"
               ]
             },
             "description": {
@@ -2057,20 +1997,15 @@
               "type": "integer"
             },
             "metadata": {
-              "items": {
-                "minimum": 0,
-                "type": "integer"
-              },
+              "additionalProperties": {},
               "type": [
-                "array",
+                "object",
                 "null"
               ]
             },
             "targetDate": {
               "format": "date-time",
-              "type": [
-                "object"
-              ]
+              "type": "string"
             },
             "teamID": {
               "type": "integer"
@@ -2089,7 +2024,7 @@
             "metadata",
             "teamID",
             "kanbanStepID",
-            "closed",
+            "closedAt",
             "targetDate"
           ],
           "type": "object",
@@ -2099,9 +2034,7 @@
           "properties": {
             "lastMessageAt": {
               "format": "date-time",
-              "type": [
-                "object"
-              ]
+              "type": "string"
             },
             "line": {
               "type": "string"
@@ -2361,9 +2294,7 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "line": {
           "type": "string"
@@ -2391,10 +2322,11 @@
     },
     "DbWorkItemCreateParams": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "description": {
@@ -2404,20 +2336,15 @@
           "type": "integer"
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -2436,7 +2363,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate"
       ],
       "type": "object",
@@ -2586,9 +2513,7 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -2607,9 +2532,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         }
       },
       "required": [
@@ -2628,9 +2551,7 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -2646,9 +2567,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         }
       },
       "required": [
@@ -2725,9 +2644,7 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "line": {
           "type": "string"
@@ -2761,9 +2678,7 @@
         },
         "expiresOn": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "userID": {
           "type": "string",
@@ -2783,14 +2698,13 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "email": {
@@ -2881,9 +2795,7 @@
         },
         "start": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": [
@@ -2923,18 +2835,14 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "message": {
           "type": "string"
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "userID": {
           "type": "string",
@@ -3036,31 +2944,29 @@
     },
     "RestDemoWorkItemsResponse": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "demoWorkItem": {
           "properties": {
             "lastMessageAt": {
               "format": "date-time",
-              "type": [
-                "object"
-              ]
+              "type": "string"
             },
             "line": {
               "type": "string"
@@ -3098,14 +3004,13 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "deletedAt": {
                 "format": "date-time",
                 "type": [
-                  "object"
+                  "string",
+                  "null"
                 ]
               },
               "email": {
@@ -3186,20 +3091,15 @@
           ]
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -3221,9 +3121,7 @@
               },
               "start": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "teamID": {
                 "type": [
@@ -3269,27 +3167,21 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemComments": {
           "items": {
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "message": {
                 "type": "string"
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "userID": {
                 "type": "string",
@@ -3398,7 +3290,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
@@ -3591,9 +3483,7 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "description": {
           "type": "string"
@@ -3658,9 +3548,7 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "description": {
                 "type": "string"
@@ -3676,9 +3564,7 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               }
             },
             "required": [
@@ -3700,9 +3586,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemTags": {
           "items": {
@@ -3801,9 +3685,7 @@
             },
             "expiresOn": {
               "format": "date-time",
-              "type": [
-                "object"
-              ]
+              "type": "string"
             },
             "userID": {
               "type": "string",
@@ -3821,14 +3703,13 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "email": {
@@ -3910,9 +3791,7 @@
               },
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "description": {
                 "type": "string"
@@ -3931,9 +3810,7 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               }
             },
             "required": [
@@ -3991,9 +3868,7 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               },
               "description": {
                 "type": "string"
@@ -4009,9 +3884,7 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": [
-                  "object"
-                ]
+                "type": "string"
               }
             },
             "required": [
@@ -4405,22 +4278,22 @@
     },
     "DbWorkItem": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "description": {
@@ -4430,20 +4303,15 @@
           "type": "integer"
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -4453,9 +4321,7 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "workItemID": {
           "type": "integer"
@@ -4472,7 +4338,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
@@ -4511,10 +4377,11 @@
       "properties": {
         "base": {
           "properties": {
-            "closed": {
+            "closedAt": {
               "format": "date-time",
               "type": [
-                "object"
+                "string",
+                "null"
               ]
             },
             "description": {
@@ -4524,20 +4391,15 @@
               "type": "integer"
             },
             "metadata": {
-              "items": {
-                "minimum": 0,
-                "type": "integer"
-              },
+              "additionalProperties": {},
               "type": [
-                "array",
+                "object",
                 "null"
               ]
             },
             "targetDate": {
               "format": "date-time",
-              "type": [
-                "object"
-              ]
+              "type": "string"
             },
             "teamID": {
               "type": "integer"
@@ -4556,7 +4418,7 @@
             "metadata",
             "teamID",
             "kanbanStepID",
-            "closed",
+            "closedAt",
             "targetDate"
           ],
           "type": "object",
@@ -4566,9 +4428,7 @@
           "properties": {
             "lastMessageAt": {
               "format": "date-time",
-              "type": [
-                "object"
-              ]
+              "type": "string"
             },
             "line": {
               "type": "string"
@@ -4828,9 +4688,7 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "line": {
           "type": "string"
@@ -4858,10 +4716,11 @@
     },
     "DbWorkItemCreateParams": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "object"
+            "string",
+            "null"
           ]
         },
         "description": {
@@ -4871,20 +4730,15 @@
           "type": "integer"
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": [
-            "object"
-          ]
+          "type": "string"
         },
         "teamID": {
           "type": "integer"
@@ -4903,7 +4757,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate"
       ],
       "type": "object",
