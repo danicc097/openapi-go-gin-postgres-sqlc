@@ -421,7 +421,7 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, o
     control: form.control,
     name: formField,
   })
-  // useWatch({name: `${formField}`, control: form.control}) // inf rerendering
+  // useWatch({ name: `${formField}`, control: form.control }) // inf rerendering
   const children = fieldArray.fields.map((item: any, k: number) => {
     const form = useFormContext()
     return (
