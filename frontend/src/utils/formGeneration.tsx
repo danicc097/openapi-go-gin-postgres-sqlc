@@ -151,9 +151,7 @@ function renderTitle(key: string) {
   )
 }
 
-const removeListItem = (formField: string, index: number) => {
-  const form = useFormContext()
-
+const removeListItem = (form, formField: string, index: number) => {
   const listItems = removeElementByIndex(form.getValues(formField), index)
   form.setValue(formField, listItems as any)
   console.log(listItems)
@@ -384,7 +382,6 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               fieldType={field.type}
               formField={formField}
               props={{ input: inputProps, container: containerProps }}
-              removeButton={null}
               options={options}
               schemaFields={schemaFields}
             />
@@ -426,6 +423,7 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, o
   })
   // useWatch({name: `${formField}`, control: form.control}) // inf rerendering
   const children = fieldArray.fields.map((item: any, k: number) => {
+    const form = useFormContext()
     return (
       <div key={item.id}>
         <Text weight={800}>{`${formField}.${k}`}</Text>
@@ -433,7 +431,7 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, o
           <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
             <ActionIcon
               onClick={(e) => {
-                removeListItem(formField, k)
+                removeListItem(form, formField, k)
               }}
               // variant="filled"
               css={css`
@@ -507,24 +505,8 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
           }}
           options={options}
           schemaFields={schemaFields}
-          removeButton={
-            <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
-              <ActionIcon
-                onClick={(e) => {
-                  // fieldArray.remove(k) // will remove all undefined
-                  removeListItem(formField, k)
-                }}
-                // variant="filled"
-                css={css`
-                  background-color: #7c1a1a;
-                `}
-                size="sm"
-                id={`${name}-${formField}-remove-button-${k}`}
-              >
-                <IconMinus size="1rem" />
-              </ActionIcon>
-            </Tooltip>
-          }
+          withRemoveButton={true}
+          index={k}
         />
       </Flex>
     )
@@ -556,9 +538,10 @@ type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U exten
     container?: any
   }
   formField: Path<T>
-  removeButton?: JSX.Element | null
+  withRemoveButton?: boolean
   schemaFields: Record<U & string, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
+  index?: number
 }
 
 // useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
@@ -569,9 +552,10 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   fieldKey, // TODO: no prop drilling
   props,
   formField, // TODO: no prop drilling
-  removeButton,
+  withRemoveButton = false,
   options, // TODO: no prop drilling
   schemaFields, // TODO: no prop drilling
+  index,
 }: GeneratedInputProps<T, ExcludeKeys, U>) => {
   const form = useFormContext()
   useWatch({ control: form.control, name: formField })
@@ -601,7 +585,10 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     withAsterisk: schemaFields[fieldKey].required,
     ...registerProps,
     ...props?.input,
-    ...(removeButton && { rightSection: removeButton, rightSectionWidth: '40px' }),
+    ...(withRemoveButton && {
+      rightSection: <RemoveButton formField={formField} index={index} />,
+      rightSectionWidth: '40px',
+    }),
     ...(propsOverride && propsOverride),
     ...(!form.getFieldState(formField).isDirty && { defaultValue: form.getValues(formField) }),
     ...(error && { error: sentenceCase(error?.message) }),
@@ -666,5 +653,27 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       <code style={{ fontSize: 12 }}>(renders: {renders})</code>
       {el}
     </Flex>
+  )
+}
+
+const RemoveButton = ({ formField, index }) => {
+  const form = useFormContext()
+  return (
+    <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
+      <ActionIcon
+        onClick={(e) => {
+          // fieldArray.remove(index) // will remove all undefined
+          removeListItem(form, formField, index)
+        }}
+        // variant="filled"
+        css={css`
+          background-color: #7c1a1a;
+        `}
+        size="sm"
+        id={`${name}-${formField}-remove-button-${index}`}
+      >
+        <IconMinus size="1rem" />
+      </ActionIcon>
+    </Tooltip>
   )
 }
