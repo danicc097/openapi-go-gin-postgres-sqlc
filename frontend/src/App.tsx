@@ -52,6 +52,7 @@ import addFormats from 'ajv-formats'
 import { IconTag } from '@tabler/icons'
 import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 import useRenders from 'src/hooks/utils/useRenders'
+import { fullFormats } from 'ajv-formats/dist/formats'
 
 const schema = {
   properties: {
@@ -330,13 +331,7 @@ export default function App() {
   const form = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {
       strict: false,
-      formats: {
-        int64: 'int64',
-        int32: 'int32',
-        binary: 'binary',
-        'date-time': 'date-time',
-        date: 'date',
-      },
+      formats: fullFormats,
     }),
     mode: 'all',
     defaultValues: formInitialValues ?? {},
