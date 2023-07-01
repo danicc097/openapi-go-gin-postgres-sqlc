@@ -60,7 +60,7 @@ const schema = {
       properties: {
         closed: {
           format: 'date-time',
-          type: ['object', 'null'],
+          type: ['string', 'null'],
         },
         description: {
           type: 'string',
@@ -70,7 +70,7 @@ const schema = {
         },
         targetDate: {
           format: 'date',
-          type: 'object',
+          type: 'string',
         },
         teamID: {
           type: 'integer',
@@ -116,7 +116,7 @@ const schema = {
       properties: {
         lastMessageAt: {
           format: 'date-time',
-          type: 'object',
+          type: 'string',
         },
         line: {
           type: 'string',
