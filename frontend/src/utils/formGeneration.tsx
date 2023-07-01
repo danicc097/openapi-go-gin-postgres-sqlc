@@ -579,6 +579,9 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
   // value modified back to normal
 
+  const formFieldKeys = formField.split('.')
+  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 3).join('.')
+
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
     mb: 4,
@@ -586,7 +589,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     ...registerProps,
     ...props?.input,
     ...(withRemoveButton && {
-      rightSection: <RemoveButton formField={formField} index={index} />,
+      rightSection: <RemoveButton formField={formFieldArrayPath} index={index} />,
       rightSectionWidth: '40px',
     }),
     ...(propsOverride && propsOverride),
@@ -663,6 +666,7 @@ const RemoveButton = ({ formField, index }) => {
       <ActionIcon
         onClick={(e) => {
           // fieldArray.remove(index) // will remove all undefined
+          console.log({ formField, index })
           removeListItem(form, formField, index)
         }}
         // variant="filled"

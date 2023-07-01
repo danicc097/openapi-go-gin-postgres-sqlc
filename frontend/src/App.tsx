@@ -395,14 +395,6 @@ export default function App() {
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
                           <Title size={20}>This form has been automatically generated from an openapi spec</Title>
-                          <Accordion>
-                            <Accordion.Item value="form">
-                              <Accordion.Control>See form</Accordion.Control>
-                              <Accordion.Panel>
-                                {/* <Prism language="json">{JSON.stringify(myFormData, null, 2)}</Prism> */}
-                              </Accordion.Panel>
-                            </Accordion.Item>
-                          </Accordion>
                           <Button
                             onClick={(e) => {
                               try {
