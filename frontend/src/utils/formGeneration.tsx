@@ -409,7 +409,8 @@ export default function DynamicForm<
                   <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
                     <ActionIcon
                       onClick={(e) => {
-                        fieldArray.remove(k)
+                        // fieldArray.remove(k) // will remove all undefined
+                        removeListItem(formField, k)
                       }}
                       // variant="filled"
                       css={css`
