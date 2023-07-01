@@ -199,8 +199,6 @@ github.com/jackc/pgx/v4 v4.0.0-20190421002000-1b8f0016e912/go.mod h1:no/Y67Jkk/9
 github.com/jackc/pgx/v4 v4.0.0-pre1.0.20190824185557-6972a5742186/go.mod h1:X+GQnOEnf1dqHGpw7JmHqHc1NxDoalibchSk9/RWuDc=
 github.com/jackc/pgx/v4 v4.12.1-0.20210724153913-640aa07df17c/go.mod h1:1QD0+tgSXP7iUjYm9C1NxKhny7lq6ee99u/z+IHFcgs=
 github.com/jackc/pgx/v4 v4.18.1/go.mod h1:FydWkUyadDmdNH/mHnGob881GawxeEm7TcMCzkb+qQE=
-github.com/jackc/pgx/v5 v5.3.2-0.20230421024359-6defa2a607fd h1:RfTDl1TAYHx3Nizj2kQ7J7u/Z5atIweWvL0HR/m8GMs=
-github.com/jackc/pgx/v5 v5.3.2-0.20230421024359-6defa2a607fd/go.mod h1:sU+RaYl9qnhD3Ce+mwnFii6YEPx70mCYghBzKvqq4qo=
 github.com/jackc/pgx/v5 v5.4.0 h1:BSr+GCm4N6QcgIwv0DyTFHK9ugfEFF9DzSbbzxOiXU0=
 github.com/jackc/pgx/v5 v5.4.0/go.mod h1:q6iHT8uDNXWiFNOlRqJzBTaSH3+2xCXkokxHZC5qWFY=
 github.com/jackc/puddle v0.0.0-20190413234325-e4ced69a3a2b/go.mod h1:m4B5Dj62Y0fbyuIc15OsIqK0+JU8nkqQjsgx7dvjSWk=
@@ -386,8 +384,8 @@ github.com/yuin/gopher-lua v1.1.0/go.mod h1:GBR0iDaNXjAgGg9zfCvksxSRnQx76gclCIb7
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=
 github.com/zitadel/logging v0.3.4 h1:9hZsTjMMTE3X2LUi0xcF9Q9EdLo+FAezeu52ireBbHM=
 github.com/zitadel/logging v0.3.4/go.mod h1:aPpLQhE+v6ocNK0TWrBrd363hZ95KcI17Q1ixAQwZF0=
-github.com/zitadel/oidc/v2 v2.6.3 h1:YY87cAcdI+3voZqcRU2RGz3Pxky/2KsjDmYDVb6EgWw=
-github.com/zitadel/oidc/v2 v2.6.3/go.mod h1:2LrbdKYLSgKxXBfct56ev4e186J7TXotlZxb6tExOO4=
+github.com/zitadel/oidc/v2 v2.6.4 h1:bruA+KOFHcGpxr++WgtvR82ZlH54kKituu5xE4wpF7o=
+github.com/zitadel/oidc/v2 v2.6.4/go.mod h1:owrsdzRqGvIZjBCY9LY1ZUYJ0mRUbGkQpZ3OskXL4wM=
 go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0 h1:l7AmwSVqozWKKXeZHycpdmpycQECRpoGwJ1FW2sWfTo=
 go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0/go.mod h1:Ep4uoO2ijR0f49Pr7jAqyTjSCyS1SRL18wwttKfwqXA=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0 h1:ZOLJc06r4CB42laIXg/7udr0pbZyuAihN10A/XuiQRY=
