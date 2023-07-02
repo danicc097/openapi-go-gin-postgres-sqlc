@@ -424,7 +424,7 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, o
   // form.watch(formField, fieldArray.fields) // inf rerendering
   // useWatch({ name: `${formField}`, control: form.control }) // same errors
 
-  const children = fieldArray.fields.map((item: any, k: number) => {
+  const children = fieldArray.fields.map((item, k) => {
     const form = useFormContext()
     return (
       <div key={item.id}>
@@ -497,7 +497,7 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
   // useWatch({ name: `${formField}`, control: form.control }) // same errors
 
   // TODO: to use controller instead: https://codesandbox.io/s/usefieldarray-typescript-v7-forked-9x7rp4?file=/src/App.tsx
-  const children = fieldArray.fields.map((item: any, k: number) => {
+  const children = fieldArray.fields.map((item, k) => {
     return (
       <Flex key={item.id}>
         <GeneratedInput
@@ -563,7 +563,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   index,
 }: GeneratedInputProps<T, ExcludeKeys, U>) => {
   const form = useFormContext()
-  useWatch({ control: form.control, name: formField })
+  // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
 
   const propsOverride = options.propsOverride?.[fieldKey]
   const type = schemaFields[fieldKey].type
