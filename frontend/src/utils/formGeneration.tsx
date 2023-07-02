@@ -553,13 +553,13 @@ type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U exten
 // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
 // for builtin support for uncontrolled input
 const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
-  fieldType, // TODO: no prop drilling (schemaFields[fieldKey])
-  fieldKey, // TODO: no prop drilling
+  fieldType,
+  fieldKey,
   props,
-  formField, // TODO: no prop drilling
+  formField,
   withRemoveButton = false,
-  options, // TODO: no prop drilling
-  schemaFields, // TODO: no prop drilling
+  options,
+  schemaFields,
   index,
 }: GeneratedInputProps<T, ExcludeKeys, U>) => {
   const form = useFormContext()
@@ -587,7 +587,8 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   // value modified back to normal
 
   const formFieldKeys = formField.split('.')
-  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 3).join('.')
+  // remove last index
+  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.')
 
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
