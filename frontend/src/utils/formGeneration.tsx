@@ -421,7 +421,9 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, o
     control: form.control,
     name: formField,
   })
-  // useWatch({ name: `${formField}`, control: form.control }) // inf rerendering
+  // form.watch(formField, fieldArray.fields) // inf rerendering
+  // useWatch({ name: `${formField}`, control: form.control }) // same errors
+
   const children = fieldArray.fields.map((item: any, k: number) => {
     const form = useFormContext()
     return (
@@ -491,7 +493,10 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
   // TODO: for both arrays need to use useFieldArray https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr (v6...)
   // https://react-hook-form.com/docs/usefieldarray
   // else react cannot render
-  // useWatch({name: `${formField}`, control: form.control}) // inf rerendering
+  // form.watch(formField, fieldArray.fields) // inf rerendering
+  // useWatch({ name: `${formField}`, control: form.control }) // same errors
+
+  // TODO: to use controller instead: https://codesandbox.io/s/usefieldarray-typescript-v7-forked-9x7rp4?file=/src/App.tsx
   const children = fieldArray.fields.map((item: any, k: number) => {
     return (
       <Flex key={item.id}>
