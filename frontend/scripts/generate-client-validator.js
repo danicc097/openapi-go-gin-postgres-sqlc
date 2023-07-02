@@ -30,6 +30,7 @@ const jsonSchemaFilePath = join(root, 'src/client-validator/gen/schema.json')
 
 const schema = readSchemaFromFile(jsonSchemaFilePath)
 // modifyDateFormats(schema)
+modifyStringValidation(schema)
 saveSchemaToFile(schema, jsonSchemaFilePath)
 
 const outputFilePath = join(root, 'src/client-validator/gen/dereferenced-schema.json')
@@ -90,6 +91,67 @@ function modifyDateFormats(schema) {
         modifyDateFormats(definitionSchema)
       }
     }
+  }
+}
+
+function modifyStringValidation(schema) {
+  if (schema.type === 'array') {
+    if (schema.items) {
+      if (Array.isArray(schema.items)) {
+        for (const itemSchema of schema.items) {
+          modifyStringValidation(itemSchema)
+          addMinLengthToRequiredStringTypes(itemSchema, schema.required)
+        }
+      } else {
+        modifyStringValidation(schema.items)
+        addMinLengthToRequiredStringTypes(schema.items, schema.required)
+      }
+    }
+  } else if (schema.type === 'object' && schema.properties) {
+    for (const propertyKey in schema.properties) {
+      if (schema.properties.hasOwnProperty(propertyKey)) {
+        const propertySchema = schema.properties[propertyKey]
+        modifyStringValidation(propertySchema)
+        addMinLengthToRequiredStringTypes(propertySchema, schema.required)
+      }
+    }
+  }
+
+  if (schema.definitions) {
+    for (const definitionKey in schema.definitions) {
+      if (schema.definitions.hasOwnProperty(definitionKey)) {
+        const definitionSchema = schema.definitions[definitionKey]
+        modifyStringValidation(definitionSchema)
+      }
+    }
+  }
+
+  if (schema.required && Array.isArray(schema.required)) {
+    const requiredStringProperties = schema.required.filter((property) => {
+      const propertySchema = schema.properties[property]
+      return (
+        propertySchema &&
+        (propertySchema.type === 'string' ||
+          (propertySchema.type === 'array' && propertySchema.items?.type === 'string'))
+      )
+    })
+
+    requiredStringProperties.forEach((property) => {
+      const propertySchema = schema.properties[property]
+      if (!propertySchema.minLength) {
+        propertySchema.minLength = 1
+      }
+    })
+  }
+}
+
+function addMinLengthToRequiredStringTypes(schema, parentRequired) {
+  if (
+    parentRequired &&
+    parentRequired.includes(schema.title) &&
+    (schema.type === 'string' || (schema.type === 'array' && schema.items?.type === 'string'))
+  ) {
+    schema.minLength = 1
   }
 }
 
