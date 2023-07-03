@@ -508,12 +508,12 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
   // https://react-hook-form.com/docs/usefieldarray
   // else react cannot render
   // form.watch(formField, fieldArray.fields) // inf rerendering
-  // useWatch({ name: `${formField}`, control: form.control }) // same errors
+  useWatch({ name: `${formField}`, control: form.control }) // same errors
 
   // TODO: to use controller instead: https://codesandbox.io/s/usefieldarray-typescript-v7-forked-9x7rp4?file=/src/App.tsx
-  const children = fieldArray.fields.map((item, k) => {
+  const children = (form.getValues(formField) as any[]).map((item, k) => {
     return (
-      <Flex key={item.id}>
+      <Flex key={k}>
         <GeneratedInput
           fieldKey={fieldKey}
           fieldType={field.type}
@@ -592,7 +592,6 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       : type === 'boolean'
       ? { setValueAs: (v) => (v === '' ? undefined : v === 'true') }
       : null),
-    required: schemaFields[fieldKey].required,
   })
 
   const fieldState = form.getFieldState(formField)
@@ -617,6 +616,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     ...(propsOverride && propsOverride),
     ...(!fieldState.isDirty && { defaultValue: form.getValues(formField) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
+    required: schemaFields[fieldKey].required && type !== 'boolean',
   }
 
   let el: JSX.Element | null = null
@@ -651,7 +651,10 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       case 'date':
         el = (
           <DateInput
-            onChange={(e) => registerOnChange({ target: { name: formField, value: e?.toISOString() } })}
+            valueFormat="DD/MM/YYYY"
+            onChange={(e) =>
+              registerOnChange({ target: { name: formField, value: e /** no need if not using ajv date formats */ } })
+            }
             placeholder="Select date"
             {..._props}
           />
@@ -660,7 +663,9 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       case 'date-time':
         el = (
           <DateTimePicker
-            onChange={(e) => registerOnChange({ target: { name: formField, value: e?.toISOString() } })}
+            onChange={(e) =>
+              registerOnChange({ target: { name: formField, value: e /** no need if not using ajv date formats */ } })
+            }
             placeholder="Select date and time"
             {..._props}
           />
