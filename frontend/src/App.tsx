@@ -279,7 +279,7 @@ export default function App() {
       workItemID: 1,
       reopened: false, // for create will ignore field for form gen
     },
-    tagIDs: [0, 1, 2],
+    tagIDs: [5, 1, 2],
     members: [
       { role: 'preparer', userID: 'user 1' },
       { role: 'preparer', userID: 'user 2' },
@@ -333,7 +333,7 @@ export default function App() {
       strict: false,
       formats: fullFormats,
     }),
-    mode: 'all',
+    mode: 'onChange',
     defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })

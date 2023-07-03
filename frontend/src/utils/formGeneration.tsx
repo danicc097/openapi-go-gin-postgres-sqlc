@@ -226,12 +226,17 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
         return {}
       case 'array':
         return []
+      case 'number':
+      case 'integer':
+        return 0
+      case 'boolean':
+        return false
       default:
-        return undefined
+        return ''
     }
   }
 
-  // do not use useFieldArray append, cannot append undefined, it simply ignores...
+  // NOTE: useFieldArray can append empty field just once (prevents user spamming add button)
   const addNestedField = (field: U & string, formField: Path<T>) => {
     const initialValue = initialValueByField(field)
 
@@ -242,9 +247,9 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     form.setValue(formField, [...vals, initialValue] as any)
   }
 
-  // useWatch({ name: parentFormField ?? '' })
   const children = entries(schemaFields).map(([fieldKey, field]) => {
     const renders = useRenders()
+
     const NestedHeader = () => {
       return (
         <div>
@@ -433,7 +438,8 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, o
           <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
             <ActionIcon
               onClick={(e) => {
-                removeListItem(form, formField, k)
+                fieldArray.remove(k)
+                // removeListItem(form, formField, k)
               }}
               // variant="filled"
               css={css`
@@ -484,6 +490,10 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
 }: ArrayChildrenProps) {
   const form = useFormContext()
 
+  // FIXME: it returns just 2 elements for tagIDs:
+  // tagIDs: [0, 1, 2], change to non zero value and its works...
+  // append method does append falsy values but only once, append is a noop when more than 1
+  // field is falsy (assumes user will fill one by one)
   const fieldArray = useFieldArray({
     control: form.control,
     name: formField,
@@ -581,7 +591,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     required: schemaFields[fieldKey].required,
   })
 
-  const error = form.getFieldState(formField).error
+  const fieldState = form.getFieldState(formField)
   // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
   // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
   // value modified back to normal
@@ -601,8 +611,8 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       rightSectionWidth: '40px',
     }),
     ...(propsOverride && propsOverride),
-    ...(!form.getFieldState(formField).isDirty && { defaultValue: form.getValues(formField) }),
-    ...(error && { error: sentenceCase(error?.message) }),
+    ...(!fieldState.isDirty && { defaultValue: form.getValues(formField) }),
+    ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
   }
 
   let el: JSX.Element | null = null
@@ -681,13 +691,19 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 
 const RemoveButton = ({ formField, index }) => {
   const form = useFormContext()
+  const fieldArray = useFieldArray({
+    control: form.control,
+    name: formField,
+  })
+
   return (
     <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
           // fieldArray.remove(index) // will remove all undefined
-          console.log({ formField, index })
-          removeListItem(form, formField, index)
+          // console.log({ formField, index })
+          // removeListItem(form, formField, index)
+          fieldArray.remove(index)
         }}
         // variant="filled"
         css={css`
