@@ -491,6 +491,10 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
   const form = useFormContext()
 
   // FIXME: it returns just 2 elements for tagIDs:
+  // IMPORTANT: https://react-hook-form.com/docs/usefieldarray  notes
+  // Does not support flat field array.
+  // TODO: we can map _.get(...) as we did before react-hook-form
+  // and have a usewatch! array of plain fields will take no time to render
   // tagIDs: [0, 1, 2], change to non zero value and its works...
   // append method does append falsy values but only once, append is a noop when more than 1
   // field is falsy (assumes user will fill one by one)
