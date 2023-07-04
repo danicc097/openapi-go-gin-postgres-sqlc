@@ -601,7 +601,6 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
     mb: 4,
-    withAsterisk: schemaFields[fieldKey].required,
     ...registerProps,
     ...props?.input,
     ...(withRemoveButton && {
