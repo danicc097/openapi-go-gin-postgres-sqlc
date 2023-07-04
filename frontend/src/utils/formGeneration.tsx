@@ -80,7 +80,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   }
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
-    [key in U]: DeepPartial<
+    [key in Exclude<U, ExcludeKeys>]: DeepPartial<
       PathType<
         T,
         // can fix key constraint error with U extends RecursiveKeyOf<T, ''> but not worth it due to cpu usage, just ignore
@@ -94,7 +94,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   // more recent version: https://stackoverflow.com/questions/74618270/how-to-make-an-object-property-depend-on-another-one-in-a-generic-type
   // TODO: inputComponent field, e.g. for color picker. if inputComponent === undefined, then switch on schema format as usual
   selectOptions?: Partial<{
-    [key in U]: ReturnType<
+    [key in Exclude<U, ExcludeKeys>]: ReturnType<
       typeof selectOptionsBuilder<
         PathType<
           T,
@@ -109,7 +109,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
    * override default input component.
    */
   input?: Partial<{
-    [key in U]: ReturnType<
+    [key in Exclude<U, ExcludeKeys>]: ReturnType<
       typeof inputBuilder<
         PathType<
           T,
@@ -121,13 +121,13 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
     >
   }>
   propsOverride?: Partial<{
-    [key in U]: {
+    [key in Exclude<U, ExcludeKeys>]: {
       label?: string
       description?: string
     }
   }>
   accordion?: Partial<{
-    [key in U]: {
+    [key in Exclude<U, ExcludeKeys>]: {
       defaultOpen?: boolean
       title?: JSX.Element
     }
