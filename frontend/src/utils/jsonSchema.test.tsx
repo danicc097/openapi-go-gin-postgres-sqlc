@@ -245,13 +245,17 @@ describe('parseSchemaFields', () => {
             defaultValues: {
               'demoProject.line': '43121234',
               // FIXME: does not infer return type like selectOptions does. this should fail
-              'members.role': 'prepadrer',
+              'members.role': 'preparer',
             },
             selectOptions: {},
           }}
         />
       </FormProvider>,
     )
+
+    type a = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'members.role'>
+    type b = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'members.userID'>
+    type c = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'base.items.items'>
 
     const ids = [
       'demoWorkItemCreateForm-base.description',

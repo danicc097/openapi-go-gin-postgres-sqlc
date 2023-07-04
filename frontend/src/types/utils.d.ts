@@ -42,6 +42,7 @@ export type GetKeys<T> = T extends StopTypes
         ? never
         : K | Dot<K, GetKeys<T[K]>>
     }[keyof T & string]
+
 /**
  * Access underlying types by dot notation path.
 
@@ -56,13 +57,21 @@ export type GetKeys<T> = T extends StopTypes
 
     PathType<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
  */
-type PathType<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer Rest}`
-  ? First extends keyof T
-    ? PathType<T[First], Rest>
-    : unknown
-  : U extends keyof T
-  ? T[U]
-  : unknown
+type PathType<T, Path extends GetKeys<T>> = Path extends keyof T
+  ? T[Path]
+  : Path extends `${infer Key}.${infer Rest}`
+  ? Key extends keyof T
+    ? NonNullable<T[Key]> extends (infer Item)[]
+      ? Rest extends GetKeys<Item>
+        ? PathType<Item, Rest>
+        : never
+      : NonNullable<T[Key]> extends Record<string, any>
+      ? Rest extends GetKeys<T[Key]>
+        ? PathType<NonNullable<T[Key]>, Rest>
+        : never
+      : never
+    : never
+  : never
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
