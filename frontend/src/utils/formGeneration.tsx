@@ -135,7 +135,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
 }
 
 type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U | null = null> = {
-  schemaFields: Record<U & string, SchemaField>
+  schemaFields: Record<string, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
   formName: string
 }
@@ -182,7 +182,7 @@ export default function DynamicForm<
           css={css`
             min-width: 100%;
           `}
-          id={name}
+          id={formName}
         >
           <button type="submit">submit</button>
           <GeneratedInputs schemaFields={schemaFields} formName={formName} options={options} />
@@ -195,9 +195,9 @@ export default function DynamicForm<
 type GeneratedInputsProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   parentFieldKey?: string
   index?: number
-  parentFormField?: Path<T> | null
+  parentFormField?: string | null
   removeButton?: JSX.Element | null
-  schemaFields: Record<U & string, SchemaField>
+  schemaFields: Record<string, SchemaField>
   formName: string
   options: DynamicFormOptions<T, ExcludeKeys, U>
 }
@@ -214,14 +214,14 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
   /**
    * Construct form accessor based on current schema field key and parent form field.
    */
-  const constructFormKey = (fieldKey: string, parentFormField: Path<T> | null): Path<T> => {
+  const constructFormKey = (fieldKey: string, parentFormField: string | null): string => {
     const currentFieldName = fieldKey.split('.').slice(-1)[0]
 
-    return (parentFormField ? `${parentFormField}.${currentFieldName}` : fieldKey) as Path<T>
+    return parentFormField ? `${parentFormField}.${currentFieldName}` : fieldKey
   }
 
-  const initialValueByField = (field: U & string) => {
-    switch (schemaFields[field].type) {
+  const initialValueByField = (fieldKey: string) => {
+    switch (schemaFields[fieldKey]?.type) {
       case 'object':
         return {}
       case 'array':
@@ -237,8 +237,8 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
   }
 
   // NOTE: useFieldArray can append empty field just once (prevents user spamming add button)
-  const addNestedField = (field: U & string, formField: Path<T>) => {
-    const initialValue = initialValueByField(field)
+  const addNestedField = (fieldKey: string, formField: string) => {
+    const initialValue = initialValueByField(fieldKey)
 
     const vals = form.getValues(formField) || []
 
@@ -315,7 +315,8 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
           {accordion ? (
             <FormAccordion>
               <NestedHeader />
-              <ArrayChildren<T, U>
+              <ArrayChildren
+                formName={formName}
                 formField={formField}
                 fieldKey={fieldKey}
                 field={field}
@@ -329,7 +330,8 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
           ) : (
             <>
               <NestedHeader />
-              <ArrayChildren<T, U>
+              <ArrayChildren
+                formName={formName}
                 formField={formField}
                 fieldKey={fieldKey}
                 field={field}
@@ -420,7 +422,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
   return <>{children}</>
 }
 
-function ArrayOfObjectsChildren<T extends object>({ formField, name: formName, fieldKey, options, schemaFields }) {
+function ArrayOfObjectsChildren({ formField, name: formName, fieldKey, options, schemaFields }) {
   const form = useFormContext()
   const fieldArray = useFieldArray({
     control: form.control,
@@ -454,7 +456,7 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name: formName, f
           <Group>
             <GeneratedInputs
               parentFieldKey={fieldKey}
-              parentFormField={`${formField}.${k}` as Path<T>}
+              parentFormField={`${formField}.${k}`}
               schemaFields={schemaFields}
               formName={formName}
               options={options}
@@ -470,15 +472,16 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name: formName, f
 
 type ArrayChildrenProps = {
   formField: string
-  fieldKey: U & string
-  field: NonNullable<Record<U & string, SchemaField>[U & string]>
+  fieldKey: string
+  field: NonNullable<Record<string, SchemaField>[string]>
   inputProps: any
   name: string
   containerProps: any
 }
 
-function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
+function ArrayChildren({
   formField,
+  formName,
   fieldKey,
   field,
   inputProps,
@@ -486,7 +489,7 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
   containerProps,
   options,
   schemaFields,
-}: ArrayChildrenProps) {
+}) {
   const form = useFormContext()
 
   // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
@@ -497,9 +500,10 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
     return (
       <Flex key={k}>
         <GeneratedInput
+          formName={formName}
           fieldKey={fieldKey}
           fieldType={field.type}
-          formField={`${formField}.${k}` as Path<T>}
+          formField={`${formField}.${k}`}
           props={{
             input: { ...inputProps, id: `${name}-${formField}-${k}` },
             container: containerProps,
@@ -532,21 +536,21 @@ function FormData() {
 }
 
 type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
-  fieldKey: U & string
+  fieldKey: string
   fieldType: SchemaField['type']
   props?: {
     input?: any
     container?: any
   }
-  formField: Path<T>
+  formField: string
   withRemoveButton?: boolean
-  schemaFields: Record<U & string, SchemaField>
+  schemaFields: Record<string, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
   index?: number
   formName: string
 }
 
-const convertValueByType = (type: SchemaField['type'], value) => {
+const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
   switch (type) {
     case 'date':
     case 'date-time':
@@ -574,7 +578,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
 
   const propsOverride = options.propsOverride?.[fieldKey]
-  const type = schemaFields[fieldKey].type
+  const type = schemaFields[fieldKey]?.type
 
   const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
     ...(type === 'date' || type === 'date-time'
@@ -610,7 +614,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     ...(propsOverride && propsOverride),
     ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, form.getValues(formField)) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
-    required: schemaFields[fieldKey].required && type !== 'boolean',
+    required: schemaFields[fieldKey]?.required && type !== 'boolean',
   }
 
   let el: JSX.Element | null = null
