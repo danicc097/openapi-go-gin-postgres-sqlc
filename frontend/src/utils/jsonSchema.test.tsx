@@ -6,6 +6,8 @@ import { getByTestId, render, screen, renderHook } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { entries, keys } from 'src/utils/object'
+import { FormProvider, useForm } from 'react-hook-form'
+import { ajvResolver } from '@hookform/resolvers/ajv'
 
 const schema = {
   properties: {
@@ -197,34 +199,63 @@ describe('parseSchemaFields', () => {
   })
 
   test('should render form fields and buttons', () => {
-    const { result } = renderHook(() =>
-      useForm({
-        initialValues: formInitialValues,
+    const { result: form } = renderHook(() =>
+      useForm<TestTypes.RestDemoWorkItemCreateRequest>({
+        resolver: ajvResolver(schema as any, {
+          strict: false,
+          // formats: fullFormats,
+        }),
+        mode: 'onChange',
+        defaultValues: formInitialValues ?? {},
+        // shouldUnregister: true, // defaultValues will not be merged against submission result.
       }),
     )
 
     const formName = 'demoWorkItemCreateForm'
 
     const view = render(
-      <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest>
-        name={formName}
-        schemaFields={schemaFields}
-        form={result.current}
-        options={{
-          defaultValues: {
-            'demoProject.line': '43121234',
-            // FIXME: does not infer return type like selectOptions does. this should fail
-            'members.role': 'prepadrer',
-          },
-          selectOptions: {},
-        }}
-      />,
+      <FormProvider {...form.current}>
+        <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, 'base.metadata'>
+          formName={formName}
+          schemaFields={schemaFields}
+          options={{
+            labels: {
+              base: null,
+              'base.closed': 'closed',
+              'base.description': 'description',
+              // 'base.metadata': 'metadata', // ignored -> not a key
+              'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
+              'base.targetDate': 'targetDate',
+              'demoProject.reopened': 'reopened',
+              'base.teamID': 'teamID',
+              'base.items': 'items',
+              'base.items.name': 'name',
+              'base.items.items': 'items',
+              'base.workItemTypeID': 'workItemTypeID',
+              demoProject: null,
+              'demoProject.lastMessageAt': 'lastMessageAt',
+              'demoProject.line': 'line',
+              'demoProject.ref': 'ref',
+              'demoProject.workItemID': 'workItemID',
+              members: 'members',
+              'members.role': 'role',
+              'members.userID': 'User',
+              tagIDs: 'tagIDs',
+            },
+            defaultValues: {
+              'demoProject.line': '43121234',
+              // FIXME: does not infer return type like selectOptions does. this should fail
+              'members.role': 'prepadrer',
+            },
+            selectOptions: {},
+          }}
+        />
+      </FormProvider>,
     )
 
     const ids = [
       'demoWorkItemCreateForm-base.description',
       'demoWorkItemCreateForm-base.kanbanStepID',
-      'demoWorkItemCreateForm-base.metadata-add-button',
       'demoWorkItemCreateForm-base.teamID',
       'demoWorkItemCreateForm-base.items-add-button',
       'demoWorkItemCreateForm-base.items-remove-button-0',
@@ -270,7 +301,6 @@ describe('parseSchemaFields', () => {
 
     const titleDataTestIds = [
       'base-title',
-      'base.metadata-title',
       'base.items-title',
       'base.items.0.items-title',
       'base.items.1.items-title',

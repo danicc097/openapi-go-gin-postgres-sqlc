@@ -137,7 +137,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
 type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U | null = null> = {
   schemaFields: Record<U & string, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
-  name: string
+  formName: string
 }
 
 function renderTitle(key: string) {
@@ -162,7 +162,7 @@ export default function DynamicForm<
   T extends object,
   ExcludeKeys extends U | null = null,
   U extends PropertyKey = GetKeys<T>,
->({ name, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
+>({ formName, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
 
@@ -185,7 +185,7 @@ export default function DynamicForm<
           id={name}
         >
           <button type="submit">submit</button>
-          <GeneratedInputs schemaFields={schemaFields} name={name} options={options} />
+          <GeneratedInputs schemaFields={schemaFields} formName={formName} options={options} />
         </form>
       </>
     </PageTemplate>
@@ -198,16 +198,15 @@ type GeneratedInputsProps<T extends object, ExcludeKeys extends U | null, U exte
   parentFormField?: Path<T> | null
   removeButton?: JSX.Element | null
   schemaFields: Record<U & string, SchemaField>
-  name: string
+  formName: string
   options: DynamicFormOptions<T, ExcludeKeys, U>
 }
 
 function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
   parentFieldKey = '',
   parentFormField = null,
-  removeButton = null,
   schemaFields,
-  name,
+  formName,
   options,
 }: GeneratedInputsProps<T, ExcludeKeys, U>) {
   const form = useFormContext()
@@ -267,7 +266,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               onClick={() => addNestedField(fieldKey, formField)}
               variant="filled"
               color={'green'}
-              id={`${name}-${formField}-add-button`}
+              id={`${formName}-${formField}-add-button`}
             >{`Add ${formField}`}</Button>
           </Flex>
         </div>
@@ -305,7 +304,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
       `,
       ...(!field.isArray && { label: formField }),
       required: field.required,
-      id: `${name}-${formField}`,
+      id: `${formName}-${formField}`,
     }
 
     if (field.isArray && field.type !== 'object') {
@@ -321,7 +320,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
                 fieldKey={fieldKey}
                 field={field}
                 inputProps={inputProps}
-                name={name}
+                name={formName}
                 containerProps={containerProps}
                 options={options}
                 schemaFields={schemaFields}
@@ -335,7 +334,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
                 fieldKey={fieldKey}
                 field={field}
                 inputProps={inputProps}
-                name={name}
+                name={formName}
                 containerProps={containerProps}
                 options={options}
                 schemaFields={schemaFields}
@@ -356,7 +355,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               <NestedHeader />
               <ArrayOfObjectsChildren
                 formField={formField}
-                name={name}
+                name={formName}
                 fieldKey={fieldKey}
                 options={options}
                 schemaFields={schemaFields}
@@ -367,7 +366,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               <NestedHeader />
               <ArrayOfObjectsChildren
                 formField={formField}
-                name={name}
+                name={formName}
                 fieldKey={fieldKey}
                 options={options}
                 schemaFields={schemaFields}
@@ -382,7 +381,6 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
       <Group key={fieldKey} align="center">
         {field.type !== 'object' ? (
           <>
-            {removeButton}
             <GeneratedInput
               fieldKey={fieldKey}
               fieldType={field.type}
@@ -390,6 +388,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               props={{ input: inputProps, container: containerProps }}
               options={options}
               schemaFields={schemaFields}
+              formName={formName}
             />
           </>
         ) : (
@@ -421,7 +420,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
   return <>{children}</>
 }
 
-function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, options, schemaFields }) {
+function ArrayOfObjectsChildren<T extends object>({ formField, name: formName, fieldKey, options, schemaFields }) {
   const form = useFormContext()
   const fieldArray = useFieldArray({
     control: form.control,
@@ -447,7 +446,7 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, o
                 background-color: #7c1a1a;
               `}
               size="sm"
-              id={`${name}-${formField}-remove-button-${k}`}
+              id={`${formName}-${formField}-remove-button-${k}`}
             >
               <IconMinus size="1rem" />
             </ActionIcon>
@@ -456,9 +455,8 @@ function ArrayOfObjectsChildren<T extends object>({ formField, name, fieldKey, o
             <GeneratedInputs
               parentFieldKey={fieldKey}
               parentFormField={`${formField}.${k}` as Path<T>}
-              removeButton={null}
               schemaFields={schemaFields}
-              name={name}
+              formName={formName}
               options={options}
             />
           </Group>
@@ -519,7 +517,7 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
 }
 
 function FormData() {
-  const myFormData = useWatch() // needs to be jsx component to use hooks, not regular function ({renderXXX()})
+  const myFormData = useWatch()
 
   return (
     <Accordion>
@@ -545,6 +543,7 @@ type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U exten
   schemaFields: Record<U & string, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
   index?: number
+  formName: string
 }
 
 const convertValueByType = (type: SchemaField['type'], value) => {
@@ -569,6 +568,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   options,
   schemaFields,
   index,
+  formName,
 }: GeneratedInputProps<T, ExcludeKeys, U>) => {
   const form = useFormContext()
   // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
@@ -605,7 +605,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     ...registerProps,
     ...props?.input,
     ...(withRemoveButton && {
-      rightSection: <RemoveButton formField={formFieldArrayPath} index={index} />,
+      rightSection: <RemoveButton formName={formName} formField={formFieldArrayPath} index={index} />,
       rightSectionWidth: '40px',
     }),
     ...(propsOverride && propsOverride),
@@ -697,7 +697,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   )
 }
 
-const RemoveButton = ({ formField, index }) => {
+const RemoveButton = ({ formName, formField, index }) => {
   const form = useFormContext()
 
   return (
@@ -714,7 +714,7 @@ const RemoveButton = ({ formField, index }) => {
         `}
         size="sm"
         /** TODO: pass name */
-        id={`${name}-${formField}-remove-button-${index}`}
+        id={`${formName}-${formField}-remove-button-${index}`}
       >
         <IconMinus size="1rem" />
       </ActionIcon>

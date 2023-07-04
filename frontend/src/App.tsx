@@ -422,7 +422,7 @@ export default function App() {
                           </legend>
                           <FormProvider {...form}>
                             <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
-                              name="demoWorkItemCreateForm"
+                              formName="demoWorkItemCreateForm"
                               // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
                               // using this hardcoded for testing purposes
                               schemaFields={{
