@@ -547,6 +547,16 @@ type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U exten
   index?: number
 }
 
+const convertValueByType = (type: SchemaField['type'], value) => {
+  switch (type) {
+    case 'date':
+    case 'date-time':
+      return new Date(value)
+    default:
+      return value
+  }
+}
+
 // useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
 // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
 // for builtin support for uncontrolled input
@@ -568,7 +578,8 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 
   const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
     ...(type === 'date' || type === 'date-time'
-      ? { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
+      ? // TODO: use convertValueByType
+        { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
       : type === 'integer'
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
       : type === 'number'
@@ -598,7 +609,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       rightSectionWidth: '40px',
     }),
     ...(propsOverride && propsOverride),
-    ...(!fieldState.isDirty && { defaultValue: form.getValues(formField) }),
+    ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, form.getValues(formField)) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
     required: schemaFields[fieldKey].required && type !== 'boolean',
   }
@@ -637,7 +648,9 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
           <DateInput
             valueFormat="DD/MM/YYYY"
             onChange={(e) =>
-              registerOnChange({ target: { name: formField, value: e /** no need if not using ajv date formats */ } })
+              registerOnChange({
+                target: { name: formField, value: e?.toISOString() /** no need if not using ajv date formats */ },
+              })
             }
             placeholder="Select date"
             {..._props}
@@ -648,7 +661,9 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
         el = (
           <DateTimePicker
             onChange={(e) =>
-              registerOnChange({ target: { name: formField, value: e /** no need if not using ajv date formats */ } })
+              registerOnChange({
+                target: { name: formField, value: e?.toISOString() /** no need if not using ajv date formats */ },
+              })
             }
             placeholder="Select date and time"
             {..._props}
