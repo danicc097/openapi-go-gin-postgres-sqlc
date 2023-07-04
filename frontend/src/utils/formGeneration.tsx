@@ -495,7 +495,7 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
 
   useWatch({ name: `${formField}`, control: form.control }) // same errors
 
-  const children = (form.getValues(formField) as any[]).map((item, k) => {
+  const children = (form.getValues(formField) || []).map((item, k: number) => {
     return (
       <Flex key={k}>
         <GeneratedInput
