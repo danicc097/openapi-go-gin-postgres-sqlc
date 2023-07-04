@@ -80,8 +80,9 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -95,8 +96,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         }
       },
       "required": [
@@ -115,8 +117,9 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -134,8 +137,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         }
       },
       "required": [
@@ -218,8 +222,9 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "line": {
           "type": "string",
@@ -256,8 +261,9 @@
         },
         "expiresOn": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
@@ -276,14 +282,14 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "email": {
@@ -359,8 +365,9 @@
         },
         "start": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": [
@@ -399,8 +406,9 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "message": {
           "type": "string",
@@ -408,8 +416,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
@@ -491,20 +500,19 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "demoWorkItem": {
@@ -535,8 +543,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
@@ -556,8 +565,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemComments": {
           "items": {
@@ -659,8 +669,9 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -692,8 +703,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemTags": {
           "items": {
@@ -738,14 +750,14 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "email": {
@@ -1036,20 +1048,19 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "description": {
@@ -1068,8 +1079,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
@@ -1080,8 +1092,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemID": {
           "type": "integer"
@@ -1363,8 +1376,9 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "line": {
           "type": "string",
@@ -1397,8 +1411,7 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "description": {
@@ -1417,8 +1430,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"

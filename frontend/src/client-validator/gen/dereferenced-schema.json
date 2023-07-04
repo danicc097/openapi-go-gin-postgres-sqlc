@@ -127,8 +127,9 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -148,8 +149,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         }
       },
       "required": [
@@ -168,8 +170,9 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -187,8 +190,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         }
       },
       "required": [
@@ -271,8 +275,9 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "line": {
           "type": "string",
@@ -309,8 +314,9 @@
         },
         "expiresOn": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "userID": {
           "type": "string",
@@ -330,14 +336,14 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "email": {
@@ -431,8 +437,9 @@
         },
         "start": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": [
@@ -472,8 +479,9 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "message": {
           "type": "string",
@@ -481,8 +489,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "userID": {
           "type": "string",
@@ -592,28 +601,28 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "demoWorkItem": {
           "properties": {
             "lastMessageAt": {
               "format": "date-time",
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "object"
+              ]
             },
             "line": {
               "type": "string",
@@ -654,14 +663,14 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "deletedAt": {
                 "format": "date-time",
                 "type": [
-                  "string",
-                  "null"
+                  "object"
                 ]
               },
               "email": {
@@ -752,8 +761,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
@@ -776,8 +786,9 @@
               },
               "start": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "teamID": {
                 "type": [
@@ -824,16 +835,18 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemComments": {
           "items": {
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "message": {
                 "type": "string",
@@ -841,8 +854,9 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "userID": {
                 "type": "string",
@@ -1162,8 +1176,9 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -1232,8 +1247,9 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "description": {
                 "type": "string",
@@ -1251,8 +1267,9 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               }
             },
             "required": [
@@ -1274,8 +1291,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemTags": {
           "items": {
@@ -1381,8 +1399,9 @@
             },
             "expiresOn": {
               "format": "date-time",
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "object"
+              ]
             },
             "userID": {
               "type": "string",
@@ -1400,14 +1419,14 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "email": {
@@ -1493,8 +1512,9 @@
               },
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "description": {
                 "type": "string",
@@ -1514,8 +1534,9 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               }
             },
             "required": [
@@ -1573,8 +1594,9 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "description": {
                 "type": "string",
@@ -1592,8 +1614,9 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               }
             },
             "required": [
@@ -2006,20 +2029,19 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "description": {
@@ -2038,8 +2060,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
@@ -2050,8 +2073,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemID": {
           "type": "integer"
@@ -2113,8 +2137,7 @@
             "closedAt": {
               "format": "date-time",
               "type": [
-                "string",
-                "null"
+                "object"
               ]
             },
             "description": {
@@ -2133,8 +2156,9 @@
             },
             "targetDate": {
               "format": "date-time",
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "object"
+              ]
             },
             "teamID": {
               "type": "integer"
@@ -2164,8 +2188,9 @@
           "properties": {
             "lastMessageAt": {
               "format": "date-time",
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "object"
+              ]
             },
             "line": {
               "type": "string",
@@ -2435,8 +2460,9 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "line": {
           "type": "string",
@@ -2469,8 +2495,7 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "description": {
@@ -2489,8 +2514,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
@@ -2668,8 +2694,9 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -2689,8 +2716,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         }
       },
       "required": [
@@ -2709,8 +2737,9 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -2728,8 +2757,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         }
       },
       "required": [
@@ -2812,8 +2842,9 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "line": {
           "type": "string",
@@ -2850,8 +2881,9 @@
         },
         "expiresOn": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "userID": {
           "type": "string",
@@ -2871,14 +2903,14 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "email": {
@@ -2972,8 +3004,9 @@
         },
         "start": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": [
@@ -3013,8 +3046,9 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "message": {
           "type": "string",
@@ -3022,8 +3056,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "userID": {
           "type": "string",
@@ -3133,28 +3168,28 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "demoWorkItem": {
           "properties": {
             "lastMessageAt": {
               "format": "date-time",
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "object"
+              ]
             },
             "line": {
               "type": "string",
@@ -3195,14 +3230,14 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "deletedAt": {
                 "format": "date-time",
                 "type": [
-                  "string",
-                  "null"
+                  "object"
                 ]
               },
               "email": {
@@ -3293,8 +3328,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
@@ -3317,8 +3353,9 @@
               },
               "start": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "teamID": {
                 "type": [
@@ -3365,16 +3402,18 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemComments": {
           "items": {
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "message": {
                 "type": "string",
@@ -3382,8 +3421,9 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "userID": {
                 "type": "string",
@@ -3703,8 +3743,9 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -3773,8 +3814,9 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "description": {
                 "type": "string",
@@ -3792,8 +3834,9 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               }
             },
             "required": [
@@ -3815,8 +3858,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemTags": {
           "items": {
@@ -3922,8 +3966,9 @@
             },
             "expiresOn": {
               "format": "date-time",
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "object"
+              ]
             },
             "userID": {
               "type": "string",
@@ -3941,14 +3986,14 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "email": {
@@ -4034,8 +4079,9 @@
               },
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "description": {
                 "type": "string",
@@ -4055,8 +4101,9 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               }
             },
             "required": [
@@ -4114,8 +4161,9 @@
             "properties": {
               "createdAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               },
               "description": {
                 "type": "string",
@@ -4133,8 +4181,9 @@
               },
               "updatedAt": {
                 "format": "date-time",
-                "type": "string",
-                "minLength": 1
+                "type": [
+                  "object"
+                ]
               }
             },
             "required": [
@@ -4547,20 +4596,19 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "description": {
@@ -4579,8 +4627,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
@@ -4591,8 +4640,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "workItemID": {
           "type": "integer"
@@ -4654,8 +4704,7 @@
             "closedAt": {
               "format": "date-time",
               "type": [
-                "string",
-                "null"
+                "object"
               ]
             },
             "description": {
@@ -4674,8 +4723,9 @@
             },
             "targetDate": {
               "format": "date-time",
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "object"
+              ]
             },
             "teamID": {
               "type": "integer"
@@ -4705,8 +4755,9 @@
           "properties": {
             "lastMessageAt": {
               "format": "date-time",
-              "type": "string",
-              "minLength": 1
+              "type": [
+                "object"
+              ]
             },
             "line": {
               "type": "string",
@@ -4976,8 +5027,9 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "line": {
           "type": "string",
@@ -5010,8 +5062,7 @@
         "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "description": {
@@ -5030,8 +5081,9 @@
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"

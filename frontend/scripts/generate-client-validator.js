@@ -29,7 +29,7 @@ await generate({
 const jsonSchemaFilePath = join(root, 'src/client-validator/gen/schema.json')
 
 const schema = readSchemaFromFile(jsonSchemaFilePath)
-// modifyDateFormats(schema)
+modifyDateFormats(schema)
 modifyStringValidation(schema)
 saveSchemaToFile(schema, jsonSchemaFilePath)
 

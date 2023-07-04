@@ -649,7 +649,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
             valueFormat="DD/MM/YYYY"
             onChange={(e) =>
               registerOnChange({
-                target: { name: formField, value: e?.toISOString() /** no need if not using ajv date formats */ },
+                target: { name: formField, value: e },
               })
             }
             placeholder="Select date"
@@ -662,7 +662,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
           <DateTimePicker
             onChange={(e) =>
               registerOnChange({
-                target: { name: formField, value: e?.toISOString() /** no need if not using ajv date formats */ },
+                target: { name: formField, value: e },
               })
             }
             placeholder="Select date and time"
