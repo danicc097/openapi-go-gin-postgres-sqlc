@@ -152,7 +152,8 @@ function renderTitle(key: string) {
 }
 
 const removeListItem = (form, formField: string, index: number) => {
-  const listItems = removeElementByIndex(form.getValues(formField), index)
+  const listItems = form.getValues(formField)
+  removeElementByIndex(listItems, index)
   form.setValue(formField, listItems as any)
   console.log(listItems)
 }
@@ -490,27 +491,10 @@ function ArrayChildren<T extends object, U extends PropertyKey = GetKeys<T>>({
 }: ArrayChildrenProps) {
   const form = useFormContext()
 
-  // FIXME: it returns just 2 elements for tagIDs:
-  // IMPORTANT: https://react-hook-form.com/docs/usefieldarray  notes
-  // Does not support flat field array.
-  // TODO: we can map _.get(...) as we did before react-hook-form
-  // and have a usewatch! array of plain fields will take no time to render
-  // tagIDs: [0, 1, 2], change to non zero value and its works...
-  // append method does append falsy values but only once, append is a noop when more than 1
-  // field is falsy (assumes user will fill one by one)
-  const fieldArray = useFieldArray({
-    control: form.control,
-    name: formField,
-  })
+  // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
 
-  // nested arrays or arrays (v6) https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr?file=/src/nestedFieldArray.js:877-883
-  // TODO: for both arrays need to use useFieldArray https://codesandbox.io/s/react-hook-form-usefieldarray-nested-arrays-x7btr (v6...)
-  // https://react-hook-form.com/docs/usefieldarray
-  // else react cannot render
-  // form.watch(formField, fieldArray.fields) // inf rerendering
   useWatch({ name: `${formField}`, control: form.control }) // same errors
 
-  // TODO: to use controller instead: https://codesandbox.io/s/usefieldarray-typescript-v7-forked-9x7rp4?file=/src/App.tsx
   const children = (form.getValues(formField) as any[]).map((item, k) => {
     return (
       <Flex key={k}>
@@ -700,25 +684,21 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 
 const RemoveButton = ({ formField, index }) => {
   const form = useFormContext()
-  const fieldArray = useFieldArray({
-    control: form.control,
-    name: formField,
-  })
 
   return (
     <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
-          // fieldArray.remove(index) // will remove all undefined
-          // console.log({ formField, index })
-          // removeListItem(form, formField, index)
-          fieldArray.remove(index)
+          // fieldArray.remove(index) // doesn't work on flat arrays
+          console.log({ formField, index, currentFormValue: form.getValues(formField) })
+          removeListItem(form, formField, index)
         }}
         // variant="filled"
         css={css`
           background-color: #7c1a1a;
         `}
         size="sm"
+        /** TODO: pass name */
         id={`${name}-${formField}-remove-button-${index}`}
       >
         <IconMinus size="1rem" />
