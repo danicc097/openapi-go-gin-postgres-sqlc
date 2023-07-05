@@ -293,7 +293,7 @@ create table work_items (
   , metadata jsonb not null
   , team_id int not null
   , kanban_step_id int not null
-  , closed timestamp with time zone -- NULL: active
+  , closed_at timestamp with time zone -- NULL: active
   , target_date timestamp with time zone not null
   /*
    -- IMPORTANT: implement this:

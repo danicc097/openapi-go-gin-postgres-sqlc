@@ -6,7 +6,7 @@ import { css } from '@emotion/react'
 import { Fragment } from 'react'
 import shallow from 'zustand/shallow'
 import Footer, { FOOTER_HEIGHT } from 'src/components/Footer'
-import { Drawer, Flex, createStyles } from '@mantine/core'
+import { Drawer, Flex, createStyles, useMantineTheme } from '@mantine/core'
 import Header, { HEADER_HEIGHT } from 'src/components/Header'
 import { useUISlice } from 'src/slices/ui'
 
@@ -34,6 +34,7 @@ type LayoutProps = {
 export default function Layout({ children }: LayoutProps) {
   const { classes } = useStyles()
   const { burgerOpened, setBurgerOpened } = useUISlice()
+  const theme = useMantineTheme()
 
   return (
     <Fragment>
@@ -50,6 +51,7 @@ export default function Layout({ children }: LayoutProps) {
           justify-content: space-between;
           align-items: center;
           min-height: calc(100vh - ${HEADER_HEIGHT}px - ${FOOTER_HEIGHT}px);
+          background-color: ${theme.colorScheme === 'dark' ? theme.colors.dark[9] : 'white'};
         `}
       >
         {children}

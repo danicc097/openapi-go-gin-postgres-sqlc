@@ -24,13 +24,13 @@ declare namespace TestTypes {
     closed: Date | null
     description: string
     kanbanStepID: number
-    metadata: number[] | null
+    metadata: {} | null
     targetDate: Date
     teamID: number
-    title: {
+    items: {
       name: string
       items: string[]
-    }
+    }[]
     workItemTypeID: number
   }
 }

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/danicc097/xo/models"
-	xo "github.com/danicc097/xo/types"
+	"github.com/danicc097/xo/v5/models"
+	xo "github.com/danicc097/xo/v5/types"
 )
 
 func init() {
@@ -164,9 +164,9 @@ func PostgresGoType(d xo.Type, schema, itype string) (string, string, error) {
 		// TODO: write custom type for interval marshaling
 		goType, zero = "[]byte", "nil"
 	case "json":
-		goType, zero = "[]byte", `""`
+		goType, zero = "map[string]any", `""`
 	case "jsonb":
-		goType, zero = "[]byte", `""`
+		goType, zero = "map[string]any", `""`
 	case "hstore":
 		goType, zero = "hstore.Hstore", "nil"
 	case "uuid":

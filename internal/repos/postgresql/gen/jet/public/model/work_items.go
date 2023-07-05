@@ -19,7 +19,7 @@ type WorkItems struct {
 	Metadata       string     `db:"metadata"`
 	TeamID         int32      `db:"team_id"`
 	KanbanStepID   int32      `db:"kanban_step_id"`
-	Closed         *time.Time `db:"closed"`
+	ClosedAt       *time.Time `db:"closed_at"`
 	TargetDate     time.Time  `db:"target_date"`
 	CreatedAt      time.Time  `db:"created_at"`
 	UpdatedAt      time.Time  `db:"updated_at"`

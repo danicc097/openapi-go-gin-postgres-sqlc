@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
+declare const Brand: unique symbol
+// equivalent to go's type definitions: e.g. type CustomString string
+// usage: type FormField = Branded<string, 'FormField'>
+export type Branded<T, B> = T & { [Brand]: B }
+
 export type Primitive = string | number | symbol
 
 export type GenericObject = Record<any, any>
@@ -22,8 +27,29 @@ export type Union<L extends unknown | undefined, R extends unknown | undefined> 
   ? L
   : L | R
 
+type Dot<T extends string, U extends string> = '' extends U ? T : `${T}.${U}`
+
+type StopTypes = number | string | boolean | symbol | bigint | Date
+
+type ExcludedTypes = (...args: any[]) => any
 /**
- * Access underlying types by dot notation.
+ * Get dot notation of all nested entries, ignoring array indexes.
+ * https://stackoverflow.com/questions/76546335
+ */
+export type GetKeys<T> = T extends StopTypes
+  ? ''
+  : T extends readonly unknown[]
+  ? GetKeys<T[number]>
+  : {
+      [K in keyof T & string]: T[K] extends StopTypes
+        ? K
+        : T[K] extends ExcludedTypes
+        ? never
+        : K | Dot<K, GetKeys<T[K]>>
+    }[keyof T & string]
+
+/**
+ * Access underlying types by dot notation path.
 
  * @example
     type RestDemoWorkItemCreateRequest = {
@@ -34,15 +60,27 @@ export type Union<L extends unknown | undefined, R extends unknown | undefined> 
         }
       }
 
-    TypeOf<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
+    PathType<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
  */
-type TypeOf<T, U extends RecursiveKeyOf<T>> = U extends `${infer First}.${infer Rest}`
-  ? First extends keyof T
-    ? TypeOf<T[First], Rest>
-    : unknown
-  : U extends keyof T
-  ? T[U]
-  : unknown
+type PathType<T, Path extends GetKeys<T>> = Path extends keyof T
+  ? T[Path]
+  : Path extends `${infer Key}.${infer Rest}`
+  ? Key extends keyof T
+    ? NonNullable<T[Key]> extends (infer Item)[]
+      ? Rest extends GetKeys<Item>
+        ? PathType<Item, Rest>
+        : never
+      : NonNullable<T[Key]> extends Record<string, any>
+      ? Rest extends GetKeys<T[Key]>
+        ? PathType<NonNullable<T[Key]>, Rest>
+        : never
+      : never
+    : never
+  : never
+
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
 
 /**
  * Get all the possible nested paths of an object

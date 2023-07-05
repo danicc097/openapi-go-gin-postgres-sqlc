@@ -107,6 +107,7 @@ x.bootstrap() {
   { { {
     git submodule update --init --recursive # sync later on with git `git submodule update --force --recursive --remote`
     x.check-build-deps
+    x.backend.sync-deps
     x.install-tools
     x.setup.swagger-ui
     x.gen.build-tools
@@ -129,7 +130,7 @@ x.install-tools() {
     go install golang.org/x/tools/cmd/goimports@latest &
     go install mvdan.cc/gofumpt@latest &
     go install github.com/danicc097/air@latest &
-    go install github.com/danicc097/xo@v1.0.0 &
+    go install github.com/danicc097/xo/v5@v5.0.0 &
     go install github.com/mikefarah/yq/v4@v4.27.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
     go install golang.org/x/tools/cmd/stringer@latest &

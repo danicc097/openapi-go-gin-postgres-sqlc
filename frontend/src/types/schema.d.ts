@@ -207,7 +207,7 @@ export interface components {
     };
     RestDemoWorkItemsResponse: {
       /** Format: date-time */
-      closed: string | null;
+      closedAt: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -216,7 +216,9 @@ export interface components {
       description: string;
       kanbanStepID: number;
       members?: (components["schemas"]["DbUser"])[] | null;
-      metadata: (number)[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -361,14 +363,16 @@ export interface components {
     PgtypeJSONB: Record<string, never>;
     DbWorkItem: {
       /** Format: date-time */
-      closed: string | null;
+      closedAt: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
       deletedAt: string | null;
       description: string;
       kanbanStepID: number;
-      metadata: (number)[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -444,10 +448,12 @@ export interface components {
     };
     DbWorkItemCreateParams: {
       /** Format: date-time */
-      closed: string | null;
+      closedAt: string | null;
       description: string;
       kanbanStepID: number;
-      metadata: (number)[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
       /** Format: date-time */
       targetDate: string;
       teamID: number;

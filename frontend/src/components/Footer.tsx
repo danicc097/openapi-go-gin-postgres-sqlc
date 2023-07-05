@@ -1,6 +1,6 @@
 import { createStyles, Container, Group, ActionIcon, Image, Text, Tooltip, Avatar } from '@mantine/core'
 import { IconBrandTwitter, IconBrandYoutube, IconBrandInstagram, IconBrandTwitch } from '@tabler/icons'
-import { Dropdown } from 'mantine-design-system'
+import { Dropdown } from 'src/components/design-system/Dropdown/Dropdown'
 import CONFIG from 'src/config'
 
 export const FOOTER_HEIGHT = 55

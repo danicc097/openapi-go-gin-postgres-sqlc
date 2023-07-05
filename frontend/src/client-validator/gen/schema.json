@@ -8,13 +8,15 @@
           "type": "integer"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "isProductive": {
           "type": "boolean"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -34,16 +36,19 @@
     "DbKanbanStep": {
       "properties": {
         "color": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "kanbanStepID": {
           "type": "integer"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -75,10 +80,13 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "name": {
           "$ref": "#/definitions/Project"
@@ -88,7 +96,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         }
       },
       "required": [
@@ -107,13 +117,17 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -123,7 +137,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         }
       },
       "required": [
@@ -141,13 +157,16 @@
     "DbWorkItemTag": {
       "properties": {
         "color": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -170,13 +189,16 @@
     "DbWorkItemType": {
       "properties": {
         "color": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -200,14 +222,18 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "line": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "ref": {
           "pattern": "^[0-9]{8}$",
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "reopened": {
           "type": "boolean"
@@ -230,11 +256,14 @@
     "DbUserAPIKey": {
       "properties": {
         "apiKey": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "expiresOn": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
@@ -253,17 +282,19 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "firstName": {
           "type": [
@@ -296,7 +327,8 @@
           "$ref": "#/definitions/UuidUUID"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [
@@ -322,7 +354,8 @@
           "type": "integer"
         },
         "comment": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "durationMinutes": {
           "type": [
@@ -332,7 +365,9 @@
         },
         "start": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": [
@@ -371,14 +406,19 @@
       "properties": {
         "createdAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "message": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
@@ -414,7 +454,8 @@
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "minLength": 1
         }
       },
       "required": [
@@ -433,10 +474,12 @@
           "type": "boolean"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "path": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "showCollapsed": {
           "type": "boolean"
@@ -454,29 +497,30 @@
     },
     "RestDemoWorkItemsResponse": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "demoWorkItem": {
           "$ref": "#/definitions/DbDemoWorkItem"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "kanbanStepID": {
           "type": "integer"
@@ -491,18 +535,17 @@
           ]
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
@@ -517,11 +560,14 @@
           ]
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "workItemComments": {
           "items": {
@@ -559,7 +605,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
@@ -623,10 +669,13 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "kanbanSteps": {
           "items": {
@@ -654,7 +703,9 @@
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "workItemTags": {
           "items": {
@@ -699,17 +750,19 @@
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "firstName": {
           "type": [
@@ -763,7 +816,8 @@
           "$ref": "#/definitions/UuidUUID"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [
@@ -805,7 +859,8 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "minLength": 1
         }
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -815,19 +870,23 @@
       "type": "object",
       "properties": {
         "title": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "detail": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "status": {
           "type": "integer"
         },
         "error": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "type": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "validationError": {
           "$ref": "#/definitions/HTTPValidationError"
@@ -942,12 +1001,14 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "minLength": 1
         },
         "msg": {
           "title": "Message",
           "description": "should always be shown to the user",
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "detail": {
           "description": "verbose details of the error",
@@ -962,7 +1023,8 @@
               "type": "object"
             },
             "value": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           }
         },
@@ -983,53 +1045,56 @@
     },
     "DbWorkItem": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "createdAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "deletedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "kanbanStepID": {
           "type": "integer"
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "updatedAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "workItemID": {
           "type": "integer"
@@ -1046,7 +1111,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
@@ -1059,13 +1124,16 @@
     "RestWorkItemTagCreateRequest": {
       "properties": {
         "color": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -1121,7 +1189,8 @@
     "RestWorkItemCommentCreateRequest": {
       "properties": {
         "message": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
@@ -1151,13 +1220,15 @@
     "DbActivityCreateParams": {
       "properties": {
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "isProductive": {
           "type": "boolean"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -1175,10 +1246,12 @@
     "DbTeamCreateParams": {
       "properties": {
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -1195,13 +1268,16 @@
     "DbWorkItemTagCreateParams": {
       "properties": {
         "color": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "projectID": {
           "type": "integer"
@@ -1300,14 +1376,18 @@
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "line": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "ref": {
           "pattern": "^[0-9]{8}$",
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "reopened": {
           "type": "boolean"
@@ -1328,38 +1408,38 @@
     },
     "DbWorkItemCreateParams": {
       "properties": {
-        "closed": {
+        "closedAt": {
           "format": "date-time",
           "type": [
-            "string",
-            "null"
+            "object"
           ]
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "kanbanStepID": {
           "type": "integer"
         },
         "metadata": {
-          "items": {
-            "minimum": 0,
-            "type": "integer"
-          },
+          "additionalProperties": {},
           "type": [
-            "array",
+            "object",
             "null"
           ]
         },
         "targetDate": {
           "format": "date-time",
-          "type": "string"
+          "type": [
+            "object"
+          ]
         },
         "teamID": {
           "type": "integer"
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "workItemTypeID": {
           "type": "integer"
@@ -1372,7 +1452,7 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closed",
+        "closedAt",
         "targetDate"
       ],
       "type": "object",

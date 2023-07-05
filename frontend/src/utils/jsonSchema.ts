@@ -15,7 +15,7 @@ export type SchemaField = {
 }
 
 export type Format = 'date-time' | 'date'
-export type Type = 'boolean' | 'integer' | 'object' | 'string' | 'array' | 'null'
+export type Type = 'boolean' | 'integer' | 'object' | 'string' | 'array' | 'null' | 'number'
 
 export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, SchemaField> {
   const schemaFields = {}

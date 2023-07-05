@@ -65,11 +65,25 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 
 	// called after a connection is established, but before it is added to the pool.
 	// Will run once.
+
+	const retries = 5
 	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
 		pgxAfterConnectLock.Lock()
 		defer pgxAfterConnectLock.Unlock()
 
-		err = registerDataTypes(context.Background(), c, typeNames)
+		var err error
+
+		for attempt := 1; attempt <= retries; attempt++ {
+			err = registerDataTypes(ctx, c, typeNames)
+			if err == nil {
+				break
+			}
+
+			if attempt < retries {
+				time.Sleep(500 * time.Millisecond)
+			}
+		}
+
 		if err != nil {
 			return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not register data types")
 		}

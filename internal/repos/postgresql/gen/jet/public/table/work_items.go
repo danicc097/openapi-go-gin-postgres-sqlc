@@ -24,7 +24,7 @@ type workItemsTable struct {
 	Metadata       postgres.ColumnString
 	TeamID         postgres.ColumnInteger
 	KanbanStepID   postgres.ColumnInteger
-	Closed         postgres.ColumnTimestampz
+	ClosedAt       postgres.ColumnTimestampz
 	TargetDate     postgres.ColumnTimestampz
 	CreatedAt      postgres.ColumnTimestampz
 	UpdatedAt      postgres.ColumnTimestampz
@@ -76,13 +76,13 @@ func newWorkItemsTableImpl(schemaName, tableName, alias string) workItemsTable {
 		MetadataColumn       = postgres.StringColumn("metadata")
 		TeamIDColumn         = postgres.IntegerColumn("team_id")
 		KanbanStepIDColumn   = postgres.IntegerColumn("kanban_step_id")
-		ClosedColumn         = postgres.TimestampzColumn("closed")
+		ClosedAtColumn       = postgres.TimestampzColumn("closed_at")
 		TargetDateColumn     = postgres.TimestampzColumn("target_date")
 		CreatedAtColumn      = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn      = postgres.TimestampzColumn("updated_at")
 		DeletedAtColumn      = postgres.TimestampzColumn("deleted_at")
-		allColumns           = postgres.ColumnList{WorkItemIDColumn, TitleColumn, DescriptionColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
-		mutableColumns       = postgres.ColumnList{TitleColumn, DescriptionColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		allColumns           = postgres.ColumnList{WorkItemIDColumn, TitleColumn, DescriptionColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedAtColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		mutableColumns       = postgres.ColumnList{TitleColumn, DescriptionColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedAtColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
 	)
 
 	return workItemsTable{
@@ -96,7 +96,7 @@ func newWorkItemsTableImpl(schemaName, tableName, alias string) workItemsTable {
 		Metadata:       MetadataColumn,
 		TeamID:         TeamIDColumn,
 		KanbanStepID:   KanbanStepIDColumn,
-		Closed:         ClosedColumn,
+		ClosedAt:       ClosedAtColumn,
 		TargetDate:     TargetDateColumn,
 		CreatedAt:      CreatedAtColumn,
 		UpdatedAt:      UpdatedAtColumn,

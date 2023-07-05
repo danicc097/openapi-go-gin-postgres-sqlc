@@ -86,3 +86,67 @@ export function generateColor(str: string): string {
 
   return `#${hex}`
 }
+
+export const colorBlindPalette = [
+  // Red-Green Colorblind Friendly
+  '#004c6d', // Dark Blue
+  '#177e89', // Teal
+  '#56a3a6', // Light Teal
+  '#f76f8e', // Salmon
+  '#8e063b', // Dark Red
+  '#c91f37', // Red
+  '#f15a29', // Orangee
+  '#f6a02e', // Yellow
+  '#f5d44e', // Light Yellow
+  '#bedbbb', // Pale Green
+  '#6aa84f', // Green
+  '#87a878', // Light Green
+
+  // Blue-Yellow Colorblind Friendly
+  '#153956', // Dark Blue
+  '#1f699e', // Blue
+  '#3d85c6', // Sky Blue
+  '#98b4d4', // Light Blue
+  '#f3be56', // Yellow
+  '#f18d32', // Orange
+  '#ea5837', // Salmon
+  '#c93756', // Red
+  '#5a343b', // Dark Red
+  '#6c7f5a', // Green
+  '#a6b985', // Light Green
+  '#c0d29c', // Pale Green
+
+  // Purple-Blue Colorblind Friendly
+  '#212946', // Dark Blue
+  '#324e7b', // Blue
+  '#4968a6', // Royal Blue
+  '#6c8dc6', // Sky Blue
+  '#b0b8db', // Light Blue
+  '#ce5a57', // Red
+  '#e37973', // Light Red
+  '#ed9c96', // Salmon
+  '#f2b6b3', // Light Salmon
+  '#f8cbb5', // Peach
+  '#ffb56c', // Orange
+  '#ffc778', // Light Orange
+
+  // Gray Colorblind Friendly
+  '#333333', // Dark Gray
+  '#666666', // Gray
+  '#999999', // Light Gray
+  '#cccccc', // Pale Gray
+  '#f7f7f7', // White
+  '#000000', // Black
+
+  // Rainbow Colorblind Friendly
+  '#1f77b4', // Blue
+  '#ff7f0e', // Orange
+  '#2ca02c', // Green
+  '#d62728', // Red
+  '#9467bd', // Purple
+  '#8c564b', // Brown
+  '#e377c2', // Pink
+  '#7f7f7f', // Gray
+  '#bcbd22', // Olive
+  '#17becf', // Teal
+]

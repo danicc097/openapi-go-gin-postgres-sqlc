@@ -20,8 +20,8 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/danicc097/xo/loader"
-	xo "github.com/danicc097/xo/types"
+	"github.com/danicc097/xo/v5/loader"
+	xo "github.com/danicc097/xo/v5/types"
 	"github.com/kenshaw/inflector"
 	"github.com/kenshaw/snaker"
 	"golang.org/x/tools/imports"
@@ -1382,7 +1382,9 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 
 	if typeOverride != "" {
 		typ = typeOverride
-		openAPISchema = camelExport(strings.Split(typeOverride, ".")[1])
+		if strings.Count(typeOverride, ".") > 0 {
+			openAPISchema = camelExport(strings.Split(typeOverride, ".")[1])
+		}
 	}
 
 	return Field{

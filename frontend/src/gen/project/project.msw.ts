@@ -103,7 +103,7 @@ export const getGetProjectBoardMock = () => ({
 export const getGetProjectWorkitemsMock = () =>
   faker.helpers.arrayElement([
     {
-      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+      closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       demoWorkItem: {
@@ -128,9 +128,7 @@ export const getGetProjectWorkitemsMock = () =>
         userID: faker.random.word(),
         username: faker.random.word(),
       })),
-      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.datatype.number({ min: 0, max: undefined }),
-      ),
+      metadata: faker.helpers.arrayElement([(() => ({ key: faker.color.hsl() }))(), null]),
       targetDate: (() => faker.date.past())(),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       timeEntries: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({

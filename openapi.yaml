@@ -798,7 +798,7 @@ components:
       type: object
     RestDemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
-        closed:
+        closedAt:
           format: date-time
           nullable: true
           type: string
@@ -821,11 +821,9 @@ components:
           nullable: true
           type: array
         metadata:
-          items:
-            minimum: 0
-            type: integer
+          additionalProperties: {}
           nullable: true
-          type: array
+          type: object
         targetDate:
           format: date-time
           type: string
@@ -865,7 +863,7 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closed
+        - closedAt
         - targetDate
         - createdAt
         - updatedAt
@@ -1177,7 +1175,7 @@ components:
       type: object
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
-        closed:
+        closedAt:
           format: date-time
           nullable: true
           type: string
@@ -1193,11 +1191,9 @@ components:
         kanbanStepID:
           type: integer
         metadata:
-          items:
-            minimum: 0
-            type: integer
+          additionalProperties: {}
           nullable: true
-          type: array
+          type: object
         targetDate:
           format: date-time
           type: string
@@ -1220,7 +1216,7 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closed
+        - closedAt
         - targetDate
         - createdAt
         - updatedAt
@@ -1409,7 +1405,7 @@ components:
       type: object
     DbWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
-        closed:
+        closedAt:
           format: date-time
           nullable: true
           type: string
@@ -1418,11 +1414,9 @@ components:
         kanbanStepID:
           type: integer
         metadata:
-          items:
-            minimum: 0
-            type: integer
+          additionalProperties: {}
           nullable: true
-          type: array
+          type: object
         targetDate:
           format: date-time
           type: string
@@ -1439,7 +1433,7 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closed
+        - closedAt
         - targetDate
       type: object
     ServicesMember: # Generated from internal structs. DO NOT EDIT.

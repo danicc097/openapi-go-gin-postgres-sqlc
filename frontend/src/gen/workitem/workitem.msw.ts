@@ -11,14 +11,12 @@ import { faker } from '@faker-js/faker'
 export const getCreateWorkitemMock = () =>
   faker.helpers.arrayElement([
     {
-      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+      closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),
       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.datatype.number({ min: 0, max: undefined }),
-      ),
+      metadata: faker.helpers.arrayElement([(() => ({ key: faker.color.hsl() }))(), null]),
       targetDate: (() => faker.date.past())(),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
@@ -31,14 +29,12 @@ export const getCreateWorkitemMock = () =>
 export const getGetWorkitemMock = () =>
   faker.helpers.arrayElement([
     {
-      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+      closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),
       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.datatype.number({ min: 0, max: undefined }),
-      ),
+      metadata: faker.helpers.arrayElement([(() => ({ key: faker.color.hsl() }))(), null]),
       targetDate: (() => faker.date.past())(),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
@@ -51,14 +47,12 @@ export const getGetWorkitemMock = () =>
 export const getUpdateWorkitemMock = () =>
   faker.helpers.arrayElement([
     {
-      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+      closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       description: faker.random.word(),
       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.datatype.number({ min: 0, max: undefined }),
-      ),
+      metadata: faker.helpers.arrayElement([(() => ({ key: faker.color.hsl() }))(), null]),
       targetDate: (() => faker.date.past())(),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
