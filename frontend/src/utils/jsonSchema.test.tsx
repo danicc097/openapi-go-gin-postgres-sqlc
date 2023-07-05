@@ -244,7 +244,6 @@ describe('parseSchemaFields', () => {
             },
             defaultValues: {
               'demoProject.line': '43121234',
-              // FIXME: does not infer return type like selectOptions does. this should fail
               'members.role': 'preparer',
             },
             selectOptions: {},
@@ -259,23 +258,23 @@ describe('parseSchemaFields', () => {
 
     const ids = [
       'demoWorkItemCreateForm-base.description',
-      'demoWorkItemCreateForm-base.kanbanStepID',
-      'demoWorkItemCreateForm-base.teamID',
       'demoWorkItemCreateForm-base.items-add-button',
       'demoWorkItemCreateForm-base.items-remove-button-0',
-      'demoWorkItemCreateForm-base.items.0.name',
-      'demoWorkItemCreateForm-base.items.0.items-add-button',
-      'demoWorkItemCreateForm-base.items.0.items-0',
-      'demoWorkItemCreateForm-base.items.0.items-remove-button-0',
-      'demoWorkItemCreateForm-base.items.0.items-1',
-      'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
       'demoWorkItemCreateForm-base.items-remove-button-1',
-      'demoWorkItemCreateForm-base.items.1.name',
-      'demoWorkItemCreateForm-base.items.1.items-add-button',
+      'demoWorkItemCreateForm-base.items.0.items-0',
+      'demoWorkItemCreateForm-base.items.0.items-1',
+      'demoWorkItemCreateForm-base.items.0.items-add-button',
+      'demoWorkItemCreateForm-base.items.0.items-remove-button-0',
+      'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
+      'demoWorkItemCreateForm-base.items.0.name',
       'demoWorkItemCreateForm-base.items.1.items-0',
-      'demoWorkItemCreateForm-base.items.1.items-remove-button-0',
       'demoWorkItemCreateForm-base.items.1.items-1',
+      'demoWorkItemCreateForm-base.items.1.items-add-button',
+      'demoWorkItemCreateForm-base.items.1.items-remove-button-0',
       'demoWorkItemCreateForm-base.items.1.items-remove-button-1',
+      'demoWorkItemCreateForm-base.items.1.name',
+      'demoWorkItemCreateForm-base.kanbanStepID',
+      'demoWorkItemCreateForm-base.teamID',
       'demoWorkItemCreateForm-base.workItemTypeID',
       'demoWorkItemCreateForm-demoProject.line',
       'demoWorkItemCreateForm-demoProject.ref',
@@ -283,19 +282,21 @@ describe('parseSchemaFields', () => {
       'demoWorkItemCreateForm-demoProject.workItemID',
       'demoWorkItemCreateForm-members-add-button',
       'demoWorkItemCreateForm-members-remove-button-0',
+      'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.0.role',
       'demoWorkItemCreateForm-members.0.userID',
-      'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.1.role',
       'demoWorkItemCreateForm-members.1.userID',
-      'demoWorkItemCreateForm-tagIDs-add-button',
       'demoWorkItemCreateForm-tagIDs-0',
-      'demoWorkItemCreateForm-tagIDs-remove-button-0',
       'demoWorkItemCreateForm-tagIDs-1',
-      'demoWorkItemCreateForm-tagIDs-remove-button-1',
       'demoWorkItemCreateForm-tagIDs-2',
+      'demoWorkItemCreateForm-tagIDs-add-button',
+      'demoWorkItemCreateForm-tagIDs-remove-button-0',
+      'demoWorkItemCreateForm-tagIDs-remove-button-1',
       'demoWorkItemCreateForm-tagIDs-remove-button-2',
     ]
+
+    console.log([...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].sort().map((e) => e.id))
 
     ids.forEach((id) => {
       const el = document.getElementById(id)
@@ -303,6 +304,7 @@ describe('parseSchemaFields', () => {
       expect(el).toBeInTheDocument()
     })
 
+    // [...document.querySelectorAll('[data-testid]')].map(e => (e.getAttribute('data-testid')))
     const titleDataTestIds = [
       'base-title',
       'base.items-title',

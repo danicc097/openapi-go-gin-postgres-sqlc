@@ -322,12 +322,10 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
             <FormAccordion>
               <NestedHeader />
               <ArrayChildren
-                formName={formName}
                 formField={formField}
                 schemaKey={schemaKey}
-                field={field}
                 inputProps={inputProps}
-                name={formName}
+                formName={formName}
                 containerProps={containerProps}
                 options={options}
                 schemaFields={schemaFields}
@@ -337,12 +335,10 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
             <>
               <NestedHeader />
               <ArrayChildren
-                formName={formName}
                 formField={formField}
                 schemaKey={schemaKey}
-                field={field}
                 inputProps={inputProps}
-                name={formName}
+                formName={formName}
                 containerProps={containerProps}
                 options={options}
                 schemaFields={schemaFields}
@@ -363,7 +359,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               <NestedHeader />
               <ArrayOfObjectsChildren
                 formField={formField}
-                name={formName}
+                formName={formName}
                 schemaKey={schemaKey}
                 options={options}
                 schemaFields={schemaFields}
@@ -374,7 +370,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               <NestedHeader />
               <ArrayOfObjectsChildren
                 formField={formField}
-                name={formName}
+                formName={formName}
                 schemaKey={schemaKey}
                 options={options}
                 schemaFields={schemaFields}
@@ -428,7 +424,21 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
   return <>{children}</>
 }
 
-function ArrayOfObjectsChildren({ formField, name: formName, schemaKey, options, schemaFields }) {
+type ArrayOfObjectsChildrenProps = {
+  formField: FormField
+  schemaKey: SchemaKey
+  formName: string
+  options: any
+  schemaFields: any
+}
+
+function ArrayOfObjectsChildren({
+  formField,
+  formName,
+  schemaKey,
+  options,
+  schemaFields,
+}: ArrayOfObjectsChildrenProps) {
   const form = useFormContext()
   const fieldArray = useFieldArray({
     control: form.control,
@@ -438,7 +448,6 @@ function ArrayOfObjectsChildren({ formField, name: formName, schemaKey, options,
   // useWatch({ name: `${formField}`, control: form.control }) // same errors
 
   const children = fieldArray.fields.map((item, k) => {
-    const form = useFormContext()
     return (
       <div key={item.id}>
         <Text weight={800}>{`${formField}.${k}`}</Text>
@@ -476,17 +485,25 @@ function ArrayOfObjectsChildren({ formField, name: formName, schemaKey, options,
   return <>{children}</>
 }
 
+type ArrayChildrenProps = {
+  formField: FormField
+  schemaKey: SchemaKey
+  formName: string
+  options: any
+  schemaFields: any
+  inputProps: any
+  containerProps: any
+}
+
 function ArrayChildren({
   formField,
   formName,
   schemaKey,
-  field,
   inputProps,
-  name,
   containerProps,
   options,
   schemaFields,
-}) {
+}: ArrayChildrenProps) {
   const form = useFormContext()
 
   // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
@@ -499,10 +516,10 @@ function ArrayChildren({
         <GeneratedInput
           formName={formName}
           schemaKey={schemaKey}
-          fieldType={field.type}
+          fieldType={schemaFields[schemaKey]}
           formField={`${formField}.${k}` as FormField}
           props={{
-            input: { ...inputProps, id: `${name}-${formField}-${k}` },
+            input: { ...inputProps, id: `${formName}-${formField}-${k}` },
             container: containerProps,
           }}
           options={options}
