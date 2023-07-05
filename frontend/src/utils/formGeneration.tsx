@@ -278,7 +278,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     }
 
     if (
-      (parentSchemaKey && parentSchemaKey !== '' && !schemaKey.startsWith(parentSchemaKey)) ||
+      (parentSchemaKey && !schemaKey.startsWith(parentSchemaKey)) ||
       parentSchemaKey === schemaKey || // fix when parent key has the same name and both are arrays
       !options.labels.hasOwnProperty(schemaKey) // labels are mandatory unless form field was excluded
     ) {
@@ -286,11 +286,11 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     }
 
     const pp = schemaKey.split('.')
-    const parentKey = parentSchemaKey
-      ? (parentSchemaKey as string).replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
-      : ''
+    const parentKey = parentSchemaKey?.replace(/\.*$/, '') || pp.slice(0, pp.length - 1).join('.')
 
-    if (schemaFields[parentKey]?.isArray && !parentSchemaKey) return null
+    if (schemaFields[parentKey]?.isArray && !parentSchemaKey) {
+      return null
+    }
 
     const formField = constructFormField(schemaKey, parentFormField)
 
@@ -516,7 +516,7 @@ function ArrayChildren({
         <GeneratedInput
           formName={formName}
           schemaKey={schemaKey}
-          fieldType={schemaFields[schemaKey]}
+          fieldType={schemaFields[schemaKey].type}
           formField={`${formField}.${k}` as FormField}
           props={{
             input: { ...inputProps, id: `${formName}-${formField}-${k}` },
@@ -734,7 +734,6 @@ const RemoveButton = ({ formName, formField, index }) => {
           background-color: #7c1a1a;
         `}
         size="sm"
-        /** TODO: pass name */
         id={`${formName}-${formField}-remove-button-${index}`}
       >
         <IconMinus size="1rem" />

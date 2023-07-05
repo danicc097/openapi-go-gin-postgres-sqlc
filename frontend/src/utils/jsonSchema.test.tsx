@@ -256,6 +256,7 @@ describe('parseSchemaFields', () => {
     type b = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'members.userID'>
     type c = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'base.items.items'>
 
+    // const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id).sort()
     const ids = [
       'demoWorkItemCreateForm-base.description',
       'demoWorkItemCreateForm-base.items-add-button',
@@ -295,8 +296,6 @@ describe('parseSchemaFields', () => {
       'demoWorkItemCreateForm-tagIDs-remove-button-1',
       'demoWorkItemCreateForm-tagIDs-remove-button-2',
     ]
-
-    console.log([...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].sort().map((e) => e.id))
 
     ids.forEach((id) => {
       const el = document.getElementById(id)
