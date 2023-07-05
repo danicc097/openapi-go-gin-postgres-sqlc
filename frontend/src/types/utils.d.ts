@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
+declare const Brand: unique symbol
+// equivalent to go's type definitions: e.g. type CustomString string
+// usage: type FormField = Branded<string, 'FormField'>
+export type Branded<T, B> = T & { [Brand]: B }
+
 export type Primitive = string | number | symbol
 
 export type GenericObject = Record<any, any>
