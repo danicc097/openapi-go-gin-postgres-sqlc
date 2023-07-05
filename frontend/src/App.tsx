@@ -280,10 +280,7 @@ export default function App() {
       reopened: false, // for create will ignore field for form gen
     },
     tagIDs: [0, 1, 2],
-    members: [
-      { role: 'preparer', userID: 'user 1' },
-      { role: 'preparer', userID: 'user 2' },
-    ],
+    members: [{ userID: 'user 1' }, { role: 'preparer', userID: 'user 2' }],
   } as TestTypes.RestDemoWorkItemCreateRequest
 
   /**
@@ -429,7 +426,6 @@ export default function App() {
                                 base: { isArray: false, required: true, type: 'object' },
                                 'base.closed': { type: 'date-time', required: true, isArray: false },
                                 'base.description': { type: 'string', required: true, isArray: false },
-                                'base.metadata': { type: 'object', required: true, isArray: false },
                                 'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
                                 'base.targetDate': { type: 'date', required: true, isArray: false },
                                 'base.teamID': { type: 'integer', required: true, isArray: false },
@@ -488,8 +484,8 @@ export default function App() {
                                   },
                                 },
                                 defaultValues: {
-                                  'demoProject.line': '534543523',
-                                  members: [{ role: 'preparer' }],
+                                  'demoProject.line': '1111',
+                                  'members.role': 'preparer',
                                 },
                                 selectOptions: {
                                   'members.userID': selectOptionsBuilder({

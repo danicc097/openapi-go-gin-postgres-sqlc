@@ -136,7 +136,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
 }
 
 type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U | null = null> = {
-  schemaFields: Record<SchemaKey, SchemaField>
+  schemaFields: Record<Exclude<U, ExcludeKeys>, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
   formName: string
 }
