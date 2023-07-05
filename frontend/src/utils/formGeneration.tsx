@@ -21,7 +21,7 @@ import {
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
-import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
+import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import _, { memoize } from 'lodash'
 import React, { useState, type ComponentProps, useMemo, type MouseEventHandler, memo } from 'react'
 import { useFormContext, type Path, type UseFormReturn, FormProvider, useWatch, useFieldArray } from 'react-hook-form'
@@ -259,9 +259,6 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
         <div>
           {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
           <Flex direction="row">
-            <legend>
-              <code>(renders: {renders})</code>
-            </legend>
             {!accordion && renderTitle(formField)}
             <Button
               size="xs"
@@ -448,7 +445,12 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
 
   const children = fieldArray.fields.map((item, k) => {
     return (
-      <div key={item.id}>
+      <div
+        key={item.id}
+        css={css`
+          min-width: 100%;
+        `}
+      >
         <Text weight={800}>{`${formField}.${k}`}</Text>
         <Card mt={12} mb={12} withBorder>
           <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
@@ -464,7 +466,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
               size="sm"
               id={`${formName}-${formField}-remove-button-${k}`}
             >
-              <IconMinus size="1rem" />
+              <IconTrash size="1rem" />
             </ActionIcon>
           </Tooltip>
           <Group>
@@ -481,7 +483,11 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
     )
   })
 
-  return <>{children}</>
+  return (
+    <Flex gap={14} align="center" direction="column">
+      {children}
+    </Flex>
+  )
 }
 
 type ArrayChildrenProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
@@ -511,7 +517,12 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
 
   const children = (form.getValues(formField) || []).map((item, k: number) => {
     return (
-      <Flex key={k}>
+      <Flex
+        key={k}
+        css={css`
+          min-width: 100%;
+        `}
+      >
         <GeneratedInput
           formName={formName}
           schemaKey={schemaKey}
@@ -529,7 +540,11 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
     )
   })
 
-  return <>{children}</>
+  return (
+    <Flex gap={14} align="center" direction="column">
+      {children}
+    </Flex>
+  )
 }
 
 function FormData() {
@@ -623,17 +638,8 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
-    mb: 4,
     ...registerProps,
     ...props?.input,
-
-    // TODO: should be external, since we could have a custom component for arrays, e.g. tagIDs []string
-    // will come from []DbWorkItemTag <MultiSelect/> with custom Selects with tag name instead of ID,
-    // therefore we should still be able to remove tags
-    ...(withRemoveButton && {
-      rightSection: <RemoveButton formName={formName} formField={formFieldArrayPath} index={index} />,
-      rightSectionWidth: '40px',
-    }),
     ...(propsOverride && propsOverride),
     ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, formValue) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
@@ -716,9 +722,9 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   const renders = useRenders()
 
   return (
-    <Flex align="center" {...props?.container}>
-      <code style={{ fontSize: 12 }}>(renders: {renders})</code>
+    <Flex align="center" justify={'center'} {...props?.container}>
       {el}
+      {withRemoveButton && <RemoveButton formName={formName} formField={formFieldArrayPath} index={index} />}
     </Flex>
   )
 }
