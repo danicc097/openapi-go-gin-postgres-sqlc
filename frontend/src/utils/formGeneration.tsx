@@ -607,6 +607,10 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     mb: 4,
     ...registerProps,
     ...props?.input,
+
+    // TODO: should be external, since we could have a custom component for arrays, e.g. tagIDs []string
+    // will come from []DbWorkItemTag <MultiSelect/> with custom Selects with tag name instead of ID,
+    // therefore we should still be able to remove tags
     ...(withRemoveButton && {
       rightSection: <RemoveButton formName={formName} formField={formFieldArrayPath} index={index} />,
       rightSectionWidth: '40px',
