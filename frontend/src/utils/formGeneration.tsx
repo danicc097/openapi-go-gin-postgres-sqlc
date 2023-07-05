@@ -612,6 +612,15 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   // remove last index
   const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.')
 
+  const formValue = form.getValues(formField)
+
+  if (formValue === null || formValue === undefined) {
+    const defaultValue = options.defaultValues?.[schemaKey]
+    if (defaultValue) {
+      form.setValue(formField, defaultValue)
+    }
+  }
+
   // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
     mb: 4,
@@ -626,7 +635,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       rightSectionWidth: '40px',
     }),
     ...(propsOverride && propsOverride),
-    ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, form.getValues(formField)) }),
+    ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, formValue) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
     required: schemaFields[schemaKey]?.required && type !== 'boolean',
   }

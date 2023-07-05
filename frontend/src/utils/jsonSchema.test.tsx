@@ -156,7 +156,7 @@ const formInitialValues = {
   },
   tagIDs: [0, 1, 2],
   members: [
-    { role: null, userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' }, // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values
+    { userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' }, // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values
     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
   ],
 } as TestTypes.RestDemoWorkItemCreateRequest
@@ -185,16 +185,8 @@ const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, Sch
   tagIDs: { type: 'integer', required: true, isArray: true },
 }
 
-describe('parseSchemaFields', () => {
+describe('form generation', () => {
   test('should extract field types correctly from a JSON schema', () => {
-    /**
-
-    form generator will use these keys. to generate multiple forms when is array we just check
-    if parent (split by . and keep up to len-2) isArray (members) or the child itself isArray (tagIDs)
-
-    it doesnt seem to be easy to get typed keys for these when arrays are involved.
-    */
-
     expect(parseSchemaFields(schema)).toEqual(schemaFields)
   })
 
@@ -243,7 +235,7 @@ describe('parseSchemaFields', () => {
               tagIDs: 'tagIDs',
             },
             defaultValues: {
-              'demoProject.line': '43121234',
+              'demoProject.line': '43121234', // should be ignored since it's set
               'members.role': 'preparer',
             },
             selectOptions: {},
@@ -317,15 +309,8 @@ describe('parseSchemaFields', () => {
       expect(view.getByTestId(id)).toBeInTheDocument()
     })
 
-    test('should update form with default values', () => {
-      // defaultValues: {
-      //   'demoProject.line': '43121234',
-      //   members: [
-      //     { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
-      //     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
-      //   ],
-      // },
-      // TODO: get input by id
-    })
+    // test should submit with default values if none changed
+
+    expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
   })
 })
