@@ -387,7 +387,6 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
           <>
             <GeneratedInput
               schemaKey={schemaKey}
-              fieldType={field.type}
               formField={formField}
               props={{ input: inputProps, container: containerProps }}
               options={options}
@@ -424,21 +423,21 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
   return <>{children}</>
 }
 
-type ArrayOfObjectsChildrenProps = {
+type ArrayOfObjectsChildrenProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   formField: FormField
   schemaKey: SchemaKey
   formName: string
-  options: any
-  schemaFields: any
+  options: DynamicFormOptions<T, ExcludeKeys, U>
+  schemaFields: Record<SchemaKey, SchemaField>
 }
 
-function ArrayOfObjectsChildren({
+function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
   formField,
   formName,
   schemaKey,
   options,
   schemaFields,
-}: ArrayOfObjectsChildrenProps) {
+}: ArrayOfObjectsChildrenProps<T, ExcludeKeys, U>) {
   const form = useFormContext()
   const fieldArray = useFieldArray({
     control: form.control,
@@ -485,17 +484,17 @@ function ArrayOfObjectsChildren({
   return <>{children}</>
 }
 
-type ArrayChildrenProps = {
+type ArrayChildrenProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   formField: FormField
   schemaKey: SchemaKey
   formName: string
-  options: any
-  schemaFields: any
+  options: DynamicFormOptions<T, ExcludeKeys, U>
+  schemaFields: Record<SchemaKey, SchemaField>
   inputProps: any
   containerProps: any
 }
 
-function ArrayChildren({
+function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
   formField,
   formName,
   schemaKey,
@@ -503,7 +502,7 @@ function ArrayChildren({
   containerProps,
   options,
   schemaFields,
-}: ArrayChildrenProps) {
+}: ArrayChildrenProps<T, ExcludeKeys, U>) {
   const form = useFormContext()
 
   // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
@@ -516,7 +515,6 @@ function ArrayChildren({
         <GeneratedInput
           formName={formName}
           schemaKey={schemaKey}
-          fieldType={schemaFields[schemaKey].type}
           formField={`${formField}.${k}` as FormField}
           props={{
             input: { ...inputProps, id: `${formName}-${formField}-${k}` },
@@ -551,14 +549,13 @@ function FormData() {
 
 type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   schemaKey: SchemaKey
-  fieldType: SchemaField['type']
   props?: {
     input?: any
     container?: any
   }
   formField: FormField
   withRemoveButton?: boolean
-  schemaFields: Record<string, SchemaField>
+  schemaFields: Record<SchemaKey, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
   index?: number
   formName: string
@@ -578,7 +575,6 @@ const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
 // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
 // for builtin support for uncontrolled input
 const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
-  fieldType,
   schemaKey,
   props,
   formField,
@@ -645,7 +641,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
     })
   } else {
-    switch (fieldType) {
+    switch (schemaFields[schemaKey]?.type) {
       case 'string':
         el = (
           <TextInput
