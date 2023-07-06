@@ -164,15 +164,15 @@ const formInitialValues = {
 const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
   // FIXME: closed should not be rquired since its required in parent but allowed type of "null"
-  'base.closed': { type: 'date-time', required: true, isArray: false },
+  'base.closed': { type: 'date-time', required: false, isArray: false },
   'base.description': { type: 'string', required: true, isArray: false },
   'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-  'base.metadata': { type: 'integer', required: true, isArray: true },
+  'base.metadata': { type: 'integer', required: false, isArray: true },
   'base.targetDate': { type: 'date', required: true, isArray: false },
   'base.teamID': { type: 'integer', required: true, isArray: false },
-  'base.items': { type: 'object', required: true, isArray: true },
+  'base.items': { type: 'object', required: false, isArray: true },
   'base.items.name': { type: 'string', required: true, isArray: false },
-  'base.items.items': { type: 'string', required: true, isArray: true },
+  'base.items.items': { type: 'string', required: false, isArray: true },
   'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
   demoProject: { isArray: false, required: true, type: 'object' },
   'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
@@ -180,10 +180,10 @@ const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, Sch
   'demoProject.ref': { type: 'string', required: true, isArray: false },
   'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
   'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
-  members: { type: 'object', required: true, isArray: true },
+  members: { type: 'object', required: false, isArray: true },
   'members.role': { type: 'string', required: true, isArray: false },
   'members.userID': { type: 'string', required: true, isArray: false },
-  tagIDs: { type: 'integer', required: true, isArray: true },
+  tagIDs: { type: 'integer', required: false, isArray: true },
 }
 
 describe('form generation', () => {

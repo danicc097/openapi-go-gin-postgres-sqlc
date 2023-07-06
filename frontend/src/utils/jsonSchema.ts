@@ -37,6 +37,7 @@ export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, Sc
         if (!property) {
           continue
         }
+
         schemaFields[newPath.join('.')] = {
           type: extractType(property),
           required: extractIsRequired(obj, parent, key),
@@ -53,15 +54,26 @@ export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, Sc
 }
 
 function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null, key: string): boolean {
+  if (key === 'items') {
+    console.log({ obj, parent })
+  }
   if (!parent) {
-    return !!obj.required?.includes(key)
+    return (
+      !!obj.required?.includes(key) &&
+      !obj.properties?.[key]?.type?.includes('null') &&
+      !obj?.items?.type?.includes('null')
+    )
   }
 
   if (parent.items) {
     return extractIsRequired(obj, parent.items, key)
   }
 
-  return !!parent.required?.includes(key)
+  return (
+    !!parent.required?.includes(key) &&
+    !obj.properties?.[key]?.type?.includes('null') &&
+    !obj?.items?.type?.includes('null')
+  )
 }
 
 function extractType(obj: JsonSchemaField): Type | Format {
