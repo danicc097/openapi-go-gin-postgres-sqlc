@@ -22,6 +22,7 @@ import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
 import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
+import { singularize } from 'inflection'
 import _, { memoize } from 'lodash'
 import React, { useState, type ComponentProps, useMemo, type MouseEventHandler, memo } from 'react'
 import { useFormContext, type Path, type UseFormReturn, FormProvider, useWatch, useFieldArray } from 'react-hook-form'
@@ -453,7 +454,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
       >
         <Text weight={800}>{`${formField}.${k}`}</Text>
         <Card mt={12} mb={12} withBorder>
-          <Tooltip withinPortal label={`Remove ${options.labels[schemaKey]}`} position="top-end" withArrow>
+          <Tooltip withinPortal label={`Remove ${singularize(options.labels[schemaKey])}`} position="top-end" withArrow>
             <ActionIcon
               onClick={(e) => {
                 fieldArray.remove(k)
@@ -718,13 +719,11 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     }
   }
 
-  const renders = useRenders()
-
   return (
     <Flex align="center" justify={'center'} {...props?.container}>
       {el}
       {index !== undefined && (
-        <Tooltip withinPortal label={`Remove ${options.labels[schemaKey]}`} position="top-end" withArrow>
+        <Tooltip withinPortal label={`Remove ${singularize(options.labels[schemaKey])}`} position="top-end" withArrow>
           <ActionIcon
             onClick={(e) => {
               // fieldArray.remove(index) // doesn't work on flat arrays
