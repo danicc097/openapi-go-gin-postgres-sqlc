@@ -44,7 +44,7 @@ import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import type { U } from 'vitest/dist/types-b7007192'
 
-export type SelectOptionsTypes = 'select' | 'multiselect' | 'colorSwatch'
+export type SelectOptionsTypes = 'select' | 'multiselect'
 
 export interface SelectOptions<Return, E = unknown> {
   values: E[]
@@ -203,7 +203,7 @@ type GeneratedInputsProps<T extends object, ExcludeKeys extends U | null, U exte
   removeButton?: JSX.Element | null
   schemaFields: Record<SchemaKey, SchemaField>
   formName: string
-  options: DynamicFormOptions<T, ExcludeKeys, U>
+  options: DynamicFormOptions<T, null, SchemaKey> // for more performant internal intellisense.
 }
 
 function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
@@ -424,7 +424,7 @@ type ArrayOfObjectsChildrenProps<T extends object, ExcludeKeys extends U | null,
   formField: FormField
   schemaKey: SchemaKey
   formName: string
-  options: DynamicFormOptions<T, ExcludeKeys, U>
+  options: DynamicFormOptions<T, null, SchemaKey> // for more performant internal intellisense.
   schemaFields: Record<SchemaKey, SchemaField>
 }
 
@@ -453,7 +453,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
       >
         <Text weight={800}>{`${formField}.${k}`}</Text>
         <Card mt={12} mb={12} withBorder>
-          <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
+          <Tooltip withinPortal label={`Remove ${options.labels[schemaKey]}`} position="top-end" withArrow>
             <ActionIcon
               onClick={(e) => {
                 fieldArray.remove(k)
@@ -494,7 +494,7 @@ type ArrayChildrenProps<T extends object, ExcludeKeys extends U | null, U extend
   formField: FormField
   schemaKey: SchemaKey
   formName: string
-  options: DynamicFormOptions<T, ExcludeKeys, U>
+  options: DynamicFormOptions<T, null, SchemaKey> // for more performant internal intellisense.
   schemaFields: Record<SchemaKey, SchemaField>
   inputProps: any
   containerProps: any
@@ -533,7 +533,6 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
           }}
           options={options}
           schemaFields={schemaFields}
-          withRemoveButton={true}
           index={k}
         />
       </Flex>
@@ -724,31 +723,25 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   return (
     <Flex align="center" justify={'center'} {...props?.container}>
       {el}
-      {withRemoveButton && <RemoveButton formName={formName} formField={formFieldArrayPath} index={index} />}
+      {index !== undefined && (
+        <Tooltip withinPortal label={`Remove ${options.labels[schemaKey]}`} position="top-end" withArrow>
+          <ActionIcon
+            onClick={(e) => {
+              // fieldArray.remove(index) // doesn't work on flat arrays
+              console.log({ formField, index, currentFormValue: form.getValues(formField) })
+              removeListItem(form, formField, index)
+            }}
+            // variant="filled"
+            css={css`
+              background-color: #7c1a1a;
+            `}
+            size="sm"
+            id={`${formName}-${formField}-remove-button-${index}`}
+          >
+            <IconMinus size="1rem" />
+          </ActionIcon>
+        </Tooltip>
+      )}
     </Flex>
-  )
-}
-
-const RemoveButton = ({ formName, formField, index }) => {
-  const form = useFormContext()
-
-  return (
-    <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
-      <ActionIcon
-        onClick={(e) => {
-          // fieldArray.remove(index) // doesn't work on flat arrays
-          console.log({ formField, index, currentFormValue: form.getValues(formField) })
-          removeListItem(form, formField, index)
-        }}
-        // variant="filled"
-        css={css`
-          background-color: #7c1a1a;
-        `}
-        size="sm"
-        id={`${formName}-${formField}-remove-button-${index}`}
-      >
-        <IconMinus size="1rem" />
-      </ActionIcon>
-    </Tooltip>
   )
 }
