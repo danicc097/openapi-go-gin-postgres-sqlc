@@ -163,6 +163,7 @@ const formInitialValues = {
 
 const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
+  // FIXME: closed should not be rquired since its required in parent but allowed type of "null"
   'base.closed': { type: 'date-time', required: true, isArray: false },
   'base.description': { type: 'string', required: true, isArray: false },
   'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
@@ -252,7 +253,7 @@ describe('form generation', () => {
     const a: a = 'reviewerf'
 
     const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id).sort()
-    console.log(actualIds)
+
     const ids = [
       'demoWorkItemCreateForm-base.description',
       'demoWorkItemCreateForm-base.items-add-button',

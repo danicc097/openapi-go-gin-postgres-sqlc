@@ -319,6 +319,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
           {accordion ? (
             <FormAccordion>
               <NestedHeader />
+              <Space p={10} />
               <ArrayChildren
                 formField={formField}
                 schemaKey={schemaKey}
@@ -332,6 +333,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
           ) : (
             <>
               <NestedHeader />
+              <Space p={6} />
               <ArrayChildren
                 formField={formField}
                 schemaKey={schemaKey}
@@ -443,6 +445,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
   })
   // form.watch(formField, fieldArray.fields) // inf rerendering
   // useWatch({ name: `${formField}`, control: form.control }) // same errors
+  const { colorScheme } = useMantineTheme()
 
   const children = fieldArray.fields.map((item, k) => {
     return (
@@ -454,27 +457,14 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
       >
         <Text weight={800}>{`${formField}.${k}`}</Text>
         <Card mt={12} mb={12} withBorder>
-          <Tooltip
-            withinPortal
-            label={`Remove ${singularize(options.labels[schemaKey] || '')}`}
-            position="top-end"
-            withArrow
-          >
-            <ActionIcon
-              onClick={(e) => {
-                fieldArray.remove(k)
-                // removeListItem(form, formField, k)
-              }}
-              // variant="filled"
-              css={css`
-                background-color: #7c1a1a;
-              `}
-              size="sm"
-              id={`${formName}-${formField}-remove-button-${k}`}
-            >
-              <IconTrash size="1rem" />
-            </ActionIcon>
-          </Tooltip>
+          <RemoveButton
+            formName={formName}
+            formField={formField}
+            fieldArray={fieldArray}
+            index={k}
+            itemName={singularize(options.labels[schemaKey] || '')}
+            icon={<IconTrash size="1rem" />}
+          />
           <Group>
             <GeneratedInputs
               parentSchemaKey={schemaKey}
@@ -490,7 +480,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
   })
 
   return (
-    <Flex gap={14} align="center" direction="column">
+    <Flex gap={6} align="center" direction="column">
       {children}
     </Flex>
   )
@@ -546,7 +536,7 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
   })
 
   return (
-    <Flex gap={14} align="center" direction="column">
+    <Flex gap={6} align="center" direction="column">
       {children}
     </Flex>
   )
@@ -585,7 +575,7 @@ const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
   switch (type) {
     case 'date':
     case 'date-time':
-      return new Date(value)
+      return value ? new Date(value) : undefined
     default:
       return value
   }
@@ -724,14 +714,16 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   }
 
   return (
-    <Flex align="center" justify={'center'} {...props?.container}>
+    <Flex align="center" gap={6} justify={'center'} {...props?.container}>
       {el}
       {index !== undefined && (
         <RemoveButton
+          fieldArray={null}
           formName={formName}
           formField={formFieldArrayPath}
           index={index}
           itemName={singularize(options.labels[schemaKey] || '')}
+          icon={<IconMinus size="1rem" />}
         />
       )}
     </Flex>
@@ -739,25 +731,33 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 }
 
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
-const RemoveButton = ({ formName, formField, index, itemName }) => {
+const RemoveButton = ({ formName, formField, index, itemName, icon, fieldArray }) => {
   const form = useFormContext()
+  const { colorScheme } = useMantineTheme()
 
   return (
     <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
-          // fieldArray.remove(index) // doesn't work on flat arrays
-          console.log({ formField, index, currentFormValue: form.getValues(formField) })
-          removeListItem(form, formField, index)
+          if (fieldArray) {
+            fieldArray.remove(index) // reach hook form doesn't work on flat arrays
+          } else {
+            console.log({ formField, index, currentFormValue: form.getValues(formField) })
+            removeListItem(form, formField, index)
+          }
         }}
         // variant="filled"
         css={css`
-          background-color: #7c1a1a;
+          background-color: ${colorScheme === 'dark' ? '#7c1a1a' : '#b03434'};
+          color: white;
+          :hover {
+            background-color: gray;
+          }
         `}
         size="sm"
         id={`${formName}-${formField}-remove-button-${index}`}
       >
-        <IconMinus size="1rem" />
+        {icon}
       </ActionIcon>
     </Tooltip>
   )

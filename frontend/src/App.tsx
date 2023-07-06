@@ -261,8 +261,8 @@ export default function App() {
         { items: ['0001', '0002'], name: 'item-1' },
         { items: ['0011', '0012'], name: 'item-2' },
       ],
-      closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-      targetDate: dayjs('2023-02-22').toDate(),
+      // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+      // targetDate: dayjs('2023-02-22').toDate(),
       description: 'some text',
       kanbanStepID: 1,
       teamID: 1,
@@ -331,9 +331,14 @@ export default function App() {
       // formats: fullFormats,
     }),
     mode: 'onChange',
-    defaultValues: formInitialValues ?? {},
+    // defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
+
+  useEffect(() => {
+    console.log('resetting')
+    form.reset(formInitialValues)
+  }, [])
 
   const {
     register,
