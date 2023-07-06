@@ -454,7 +454,12 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
       >
         <Text weight={800}>{`${formField}.${k}`}</Text>
         <Card mt={12} mb={12} withBorder>
-          <Tooltip withinPortal label={`Remove ${singularize(options.labels[schemaKey])}`} position="top-end" withArrow>
+          <Tooltip
+            withinPortal
+            label={`Remove ${singularize(options.labels[schemaKey] || '')}`}
+            position="top-end"
+            withArrow
+          >
             <ActionIcon
               onClick={(e) => {
                 fieldArray.remove(k)
@@ -571,7 +576,7 @@ type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U exten
   formField: FormField
   withRemoveButton?: boolean
   schemaFields: Record<SchemaKey, SchemaField>
-  options: DynamicFormOptions<T, ExcludeKeys, U>
+  options: DynamicFormOptions<T, null, SchemaKey>
   index?: number
   formName: string
 }
@@ -593,7 +598,6 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   schemaKey,
   props,
   formField,
-  withRemoveButton = false,
   options,
   schemaFields,
   index,
@@ -723,24 +727,38 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     <Flex align="center" justify={'center'} {...props?.container}>
       {el}
       {index !== undefined && (
-        <Tooltip withinPortal label={`Remove ${singularize(options.labels[schemaKey])}`} position="top-end" withArrow>
-          <ActionIcon
-            onClick={(e) => {
-              // fieldArray.remove(index) // doesn't work on flat arrays
-              console.log({ formField, index, currentFormValue: form.getValues(formField) })
-              removeListItem(form, formField, index)
-            }}
-            // variant="filled"
-            css={css`
-              background-color: #7c1a1a;
-            `}
-            size="sm"
-            id={`${formName}-${formField}-remove-button-${index}`}
-          >
-            <IconMinus size="1rem" />
-          </ActionIcon>
-        </Tooltip>
+        <RemoveButton
+          formName={formName}
+          formField={formFieldArrayPath}
+          index={index}
+          itemName={singularize(options.labels[schemaKey] || '')}
+        />
       )}
     </Flex>
+  )
+}
+
+// needs to be own component to trigger rerender on delete, can't have conditional useWatch
+const RemoveButton = ({ formName, formField, index, itemName }) => {
+  const form = useFormContext()
+
+  return (
+    <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
+      <ActionIcon
+        onClick={(e) => {
+          // fieldArray.remove(index) // doesn't work on flat arrays
+          console.log({ formField, index, currentFormValue: form.getValues(formField) })
+          removeListItem(form, formField, index)
+        }}
+        // variant="filled"
+        css={css`
+          background-color: #7c1a1a;
+        `}
+        size="sm"
+        id={`${formName}-${formField}-remove-button-${index}`}
+      >
+        <IconMinus size="1rem" />
+      </ActionIcon>
+    </Tooltip>
   )
 }

@@ -51,6 +51,9 @@ export default mergeConfig(
         reporter: ['text', 'html'],
         exclude: ['node_modules/', 'src/setupTests.ts'],
       },
+      typecheck: {
+        ignoreSourceErrors: false,
+      },
       css: false,
       // transformMode: {
       //   web: [/\.[jt]sx$/],

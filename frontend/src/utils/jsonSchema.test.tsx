@@ -249,7 +249,10 @@ describe('form generation', () => {
     type b = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'members.userID'>
     type c = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'base.items.items'>
 
-    // const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id).sort()
+    const a: a = 'reviewerf'
+
+    const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id).sort()
+    console.log(actualIds)
     const ids = [
       'demoWorkItemCreateForm-base.description',
       'demoWorkItemCreateForm-base.items-add-button',
