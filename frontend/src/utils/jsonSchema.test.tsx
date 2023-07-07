@@ -163,7 +163,6 @@ const formInitialValues = {
 
 const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
-  // FIXME: closed should not be rquired since its required in parent but allowed type of "null"
   'base.closed': { type: 'date-time', required: false, isArray: false },
   'base.description': { type: 'string', required: true, isArray: false },
   'base.kanbanStepID': { type: 'integer', required: true, isArray: false },

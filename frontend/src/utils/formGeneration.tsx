@@ -412,7 +412,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
             />
           </>
         ) : (
-          <>{renderTitle(formField)}</>
+          <>{renderTitle(formField, options.labels[schemaKey])}</>
         )}
       </Group>
     )
@@ -425,7 +425,10 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
       return (
         <Accordion
           defaultValue={accordion.defaultOpen ? value : null}
-          styles={{ control: { padding: 0, maxHeight: '28px' } }}
+          styles={{
+            control: { padding: 0, maxHeight: '28px' },
+            content: { paddingRight: 0, paddingLeft: 0 },
+          }}
           {...containerProps}
         >
           <Accordion.Item value={value}>
