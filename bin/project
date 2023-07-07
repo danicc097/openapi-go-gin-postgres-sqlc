@@ -822,6 +822,7 @@ x.test.frontend() {
   frontend_config_setup
   cd frontend
   pnpm run test:no-watch
+  pnpm run test-types:no-watch
 }
 
 # Test frontend on file changes.

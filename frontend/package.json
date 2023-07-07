@@ -12,9 +12,10 @@
     "lint": "eslint --config ./.eslintrc.json --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx ./src",
     "lint:fix": "eslint --config ./.eslintrc.json --ext .js,.jsx,.ts,.tsx --fix ./src",
     "test": "vitest watch",
-    "test:no-watch": "vitest run"
+    "test:no-watch": "vitest run",
+    "test-types:no-watch": "vitest typecheck --run",
+    "test-types": "vitest typecheck"
   },
-  "resolveJsonModule": true,
   "dependencies": {
     "@babel/core": "^7.20.2",
     "@emotion/babel-plugin": "^11.11.0",

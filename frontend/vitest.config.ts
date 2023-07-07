@@ -51,8 +51,9 @@ export default mergeConfig(
         reporter: ['text', 'html'],
         exclude: ['node_modules/', 'src/setupTests.ts'],
       },
+      // `vitest typecheck`, not run in watch (https://github.com/vitest-dev/vitest/issues/2299)
       typecheck: {
-        ignoreSourceErrors: false,
+        ignoreSourceErrors: true,
       },
       css: false,
       // transformMode: {

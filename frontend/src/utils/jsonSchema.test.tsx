@@ -245,13 +245,6 @@ describe('form generation', () => {
       </FormProvider>,
     )
 
-    // TODO: use https://vitest.dev/guide/testing-types.html
-    type a = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'members.role'>
-    type b = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'members.userID'>
-    type c = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'base.items.items'>
-
-    const a: a = 'reviewerf'
-
     const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id).sort()
 
     const ids = [
