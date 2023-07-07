@@ -72,7 +72,10 @@ function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null,
   return (
     !!parent.required?.includes(key) &&
     !obj.properties?.[key]?.type?.includes('null') &&
-    !obj?.items?.type?.includes('null')
+    !obj.items?.type?.includes('null') &&
+    (obj.type?.includes('array') && obj.items?.properties?.[key]?.type?.includes('array')
+      ? !obj?.type?.includes('null')
+      : true)
   )
 }
 
