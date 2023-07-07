@@ -160,6 +160,8 @@ const removeListItem = (form, formField: FormField, index: number) => {
   console.log(listItems)
 }
 
+const cardRadius = 6
+
 export default function DynamicForm<
   T extends object,
   ExcludeKeys extends U | null = null,
@@ -269,7 +271,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               variant="filled"
               color={'green'}
               id={`${formName}-${formField}-add-button`}
-            >{`Add ${formField}`}</Button>
+            >{`Add ${singularize(options.labels[schemaKey] || '')}`}</Button>
           </Flex>
         </div>
       )
@@ -314,7 +316,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     if (field.isArray && field.type !== 'object') {
       // nested array of nonbjects generation
       return (
-        <Card key={schemaKey} mt={12} mb={12} withBorder>
+        <Card radius={cardRadius} key={schemaKey} mt={12} mb={12} withBorder>
           {/* existing array fields, if any */}
           {accordion ? (
             <FormAccordion>
@@ -353,7 +355,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
       // array of objects
       return (
         // TODO: background color based on depth
-        <Card key={schemaKey} mt={12} mb={12} withBorder>
+        <Card radius={cardRadius} key={schemaKey} mt={12} mb={12} withBorder>
           {accordion ? (
             <FormAccordion>
               <NestedHeader />
@@ -445,7 +447,8 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
   })
   // form.watch(formField, fieldArray.fields) // inf rerendering
   // useWatch({ name: `${formField}`, control: form.control }) // same errors
-  const { colorScheme } = useMantineTheme()
+  const theme = useMantineTheme()
+  const itemName = singularize(options.labels[schemaKey] || '')
 
   const children = fieldArray.fields.map((item, k) => {
     return (
@@ -456,13 +459,19 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
         `}
       >
         <Text weight={800}>{`${formField}.${k}`}</Text>
-        <Card mt={12} mb={12} withBorder>
+        <Card
+          mt={12}
+          mb={12}
+          withBorder
+          radius={cardRadius}
+          bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
+        >
           <RemoveButton
             formName={formName}
             formField={formField}
             fieldArray={fieldArray}
             index={k}
-            itemName={singularize(options.labels[schemaKey] || '')}
+            itemName={itemName}
             icon={<IconTrash size="1rem" />}
           />
           <Group>
@@ -506,6 +515,7 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
   schemaFields,
 }: ArrayChildrenProps<T, ExcludeKeys, U>) {
   const form = useFormContext()
+  const theme = useMantineTheme()
 
   // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
 
@@ -536,9 +546,16 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
   })
 
   return (
-    <Flex gap={6} align="center" direction="column">
-      {children}
-    </Flex>
+    <Card
+      radius={cardRadius}
+      p={6}
+      bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
+      withBorder
+    >
+      <Flex gap={6} align="center" direction="column">
+        {children}
+      </Flex>
+    </Card>
   )
 }
 
@@ -598,6 +615,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 
   const propsOverride = options.propsOverride?.[schemaKey]
   const type = schemaFields[schemaKey]?.type
+  const itemName = singularize(options.labels[schemaKey] || '')
 
   const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
     ...(type === 'date' || type === 'date-time'
@@ -722,7 +740,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
           formName={formName}
           formField={formFieldArrayPath}
           index={index}
-          itemName={singularize(options.labels[schemaKey] || '')}
+          itemName={itemName}
           icon={<IconMinus size="1rem" />}
         />
       )}
