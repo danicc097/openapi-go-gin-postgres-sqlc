@@ -213,7 +213,7 @@ describe('form generation', () => {
           schemaFields={schemaFields}
           options={{
             labels: {
-              base: null,
+              base: 'base', // just title via renderTitle
               'base.closed': 'closed',
               'base.description': 'description',
               // 'base.metadata': 'metadata', // ignored -> not a key
@@ -225,7 +225,7 @@ describe('form generation', () => {
               'base.items.name': 'name',
               'base.items.items': 'items',
               'base.workItemTypeID': 'workItemTypeID',
-              demoProject: null,
+              demoProject: null, // won't render title
               'demoProject.lastMessageAt': 'lastMessageAt',
               'demoProject.line': 'line',
               'demoProject.ref': 'ref',
@@ -299,7 +299,6 @@ describe('form generation', () => {
       'base.items-title',
       'base.items.0.items-title',
       'base.items.1.items-title',
-      'demoProject-title',
       'members-title',
       'tagIDs-title',
     ]

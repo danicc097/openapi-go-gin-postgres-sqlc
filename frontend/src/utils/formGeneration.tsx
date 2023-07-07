@@ -142,11 +142,11 @@ type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, Excl
   formName: string
 }
 
-function renderTitle(key: string) {
+function renderTitle(key: FormField, title) {
   return (
     <>
       <Title data-testid={`${key}-title`} size={18}>
-        {key}
+        {title}
       </Title>
       <Space p={8} />
     </>
@@ -172,7 +172,7 @@ export default function DynamicForm<
 
   // TODO: will also need sorting schemaFields beforehand and then generate normally.
   return (
-    <PageTemplate minWidth={1000}>
+    <PageTemplate minWidth={800}>
       <>
         <FormData />
         <form
@@ -261,8 +261,8 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
       return (
         <div>
           {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
-          <Flex direction="row">
-            {!accordion && renderTitle(formField)}
+          <Flex direction="row" align="center">
+            {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
             <Button
               size="xs"
               p={4}
@@ -316,7 +316,16 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     if (field.isArray && field.type !== 'object') {
       // nested array of nonbjects generation
       return (
-        <Card radius={cardRadius} key={schemaKey} mt={12} mb={12} withBorder>
+        <Card
+          radius={cardRadius}
+          key={schemaKey}
+          mt={12}
+          mb={12}
+          withBorder
+          css={css`
+            width: 100%;
+          `}
+        >
           {/* existing array fields, if any */}
           {accordion ? (
             <FormAccordion>
@@ -384,7 +393,13 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     }
 
     return (
-      <Group key={schemaKey} align="center">
+      <Group
+        key={schemaKey}
+        align="center"
+        css={css`
+          width: 100%;
+        `}
+      >
         {field.type !== 'object' ? (
           <>
             <GeneratedInput
@@ -458,7 +473,6 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
           min-width: 100%;
         `}
       >
-        <Text weight={800}>{`${formField}.${k}`}</Text>
         <Card
           mt={12}
           mb={12}
@@ -466,14 +480,16 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
           radius={cardRadius}
           bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
         >
-          <RemoveButton
-            formName={formName}
-            formField={formField}
-            fieldArray={fieldArray}
-            index={k}
-            itemName={itemName}
-            icon={<IconTrash size="1rem" />}
-          />
+          <Flex justify={'end'}>
+            <RemoveButton
+              formName={formName}
+              formField={formField}
+              fieldArray={fieldArray}
+              index={k}
+              itemName={itemName}
+              icon={<IconTrash size="1rem" />}
+            />
+          </Flex>
           <Group>
             <GeneratedInputs
               parentSchemaKey={schemaKey}
@@ -526,7 +542,7 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
       <Flex
         key={k}
         css={css`
-          min-width: 100%;
+          width: 100%;
         `}
       >
         <GeneratedInput
@@ -551,8 +567,18 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
       p={6}
       bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
       withBorder
+      css={css`
+        width: 100%;
+      `}
     >
-      <Flex gap={6} align="center" direction="column">
+      <Flex
+        gap={6}
+        align="center"
+        direction="column"
+        css={css`
+          width: 100%;
+        `}
+      >
         {children}
       </Flex>
     </Card>
