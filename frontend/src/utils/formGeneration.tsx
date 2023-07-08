@@ -33,7 +33,15 @@ import React, {
   createContext,
   useContext,
 } from 'react'
-import { useFormContext, type Path, type UseFormReturn, FormProvider, useWatch, useFieldArray } from 'react-hook-form'
+import {
+  useFormContext,
+  type Path,
+  type UseFormReturn,
+  FormProvider,
+  useWatch,
+  useFieldArray,
+  type UseFieldArrayReturn,
+} from 'react-hook-form'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
@@ -592,7 +600,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   const formFieldKeys = formField.split('.')
   // remove last index
-  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.')
+  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.') as FormField
 
   const formValue = form.getValues(formField)
 
@@ -702,8 +710,16 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   )
 }
 
+type RemoveButtonProps = {
+  formField: FormField
+  index: number
+  itemName: string
+  icon: React.ReactNode
+  fieldArray: UseFieldArrayReturn | null
+}
+
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
-const RemoveButton = ({ formField, index, itemName, icon, fieldArray }) => {
+const RemoveButton = ({ formField, index, itemName, icon, fieldArray }: RemoveButtonProps) => {
   const form = useFormContext()
   const { colorScheme } = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
