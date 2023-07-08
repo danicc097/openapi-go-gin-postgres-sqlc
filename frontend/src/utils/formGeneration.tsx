@@ -787,6 +787,7 @@ const initialValueByType = (type?: SchemaField['type']) => {
     case 'boolean':
       return false
     default:
+      console.log(`unknown type: ${type}`)
       return ''
   }
 }

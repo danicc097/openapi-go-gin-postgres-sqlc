@@ -1,8 +1,8 @@
-import { createStyles, MantineTheme } from '@mantine/core';
-import { colors, shadows } from '../config';
+import { createStyles, MantineTheme } from '@mantine/core'
+import { colors, shadows } from '../config'
 
 export default createStyles((theme: MantineTheme) => {
-  const dark = theme.colorScheme === 'dark';
+  const dark = theme.colorScheme === 'dark'
 
   return {
     arrow: {
@@ -30,5 +30,5 @@ export default createStyles((theme: MantineTheme) => {
       margin: '10px',
       borderTop: `0.0625rem solid ${dark ? colors.B30 : colors.BGLight}`,
     },
-  };
-});
+  }
+})
