@@ -387,7 +387,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
             />
           </>
         ) : (
-          <>{renderTitle(formField, options.labels[schemaKey])}</>
+          <>{options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}</>
         )}
       </Group>
     )

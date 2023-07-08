@@ -306,8 +306,7 @@ describe('form generation', () => {
 
     expect(actualIds.sort()).toEqual(ids.sort())
 
-    // [...document.querySelectorAll('[data-testid]')].sort().map(e => (e.getAttribute('data-testid')))
-    const titleDataTestIds = [
+    const dataTestIds = [
       'base-title',
       'base.items-title',
       'base.items.0.items-title',
@@ -315,9 +314,9 @@ describe('form generation', () => {
       'members-title',
       'tagIDs-title',
     ]
-    titleDataTestIds.forEach((id) => {
-      expect(view.getByTestId(id)).toBeInTheDocument()
-    })
+    const actualDataTestIds = [...document.querySelectorAll('[data-testid]')].map((e) => e.getAttribute('data-testid'))
+
+    expect(actualDataTestIds.sort()).toEqual(dataTestIds.sort())
 
     // test should submit with default values if none changed
 
