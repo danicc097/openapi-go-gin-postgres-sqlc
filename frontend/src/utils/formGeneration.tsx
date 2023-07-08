@@ -227,55 +227,8 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     return (parentFormField ? `${parentFormField}.${currentFieldName}` : schemaKey) as FormField
   }
 
-  const initialValueByKey = (schemaKey: SchemaKey) => {
-    switch (schemaFields[schemaKey]?.type) {
-      case 'object':
-        return {}
-      case 'array':
-        return []
-      case 'number':
-      case 'integer':
-        return 0
-      case 'boolean':
-        return false
-      default:
-        return ''
-    }
-  }
-
-  // NOTE: useFieldArray can append empty field just once (prevents user spamming add button)
-  const addNestedField = (schemaKey: SchemaKey, formField: FormField) => {
-    const initialValue = initialValueByKey(schemaKey)
-
-    const vals = form.getValues(formField) || []
-
-    console.log([...vals, initialValue] as any)
-
-    form.setValue(formField, [...vals, initialValue] as any)
-  }
-
   const children = entries(schemaFields).map(([schemaKey, field]) => {
     const renders = useRenders()
-
-    const NestedHeader = () => {
-      return (
-        <div>
-          {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
-          <Flex direction="row" align="center">
-            {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
-            <Button
-              size="xs"
-              p={4}
-              leftIcon={<IconPlus size="1rem" />}
-              onClick={() => addNestedField(schemaKey, formField)}
-              variant="filled"
-              color={'green'}
-              id={`${formName}-${formField}-add-button`}
-            >{`Add ${singularize(options.labels[schemaKey] || '')}`}</Button>
-          </Flex>
-        </div>
-      )
-    }
 
     if (
       (parentSchemaKey && !schemaKey.startsWith(parentSchemaKey)) ||
@@ -312,6 +265,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
       required: field.required,
       id: `${formName}-${formField}`,
     }
+    const itemName = singularize(options.labels[schemaKey] || '')
 
     if (field.isArray && field.type !== 'object') {
       // nested array of nonbjects generation
@@ -329,7 +283,14 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
           {/* existing array fields, if any */}
           {accordion ? (
             <FormAccordion>
-              <NestedHeader />
+              <NestedHeader
+                formName={formName}
+                formField={formField}
+                schemaKey={schemaKey}
+                options={options}
+                itemName={itemName}
+                schemaFields={schemaFields}
+              />
               <Space p={10} />
               <ArrayChildren
                 formField={formField}
@@ -343,7 +304,14 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
             </FormAccordion>
           ) : (
             <>
-              <NestedHeader />
+              <NestedHeader
+                formName={formName}
+                formField={formField}
+                schemaKey={schemaKey}
+                options={options}
+                itemName={itemName}
+                schemaFields={schemaFields}
+              />
               <Space p={6} />
               <ArrayChildren
                 formField={formField}
@@ -367,7 +335,14 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
         <Card radius={cardRadius} key={schemaKey} mt={12} mb={12} withBorder>
           {accordion ? (
             <FormAccordion>
-              <NestedHeader />
+              <NestedHeader
+                formName={formName}
+                formField={formField}
+                schemaKey={schemaKey}
+                options={options}
+                itemName={itemName}
+                schemaFields={schemaFields}
+              />
               <ArrayOfObjectsChildren
                 formField={formField}
                 formName={formName}
@@ -378,7 +353,14 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
             </FormAccordion>
           ) : (
             <>
-              <NestedHeader />
+              <NestedHeader
+                formName={formName}
+                formField={formField}
+                schemaKey={schemaKey}
+                options={options}
+                itemName={itemName}
+                schemaFields={schemaFields}
+              />
               <ArrayOfObjectsChildren
                 formField={formField}
                 formName={formName}
@@ -563,6 +545,8 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
       </Flex>
     )
   })
+
+  if (children.length === 0) return null
 
   return (
     <Card
@@ -808,4 +792,49 @@ const RemoveButton = ({ formName, formField, index, itemName, icon, fieldArray }
       </ActionIcon>
     </Tooltip>
   )
+}
+
+const NestedHeader = ({ formName, formField, schemaKey, options, itemName, schemaFields }) => {
+  const form = useFormContext()
+  const accordion = options.accordion?.[schemaKey]
+
+  return (
+    <div>
+      {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
+      <Flex direction="row" align="center">
+        {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
+        <Button
+          size="xs"
+          p={4}
+          leftIcon={<IconPlus size="1rem" />}
+          onClick={() => {
+            const initialValue = initialValueByType(schemaFields[schemaKey]?.type)
+            const vals = form.getValues(formField) || []
+            console.log([...vals, initialValue] as any)
+
+            form.setValue(formField, [...vals, initialValue] as any)
+          }}
+          variant="filled"
+          color={'green'}
+          id={`${formName}-${formField}-add-button`}
+        >{`Add ${itemName}`}</Button>
+      </Flex>
+    </div>
+  )
+}
+
+const initialValueByType = (type: SchemaField['type']) => {
+  switch (type) {
+    case 'object':
+      return {}
+    case 'array':
+      return []
+    case 'number':
+    case 'integer':
+      return 0
+    case 'boolean':
+      return false
+    default:
+      return ''
+  }
 }
