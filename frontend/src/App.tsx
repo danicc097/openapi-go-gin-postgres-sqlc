@@ -328,7 +328,7 @@ export default function App() {
   const form = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {
       strict: false,
-      // formats: fullFormats,
+      formats: fullFormats,
     }),
     mode: 'onChange',
     // defaultValues: formInitialValues ?? {},
