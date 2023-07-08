@@ -444,7 +444,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
   const children = (form.getValues(formField) || []).map((item, k) => {
     return (
       <div
-        key={k}
+        key={k} // if reordering needed check useFieldArray impl. can't use on flat array so will have to reimplement one way or another
         css={css`
           min-width: 100%;
         `}
@@ -515,7 +515,7 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
   const children = (form.getValues(formField) || []).map((item, k: number) => {
     return (
       <Flex
-        key={k}
+        key={k} // if reordering needed check useFieldArray impl. can't use on flat array so will have to reimplement one way or another
         css={css`
           width: 100%;
         `}
