@@ -589,9 +589,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   })
 
   const fieldState = form.getFieldState(formField)
-  // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
-  // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
-  // value modified back to normal
 
   const formFieldKeys = formField.split('.')
   // remove last index

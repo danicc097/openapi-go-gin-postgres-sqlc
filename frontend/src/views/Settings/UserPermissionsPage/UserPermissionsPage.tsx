@@ -9,7 +9,6 @@ import type { Role } from 'src/client-validator/gen/models'
 import PageTemplate from 'src/components/PageTemplate'
 import type { ValidationErrors } from 'src/client-validator/validate'
 import { updateUserAuthorization, useUpdateUserAuthorization } from 'src/gen/user/user'
-import { Form, useForm, type UseFormReturnType } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
 import { RestDemoWorkItemCreateRequestDecoder, UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
 import { newFrontendSpan } from 'src/TraceProvider'
@@ -54,6 +53,7 @@ import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
 import { asConst } from 'json-schema-to-ts'
 import type { components, schemas } from 'src/types/schema'
+import { useForm } from 'react-hook-form'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -70,7 +70,7 @@ interface SelectRoleItemProps extends React.ComponentPropsWithoutRef<'div'> {
   value: User['role']
 }
 
-function scopeColor(scopeName: string): DefaultMantineColor {
+function scopeColor(scopeName?: string): DefaultMantineColor {
   switch (scopeName) {
     case 'read':
       return 'green'
@@ -79,6 +79,8 @@ function scopeColor(scopeName: string): DefaultMantineColor {
       return 'orange'
     case 'delete':
       return 'red'
+    default:
+      return 'blue'
   }
 }
 
@@ -134,8 +136,8 @@ export default function UserPermissionsPage() {
       value: role,
     }))
 
-  const scopeEditPanels: Record<string, Partial<typeof SCOPES>> = Object.entries(SCOPES).reduce((acc, [key, value]) => {
-    const [group, scope] = key.split(':')
+  const scopeEditPanels: Record<string, Partial<typeof SCOPES>> = entries(SCOPES).reduce((acc, [key, value]) => {
+    const [group, scope] = key.split(':', 2) as [string, string]
     if (!acc[group]) {
       acc[group] = {}
     }
@@ -163,13 +165,8 @@ export default function UserPermissionsPage() {
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
-  const form = useForm({
-    initialValues: {} as UpdateUserAuthRequest,
-    validateInputOnChange: true,
-    validate: {
-      role: (v, vv, path) => validateField(UpdateUserAuthRequestDecoder, path, vv),
-      scopes: (v, vv, path) => validateField(UpdateUserAuthRequestDecoder, path, vv),
-    },
+  const form = useForm<UpdateUserAuthRequest>({
+    defaultValues: {},
   })
 
   const submitRoleUpdate = async () => {
@@ -199,9 +196,10 @@ export default function UserPermissionsPage() {
     span?.end()
   }
 
-  const handleError = (errors: typeof form.errors) => {
+  const handleError = (errors: typeof form.formState.errors) => {
     if (Object.values(errors).some((v) => v)) {
       console.log('some errors found')
+      console.log(errors)
 
       // TODO validate everything and show ALL validation errors
       // (we dont want to show very long error messages in each form
@@ -223,15 +221,15 @@ export default function UserPermissionsPage() {
 
   const onRoleSelectableChange = (role) => {
     console.log(role)
-    form.setFieldValue('role', role)
+    form.setValue('role', role)
   }
 
   const onEmailSelectableChange = (email) => {
     const user = allUsers.find((user) => user.email === email)
     console.log(user)
     setUserSelection(user)
-    form.setFieldValue('role', user.role)
-    form.setFieldValue('scopes', user.scopes)
+    form.setValue('role', user.role)
+    form.setValue('scopes', user.scopes)
   }
 
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -252,11 +250,11 @@ export default function UserPermissionsPage() {
 
     const handleCheckboxChange = (key: Scope, checked: boolean) => {
       if (checked) {
-        form.setFieldValue('scopes', [...form.values.scopes, key])
+        form.setValue('scopes', [...form.getValues('scopes'), key])
       } else {
-        form.setFieldValue(
+        form.setValue(
           'scopes',
-          form.values.scopes.filter((scope) => scope !== key),
+          form.getValues('scopes')?.filter((scope) => scope !== key),
         )
       }
     }
@@ -280,7 +278,7 @@ export default function UserPermissionsPage() {
         {entries(scopes).map(([key, scope]) => {
           const scopeName = key.split(':')[1]
           const isDisabled = !scopeChangeAllowed(key)
-          const isChecked = form.values.scopes.includes(key)
+          const isChecked = form.getValues('scopes')?.includes(key)
 
           return (
             <div key={key}>
@@ -296,7 +294,7 @@ export default function UserPermissionsPage() {
                     display: 'flex',
                     alignItems: 'center',
                     marginBottom: '2px',
-                    filter: isDisabled && 'grayscale(1)',
+                    filter: isDisabled ? 'grayscale(1)' : '',
                   }}
                 >
                   <Grid.Col span={2}>
@@ -352,36 +350,6 @@ export default function UserPermissionsPage() {
 
   type KanbanStepID = PathType<RestDemoWorkItemCreateRequest, 'base.kanbanStepID'>
 
-  /* TODO: allow generate form customization per path, e.g. for kanbanStepID  ->
-   // add optional schema["DbKanbanStep"] if defaultValues are
-    generateForm<RestDemoWorkItemCreateRequest, schema["DbKanbanStep"]``R``>(
-      RestDemoWorkItemCreateForm,
-      {
-      override: {
-        'base.kanbanStepID': {
-          // so we can show kanban step name instead of ID in a dropdown, for instance
-          // accessor must satisfy (...args: any) => <U> where U is PathType<typeof RestDemoWorkItemCreateForm, 'base.kanbanStepID'>
-          // which is as far as we can get to ensure we're returning the right form value
-          // accesor and display fns are required if optional type arg is passed (schema["DbKanbanStep"])
-          accessor: (kanbanStep: <R>): <T> => {
-            // ... any modifications
-            return kanbanStep.kanbanStepID
-          },
-          // display in dropdown, multiselect...
-           display: (kanbanStep: <R>): <T> => {
-            // ... any modifications
-            return (<Badge radius={4} size="xs" color={kanbanStep.color}>
-                      {kanbanStep.name}
-                    </Badge>)
-          },
-          // pool of options for dropdown, multiselect... must be an array of passsed arg <R>
-          options: customKanbanStepsOptions // []schema["DbKanbanStep"] // may be all, filtered based on some param...
-        }
-      },
-      )
-  }
-  */
-
   const element = (
     <>
       {JSON.stringify(calloutError)}
@@ -393,7 +361,7 @@ export default function UserPermissionsPage() {
       <Prism language="json">{JSON.stringify(form, null, 4)}</Prism>
       <Space pt={12} />
       <form
-        onSubmit={form.onSubmit(onRoleUpdateSubmit, handleError)}
+        onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}
         // error={getErrors()}
       >
         <Flex direction="column">
@@ -434,7 +402,7 @@ export default function UserPermissionsPage() {
                   data-test-subj="updateUserAuthForm__selectable_Role"
                   defaultValue={userSelection.role}
                   data={roleOptions ?? []}
-                  value={form.values.role}
+                  value={form.getValues('role')}
                   onChange={onRoleSelectableChange}
                 />
                 <Space pt={12} />
