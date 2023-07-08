@@ -24,7 +24,15 @@ import { useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { singularize } from 'inflection'
 import _, { memoize } from 'lodash'
-import React, { useState, type ComponentProps, useMemo, type MouseEventHandler, memo } from 'react'
+import React, {
+  useState,
+  type ComponentProps,
+  useMemo,
+  type MouseEventHandler,
+  memo,
+  createContext,
+  useContext,
+} from 'react'
 import { useFormContext, type Path, type UseFormReturn, FormProvider, useWatch, useFieldArray } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
@@ -136,6 +144,33 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   }>
 }
 
+type DynamicFormContextValue = {
+  formName: string
+  schemaFields: Record<SchemaKey, SchemaField>
+  options: DynamicFormOptions<any, null, SchemaKey> // for more performant internal intellisense. for user it will be typed
+}
+
+const DynamicFormContext = createContext<DynamicFormContextValue | undefined>(undefined)
+
+type DynamicFormProviderProps = {
+  value: DynamicFormContextValue
+  children: React.ReactNode
+}
+
+const DynamicFormProvider = ({ value, children }: DynamicFormProviderProps) => {
+  return <DynamicFormContext.Provider value={value}>{children}</DynamicFormContext.Provider>
+}
+
+const useDynamicFormContext = (): DynamicFormContextValue => {
+  const context = useContext(DynamicFormContext)
+
+  if (!context) {
+    throw new Error('useDynamicFormContext must be used within a DynamicFormProvider')
+  }
+
+  return context
+}
+
 type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U | null = null> = {
   schemaFields: Record<Exclude<U, ExcludeKeys>, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, U>
@@ -165,27 +200,29 @@ export default function DynamicForm<
 
   // TODO: will also need sorting schemaFields beforehand and then generate normally.
   return (
-    <PageTemplate minWidth={800}>
-      <>
-        <FormData />
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            form.handleSubmit(
-              (data) => console.log({ data }),
-              (errors) => console.log({ errors }),
-            )(e)
-          }}
-          css={css`
-            min-width: 100%;
-          `}
-          id={formName}
-        >
-          <button type="submit">submit</button>
-          <GeneratedInputs schemaFields={schemaFields} formName={formName} options={options} />
-        </form>
-      </>
-    </PageTemplate>
+    <DynamicFormProvider value={{ formName, options, schemaFields }}>
+      <PageTemplate minWidth={800}>
+        <>
+          <FormData />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit(
+                (data) => console.log({ data }),
+                (errors) => console.log({ errors }),
+              )(e)
+            }}
+            css={css`
+              min-width: 100%;
+            `}
+            id={formName}
+          >
+            <button type="submit">submit</button>
+            <GeneratedInputs />
+          </form>
+        </>
+      </PageTemplate>
+    </DynamicFormProvider>
   )
 }
 
@@ -201,24 +238,15 @@ const constructFormField = (schemaKey: SchemaKey, parentFormField?: FormField) =
 type SchemaKey = Branded<string, 'SchemaKey'>
 type FormField = Branded<string, 'FormField'>
 
-type GeneratedInputsProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+type GeneratedInputsProps = {
   parentSchemaKey?: SchemaKey
   index?: number
   parentFormField?: FormField
   removeButton?: JSX.Element | null
-  schemaFields: Record<SchemaKey, SchemaField>
-  formName: string
-  options: DynamicFormOptions<T, null, SchemaKey> // for more performant internal intellisense.
 }
 
-function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
-  parentSchemaKey,
-  parentFormField,
-  schemaFields,
-  formName,
-  options,
-}: GeneratedInputsProps<T, ExcludeKeys, U>) {
-  const form = useFormContext()
+function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsProps) {
+  const { formName, options, schemaFields } = useDynamicFormContext()
 
   const children = entries(schemaFields).map(([schemaKey, field]) => {
     if (
@@ -272,44 +300,24 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
           {/* existing array fields, if any */}
           {accordion ? (
             <FormAccordion accordion={accordion} schemaKey={schemaKey} containerProps={containerProps}>
-              <NestedHeader
-                formName={formName}
-                formField={formField}
-                schemaKey={schemaKey}
-                options={options}
-                itemName={itemName}
-                schemaFields={schemaFields}
-              />
+              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
               <Space p={10} />
               <ArrayChildren
                 formField={formField}
                 schemaKey={schemaKey}
                 inputProps={inputProps}
-                formName={formName}
                 containerProps={containerProps}
-                options={options}
-                schemaFields={schemaFields}
               />
             </FormAccordion>
           ) : (
             <>
-              <NestedHeader
-                formName={formName}
-                formField={formField}
-                schemaKey={schemaKey}
-                options={options}
-                itemName={itemName}
-                schemaFields={schemaFields}
-              />
+              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
               <Space p={6} />
               <ArrayChildren
                 formField={formField}
                 schemaKey={schemaKey}
                 inputProps={inputProps}
-                formName={formName}
                 containerProps={containerProps}
-                options={options}
-                schemaFields={schemaFields}
               />
             </>
           )}
@@ -323,39 +331,13 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
         <Card radius={cardRadius} key={schemaKey} mt={12} mb={12} withBorder>
           {accordion ? (
             <FormAccordion accordion={accordion} schemaKey={schemaKey} containerProps={containerProps}>
-              <NestedHeader
-                formName={formName}
-                formField={formField}
-                schemaKey={schemaKey}
-                options={options}
-                itemName={itemName}
-                schemaFields={schemaFields}
-              />
-              <ArrayOfObjectsChildren
-                formField={formField}
-                formName={formName}
-                schemaKey={schemaKey}
-                options={options}
-                schemaFields={schemaFields}
-              />
+              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
+              <ArrayOfObjectsChildren formField={formField} schemaKey={schemaKey} />
             </FormAccordion>
           ) : (
             <>
-              <NestedHeader
-                formName={formName}
-                formField={formField}
-                schemaKey={schemaKey}
-                options={options}
-                itemName={itemName}
-                schemaFields={schemaFields}
-              />
-              <ArrayOfObjectsChildren
-                formField={formField}
-                formName={formName}
-                schemaKey={schemaKey}
-                options={options}
-                schemaFields={schemaFields}
-              />
+              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
+              <ArrayOfObjectsChildren formField={formField} schemaKey={schemaKey} />
             </>
           )}
         </Card>
@@ -376,9 +358,6 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
               schemaKey={schemaKey}
               formField={formField}
               props={{ input: inputProps, container: containerProps }}
-              options={options}
-              schemaFields={schemaFields}
-              formName={formName}
             />
           </>
         ) : (
@@ -413,21 +392,17 @@ function FormAccordion({ children, accordion, schemaKey, containerProps }): JSX.
   )
 }
 
-type ArrayOfObjectsChildrenProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+type ArrayOfObjectsChildrenProps = {
   formField: FormField
   schemaKey: SchemaKey
-  formName: string
-  options: DynamicFormOptions<T, null, SchemaKey> // for more performant internal intellisense.
-  schemaFields: Record<SchemaKey, SchemaField>
 }
 
-function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
+function ArrayOfObjectsChildren({
   formField,
-  formName,
+
   schemaKey,
-  options,
-  schemaFields,
-}: ArrayOfObjectsChildrenProps<T, ExcludeKeys, U>) {
+}: ArrayOfObjectsChildrenProps) {
+  const { formName, options, schemaFields } = useDynamicFormContext()
   const form = useFormContext()
   // form.watch(formField, fieldArray.fields) // inf rerendering
   const theme = useMantineTheme()
@@ -458,7 +433,6 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
           <Flex justify={'end'}>
             <RemoveButton
               fieldArray={fieldArray}
-              formName={formName}
               formField={formField}
               index={k}
               itemName={itemName}
@@ -466,13 +440,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
             />
           </Flex>
           <Group>
-            <GeneratedInputs
-              parentSchemaKey={schemaKey}
-              parentFormField={`${formField}.${k}` as FormField}
-              schemaFields={schemaFields}
-              formName={formName}
-              options={options}
-            />
+            <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${k}` as FormField} />
           </Group>
         </Card>
       </div>
@@ -486,27 +454,23 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
   )
 }
 
-type ArrayChildrenProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+type ArrayChildrenProps = {
   formField: FormField
   schemaKey: SchemaKey
-  formName: string
-  options: DynamicFormOptions<T, null, SchemaKey> // for more performant internal intellisense.
-  schemaFields: Record<SchemaKey, SchemaField>
   inputProps: any
   containerProps: any
 }
 
-function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
+function ArrayChildren({
   formField,
-  formName,
+
   schemaKey,
   inputProps,
   containerProps,
-  options,
-  schemaFields,
-}: ArrayChildrenProps<T, ExcludeKeys, U>) {
+}: ArrayChildrenProps) {
   const form = useFormContext()
   const theme = useMantineTheme()
+  const { formName, options, schemaFields } = useDynamicFormContext()
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
@@ -522,15 +486,12 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
         `}
       >
         <GeneratedInput
-          formName={formName}
           schemaKey={schemaKey}
           formField={`${formField}.${k}` as FormField}
           props={{
             input: { ...inputProps, id: `${formName}-${formField}-${k}` },
             container: containerProps,
           }}
-          options={options}
-          schemaFields={schemaFields}
           index={k}
         />
       </Flex>
@@ -578,7 +539,7 @@ function FormData() {
   )
 }
 
-type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+type GeneratedInputProps = {
   schemaKey: SchemaKey
   props?: {
     input?: any
@@ -586,10 +547,7 @@ type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U exten
   }
   formField: FormField
   withRemoveButton?: boolean
-  schemaFields: Record<SchemaKey, SchemaField>
-  options: DynamicFormOptions<T, null, SchemaKey>
   index?: number
-  formName: string
 }
 
 const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
@@ -605,17 +563,10 @@ const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
 // useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
 // TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
 // for builtin support for uncontrolled input
-const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
-  schemaKey,
-  props,
-  formField,
-  options,
-  schemaFields,
-  index,
-  formName,
-}: GeneratedInputProps<T, ExcludeKeys, U>) => {
+const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputProps) => {
   const form = useFormContext()
   // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
+  const { formName, options, schemaFields } = useDynamicFormContext()
 
   const propsOverride = options.propsOverride?.[schemaKey]
   const type = schemaFields[schemaKey]?.type
@@ -741,7 +692,6 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       {index !== undefined && (
         <RemoveButton
           fieldArray={null}
-          formName={formName}
           formField={formFieldArrayPath}
           index={index}
           itemName={itemName}
@@ -753,9 +703,10 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 }
 
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
-const RemoveButton = ({ formName, formField, index, itemName, icon, fieldArray }) => {
+const RemoveButton = ({ formField, index, itemName, icon, fieldArray }) => {
   const form = useFormContext()
   const { colorScheme } = useMantineTheme()
+  const { formName, options, schemaFields } = useDynamicFormContext()
 
   return (
     <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
@@ -787,7 +738,15 @@ const RemoveButton = ({ formName, formField, index, itemName, icon, fieldArray }
   )
 }
 
-const NestedHeader = ({ formName, formField, schemaKey, options, itemName, schemaFields }) => {
+type NestedHeaderProps = {
+  schemaKey: SchemaKey
+  formField: FormField
+  itemName: string
+}
+
+const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
   const form = useFormContext()
   const accordion = options.accordion?.[schemaKey]
 
@@ -816,7 +775,7 @@ const NestedHeader = ({ formName, formField, schemaKey, options, itemName, schem
   )
 }
 
-const initialValueByType = (type: SchemaField['type']) => {
+const initialValueByType = (type?: SchemaField['type']) => {
   switch (type) {
     case 'object':
       return {}
