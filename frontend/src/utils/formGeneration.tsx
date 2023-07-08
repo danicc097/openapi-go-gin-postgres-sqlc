@@ -153,13 +153,6 @@ function renderTitle(key: FormField, title) {
   )
 }
 
-const removeListItem = (form, formField: FormField, index: number) => {
-  const listItems = form.getValues(formField)
-  removeElementByIndex(listItems, index)
-  form.setValue(formField, listItems as any)
-  console.log(listItems)
-}
-
 const cardRadius = 6
 
 export default function DynamicForm<
@@ -441,19 +434,17 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
   schemaFields,
 }: ArrayOfObjectsChildrenProps<T, ExcludeKeys, U>) {
   const form = useFormContext()
-  const fieldArray = useFieldArray({
-    control: form.control,
-    name: formField,
-  })
   // form.watch(formField, fieldArray.fields) // inf rerendering
   // useWatch({ name: `${formField}`, control: form.control }) // same errors
   const theme = useMantineTheme()
   const itemName = singularize(options.labels[schemaKey] || '')
 
-  const children = fieldArray.fields.map((item, k) => {
+  useWatch({ name: `${formField}`, control: form.control }) // needed
+
+  const children = (form.getValues(formField) || []).map((item, k) => {
     return (
       <div
-        key={item.id}
+        key={k}
         css={css`
           min-width: 100%;
         `}
@@ -469,7 +460,6 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
             <RemoveButton
               formName={formName}
               formField={formField}
-              fieldArray={fieldArray}
               index={k}
               itemName={itemName}
               icon={<IconTrash size="1rem" />}
@@ -520,7 +510,7 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
 
   // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
 
-  useWatch({ name: `${formField}`, control: form.control }) // same errors
+  useWatch({ name: `${formField}`, control: form.control }) // needed
 
   const children = (form.getValues(formField) || []).map((item, k: number) => {
     return (
@@ -749,7 +739,6 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       {el}
       {index !== undefined && (
         <RemoveButton
-          fieldArray={null}
           formName={formName}
           formField={formFieldArrayPath}
           index={index}
@@ -762,7 +751,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 }
 
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
-const RemoveButton = ({ formName, formField, index, itemName, icon, fieldArray }) => {
+const RemoveButton = ({ formName, formField, index, itemName, icon }) => {
   const form = useFormContext()
   const { colorScheme } = useMantineTheme()
 
@@ -770,12 +759,11 @@ const RemoveButton = ({ formName, formField, index, itemName, icon, fieldArray }
     <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
-          if (fieldArray) {
-            fieldArray.remove(index) // reach hook form doesn't work on flat arrays
-          } else {
-            console.log({ formField, index, currentFormValue: form.getValues(formField) })
-            removeListItem(form, formField, index)
-          }
+          console.log({ formField, index, currentFormValue: form.getValues(formField) })
+          const listItems = form.getValues(formField)
+          removeElementByIndex(listItems, index)
+          form.setValue(formField, listItems as any)
+          console.log(listItems)
         }}
         // variant="filled"
         css={css`
