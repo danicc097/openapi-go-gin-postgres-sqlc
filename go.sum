@@ -384,8 +384,8 @@ github.com/yuin/gopher-lua v1.1.0/go.mod h1:GBR0iDaNXjAgGg9zfCvksxSRnQx76gclCIb7
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=
 github.com/zitadel/logging v0.3.4 h1:9hZsTjMMTE3X2LUi0xcF9Q9EdLo+FAezeu52ireBbHM=
 github.com/zitadel/logging v0.3.4/go.mod h1:aPpLQhE+v6ocNK0TWrBrd363hZ95KcI17Q1ixAQwZF0=
-github.com/zitadel/oidc/v2 v2.6.3 h1:YY87cAcdI+3voZqcRU2RGz3Pxky/2KsjDmYDVb6EgWw=
-github.com/zitadel/oidc/v2 v2.6.3/go.mod h1:2LrbdKYLSgKxXBfct56ev4e186J7TXotlZxb6tExOO4=
+github.com/zitadel/oidc/v2 v2.6.4 h1:bruA+KOFHcGpxr++WgtvR82ZlH54kKituu5xE4wpF7o=
+github.com/zitadel/oidc/v2 v2.6.4/go.mod h1:owrsdzRqGvIZjBCY9LY1ZUYJ0mRUbGkQpZ3OskXL4wM=
 go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0 h1:l7AmwSVqozWKKXeZHycpdmpycQECRpoGwJ1FW2sWfTo=
 go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0/go.mod h1:Ep4uoO2ijR0f49Pr7jAqyTjSCyS1SRL18wwttKfwqXA=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0 h1:ZOLJc06r4CB42laIXg/7udr0pbZyuAihN10A/XuiQRY=

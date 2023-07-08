@@ -439,7 +439,7 @@ github.com/yuin/gopher-lua/pm
 # github.com/zitadel/logging v0.3.4
 ## explicit; go 1.13
 github.com/zitadel/logging
-# github.com/zitadel/oidc/v2 v2.6.3
+# github.com/zitadel/oidc/v2 v2.6.4
 ## explicit; go 1.18
 github.com/zitadel/oidc/v2/pkg/client
 github.com/zitadel/oidc/v2/pkg/client/rp
