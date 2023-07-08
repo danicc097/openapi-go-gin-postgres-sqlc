@@ -344,12 +344,6 @@ export default function UserPermissionsPage() {
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
   console.log(demoWorkItemCreateSchema)
 
-  type Paths = RecursiveKeyOf<RestDemoWorkItemCreateRequest>
-
-  const a: Paths = 'base.kanbanStepID'
-
-  type KanbanStepID = PathType<RestDemoWorkItemCreateRequest, 'base.kanbanStepID'>
-
   const element = (
     <>
       {JSON.stringify(calloutError)}
