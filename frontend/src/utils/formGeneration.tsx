@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { css } from '@emotion/react'
+import type { EmotionJSX } from '@emotion/react/types/jsx-namespace'
 import {
   Group,
   TextInput,
@@ -32,6 +34,7 @@ import React, {
   memo,
   createContext,
   useContext,
+  type PropsWithChildren,
 } from 'react'
 import {
   useFormContext,
@@ -253,6 +256,12 @@ type GeneratedInputsProps = {
   removeButton?: JSX.Element | null
 }
 
+const containerProps = {
+  css: css`
+    width: 100%;
+  `,
+}
+
 function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsProps) {
   const { formName, options, schemaFields } = useDynamicFormContext()
 
@@ -275,12 +284,6 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
     const formField = constructFormField(schemaKey, parentFormField)
 
     const accordion = options.accordion?.[schemaKey]
-
-    const containerProps = {
-      css: css`
-        width: 100%;
-      `,
-    }
 
     const inputProps = {
       css: css`
@@ -307,26 +310,16 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
         >
           {/* existing array fields, if any */}
           {accordion ? (
-            <FormAccordion accordion={accordion} schemaKey={schemaKey} containerProps={containerProps}>
+            <FormAccordion schemaKey={schemaKey}>
               <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
               <Space p={10} />
-              <ArrayChildren
-                formField={formField}
-                schemaKey={schemaKey}
-                inputProps={inputProps}
-                containerProps={containerProps}
-              />
+              <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
             </FormAccordion>
           ) : (
             <>
               <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
               <Space p={6} />
-              <ArrayChildren
-                formField={formField}
-                schemaKey={schemaKey}
-                inputProps={inputProps}
-                containerProps={containerProps}
-              />
+              <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
             </>
           )}
         </Card>
@@ -338,7 +331,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       return (
         <Card radius={cardRadius} key={schemaKey} mt={12} mb={12} withBorder>
           {accordion ? (
-            <FormAccordion accordion={accordion} schemaKey={schemaKey} containerProps={containerProps}>
+            <FormAccordion schemaKey={schemaKey}>
               <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
               <ArrayOfObjectsChildren formField={formField} schemaKey={schemaKey} />
             </FormAccordion>
@@ -378,7 +371,16 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
   return <>{children}</>
 }
 
-function FormAccordion({ children, accordion, schemaKey, containerProps }): JSX.Element | null {
+type FormAccordionProps = {
+  schemaKey: SchemaKey
+  children: React.ReactNode
+}
+
+function FormAccordion({ children, schemaKey }: FormAccordionProps): JSX.Element | null {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
+  const accordion = options.accordion?.[schemaKey]
+
   if (!accordion) return null
 
   const value = `${schemaKey}-accordion`
@@ -466,16 +468,9 @@ type ArrayChildrenProps = {
   formField: FormField
   schemaKey: SchemaKey
   inputProps: any
-  containerProps: any
 }
 
-function ArrayChildren({
-  formField,
-
-  schemaKey,
-  inputProps,
-  containerProps,
-}: ArrayChildrenProps) {
+function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps) {
   const form = useFormContext()
   const theme = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
@@ -550,8 +545,8 @@ function FormData() {
 type GeneratedInputProps = {
   schemaKey: SchemaKey
   props?: {
-    input?: any
-    container?: any
+    input?: PropsWithChildren<any>
+    container?: PropsWithChildren<any>
   }
   formField: FormField
   withRemoveButton?: boolean
@@ -715,7 +710,7 @@ type RemoveButtonProps = {
   index: number
   itemName: string
   icon: React.ReactNode
-  fieldArray: UseFieldArrayReturn | null
+  fieldArray: any
 }
 
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch

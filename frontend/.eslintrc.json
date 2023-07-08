@@ -44,7 +44,8 @@
     "prefer-template": "error",
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
-    "react-hooks/exhaustive-deps": "off"
+    "react-hooks/exhaustive-deps": "off",
+    "react/prop-types": "off"
   },
   "ignorePatterns": [
     "build/**/*"
