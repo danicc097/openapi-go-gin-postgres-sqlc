@@ -54,9 +54,6 @@ export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, Sc
 }
 
 function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null, key: string): boolean {
-  if (key === 'items') {
-    console.log({ obj, parent })
-  }
   if (!parent) {
     return (
       !!obj.required?.includes(key) &&

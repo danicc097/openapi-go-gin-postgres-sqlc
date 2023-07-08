@@ -244,10 +244,11 @@ describe('form generation', () => {
       </FormProvider>,
     )
 
-    const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id).sort()
-
     const ids = [
+      'demoWorkItemCreateForm',
+      'demoWorkItemCreateForm-base.closed-label',
       'demoWorkItemCreateForm-base.description',
+      'demoWorkItemCreateForm-base.description-label',
       'demoWorkItemCreateForm-base.items-add-button',
       'demoWorkItemCreateForm-base.items-remove-button-0',
       'demoWorkItemCreateForm-base.items-remove-button-1',
@@ -257,26 +258,41 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-base.items.0.items-remove-button-0',
       'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
       'demoWorkItemCreateForm-base.items.0.name',
+      'demoWorkItemCreateForm-base.items.0.name-label',
       'demoWorkItemCreateForm-base.items.1.items-0',
       'demoWorkItemCreateForm-base.items.1.items-1',
       'demoWorkItemCreateForm-base.items.1.items-add-button',
       'demoWorkItemCreateForm-base.items.1.items-remove-button-0',
       'demoWorkItemCreateForm-base.items.1.items-remove-button-1',
       'demoWorkItemCreateForm-base.items.1.name',
+      'demoWorkItemCreateForm-base.items.1.name-label',
       'demoWorkItemCreateForm-base.kanbanStepID',
+      'demoWorkItemCreateForm-base.kanbanStepID-label',
+      'demoWorkItemCreateForm-base.targetDate',
+      'demoWorkItemCreateForm-base.targetDate-label',
       'demoWorkItemCreateForm-base.teamID',
+      'demoWorkItemCreateForm-base.teamID-label',
       'demoWorkItemCreateForm-base.workItemTypeID',
+      'demoWorkItemCreateForm-base.workItemTypeID-label',
+      'demoWorkItemCreateForm-demoProject.lastMessageAt-label',
       'demoWorkItemCreateForm-demoProject.line',
+      'demoWorkItemCreateForm-demoProject.line-label',
       'demoWorkItemCreateForm-demoProject.ref',
+      'demoWorkItemCreateForm-demoProject.ref-label',
       'demoWorkItemCreateForm-demoProject.reopened',
       'demoWorkItemCreateForm-demoProject.workItemID',
+      'demoWorkItemCreateForm-demoProject.workItemID-label',
       'demoWorkItemCreateForm-members-add-button',
       'demoWorkItemCreateForm-members-remove-button-0',
       'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.0.role',
+      'demoWorkItemCreateForm-members.0.role-label',
       'demoWorkItemCreateForm-members.0.userID',
+      'demoWorkItemCreateForm-members.0.userID-label',
       'demoWorkItemCreateForm-members.1.role',
+      'demoWorkItemCreateForm-members.1.role-label',
       'demoWorkItemCreateForm-members.1.userID',
+      'demoWorkItemCreateForm-members.1.userID-label',
       'demoWorkItemCreateForm-tagIDs-0',
       'demoWorkItemCreateForm-tagIDs-1',
       'demoWorkItemCreateForm-tagIDs-2',
@@ -286,13 +302,11 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-tagIDs-remove-button-2',
     ]
 
-    ids.forEach((id) => {
-      const el = document.getElementById(id)
-      expect(el, `${id} not found`).toBeTruthy()
-      expect(el).toBeInTheDocument()
-    })
+    const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id)
 
-    // [...document.querySelectorAll('[data-testid]')].map(e => (e.getAttribute('data-testid')))
+    expect(actualIds.sort()).toEqual(ids.sort())
+
+    // [...document.querySelectorAll('[data-testid]')].sort().map(e => (e.getAttribute('data-testid')))
     const titleDataTestIds = [
       'base-title',
       'base.items-title',
