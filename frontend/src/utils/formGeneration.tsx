@@ -189,6 +189,15 @@ export default function DynamicForm<
   )
 }
 
+/**
+ * Construct form accessor based on current schema field key and parent form field.
+ */
+const constructFormField = (schemaKey: SchemaKey, parentFormField?: FormField) => {
+  const currentFieldName = schemaKey.split('.').slice(-1)[0]
+
+  return (parentFormField ? `${parentFormField}.${currentFieldName}` : schemaKey) as FormField
+}
+
 type SchemaKey = Branded<string, 'SchemaKey'>
 type FormField = Branded<string, 'FormField'>
 
@@ -210,15 +219,6 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
   options,
 }: GeneratedInputsProps<T, ExcludeKeys, U>) {
   const form = useFormContext()
-
-  /**
-   * Construct form accessor based on current schema field key and parent form field.
-   */
-  const constructFormField = (schemaKey: SchemaKey, parentFormField?: FormField) => {
-    const currentFieldName = schemaKey.split('.').slice(-1)[0]
-
-    return (parentFormField ? `${parentFormField}.${currentFieldName}` : schemaKey) as FormField
-  }
 
   const children = entries(schemaFields).map(([schemaKey, field]) => {
     if (
@@ -271,7 +271,7 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
         >
           {/* existing array fields, if any */}
           {accordion ? (
-            <FormAccordion>
+            <FormAccordion accordion={accordion} schemaKey={schemaKey} containerProps={containerProps}>
               <NestedHeader
                 formName={formName}
                 formField={formField}
@@ -320,10 +320,9 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     if (field.isArray && field.type === 'object') {
       // array of objects
       return (
-        // TODO: background color based on depth
         <Card radius={cardRadius} key={schemaKey} mt={12} mb={12} withBorder>
           {accordion ? (
-            <FormAccordion>
+            <FormAccordion accordion={accordion} schemaKey={schemaKey} containerProps={containerProps}>
               <NestedHeader
                 formName={formName}
                 formField={formField}
@@ -387,31 +386,31 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
         )}
       </Group>
     )
-
-    function FormAccordion({ children }): JSX.Element | null {
-      if (!accordion) return null
-
-      const value = `${schemaKey}-accordion`
-
-      return (
-        <Accordion
-          defaultValue={accordion.defaultOpen ? value : null}
-          styles={{
-            control: { padding: 0, maxHeight: '28px' },
-            content: { paddingRight: 0, paddingLeft: 0 },
-          }}
-          {...containerProps}
-        >
-          <Accordion.Item value={value}>
-            <Accordion.Control>{accordion.title ?? `${schemaKey}`}</Accordion.Control>
-            <Accordion.Panel>{children}</Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-      )
-    }
   })
 
   return <>{children}</>
+}
+
+function FormAccordion({ children, accordion, schemaKey, containerProps }): JSX.Element | null {
+  if (!accordion) return null
+
+  const value = `${schemaKey}-accordion`
+
+  return (
+    <Accordion
+      defaultValue={accordion.defaultOpen ? value : null}
+      styles={{
+        control: { padding: 0, maxHeight: '28px' },
+        content: { paddingRight: 0, paddingLeft: 0 },
+      }}
+      {...containerProps}
+    >
+      <Accordion.Item value={value}>
+        <Accordion.Control>{accordion.title ?? `${schemaKey}`}</Accordion.Control>
+        <Accordion.Panel>{children}</Accordion.Panel>
+      </Accordion.Item>
+    </Accordion>
+  )
 }
 
 type ArrayOfObjectsChildrenProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
@@ -431,7 +430,6 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
 }: ArrayOfObjectsChildrenProps<T, ExcludeKeys, U>) {
   const form = useFormContext()
   // form.watch(formField, fieldArray.fields) // inf rerendering
-  // useWatch({ name: `${formField}`, control: form.control }) // same errors
   const theme = useMantineTheme()
   const itemName = singularize(options.labels[schemaKey] || '')
 
@@ -441,6 +439,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
     name: formField,
   })
   const children = fieldArray.fields.map((item, k) => {
+    // input focus loss on rerender when defining component inside another function scope
     return (
       <div
         // reodering: https://codesandbox.io/s/watch-usewatch-calc-forked-5vrcsk?file=/src/fieldArray.js
@@ -512,6 +511,7 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
   const children = (form.getValues(formField) || []).map((item, k: number) => {
+    // input focus loss on rerender when defining component inside another function scope
     return (
       <Flex
         // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.

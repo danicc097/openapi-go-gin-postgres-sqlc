@@ -64,6 +64,7 @@ const schema = {
         },
         description: {
           type: 'string',
+          minLength: 1,
         },
         kanbanStepID: {
           type: 'integer',
@@ -81,11 +82,13 @@ const schema = {
               items: {
                 items: {
                   type: 'string',
+                  minLength: 1,
                 },
                 type: ['array', 'null'],
               },
               name: {
                 type: 'string',
+                minLength: 1,
                 $schema: 'http://json-schema.org/draft-04/schema#',
               },
             },
@@ -120,10 +123,12 @@ const schema = {
         },
         line: {
           type: 'string',
+          minLength: 1,
         },
         ref: {
           pattern: '^[0-9]{8}$',
           type: 'string',
+          minLength: 1,
         },
         reopened: {
           type: 'boolean',
@@ -142,6 +147,7 @@ const schema = {
           role: {
             title: 'WorkItem role',
             type: 'string',
+            minLength: 1,
             'x-generated': '-',
             enum: ['preparer', 'reviewer'],
             description: "represents a database 'work_item_role'",
@@ -149,6 +155,7 @@ const schema = {
           },
           userID: {
             type: 'string',
+            minLength: 1,
             $schema: 'http://json-schema.org/draft-04/schema#',
           },
         },

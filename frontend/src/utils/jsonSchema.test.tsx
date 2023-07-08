@@ -8,6 +8,7 @@ import dayjs from 'dayjs'
 import { entries, keys } from 'src/utils/object'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
+import { fullFormats } from 'ajv-formats/dist/formats'
 
 const schema = {
   properties: {
@@ -139,7 +140,7 @@ const formInitialValues = {
       { items: ['0011', '0012'], name: 'item-2' },
     ],
     closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-    targetDate: dayjs('2023-02-22').toDate(),
+    // targetDate: dayjs('2023-02-22').toDate(),
     description: 'some text',
     kanbanStepID: 1,
     teamID: 1,
@@ -190,12 +191,12 @@ describe('form generation', () => {
     expect(parseSchemaFields(schema)).toEqual(schemaFields)
   })
 
-  test('should render form fields and buttons', () => {
+  test('should render form fields and buttons', async () => {
     const { result: form } = renderHook(() =>
       useForm<TestTypes.RestDemoWorkItemCreateRequest>({
         resolver: ajvResolver(schema as any, {
           strict: false,
-          // formats: fullFormats,
+          formats: fullFormats,
         }),
         mode: 'onChange',
         defaultValues: formInitialValues ?? {},
@@ -321,5 +322,11 @@ describe('form generation', () => {
     // test should submit with default values if none changed
 
     expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
+
+    view.getByText('submit').click()
+
+    console.log(form.current.formState.errors)
+    console.log(form.current.formState.isValid)
+    expect(keys(form.current.formState.errors)).toEqual([])
   })
 })
