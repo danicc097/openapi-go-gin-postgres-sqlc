@@ -762,6 +762,7 @@ const RemoveButton = ({ formName, formField, index, itemName, icon }) => {
           console.log({ formField, index, currentFormValue: form.getValues(formField) })
           const listItems = form.getValues(formField)
           removeElementByIndex(listItems, index)
+          form.unregister(formField)
           form.setValue(formField, listItems as any)
           console.log(listItems)
         }}
