@@ -221,8 +221,6 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
   }
 
   const children = entries(schemaFields).map(([schemaKey, field]) => {
-    const renders = useRenders()
-
     if (
       (parentSchemaKey && !schemaKey.startsWith(parentSchemaKey)) ||
       parentSchemaKey === schemaKey || // fix when parent key has the same name and both are arrays
@@ -240,8 +238,6 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
 
     const formField = constructFormField(schemaKey, parentFormField)
 
-    const formValue = JSON.stringify(form.getValues(formField))
-    // console.log({ formField, formValue })
     const accordion = options.accordion?.[schemaKey]
 
     const containerProps = {
@@ -440,11 +436,15 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
   const itemName = singularize(options.labels[schemaKey] || '')
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
-
-  const children = (form.getValues(formField) || []).map((item, k) => {
+  const fieldArray = useFieldArray({
+    control: form.control,
+    name: formField,
+  })
+  const children = fieldArray.fields.map((item, k) => {
     return (
       <div
-        key={k} // if reordering needed check useFieldArray impl. can't use on flat array so will have to reimplement one way or another
+        // reodering: https://codesandbox.io/s/watch-usewatch-calc-forked-5vrcsk?file=/src/fieldArray.js
+        key={item.id}
         css={css`
           min-width: 100%;
         `}
@@ -458,6 +458,7 @@ function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, 
         >
           <Flex justify={'end'}>
             <RemoveButton
+              fieldArray={fieldArray}
               formName={formName}
               formField={formField}
               index={k}
@@ -508,14 +509,14 @@ function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends
   const form = useFormContext()
   const theme = useMantineTheme()
 
-  // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
-
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
   const children = (form.getValues(formField) || []).map((item, k: number) => {
     return (
       <Flex
-        key={k} // if reordering needed check useFieldArray impl. can't use on flat array so will have to reimplement one way or another
+        // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
+        // if reordering needed change spec to use object. since it's all generated its the easiest way to not mess up validation, etc.
+        key={k}
         css={css`
           width: 100%;
         `}
@@ -739,6 +740,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       {el}
       {index !== undefined && (
         <RemoveButton
+          fieldArray={null}
           formName={formName}
           formField={formFieldArrayPath}
           index={index}
@@ -751,7 +753,7 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
 }
 
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
-const RemoveButton = ({ formName, formField, index, itemName, icon }) => {
+const RemoveButton = ({ formName, formField, index, itemName, icon, fieldArray }) => {
   const form = useFormContext()
   const { colorScheme } = useMantineTheme()
 
@@ -759,12 +761,14 @@ const RemoveButton = ({ formName, formField, index, itemName, icon }) => {
     <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
-          console.log({ formField, index, currentFormValue: form.getValues(formField) })
-          const listItems = form.getValues(formField)
-          removeElementByIndex(listItems, index)
+          if (fieldArray) {
+            fieldArray.remove(index) // reach hook form doesn't work on flat arrays
+          } else {
+            const listItems = form.getValues(formField)
+            removeElementByIndex(listItems, index)
+            form.setValue(formField, listItems as any)
+          }
           form.unregister(formField)
-          form.setValue(formField, listItems as any)
-          console.log(listItems)
         }}
         // variant="filled"
         css={css`
