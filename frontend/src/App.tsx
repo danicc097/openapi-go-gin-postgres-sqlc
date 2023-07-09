@@ -365,8 +365,6 @@ export default function App() {
 
   type ExcludedFormKeys = 'base.metadata'
 
-  const renders = useRenders()
-
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
       <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
@@ -413,27 +411,10 @@ export default function App() {
                           >
                             Validate form
                           </Button>
-                          {/* <form
-                            onSubmit={(e) => {
-                              e.preventDefault()
-                              handleSubmit(
-                                (data) => console.log({ data }),
-                                (errors) => console.log({ errors }),
-                              )(e)
-                            }}
-                          >
-                            <input {...register('demoProject.ref')} />
-                            <input {...register('base.items.1.name')} />
-                            <button type="submit">submit</button>
-                          </form> */}
-                          <legend>
-                            Content <code>(renders: {renders})</code>
-                          </legend>
                           <FormProvider {...form}>
                             <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
                               formName="demoWorkItemCreateForm"
                               // schemaFields will come from `parseSchemaFields(schema.RestDemo... OR  asConst(jsonSchema.definitions.<...>))`
-
                               // using this hardcoded for testing purposes
                               schemaFields={{
                                 base: { isArray: false, required: true, type: 'object' },
@@ -491,7 +472,7 @@ export default function App() {
                                         <IconTag size={16} />
                                         <Text weight={700} size={'md'} color={theme.primaryColor}>
                                           Items
-                                        </Text>{' '}
+                                        </Text>
                                       </Flex>
                                     ),
                                   },
