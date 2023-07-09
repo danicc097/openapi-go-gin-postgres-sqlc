@@ -291,7 +291,7 @@ export default function App() {
       reopened: false, // for create will ignore field for form gen
     },
     tagIDs: [0, 1, 2],
-    members: [{ userID: 'user 1' }, { role: 'preparer', userID: 'user 2' }],
+    members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'user 2' }],
   } as TestTypes.RestDemoWorkItemCreateRequest
 
   /**
@@ -488,8 +488,11 @@ export default function App() {
                                 selectOptions: {
                                   'members.userID': selectOptionsBuilder({
                                     type: 'select',
-                                    values: [...Array(20)].map((x, i) => {
-                                      return getGetCurrentUserMock()
+                                    values: [...Array(1)].map((x, i) => {
+                                      const user = getGetCurrentUserMock()
+                                      user.email = '1@mail.com'
+                                      user.userID = '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65'
+                                      return user
                                     }),
                                     optionTransformer(el) {
                                       return (

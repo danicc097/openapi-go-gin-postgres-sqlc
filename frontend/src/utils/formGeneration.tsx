@@ -641,6 +641,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   } else if (selectOptions) {
     console.log(selectOptions)
 
+    // TODO: on watch, should set current Select value by filtering
+    // selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
+    // else value lost on rerendering
+
     el = (
       <Select
         withinPortal
