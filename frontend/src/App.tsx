@@ -16,6 +16,9 @@ import {
   Text,
   Flex,
   useMantineTheme,
+  Avatar,
+  Group,
+  Space,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
@@ -53,6 +56,7 @@ import { IconTag } from '@tabler/icons'
 import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 import useRenders from 'src/hooks/utils/useRenders'
 import { fullFormats } from 'ajv-formats/dist/formats'
+import { nameInitials } from 'src/utils/strings'
 
 const schema = {
   properties: {
@@ -488,7 +492,25 @@ export default function App() {
                                       return getGetCurrentUserMock()
                                     }),
                                     optionTransformer(el) {
-                                      return <>{el.email}</>
+                                      return (
+                                        <div>
+                                          <Group noWrap spacing="lg" align="center">
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                              <Avatar
+                                                size={35}
+                                                radius="xl"
+                                                data-test-id="header-profile-avatar"
+                                                alt={el?.username}
+                                              >
+                                                {nameInitials(el.fullName || '')}
+                                              </Avatar>
+                                              <Space p={5} />
+                                            </div>
+
+                                            <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
+                                          </Group>
+                                        </div>
+                                      )
                                     },
                                     formValueTransformer(el) {
                                       return el.userID

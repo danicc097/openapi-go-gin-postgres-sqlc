@@ -631,21 +631,9 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     })
   } else if (selectOptions) {
     console.log(selectOptions)
-    const SelectItem = forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
-      return (
-        <div ref={ref} {...others}>
-          <Group noWrap spacing="lg" align="center">
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={option?.username}>
-                {nameInitials(option.fullName || '')}
-              </Avatar>
-              <Space p={5} />
-            </div>
 
-            <div style={{ marginLeft: 'auto' }}>{option?.email}</div>
-          </Group>
-        </div>
-      )
+    const SelectItem = forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
+      return React.cloneElement(selectOptions.optionTransformer(option), { ref, ...others })
     })
 
     el = (
@@ -656,7 +644,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         data-test-subj="updateUserAuthForm__selectable"
         searchable
         filter={(option, item) => {
-          console.log({ option, item })
           if (option !== '') {
             return item.label === selectOptions.labelTransformer(option)
           }
