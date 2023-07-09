@@ -53,7 +53,7 @@ import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
 import { asConst } from 'json-schema-to-ts'
 import type { components, schemas } from 'src/types/schema'
-import { useForm, useWatch } from 'react-hook-form'
+import { FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form'
 import { nameInitials } from 'src/utils/strings'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
@@ -262,6 +262,8 @@ export default function UserPermissionsPage() {
       return isAuthorized({ user, requiredRole: 'admin' }) || isAuthorized({ user, requiredScopes: [scope] })
     }
 
+    useWatch({ name: 'scopes', control: form.control })
+
     return (
       <Box
         mb={12}
@@ -347,14 +349,14 @@ export default function UserPermissionsPage() {
   useWatch({ name: 'role', control: form.control })
 
   const element = (
-    <>
+    <FormProvider {...form}>
       {JSON.stringify(calloutError)}
       <ErrorCallout title="Error updating user" errors={getErrors()} />
       <Space pt={12} />
       <Title size={12}>
         <Text>Form</Text>
       </Title>
-      <Prism language="json">{JSON.stringify(form.getValues(), null, 4)}</Prism>
+      <FormData />
       <Space pt={12} />
       <form
         onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}
@@ -450,7 +452,7 @@ export default function UserPermissionsPage() {
           </Group>
         </>
       </Modal>
-    </>
+    </FormProvider>
   )
 
   return (
@@ -462,4 +464,11 @@ export default function UserPermissionsPage() {
       </>
     </PageTemplate>
   )
+}
+function FormData() {
+  const form = useFormContext()
+
+  form.watch()
+
+  return <Prism language="json">{JSON.stringify(form.getValues(), null, 4)}</Prism>
 }
