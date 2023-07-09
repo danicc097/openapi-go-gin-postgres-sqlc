@@ -655,6 +655,9 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         searchable
         filter={(option, item) => {
           console.log({ option, item })
+          if (selectOptions.componentTransformer && option !== '') {
+            return item.label === selectOptions.componentTransformer(option)
+          }
           return (
             item.value.toLowerCase().includes(option.toLowerCase().trim()) ||
             (item.description &&
@@ -667,8 +670,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 ))
           )
         }}
+        // FIXME: mantine does not support current selection as react element (shows stringified [Object ])
+        // will need labelTransformer to be used for label key and do filter based on item.label === selectOptions.labelTransformer(option)
         data={selectOptions.values.map((option) => ({
-          label: selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option),
+          label: selectOptions.componentTransformer ? selectOptions.componentTransformer(option) : String(option),
           value: selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option),
           option,
         }))}
@@ -677,7 +682,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             (option) =>
               (selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : option) === value,
           )
-          console.log({ onCHangeOption: option })
+          console.log({ onChangeOption: option })
           if (!option) return
           registerOnChange({
             target: {
