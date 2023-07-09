@@ -19,6 +19,8 @@ import {
   Flex,
   Tooltip,
   Accordion,
+  Select,
+  Avatar,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
@@ -35,6 +37,7 @@ import React, {
   createContext,
   useContext,
   type PropsWithChildren,
+  forwardRef,
 } from 'react'
 import {
   useFormContext,
@@ -61,7 +64,7 @@ import type {
 import { removeElementByIndex } from 'src/utils/array'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
-import { sentenceCase } from 'src/utils/strings'
+import { nameInitials, sentenceCase } from 'src/utils/strings'
 import type { U } from 'vitest/dist/types-b7007192'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
@@ -615,6 +618,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   let el: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
+  const selectOptions = options.selectOptions?.[schemaKey]
+
   if (component) {
     el = React.cloneElement(component, {
       ..._props,
@@ -622,6 +627,68 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
     })
+  } else if (selectOptions) {
+    console.log(selectOptions)
+    const SelectUserItem = forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
+      return (
+        <div ref={ref} {...others}>
+          <Group noWrap spacing="lg" align="center">
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={option?.username}>
+                {nameInitials(option.fullName || '')}
+              </Avatar>
+              <Space p={5} />
+            </div>
+
+            <div style={{ marginLeft: 'auto' }}>{option?.email}</div>
+          </Group>
+        </div>
+      )
+    })
+
+    el = (
+      <Select
+        withinPortal
+        label="Select user to update"
+        itemComponent={SelectUserItem}
+        data-test-subj="updateUserAuthForm__selectable"
+        searchable
+        filter={(option, item) => {
+          console.log({ option, item })
+          return (
+            item.value.toLowerCase().includes(option.toLowerCase().trim()) ||
+            (item.description &&
+              String(item.description)
+                ?.toLowerCase()
+                .includes(
+                  (selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option))
+                    .toLowerCase()
+                    .trim(),
+                ))
+          )
+        }}
+        data={selectOptions.values.map((option) => ({
+          label: selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option),
+          value: selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option),
+          option,
+        }))}
+        onChange={(value) => {
+          const option = selectOptions.values.find(
+            (option) =>
+              (selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : option) === value,
+          )
+          console.log({ onCHangeOption: option })
+          if (!option) return
+          registerOnChange({
+            target: {
+              name: formField,
+              value: selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option),
+            },
+          })
+        }}
+        {..._props}
+      />
+    )
   } else {
     switch (schemaFields[schemaKey]?.type) {
       case 'string':
