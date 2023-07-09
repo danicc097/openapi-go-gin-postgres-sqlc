@@ -645,14 +645,11 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         searchable
         filter={(option, item) => {
           if (option !== '') {
-            return item.label === selectOptions.labelTransformer(option)
+            return item.label?.toLowerCase().includes(option.toLowerCase().trim())
           }
           return (
             item.value.toLowerCase().includes(option.toLowerCase().trim()) ||
-            (item.description &&
-              String(item.description)
-                ?.toLowerCase()
-                .includes(selectOptions.formValueTransformer(option).toLowerCase().trim()))
+            (item.description && String(item.description)?.toLowerCase().includes(option.toLowerCase().trim()))
           )
         }}
         data={selectOptions.values.map((option) => ({
