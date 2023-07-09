@@ -259,7 +259,17 @@ export default function UserPermissionsPage() {
     }
 
     const scopeChangeAllowed = (scope: Scope) => {
-      return isAuthorized({ user, requiredRole: 'admin' }) || isAuthorized({ user, requiredScopes: [scope] })
+      if (isAuthorized({ user, requiredRole: 'admin' })) {
+        return { allowed: true }
+      }
+      if (!isAuthorized({ user, requiredRole: userSelection?.role })) {
+        return { allowed: false, message: 'You are not allowed to change scopes for this user' }
+      }
+      if (!isAuthorized({ user, requiredScopes: [scope] })) {
+        return { allowed: false, message: 'You do not have this scope' }
+      }
+
+      return { allowed: true }
     }
 
     useWatch({ name: 'scopes', control: form.control })
@@ -278,16 +288,16 @@ export default function UserPermissionsPage() {
         </Title>
         {entries(scopes).map(([key, scope]) => {
           const scopeName = key.split(':')[1]
-          const isDisabled = !scopeChangeAllowed(key)
+          const { allowed, message } = scopeChangeAllowed(key)
           const isChecked = form.getValues('scopes')?.includes(key)
 
           return (
             <div key={key}>
               <Tooltip
-                label={<Text size={10}>You do not have this scope</Text>}
+                label={<Text size={12}>{`${message}`}</Text>}
                 position="left"
                 withArrow
-                disabled={!isDisabled}
+                disabled={allowed}
                 withinPortal
               >
                 <Grid
@@ -295,7 +305,7 @@ export default function UserPermissionsPage() {
                     display: 'flex',
                     alignItems: 'center',
                     marginBottom: '2px',
-                    filter: isDisabled ? 'grayscale(1)' : '',
+                    filter: !allowed ? 'grayscale(1)' : '',
                   }}
                 >
                   <Grid.Col span={2}>
@@ -305,7 +315,7 @@ export default function UserPermissionsPage() {
                         size="xs"
                         id={key}
                         color="blue"
-                        disabled={isDisabled}
+                        disabled={!allowed}
                         onChange={(e) => handleCheckboxChange(key, e.target.checked)}
                       />
                       <Space pl={10} />
