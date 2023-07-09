@@ -639,8 +639,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
     })
   } else if (selectOptions) {
-    console.log(selectOptions)
-
     // TODO: on watch, should set current Select value by filtering
     // selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
     // else value lost on rerendering
@@ -774,18 +772,22 @@ const RemoveButton = ({ formField, index, itemName, icon, fieldArray }: RemoveBu
   const { colorScheme } = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
+  useWatch({ name: `${formField}`, control: form.control }) // TODO: fix default input values when deleting and adding components due to rhf's defaultValues
+
   return (
     <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
           if (fieldArray) {
             fieldArray.remove(index) // reach hook form doesn't work on flat arrays
+            // don't unregister if using fieldArray
+            // form.unregister(formField) // fixes default input values on new objects but breaks existing objects.
           } else {
             const listItems = form.getValues(formField)
             removeElementByIndex(listItems, index)
+            form.unregister(formField) // needs to be before setValue
             form.setValue(formField, listItems as any)
           }
-          form.unregister(formField)
         }}
         // variant="filled"
         css={css`
