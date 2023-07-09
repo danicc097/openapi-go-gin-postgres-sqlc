@@ -432,11 +432,13 @@ function ArrayOfObjectsChildren({
   const theme = useMantineTheme()
   const itemName = singularize(options.labels[schemaKey] || '')
 
-  useWatch({ name: `${formField}`, control: form.control }) // needed
   const fieldArray = useFieldArray({
     control: form.control,
     name: formField,
   })
+
+  useWatch({ name: `${formField}`, control: form.control }) // needed
+
   const children = fieldArray.fields.map((item, k) => {
     // input focus loss on rerender when defining component inside another function scope
     return (
@@ -456,7 +458,7 @@ function ArrayOfObjectsChildren({
         >
           <Flex justify={'end'}>
             <RemoveButton
-              fieldArray={fieldArray}
+              withFieldArray={true}
               formField={formField}
               index={k}
               itemName={itemName}
@@ -543,6 +545,8 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
 
 function FormData() {
   const myFormData = useWatch()
+
+  console.log(JSON.stringify(myFormData.base.items, null, 2))
 
   return (
     <Accordion>
@@ -747,7 +751,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       {el}
       {index !== undefined && (
         <RemoveButton
-          fieldArray={null}
+          withFieldArray={false}
           formField={formFieldArrayPath}
           index={index}
           itemName={itemName}
@@ -763,22 +767,27 @@ type RemoveButtonProps = {
   index: number
   itemName: string
   icon: React.ReactNode
-  fieldArray: any
+  withFieldArray: boolean
 }
 
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
-const RemoveButton = ({ formField, index, itemName, icon, fieldArray }: RemoveButtonProps) => {
+const RemoveButton = ({ formField, index, itemName, icon, withFieldArray }: RemoveButtonProps) => {
   const form = useFormContext()
   const { colorScheme } = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
   useWatch({ name: `${formField}`, control: form.control }) // TODO: fix default input values when deleting and adding components due to rhf's defaultValues
 
+  const fieldArray = useFieldArray({
+    control: form.control,
+    name: formField,
+  })
+
   return (
     <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
-          if (fieldArray) {
+          if (withFieldArray) {
             fieldArray.remove(index) // reach hook form doesn't work on flat arrays
             // don't unregister if using fieldArray
             // form.unregister(formField) // fixes default input values on new objects but breaks existing objects.
