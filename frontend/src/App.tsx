@@ -493,7 +493,7 @@ export default function App() {
                                     }),
                                     optionTransformer(el) {
                                       return (
-                                        <div>
+                                        <>
                                           <Group noWrap spacing="lg" align="center">
                                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                               <Avatar
@@ -509,7 +509,7 @@ export default function App() {
 
                                             <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
                                           </Group>
-                                        </div>
+                                        </>
                                       )
                                     },
                                     formValueTransformer(el) {

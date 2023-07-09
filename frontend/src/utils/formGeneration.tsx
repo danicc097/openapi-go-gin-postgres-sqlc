@@ -633,7 +633,11 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     console.log(selectOptions)
 
     const SelectItem = forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
-      return React.cloneElement(selectOptions.optionTransformer(option), { ref, ...others })
+      return (
+        <div ref={ref} {...others}>
+          {selectOptions.optionTransformer(option)}
+        </div>
+      )
     })
 
     el = (
