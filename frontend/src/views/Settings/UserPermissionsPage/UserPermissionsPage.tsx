@@ -53,7 +53,8 @@ import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
 import { asConst } from 'json-schema-to-ts'
 import type { components, schemas } from 'src/types/schema'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
+import { nameInitials } from 'src/utils/strings'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -101,10 +102,7 @@ const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
         <Group noWrap spacing="lg" align="center">
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
-              {user.fullName
-                ?.split(' ')
-                .map((n) => n[0].toUpperCase())
-                .join('')}
+              {nameInitials(user.fullName || '')}
             </Avatar>
             <Space p={5} />
             <RoleBadge role={user.role} />
@@ -118,9 +116,8 @@ const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
 )
 
 export default function UserPermissionsPage() {
-  const [userSelection, setUserSelection] = useState<User>(null)
-  const [roleSelection, setRoleSelection] = useState<Role>(null)
-  const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps>>(undefined)
+  const [userSelection, setUserSelection] = useState<User | null>(null)
+  const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps> | null>(null)
   const { user } = useAuthenticatedUser()
 
   const [allUsers] = useState(
@@ -146,7 +143,7 @@ export default function UserPermissionsPage() {
   }, {})
 
   useEffect(() => {
-    if (userOptions === undefined) {
+    if (userOptions === null) {
       setUserOptions(
         allUsers
           ? allUsers.map((user) => ({
@@ -154,7 +151,7 @@ export default function UserPermissionsPage() {
               value: user.email,
               user,
             }))
-          : undefined,
+          : null,
       )
     } else {
       setUserOptions(userOptions)
@@ -172,7 +169,8 @@ export default function UserPermissionsPage() {
   const submitRoleUpdate = async () => {
     const span = newFrontendSpan('submitRoleUpdate')
     try {
-      const updateUserAuthRequest = UpdateUserAuthRequestDecoder.decode(form.values)
+      if (!userSelection) return
+      const updateUserAuthRequest = UpdateUserAuthRequestDecoder.decode(form.getValues())
       const payload = await updateUserAuthorization(userSelection.userID, updateUserAuthRequest)
       console.log('fulfilled', payload)
       notifications.show({
@@ -197,7 +195,7 @@ export default function UserPermissionsPage() {
   }
 
   const handleError = (errors: typeof form.formState.errors) => {
-    if (Object.values(errors).some((v) => v)) {
+    if (errors) {
       console.log('some errors found')
       console.log(errors)
 
@@ -206,7 +204,7 @@ export default function UserPermissionsPage() {
       // field, just that the field has an error,
       // so all validation errors are aggregated with full description in a callout)
       try {
-        UpdateUserAuthRequestDecoder.decode(form.values)
+        UpdateUserAuthRequestDecoder.decode(form.getValues())
         setCalloutError(null)
       } catch (error) {
         if (error.validationErrors) {
@@ -226,6 +224,7 @@ export default function UserPermissionsPage() {
 
   const onEmailSelectableChange = (email) => {
     const user = allUsers.find((user) => user.email === email)
+    if (!user) return
     console.log(user)
     setUserSelection(user)
     form.setValue('role', user.role)
@@ -250,7 +249,7 @@ export default function UserPermissionsPage() {
 
     const handleCheckboxChange = (key: Scope, checked: boolean) => {
       if (checked) {
-        form.setValue('scopes', [...form.getValues('scopes'), key])
+        form.setValue('scopes', form.getValues('scopes')?.concat([key]))
       } else {
         form.setValue(
           'scopes',
@@ -342,7 +341,10 @@ export default function UserPermissionsPage() {
   }
 
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
-  console.log(demoWorkItemCreateSchema)
+
+  const registerProps = form.register('role')
+
+  useWatch({ name: 'role', control: form.control })
 
   const element = (
     <>
@@ -352,7 +354,7 @@ export default function UserPermissionsPage() {
       <Title size={12}>
         <Text>Form</Text>
       </Title>
-      <Prism language="json">{JSON.stringify(form, null, 4)}</Prism>
+      <Prism language="json">{JSON.stringify(form.getValues(), null, 4)}</Prism>
       <Space pt={12} />
       <form
         onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}
@@ -383,7 +385,6 @@ export default function UserPermissionsPage() {
         {userSelection?.email && (
           <>
             <Divider m={8} />
-
             {isAuthorized({ user, requiredRole: userSelection.role }) && (
               <>
                 <Select
@@ -396,8 +397,8 @@ export default function UserPermissionsPage() {
                   data-test-subj="updateUserAuthForm__selectable_Role"
                   defaultValue={userSelection.role}
                   data={roleOptions ?? []}
-                  value={form.getValues('role')}
-                  onChange={onRoleSelectableChange}
+                  {...registerProps}
+                  onChange={(value) => registerProps.onChange({ target: { name: 'role', value } })}
                 />
                 <Space pt={12} />
               </>

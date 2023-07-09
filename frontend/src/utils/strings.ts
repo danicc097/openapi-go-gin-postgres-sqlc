@@ -8,3 +8,10 @@ export function removePrefix(str: string, prefix: string) {
 export function sentenceCase(str) {
   return str.charAt(0).toUpperCase() + str.substr(1).toLowerCase()
 }
+
+export function nameInitials(name: string) {
+  return name
+    .split(' ')
+    .map((n) => (n[0] || '').toUpperCase())
+    .join('')
+}
