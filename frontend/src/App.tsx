@@ -487,11 +487,14 @@ export default function App() {
                                     values: [...Array(20)].map((x, i) => {
                                       return getGetCurrentUserMock()
                                     }),
-                                    componentTransformer(el) {
+                                    optionTransformer(el) {
                                       return <>{el.email}</>
                                     },
                                     formValueTransformer(el) {
                                       return el.userID
+                                    },
+                                    labelTransformer(el) {
+                                      return el.email
                                     },
                                   }),
                                 },

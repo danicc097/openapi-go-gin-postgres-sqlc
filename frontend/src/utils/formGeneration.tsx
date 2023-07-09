@@ -72,9 +72,9 @@ export type SelectOptionsTypes = 'select' | 'multiselect'
 export interface SelectOptions<Return, E = unknown> {
   values: E[]
   type: SelectOptionsTypes
-  formValueTransformer?: <V extends E>(el: V & E) => Return
-  // TODO: via mantine componentValue
-  componentTransformer?: <V extends E>(el: V & E) => JSX.Element
+  formValueTransformer: <V extends E>(el: V & E) => Return
+  optionTransformer: <V extends E>(el: V & E) => JSX.Element
+  labelTransformer: <V extends E>(el: V & E) => string
 }
 
 export interface InputOptions<Return, E = unknown> {
@@ -85,11 +85,13 @@ export const selectOptionsBuilder = <Return, V>({
   type,
   values,
   formValueTransformer,
-  componentTransformer,
+  optionTransformer,
+  labelTransformer,
 }: SelectOptions<Return, V>): SelectOptions<Return, V> => ({
   type,
   values,
-  componentTransformer,
+  optionTransformer,
+  labelTransformer,
   formValueTransformer,
 })
 
@@ -629,7 +631,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     })
   } else if (selectOptions) {
     console.log(selectOptions)
-    const SelectUserItem = forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
+    const SelectItem = forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
       return (
         <div ref={ref} {...others}>
           <Group noWrap spacing="lg" align="center">
@@ -650,44 +652,35 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       <Select
         withinPortal
         label="Select user to update"
-        itemComponent={SelectUserItem}
+        itemComponent={SelectItem}
         data-test-subj="updateUserAuthForm__selectable"
         searchable
         filter={(option, item) => {
           console.log({ option, item })
-          if (selectOptions.componentTransformer && option !== '') {
-            return item.label === selectOptions.componentTransformer(option)
+          if (option !== '') {
+            return item.label === selectOptions.labelTransformer(option)
           }
           return (
             item.value.toLowerCase().includes(option.toLowerCase().trim()) ||
             (item.description &&
               String(item.description)
                 ?.toLowerCase()
-                .includes(
-                  (selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option))
-                    .toLowerCase()
-                    .trim(),
-                ))
+                .includes(selectOptions.formValueTransformer(option).toLowerCase().trim()))
           )
         }}
-        // FIXME: mantine does not support current selection as react element (shows stringified [Object ])
-        // will need labelTransformer to be used for label key and do filter based on item.label === selectOptions.labelTransformer(option)
         data={selectOptions.values.map((option) => ({
-          label: selectOptions.componentTransformer ? selectOptions.componentTransformer(option) : String(option),
-          value: selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option),
+          label: selectOptions.labelTransformer(option),
+          value: selectOptions.formValueTransformer(option),
           option,
         }))}
         onChange={(value) => {
-          const option = selectOptions.values.find(
-            (option) =>
-              (selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : option) === value,
-          )
+          const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
           console.log({ onChangeOption: option })
           if (!option) return
           registerOnChange({
             target: {
               name: formField,
-              value: selectOptions.formValueTransformer ? selectOptions.formValueTransformer(option) : String(option),
+              value: selectOptions.formValueTransformer(option),
             },
           })
         }}
