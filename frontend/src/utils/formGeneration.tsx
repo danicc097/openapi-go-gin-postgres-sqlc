@@ -432,19 +432,14 @@ function ArrayOfObjectsChildren({
   const theme = useMantineTheme()
   const itemName = singularize(options.labels[schemaKey] || '')
 
-  const fieldArray = useFieldArray({
-    control: form.control,
-    name: formField,
-  })
-
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
-  const children = fieldArray.fields.map((item, k) => {
+  const children = (form.getValues(formField) || []).map((item, k: number) => {
     // input focus loss on rerender when defining component inside another function scope
     return (
       <div
         // reodering: https://codesandbox.io/s/watch-usewatch-calc-forked-5vrcsk?file=/src/fieldArray.js
-        key={item.id}
+        key={k}
         css={css`
           min-width: 100%;
         `}
@@ -457,13 +452,7 @@ function ArrayOfObjectsChildren({
           bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
         >
           <Flex justify={'end'}>
-            <RemoveButton
-              withFieldArray={true}
-              formField={formField}
-              index={k}
-              itemName={itemName}
-              icon={<IconTrash size="1rem" />}
-            />
+            <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
           <Group>
             <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${k}` as FormField} />
@@ -751,7 +740,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       {el}
       {index !== undefined && (
         <RemoveButton
-          withFieldArray={false}
           formField={formFieldArrayPath}
           index={index}
           itemName={itemName}
@@ -767,16 +755,16 @@ type RemoveButtonProps = {
   index: number
   itemName: string
   icon: React.ReactNode
-  withFieldArray: boolean
+  withFieldArray?: boolean
 }
 
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
-const RemoveButton = ({ formField, index, itemName, icon, withFieldArray }: RemoveButtonProps) => {
+const RemoveButton = ({ formField, index, itemName, icon, withFieldArray = false }: RemoveButtonProps) => {
   const form = useFormContext()
   const { colorScheme } = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
-  useWatch({ name: `${formField}`, control: form.control }) // TODO: fix default input values when deleting and adding components due to rhf's defaultValues
+  useWatch({ name: `${formField}`, control: form.control })
 
   const fieldArray = useFieldArray({
     control: form.control,
@@ -787,10 +775,9 @@ const RemoveButton = ({ formField, index, itemName, icon, withFieldArray }: Remo
     <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
+          // NOTE: don't use rhf useFieldArray, way too many edge cases for no gain. if reordering is needed, implement it manually.
           if (withFieldArray) {
-            fieldArray.remove(index) // reach hook form doesn't work on flat arrays
-            // don't unregister if using fieldArray
-            // form.unregister(formField) // fixes default input values on new objects but breaks existing objects.
+            fieldArray.remove(index)
           } else {
             const listItems = form.getValues(formField)
             removeElementByIndex(listItems, index)
