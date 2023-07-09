@@ -99,6 +99,15 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
   component,
 })
 
+const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
+  forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
+    return (
+      <div ref={ref} {...others}>
+        {transformer(option)}
+      </div>
+    )
+  })
+
 export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   // FIXME: Exclude<U, ExcludeKeys> breaks indexing type inference - but does exclude
   labels: {
@@ -632,19 +641,11 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   } else if (selectOptions) {
     console.log(selectOptions)
 
-    const SelectItem = forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
-      return (
-        <div ref={ref} {...others}>
-          {selectOptions.optionTransformer(option)}
-        </div>
-      )
-    })
-
     el = (
       <Select
         withinPortal
         label="Select user to update"
-        itemComponent={SelectItem}
+        itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
         data-test-subj="updateUserAuthForm__selectable"
         searchable
         filter={(option, item) => {
