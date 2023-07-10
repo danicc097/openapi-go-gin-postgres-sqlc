@@ -186,6 +186,10 @@ describe('form generation', () => {
   })
 
   test('should render form fields and buttons', async () => {
+    /**
+     * FIXME: no need for renderHook. test via ui.
+     * https://react-hook-form.com/advanced-usage#TestingForm
+     */
     const { result: form } = renderHook(() =>
       useForm<TestTypes.RestDemoWorkItemCreateRequest>({
         resolver: ajvResolver(schema as any, {
