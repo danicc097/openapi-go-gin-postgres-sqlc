@@ -45,7 +45,8 @@
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
     "react-hooks/exhaustive-deps": "off",
-    "react/prop-types": "off"
+    "react/prop-types": "off",
+    "testing-library/no-node-access": "off"
   },
   "ignorePatterns": [
     "build/**/*"
@@ -55,16 +56,6 @@
       "version": "detect"
     }
   },
-  "overrides": [
-    {
-      "files": [
-        "*.test.*"
-      ],
-      "extends": [
-        "plugin:testing-library/react"
-      ]
-    }
-  ],
   "globals": {
     "page": true,
     "browser": true,

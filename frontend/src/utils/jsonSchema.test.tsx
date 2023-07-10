@@ -323,7 +323,7 @@ describe('form generation', () => {
 
     expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
 
-    view.getByText('submit').click()
+    screen.getByText('submit').click()
 
     console.log(form.current.formState.errors)
     console.log(form.current.formState.isValid)
