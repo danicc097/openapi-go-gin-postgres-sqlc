@@ -66,7 +66,6 @@ import { removeElementByIndex } from 'src/utils/array'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
-import type { U } from 'vitest/dist/types-b7007192'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
