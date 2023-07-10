@@ -47,6 +47,7 @@ import {
   useWatch,
   useFieldArray,
   type UseFieldArrayReturn,
+  useFormState,
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
@@ -223,6 +224,8 @@ export default function DynamicForm<
   const theme = useMantineTheme()
   const form = useFormContext()
 
+  const { isDirty, isSubmitting, submitCount } = form.formState
+
   // TODO: will also need sorting schemaFields beforehand and then generate normally.
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields }}>
@@ -240,7 +243,7 @@ export default function DynamicForm<
             css={css`
               min-width: 100%;
             `}
-            id={formName}
+            data-testid={formName}
           >
             <button type="submit">submit</button>
             <GeneratedInputs />
@@ -534,8 +537,9 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
 
 function FormData() {
   const myFormData = useWatch()
+  const myFormState = useFormState()
 
-  console.log(JSON.stringify(myFormData.base.items, null, 2))
+  // console.log(JSON.stringify(myFormData.base.items, null, 2))
 
   return (
     <Accordion>

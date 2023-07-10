@@ -2,7 +2,7 @@ import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathTyp
 import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
-import { getByTestId, render, screen, renderHook } from '@testing-library/react'
+import { getByTestId, render, screen, renderHook, fireEvent, act, getByText } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { entries, keys } from 'src/utils/object'
@@ -25,11 +25,7 @@ const schema = {
           type: 'integer',
         },
         metadata: {
-          items: {
-            minimum: 0,
-            type: 'integer',
-          },
-          type: ['array', 'null'],
+          type: 'object',
         },
         targetDate: {
           format: 'date',
@@ -144,15 +140,13 @@ const formInitialValues = {
     description: 'some text',
     kanbanStepID: 1,
     teamID: 1,
+    metadata: {},
     workItemTypeID: 1,
   },
-  // TODO: need to check runtime type, else all fails catastrophically.
-  // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
-  // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
   demoProject: {
     lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
     line: '3e3e2',
-    ref: '312321',
+    ref: '124321', // should fail pattern validation
     workItemID: 1,
   },
   tagIDs: [0, 1, 2],
@@ -167,7 +161,7 @@ const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, Sch
   'base.closed': { type: 'date-time', required: false, isArray: false },
   'base.description': { type: 'string', required: true, isArray: false },
   'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-  'base.metadata': { type: 'integer', required: false, isArray: true },
+  'base.metadata': { type: 'object', required: true, isArray: false },
   'base.targetDate': { type: 'date', required: true, isArray: false },
   'base.teamID': { type: 'integer', required: true, isArray: false },
   'base.items': { type: 'object', required: false, isArray: true },
@@ -205,6 +199,8 @@ describe('form generation', () => {
     )
 
     const formName = 'demoWorkItemCreateForm'
+
+    const { isDirty, isSubmitting, submitCount } = form.current.formState
 
     const view = render(
       <FormProvider {...form.current}>
@@ -246,7 +242,6 @@ describe('form generation', () => {
     )
 
     const ids = [
-      'demoWorkItemCreateForm',
       'demoWorkItemCreateForm-base.closed-label',
       'demoWorkItemCreateForm-base.description',
       'demoWorkItemCreateForm-base.description-label',
@@ -308,6 +303,7 @@ describe('form generation', () => {
     expect(actualIds.sort()).toEqual(ids.sort())
 
     const dataTestIds = [
+      'demoWorkItemCreateForm',
       'base-title',
       'base.items-title',
       'base.items.0.items-title',
@@ -323,10 +319,10 @@ describe('form generation', () => {
 
     expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
 
-    screen.getByText('submit').click()
-
+    const formElement = screen.getByTestId(formName)
+    fireEvent.submit(formElement)
     console.log(form.current.formState.errors)
     console.log(form.current.formState.isValid)
-    expect(keys(form.current.formState.errors)).toEqual([])
+    expect(form.current.formState.errors).toEqual({})
   })
 })
