@@ -639,6 +639,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     // selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
     // else value lost on rerendering
 
+    // IMPORTANT: mantine assumes label = value, else it doesn't work...
+    // e.g. with users we could have select have a tooltip that says what user that is (and can even show the itemComponent instead of just a string)
+    // ideally, we would just use an external select that doesn't make these assumptions for no reason.
+    // we could just fork select to design-system and adapt there.
     el = (
       <Select
         withinPortal
@@ -656,7 +660,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
           )
         }}
         data={selectOptions.values.map((option) => ({
-          label: selectOptions.labelTransformer(option),
+          label: selectOptions.formValueTransformer(option), // https://github.com/mantinedev/mantine/issues/980
           value: selectOptions.formValueTransformer(option),
           option,
         }))}
