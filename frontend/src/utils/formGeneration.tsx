@@ -21,6 +21,7 @@ import {
   Accordion,
   Select,
   Avatar,
+  Input,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
@@ -581,6 +582,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
   const { formName, options, schemaFields } = useDynamicFormContext()
 
+  const [isInputVisible, setIsInputVisible] = useState(false)
+
   const propsOverride = options.propsOverride?.[schemaKey]
   const type = schemaFields[schemaKey]?.type
   const itemName = singularize(options.labels[schemaKey] || '')
@@ -635,49 +638,65 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
     })
   } else if (selectOptions) {
-    // TODO: on watch, should set current Select value by filtering
-    // selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
-    // else value lost on rerendering
-
-    // IMPORTANT: mantine assumes label = value, else it doesn't work...
-    // e.g. with users we could have select have a tooltip that says what user that is (and can even show the itemComponent instead of just a string)
-    // ideally, we would just use an external select that doesn't make these assumptions for no reason.
-    // we could just fork select to design-system and adapt there.
-    el = (
-      <Select
-        withinPortal
-        label="Select user to update"
-        itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
-        data-test-subj="updateUserAuthForm__selectable"
-        searchable
-        filter={(option, item) => {
-          if (option !== '') {
-            return item.label?.toLowerCase().includes(option.toLowerCase().trim())
-          }
-          return (
-            item.value.toLowerCase().includes(option.toLowerCase().trim()) ||
-            (item.description && String(item.description)?.toLowerCase().includes(option.toLowerCase().trim()))
-          )
-        }}
-        data={selectOptions.values.map((option) => ({
-          label: selectOptions.formValueTransformer(option), // https://github.com/mantinedev/mantine/issues/980
-          value: selectOptions.formValueTransformer(option),
-          option,
-        }))}
-        onChange={(value) => {
-          const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
-          console.log({ onChangeOption: option })
-          if (!option) return
-          registerOnChange({
-            target: {
-              name: formField,
-              value: selectOptions.formValueTransformer(option),
-            },
-          })
-        }}
-        {..._props}
-      />
-    )
+    const option = selectOptions.values.find((option) => {
+      console.log({ option: selectOptions.formValueTransformer(option), formValue: form.getValues(formField) })
+      return selectOptions.formValueTransformer(option) === form.getValues(formField)
+    })
+    if (!isInputVisible && option !== undefined) {
+      console.log(selectOptions.labelTransformer(option))
+      el = (
+        <Input.Wrapper {..._props}>
+          <Card
+            withBorder
+            //onFocus={toggleVisibility}
+            pl={12}
+            pr={12}
+            pt={0}
+            pb={0}
+            onClick={() => setIsInputVisible(true)}
+          >
+            {selectOptions.optionTransformer(option)}
+          </Card>
+        </Input.Wrapper>
+      )
+    } else {
+      // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
+      el = (
+        <Select
+          // onBlur={() => setIsInputVisible(false)} FIXME: blur on select's input not triggered
+          withinPortal
+          itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
+          searchable
+          filter={(option, item) => {
+            if (option !== '') {
+              return item.label?.toLowerCase().includes(option.toLowerCase().trim())
+            }
+            return (
+              item.value.toLowerCase().includes(option.toLowerCase().trim()) ||
+              (item.description && String(item.description)?.toLowerCase().includes(option.toLowerCase().trim()))
+            )
+          }}
+          data={selectOptions.values.map((option) => ({
+            label: selectOptions.formValueTransformer(option),
+            value: selectOptions.formValueTransformer(option),
+            option,
+          }))}
+          onChange={async (value) => {
+            const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
+            console.log({ onChangeOption: option })
+            if (!option) return
+            await registerOnChange({
+              target: {
+                name: formField,
+                value: selectOptions.formValueTransformer(option),
+              },
+            })
+            setIsInputVisible(false)
+          }}
+          {..._props}
+        />
+      )
+    }
   } else {
     switch (schemaFields[schemaKey]?.type) {
       case 'string':
