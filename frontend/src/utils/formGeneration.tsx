@@ -713,8 +713,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             //onFocus={toggleVisibility}
             pl={12}
             pr={12}
-            pt={0}
-            pb={0}
+            pt={2}
+            pb={2}
             onClick={() => {
               setIsInputVisible(true)
               console.log({ _props })
