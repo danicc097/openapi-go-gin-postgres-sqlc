@@ -579,6 +579,7 @@ const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
 // for builtin support for uncontrolled input
 const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputProps) => {
   const form = useFormContext()
+  const theme = useMantineTheme()
   // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
   const { formName, options, schemaFields } = useDynamicFormContext()
 
@@ -647,6 +648,15 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       el = (
         <Input.Wrapper {..._props}>
           <Card
+            tabIndex={0}
+            css={css`
+              :focus {
+                border-color: ${theme.colors.blue[8]} !important;
+              }
+            `}
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') setIsInputVisible(true)
+            }}
             withBorder
             //onFocus={toggleVisibility}
             pl={12}
@@ -665,6 +675,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         <Select
           // onBlur={() => setIsInputVisible(false)} FIXME: blur on select's input not triggered
           withinPortal
+          initiallyOpened={option !== undefined}
           itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
           searchable
           // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.

@@ -496,7 +496,7 @@ export default function App() {
                                                 data-test-id="header-profile-avatar"
                                                 alt={el?.username}
                                               >
-                                                {nameInitials(el.fullName || '')}
+                                                {nameInitials(el?.fullName || '')}
                                               </Avatar>
                                               <Space p={5} />
                                             </div>
