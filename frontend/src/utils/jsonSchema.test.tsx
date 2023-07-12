@@ -1,5 +1,5 @@
 import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
-import DynamicForm from 'src/utils/formGeneration'
+import DynamicForm, { selectOptionsBuilder } from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
 import { getByTestId, render, screen, renderHook, fireEvent, act, getByText } from '@testing-library/react'
@@ -9,6 +9,9 @@ import { entries, keys } from 'src/utils/object'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import { fullFormats } from 'ajv-formats/dist/formats'
+import { Group, Avatar, Space } from '@mantine/core'
+import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+import { nameInitials } from 'src/utils/strings'
 
 const schema = {
   properties: {
@@ -151,7 +154,11 @@ const formInitialValues = {
   },
   tagIDs: [0, 1, 2],
   members: [
-    { userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' }, // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values
+    // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values.
+    // since userid exists and it's an initial value, it will show custom select card to work around https://github.com/mantinedev/mantine/issues/980
+    // therefore its element input id does not exist
+    { userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
+    // userid does not exist in selectOptions users -> will show input directly instead
     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
   ],
 } as TestTypes.RestDemoWorkItemCreateRequest
@@ -239,7 +246,39 @@ describe('form generation', () => {
               'demoProject.line': '43121234', // should be ignored since it's set
               'members.role': 'preparer',
             },
-            selectOptions: {},
+            selectOptions: {
+              'members.userID': selectOptionsBuilder({
+                type: 'select',
+                values: [...Array(1)].map((x, i) => {
+                  const user = getGetCurrentUserMock()
+                  user.email = '1@mail.com'
+                  user.userID = 'a446259c-1083-4212-98fe-bd080c41e7d7'
+                  return user
+                }),
+                optionTransformer(el) {
+                  return (
+                    <>
+                      <Group noWrap spacing="lg" align="center">
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
+                            {nameInitials(el?.fullName || '')}
+                          </Avatar>
+                          <Space p={5} />
+                        </div>
+
+                        <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
+                      </Group>
+                    </>
+                  )
+                },
+                formValueTransformer(el) {
+                  return el.userID
+                },
+                labelTransformer(el) {
+                  return el.email
+                },
+              }),
+            },
           }}
         />
       </FormProvider>,
@@ -287,7 +326,7 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.0.role',
       'demoWorkItemCreateForm-members.0.role-label',
-      'demoWorkItemCreateForm-members.0.userID',
+      // 'demoWorkItemCreateForm-members.0.userID', // will show custom select
       'demoWorkItemCreateForm-members.0.userID-label',
       'demoWorkItemCreateForm-members.1.role',
       'demoWorkItemCreateForm-members.1.role-label',

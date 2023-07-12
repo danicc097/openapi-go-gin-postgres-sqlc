@@ -333,14 +333,14 @@ export default function App() {
       formats: fullFormats,
     }),
     mode: 'onChange',
-    // defaultValues: formInitialValues ?? {},
+    defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
 
-  useEffect(() => {
-    console.log('resetting')
-    form.reset(formInitialValues)
-  }, [])
+  // useEffect(() => {
+  //   console.log('resetting')
+  //   form.reset(formInitialValues)
+  // }, [])
 
   const {
     register,
