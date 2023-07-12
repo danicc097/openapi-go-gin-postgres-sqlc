@@ -658,7 +658,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
     el = (
       <Select
-        // onBlur={() => setIsInputVisible(false)} FIXME: blur on select's input not triggered
         withinPortal
         selectOnBlur
         initiallyOpened={option !== undefined}
@@ -674,13 +673,17 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
           return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
         }}
+        // IMPORTANT: Select value should always be either string or null as per doc
+        // (and implicitly label must be equal to value else all is broken unlike with multiselect)
         data={selectOptions.values.map((option) => ({
-          label: selectOptions.formValueTransformer(option),
-          value: selectOptions.formValueTransformer(option),
+          label: String(selectOptions.formValueTransformer(option)),
+          value: String(selectOptions.formValueTransformer(option)),
           option,
         }))}
         onChange={async (value) => {
-          const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
+          const option = selectOptions.values.find(
+            (option) => String(selectOptions.formValueTransformer(option)) === value,
+          )
           console.log({ onChangeOption: option })
           if (!option) return
           await registerOnChange({
@@ -691,7 +694,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
           })
           setIsInputVisible(false)
         }}
-        value={form.getValues(formField)}
+        value={String(form.getValues(formField))}
         {..._props}
         ref={selectRef}
       />

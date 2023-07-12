@@ -332,7 +332,7 @@ export default function App() {
       strict: false,
       formats: fullFormats,
     }),
-    mode: 'onChange',
+    mode: 'all',
     defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
