@@ -646,6 +646,9 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
     })
+    // TODO: multiSelectOptions: https://codesandbox.io/s/watch-with-usefieldarray-forked-9383hz?file=/src/formGeneration.tsx
+    // which do allow custom labels by default and doesnt need workaround
+    // use them with tagIDs -> DbWorkItemTag[] -> tag.name
   } else if (selectOptions) {
     const option = selectOptions.values.find((option) => {
       console.log({ option: selectOptions.formValueTransformer(option), formValue: form.getValues(formField) })
