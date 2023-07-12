@@ -667,14 +667,15 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
           withinPortal
           itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
           searchable
+          // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
+          // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+          // else we need to forcefully use current label/value
           filter={(option, item) => {
             if (option !== '') {
-              return item.label?.toLowerCase().includes(option.toLowerCase().trim())
+              return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
             }
-            return (
-              item.value.toLowerCase().includes(option.toLowerCase().trim()) ||
-              (item.description && String(item.description)?.toLowerCase().includes(option.toLowerCase().trim()))
-            )
+
+            return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
           }}
           data={selectOptions.values.map((option) => ({
             label: selectOptions.formValueTransformer(option),
@@ -693,6 +694,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             })
             setIsInputVisible(false)
           }}
+          value={form.getValues(formField)}
           {..._props}
         />
       )
