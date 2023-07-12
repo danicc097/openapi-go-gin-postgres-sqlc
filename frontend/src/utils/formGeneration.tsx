@@ -39,6 +39,8 @@ import React, {
   useContext,
   type PropsWithChildren,
   forwardRef,
+  useRef,
+  useEffect,
 } from 'react'
 import {
   useFormContext,
@@ -628,8 +630,14 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   }
 
   let el: JSX.Element | null = null
+  let customEl: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
   const selectOptions = options.selectOptions?.[schemaKey]
+  const selectRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isInputVisible) selectRef.current?.focus()
+  }, [isInputVisible])
 
   if (component) {
     el = React.cloneElement(component, {
@@ -643,10 +651,54 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       console.log({ option: selectOptions.formValueTransformer(option), formValue: form.getValues(formField) })
       return selectOptions.formValueTransformer(option) === form.getValues(formField)
     })
+
+    // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
+    el = (
+      <Select
+        // onBlur={() => setIsInputVisible(false)} FIXME: blur on select's input not triggered
+        withinPortal
+        selectOnBlur
+        initiallyOpened={option !== undefined}
+        itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
+        searchable
+        // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
+        // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+        // else we need to forcefully use current label/value
+        filter={(option, item) => {
+          if (option !== '') {
+            return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+          }
+
+          return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+        }}
+        data={selectOptions.values.map((option) => ({
+          label: selectOptions.formValueTransformer(option),
+          value: selectOptions.formValueTransformer(option),
+          option,
+        }))}
+        onChange={async (value) => {
+          const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
+          console.log({ onChangeOption: option })
+          if (!option) return
+          await registerOnChange({
+            target: {
+              name: formField,
+              value: selectOptions.formValueTransformer(option),
+            },
+          })
+          setIsInputVisible(false)
+        }}
+        value={form.getValues(formField)}
+        {..._props}
+        ref={selectRef}
+      />
+    )
+
     if (!isInputVisible && option !== undefined) {
       console.log(selectOptions.labelTransformer(option))
-      el = (
-        <Input.Wrapper {..._props}>
+      const { ref, ...customSelectProps } = _props
+      customEl = (
+        <Input.Wrapper {...customSelectProps}>
           <Card
             tabIndex={0}
             css={css`
@@ -663,51 +715,16 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             pr={12}
             pt={0}
             pb={0}
-            onClick={() => setIsInputVisible(true)}
+            onClick={() => {
+              setIsInputVisible(true)
+              console.log({ _props })
+              console.log(selectRef.current)
+              selectRef.current?.focus()
+            }}
           >
             {selectOptions.optionTransformer(option)}
           </Card>
         </Input.Wrapper>
-      )
-    } else {
-      // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
-      el = (
-        <Select
-          // onBlur={() => setIsInputVisible(false)} FIXME: blur on select's input not triggered
-          withinPortal
-          initiallyOpened={option !== undefined}
-          itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
-          searchable
-          // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
-          // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-          // else we need to forcefully use current label/value
-          filter={(option, item) => {
-            if (option !== '') {
-              return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-            }
-
-            return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-          }}
-          data={selectOptions.values.map((option) => ({
-            label: selectOptions.formValueTransformer(option),
-            value: selectOptions.formValueTransformer(option),
-            option,
-          }))}
-          onChange={async (value) => {
-            const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
-            console.log({ onChangeOption: option })
-            if (!option) return
-            await registerOnChange({
-              target: {
-                name: formField,
-                value: selectOptions.formValueTransformer(option),
-              },
-            })
-            setIsInputVisible(false)
-          }}
-          value={form.getValues(formField)}
-          {..._props}
-        />
       )
     }
   } else {
@@ -776,7 +793,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   return (
     <Flex align="center" gap={6} justify={'center'} {...props?.container}>
-      {el}
+      {customEl ? customEl : el}
       {index !== undefined && (
         <RemoveButton
           formField={formFieldArrayPath}
