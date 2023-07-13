@@ -443,7 +443,7 @@ export default function App() {
                                     optionTransformer(el) {
                                       return (
                                         <Group noWrap spacing="lg" align="center">
-                                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <Flex align={'center'}>
                                             <Avatar
                                               size={'28px'}
                                               radius="xl"
@@ -453,7 +453,7 @@ export default function App() {
                                               {nameInitials(el?.fullName || '')}
                                             </Avatar>
                                             <Space p={5} />
-                                          </div>
+                                          </Flex>
 
                                           <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
                                         </Group>

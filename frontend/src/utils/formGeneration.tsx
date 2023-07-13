@@ -593,7 +593,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
   const { formName, options, schemaFields } = useDynamicFormContext()
 
-  const [isInputVisible, setIsInputVisible] = useState(false)
+  const [isSelectVisible, setIsSelectVisible] = useState(false)
 
   const propsOverride = options.propsOverride?.[schemaKey]
   const type = schemaFields[schemaKey]?.type
@@ -642,10 +642,14 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const component = options.input?.[schemaKey]?.component
   const selectOptions = options.selectOptions?.[schemaKey]
   const selectRef = useRef<HTMLInputElement>(null)
+  const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
 
   useEffect(() => {
-    if (isInputVisible) selectRef.current?.focus()
-  }, [isInputVisible])
+    if (isSelectVisible) {
+      setCustomElMinHeight(selectRef.current?.clientHeight ?? 34.5)
+      selectRef.current?.focus()
+    }
+  }, [isSelectVisible])
 
   if (component) {
     el = React.cloneElement(component, {
@@ -700,7 +704,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               value: selectOptions.formValueTransformer(option),
             },
           })
-          setIsInputVisible(false)
+          setIsSelectVisible(false)
         }}
         value={String(form.getValues(formField))}
         {..._props}
@@ -708,7 +712,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       />
     )
 
-    if (!isInputVisible && option !== undefined) {
+    if (!isSelectVisible && option !== undefined) {
       console.log(selectOptions.labelTransformer(option))
       const { ref, ...customSelectProps } = _props
       customEl = (
@@ -716,13 +720,17 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
           <Card
             tabIndex={0}
             css={css`
-              min-height: 34.5px; //TODO: comes from old input (el) height
+              min-height: ${customElMinHeight}px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+
               :focus {
                 border-color: ${theme.colors.blue[8]} !important;
               }
             `}
             onKeyUp={(e) => {
-              if (e.key === 'Enter') setIsInputVisible(true)
+              if (e.key === 'Enter') setIsSelectVisible(true)
             }}
             withBorder
             //onFocus={toggleVisibility}
@@ -731,9 +739,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             pt={0}
             pb={0}
             onClick={() => {
-              setIsInputVisible(true)
-              console.log({ _props })
-              console.log(selectRef.current)
+              setIsSelectVisible(true)
               selectRef.current?.focus()
             }}
           >
