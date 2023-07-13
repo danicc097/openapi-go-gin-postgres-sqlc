@@ -78,7 +78,7 @@ export interface SelectOptions<Return, E = unknown> {
   type: SelectOptionsTypes
   formValueTransformer: <V extends E>(el: V & E) => Return
   optionTransformer: <V extends E>(el: V & E) => JSX.Element
-  labelTransformer: <V extends E>(el: V & E) => string
+  labelTransformer?: <V extends E>(el: V & E) => string
 }
 
 export interface InputOptions<Return, E = unknown> {
@@ -704,7 +704,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     )
 
     if (!isSelectVisible && option !== undefined) {
-      console.log(selectOptions.labelTransformer(option))
       const { ref, ...customSelectProps } = _props
       customEl = (
         <Input.Wrapper {...customSelectProps} pt={0} pb={0}>
@@ -715,6 +714,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               display: flex;
               align-items: center;
               justify-content: space-between;
+              font-size: ${theme.fontSizes.sm};
 
               :focus {
                 border-color: ${theme.colors.blue[8]} !important;
@@ -734,7 +734,9 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               selectRef.current?.focus()
             }}
           >
-            {selectOptions.optionTransformer(option)}
+            {selectOptions.labelTransformer
+              ? selectOptions.labelTransformer(option)
+              : selectOptions.optionTransformer(option)}
           </Card>
         </Input.Wrapper>
       )
