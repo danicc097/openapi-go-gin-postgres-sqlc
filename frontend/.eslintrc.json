@@ -8,8 +8,7 @@
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:testing-library/react"
+    "plugin:react-hooks/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -45,8 +44,7 @@
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
     "react-hooks/exhaustive-deps": "off",
-    "react/prop-types": "off",
-    "testing-library/no-node-access": "off"
+    "react/prop-types": "off"
   },
   "ignorePatterns": [
     "build/**/*"
@@ -56,6 +54,19 @@
       "version": "detect"
     }
   },
+  "overrides": [
+    {
+      "files": [
+        "*.test.*"
+      ],
+      "extends": [
+        "plugin:testing-library/react"
+      ],
+      "rules": {
+        "testing-library/no-node-access": "off"
+      }
+    }
+  ],
   "globals": {
     "page": true,
     "browser": true,

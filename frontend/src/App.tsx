@@ -230,6 +230,13 @@ const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
 const UserPermissionsPage = React.lazy(() => import('src/views/Settings/UserPermissionsPage/UserPermissionsPage'))
 const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectManagementPage/ProjectManagementPage'))
 
+const members = [...Array(10)].map((x, i) => {
+  const user = getGetCurrentUserMock()
+  user.email = `${i}@mail.com`
+  user.userID = `${i}ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65`
+  return user
+})
+
 export default function App() {
   const theme = useMantineTheme()
   const [colorScheme, setColorScheme] = useState<ColorScheme>(
@@ -479,12 +486,7 @@ export default function App() {
                                 selectOptions: {
                                   'members.userID': selectOptionsBuilder({
                                     type: 'select',
-                                    values: [...Array(1)].map((x, i) => {
-                                      const user = getGetCurrentUserMock()
-                                      user.email = '1@mail.com'
-                                      user.userID = '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65'
-                                      return user
-                                    }),
+                                    values: members,
                                     optionTransformer(el) {
                                       return (
                                         <>

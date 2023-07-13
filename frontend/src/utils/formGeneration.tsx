@@ -22,6 +22,7 @@ import {
   Select,
   Avatar,
   Input,
+  Code,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
@@ -387,7 +388,14 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
     )
   })
 
-  return <>{children}</>
+  const renderCount = useRenders()
+
+  return (
+    <>
+      <Code c={'red'}>Renders: {renderCount}</Code>
+      {children}
+    </>
+  )
 }
 
 type FormAccordionProps = {
@@ -546,7 +554,7 @@ function FormData() {
   return (
     <Accordion>
       <Accordion.Item value="form">
-        <Accordion.Control>See form</Accordion.Control>
+        <Accordion.Control>{`See form`}</Accordion.Control>
         <Accordion.Panel>
           <Prism language="json">{JSON.stringify(myFormData, null, 2)}</Prism>
         </Accordion.Panel>
