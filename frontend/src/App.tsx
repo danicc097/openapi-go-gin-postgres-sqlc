@@ -37,7 +37,7 @@ import DynamicForm, {
   type SelectOptions,
   type DynamicFormOptions,
 } from 'src/utils/formGeneration'
-import type { RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
+import type { DbWorkItemTag, RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
@@ -235,6 +235,17 @@ const members = [...Array(10)].map((x, i) => {
   user.email = `${i}@mail.com`
   user.userID = `${i}ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65`
   return user
+})
+
+const tags = [...Array(10)].map((x, i) => {
+  const tag: DbWorkItemTag = {
+    name: `${i} tag`,
+    color: `#${i}34236`,
+    workItemTagID: i,
+    projectID: 1,
+    description: 'description',
+  } // TODO: get workitem tags endpoint
+  return tag
 })
 
 export default function App() {
@@ -463,7 +474,25 @@ export default function App() {
                                       return el.userID
                                     },
                                     labelTransformer(el) {
-                                      return el.email
+                                      return <>{el.email}</>
+                                    },
+                                  }),
+                                  tagIDs: selectOptionsBuilder({
+                                    type: 'multiselect',
+                                    values: tags,
+                                    optionTransformer(el) {
+                                      return (
+                                        <Group noWrap spacing="lg" align="center">
+                                          <Flex align={'center'}></Flex>
+                                          <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
+                                        </Group>
+                                      )
+                                    },
+                                    formValueTransformer(el) {
+                                      return el.workItemTagID
+                                    },
+                                    labelTransformer(el) {
+                                      return <>{el.name}</>
                                     },
                                   }),
                                 },

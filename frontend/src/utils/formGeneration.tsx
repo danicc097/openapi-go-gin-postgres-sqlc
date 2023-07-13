@@ -23,6 +23,9 @@ import {
   Avatar,
   Input,
   Code,
+  MultiSelect,
+  type MultiSelectValueProps,
+  CloseButton,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
@@ -73,12 +76,12 @@ import { nameInitials, sentenceCase } from 'src/utils/strings'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
-export interface SelectOptions<Return, E = unknown> {
-  values: E[]
+export type SelectOptions<Return, E = unknown> = {
   type: SelectOptionsTypes
-  formValueTransformer: <V extends E>(el: V & E) => Return
+  values: E[]
+  formValueTransformer: <V extends E>(el: V & E) => Return extends unknown[] ? Return[number] : Return
   optionTransformer: <V extends E>(el: V & E) => JSX.Element
-  labelTransformer?: <V extends E>(el: V & E) => string
+  labelTransformer?: <V extends E>(el: V & E) => JSX.Element
 }
 
 export interface InputOptions<Return, E = unknown> {
@@ -111,6 +114,36 @@ const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
       </Box>
     )
   })
+
+const valueComponentTemplate =
+  (transformer: (...args: any[]) => JSX.Element) =>
+  ({ value, option, onRemove, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
+    return (
+      <div {...others}>
+        <Box
+          sx={(theme) => ({
+            display: 'flex',
+            cursor: 'default',
+            alignItems: 'center',
+            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
+            border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[4]}`,
+            paddingLeft: theme.spacing.xs,
+            borderRadius: theme.radius.sm,
+          })}
+        >
+          <Box sx={{ lineHeight: 1, fontSize: rem(12) }}>{transformer(option)}</Box>
+          <CloseButton
+            //@ts-ignore
+            onMouseDown={onRemove}
+            variant="transparent"
+            size={22}
+            iconSize={14}
+            tabIndex={-1}
+          />
+        </Box>
+      </div>
+    )
+  }
 
 export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   labels: {
@@ -653,93 +686,149 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     // which do allow custom labels by default and doesnt need workaround
     // use them with tagIDs -> DbWorkItemTag[] -> tag.name
   } else if (selectOptions) {
-    const option = selectOptions.values.find((option) => {
-      console.log({ option: selectOptions.formValueTransformer(option), formValue: form.getValues(formField) })
-      return selectOptions.formValueTransformer(option) === form.getValues(formField)
-    })
-
-    // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
-    el = (
-      <Select
-        withinPortal
-        selectOnBlur
-        initiallyOpened={option !== undefined}
-        itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
-        searchable
-        // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
-        // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-        // else we need to forcefully use current label/value
-        filter={(option, item) => {
-          if (option !== '') {
-            return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-          }
-
-          return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-        }}
-        // IMPORTANT: Select value should always be either string or null as per doc
-        // (and implicitly label must be equal to value else all is broken unlike with multiselect)
-        data={selectOptions.values.map((option) => ({
-          label: String(selectOptions.formValueTransformer(option)),
-          value: String(selectOptions.formValueTransformer(option)),
-          option,
-        }))}
-        onChange={async (value) => {
-          const option = selectOptions.values.find(
-            (option) => String(selectOptions.formValueTransformer(option)) === value,
-          )
-          console.log({ onChangeOption: option })
-          if (!option) return
-          await registerOnChange({
-            target: {
-              name: formField,
-              value: selectOptions.formValueTransformer(option),
-            },
+    switch (selectOptions.type) {
+      case 'select':
+        {
+          const option = selectOptions.values.find((option) => {
+            console.log({ option: selectOptions.formValueTransformer(option), formValue: form.getValues(formField) })
+            return selectOptions.formValueTransformer(option) === form.getValues(formField)
           })
-          setIsSelectVisible(false)
-        }}
-        value={String(form.getValues(formField))}
-        {..._props}
-        ref={selectRef}
-      />
-    )
 
-    if (!isSelectVisible && option !== undefined) {
-      const { ref, ...customSelectProps } = _props
-      customEl = (
-        <Input.Wrapper {...customSelectProps} pt={0} pb={0}>
-          <Card
-            tabIndex={0}
-            css={css`
-              min-height: ${customElMinHeight}px;
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              font-size: ${theme.fontSizes.sm};
+          // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
+          el = (
+            <Select
+              withinPortal
+              initiallyOpened={option !== undefined}
+              itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
+              searchable
+              // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
+              // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+              // else we need to forcefully use current label/value
+              filter={(option, item) => {
+                if (option !== '') {
+                  return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+                }
 
-              :focus {
-                border-color: ${theme.colors.blue[8]} !important;
-              }
-            `}
-            onKeyUp={(e) => {
-              if (e.key === 'Enter') setIsSelectVisible(true)
-            }}
-            withBorder
-            //onFocus={toggleVisibility}
-            pl={12}
-            pr={12}
-            pt={0}
-            pb={0}
-            onClick={() => {
-              setIsSelectVisible(true)
-              selectRef.current?.focus()
-            }}
-          >
-            {selectOptions.labelTransformer
-              ? selectOptions.labelTransformer(option)
-              : selectOptions.optionTransformer(option)}
-          </Card>
-        </Input.Wrapper>
-      )
+                return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+              }}
+              // IMPORTANT: Select value should always be either string or null as per doc
+              // (and implicitly label must be equal to value else all is broken unlike with multiselect)
+              data={selectOptions.values.map((option) => ({
+                label: String(selectOptions.formValueTransformer(option)),
+                value: String(selectOptions.formValueTransformer(option)),
+                option,
+              }))}
+              onChange={async (value) => {
+                const option = selectOptions.values.find(
+                  (option) => String(selectOptions.formValueTransformer(option)) === value,
+                )
+                console.log({ onChangeOption: option })
+                if (!option) return
+                await registerOnChange({
+                  target: {
+                    name: formField,
+                    value: selectOptions.formValueTransformer(option),
+                  },
+                })
+                setIsSelectVisible(false)
+              }}
+              value={String(form.getValues(formField))}
+              {..._props}
+              ref={selectRef}
+            />
+          )
+
+          if (!isSelectVisible && option !== undefined) {
+            const { ref, ...customSelectProps } = _props
+            customEl = (
+              <Input.Wrapper {...customSelectProps} pt={0} pb={0}>
+                <Card
+                  tabIndex={0}
+                  css={css`
+                    min-height: ${customElMinHeight}px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    font-size: ${theme.fontSizes.sm};
+
+                    :focus {
+                      border-color: ${theme.colors.blue[8]} !important;
+                    }
+                  `}
+                  onKeyUp={(e) => {
+                    if (e.key === 'Enter') setIsSelectVisible(true)
+                  }}
+                  withBorder
+                  //onFocus={toggleVisibility}
+                  pl={12}
+                  pr={12}
+                  pt={0}
+                  pb={0}
+                  onClick={() => {
+                    setIsSelectVisible(true)
+                    selectRef.current?.focus()
+                  }}
+                >
+                  {selectOptions.labelTransformer
+                    ? selectOptions.labelTransformer(option)
+                    : selectOptions.optionTransformer(option)}
+                </Card>
+              </Input.Wrapper>
+            )
+          }
+        }
+        break
+      case 'multiselect':
+        {
+          const option = selectOptions.values.find((option) => {
+            console.log({ option: selectOptions.formValueTransformer(option), formValue: form.getValues(formField) })
+            return selectOptions.formValueTransformer(option) === form.getValues(formField)
+          })
+
+          // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
+          el = (
+            <MultiSelect
+              withinPortal
+              itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
+              valueComponent={valueComponentTemplate(
+                selectOptions.labelTransformer ? selectOptions.labelTransformer : selectOptions.optionTransformer,
+              )}
+              searchable
+              filter={(option, selected, item) => {
+                if (option !== '') {
+                  return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+                }
+
+                return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+              }}
+              data={selectOptions.values.map((option) => ({
+                label: String(selectOptions.formValueTransformer(option)),
+                value: String(selectOptions.formValueTransformer(option)),
+                option,
+              }))}
+              onChange={async (values) => {
+                console.log({ values, formValues: form.getValues(formField) })
+                const options = values.map((value) =>
+                  selectOptions.values.find((option) => value === selectOptions.formValueTransformer(option)),
+                )
+                console.log({ onChangeOptions: options })
+                //if (!option) return
+                registerOnChange({
+                  target: {
+                    name: formField,
+                    value: options.map((o) => selectOptions.formValueTransformer(o)),
+                  },
+                })
+              }}
+              value={form.getValues(formField)}
+              {..._props}
+              ref={selectRef}
+            />
+          )
+        }
+        break
+      default:
+        break
     }
   } else {
     switch (schemaFields[schemaKey]?.type) {
