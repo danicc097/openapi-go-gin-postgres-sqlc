@@ -292,48 +292,6 @@ export default function App() {
     members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'user 2' }],
   } as TestTypes.RestDemoWorkItemCreateRequest
 
-  /**
-   * TODO: transformers: e.g. initialValues.members = USERS.map =>(userToMemberTransformer(user: User): ServiceMember)
-   * but we will not set this manually. instead we have a wrapper before form creation where initialData = {"members": USERS} (so now []User instead of ServiceMember)
-   * and transformer be used in options.transformers = {"members": (users: []User) => users.map(u => userToMemberTransformer(u))}.
-   * transformer function must match signature inferred from initialData wrapper and form itself so its fully typed.
-   * The same principle needs to be used for custom components, e.g. multiselect and select.
-   */
-
-  /*
-
-  TODO:
-
-  const ajv = new Ajv({ strict: false, allErrors: true })
-  addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
-  const schema = ajv.getSchema(RestDemoWorkItemCreateRequestDecoder.schemaRef)
-
-  and then react hook form : resolver: ajvResolver(schema)
-  */
-  // const demoWorkItemCreateForm = useForm({
-  //   // TODO: simple function to initialize top level with empty object if property type === object
-  //   // now that we have json schema dereferenced
-  //   initialValues: formInitialValues,
-  //   validateInputOnChange: true,
-  //   validate: {
-  //     // TODO: should be able to validate whole nested objects at once.
-  //     // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
-  //     // will need adhoc validateForm func that validates fields where (isArray && type !== object)
-  //     // or better yet, convert arrays of nonobjects to arrays of objects, indexed by whatever default key,
-  //     // and we convert them back with an adapter before making the request.
-  //     // we would need to exclude these fields from validate, and call client-validator's validateField with the
-  //     // original object and setError appropiately in the field using index + default key instead of just by index.
-
-  //     base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
-  //     demoProject: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
-  //     members: (v, vv, path) => {
-  //       // console.log(`would have validated members. value: ${JSON.stringify(v)}`)
-  //       // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
-  //       return null
-  //     },
-  //   },
-  // })
-
   const form = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {
       strict: false,
@@ -343,11 +301,6 @@ export default function App() {
     defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
-
-  // useEffect(() => {
-  //   console.log('resetting')
-  //   form.reset(formInitialValues)
-  // }, [])
 
   const {
     register,
@@ -489,23 +442,21 @@ export default function App() {
                                     values: members,
                                     optionTransformer(el) {
                                       return (
-                                        <>
-                                          <Group noWrap spacing="lg" align="center">
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                              <Avatar
-                                                size={35}
-                                                radius="xl"
-                                                data-test-id="header-profile-avatar"
-                                                alt={el?.username}
-                                              >
-                                                {nameInitials(el?.fullName || '')}
-                                              </Avatar>
-                                              <Space p={5} />
-                                            </div>
+                                        <Group noWrap spacing="lg" align="center">
+                                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <Avatar
+                                              size={'28px'}
+                                              radius="xl"
+                                              data-test-id="header-profile-avatar"
+                                              alt={el?.username}
+                                            >
+                                              {nameInitials(el?.fullName || '')}
+                                            </Avatar>
+                                            <Space p={5} />
+                                          </div>
 
-                                            <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
-                                          </Group>
-                                        </>
+                                          <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
+                                        </Group>
                                       )
                                     },
                                     formValueTransformer(el) {

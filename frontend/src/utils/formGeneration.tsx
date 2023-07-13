@@ -26,7 +26,7 @@ import {
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
-import { useMantineTheme } from '@mantine/styles'
+import { rem, useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { singularize } from 'inflection'
 import _, { memoize } from 'lodash'
@@ -106,9 +106,9 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
 const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
   forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
     return (
-      <div ref={ref} {...others}>
+      <Box ref={ref} {...others} m={2}>
         {transformer(option)}
-      </div>
+      </Box>
     )
   })
 
@@ -392,7 +392,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
 
   return (
     <>
-      <Code c={'red'}>Renders: {renderCount}</Code>
+      {/* <Code c={'red'}>Renders: {renderCount}</Code> */}
       {children}
     </>
   )
@@ -712,10 +712,11 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       console.log(selectOptions.labelTransformer(option))
       const { ref, ...customSelectProps } = _props
       customEl = (
-        <Input.Wrapper {...customSelectProps}>
+        <Input.Wrapper {...customSelectProps} pt={0} pb={0}>
           <Card
             tabIndex={0}
             css={css`
+              min-height: 34.5px; //TODO: comes from old input (el) height
               :focus {
                 border-color: ${theme.colors.blue[8]} !important;
               }
@@ -727,8 +728,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             //onFocus={toggleVisibility}
             pl={12}
             pr={12}
-            pt={2}
-            pb={2}
+            pt={0}
+            pb={0}
             onClick={() => {
               setIsInputVisible(true)
               console.log({ _props })
