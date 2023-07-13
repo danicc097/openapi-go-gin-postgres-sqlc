@@ -113,7 +113,6 @@ const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
   })
 
 export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
-  // FIXME: Exclude<U, ExcludeKeys> breaks indexing type inference - but does exclude
   labels: {
     [key in Exclude<U, ExcludeKeys>]: string | null
   }
@@ -128,10 +127,6 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
       >
     >
   }>
-  //  list of options used for Select and MultiSelect
-  // TODO: someone had the exact same idea: https://stackoverflow.com/questions/69254779/infer-type-based-on-the-generic-type-of-a-sibling-property-in-typescript
-  // more recent version: https://stackoverflow.com/questions/74618270/how-to-make-an-object-property-depend-on-another-one-in-a-generic-type
-  // TODO: inputComponent field, e.g. for color picker. if inputComponent === undefined, then switch on schema format as usual
   selectOptions?: Partial<{
     [key in Exclude<U, ExcludeKeys>]: ReturnType<
       typeof selectOptionsBuilder<
@@ -227,9 +222,9 @@ export default function DynamicForm<
   const theme = useMantineTheme()
   const form = useFormContext()
 
-  const { isDirty, isSubmitting, submitCount } = form.formState
-
-  // TODO: will also need sorting schemaFields beforehand and then generate normally.
+  // TODO: will also need sorting schemaFields beforehand and then generate normally if sorting: [<keyof T>] is given.
+  // we will then foreach key in sorting, append schemafields[key] to a new list.
+  // then loop schemafields normally and append, ignoring if key in sorting
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields }}>
       <PageTemplate minWidth={800}>
@@ -584,9 +579,6 @@ const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
   }
 }
 
-// useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
-// TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
-// for builtin support for uncontrolled input
 const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputProps) => {
   const form = useFormContext()
   const theme = useMantineTheme()
@@ -627,7 +619,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     }
   }
 
-  // TODO: multiselect and select early check (if found in options.components override)
   const _props = {
     ...registerProps,
     ...props?.input,
@@ -814,7 +805,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   return (
     <Flex align="center" gap={6} justify={'center'} {...props?.container}>
-      {customEl ? customEl : el}
+      {customEl || el}
       {index !== undefined && (
         <RemoveButton
           formField={formFieldArrayPath}
