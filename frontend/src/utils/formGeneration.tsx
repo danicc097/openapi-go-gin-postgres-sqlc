@@ -825,35 +825,24 @@ type RemoveButtonProps = {
   index: number
   itemName: string
   icon: React.ReactNode
-  withFieldArray?: boolean
 }
 
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
-const RemoveButton = ({ formField, index, itemName, icon, withFieldArray = false }: RemoveButtonProps) => {
+const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) => {
   const form = useFormContext()
   const { colorScheme } = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
-
-  useWatch({ name: `${formField}`, control: form.control })
-
-  const fieldArray = useFieldArray({
-    control: form.control,
-    name: formField,
-  })
 
   return (
     <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
           // NOTE: don't use rhf useFieldArray, way too many edge cases for no gain. if reordering is needed, implement it manually.
-          if (withFieldArray) {
-            fieldArray.remove(index)
-          } else {
-            const listItems = form.getValues(formField)
-            removeElementByIndex(listItems, index)
-            form.unregister(formField) // needs to be before setValue
-            form.setValue(formField, listItems as any)
-          }
+          // we could even implement flat array reordering by handling them internally as objects with id prop
+          const listItems = form.getValues(formField)
+          removeElementByIndex(listItems, index)
+          form.unregister(formField) // needs to be before setValue
+          form.setValue(formField, listItems as any)
         }}
         // variant="filled"
         css={css`
