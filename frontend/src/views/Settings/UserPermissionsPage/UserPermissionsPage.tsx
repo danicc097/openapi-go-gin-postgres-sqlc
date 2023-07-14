@@ -42,7 +42,7 @@ import {
 import { Prism } from '@mantine/prism'
 import { notifications } from '@mantine/notifications'
 import { IconCheck } from '@tabler/icons'
-import RoleBadge from 'src/components/RoleBadge'
+import RoleBadge from 'src/components/Badges/Role'
 import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
 import ROLES from 'src/roles'

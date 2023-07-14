@@ -1,6 +1,6 @@
 import SCOPES from 'src/scopes'
 import _ from 'lodash'
-import type { Role } from 'src/gen/model'
+import type { Role, WorkItemRole } from 'src/gen/model'
 
 const LIGHT_BLUE = '#4EC5F1'
 const LIGHT_GREEN = '#0DF2C8'
@@ -24,6 +24,19 @@ const ROLE_COLORS: RoleColors = {
 
 export const roleColor = (role: Role) => {
   return ROLE_COLORS[role]
+}
+
+type WorkItemRoleColors = {
+  [key in WorkItemRole]: string
+}
+
+const WORK_ITEM_ROLE_COLORS: WorkItemRoleColors = {
+  preparer: LIGHT_GREY,
+  reviewer: LIGHT_ORANGE,
+}
+
+export const workItemRoleColor = (role: WorkItemRole) => {
+  return WORK_ITEM_ROLE_COLORS[role]
 }
 
 export const COLORS = [
