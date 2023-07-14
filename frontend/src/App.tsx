@@ -38,7 +38,7 @@ import DynamicForm, {
   type SelectOptions,
   type DynamicFormOptions,
 } from 'src/utils/formGeneration'
-import type { DbWorkItemTag, RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
+import type { DbWorkItemTag, RestDemoWorkItemCreateRequest, User, WorkItemRole } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
@@ -58,6 +58,8 @@ import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 import useRenders from 'src/hooks/utils/useRenders'
 import { fullFormats } from 'ajv-formats/dist/formats'
 import { nameInitials } from 'src/utils/strings'
+import WorkItemRoleBadge from 'src/components/Badges/WorkItemRoleBadge'
+import { WORK_ITEM_ROLES } from 'src/services/authorization'
 
 const schema = {
   properties: {
@@ -466,7 +468,7 @@ export default function App() {
                                   'members.userID': selectOptionsBuilder({
                                     type: 'select',
                                     values: members,
-                                    // transformers can be reusable between forms. could simply become
+                                    //  TODO: transformers can be reusable between forms. could simply become
                                     //  {
                                     //   type: "select"
                                     //   values: ...
@@ -499,6 +501,19 @@ export default function App() {
                                     },
                                     labelColor(el) {
                                       return el.color
+                                    },
+                                  }),
+                                  'members.role': selectOptionsBuilder({
+                                    type: 'select',
+                                    values: WORK_ITEM_ROLES,
+                                    optionTransformer: (el) => {
+                                      return <WorkItemRoleBadge role={el} />
+                                    },
+                                    formValueTransformer(el) {
+                                      return el
+                                    },
+                                    labelTransformer(el) {
+                                      return <WorkItemRoleBadge role={el} />
                                     },
                                   }),
                                 },
