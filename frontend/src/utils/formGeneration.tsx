@@ -235,9 +235,9 @@ const useDynamicFormContext = (): DynamicFormContextValue => {
   return context
 }
 
-type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U | null = null> = {
-  schemaFields: Record<Exclude<U, ExcludeKeys>, SchemaField>
-  options: DynamicFormOptions<T, ExcludeKeys, U>
+type DynamicFormProps<T extends object, ExcludeKeys extends GetKeys<T> | null = null> = {
+  schemaFields: Record<Exclude<GetKeys<T>, ExcludeKeys>, SchemaField>
+  options: DynamicFormOptions<T, ExcludeKeys, GetKeys<T>>
   formName: string
 }
 
@@ -254,11 +254,11 @@ function renderTitle(key: FormField, title) {
 
 const cardRadius = 6
 
-export default function DynamicForm<
-  T extends object,
-  ExcludeKeys extends U | null = null,
-  U extends PropertyKey = GetKeys<T>,
->({ formName, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
+export default function DynamicForm<T extends object, ExcludeKeys extends GetKeys<T> | null = null>({
+  formName,
+  schemaFields,
+  options,
+}: DynamicFormProps<T, ExcludeKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
 
