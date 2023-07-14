@@ -349,7 +349,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       css: css`
         width: 100%;
       `,
-      ...(!field.isArray && { label: formField }),
+      ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
       id: `${formName}-${formField}`,
     }

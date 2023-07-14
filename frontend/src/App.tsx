@@ -424,26 +424,26 @@ export default function App() {
                                 // check if labels hasOwnProperty fieldKey and if not exclude from form.
                                 labels: {
                                   base: null,
-                                  'base.closed': 'closed',
-                                  'base.description': 'description',
+                                  'base.closed': 'Closed',
+                                  'base.description': 'Description',
                                   // 'base.metadata': 'metadata', // ignored -> not a key
-                                  'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
-                                  'base.targetDate': 'targetDate',
-                                  'demoProject.reopened': 'reopened',
-                                  'base.teamID': 'teamID',
-                                  'base.items': 'items',
-                                  'base.items.name': 'name',
-                                  'base.items.items': 'items',
-                                  'base.workItemTypeID': 'workItemTypeID',
+                                  'base.kanbanStepID': 'Kanban step', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
+                                  'base.targetDate': 'Target date',
+                                  'demoProject.reopened': 'Reopened',
+                                  'base.teamID': 'Team',
+                                  'base.items': 'Items',
+                                  'base.items.name': 'Name',
+                                  'base.items.items': 'Items',
+                                  'base.workItemTypeID': 'Type',
                                   demoProject: null,
-                                  'demoProject.lastMessageAt': 'lastMessageAt',
-                                  'demoProject.line': 'line',
-                                  'demoProject.ref': 'ref',
-                                  'demoProject.workItemID': 'workItemID',
-                                  members: 'members',
-                                  'members.role': 'role',
+                                  'demoProject.lastMessageAt': 'Last message at',
+                                  'demoProject.line': 'Line',
+                                  'demoProject.ref': 'Ref',
+                                  'demoProject.workItemID': 'Work item',
+                                  members: 'Members',
+                                  'members.role': 'Role',
                                   'members.userID': 'User',
-                                  tagIDs: 'tagIDs',
+                                  tagIDs: 'Tags',
                                 },
                                 accordion: {
                                   'base.items': {
