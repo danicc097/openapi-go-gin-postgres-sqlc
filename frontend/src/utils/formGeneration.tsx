@@ -523,6 +523,25 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
+  if (options.selectOptions?.[schemaKey]?.type === 'multiselect') {
+    return (
+      <Flex
+        css={css`
+          width: 100%;
+        `}
+      >
+        <GeneratedInput
+          schemaKey={schemaKey}
+          formField={formField as FormField}
+          props={{
+            input: { ...inputProps, id: `${formName}-${formField}` },
+            container: containerProps,
+          }}
+        />
+      </Flex>
+    )
+  }
+
   const children = (form.getValues(formField) || []).map((item, k: number) => {
     // input focus loss on rerender when defining component inside another function scope
     return (
@@ -780,12 +799,13 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         break
       case 'multiselect':
         {
-          const option = selectOptions.values.find((option) => {
-            console.log({ option: selectOptions.formValueTransformer(option), formValue: form.getValues(formField) })
-            return selectOptions.formValueTransformer(option) === form.getValues(formField)
-          })
+          const data = selectOptions.values.map((option) => ({
+            label: selectOptions.formValueTransformer(option),
+            value: selectOptions.formValueTransformer(option),
+            option,
+          }))
 
-          // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
+          console.log(data)
           el = (
             <MultiSelect
               withinPortal
@@ -801,11 +821,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
                 return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
               }}
-              data={selectOptions.values.map((option) => ({
-                label: String(selectOptions.formValueTransformer(option)),
-                value: String(selectOptions.formValueTransformer(option)),
-                option,
-              }))}
+              data={data}
               onChange={async (values) => {
                 console.log({ values, formValues: form.getValues(formField) })
                 const options = values.map((value) =>

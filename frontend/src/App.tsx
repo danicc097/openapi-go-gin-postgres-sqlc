@@ -492,7 +492,7 @@ export default function App() {
                                       return el.workItemTagID
                                     },
                                     labelTransformer(el) {
-                                      return <>{el.name}</>
+                                      return <>{el.name} label</>
                                     },
                                   }),
                                 },
