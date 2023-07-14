@@ -138,6 +138,7 @@ const valueComponentTemplate =
             borderRadius: theme.radius.sm,
           })}
         >
+          {/* // TODO: use high contrast black:white on label */}
           <Box sx={{ lineHeight: 1, fontSize: rem(12) }}>{transformer(option)}</Box>
           <CloseButton
             //@ts-ignore
@@ -541,8 +542,13 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
           schemaKey={schemaKey}
           formField={formField as FormField}
           props={{
-            input: { ...inputProps, id: `${formName}-${formField}` },
-            container: containerProps,
+            input: {
+              ...inputProps,
+              id: `${formName}-${formField}`,
+            },
+            container: {
+              ...containerProps,
+            },
           }}
         />
       </Flex>
@@ -813,6 +819,11 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
           el = (
             <MultiSelect
+              styles={{
+                input: {
+                  backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
+                },
+              }}
               withinPortal
               itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
               valueComponent={valueComponentTemplate(
@@ -941,7 +952,7 @@ type RemoveButtonProps = {
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
 const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) => {
   const form = useFormContext()
-  const { colorScheme } = useMantineTheme()
+  const theme = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
   return (
@@ -957,7 +968,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
         }}
         // variant="filled"
         css={css`
-          background-color: ${colorScheme === 'dark' ? '#7c1a1a' : '#b03434'};
+          background-color: ${theme.colorScheme === 'dark' ? '#7c1a1a' : '#b03434'};
           color: white;
           :hover {
             background-color: gray;
