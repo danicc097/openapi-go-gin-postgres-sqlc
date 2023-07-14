@@ -28,6 +28,7 @@ import {
   CloseButton,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
+import { useFocusWithin } from '@mantine/hooks'
 import { Prism } from '@mantine/prism'
 import { rem, useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
@@ -702,8 +703,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   let customEl: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
   const selectOptions = options.selectOptions?.[schemaKey]
-  const selectRef = useRef<HTMLInputElement>(null)
+  const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
+
+  const { ref: focusRef, focused: selectFocused } = useFocusWithin()
 
   useEffect(() => {
     if (isSelectVisible) {
@@ -711,6 +714,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       selectRef.current?.focus()
     }
   }, [isSelectVisible])
+
+  useEffect(() => {
+    if (!selectFocused) setIsSelectVisible(false)
+  }, [selectFocused])
 
   if (component) {
     el = React.cloneElement(component, {
@@ -733,6 +740,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
           // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
           el = (
             <Select
+              onBlur={(e) => setIsSelectVisible(false)}
               withinPortal
               initiallyOpened={option !== undefined}
               itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
@@ -770,7 +778,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               }}
               value={String(form.getValues(formField))}
               {..._props}
-              ref={selectRef}
+              ref={(el) => {
+                selectRef.current = el
+                focusRef.current = el
+              }}
               placeholder={`Select ${lowerFirst(itemName)}`}
             />
           )
