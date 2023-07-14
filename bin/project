@@ -605,8 +605,8 @@ x.gen.proto() {
     protoc \
       --go-grpc_out=internal/pb/. \
       --go_out=internal/pb/. \
-      --go-grpc_opt=M$filename=$import_path,paths=import \
-      --go_opt=M$filename=$import_path,paths=import \
+      --go-grpc_opt=M${filename}=${import_path},paths=import \
+      --go_opt=M${filename}=${import_path},paths=import \
       internal/python-ml-app-protos/tfidf/v1/service.proto || err "Failed proto generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
