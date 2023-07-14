@@ -120,7 +120,7 @@ const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
 
 const valueComponentTemplate =
   (transformer: (...args: any[]) => JSX.Element, colorFn?: (...args: any[]) => string) =>
-  ({ value, option, onRemove, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
+  ({ value, option, onRemove, classNames, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
     let color
     if (colorFn) {
       color = colorFn(option)
