@@ -74,6 +74,8 @@ export const COLORS = [
 export const COLOR_BLIND_PALETTE = ['#999999', '#E69F00', '#56B4E9', '#009E73', '#0072B2', '#D55E00', '#CC79A7']
 
 export function getContrastYIQ(hexColor) {
+  if (!hexColor) return `#aaaaaa`
+
   const hex = hexColor.replace('#', '')
   const [r, g, b] = hex.match(/.{2}/g).map((val) => parseInt(val, 16))
 
