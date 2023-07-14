@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { css } from '@emotion/react'
+import type { EmotionJSX } from '@emotion/react/types/jsx-namespace'
 import {
   Group,
   TextInput,
@@ -17,14 +19,43 @@ import {
   Flex,
   Tooltip,
   Accordion,
+  Select,
+  Avatar,
+  Input,
+  Code,
+  MultiSelect,
+  type MultiSelectValueProps,
+  CloseButton,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
-import { useMantineTheme } from '@mantine/styles'
-import { Icon123, IconMinus, IconPlus } from '@tabler/icons'
-import _, { memoize } from 'lodash'
-import React, { useState, type ComponentProps, useMemo, type MouseEventHandler, memo } from 'react'
-import { useFormContext, type Path, type UseFormReturn, FormProvider, useWatch, useFieldArray } from 'react-hook-form'
+import { rem, useMantineTheme } from '@mantine/styles'
+import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
+import { pluralize, singularize } from 'inflection'
+import _, { lowerFirst, memoize } from 'lodash'
+import React, {
+  useState,
+  type ComponentProps,
+  useMemo,
+  type MouseEventHandler,
+  memo,
+  createContext,
+  useContext,
+  type PropsWithChildren,
+  forwardRef,
+  useRef,
+  useEffect,
+} from 'react'
+import {
+  useFormContext,
+  type Path,
+  type UseFormReturn,
+  FormProvider,
+  useWatch,
+  useFieldArray,
+  type UseFieldArrayReturn,
+  useFormState,
+} from 'react-hook-form'
 import { json } from 'react-router-dom'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
@@ -39,19 +70,20 @@ import type {
   Branded,
 } from 'src/types/utils'
 import { removeElementByIndex } from 'src/utils/array'
+import { getContrastYIQ } from 'src/utils/colors'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
-import { sentenceCase } from 'src/utils/strings'
-import type { U } from 'vitest/dist/types-b7007192'
+import { nameInitials, sentenceCase } from 'src/utils/strings'
 
-export type SelectOptionsTypes = 'select' | 'multiselect' | 'colorSwatch'
+export type SelectOptionsTypes = 'select' | 'multiselect'
 
-export interface SelectOptions<Return, E = unknown> {
-  values: E[]
+export type SelectOptions<Return, E = unknown> = {
   type: SelectOptionsTypes
-  formValueTransformer?: <V extends E>(el: V & E) => Return
-  // TODO: via mantine componentValue
-  componentTransformer?: <V extends E>(el: V & E) => JSX.Element
+  values: E[]
+  formValueTransformer: <V extends E>(el: V & E) => Return extends unknown[] ? Return[number] : Return
+  optionTransformer: <V extends E>(el: V & E) => JSX.Element
+  labelTransformer?: <V extends E>(el: V & E) => JSX.Element
+  labelColor?: <V extends E>(el: V & E) => string
 }
 
 export interface InputOptions<Return, E = unknown> {
@@ -62,20 +94,70 @@ export const selectOptionsBuilder = <Return, V>({
   type,
   values,
   formValueTransformer,
-  componentTransformer,
+  optionTransformer,
+  labelTransformer,
+  labelColor,
 }: SelectOptions<Return, V>): SelectOptions<Return, V> => ({
   type,
   values,
-  componentTransformer,
+  optionTransformer,
+  labelTransformer,
   formValueTransformer,
+  labelColor,
 })
 
 export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>): InputOptions<Return, V> => ({
   component,
 })
 
+const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
+  forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
+    return (
+      <Box ref={ref} {...others} m={2}>
+        {transformer(option)}
+      </Box>
+    )
+  })
+
+const valueComponentTemplate =
+  (transformer: (...args: any[]) => JSX.Element, colorFn?: (...args: any[]) => string) =>
+  ({ value, option, onRemove, classNames, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
+    let color
+    if (colorFn) {
+      color = colorFn(option)
+    }
+    return (
+      <div {...others}>
+        <Box
+          sx={(theme) => ({
+            display: 'flex',
+            cursor: 'default',
+            alignItems: 'center',
+            backgroundColor: color || (theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white),
+            border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[4]}`,
+            paddingLeft: theme.spacing.xs,
+            borderRadius: theme.radius.sm,
+          })}
+        >
+          <Box
+            sx={{ lineHeight: 1, fontSize: rem(12), color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black' }}
+          >
+            {transformer(option)}
+          </Box>
+          <CloseButton
+            //@ts-ignore
+            onMouseDown={onRemove}
+            variant="transparent"
+            size={22}
+            iconSize={14}
+            tabIndex={-1}
+          />
+        </Box>
+      </div>
+    )
+  }
+
 export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
-  // FIXME: Exclude<U, ExcludeKeys> breaks indexing type inference - but does exclude
   labels: {
     [key in Exclude<U, ExcludeKeys>]: string | null
   }
@@ -90,10 +172,6 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
       >
     >
   }>
-  //  list of options used for Select and MultiSelect
-  // TODO: someone had the exact same idea: https://stackoverflow.com/questions/69254779/infer-type-based-on-the-generic-type-of-a-sibling-property-in-typescript
-  // more recent version: https://stackoverflow.com/questions/74618270/how-to-make-an-object-property-depend-on-another-one-in-a-generic-type
-  // TODO: inputComponent field, e.g. for color picker. if inputComponent === undefined, then switch on schema format as usual
   selectOptions?: Partial<{
     [key in Exclude<U, ExcludeKeys>]: ReturnType<
       typeof selectOptionsBuilder<
@@ -135,148 +213,119 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   }>
 }
 
-type DynamicFormProps<T extends object, U extends PropertyKey = GetKeys<T>, ExcludeKeys extends U | null = null> = {
+type DynamicFormContextValue = {
+  formName: string
   schemaFields: Record<SchemaKey, SchemaField>
-  options: DynamicFormOptions<T, ExcludeKeys, U>
+  options: DynamicFormOptions<any, null, SchemaKey> // for more performant internal intellisense. for user it will be typed
+}
+
+const DynamicFormContext = createContext<DynamicFormContextValue | undefined>(undefined)
+
+type DynamicFormProviderProps = {
+  value: DynamicFormContextValue
+  children: React.ReactNode
+}
+
+const DynamicFormProvider = ({ value, children }: DynamicFormProviderProps) => {
+  return <DynamicFormContext.Provider value={value}>{children}</DynamicFormContext.Provider>
+}
+
+const useDynamicFormContext = (): DynamicFormContextValue => {
+  const context = useContext(DynamicFormContext)
+
+  if (!context) {
+    throw new Error('useDynamicFormContext must be used within a DynamicFormProvider')
+  }
+
+  return context
+}
+
+type DynamicFormProps<T extends object, ExcludeKeys extends GetKeys<T> | null = null> = {
+  schemaFields: Record<Exclude<GetKeys<T>, ExcludeKeys>, SchemaField>
+  options: DynamicFormOptions<T, ExcludeKeys, GetKeys<T>>
   formName: string
 }
 
-function renderTitle(key: string) {
+function renderTitle(key: FormField, title) {
   return (
     <>
       <Title data-testid={`${key}-title`} size={18}>
-        {key}
+        {title}
       </Title>
       <Space p={8} />
     </>
   )
 }
 
-const removeListItem = (form, formField: FormField, index: number) => {
-  const listItems = form.getValues(formField)
-  removeElementByIndex(listItems, index)
-  form.setValue(formField, listItems as any)
-  console.log(listItems)
-}
+const cardRadius = 6
 
-export default function DynamicForm<
-  T extends object,
-  ExcludeKeys extends U | null = null,
-  U extends PropertyKey = GetKeys<T>,
->({ formName, schemaFields, options }: DynamicFormProps<T, U, ExcludeKeys>) {
+export default function DynamicForm<T extends object, ExcludeKeys extends GetKeys<T> | null = null>({
+  formName,
+  schemaFields,
+  options,
+}: DynamicFormProps<T, ExcludeKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
 
-  // TODO: will also need sorting schemaFields beforehand and then generate normally.
+  // TODO: will also need sorting schemaFields beforehand and then generate normally if sorting: [<keyof T>] is given.
+  // we will then foreach key in sorting, append schemafields[key] to a new list.
+  // then loop schemafields normally and append, ignoring if key in sorting
   return (
-    <PageTemplate minWidth={1000}>
-      <>
-        <FormData />
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            form.handleSubmit(
-              (data) => console.log({ data }),
-              (errors) => console.log({ errors }),
-            )(e)
-          }}
-          css={css`
-            min-width: 100%;
-          `}
-          id={formName}
-        >
-          <button type="submit">submit</button>
-          <GeneratedInputs schemaFields={schemaFields} formName={formName} options={options} />
-        </form>
-      </>
-    </PageTemplate>
+    <DynamicFormProvider value={{ formName, options, schemaFields }}>
+      <PageTemplate minWidth={800}>
+        <>
+          <FormData />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit(
+                (data) => console.log({ data }),
+                (errors) => console.log({ errors }),
+              )(e)
+            }}
+            css={css`
+              min-width: 100%;
+            `}
+            data-testid={formName}
+          >
+            <button type="submit">submit</button>
+            <GeneratedInputs />
+          </form>
+        </>
+      </PageTemplate>
+    </DynamicFormProvider>
   )
+}
+
+/**
+ * Construct form accessor based on current schema field key and parent form field.
+ */
+const constructFormField = (schemaKey: SchemaKey, parentFormField?: FormField) => {
+  const currentFieldName = schemaKey.split('.').slice(-1)[0]
+
+  return (parentFormField ? `${parentFormField}.${currentFieldName}` : schemaKey) as FormField
 }
 
 type SchemaKey = Branded<string, 'SchemaKey'>
 type FormField = Branded<string, 'FormField'>
 
-type GeneratedInputsProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+type GeneratedInputsProps = {
   parentSchemaKey?: SchemaKey
   index?: number
   parentFormField?: FormField
   removeButton?: JSX.Element | null
-  schemaFields: Record<SchemaKey, SchemaField>
-  formName: string
-  options: DynamicFormOptions<T, ExcludeKeys, U>
 }
 
-function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
-  parentSchemaKey,
-  parentFormField,
-  schemaFields,
-  formName,
-  options,
-}: GeneratedInputsProps<T, ExcludeKeys, U>) {
-  const form = useFormContext()
+const containerProps = {
+  css: css`
+    width: 100%;
+  `,
+}
 
-  /**
-   * Construct form accessor based on current schema field key and parent form field.
-   */
-  const constructFormField = (schemaKey: SchemaKey, parentFormField?: FormField) => {
-    const currentFieldName = schemaKey.split('.').slice(-1)[0]
-
-    return (parentFormField ? `${parentFormField}.${currentFieldName}` : schemaKey) as FormField
-  }
-
-  const initialValueByKey = (schemaKey: SchemaKey) => {
-    switch (schemaFields[schemaKey]?.type) {
-      case 'object':
-        return {}
-      case 'array':
-        return []
-      case 'number':
-      case 'integer':
-        return 0
-      case 'boolean':
-        return false
-      default:
-        return ''
-    }
-  }
-
-  // NOTE: useFieldArray can append empty field just once (prevents user spamming add button)
-  const addNestedField = (schemaKey: SchemaKey, formField: FormField) => {
-    const initialValue = initialValueByKey(schemaKey)
-
-    const vals = form.getValues(formField) || []
-
-    console.log([...vals, initialValue] as any)
-
-    form.setValue(formField, [...vals, initialValue] as any)
-  }
+function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsProps) {
+  const { formName, options, schemaFields } = useDynamicFormContext()
 
   const children = entries(schemaFields).map(([schemaKey, field]) => {
-    const renders = useRenders()
-
-    const NestedHeader = () => {
-      return (
-        <div>
-          {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
-          <Flex direction="row">
-            <legend>
-              <code>(renders: {renders})</code>
-            </legend>
-            {!accordion && renderTitle(formField)}
-            <Button
-              size="xs"
-              p={4}
-              leftIcon={<IconPlus size="1rem" />}
-              onClick={() => addNestedField(schemaKey, formField)}
-              variant="filled"
-              color={'green'}
-              id={`${formName}-${formField}-add-button`}
-            >{`Add ${formField}`}</Button>
-          </Flex>
-        </div>
-      )
-    }
-
     if (
       (parentSchemaKey && !schemaKey.startsWith(parentSchemaKey)) ||
       parentSchemaKey === schemaKey || // fix when parent key has the same name and both are arrays
@@ -294,55 +343,43 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
 
     const formField = constructFormField(schemaKey, parentFormField)
 
-    const formValue = JSON.stringify(form.getValues(formField))
-    // console.log({ formField, formValue })
     const accordion = options.accordion?.[schemaKey]
-
-    const containerProps = {
-      css: css`
-        width: 100%;
-      `,
-    }
 
     const inputProps = {
       css: css`
         width: 100%;
       `,
-      ...(!field.isArray && { label: formField }),
+      ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
       id: `${formName}-${formField}`,
     }
+    const itemName = singularize(options.labels[schemaKey] || '')
 
     if (field.isArray && field.type !== 'object') {
       // nested array of nonbjects generation
       return (
-        <Card key={schemaKey} mt={12} mb={12} withBorder>
+        <Card
+          radius={cardRadius}
+          key={schemaKey}
+          mt={12}
+          mb={12}
+          withBorder
+          css={css`
+            width: 100%;
+          `}
+        >
           {/* existing array fields, if any */}
           {accordion ? (
-            <FormAccordion>
-              <NestedHeader />
-              <ArrayChildren
-                formField={formField}
-                schemaKey={schemaKey}
-                inputProps={inputProps}
-                formName={formName}
-                containerProps={containerProps}
-                options={options}
-                schemaFields={schemaFields}
-              />
+            <FormAccordion schemaKey={schemaKey}>
+              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
+              <Space p={10} />
+              <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
             </FormAccordion>
           ) : (
             <>
-              <NestedHeader />
-              <ArrayChildren
-                formField={formField}
-                schemaKey={schemaKey}
-                inputProps={inputProps}
-                formName={formName}
-                containerProps={containerProps}
-                options={options}
-                schemaFields={schemaFields}
-              />
+              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
+              <Space p={6} />
+              <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
             </>
           )}
         </Card>
@@ -352,29 +389,16 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     if (field.isArray && field.type === 'object') {
       // array of objects
       return (
-        // TODO: background color based on depth
-        <Card key={schemaKey} mt={12} mb={12} withBorder>
+        <Card radius={cardRadius} key={schemaKey} mt={12} mb={12} withBorder>
           {accordion ? (
-            <FormAccordion>
-              <NestedHeader />
-              <ArrayOfObjectsChildren
-                formField={formField}
-                formName={formName}
-                schemaKey={schemaKey}
-                options={options}
-                schemaFields={schemaFields}
-              />
+            <FormAccordion schemaKey={schemaKey}>
+              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
+              <ArrayOfObjectsChildren formField={formField} schemaKey={schemaKey} />
             </FormAccordion>
           ) : (
             <>
-              <NestedHeader />
-              <ArrayOfObjectsChildren
-                formField={formField}
-                formName={formName}
-                schemaKey={schemaKey}
-                options={options}
-                schemaFields={schemaFields}
-              />
+              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
+              <ArrayOfObjectsChildren formField={formField} schemaKey={schemaKey} />
             </>
           )}
         </Card>
@@ -382,163 +406,219 @@ function GeneratedInputs<T extends object, ExcludeKeys extends U | null, U exten
     }
 
     return (
-      <Group key={schemaKey} align="center">
+      <Group
+        key={schemaKey}
+        align="center"
+        css={css`
+          width: 100%;
+        `}
+      >
         {field.type !== 'object' ? (
           <>
             <GeneratedInput
               schemaKey={schemaKey}
               formField={formField}
               props={{ input: inputProps, container: containerProps }}
-              options={options}
-              schemaFields={schemaFields}
-              formName={formName}
             />
           </>
         ) : (
-          <>{renderTitle(formField)}</>
+          <>{options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}</>
         )}
       </Group>
     )
-
-    function FormAccordion({ children }): JSX.Element | null {
-      if (!accordion) return null
-
-      const value = `${schemaKey}-accordion`
-
-      return (
-        <Accordion
-          defaultValue={accordion.defaultOpen ? value : null}
-          styles={{ control: { padding: 0, maxHeight: '28px' } }}
-          {...containerProps}
-        >
-          <Accordion.Item value={value}>
-            <Accordion.Control>{accordion.title ?? `${schemaKey}`}</Accordion.Control>
-            <Accordion.Panel>{children}</Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-      )
-    }
   })
 
-  return <>{children}</>
+  const renderCount = useRenders()
+
+  return (
+    <>
+      {/* <Code c={'red'}>Renders: {renderCount}</Code> */}
+      {children}
+    </>
+  )
 }
 
-type ArrayOfObjectsChildrenProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+type FormAccordionProps = {
+  schemaKey: SchemaKey
+  children: React.ReactNode
+}
+
+function FormAccordion({ children, schemaKey }: FormAccordionProps): JSX.Element | null {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
+  const accordion = options.accordion?.[schemaKey]
+
+  if (!accordion) return null
+
+  const value = `${schemaKey}-accordion`
+
+  return (
+    <Accordion
+      defaultValue={accordion.defaultOpen ? value : null}
+      styles={{
+        control: { padding: 0, maxHeight: '28px' },
+        content: { paddingRight: 0, paddingLeft: 0 },
+      }}
+      {...containerProps}
+    >
+      <Accordion.Item value={value}>
+        <Accordion.Control>{accordion.title ?? `${schemaKey}`}</Accordion.Control>
+        <Accordion.Panel>{children}</Accordion.Panel>
+      </Accordion.Item>
+    </Accordion>
+  )
+}
+
+type ArrayOfObjectsChildrenProps = {
   formField: FormField
   schemaKey: SchemaKey
-  formName: string
-  options: DynamicFormOptions<T, ExcludeKeys, U>
-  schemaFields: Record<SchemaKey, SchemaField>
 }
 
-function ArrayOfObjectsChildren<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
+function ArrayOfObjectsChildren({
   formField,
-  formName,
-  schemaKey,
-  options,
-  schemaFields,
-}: ArrayOfObjectsChildrenProps<T, ExcludeKeys, U>) {
-  const form = useFormContext()
-  const fieldArray = useFieldArray({
-    control: form.control,
-    name: formField,
-  })
-  // form.watch(formField, fieldArray.fields) // inf rerendering
-  // useWatch({ name: `${formField}`, control: form.control }) // same errors
 
-  const children = fieldArray.fields.map((item, k) => {
+  schemaKey,
+}: ArrayOfObjectsChildrenProps) {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+  const form = useFormContext()
+  // form.watch(formField, fieldArray.fields) // inf rerendering
+  const theme = useMantineTheme()
+  const itemName = singularize(options.labels[schemaKey] || '')
+
+  useWatch({ name: `${formField}`, control: form.control }) // needed
+
+  const children = (form.getValues(formField) || []).map((item, k: number) => {
+    // input focus loss on rerender when defining component inside another function scope
     return (
-      <div key={item.id}>
-        <Text weight={800}>{`${formField}.${k}`}</Text>
-        <Card mt={12} mb={12} withBorder>
-          <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
-            <ActionIcon
-              onClick={(e) => {
-                fieldArray.remove(k)
-                // removeListItem(form, formField, k)
-              }}
-              // variant="filled"
-              css={css`
-                background-color: #7c1a1a;
-              `}
-              size="sm"
-              id={`${formName}-${formField}-remove-button-${k}`}
-            >
-              <IconMinus size="1rem" />
-            </ActionIcon>
-          </Tooltip>
+      <div
+        // reodering: https://codesandbox.io/s/watch-usewatch-calc-forked-5vrcsk?file=/src/fieldArray.js
+        key={k}
+        css={css`
+          min-width: 100%;
+        `}
+      >
+        <Card
+          mt={12}
+          mb={12}
+          withBorder
+          radius={cardRadius}
+          bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
+        >
+          <Flex justify={'end'}>
+            <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
+          </Flex>
           <Group>
-            <GeneratedInputs
-              parentSchemaKey={schemaKey}
-              parentFormField={`${formField}.${k}` as FormField}
-              schemaFields={schemaFields}
-              formName={formName}
-              options={options}
-            />
+            <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${k}` as FormField} />
           </Group>
         </Card>
       </div>
     )
   })
 
-  return <>{children}</>
+  return (
+    <Flex gap={6} align="center" direction="column">
+      {children}
+    </Flex>
+  )
 }
 
-type ArrayChildrenProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+type ArrayChildrenProps = {
   formField: FormField
   schemaKey: SchemaKey
-  formName: string
-  options: DynamicFormOptions<T, ExcludeKeys, U>
-  schemaFields: Record<SchemaKey, SchemaField>
   inputProps: any
-  containerProps: any
 }
 
-function ArrayChildren<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
-  formField,
-  formName,
-  schemaKey,
-  inputProps,
-  containerProps,
-  options,
-  schemaFields,
-}: ArrayChildrenProps<T, ExcludeKeys, U>) {
+function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps) {
   const form = useFormContext()
+  const theme = useMantineTheme()
+  const { formName, options, schemaFields } = useDynamicFormContext()
 
-  // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
+  useWatch({ name: `${formField}`, control: form.control }) // needed
 
-  useWatch({ name: `${formField}`, control: form.control }) // same errors
+  if (options.selectOptions?.[schemaKey]?.type === 'multiselect') {
+    return (
+      <Flex
+        css={css`
+          width: 100%;
+        `}
+      >
+        <GeneratedInput
+          schemaKey={schemaKey}
+          formField={formField as FormField}
+          props={{
+            input: {
+              ...inputProps,
+              id: `${formName}-${formField}`,
+            },
+            container: {
+              ...containerProps,
+            },
+          }}
+        />
+      </Flex>
+    )
+  }
 
   const children = (form.getValues(formField) || []).map((item, k: number) => {
+    // input focus loss on rerender when defining component inside another function scope
     return (
-      <Flex key={k}>
+      <Flex
+        // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
+        // if reordering needed change spec to use object. since it's all generated its the easiest way to not mess up validation, etc.
+        key={k}
+        css={css`
+          width: 100%;
+        `}
+      >
         <GeneratedInput
-          formName={formName}
           schemaKey={schemaKey}
           formField={`${formField}.${k}` as FormField}
           props={{
             input: { ...inputProps, id: `${formName}-${formField}-${k}` },
             container: containerProps,
           }}
-          options={options}
-          schemaFields={schemaFields}
-          withRemoveButton={true}
           index={k}
         />
       </Flex>
     )
   })
 
-  return <>{children}</>
+  if (children.length === 0) return null
+
+  return (
+    <Card
+      radius={cardRadius}
+      p={6}
+      bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
+      withBorder
+      css={css`
+        width: 100%;
+      `}
+    >
+      <Flex
+        gap={6}
+        align="center"
+        direction="column"
+        css={css`
+          width: 100%;
+        `}
+      >
+        {children}
+      </Flex>
+    </Card>
+  )
 }
 
 function FormData() {
   const myFormData = useWatch()
+  const myFormState = useFormState()
+
+  // console.log(JSON.stringify(myFormData.base.items, null, 2))
 
   return (
     <Accordion>
       <Accordion.Item value="form">
-        <Accordion.Control>See form</Accordion.Control>
+        <Accordion.Control>{`See form`}</Accordion.Control>
         <Accordion.Panel>
           <Prism language="json">{JSON.stringify(myFormData, null, 2)}</Prism>
         </Accordion.Panel>
@@ -547,48 +627,38 @@ function FormData() {
   )
 }
 
-type GeneratedInputProps<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+type GeneratedInputProps = {
   schemaKey: SchemaKey
   props?: {
-    input?: any
-    container?: any
+    input?: PropsWithChildren<any>
+    container?: PropsWithChildren<any>
   }
   formField: FormField
   withRemoveButton?: boolean
-  schemaFields: Record<SchemaKey, SchemaField>
-  options: DynamicFormOptions<T, ExcludeKeys, U>
   index?: number
-  formName: string
 }
 
 const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
   switch (type) {
     case 'date':
     case 'date-time':
-      return new Date(value)
+      return value ? new Date(value) : undefined
     default:
       return value
   }
 }
 
-// useMemo with dep list of [JSON.stringify(_.get(form.values, formField)), ...] (will always rerender if its object, but if string only when it changes)
-// TODO: just migrate to react-hook-form: https://codesandbox.io/s/dynamic-radio-example-forked-et0wi?file=/src/content/FirstFormSection.tsx
-// for builtin support for uncontrolled input
-const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>>({
-  schemaKey,
-  props,
-  formField,
-  withRemoveButton = false,
-  options,
-  schemaFields,
-  index,
-  formName,
-}: GeneratedInputProps<T, ExcludeKeys, U>) => {
+const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputProps) => {
   const form = useFormContext()
+  const theme = useMantineTheme()
   // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
+  const [isSelectVisible, setIsSelectVisible] = useState(false)
 
   const propsOverride = options.propsOverride?.[schemaKey]
   const type = schemaFields[schemaKey]?.type
+  const itemName = singularize(options.labels[schemaKey] || '')
 
   const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
     ...(type === 'date' || type === 'date-time'
@@ -604,35 +674,44 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
   })
 
   const fieldState = form.getFieldState(formField)
-  // FIXME: https://stackoverflow.com/questions/75437898/react-hook-form-react-select-cannot-read-properties-of-undefined-reading-n
-  // mantine does not alter TextInput onChange but we need to customize onChange for the rest and call rhf onChange manually with
-  // value modified back to normal
 
   const formFieldKeys = formField.split('.')
   // remove last index
-  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.')
+  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.') as FormField
 
-  // TODO: multiselect and select early check (if found in options.components override)
+  const formValue = form.getValues(formField)
+
+  if (formValue === null || formValue === undefined) {
+    const defaultValue = options.defaultValues?.[schemaKey]
+    if (defaultValue) {
+      form.setValue(formField, defaultValue)
+    }
+  }
+
   const _props = {
-    mb: 4,
     ...registerProps,
     ...props?.input,
-
-    // TODO: should be external, since we could have a custom component for arrays, e.g. tagIDs []string
-    // will come from []DbWorkItemTag <MultiSelect/> with custom Selects with tag name instead of ID,
-    // therefore we should still be able to remove tags
-    ...(withRemoveButton && {
-      rightSection: <RemoveButton formName={formName} formField={formFieldArrayPath} index={index} />,
-      rightSectionWidth: '40px',
-    }),
     ...(propsOverride && propsOverride),
-    ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, form.getValues(formField)) }),
+    ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, formValue) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
     required: schemaFields[schemaKey]?.required && type !== 'boolean',
+    placeholder: `Enter ${lowerFirst(singularize(options.labels[schemaKey] || ''))}`,
   }
 
   let el: JSX.Element | null = null
+  let customEl: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
+  const selectOptions = options.selectOptions?.[schemaKey]
+  const selectRef = useRef<HTMLInputElement>(null)
+  const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
+
+  useEffect(() => {
+    if (isSelectVisible) {
+      setCustomElMinHeight(selectRef.current?.clientHeight ?? 34.5)
+      selectRef.current?.focus()
+    }
+  }, [isSelectVisible])
+
   if (component) {
     el = React.cloneElement(component, {
       ..._props,
@@ -640,6 +719,157 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
       // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
     })
+    // TODO: multiSelectOptions: https://codesandbox.io/s/watch-with-usefieldarray-forked-9383hz?file=/src/formGeneration.tsx
+    // which do allow custom labels by default and doesnt need workaround
+    // use them with tagIDs -> DbWorkItemTag[] -> tag.name
+  } else if (selectOptions) {
+    switch (selectOptions.type) {
+      case 'select':
+        {
+          const option = selectOptions.values.find((option) => {
+            return selectOptions.formValueTransformer(option) === form.getValues(formField)
+          })
+
+          // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
+          el = (
+            <Select
+              withinPortal
+              initiallyOpened={option !== undefined}
+              itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
+              searchable
+              // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
+              // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+              // else we need to forcefully use current label/value
+              filter={(option, item) => {
+                if (option !== '') {
+                  return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+                }
+
+                return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+              }}
+              // IMPORTANT: Select value should always be either string or null as per doc
+              // (and implicitly label must be equal to value else all is broken unlike with multiselect)
+              data={selectOptions.values.map((option) => ({
+                label: String(selectOptions.formValueTransformer(option)),
+                value: String(selectOptions.formValueTransformer(option)),
+                option,
+              }))}
+              onChange={async (value) => {
+                const option = selectOptions.values.find(
+                  (option) => String(selectOptions.formValueTransformer(option)) === value,
+                )
+                console.log({ onChangeOption: option })
+                if (!option) return
+                await registerOnChange({
+                  target: {
+                    name: formField,
+                    value: selectOptions.formValueTransformer(option),
+                  },
+                })
+                setIsSelectVisible(false)
+              }}
+              value={String(form.getValues(formField))}
+              {..._props}
+              ref={selectRef}
+              placeholder={`Select ${lowerFirst(itemName)}`}
+            />
+          )
+
+          if (!isSelectVisible && option !== undefined) {
+            const { ref, ...customSelectProps } = _props
+            customEl = (
+              <Input.Wrapper {...customSelectProps} pt={0} pb={0}>
+                <Card
+                  tabIndex={0}
+                  css={css`
+                    min-height: ${customElMinHeight}px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    font-size: ${theme.fontSizes.sm};
+
+                    :focus {
+                      border-color: ${theme.colors.blue[8]} !important;
+                    }
+                  `}
+                  onKeyUp={(e) => {
+                    if (e.key === 'Enter') setIsSelectVisible(true)
+                  }}
+                  withBorder
+                  //onFocus={toggleVisibility}
+                  pl={12}
+                  pr={12}
+                  pt={0}
+                  pb={0}
+                  onClick={() => {
+                    setIsSelectVisible(true)
+                    selectRef.current?.focus()
+                  }}
+                >
+                  {selectOptions.labelTransformer
+                    ? selectOptions.labelTransformer(option)
+                    : selectOptions.optionTransformer(option)}
+                </Card>
+              </Input.Wrapper>
+            )
+          }
+        }
+        break
+      case 'multiselect':
+        {
+          const data = selectOptions.values.map((option) => ({
+            label: selectOptions.formValueTransformer(option),
+            value: selectOptions.formValueTransformer(option),
+            option,
+          }))
+
+          el = (
+            <MultiSelect
+              styles={{
+                input: {
+                  backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
+                },
+              }}
+              withinPortal
+              itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
+              valueComponent={valueComponentTemplate(
+                selectOptions.labelTransformer ? selectOptions.labelTransformer : selectOptions.optionTransformer,
+                selectOptions.labelColor,
+              )}
+              searchable
+              filter={(option, selected, item) => {
+                if (option !== '') {
+                  return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+                }
+
+                return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+              }}
+              data={data}
+              onChange={async (values) => {
+                console.log({ values, formValues: form.getValues(formField) })
+                const options = values.map((value) =>
+                  selectOptions.values.find((option) => value === selectOptions.formValueTransformer(option)),
+                )
+                console.log({ onChangeOptions: options })
+                //if (!option) return
+                registerOnChange({
+                  target: {
+                    name: formField,
+                    value: options.map((o) => selectOptions.formValueTransformer(o)),
+                  },
+                })
+              }}
+              value={form.getValues(formField)}
+              {..._props}
+              ref={selectRef}
+              placeholder={`Select ${lowerFirst(pluralize(itemName))}`}
+            />
+          )
+        }
+        break
+      default:
+        break
+    }
   } else {
     switch (schemaFields[schemaKey]?.type) {
       case 'string':
@@ -669,8 +899,8 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
                 target: { name: formField, value: e },
               })
             }
-            placeholder="Select date"
             {..._props}
+            placeholder="Select date"
           />
         )
         break
@@ -682,8 +912,8 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
                 target: { name: formField, value: e },
               })
             }
-            placeholder="Select date and time"
             {..._props}
+            placeholder="Select date and time"
           />
         )
         break
@@ -704,36 +934,114 @@ const GeneratedInput = <T extends object, ExcludeKeys extends U | null, U extend
     }
   }
 
-  const renders = useRenders()
-
   return (
-    <Flex align="center" {...props?.container}>
-      <code style={{ fontSize: 12 }}>(renders: {renders})</code>
-      {el}
+    <Flex align="center" gap={6} justify={'center'} {...props?.container}>
+      {customEl || el}
+      {index !== undefined && (
+        <RemoveButton
+          formField={formFieldArrayPath}
+          index={index}
+          itemName={itemName}
+          icon={<IconMinus size="1rem" />}
+        />
+      )}
     </Flex>
   )
 }
 
-const RemoveButton = ({ formName, formField, index }) => {
+type RemoveButtonProps = {
+  formField: FormField
+  index: number
+  itemName: string
+  icon: React.ReactNode
+}
+
+// needs to be own component to trigger rerender on delete, can't have conditional useWatch
+const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) => {
   const form = useFormContext()
+  const theme = useMantineTheme()
+  const { formName, options, schemaFields } = useDynamicFormContext()
 
   return (
-    <Tooltip withinPortal label="Remove item" position="top-end" withArrow>
+    <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
-          // fieldArray.remove(index) // doesn't work on flat arrays
-          console.log({ formField, index, currentFormValue: form.getValues(formField) })
-          removeListItem(form, formField, index)
+          // NOTE: don't use rhf useFieldArray, way too many edge cases for no gain. if reordering is needed, implement it manually.
+          // we could even implement flat array reordering by handling them internally as objects with id prop
+          const listItems = form.getValues(formField)
+          removeElementByIndex(listItems, index)
+          form.unregister(formField) // needs to be before setValue
+          form.setValue(formField, listItems as any)
         }}
         // variant="filled"
         css={css`
-          background-color: #7c1a1a;
+          background-color: ${theme.colorScheme === 'dark' ? '#7c1a1a' : '#b03434'};
+          color: white;
+          :hover {
+            background-color: gray;
+          }
         `}
         size="sm"
         id={`${formName}-${formField}-remove-button-${index}`}
       >
-        <IconMinus size="1rem" />
+        {icon}
       </ActionIcon>
     </Tooltip>
   )
+}
+
+type NestedHeaderProps = {
+  schemaKey: SchemaKey
+  formField: FormField
+  itemName: string
+}
+
+const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
+  const form = useFormContext()
+  const accordion = options.accordion?.[schemaKey]
+
+  return (
+    <div>
+      {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
+      <Flex direction="row" align="center">
+        {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
+        {options.selectOptions?.[schemaKey]?.type !== 'multiselect' && (
+          <Button
+            size="xs"
+            p={4}
+            leftIcon={<IconPlus size="1rem" />}
+            onClick={() => {
+              const initialValue = initialValueByType(schemaFields[schemaKey]?.type)
+              const vals = form.getValues(formField) || []
+              console.log([...vals, initialValue] as any)
+
+              form.setValue(formField, [...vals, initialValue] as any)
+            }}
+            variant="filled"
+            color={'green'}
+            id={`${formName}-${formField}-add-button`}
+          >{`Add ${itemName}`}</Button>
+        )}
+      </Flex>
+    </div>
+  )
+}
+
+const initialValueByType = (type?: SchemaField['type']) => {
+  switch (type) {
+    case 'object':
+      return {}
+    case 'array':
+      return []
+    case 'number':
+    case 'integer':
+      return 0
+    case 'boolean':
+      return false
+    default:
+      console.log(`unknown type: ${type}`)
+      return ''
+  }
 }

@@ -136,7 +136,6 @@ x.install-tools() {
     go install golang.org/x/tools/cmd/stringer@latest &
 
     go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 &
-    go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0 &
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &
 
     GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter &
@@ -606,8 +605,8 @@ x.gen.proto() {
     protoc \
       --go-grpc_out=internal/pb/. \
       --go_out=internal/pb/. \
-      --go-grpc_opt=M$filename=$import_path,paths=import \
-      --go_opt=M$filename=$import_path,paths=import \
+      --go-grpc_opt=M${filename}=${import_path},paths=import \
+      --go_opt=M${filename}=${import_path},paths=import \
       internal/python-ml-app-protos/tfidf/v1/service.proto || err "Failed proto generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -822,6 +821,7 @@ x.test.frontend() {
   frontend_config_setup
   cd frontend
   pnpm run test:no-watch
+  pnpm run test-types:no-watch
 }
 
 # Test frontend on file changes.

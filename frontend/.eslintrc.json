@@ -8,8 +8,7 @@
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
-    "plugin:react-hooks/recommended",
-    "testing-library"
+    "plugin:react-hooks/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -44,7 +43,8 @@
     "prefer-template": "error",
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
-    "react-hooks/exhaustive-deps": "off"
+    "react-hooks/exhaustive-deps": "off",
+    "react/prop-types": "off"
   },
   "ignorePatterns": [
     "build/**/*"
@@ -61,7 +61,10 @@
       ],
       "extends": [
         "plugin:testing-library/react"
-      ]
+      ],
+      "rules": {
+        "testing-library/no-node-access": "off"
+      }
     }
   ],
   "globals": {

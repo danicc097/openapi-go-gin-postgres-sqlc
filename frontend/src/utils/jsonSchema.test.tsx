@@ -1,13 +1,27 @@
 import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
-import DynamicForm from 'src/utils/formGeneration'
+import DynamicForm, { selectOptionsBuilder } from 'src/utils/formGeneration'
 import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
-import { getByTestId, render, screen, renderHook } from '@testing-library/react'
+import { getByTestId, render, screen, renderHook, fireEvent, act, getByText } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { entries, keys } from 'src/utils/object'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
+import { fullFormats } from 'ajv-formats/dist/formats'
+import { Group, Avatar, Space, Flex } from '@mantine/core'
+import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+import { nameInitials } from 'src/utils/strings'
+
+const tags = [...Array(10)].map((x, i) => {
+  return {
+    name: `${i} tag`,
+    color: `#${i}34236`,
+    workItemTagID: i,
+    projectID: 1,
+    description: 'description',
+  }
+})
 
 const schema = {
   properties: {
@@ -24,11 +38,7 @@ const schema = {
           type: 'integer',
         },
         metadata: {
-          items: {
-            minimum: 0,
-            type: 'integer',
-          },
-          type: ['array', 'null'],
+          type: 'object',
         },
         targetDate: {
           format: 'date',
@@ -126,8 +136,14 @@ const schema = {
       },
       type: ['array', 'null'],
     },
+    tagIDsMultiselect: {
+      items: {
+        type: 'integer',
+      },
+      type: ['array', 'null'],
+    },
   },
-  required: ['demoProject', 'base', 'tagIDs', 'members'],
+  required: ['demoProject', 'base', 'tagIDsMultiselect', 'members'],
   type: 'object',
   'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
 } as JsonSchemaField
@@ -139,39 +155,42 @@ const formInitialValues = {
       { items: ['0011', '0012'], name: 'item-2' },
     ],
     closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-    targetDate: dayjs('2023-02-22').toDate(),
+    // targetDate: dayjs('2023-02-22').toDate(),
     description: 'some text',
     kanbanStepID: 1,
     teamID: 1,
+    metadata: {},
     workItemTypeID: 1,
   },
-  // TODO: need to check runtime type, else all fails catastrophically.
-  // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
-  // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
   demoProject: {
     lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
     line: '3e3e2',
-    ref: '312321',
+    ref: '124321', // should fail pattern validation
     workItemID: 1,
   },
   tagIDs: [0, 1, 2],
+  tagIDsMultiselect: [0, 1, 2],
   members: [
-    { role: null, userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' }, // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values
+    // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values.
+    // since userid exists and it's an initial value, it will show custom select card to work around https://github.com/mantinedev/mantine/issues/980
+    // therefore its element input id does not exist
+    { userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
+    // userid does not exist in selectOptions users -> will show input directly instead
     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
   ],
 } as TestTypes.RestDemoWorkItemCreateRequest
 
 const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
-  'base.closed': { type: 'date-time', required: true, isArray: false },
+  'base.closed': { type: 'date-time', required: false, isArray: false },
   'base.description': { type: 'string', required: true, isArray: false },
   'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-  'base.metadata': { type: 'integer', required: true, isArray: true },
+  'base.metadata': { type: 'object', required: true, isArray: false },
   'base.targetDate': { type: 'date', required: true, isArray: false },
   'base.teamID': { type: 'integer', required: true, isArray: false },
-  'base.items': { type: 'object', required: true, isArray: true },
+  'base.items': { type: 'object', required: false, isArray: true },
   'base.items.name': { type: 'string', required: true, isArray: false },
-  'base.items.items': { type: 'string', required: true, isArray: true },
+  'base.items.items': { type: 'string', required: false, isArray: true },
   'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
   demoProject: { isArray: false, required: true, type: 'object' },
   'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
@@ -179,31 +198,28 @@ const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, Sch
   'demoProject.ref': { type: 'string', required: true, isArray: false },
   'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
   'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
-  members: { type: 'object', required: true, isArray: true },
+  members: { type: 'object', required: false, isArray: true },
   'members.role': { type: 'string', required: true, isArray: false },
   'members.userID': { type: 'string', required: true, isArray: false },
-  tagIDs: { type: 'integer', required: true, isArray: true },
+  tagIDs: { type: 'integer', required: false, isArray: true },
+  tagIDsMultiselect: { type: 'integer', required: false, isArray: true },
 }
 
-describe('parseSchemaFields', () => {
+describe('form generation', () => {
   test('should extract field types correctly from a JSON schema', () => {
-    /**
-
-    form generator will use these keys. to generate multiple forms when is array we just check
-    if parent (split by . and keep up to len-2) isArray (members) or the child itself isArray (tagIDs)
-
-    it doesnt seem to be easy to get typed keys for these when arrays are involved.
-    */
-
     expect(parseSchemaFields(schema)).toEqual(schemaFields)
   })
 
-  test('should render form fields and buttons', () => {
+  test('should render form fields and buttons', async () => {
+    /**
+     * FIXME: no need for renderHook. test via ui.
+     * https://react-hook-form.com/advanced-usage#TestingForm
+     */
     const { result: form } = renderHook(() =>
       useForm<TestTypes.RestDemoWorkItemCreateRequest>({
         resolver: ajvResolver(schema as any, {
           strict: false,
-          // formats: fullFormats,
+          formats: fullFormats,
         }),
         mode: 'onChange',
         defaultValues: formInitialValues ?? {},
@@ -213,6 +229,8 @@ describe('parseSchemaFields', () => {
 
     const formName = 'demoWorkItemCreateForm'
 
+    const { isDirty, isSubmitting, submitCount } = form.current.formState
+
     const view = render(
       <FormProvider {...form.current}>
         <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, 'base.metadata'>
@@ -220,7 +238,7 @@ describe('parseSchemaFields', () => {
           schemaFields={schemaFields}
           options={{
             labels: {
-              base: null,
+              base: 'base', // just title via renderTitle
               'base.closed': 'closed',
               'base.description': 'description',
               // 'base.metadata': 'metadata', // ignored -> not a key
@@ -232,7 +250,7 @@ describe('parseSchemaFields', () => {
               'base.items.name': 'name',
               'base.items.items': 'items',
               'base.workItemTypeID': 'workItemTypeID',
-              demoProject: null,
+              demoProject: null, // won't render title
               'demoProject.lastMessageAt': 'lastMessageAt',
               'demoProject.line': 'line',
               'demoProject.ref': 'ref',
@@ -241,24 +259,72 @@ describe('parseSchemaFields', () => {
               'members.role': 'role',
               'members.userID': 'User',
               tagIDs: 'tagIDs',
+              tagIDsMultiselect: 'tagIDsMultiselect',
             },
             defaultValues: {
-              'demoProject.line': '43121234',
+              'demoProject.line': '43121234', // should be ignored since it's set
               'members.role': 'preparer',
             },
-            selectOptions: {},
+            selectOptions: {
+              'members.userID': selectOptionsBuilder({
+                type: 'select',
+                values: [...Array(1)].map((x, i) => {
+                  const user = getGetCurrentUserMock()
+                  user.email = '1@mail.com'
+                  user.userID = 'a446259c-1083-4212-98fe-bd080c41e7d7'
+                  return user
+                }),
+                optionTransformer(el) {
+                  return (
+                    <>
+                      <Group noWrap spacing="lg" align="center">
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
+                            {nameInitials(el?.fullName || '')}
+                          </Avatar>
+                          <Space p={5} />
+                        </div>
+
+                        <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
+                      </Group>
+                    </>
+                  )
+                },
+                formValueTransformer(el) {
+                  return el.userID
+                },
+                labelTransformer(el) {
+                  return <>el.email</>
+                },
+              }),
+              tagIDsMultiselect: selectOptionsBuilder({
+                type: 'multiselect',
+                values: tags,
+                optionTransformer(el) {
+                  return (
+                    <Group noWrap spacing="lg" align="center">
+                      <Flex align={'center'}></Flex>
+                      <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
+                    </Group>
+                  )
+                },
+                formValueTransformer(el) {
+                  return el.workItemTagID
+                },
+                labelTransformer(el) {
+                  return <>{el.name} label</>
+                },
+              }),
+            },
           }}
         />
       </FormProvider>,
     )
 
-    type a = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'members.role'>
-    type b = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'members.userID'>
-    type c = PathType<TestTypes.RestDemoWorkItemCreateRequest, 'base.items.items'>
-
-    // const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id).sort()
     const ids = [
+      'demoWorkItemCreateForm-base.closed-label',
       'demoWorkItemCreateForm-base.description',
+      'demoWorkItemCreateForm-base.description-label',
       'demoWorkItemCreateForm-base.items-add-button',
       'demoWorkItemCreateForm-base.items-remove-button-0',
       'demoWorkItemCreateForm-base.items-remove-button-1',
@@ -268,26 +334,42 @@ describe('parseSchemaFields', () => {
       'demoWorkItemCreateForm-base.items.0.items-remove-button-0',
       'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
       'demoWorkItemCreateForm-base.items.0.name',
+      'demoWorkItemCreateForm-base.items.0.name-label',
       'demoWorkItemCreateForm-base.items.1.items-0',
       'demoWorkItemCreateForm-base.items.1.items-1',
       'demoWorkItemCreateForm-base.items.1.items-add-button',
       'demoWorkItemCreateForm-base.items.1.items-remove-button-0',
       'demoWorkItemCreateForm-base.items.1.items-remove-button-1',
       'demoWorkItemCreateForm-base.items.1.name',
+      'demoWorkItemCreateForm-base.items.1.name-label',
       'demoWorkItemCreateForm-base.kanbanStepID',
+      'demoWorkItemCreateForm-base.kanbanStepID-label',
+      'demoWorkItemCreateForm-base.targetDate',
+      'demoWorkItemCreateForm-base.targetDate-label',
       'demoWorkItemCreateForm-base.teamID',
+      'demoWorkItemCreateForm-base.teamID-label',
       'demoWorkItemCreateForm-base.workItemTypeID',
+      'demoWorkItemCreateForm-base.workItemTypeID-label',
+      'demoWorkItemCreateForm-demoProject.lastMessageAt-label',
       'demoWorkItemCreateForm-demoProject.line',
+      'demoWorkItemCreateForm-demoProject.line-label',
       'demoWorkItemCreateForm-demoProject.ref',
+      'demoWorkItemCreateForm-demoProject.ref-label',
       'demoWorkItemCreateForm-demoProject.reopened',
       'demoWorkItemCreateForm-demoProject.workItemID',
+      'demoWorkItemCreateForm-demoProject.workItemID-label',
       'demoWorkItemCreateForm-members-add-button',
       'demoWorkItemCreateForm-members-remove-button-0',
       'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.0.role',
-      'demoWorkItemCreateForm-members.0.userID',
+      'demoWorkItemCreateForm-members.0.role-label',
+      // 'demoWorkItemCreateForm-members.0.userID', // will show custom select
+      'demoWorkItemCreateForm-members.0.userID-label',
       'demoWorkItemCreateForm-members.1.role',
+      'demoWorkItemCreateForm-members.1.role-label',
       'demoWorkItemCreateForm-members.1.userID',
+      'demoWorkItemCreateForm-members.1.userID-label',
+      'demoWorkItemCreateForm-tagIDsMultiselect',
       'demoWorkItemCreateForm-tagIDs-0',
       'demoWorkItemCreateForm-tagIDs-1',
       'demoWorkItemCreateForm-tagIDs-2',
@@ -297,35 +379,35 @@ describe('parseSchemaFields', () => {
       'demoWorkItemCreateForm-tagIDs-remove-button-2',
     ]
 
-    ids.forEach((id) => {
-      const el = document.getElementById(id)
-      expect(el, `${id} not found`).toBeTruthy()
-      expect(el).toBeInTheDocument()
-    })
+    const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id)
 
-    // [...document.querySelectorAll('[data-testid]')].map(e => (e.getAttribute('data-testid')))
-    const titleDataTestIds = [
+    expect(actualIds.sort()).toEqual(ids.sort())
+
+    const dataTestIds = [
+      'demoWorkItemCreateForm',
       'base-title',
       'base.items-title',
       'base.items.0.items-title',
       'base.items.1.items-title',
-      'demoProject-title',
       'members-title',
       'tagIDs-title',
+      'tagIDsMultiselect-title',
     ]
-    titleDataTestIds.forEach((id) => {
-      expect(view.getByTestId(id)).toBeInTheDocument()
-    })
+    const actualDataTestIds = [...document.querySelectorAll('[data-testid]')].map((e) => e.getAttribute('data-testid'))
 
-    test('should update form with default values', () => {
-      // defaultValues: {
-      //   'demoProject.line': '43121234',
-      //   members: [
-      //     { role: 'preparer', userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
-      //     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
-      //   ],
-      // },
-      // TODO: get input by id
-    })
+    expect(actualDataTestIds.sort()).toEqual(dataTestIds.sort())
+
+    // test should submit with default values if none changed
+
+    // FIXME: dont check state, its not updated. call submit with mock onsubmit that returns data and check
+    // that return value is what we expect.
+    // https://react-hook-form.com/advanced-usage#TestingForm
+    expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
+
+    const formElement = screen.getByTestId(formName)
+    fireEvent.submit(formElement)
+    console.log(form.current.formState.errors)
+    console.log(form.current.formState.isValid)
+    expect(form.current.formState.errors).toEqual({})
   })
 })

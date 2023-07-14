@@ -16,6 +16,10 @@ import {
   Text,
   Flex,
   useMantineTheme,
+  Avatar,
+  Group,
+  Space,
+  Box,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
@@ -34,7 +38,7 @@ import DynamicForm, {
   type SelectOptions,
   type DynamicFormOptions,
 } from 'src/utils/formGeneration'
-import type { RestDemoWorkItemCreateRequest, User } from 'src/gen/model'
+import type { DbWorkItemTag, RestDemoWorkItemCreateRequest, User, WorkItemRole } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
@@ -53,6 +57,9 @@ import { IconTag } from '@tabler/icons'
 import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 import useRenders from 'src/hooks/utils/useRenders'
 import { fullFormats } from 'ajv-formats/dist/formats'
+import { nameInitials } from 'src/utils/strings'
+import WorkItemRoleBadge from 'src/components/Badges/WorkItemRoleBadge'
+import { WORK_ITEM_ROLES } from 'src/services/authorization'
 
 const schema = {
   properties: {
@@ -64,6 +71,7 @@ const schema = {
         },
         description: {
           type: 'string',
+          minLength: 1,
         },
         kanbanStepID: {
           type: 'integer',
@@ -81,11 +89,13 @@ const schema = {
               items: {
                 items: {
                   type: 'string',
+                  minLength: 1,
                 },
                 type: ['array', 'null'],
               },
               name: {
                 type: 'string',
+                minLength: 1,
                 $schema: 'http://json-schema.org/draft-04/schema#',
               },
             },
@@ -99,16 +109,7 @@ const schema = {
           type: 'integer',
         },
       },
-      required: [
-        'items',
-        'description',
-        'workItemTypeID',
-        'metadata',
-        'teamID',
-        'kanbanStepID',
-        'closed',
-        'targetDate',
-      ],
+      required: ['items', 'description', 'workItemTypeID', 'teamID', 'kanbanStepID', 'closed', 'targetDate'],
       type: 'object',
       $schema: 'http://json-schema.org/draft-04/schema#',
     },
@@ -120,10 +121,12 @@ const schema = {
         },
         line: {
           type: 'string',
+          minLength: 1,
         },
         ref: {
           pattern: '^[0-9]{8}$',
           type: 'string',
+          minLength: 1,
         },
         reopened: {
           type: 'boolean',
@@ -142,6 +145,7 @@ const schema = {
           role: {
             title: 'WorkItem role',
             type: 'string',
+            minLength: 1,
             'x-generated': '-',
             enum: ['preparer', 'reviewer'],
             description: "represents a database 'work_item_role'",
@@ -149,6 +153,7 @@ const schema = {
           },
           userID: {
             type: 'string',
+            minLength: 1,
             $schema: 'http://json-schema.org/draft-04/schema#',
           },
         },
@@ -228,6 +233,38 @@ const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
 const UserPermissionsPage = React.lazy(() => import('src/views/Settings/UserPermissionsPage/UserPermissionsPage'))
 const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectManagementPage/ProjectManagementPage'))
 
+const members = [...Array(10)].map((x, i) => {
+  const user = getGetCurrentUserMock()
+  user.email = `${i}@mail.com`
+  user.userID = `${i}ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65`
+  return user
+})
+
+const tags = [...Array(10)].map((x, i) => {
+  const tag: DbWorkItemTag = {
+    name: `${i} tag`,
+    color: `#${i}34236`,
+    workItemTagID: i,
+    projectID: 1,
+    description: 'description',
+  } // TODO: get workitem tags endpoint
+  return tag
+})
+
+const userIdOptionTransformer = (el: User) => {
+  return (
+    <Group noWrap spacing="lg" align="center" mr={8}>
+      <Flex align={'center'}>
+        <Avatar size={'28px'} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
+          {nameInitials(el?.fullName || '')}
+        </Avatar>
+        <Space p={5} />
+      </Flex>
+      <Box ml={'auto'}>{el?.email}</Box>
+    </Group>
+  )
+}
+
 export default function App() {
   const theme = useMantineTheme()
   const [colorScheme, setColorScheme] = useState<ColorScheme>(
@@ -261,8 +298,8 @@ export default function App() {
         { items: ['0001', '0002'], name: 'item-1' },
         { items: ['0011', '0012'], name: 'item-2' },
       ],
-      closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-      targetDate: dayjs('2023-02-22').toDate(),
+      // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+      // targetDate: dayjs('2023-02-22').toDate(),
       description: 'some text',
       kanbanStepID: 1,
       teamID: 1,
@@ -279,61 +316,16 @@ export default function App() {
       workItemID: 1,
       reopened: false, // for create will ignore field for form gen
     },
-    tagIDs: [0, 1, 2],
-    members: [
-      { role: 'preparer', userID: 'user 1' },
-      { role: 'preparer', userID: 'user 2' },
-    ],
+    tagIDs: [0, 5, 8],
+    members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'user 2' }],
   } as TestTypes.RestDemoWorkItemCreateRequest
-
-  /**
-   * TODO: transformers: e.g. initialValues.members = USERS.map =>(userToMemberTransformer(user: User): ServiceMember)
-   * but we will not set this manually. instead we have a wrapper before form creation where initialData = {"members": USERS} (so now []User instead of ServiceMember)
-   * and transformer be used in options.transformers = {"members": (users: []User) => users.map(u => userToMemberTransformer(u))}.
-   * transformer function must match signature inferred from initialData wrapper and form itself so its fully typed.
-   * The same principle needs to be used for custom components, e.g. multiselect and select.
-   */
-
-  /*
-
-  TODO:
-
-  const ajv = new Ajv({ strict: false, allErrors: true })
-  addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
-  const schema = ajv.getSchema(RestDemoWorkItemCreateRequestDecoder.schemaRef)
-
-  and then react hook form : resolver: ajvResolver(schema)
-  */
-  // const demoWorkItemCreateForm = useForm({
-  //   // TODO: simple function to initialize top level with empty object if property type === object
-  //   // now that we have json schema dereferenced
-  //   initialValues: formInitialValues,
-  //   validateInputOnChange: true,
-  //   validate: {
-  //     // TODO: should be able to validate whole nested objects at once.
-  //     // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
-  //     // will need adhoc validateForm func that validates fields where (isArray && type !== object)
-  //     // or better yet, convert arrays of nonobjects to arrays of objects, indexed by whatever default key,
-  //     // and we convert them back with an adapter before making the request.
-  //     // we would need to exclude these fields from validate, and call client-validator's validateField with the
-  //     // original object and setError appropiately in the field using index + default key instead of just by index.
-
-  //     base: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
-  //     demoProject: (v, vv, path) => validateField(RestDemoWorkItemCreateRequestDecoder, path, vv),
-  //     members: (v, vv, path) => {
-  //       // console.log(`would have validated members. value: ${JSON.stringify(v)}`)
-  //       // IMPORTANT: unsupp form validation of array items that are not objects https://github.com/mantinedev/mantine/issues/4445
-  //       return null
-  //     },
-  //   },
-  // })
 
   const form = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {
       strict: false,
-      // formats: fullFormats,
+      formats: fullFormats,
     }),
-    mode: 'onChange',
+    mode: 'all',
     defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
@@ -354,9 +346,7 @@ export default function App() {
   //   }
   // }, [demoWorkItemCreateForm])
 
-  type ExcludedFormKeys = 'base.metadata'
-
-  const renders = useRenders()
+  type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
 
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
@@ -404,38 +394,21 @@ export default function App() {
                           >
                             Validate form
                           </Button>
-                          {/* <form
-                            onSubmit={(e) => {
-                              e.preventDefault()
-                              handleSubmit(
-                                (data) => console.log({ data }),
-                                (errors) => console.log({ errors }),
-                              )(e)
-                            }}
-                          >
-                            <input {...register('demoProject.ref')} />
-                            <input {...register('base.items.1.name')} />
-                            <button type="submit">submit</button>
-                          </form> */}
-                          <legend>
-                            Content <code>(renders: {renders})</code>
-                          </legend>
                           <FormProvider {...form}>
                             <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
                               formName="demoWorkItemCreateForm"
-                              // schemaFields will come from `parseSchemaFields(schema.RestDemo...)`
+                              // schemaFields will come from `parseSchemaFields(schema.RestDemo... OR  asConst(jsonSchema.definitions.<...>))`
                               // using this hardcoded for testing purposes
                               schemaFields={{
                                 base: { isArray: false, required: true, type: 'object' },
-                                'base.closed': { type: 'date-time', required: true, isArray: false },
+                                'base.closed': { type: 'date-time', required: false, isArray: false },
                                 'base.description': { type: 'string', required: true, isArray: false },
-                                'base.metadata': { type: 'object', required: true, isArray: false },
                                 'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
                                 'base.targetDate': { type: 'date', required: true, isArray: false },
                                 'base.teamID': { type: 'integer', required: true, isArray: false },
-                                'base.items': { type: 'object', required: true, isArray: true },
+                                'base.items': { type: 'object', required: false, isArray: true },
                                 'base.items.name': { type: 'string', required: true, isArray: false },
-                                'base.items.items': { type: 'string', required: true, isArray: true },
+                                'base.items.items': { type: 'string', required: false, isArray: true },
                                 'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
                                 demoProject: { isArray: false, required: true, type: 'object' },
                                 'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
@@ -443,36 +416,36 @@ export default function App() {
                                 'demoProject.ref': { type: 'string', required: true, isArray: false },
                                 'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
                                 'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
-                                members: { type: 'object', required: true, isArray: true },
+                                members: { type: 'object', required: false, isArray: true },
                                 'members.role': { type: 'string', required: true, isArray: false },
                                 'members.userID': { type: 'string', required: true, isArray: false },
-                                tagIDs: { type: 'integer', required: true, isArray: true },
+                                tagIDs: { type: 'integer', required: false, isArray: true },
                               }}
                               options={{
                                 // since labels is mandatory, instead of duplicating with ignore: U[] just
                                 // check if labels hasOwnProperty fieldKey and if not exclude from form.
                                 labels: {
                                   base: null,
-                                  'base.closed': 'closed',
-                                  'base.description': 'description',
+                                  'base.closed': 'Closed',
+                                  'base.description': 'Description',
                                   // 'base.metadata': 'metadata', // ignored -> not a key
-                                  'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
-                                  'base.targetDate': 'targetDate',
-                                  'demoProject.reopened': 'reopened',
-                                  'base.teamID': 'teamID',
-                                  'base.items': 'items',
-                                  'base.items.name': 'name',
-                                  'base.items.items': 'items',
-                                  'base.workItemTypeID': 'workItemTypeID',
+                                  'base.kanbanStepID': 'Kanban step', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
+                                  'base.targetDate': 'Target date',
+                                  'demoProject.reopened': 'Reopened',
+                                  'base.teamID': 'Team',
+                                  'base.items': 'Items',
+                                  'base.items.name': 'Name',
+                                  'base.items.items': 'Items',
+                                  'base.workItemTypeID': 'Type',
                                   demoProject: null,
-                                  'demoProject.lastMessageAt': 'lastMessageAt',
-                                  'demoProject.line': 'line',
-                                  'demoProject.ref': 'ref',
-                                  'demoProject.workItemID': 'workItemID',
-                                  members: 'members',
-                                  'members.role': 'role',
+                                  'demoProject.lastMessageAt': 'Last message at',
+                                  'demoProject.line': 'Line',
+                                  'demoProject.ref': 'Ref',
+                                  'demoProject.workItemID': 'Work item',
+                                  members: 'Members',
+                                  'members.role': 'Role',
                                   'members.userID': 'User',
-                                  tagIDs: 'tagIDs',
+                                  tagIDs: 'Tags',
                                 },
                                 accordion: {
                                   'base.items': {
@@ -482,26 +455,65 @@ export default function App() {
                                         <IconTag size={16} />
                                         <Text weight={700} size={'md'} color={theme.primaryColor}>
                                           Items
-                                        </Text>{' '}
+                                        </Text>
                                       </Flex>
                                     ),
                                   },
                                 },
                                 defaultValues: {
-                                  'demoProject.line': '534543523',
-                                  members: [{ role: 'preparer' }],
+                                  'demoProject.line': '1111',
+                                  'members.role': 'preparer',
                                 },
                                 selectOptions: {
                                   'members.userID': selectOptionsBuilder({
                                     type: 'select',
-                                    values: [...Array(20)].map((x, i) => {
-                                      return getGetCurrentUserMock()
-                                    }),
-                                    componentTransformer(el) {
-                                      return <>{el.email}</>
-                                    },
+                                    values: members,
+                                    //  TODO: transformers can be reusable between forms. could simply become
+                                    //  {
+                                    //   type: "select"
+                                    //   values: ...
+                                    //   ...userIdFormTransformers
+                                    // }
+                                    optionTransformer: userIdOptionTransformer,
                                     formValueTransformer(el) {
                                       return el.userID
+                                    },
+                                    labelTransformer(el) {
+                                      return <>{el.email}</>
+                                    },
+                                  }),
+                                  tagIDs: selectOptionsBuilder({
+                                    type: 'multiselect',
+                                    values: tags,
+                                    optionTransformer(el) {
+                                      return (
+                                        <Group noWrap spacing="lg" align="center">
+                                          <Flex align={'center'}></Flex>
+                                          <div>{el?.name}</div>
+                                        </Group>
+                                      )
+                                    },
+                                    formValueTransformer(el) {
+                                      return el.workItemTagID
+                                    },
+                                    labelTransformer(el) {
+                                      return <>{el.name} label</>
+                                    },
+                                    labelColor(el) {
+                                      return el.color
+                                    },
+                                  }),
+                                  'members.role': selectOptionsBuilder({
+                                    type: 'select',
+                                    values: WORK_ITEM_ROLES,
+                                    optionTransformer: (el) => {
+                                      return <WorkItemRoleBadge role={el} />
+                                    },
+                                    formValueTransformer(el) {
+                                      return el
+                                    },
+                                    labelTransformer(el) {
+                                      return <WorkItemRoleBadge role={el} />
                                     },
                                   }),
                                 },

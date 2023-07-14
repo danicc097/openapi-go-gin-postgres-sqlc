@@ -16,8 +16,12 @@ export const createAvatarImageDataUrl = (str: string) => {
   const canvas = document.createElement('canvas')
   canvas.width = 150
   canvas.height = 150
+
   const ctx = canvas.getContext('2d')
   const color = COLOR_BLIND_PALETTE[normStr.charCodeAt(0) % COLOR_BLIND_PALETTE.length]
+
+  if (!color || !ctx) return
+
   ctx.fillStyle = color
   ctx.beginPath()
   ctx.arc(75, 75, 75, 0, 2 * Math.PI)

@@ -154,6 +154,9 @@ dependencies:
   idb-keyval:
     specifier: ^6.2.1
     version: 6.2.1
+  inflection:
+    specifier: ^2.0.1
+    version: 2.0.1
   js-cookie:
     specifier: ^3.0.5
     version: 3.0.5
@@ -5283,6 +5286,11 @@ packages:
   /indent-string@4.0.0:
     resolution: {integrity: sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==}
     engines: {node: '>=8'}
+    dev: false
+
+  /inflection@2.0.1:
+    resolution: {integrity: sha512-wzkZHqpb4eGrOKBl34xy3umnYHx8Si5R1U4fwmdxLo5gdH6mEK8gclckTj/qWqy4Je0bsDYe/qazZYuO7xe3XQ==}
+    engines: {node: '>=14.0.0'}
     dev: false
 
   /inflight@1.0.6:

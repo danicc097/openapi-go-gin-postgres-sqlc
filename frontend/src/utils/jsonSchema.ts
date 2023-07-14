@@ -25,7 +25,7 @@ export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, Sc
     const isObj = obj.properties && extractType(obj) === 'object'
 
     if (isArrayOfObj) {
-      extract(obj.items.properties)
+      extract(obj?.items?.properties)
     } else if (isObj) {
       extract(obj.properties)
     }
@@ -34,6 +34,10 @@ export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, Sc
       for (const key in properties) {
         const newPath = [...path, key]
         const property = properties[key]
+        if (!property) {
+          continue
+        }
+
         schemaFields[newPath.join('.')] = {
           type: extractType(property),
           required: extractIsRequired(obj, parent, key),
@@ -51,14 +55,25 @@ export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, Sc
 
 function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null, key: string): boolean {
   if (!parent) {
-    return obj.required?.includes(key)
+    return (
+      !!obj.required?.includes(key) &&
+      !obj.properties?.[key]?.type?.includes('null') &&
+      !obj?.items?.type?.includes('null')
+    )
   }
 
   if (parent.items) {
     return extractIsRequired(obj, parent.items, key)
   }
 
-  return Array.isArray(parent?.required) ? parent.required.includes(key) : false
+  return (
+    !!parent.required?.includes(key) &&
+    !obj.properties?.[key]?.type?.includes('null') &&
+    !obj.items?.type?.includes('null') &&
+    (obj.type?.includes('array') && obj.items?.properties?.[key]?.type?.includes('array')
+      ? !obj?.type?.includes('null')
+      : true)
+  )
 }
 
 function extractType(obj: JsonSchemaField): Type | Format {
@@ -73,7 +88,7 @@ function extractType(obj: JsonSchemaField): Type | Format {
 
   return obj.format ?? type
 
-  function _type(x: JsonSchemaField['type']): Type {
-    return Array.isArray(x) ? x.filter((t) => t !== 'null')[0] : x
+  function _type(x: JsonSchemaField['type']) {
+    return (Array.isArray(x) ? x.filter((t) => t !== 'null')[0] : x) as Type
   }
 }
