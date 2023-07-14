@@ -82,6 +82,7 @@ export type SelectOptions<Return, E = unknown> = {
   formValueTransformer: <V extends E>(el: V & E) => Return extends unknown[] ? Return[number] : Return
   optionTransformer: <V extends E>(el: V & E) => JSX.Element
   labelTransformer?: <V extends E>(el: V & E) => JSX.Element
+  labelColor?: <V extends E>(el: V & E) => string
 }
 
 export interface InputOptions<Return, E = unknown> {
@@ -94,12 +95,14 @@ export const selectOptionsBuilder = <Return, V>({
   formValueTransformer,
   optionTransformer,
   labelTransformer,
+  labelColor,
 }: SelectOptions<Return, V>): SelectOptions<Return, V> => ({
   type,
   values,
   optionTransformer,
   labelTransformer,
   formValueTransformer,
+  labelColor,
 })
 
 export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>): InputOptions<Return, V> => ({
@@ -116,8 +119,12 @@ const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
   })
 
 const valueComponentTemplate =
-  (transformer: (...args: any[]) => JSX.Element) =>
+  (transformer: (...args: any[]) => JSX.Element, colorFn?: (...args: any[]) => string) =>
   ({ value, option, onRemove, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
+    let color
+    if (colorFn) {
+      color = colorFn(option)
+    }
     return (
       <div {...others}>
         <Box
@@ -125,7 +132,7 @@ const valueComponentTemplate =
             display: 'flex',
             cursor: 'default',
             alignItems: 'center',
-            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
+            backgroundColor: color || (theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white),
             border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[4]}`,
             paddingLeft: theme.spacing.xs,
             borderRadius: theme.radius.sm,
@@ -811,6 +818,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
               valueComponent={valueComponentTemplate(
                 selectOptions.labelTransformer ? selectOptions.labelTransformer : selectOptions.optionTransformer,
+                selectOptions.labelColor,
               )}
               searchable
               filter={(option, selected, item) => {

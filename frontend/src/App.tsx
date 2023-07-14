@@ -299,7 +299,7 @@ export default function App() {
       workItemID: 1,
       reopened: false, // for create will ignore field for form gen
     },
-    tagIDs: [0, 1, 2],
+    tagIDs: [0, 5, 8],
     members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'user 2' }],
   } as TestTypes.RestDemoWorkItemCreateRequest
 
@@ -329,7 +329,7 @@ export default function App() {
   //   }
   // }, [demoWorkItemCreateForm])
 
-  type ExcludedFormKeys = 'base.metadata'
+  type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
 
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
@@ -493,6 +493,9 @@ export default function App() {
                                     },
                                     labelTransformer(el) {
                                       return <>{el.name} label</>
+                                    },
+                                    labelColor(el) {
+                                      return el.color
                                     },
                                   }),
                                 },

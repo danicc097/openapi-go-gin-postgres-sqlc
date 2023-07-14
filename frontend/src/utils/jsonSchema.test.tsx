@@ -399,6 +399,9 @@ describe('form generation', () => {
 
     // test should submit with default values if none changed
 
+    // FIXME: dont check state, its not updated. call submit with mock onsubmit that returns data and check
+    // that return value is what we expect.
+    // https://react-hook-form.com/advanced-usage#TestingForm
     expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
 
     const formElement = screen.getByTestId(formName)
