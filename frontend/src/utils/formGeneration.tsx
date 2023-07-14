@@ -805,7 +805,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             option,
           }))
 
-          console.log(data)
           el = (
             <MultiSelect
               withinPortal
@@ -983,21 +982,23 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
       {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
       <Flex direction="row" align="center">
         {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
-        <Button
-          size="xs"
-          p={4}
-          leftIcon={<IconPlus size="1rem" />}
-          onClick={() => {
-            const initialValue = initialValueByType(schemaFields[schemaKey]?.type)
-            const vals = form.getValues(formField) || []
-            console.log([...vals, initialValue] as any)
+        {options.selectOptions?.[schemaKey]?.type !== 'multiselect' && (
+          <Button
+            size="xs"
+            p={4}
+            leftIcon={<IconPlus size="1rem" />}
+            onClick={() => {
+              const initialValue = initialValueByType(schemaFields[schemaKey]?.type)
+              const vals = form.getValues(formField) || []
+              console.log([...vals, initialValue] as any)
 
-            form.setValue(formField, [...vals, initialValue] as any)
-          }}
-          variant="filled"
-          color={'green'}
-          id={`${formName}-${formField}-add-button`}
-        >{`Add ${itemName}`}</Button>
+              form.setValue(formField, [...vals, initialValue] as any)
+            }}
+            variant="filled"
+            color={'green'}
+            id={`${formName}-${formField}-add-button`}
+          >{`Add ${itemName}`}</Button>
+        )}
       </Flex>
     </div>
   )

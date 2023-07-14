@@ -18,12 +18,14 @@ declare namespace TestTypes {
     demoProject: DbDemoWorkItemCreateParams
     members: ServicesMember[] | null
     tagIDs: number[] | null
+    tagIDsMultiselect: number[] | null
   }
 
   interface DbWorkItemCreateParams {
     closed: Date | null
     description: string
     kanbanStepID: number
+    // eslint-disable-next-line @typescript-eslint/ban-types
     metadata: {} | null
     targetDate: Date
     teamID: number

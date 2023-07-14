@@ -9,9 +9,19 @@ import { entries, keys } from 'src/utils/object'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import { fullFormats } from 'ajv-formats/dist/formats'
-import { Group, Avatar, Space } from '@mantine/core'
+import { Group, Avatar, Space, Flex } from '@mantine/core'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import { nameInitials } from 'src/utils/strings'
+
+const tags = [...Array(10)].map((x, i) => {
+  return {
+    name: `${i} tag`,
+    color: `#${i}34236`,
+    workItemTagID: i,
+    projectID: 1,
+    description: 'description',
+  }
+})
 
 const schema = {
   properties: {
@@ -126,8 +136,14 @@ const schema = {
       },
       type: ['array', 'null'],
     },
+    tagIDsMultiselect: {
+      items: {
+        type: 'integer',
+      },
+      type: ['array', 'null'],
+    },
   },
-  required: ['demoProject', 'base', 'tagIDs', 'members'],
+  required: ['demoProject', 'base', 'tagIDsMultiselect', 'members'],
   type: 'object',
   'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
 } as JsonSchemaField
@@ -153,6 +169,7 @@ const formInitialValues = {
     workItemID: 1,
   },
   tagIDs: [0, 1, 2],
+  tagIDsMultiselect: [0, 1, 2],
   members: [
     // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values.
     // since userid exists and it's an initial value, it will show custom select card to work around https://github.com/mantinedev/mantine/issues/980
@@ -185,6 +202,7 @@ const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, Sch
   'members.role': { type: 'string', required: true, isArray: false },
   'members.userID': { type: 'string', required: true, isArray: false },
   tagIDs: { type: 'integer', required: false, isArray: true },
+  tagIDsMultiselect: { type: 'integer', required: false, isArray: true },
 }
 
 describe('form generation', () => {
@@ -241,6 +259,7 @@ describe('form generation', () => {
               'members.role': 'role',
               'members.userID': 'User',
               tagIDs: 'tagIDs',
+              tagIDsMultiselect: 'tagIDsMultiselect',
             },
             defaultValues: {
               'demoProject.line': '43121234', // should be ignored since it's set
@@ -275,7 +294,25 @@ describe('form generation', () => {
                   return el.userID
                 },
                 labelTransformer(el) {
-                  return el.email
+                  return <>el.email</>
+                },
+              }),
+              tagIDsMultiselect: selectOptionsBuilder({
+                type: 'multiselect',
+                values: tags,
+                optionTransformer(el) {
+                  return (
+                    <Group noWrap spacing="lg" align="center">
+                      <Flex align={'center'}></Flex>
+                      <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
+                    </Group>
+                  )
+                },
+                formValueTransformer(el) {
+                  return el.workItemTagID
+                },
+                labelTransformer(el) {
+                  return <>{el.name} label</>
                 },
               }),
             },
@@ -332,6 +369,7 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-members.1.role-label',
       'demoWorkItemCreateForm-members.1.userID',
       'demoWorkItemCreateForm-members.1.userID-label',
+      'demoWorkItemCreateForm-tagIDsMultiselect',
       'demoWorkItemCreateForm-tagIDs-0',
       'demoWorkItemCreateForm-tagIDs-1',
       'demoWorkItemCreateForm-tagIDs-2',
@@ -353,6 +391,7 @@ describe('form generation', () => {
       'base.items.1.items-title',
       'members-title',
       'tagIDs-title',
+      'tagIDsMultiselect-title',
     ]
     const actualDataTestIds = [...document.querySelectorAll('[data-testid]')].map((e) => e.getAttribute('data-testid'))
 
