@@ -31,8 +31,8 @@ import { DateInput, DateTimePicker } from '@mantine/dates'
 import { Prism } from '@mantine/prism'
 import { rem, useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
-import { singularize } from 'inflection'
-import _, { memoize } from 'lodash'
+import { pluralize, singularize } from 'inflection'
+import _, { lowerFirst, memoize } from 'lodash'
 import React, {
   useState,
   type ComponentProps,
@@ -695,6 +695,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, formValue) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
     required: schemaFields[schemaKey]?.required && type !== 'boolean',
+    placeholder: `Enter ${lowerFirst(singularize(options.labels[schemaKey] || ''))}`,
   }
 
   let el: JSX.Element | null = null
@@ -770,6 +771,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               value={String(form.getValues(formField))}
               {..._props}
               ref={selectRef}
+              placeholder={`Select ${lowerFirst(itemName)}`}
             />
           )
 
@@ -860,6 +862,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               value={form.getValues(formField)}
               {..._props}
               ref={selectRef}
+              placeholder={`Select ${lowerFirst(pluralize(itemName))}`}
             />
           )
         }
@@ -896,8 +899,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 target: { name: formField, value: e },
               })
             }
-            placeholder="Select date"
             {..._props}
+            placeholder="Select date"
           />
         )
         break
@@ -909,8 +912,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 target: { name: formField, value: e },
               })
             }
-            placeholder="Select date and time"
             {..._props}
+            placeholder="Select date and time"
           />
         )
         break
