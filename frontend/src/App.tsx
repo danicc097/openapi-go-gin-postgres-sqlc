@@ -396,6 +396,17 @@ export default function App() {
                           </Button>
                           <FormProvider {...form}>
                             <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
+                              onSubmit={(e) => {
+                                e.preventDefault()
+                                form.handleSubmit(
+                                  (data) => {
+                                    console.log({ data })
+                                  },
+                                  (errors) => {
+                                    console.log({ errors })
+                                  },
+                                )(e)
+                              }}
                               formName="demoWorkItemCreateForm"
                               // schemaFields will come from `parseSchemaFields(schema.RestDemo... OR  asConst(jsonSchema.definitions.<...>))`
                               // using this hardcoded for testing purposes

@@ -245,6 +245,7 @@ type DynamicFormProps<T extends object, ExcludeKeys extends GetKeys<T> | null = 
   schemaFields: Record<Exclude<GetKeys<T>, ExcludeKeys>, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, GetKeys<T>>
   formName: string
+  onSubmit: React.FormEventHandler<HTMLFormElement>
 }
 
 function renderTitle(key: FormField, title) {
@@ -264,6 +265,7 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
   formName,
   schemaFields,
   options,
+  onSubmit,
 }: DynamicFormProps<T, ExcludeKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
@@ -277,13 +279,7 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
         <>
           <FormData />
           <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit(
-                (data) => console.log({ data }),
-                (errors) => console.log({ errors }),
-              )(e)
-            }}
+            onSubmit={onSubmit}
             css={css`
               min-width: 100%;
             `}
@@ -343,8 +339,8 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
     }
 
     const formField = constructFormField(schemaKey, parentFormField)
-
     const accordion = options.accordion?.[schemaKey]
+    const itemName = singularize(options.labels[schemaKey] || '')
 
     const inputProps = {
       css: css`
@@ -353,8 +349,10 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
       id: `${formName}-${formField}`,
+      onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        e.key === 'Enter' && e.preventDefault()
+      },
     }
-    const itemName = singularize(options.labels[schemaKey] || '')
 
     if (field.isArray && field.type !== 'object') {
       // nested array of nonbjects generation

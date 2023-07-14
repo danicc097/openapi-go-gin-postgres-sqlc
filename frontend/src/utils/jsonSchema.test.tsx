@@ -234,6 +234,17 @@ describe('form generation', () => {
     const view = render(
       <FormProvider {...form.current}>
         <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, 'base.metadata'>
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.current.handleSubmit(
+              (data) => {
+                console.log({ data })
+              },
+              (errors) => {
+                console.log({ errors })
+              },
+            )(e)
+          }}
           formName={formName}
           schemaFields={schemaFields}
           options={{
