@@ -70,6 +70,7 @@ import type {
   Branded,
 } from 'src/types/utils'
 import { removeElementByIndex } from 'src/utils/array'
+import { getContrastYIQ } from 'src/utils/colors'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
@@ -138,8 +139,11 @@ const valueComponentTemplate =
             borderRadius: theme.radius.sm,
           })}
         >
-          {/* // TODO: use high contrast black:white on label */}
-          <Box sx={{ lineHeight: 1, fontSize: rem(12) }}>{transformer(option)}</Box>
+          <Box
+            sx={{ lineHeight: 1, fontSize: rem(12), color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black' }}
+          >
+            {transformer(option)}
+          </Box>
           <CloseButton
             //@ts-ignore
             onMouseDown={onRemove}
