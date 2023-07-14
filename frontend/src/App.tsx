@@ -19,6 +19,7 @@ import {
   Avatar,
   Group,
   Space,
+  Box,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
@@ -453,7 +454,7 @@ export default function App() {
                                     values: members,
                                     optionTransformer(el) {
                                       return (
-                                        <Group noWrap spacing="lg" align="center">
+                                        <Group noWrap spacing="lg" align="center" mr={8}>
                                           <Flex align={'center'}>
                                             <Avatar
                                               size={'28px'}
@@ -465,8 +466,7 @@ export default function App() {
                                             </Avatar>
                                             <Space p={5} />
                                           </Flex>
-
-                                          <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
+                                          <Box ml={'auto'}>{el?.email}</Box>
                                         </Group>
                                       )
                                     },
@@ -484,7 +484,7 @@ export default function App() {
                                       return (
                                         <Group noWrap spacing="lg" align="center">
                                           <Flex align={'center'}></Flex>
-                                          <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
+                                          <div>{el?.name}</div>
                                         </Group>
                                       )
                                     },

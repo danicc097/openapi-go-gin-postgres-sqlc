@@ -716,7 +716,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       case 'select':
         {
           const option = selectOptions.values.find((option) => {
-            console.log({ option: selectOptions.formValueTransformer(option), formValue: form.getValues(formField) })
             return selectOptions.formValueTransformer(option) === form.getValues(formField)
           })
 
