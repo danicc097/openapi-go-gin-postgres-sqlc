@@ -249,6 +249,20 @@ const tags = [...Array(10)].map((x, i) => {
   return tag
 })
 
+const userIdOptionTransformer = (el: User) => {
+  return (
+    <Group noWrap spacing="lg" align="center" mr={8}>
+      <Flex align={'center'}>
+        <Avatar size={'28px'} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
+          {nameInitials(el?.fullName || '')}
+        </Avatar>
+        <Space p={5} />
+      </Flex>
+      <Box ml={'auto'}>{el?.email}</Box>
+    </Group>
+  )
+}
+
 export default function App() {
   const theme = useMantineTheme()
   const [colorScheme, setColorScheme] = useState<ColorScheme>(
@@ -452,24 +466,13 @@ export default function App() {
                                   'members.userID': selectOptionsBuilder({
                                     type: 'select',
                                     values: members,
-                                    optionTransformer(el) {
-                                      return (
-                                        <Group noWrap spacing="lg" align="center" mr={8}>
-                                          <Flex align={'center'}>
-                                            <Avatar
-                                              size={'28px'}
-                                              radius="xl"
-                                              data-test-id="header-profile-avatar"
-                                              alt={el?.username}
-                                            >
-                                              {nameInitials(el?.fullName || '')}
-                                            </Avatar>
-                                            <Space p={5} />
-                                          </Flex>
-                                          <Box ml={'auto'}>{el?.email}</Box>
-                                        </Group>
-                                      )
-                                    },
+                                    // transformers can be reusable between forms. could simply become
+                                    //  {
+                                    //   type: "select"
+                                    //   values: ...
+                                    //   ...userIdFormTransformers
+                                    // }
+                                    optionTransformer: userIdOptionTransformer,
                                     formValueTransformer(el) {
                                       return el.userID
                                     },
