@@ -240,103 +240,6 @@ export default function UserPermissionsPage() {
     showModal()
   }
 
-  interface CheckboxPanelProps {
-    title: string
-    scopes: Partial<typeof SCOPES>
-  }
-
-  const CheckboxPanel = ({ title, scopes }: CheckboxPanelProps) => {
-    const [disabledScopes, setDisabledScopes] = useState<string[]>([])
-
-    const handleCheckboxChange = (key: Scope, checked: boolean) => {
-      if (checked) {
-        form.setValue('scopes', form.getValues('scopes')?.concat([key]))
-      } else {
-        form.setValue(
-          'scopes',
-          form.getValues('scopes')?.filter((scope) => scope !== key),
-        )
-      }
-    }
-
-    const scopeChangeAllowed = (scope: Scope) => {
-      if (isAuthorized({ user, requiredRole: 'admin' })) {
-        return { allowed: true }
-      }
-      if (!isAuthorized({ user, requiredRole: userSelection?.role })) {
-        return { allowed: false, message: 'You are not allowed to change scopes for this user' }
-      }
-      if (!isAuthorized({ user, requiredScopes: [scope] })) {
-        return { allowed: false, message: 'You do not have this scope' }
-      }
-
-      return { allowed: true }
-    }
-
-    useWatch({ name: 'scopes', control: form.control })
-
-    return (
-      <Box
-        mb={12}
-        sx={(theme) => ({
-          backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
-          borderRadius: theme.radius.md,
-          padding: '4px 16px',
-        })}
-      >
-        <Title size={15} mt={4} mb={8}>
-          {title}
-        </Title>
-        {entries(scopes).map(([key, scope]) => {
-          const scopeName = key.split(':')[1]
-          const { allowed, message } = scopeChangeAllowed(key)
-          const isChecked = form.getValues('scopes')?.includes(key)
-
-          return (
-            <div key={key}>
-              <Tooltip
-                label={<Text size={12}>{`${message}`}</Text>}
-                position="left"
-                withArrow
-                disabled={allowed}
-                withinPortal
-              >
-                <Grid
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginBottom: '2px',
-                    filter: !allowed ? 'grayscale(1)' : '',
-                  }}
-                >
-                  <Grid.Col span={2}>
-                    <Flex direction="row">
-                      <Checkbox
-                        checked={isChecked}
-                        size="xs"
-                        id={key}
-                        color="blue"
-                        disabled={!allowed}
-                        onChange={(e) => handleCheckboxChange(key, e.target.checked)}
-                      />
-                      <Space pl={10} />
-                      <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
-                        {scopeName}
-                      </Badge>
-                    </Flex>
-                  </Grid.Col>
-                  <Grid.Col span="auto">
-                    <Text size={14}>{scope.description}</Text>
-                  </Grid.Col>
-                </Grid>
-              </Tooltip>
-            </div>
-          )
-        })}
-      </Box>
-    )
-  }
-
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
 
   const registerProps = form.register('role')
@@ -403,6 +306,8 @@ export default function UserPermissionsPage() {
             <Card shadow="md" padding="lg" radius="md" withBorder>
               {entries(scopeEditPanels).map(([group, scopes]) => (
                 <CheckboxPanel
+                  user={user}
+                  userSelection={userSelection}
                   key={group}
                   title={group.replace(/-/g, ' ').replace(/^\w{1}/g, (c) => c.toUpperCase())}
                   scopes={scopes}
@@ -457,10 +362,110 @@ export default function UserPermissionsPage() {
     </PageTemplate>
   )
 }
+
 function FormData() {
   const form = useFormContext()
 
   form.watch()
 
   return <Prism language="json">{JSON.stringify(form.getValues(), null, 4)}</Prism>
+}
+
+interface CheckboxPanelProps {
+  title: string
+  scopes: Partial<typeof SCOPES>
+  user: User
+  userSelection: User
+}
+
+const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProps) => {
+  const form = useFormContext()
+
+  const handleCheckboxChange = (key: Scope, checked: boolean) => {
+    if (checked) {
+      form.setValue('scopes', form.getValues('scopes')?.concat([key]))
+    } else {
+      form.setValue(
+        'scopes',
+        form.getValues('scopes')?.filter((scope) => scope !== key),
+      )
+    }
+  }
+
+  const scopeChangeAllowed = (scope: Scope) => {
+    if (isAuthorized({ user, requiredRole: 'admin' })) {
+      return { allowed: true }
+    }
+    if (!isAuthorized({ user, requiredRole: userSelection?.role })) {
+      return { allowed: false, message: 'You are not allowed to change scopes for this user' }
+    }
+    if (!isAuthorized({ user, requiredScopes: [scope] })) {
+      return { allowed: false, message: 'You do not have this scope' }
+    }
+
+    return { allowed: true }
+  }
+
+  useWatch({ name: 'scopes', control: form.control })
+
+  return (
+    <Box
+      mb={12}
+      sx={(theme) => ({
+        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
+        borderRadius: theme.radius.md,
+        padding: '4px 16px',
+      })}
+    >
+      <Title size={15} mt={4} mb={8}>
+        {title}
+      </Title>
+      {entries(scopes).map(([key, scope]) => {
+        const scopeName = key.split(':')[1]
+        const { allowed, message } = scopeChangeAllowed(key)
+        const isChecked = form.getValues('scopes')?.includes(key)
+
+        return (
+          <div key={key}>
+            <Tooltip
+              label={<Text size={12}>{`${message}`}</Text>}
+              position="left"
+              withArrow
+              disabled={allowed}
+              withinPortal
+            >
+              <Grid
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '2px',
+                  filter: !allowed ? 'grayscale(1)' : '',
+                }}
+              >
+                <Grid.Col span={2}>
+                  <Flex direction="row">
+                    <Checkbox
+                      checked={isChecked}
+                      size="xs"
+                      id={key}
+                      color="blue"
+                      disabled={!allowed}
+                      onChange={(e) => handleCheckboxChange(key, e.target.checked)}
+                    />
+                    <Space pl={10} />
+                    <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
+                      {scopeName}
+                    </Badge>
+                  </Flex>
+                </Grid.Col>
+                <Grid.Col span="auto">
+                  <Text size={14}>{scope.description}</Text>
+                </Grid.Col>
+              </Grid>
+            </Tooltip>
+          </div>
+        )
+      })}
+    </Box>
+  )
 }
