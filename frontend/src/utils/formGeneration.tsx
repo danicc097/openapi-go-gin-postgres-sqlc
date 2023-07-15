@@ -58,6 +58,8 @@ import {
   useFormState,
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
+import { ApiError } from 'src/api/mutator'
+import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
@@ -269,6 +271,11 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
 }: DynamicFormProps<T, ExcludeKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors()
+
+  useEffect(() => {
+    setCalloutErrors(new ApiError('Remote error message'))
+  }, [])
 
   // TODO: will also need sorting schemaFields beforehand and then generate normally if sorting: [<keyof T>] is given.
   // we will then foreach key in sorting, append schemafields[key] to a new list.
@@ -278,6 +285,7 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
       <PageTemplate minWidth={800}>
         <>
           <FormData />
+          <ErrorCallout title="Custom error title" errors={extractCalloutErrors()} />
           <form
             onSubmit={onSubmit}
             css={css`
@@ -285,7 +293,7 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
             `}
             data-testid={formName}
           >
-            <button type="submit">submit</button>
+            <Button type="submit">Submit</Button>
             <GeneratedInputs />
           </form>
         </>
