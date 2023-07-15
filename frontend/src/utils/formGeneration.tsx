@@ -71,6 +71,7 @@ import type {
   RecursiveKeyOfArray,
   PathType,
   Branded,
+  UniqueArray,
 } from 'src/types/utils'
 import { removeElementByIndex } from 'src/utils/array'
 import { getContrastYIQ } from 'src/utils/colors'
@@ -164,6 +165,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   labels: {
     [key in Exclude<U, ExcludeKeys>]: string | null
   }
+  order?: UniqueArray<Array<Exclude<U, ExcludeKeys>>>
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
     [key in Exclude<U, ExcludeKeys>]: DeepPartial<
@@ -276,6 +278,16 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
   useEffect(() => {
     setCalloutErrors(new ApiError('Remote error message'))
   }, [])
+
+  if (options.order) {
+    const _schemaFields: Array<[keyof typeof schemaFields, SchemaField]> = []
+    options.order.forEach((k, i) => {
+      _schemaFields.push([k, schemaFields[k]])
+    })
+    entries(schemaFields).forEach(([k, v], i) => {
+      _schemaFields.push([k, v])
+    })
+  }
 
   // TODO: will also need sorting schemaFields beforehand and then generate normally if sorting: [<keyof T>] is given.
   // we will then foreach key in sorting, append schemafields[key] to a new list.
