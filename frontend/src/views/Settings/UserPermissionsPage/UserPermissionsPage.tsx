@@ -47,7 +47,7 @@ import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
 import ROLES from 'src/roles'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
-import ErrorCallout from 'src/components/ErrorCallout/ErrorCallout'
+import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
@@ -159,7 +159,7 @@ export default function UserPermissionsPage() {
     }
   }, [allUsers, userOptions])
 
-  const [calloutError, setCalloutError] = useState<AppError | null>(null)
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors()
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
@@ -182,15 +182,15 @@ export default function UserPermissionsPage() {
         autoClose: 15000,
         message: 'Submitted',
       })
-      setCalloutError(null)
+      setCalloutErrors(null)
     } catch (error) {
       console.error(error)
       if (error.validationErrors) {
-        setCalloutError(error.validationErrors)
+        setCalloutErrors(error.validationErrors)
         console.log('error')
         return
       }
-      setCalloutError(error)
+      setCalloutErrors(error)
     }
     span?.end()
   }
@@ -206,14 +206,14 @@ export default function UserPermissionsPage() {
       // so all validation errors are aggregated with full description in a callout)
       try {
         UpdateUserAuthRequestDecoder.decode(form.getValues())
-        setCalloutError(null)
+        setCalloutErrors(null)
       } catch (error) {
         if (error.validationErrors) {
-          setCalloutError(error.validationErrors)
+          setCalloutErrors(error.validationErrors)
           console.error(error)
           return
         }
-        setCalloutError(error)
+        setCalloutErrors(error)
       }
     }
   }
@@ -337,29 +337,6 @@ export default function UserPermissionsPage() {
     )
   }
 
-  // TODO: export to generic helper. should have custom error just for api calls, see mutator.ts
-  const getErrors = () => {
-    if (!calloutError) return []
-
-    // TODO: instead construct based on spec HTTPError which internally could have validationError array with loc, etc, see FastAPI template
-    // or a regular error with message, title, detail, status...
-    // and construct appropriately
-    if (calloutError instanceof ApiError) return [calloutError.message]
-
-    // external call error
-    if (calloutError instanceof AxiosError) return [calloutError.message]
-
-    return []
-
-    // client side validation replaced by react hook form ajv resolver
-    // error callout is just used for remote errors.
-    // however we should also handle locs returned by backend (which have
-    // no relation to schema validation). e.g. some field path is invalid because it already exists,
-    // then we should set error in its input
-    //
-    // return calloutError?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
-  }
-
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
 
   const registerProps = form.register('role')
@@ -368,18 +345,15 @@ export default function UserPermissionsPage() {
 
   const element = (
     <FormProvider {...form}>
-      {JSON.stringify(calloutError)}
-      <ErrorCallout title="Error updating user" errors={getErrors()} />
+      {JSON.stringify(calloutErrors)}
+      <ErrorCallout title="Error updating user" errors={extractCalloutErrors()} />
       <Space pt={12} />
       <Title size={12}>
         <Text>Form</Text>
       </Title>
       <FormData />
       <Space pt={12} />
-      <form
-        onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}
-        // error={getErrors()}
-      >
+      <form onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}>
         <Flex direction="column">
           <Select
             label="Select user to update"
