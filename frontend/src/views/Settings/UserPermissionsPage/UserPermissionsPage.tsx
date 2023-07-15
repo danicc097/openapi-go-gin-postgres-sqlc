@@ -55,6 +55,7 @@ import { asConst } from 'json-schema-to-ts'
 import type { components, schemas } from 'src/types/schema'
 import { FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form'
 import { nameInitials } from 'src/utils/strings'
+import type { AppError } from 'src/types/ui'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -158,7 +159,7 @@ export default function UserPermissionsPage() {
     }
   }, [allUsers, userOptions])
 
-  const [calloutError, setCalloutError] = useState<AppError>(null)
+  const [calloutError, setCalloutError] = useState<AppError | null>(null)
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
@@ -348,8 +349,15 @@ export default function UserPermissionsPage() {
     // external call error
     if (calloutError instanceof AxiosError) return [calloutError.message]
 
-    // client side validation
-    return calloutError?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
+    return []
+
+    // client side validation replaced by react hook form ajv resolver
+    // error callout is just used for remote errors.
+    // however we should also handle locs returned by backend (which have
+    // no relation to schema validation). e.g. some field path is invalid because it already exists,
+    // then we should set error in its input
+    //
+    // return calloutError?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
   }
 
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
