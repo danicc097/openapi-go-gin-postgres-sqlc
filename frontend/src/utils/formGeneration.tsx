@@ -165,7 +165,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   labels: {
     [key in Exclude<U, ExcludeKeys>]: string | null
   }
-  order?: Array<Exclude<keyof T, ExcludeKeys>>
+  renderOrderPriority?: Array<Exclude<keyof T, ExcludeKeys>>
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
     [key in Exclude<U, ExcludeKeys>]: DeepPartial<
@@ -280,9 +280,9 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
   }, [])
 
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
-  if (options.order) {
+  if (options.renderOrderPriority) {
     const _schemaKeys: SchemaKey[] = []
-    _.uniq(options.order).forEach((k, i) => {
+    _.uniq(options.renderOrderPriority).forEach((k, i) => {
       entries(schemaFields).forEach(([sk, v], i) => {
         if (!String(sk).startsWith(String(k))) return
         _schemaKeys.push(sk as SchemaKey)

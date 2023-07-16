@@ -248,6 +248,7 @@ describe('form generation', () => {
           formName={formName}
           schemaFields={schemaFields}
           options={{
+            renderOrderPriority: ['tagIDs', 'members'],
             labels: {
               base: 'base', // just title via renderTitle
               'base.closed': 'closed',
