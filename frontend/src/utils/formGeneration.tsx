@@ -206,7 +206,6 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   }>
   propsOverride?: Partial<{
     [key in Exclude<U, ExcludeKeys>]: {
-      label?: string
       description?: string
     }
   }>

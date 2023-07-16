@@ -545,7 +545,6 @@ export default function App() {
                                 // these should probably be all required later, to ensure formField is never used.
                                 propsOverride: {
                                   'demoProject.line': {
-                                    label: 'Line',
                                     description: 'This is some help text.',
                                   },
                                 },
