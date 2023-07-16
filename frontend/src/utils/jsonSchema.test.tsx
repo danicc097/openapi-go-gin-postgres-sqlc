@@ -254,7 +254,7 @@ describe('form generation', () => {
               'base.closed': 'closed',
               'base.description': 'description',
               // 'base.metadata': 'metadata', // ignored -> not a key
-              'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
+              'base.kanbanStepID': 'kanbanStepID',
               'base.targetDate': 'targetDate',
               'demoProject.reopened': 'reopened',
               'base.teamID': 'teamID',
