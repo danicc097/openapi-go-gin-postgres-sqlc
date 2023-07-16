@@ -27,6 +27,8 @@ export type Union<L extends unknown | undefined, R extends unknown | undefined> 
   ? L
   : L | R
 
+type Callable = (...args: any[]) => unknown
+
 type Dot<T extends string, U extends string> = '' extends U ? T : `${T}.${U}`
 
 type StopTypes = number | string | boolean | symbol | bigint | Date

@@ -540,6 +540,9 @@ export default function App() {
                                         styles={{ root: { width: '100%' } }}
                                       />
                                     ),
+                                    propsFn(registerOnChange) {
+                                      return {}
+                                    },
                                   },
                                 },
                                 // these should probably be all required later, to ensure formField is never used.

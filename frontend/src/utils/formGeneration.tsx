@@ -72,6 +72,7 @@ import type {
   PathType,
   Branded,
   UniqueArray,
+  Callable,
 } from 'src/types/utils'
 import { removeElementByIndex } from 'src/utils/array'
 import { getContrastYIQ } from 'src/utils/colors'
@@ -92,6 +93,7 @@ export type SelectOptions<Return, E = unknown> = {
 
 export interface InputOptions<Return, E = unknown> {
   component: JSX.Element
+  propsFn?: (registerOnChange: Callable) => React.ComponentProps<'input'>
 }
 
 export const selectOptionsBuilder = <Return, V>({
@@ -726,6 +728,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   let el: JSX.Element | null = null
   let customEl: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
+  // TODO: componentPropsFn must return {}
+  const componentPropsFn = options.input?.[schemaKey]?.propsFn
   const selectOptions = options.selectOptions?.[schemaKey]
   const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
@@ -746,9 +750,11 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   if (component) {
     el = React.cloneElement(component, {
       ..._props,
-      ...component.props, // allow user override
       // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
+      // props
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
+      ...component.props, // allow user override
+      ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
     })
     // TODO: multiSelectOptions: https://codesandbox.io/s/watch-with-usefieldarray-forked-9383hz?file=/src/formGeneration.tsx
     // which do allow custom labels by default and doesnt need workaround
