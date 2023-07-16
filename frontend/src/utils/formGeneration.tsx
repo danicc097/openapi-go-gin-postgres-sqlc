@@ -56,6 +56,8 @@ import {
   useFieldArray,
   type UseFieldArrayReturn,
   useFormState,
+  type UseFormRegisterReturn,
+  type ChangeHandler,
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
@@ -93,7 +95,7 @@ export type SelectOptions<Return, E = unknown> = {
 
 export interface InputOptions<Return, E = unknown> {
   component: JSX.Element
-  propsFn?: (registerOnChange: Callable) => React.ComponentProps<'input'>
+  propsFn?: (registerOnChange: ChangeHandler) => React.ComponentProps<'input'>
 }
 
 export const selectOptionsBuilder = <Return, V>({
