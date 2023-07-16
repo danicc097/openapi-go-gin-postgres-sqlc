@@ -458,7 +458,7 @@ export default function App() {
                                   'members.userID': 'User',
                                   tagIDs: 'Tags',
                                 },
-                                order: ['base', 'base'],
+                                order: ['tagIDs', 'members'],
                                 accordion: {
                                   'base.items': {
                                     defaultOpen: true,

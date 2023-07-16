@@ -165,7 +165,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   labels: {
     [key in Exclude<U, ExcludeKeys>]: string | null
   }
-  order?: UniqueArray<Array<Exclude<U, ExcludeKeys>>>
+  order?: Array<Exclude<keyof T, ExcludeKeys>>
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
     [key in Exclude<U, ExcludeKeys>]: DeepPartial<
@@ -279,14 +279,24 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
     setCalloutErrors(new ApiError('Remote error message'))
   }, [])
 
+  // TODO: should have keyof instead of GetKeys to allow reordering of top level only.
+  // allowing nested field reordering would be a mess.
+  // if a top level key is specified, then we will filter schemaKeys for keys that startsWith
+  // that, sort and append together.
   if (options.order) {
-    const _schemaFields: Array<[keyof typeof schemaFields, SchemaField]> = []
-    options.order.forEach((k, i) => {
-      _schemaFields.push([k, schemaFields[k]])
+    const _schemaKeys: SchemaKey[] = []
+    _.uniq(options.order).forEach((k, i) => {
+      entries(schemaFields).forEach(([sk, v], i) => {
+        if (!String(sk).startsWith(String(k))) return
+        _schemaKeys.push(k as SchemaKey)
+      })
     })
+    console.log(_schemaKeys)
     entries(schemaFields).forEach(([k, v], i) => {
-      _schemaFields.push([k, v])
+      if (k in _schemaKeys) return
+      _schemaKeys.push(k as SchemaKey)
     })
+    console.log(_schemaKeys)
   }
 
   // TODO: will also need sorting schemaFields beforehand and then generate normally if sorting: [<keyof T>] is given.
