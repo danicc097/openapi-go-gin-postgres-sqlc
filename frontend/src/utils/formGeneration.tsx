@@ -279,31 +279,28 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
     setCalloutErrors(new ApiError('Remote error message'))
   }, [])
 
-  // TODO: should have keyof instead of GetKeys to allow reordering of top level only.
-  // allowing nested field reordering would be a mess.
-  // if a top level key is specified, then we will filter schemaKeys for keys that startsWith
-  // that, sort and append together.
+  let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.order) {
     const _schemaKeys: SchemaKey[] = []
     _.uniq(options.order).forEach((k, i) => {
       entries(schemaFields).forEach(([sk, v], i) => {
         if (!String(sk).startsWith(String(k))) return
-        _schemaKeys.push(k as SchemaKey)
+        _schemaKeys.push(sk as SchemaKey)
       })
     })
-    console.log(_schemaKeys)
     entries(schemaFields).forEach(([k, v], i) => {
-      if (k in _schemaKeys) return
+      if (_schemaKeys.includes(k as SchemaKey)) return
       _schemaKeys.push(k as SchemaKey)
     })
-    console.log(_schemaKeys)
+
+    _schemaFields = _schemaKeys.reduce((acc, key) => {
+      acc[key] = schemaFields[key]
+      return acc
+    }, {})
   }
 
-  // TODO: will also need sorting schemaFields beforehand and then generate normally if sorting: [<keyof T>] is given.
-  // we will then foreach key in sorting, append schemafields[key] to a new list.
-  // then loop schemafields normally and append, ignoring if key in sorting
   return (
-    <DynamicFormProvider value={{ formName, options, schemaFields }}>
+    <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <PageTemplate minWidth={800}>
         <>
           <FormData />
