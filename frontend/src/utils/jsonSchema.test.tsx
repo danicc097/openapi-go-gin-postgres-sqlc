@@ -234,15 +234,27 @@ describe('form generation', () => {
     const view = render(
       <FormProvider {...form.current}>
         <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, 'base.metadata'>
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.current.handleSubmit(
+              (data) => {
+                console.log({ data })
+              },
+              (errors) => {
+                console.log({ errors })
+              },
+            )(e)
+          }}
           formName={formName}
           schemaFields={schemaFields}
           options={{
+            renderOrderPriority: ['tagIDs', 'members'],
             labels: {
               base: 'base', // just title via renderTitle
               'base.closed': 'closed',
               'base.description': 'description',
               // 'base.metadata': 'metadata', // ignored -> not a key
-              'base.kanbanStepID': 'kanbanStepID', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
+              'base.kanbanStepID': 'kanbanStepID',
               'base.targetDate': 'targetDate',
               'demoProject.reopened': 'reopened',
               'base.teamID': 'teamID',

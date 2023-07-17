@@ -285,13 +285,21 @@ export interface components {
        */
       messages: (string)[];
     };
+    /**
+     * @description Represents standardized HTTP error types.
+     * Notes:
+     * - 'Private' marks an error to be hidden in response.
+     *  
+     * @enum {string}
+     */
+    ErrorCode: "Unknown" | "Private" | "NotFound" | "InvalidArgument" | "AlreadyExists" | "Unauthorized" | "Unauthenticated" | "RequestValidation" | "ResponseValidation" | "OIDC" | "InvalidRole" | "InvalidScope" | "InvalidUUID";
     /** @description represents an error message response. */
     HTTPError: {
       title: string;
       detail: string;
       status: number;
       error: string;
-      type: string;
+      type: components["schemas"]["ErrorCode"];
       validationError?: components["schemas"]["HTTPValidationError"];
     };
     /**

@@ -6,6 +6,8 @@ package internal
 import (
 	"errors"
 	"fmt"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
 
 // Error represents an error that could be wrapping another error,
@@ -13,33 +15,11 @@ import (
 type Error struct {
 	orig error
 	msg  string
-	code ErrorCode
+	code models.ErrorCode
 }
 
-// ErrorCode defines supported error codes.
-type ErrorCode uint
-
-//go:generate stringer -type=ErrorCode -trimprefix=ErrorCode
-const (
-	ErrorCodeUnknown ErrorCode = iota
-	// ErrorCodePrivate marks an error to be hidden in response.
-	ErrorCodePrivate
-	ErrorCodeNotFound
-	ErrorCodeInvalidArgument
-	ErrorCodeAlreadyExists
-	ErrorCodeUnauthorized
-	ErrorCodeUnauthenticated
-	ErrorCodeRequestValidation
-	ErrorCodeResponseValidation
-
-	ErrorCodeInvalidRole
-	ErrorCodeInvalidScope
-
-	ErrorCodeInvalidUUID
-)
-
 // WrapErrorf returns a wrapped error.
-func WrapErrorf(orig error, code ErrorCode, format string, a ...any) error {
+func WrapErrorf(orig error, code models.ErrorCode, format string, a ...any) error {
 	return &Error{
 		code: code,
 		orig: orig,
@@ -48,7 +28,7 @@ func WrapErrorf(orig error, code ErrorCode, format string, a ...any) error {
 }
 
 // NewErrorf instantiates a new error.
-func NewErrorf(code ErrorCode, format string, a ...any) error {
+func NewErrorf(code models.ErrorCode, format string, a ...any) error {
 	return WrapErrorf(nil, code, format, a...)
 }
 
@@ -67,7 +47,7 @@ func (e *Error) Unwrap() error {
 }
 
 // Code returns the code representing this error.
-func (e *Error) Code() ErrorCode {
+func (e *Error) Code() models.ErrorCode {
 	return e.code
 }
 

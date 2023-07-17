@@ -26,6 +26,7 @@ import {
   RestProjectBoardResponse,
   User,
   HTTPValidationError,
+  ErrorCode,
   HTTPError,
   Topics,
   Scope,
@@ -279,6 +280,18 @@ export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
       throw new Error(`Schema ${HTTPValidationErrorDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, HTTPValidationErrorDecoder.definitionName)
+  },
+}
+export const ErrorCodeDecoder: Decoder<ErrorCode> = {
+  definitionName: 'ErrorCode',
+  schemaRef: '#/definitions/ErrorCode',
+
+  decode(json: unknown): ErrorCode {
+    const schema = ajv.getSchema(ErrorCodeDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ErrorCodeDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ErrorCodeDecoder.definitionName)
   },
 }
 export const HTTPErrorDecoder: Decoder<HTTPError> = {

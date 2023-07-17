@@ -28,6 +28,7 @@ import {
   CloseButton,
 } from '@mantine/core'
 import { DateInput, DateTimePicker } from '@mantine/dates'
+import { useFocusWithin } from '@mantine/hooks'
 import { Prism } from '@mantine/prism'
 import { rem, useMantineTheme } from '@mantine/styles'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
@@ -55,8 +56,12 @@ import {
   useFieldArray,
   type UseFieldArrayReturn,
   useFormState,
+  type UseFormRegisterReturn,
+  type ChangeHandler,
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
+import { ApiError } from 'src/api/mutator'
+import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
 import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
@@ -68,6 +73,8 @@ import type {
   RecursiveKeyOfArray,
   PathType,
   Branded,
+  UniqueArray,
+  Callable,
 } from 'src/types/utils'
 import { removeElementByIndex } from 'src/utils/array'
 import { getContrastYIQ } from 'src/utils/colors'
@@ -88,6 +95,7 @@ export type SelectOptions<Return, E = unknown> = {
 
 export interface InputOptions<Return, E = unknown> {
   component: JSX.Element
+  propsFn?: (registerOnChange: ChangeHandler) => React.ComponentProps<'input'>
 }
 
 export const selectOptionsBuilder = <Return, V>({
@@ -161,6 +169,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   labels: {
     [key in Exclude<U, ExcludeKeys>]: string | null
   }
+  renderOrderPriority?: Array<Exclude<keyof T, ExcludeKeys>>
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
     [key in Exclude<U, ExcludeKeys>]: DeepPartial<
@@ -201,7 +210,6 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
   }>
   propsOverride?: Partial<{
     [key in Exclude<U, ExcludeKeys>]: {
-      label?: string
       description?: string
     }
   }>
@@ -244,6 +252,7 @@ type DynamicFormProps<T extends object, ExcludeKeys extends GetKeys<T> | null = 
   schemaFields: Record<Exclude<GetKeys<T>, ExcludeKeys>, SchemaField>
   options: DynamicFormOptions<T, ExcludeKeys, GetKeys<T>>
   formName: string
+  onSubmit: React.FormEventHandler<HTMLFormElement>
 }
 
 function renderTitle(key: FormField, title) {
@@ -263,32 +272,50 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
   formName,
   schemaFields,
   options,
+  onSubmit,
 }: DynamicFormProps<T, ExcludeKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors()
 
-  // TODO: will also need sorting schemaFields beforehand and then generate normally if sorting: [<keyof T>] is given.
-  // we will then foreach key in sorting, append schemafields[key] to a new list.
-  // then loop schemafields normally and append, ignoring if key in sorting
+  useEffect(() => {
+    setCalloutErrors(new ApiError('Remote error message'))
+  }, [])
+
+  let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
+  if (options.renderOrderPriority) {
+    const _schemaKeys: SchemaKey[] = []
+    _.uniq(options.renderOrderPriority).forEach((k, i) => {
+      entries(schemaFields).forEach(([sk, v], i) => {
+        if (!String(sk).startsWith(String(k))) return
+        _schemaKeys.push(sk as SchemaKey)
+      })
+    })
+    entries(schemaFields).forEach(([k, v], i) => {
+      if (_schemaKeys.includes(k as SchemaKey)) return
+      _schemaKeys.push(k as SchemaKey)
+    })
+
+    _schemaFields = _schemaKeys.reduce((acc, key) => {
+      acc[key] = schemaFields[key]
+      return acc
+    }, {})
+  }
+
   return (
-    <DynamicFormProvider value={{ formName, options, schemaFields }}>
+    <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <PageTemplate minWidth={800}>
         <>
           <FormData />
+          <ErrorCallout title="Custom error title" errors={extractCalloutErrors()} />
           <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit(
-                (data) => console.log({ data }),
-                (errors) => console.log({ errors }),
-              )(e)
-            }}
+            onSubmit={onSubmit}
             css={css`
               min-width: 100%;
             `}
             data-testid={formName}
           >
-            <button type="submit">submit</button>
+            <Button type="submit">Submit</Button>
             <GeneratedInputs />
           </form>
         </>
@@ -342,8 +369,8 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
     }
 
     const formField = constructFormField(schemaKey, parentFormField)
-
     const accordion = options.accordion?.[schemaKey]
+    const itemName = singularize(options.labels[schemaKey] || '')
 
     const inputProps = {
       css: css`
@@ -352,8 +379,10 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
       id: `${formName}-${formField}`,
+      onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        e.key === 'Enter' && e.preventDefault()
+      },
     }
-    const itemName = singularize(options.labels[schemaKey] || '')
 
     if (field.isArray && field.type !== 'object') {
       // nested array of nonbjects generation
@@ -701,9 +730,13 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   let el: JSX.Element | null = null
   let customEl: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
+  // TODO: componentPropsFn must return {}
+  const componentPropsFn = options.input?.[schemaKey]?.propsFn
   const selectOptions = options.selectOptions?.[schemaKey]
-  const selectRef = useRef<HTMLInputElement>(null)
+  const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
+
+  const { ref: focusRef, focused: selectFocused } = useFocusWithin()
 
   useEffect(() => {
     if (isSelectVisible) {
@@ -712,12 +745,18 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     }
   }, [isSelectVisible])
 
+  useEffect(() => {
+    if (!selectFocused) setIsSelectVisible(false)
+  }, [selectFocused])
+
   if (component) {
     el = React.cloneElement(component, {
       ..._props,
-      ...component.props, // allow user override
       // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
+      // props
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
+      ...component.props, // allow user override
+      ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
     })
     // TODO: multiSelectOptions: https://codesandbox.io/s/watch-with-usefieldarray-forked-9383hz?file=/src/formGeneration.tsx
     // which do allow custom labels by default and doesnt need workaround
@@ -733,6 +772,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
           // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
           el = (
             <Select
+              onBlur={(e) => setIsSelectVisible(false)}
               withinPortal
               initiallyOpened={option !== undefined}
               itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
@@ -770,7 +810,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               }}
               value={String(form.getValues(formField))}
               {..._props}
-              ref={selectRef}
+              ref={(el) => {
+                selectRef.current = el
+                focusRef.current = el
+              }}
               placeholder={`Select ${lowerFirst(itemName)}`}
             />
           )

@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -16,7 +17,7 @@ import (
 var errorUniqueViolationRegex = regexp.MustCompile(`\((.*)\)=\((.*)\)`)
 
 func parseErrorDetail(err error) error {
-	newErr := internal.WrapErrorf(err, internal.ErrorCodeUnknown, err.Error())
+	newErr := internal.WrapErrorf(err, models.ErrorCodeUnknown, err.Error())
 
 	/**
 	 * TODO: will have generic xo Error struct, which has Entity field.
@@ -37,7 +38,7 @@ func parseErrorDetail(err error) error {
 	var xoErr *db.XoError
 	if errors.As(err, &xoErr) {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return internal.NewErrorf(internal.ErrorCodeNotFound, xoErr.Entity+" not found")
+			return internal.NewErrorf(models.ErrorCodeNotFound, xoErr.Entity+" not found")
 		}
 	}
 
@@ -54,9 +55,9 @@ func convertPgErr(pgErr *pgconn.PgError) error {
 			break
 		}
 		column, value = matches[1], matches[2]
-		err = internal.NewErrorf(internal.ErrorCodeAlreadyExists, fmt.Sprintf("%s %q already exists", column, value))
+		err = internal.NewErrorf(models.ErrorCodeAlreadyExists, fmt.Sprintf("%s %q already exists", column, value))
 	default:
-		err = internal.NewErrorf(internal.ErrorCodeUnknown, fmt.Sprintf("%s | %s", pgErr.Detail, pgErr.Message))
+		err = internal.NewErrorf(models.ErrorCodeUnknown, fmt.Sprintf("%s | %s", pgErr.Detail, pgErr.Message))
 	}
 
 	return err

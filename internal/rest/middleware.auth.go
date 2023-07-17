@@ -50,7 +50,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if apiKey != "" {
 			u, err := a.authnsvc.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil || u == nil {
-				renderErrorResponse(c, "unauthenticated", internal.NewErrorf(internal.ErrorCodeUnauthenticated, "could not get user from api key"))
+				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from api key"))
 				c.Abort()
 
 				return
@@ -65,7 +65,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if strings.HasPrefix(auth, "Bearer ") {
 			u, err := a.authnsvc.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
 			if err != nil || u == nil {
-				renderErrorResponse(c, "unauthenticated", internal.NewErrorf(internal.ErrorCodeUnauthenticated, "could not get user from token"))
+				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token"))
 				c.Abort()
 
 				return
@@ -76,7 +76,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		renderErrorResponse(c, "unauthenticated", internal.NewErrorf(internal.ErrorCodeUnauthenticated, "could not get user from token"))
+		renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token"))
 		c.Abort()
 	}
 }

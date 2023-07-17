@@ -47,7 +47,7 @@ import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
 import ROLES from 'src/roles'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
-import ErrorCallout from 'src/components/ErrorCallout/ErrorCallout'
+import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
@@ -55,6 +55,7 @@ import { asConst } from 'json-schema-to-ts'
 import type { components, schemas } from 'src/types/schema'
 import { FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form'
 import { nameInitials } from 'src/utils/strings'
+import type { AppError } from 'src/types/ui'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -158,7 +159,7 @@ export default function UserPermissionsPage() {
     }
   }, [allUsers, userOptions])
 
-  const [calloutError, setCalloutError] = useState<AppError>(null)
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors()
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
@@ -181,15 +182,15 @@ export default function UserPermissionsPage() {
         autoClose: 15000,
         message: 'Submitted',
       })
-      setCalloutError(null)
+      setCalloutErrors(null)
     } catch (error) {
       console.error(error)
       if (error.validationErrors) {
-        setCalloutError(error.validationErrors)
+        setCalloutErrors(error.validationErrors)
         console.log('error')
         return
       }
-      setCalloutError(error)
+      setCalloutErrors(error)
     }
     span?.end()
   }
@@ -205,14 +206,14 @@ export default function UserPermissionsPage() {
       // so all validation errors are aggregated with full description in a callout)
       try {
         UpdateUserAuthRequestDecoder.decode(form.getValues())
-        setCalloutError(null)
+        setCalloutErrors(null)
       } catch (error) {
         if (error.validationErrors) {
-          setCalloutError(error.validationErrors)
+          setCalloutErrors(error.validationErrors)
           console.error(error)
           return
         }
-        setCalloutError(error)
+        setCalloutErrors(error)
       }
     }
   }
@@ -239,119 +240,6 @@ export default function UserPermissionsPage() {
     showModal()
   }
 
-  interface CheckboxPanelProps {
-    title: string
-    scopes: Partial<typeof SCOPES>
-  }
-
-  const CheckboxPanel = ({ title, scopes }: CheckboxPanelProps) => {
-    const [disabledScopes, setDisabledScopes] = useState<string[]>([])
-
-    const handleCheckboxChange = (key: Scope, checked: boolean) => {
-      if (checked) {
-        form.setValue('scopes', form.getValues('scopes')?.concat([key]))
-      } else {
-        form.setValue(
-          'scopes',
-          form.getValues('scopes')?.filter((scope) => scope !== key),
-        )
-      }
-    }
-
-    const scopeChangeAllowed = (scope: Scope) => {
-      if (isAuthorized({ user, requiredRole: 'admin' })) {
-        return { allowed: true }
-      }
-      if (!isAuthorized({ user, requiredRole: userSelection?.role })) {
-        return { allowed: false, message: 'You are not allowed to change scopes for this user' }
-      }
-      if (!isAuthorized({ user, requiredScopes: [scope] })) {
-        return { allowed: false, message: 'You do not have this scope' }
-      }
-
-      return { allowed: true }
-    }
-
-    useWatch({ name: 'scopes', control: form.control })
-
-    return (
-      <Box
-        mb={12}
-        sx={(theme) => ({
-          backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
-          borderRadius: theme.radius.md,
-          padding: '4px 16px',
-        })}
-      >
-        <Title size={15} mt={4} mb={8}>
-          {title}
-        </Title>
-        {entries(scopes).map(([key, scope]) => {
-          const scopeName = key.split(':')[1]
-          const { allowed, message } = scopeChangeAllowed(key)
-          const isChecked = form.getValues('scopes')?.includes(key)
-
-          return (
-            <div key={key}>
-              <Tooltip
-                label={<Text size={12}>{`${message}`}</Text>}
-                position="left"
-                withArrow
-                disabled={allowed}
-                withinPortal
-              >
-                <Grid
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginBottom: '2px',
-                    filter: !allowed ? 'grayscale(1)' : '',
-                  }}
-                >
-                  <Grid.Col span={2}>
-                    <Flex direction="row">
-                      <Checkbox
-                        checked={isChecked}
-                        size="xs"
-                        id={key}
-                        color="blue"
-                        disabled={!allowed}
-                        onChange={(e) => handleCheckboxChange(key, e.target.checked)}
-                      />
-                      <Space pl={10} />
-                      <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
-                        {scopeName}
-                      </Badge>
-                    </Flex>
-                  </Grid.Col>
-                  <Grid.Col span="auto">
-                    <Text size={14}>{scope.description}</Text>
-                  </Grid.Col>
-                </Grid>
-              </Tooltip>
-            </div>
-          )
-        })}
-      </Box>
-    )
-  }
-
-  // TODO: export to generic helper. should have custom error just for api calls, see mutator.ts
-  const getErrors = () => {
-    if (!calloutError) return []
-
-    // TODO: instead construct based on spec HTTPError which internally could have validationError array with loc, etc, see FastAPI template
-    // or a regular error with message, title, detail, status...
-    // and construct appropriately
-    if (calloutError instanceof ApiError) return [calloutError.message]
-
-    // external call error
-    if (calloutError instanceof AxiosError) return [calloutError.message]
-
-    // client side validation
-    return calloutError?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
-  }
-
   const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
 
   const registerProps = form.register('role')
@@ -360,18 +248,14 @@ export default function UserPermissionsPage() {
 
   const element = (
     <FormProvider {...form}>
-      {JSON.stringify(calloutError)}
-      <ErrorCallout title="Error updating user" errors={getErrors()} />
+      <ErrorCallout title={extractCalloutTitle()} errors={extractCalloutErrors()} />
       <Space pt={12} />
       <Title size={12}>
         <Text>Form</Text>
       </Title>
       <FormData />
       <Space pt={12} />
-      <form
-        onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}
-        // error={getErrors()}
-      >
+      <form onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}>
         <Flex direction="column">
           <Select
             label="Select user to update"
@@ -421,6 +305,8 @@ export default function UserPermissionsPage() {
             <Card shadow="md" padding="lg" radius="md" withBorder>
               {entries(scopeEditPanels).map(([group, scopes]) => (
                 <CheckboxPanel
+                  user={user}
+                  userSelection={userSelection}
                   key={group}
                   title={group.replace(/-/g, ' ').replace(/^\w{1}/g, (c) => c.toUpperCase())}
                   scopes={scopes}
@@ -475,10 +361,110 @@ export default function UserPermissionsPage() {
     </PageTemplate>
   )
 }
+
 function FormData() {
   const form = useFormContext()
 
   form.watch()
 
   return <Prism language="json">{JSON.stringify(form.getValues(), null, 4)}</Prism>
+}
+
+interface CheckboxPanelProps {
+  title: string
+  scopes: Partial<typeof SCOPES>
+  user: User
+  userSelection: User
+}
+
+const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProps) => {
+  const form = useFormContext()
+
+  const handleCheckboxChange = (key: Scope, checked: boolean) => {
+    if (checked) {
+      form.setValue('scopes', form.getValues('scopes')?.concat([key]))
+    } else {
+      form.setValue(
+        'scopes',
+        form.getValues('scopes')?.filter((scope) => scope !== key),
+      )
+    }
+  }
+
+  const scopeChangeAllowed = (scope: Scope) => {
+    if (isAuthorized({ user, requiredRole: 'admin' })) {
+      return { allowed: true }
+    }
+    if (!isAuthorized({ user, requiredRole: userSelection?.role })) {
+      return { allowed: false, message: 'You are not allowed to change scopes for this user' }
+    }
+    if (!isAuthorized({ user, requiredScopes: [scope] })) {
+      return { allowed: false, message: 'You do not have this scope' }
+    }
+
+    return { allowed: true }
+  }
+
+  useWatch({ name: 'scopes', control: form.control })
+
+  return (
+    <Box
+      mb={12}
+      sx={(theme) => ({
+        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
+        borderRadius: theme.radius.md,
+        padding: '4px 16px',
+      })}
+    >
+      <Title size={15} mt={4} mb={8}>
+        {title}
+      </Title>
+      {entries(scopes).map(([key, scope]) => {
+        const scopeName = key.split(':')[1]
+        const { allowed, message } = scopeChangeAllowed(key)
+        const isChecked = form.getValues('scopes')?.includes(key)
+
+        return (
+          <div key={key}>
+            <Tooltip
+              label={<Text size={12}>{`${message}`}</Text>}
+              position="left"
+              withArrow
+              disabled={allowed}
+              withinPortal
+            >
+              <Grid
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '2px',
+                  filter: !allowed ? 'grayscale(1)' : '',
+                }}
+              >
+                <Grid.Col span={2}>
+                  <Flex direction="row">
+                    <Checkbox
+                      checked={isChecked}
+                      size="xs"
+                      id={key}
+                      color="blue"
+                      disabled={!allowed}
+                      onChange={(e) => handleCheckboxChange(key, e.target.checked)}
+                    />
+                    <Space pl={10} />
+                    <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
+                      {scopeName}
+                    </Badge>
+                  </Flex>
+                </Grid.Col>
+                <Grid.Col span="auto">
+                  <Text size={14}>{scope.description}</Text>
+                </Grid.Col>
+              </Grid>
+            </Tooltip>
+          </div>
+        )
+      })}
+    </Box>
+  )
 }

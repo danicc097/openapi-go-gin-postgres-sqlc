@@ -116,6 +116,42 @@ func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
 	}
 }
 
+// Defines values for ErrorCode.
+const (
+	ErrorCodeAlreadyExists      ErrorCode = "AlreadyExists"
+	ErrorCodeInvalidArgument    ErrorCode = "InvalidArgument"
+	ErrorCodeInvalidRole        ErrorCode = "InvalidRole"
+	ErrorCodeInvalidScope       ErrorCode = "InvalidScope"
+	ErrorCodeInvalidUUID        ErrorCode = "InvalidUUID"
+	ErrorCodeNotFound           ErrorCode = "NotFound"
+	ErrorCodeOIDC               ErrorCode = "OIDC"
+	ErrorCodePrivate            ErrorCode = "Private"
+	ErrorCodeRequestValidation  ErrorCode = "RequestValidation"
+	ErrorCodeResponseValidation ErrorCode = "ResponseValidation"
+	ErrorCodeUnauthenticated    ErrorCode = "Unauthenticated"
+	ErrorCodeUnauthorized       ErrorCode = "Unauthorized"
+	ErrorCodeUnknown            ErrorCode = "Unknown"
+)
+
+// AllErrorCodeValues returns all possible values for ErrorCode.
+func AllErrorCodeValues() []ErrorCode {
+	return []ErrorCode{
+		ErrorCodeAlreadyExists,
+		ErrorCodeInvalidArgument,
+		ErrorCodeInvalidRole,
+		ErrorCodeInvalidScope,
+		ErrorCodeInvalidUUID,
+		ErrorCodeNotFound,
+		ErrorCodeOIDC,
+		ErrorCodePrivate,
+		ErrorCodeRequestValidation,
+		ErrorCodeResponseValidation,
+		ErrorCodeUnauthenticated,
+		ErrorCodeUnauthorized,
+		ErrorCodeUnknown,
+	}
+}
+
 // Defines values for NotificationType.
 const (
 	NotificationTypeGlobal   NotificationType = "global"
@@ -415,13 +451,22 @@ type DemoTwoWorkItemTypes string
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
 type DemoWorkItemTypes string
 
+// ErrorCode Represents standardized HTTP error types.
+// Notes:
+// - 'Private' marks an error to be hidden in response.
+type ErrorCode string
+
 // HTTPError represents an error message response.
 type HTTPError struct {
-	Detail          string               `json:"detail"`
-	Error           string               `json:"error"`
-	Status          int                  `json:"status"`
-	Title           string               `json:"title"`
-	Type            string               `json:"type"`
+	Detail string `json:"detail"`
+	Error  string `json:"error"`
+	Status int    `json:"status"`
+	Title  string `json:"title"`
+
+	// Type Represents standardized HTTP error types.
+	// Notes:
+	// - 'Private' marks an error to be hidden in response.
+	Type            ErrorCode            `json:"type"`
 	ValidationError *HTTPValidationError `json:"validationError,omitempty"`
 }
 

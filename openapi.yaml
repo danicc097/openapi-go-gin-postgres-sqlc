@@ -1024,6 +1024,26 @@ components:
           type: array
           items:
             type: string
+    ErrorCode:
+      description: |
+        Represents standardized HTTP error types.
+        Notes:
+        - 'Private' marks an error to be hidden in response.
+      type: string
+      enum:
+        - Unknown
+        - Private
+        - NotFound
+        - InvalidArgument
+        - AlreadyExists
+        - Unauthorized
+        - Unauthenticated
+        - RequestValidation
+        - ResponseValidation
+        - OIDC
+        - InvalidRole
+        - InvalidScope
+        - InvalidUUID
     HTTPError:
       description: represents an error message response.
       type: object
@@ -1036,9 +1056,8 @@ components:
           type: integer
         error:
           type: string
-        # see internal/errors.go ErrorCode
         type:
-          type: string
+          $ref: '#/components/schemas/ErrorCode'
         validationError:
           $ref: '#/components/schemas/HTTPValidationError'
       required:

@@ -1736,6 +1736,26 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "ErrorCode": {
+      "description": "Represents standardized HTTP error types.\nNotes:\n- 'Private' marks an error to be hidden in response.\n",
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "Private",
+        "NotFound",
+        "InvalidArgument",
+        "AlreadyExists",
+        "Unauthorized",
+        "Unauthenticated",
+        "RequestValidation",
+        "ResponseValidation",
+        "OIDC",
+        "InvalidRole",
+        "InvalidScope",
+        "InvalidUUID"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "HTTPError": {
       "description": "represents an error message response.",
       "type": "object",
@@ -1756,8 +1776,24 @@
           "minLength": 1
         },
         "type": {
+          "description": "Represents standardized HTTP error types.\nNotes:\n- 'Private' marks an error to be hidden in response.\n",
           "type": "string",
-          "minLength": 1
+          "enum": [
+            "Unknown",
+            "Private",
+            "NotFound",
+            "InvalidArgument",
+            "AlreadyExists",
+            "Unauthorized",
+            "Unauthenticated",
+            "RequestValidation",
+            "ResponseValidation",
+            "OIDC",
+            "InvalidRole",
+            "InvalidScope",
+            "InvalidUUID"
+          ],
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "validationError": {
           "title": "HTTPValidationError",
@@ -4303,6 +4339,26 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "ErrorCode": {
+      "description": "Represents standardized HTTP error types.\nNotes:\n- 'Private' marks an error to be hidden in response.\n",
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "Private",
+        "NotFound",
+        "InvalidArgument",
+        "AlreadyExists",
+        "Unauthorized",
+        "Unauthenticated",
+        "RequestValidation",
+        "ResponseValidation",
+        "OIDC",
+        "InvalidRole",
+        "InvalidScope",
+        "InvalidUUID"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "HTTPError": {
       "description": "represents an error message response.",
       "type": "object",
@@ -4323,8 +4379,24 @@
           "minLength": 1
         },
         "type": {
+          "description": "Represents standardized HTTP error types.\nNotes:\n- 'Private' marks an error to be hidden in response.\n",
           "type": "string",
-          "minLength": 1
+          "enum": [
+            "Unknown",
+            "Private",
+            "NotFound",
+            "InvalidArgument",
+            "AlreadyExists",
+            "Unauthorized",
+            "Unauthenticated",
+            "RequestValidation",
+            "ResponseValidation",
+            "OIDC",
+            "InvalidRole",
+            "InvalidScope",
+            "InvalidUUID"
+          ],
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "validationError": {
           "title": "HTTPValidationError",

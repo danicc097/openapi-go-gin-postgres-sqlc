@@ -104,7 +104,7 @@ func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
 func (a *Authorization) ScopeByName(scope string) (Scope, error) {
 	s, ok := a.scopes[models.Scope(scope)]
 	if !ok {
-		return Scope{}, internal.NewErrorf(internal.ErrorCodeInvalidScope, "unknown scope %s", scope)
+		return Scope{}, internal.NewErrorf(models.ErrorCodeInvalidScope, "unknown scope %s", scope)
 	}
 
 	return s, nil
@@ -112,7 +112,7 @@ func (a *Authorization) ScopeByName(scope string) (Scope, error) {
 
 func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
 	if role.Rank < a.roles[requiredRole].Rank {
-		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted: unauthorized role")
+		return internal.NewErrorf(models.ErrorCodeUnauthorized, "access restricted: unauthorized role")
 	}
 
 	return nil
@@ -121,7 +121,7 @@ func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) err
 func (a *Authorization) HasRequiredScopes(scopes models.Scopes, requiredScopes models.Scopes) error {
 	for _, rs := range requiredScopes {
 		if !slices.Contains(scopes, rs) {
-			return internal.NewErrorf(internal.ErrorCodeUnauthorized, fmt.Sprintf("access restricted: missing scope %s", rs))
+			return internal.NewErrorf(models.ErrorCodeUnauthorized, fmt.Sprintf("access restricted: missing scope %s", rs))
 		}
 	}
 

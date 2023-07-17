@@ -396,6 +396,17 @@ export default function App() {
                           </Button>
                           <FormProvider {...form}>
                             <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
+                              onSubmit={(e) => {
+                                e.preventDefault()
+                                form.handleSubmit(
+                                  (data) => {
+                                    console.log({ data })
+                                  },
+                                  (errors) => {
+                                    console.log({ errors })
+                                  },
+                                )(e)
+                              }}
                               formName="demoWorkItemCreateForm"
                               // schemaFields will come from `parseSchemaFields(schema.RestDemo... OR  asConst(jsonSchema.definitions.<...>))`
                               // using this hardcoded for testing purposes
@@ -447,6 +458,7 @@ export default function App() {
                                   'members.userID': 'User',
                                   tagIDs: 'Tags',
                                 },
+                                renderOrderPriority: ['tagIDs', 'members'],
                                 accordion: {
                                   'base.items': {
                                     defaultOpen: true,
@@ -528,12 +540,14 @@ export default function App() {
                                         styles={{ root: { width: '100%' } }}
                                       />
                                     ),
+                                    propsFn(registerOnChange) {
+                                      return {}
+                                    },
                                   },
                                 },
                                 // these should probably be all required later, to ensure formField is never used.
                                 propsOverride: {
                                   'demoProject.line': {
-                                    label: 'Line',
                                     description: 'This is some help text.',
                                   },
                                 },

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
@@ -81,7 +82,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 				options.ErrorHandler(c, err.Error(), http.StatusBadRequest)
 			} else {
 				// error response customized via WithCustomSchemaErrorFunc
-				renderErrorResponse(c, "invalid request", internal.WrapErrorf(err, internal.ErrorCodeRequestValidation, "OpenAPI request validation failed"))
+				renderErrorResponse(c, "Invalid request", internal.WrapErrorf(err, models.ErrorCodeRequestValidation, "OpenAPI request validation failed"))
 			}
 
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
@@ -119,7 +120,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 
 		if err := openapi3filter.ValidateResponse(c.Request.Context(), input); err != nil {
 			rbw.body.Reset()
-			renderErrorResponse(c, "invalid response", internal.WrapErrorf(err, internal.ErrorCodeResponseValidation, "OpenAPI response validation failed"))
+			renderErrorResponse(c, "Invalid response", internal.WrapErrorf(err, models.ErrorCodeResponseValidation, "OpenAPI response validation failed"))
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return
@@ -163,11 +164,11 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 		case *routers.RouteError:
 			// We've got a bad request, the path requested doesn't match
 			// either server, or path, or something.
-			return internal.NewErrorf(internal.ErrorCodeRequestValidation, e.Reason)
+			return internal.NewErrorf(models.ErrorCodeRequestValidation, e.Reason)
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.
-			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "unknown error validating route: %s", err.Error())
+			return internal.NewErrorf(models.ErrorCodeRequestValidation, "unknown error validating route: %s", err.Error())
 		}
 	}
 
@@ -202,13 +203,13 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 			// Split up the verbose error by lines and return the first one
 			// openapi errors seem to be multi-line with a decent message on the first
 			errorLines := strings.Split(e.Error(), "\n")
-			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "error in openapi3filter.RequestError: %s", errorLines[0])
+			return internal.NewErrorf(models.ErrorCodeRequestValidation, "error in openapi3filter.RequestError: %s", errorLines[0])
 		case *openapi3filter.SecurityRequirementsError:
-			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "error in openapi3filter.SecurityRequirementsError: %s", e.Error())
+			return internal.NewErrorf(models.ErrorCodeRequestValidation, "error in openapi3filter.SecurityRequirementsError: %s", e.Error())
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.
-			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "unknown error validating request: %s", err)
+			return internal.NewErrorf(models.ErrorCodeRequestValidation, "unknown error validating request: %s", err)
 		}
 	}
 	return nil
@@ -232,5 +233,5 @@ func getMultiErrorHandlerFromOptions(options *OAValidatorOptions) MultiErrorHand
 // of all of the errors. This method is called if there are no other
 // methods defined on the options.
 func defaultMultiErrorHandler(me openapi3.MultiError) error {
-	return internal.WrapErrorf(me, internal.ErrorCodeRequestValidation, "validation errors encountered")
+	return internal.WrapErrorf(me, models.ErrorCodeRequestValidation, "validation errors encountered")
 }

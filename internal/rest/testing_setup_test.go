@@ -10,7 +10,8 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
-	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
@@ -66,12 +67,12 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 
 	// race. also already done in testutils setup.
 	// if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {
-	// 	return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
+	// 	return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "envvar.Load")
 	// }
 
 	// provider, err := vault.New()
 	// if err != nil {
-	// 	return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
+	// 	return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.NewVaultProvider")
 	// }
 
 	// conf := envvar.New(provider)
@@ -87,7 +88,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.zapNew")
 	}
 
 	_, err = openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
@@ -106,7 +107,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 		RolePolicyPath:  "../../roles.json",
 	}, WithMiddlewares(middlewares...))
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "New")
 	}
 
 	return srv.httpsrv, nil
