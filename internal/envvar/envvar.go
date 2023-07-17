@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
 
 // Provider ...
@@ -25,11 +26,11 @@ type Configuration struct{}
 // It also initializes/replaces app configuration.
 func Load(filename string) error {
 	if err := godotenv.Load(filename); err != nil {
-		return internal.NewErrorf(internal.ErrorCodeUnknown, fmt.Sprintf("loading %s env var file: %s", filename, err))
+		return internal.NewErrorf(models.ErrorCodeUnknown, fmt.Sprintf("loading %s env var file: %s", filename, err))
 	}
 
 	if err := internal.NewAppConfig(); err != nil {
-		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "internal.NewAppConfig")
+		return internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.NewAppConfig")
 	}
 
 	return nil

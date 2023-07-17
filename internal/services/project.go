@@ -40,7 +40,7 @@ func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID int) (*db.Proje
 
 	project, err := p.projectRepo.ByID(ctx, d, projectID)
 	if err != nil {
-		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
+		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
 	}
 
 	return project, nil
@@ -51,7 +51,7 @@ func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 
 	project, err := p.projectRepo.ByName(ctx, d, name)
 	if err != nil {
-		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
+		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
 	}
 
 	return project, nil
@@ -69,7 +69,7 @@ func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName models.Project, update map[string]any) (*models.ProjectConfig, error) {
 	project, err := p.projectRepo.ByName(ctx, d, projectName)
 	if err != nil {
-		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
+		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
 	}
 
 	fieldsMap := make(map[string]map[string]any)

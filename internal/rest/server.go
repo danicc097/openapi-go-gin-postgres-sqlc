@@ -280,7 +280,7 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 	var err error
 
 	if err = envvar.Load(env); err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "envvar.Load")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "envvar.Load")
 	}
 
 	cfg := internal.Config
@@ -295,19 +295,19 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 	}
 
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "zap.New")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "zap.New")
 	}
 
 	// slogger := logger
 
 	pool, sqlpool, err := postgresql.New(logger.Sugar())
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "postgresql.New")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "postgresql.New")
 	}
 
 	rdb, err := redis.New()
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "redis.New")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "redis.New")
 	}
 
 	tp := tracing.InitTracer()
@@ -324,7 +324,7 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
 	)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "movieSvcConn")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "movieSvcConn")
 	}
 
 	srv, err := NewServer(Config{
@@ -340,7 +340,7 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 		MyProviderCallbackPath: "/auth/myprovider/callback",
 	})
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "NewServer")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
 	}
 
 	errC := make(chan error, 1)

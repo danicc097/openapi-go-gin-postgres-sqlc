@@ -5,6 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { ErrorCode } from './errorCode'
 import type { HTTPValidationError } from './hTTPValidationError'
 
 /**
@@ -15,6 +16,6 @@ export interface HTTPError {
   detail: string
   status: number
   error: string
-  type: string
+  type: ErrorCode
   validationError?: HTTPValidationError
 }

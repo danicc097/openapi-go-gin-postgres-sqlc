@@ -51,7 +51,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 
 	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		renderErrorResponse(c, "database error", internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not being tx"))
+		renderErrorResponse(c, "database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not being tx"))
 
 		return
 	}
@@ -60,7 +60,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	body := &models.UpdateUserRequest{}
 
 	if err := c.BindJSON(body); err != nil {
-		renderErrorResponse(c, "invalid data", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "invalid data"))
+		renderErrorResponse(c, "invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
 
 		return
 	}
@@ -108,7 +108,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 
 	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		renderErrorResponse(c, "database error", internal.WrapErrorf(err, internal.ErrorCodePrivate, "could not being tx"))
+		renderErrorResponse(c, "database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not being tx"))
 
 		return
 	}
@@ -117,7 +117,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 	body := &models.UpdateUserAuthRequest{}
 
 	if err := c.BindJSON(body); err != nil {
-		renderErrorResponse(c, "invalid data", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "invalid data"))
+		renderErrorResponse(c, "invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
 
 		return
 	}

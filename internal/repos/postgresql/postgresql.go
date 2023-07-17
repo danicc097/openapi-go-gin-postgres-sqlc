@@ -20,6 +20,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
 
 var pgxAfterConnectLock = sync.Mutex{}
@@ -41,7 +42,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 
 	poolConfig, err := pgxpool.ParseConfig(dsn.String())
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgx.ParseConfig")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "pgx.ParseConfig")
 	}
 
 	if cfg.Postgres.TraceEnabled {
@@ -54,11 +55,11 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 	searchPaths := []string{"public", "xo_tests"}
 	conn, err := pgx.Connect(context.Background(), dsn.String())
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not connect to database")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not connect to database")
 	}
 	typeNames, err := queryDatabaseTypeNames(context.Background(), conn, searchPaths...)
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not query database types")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not query database types")
 	}
 
 	afterConnectRun := false
@@ -85,7 +86,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		}
 
 		if err != nil {
-			return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not register data types")
+			return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register data types")
 		}
 
 		afterConnectRun = true
@@ -95,16 +96,16 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 
 	pgxPool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgxpool.New")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "pgxpool.New")
 	}
 
 	if err := pgxPool.Ping(context.Background()); err != nil {
-		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "db.Ping")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "db.Ping")
 	}
 
 	sqlPool, err := sql.Open("pgx", pgxPool.Config().ConnString())
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "sql.Open")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "sql.Open")
 	}
 
 	for !afterConnectRun {

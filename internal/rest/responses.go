@@ -18,7 +18,7 @@ import (
 func renderErrorResponse(c *gin.Context, title string, err error) {
 	resp := models.HTTPError{
 		Title: title, Error: err.Error(),
-		Type:   internal.ErrorCodeUnknown.String(),
+		Type:   models.ErrorCodeUnknown,
 		Status: http.StatusInternalServerError,
 	}
 
@@ -54,36 +54,36 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		resp.Title = "internal error"
 		resp.Detail = title
 	} else {
-		resp.Type = ierr.Code().String()
+		resp.Type = ierr.Code()
 		resp.Detail = ierr.Cause().Error()
 		switch ierr.Code() {
-		case internal.ErrorCodeNotFound:
+		case models.ErrorCodeNotFound:
 			resp.Status = http.StatusNotFound
-		case internal.ErrorCodeInvalidArgument:
+		case models.ErrorCodeInvalidArgument:
 			resp.Status = http.StatusBadRequest
-		case internal.ErrorCodeInvalidRole, internal.ErrorCodeInvalidScope, internal.ErrorCodeInvalidUUID:
+		case models.ErrorCodeInvalidRole, models.ErrorCodeInvalidScope, models.ErrorCodeInvalidUUID:
 			resp.Status = http.StatusBadRequest
-		case internal.ErrorCodeRequestValidation:
+		case models.ErrorCodeRequestValidation:
 			resp.Status = http.StatusBadRequest
 			resp.Detail = "OpenAPI request validation failed"
 			resp.Error = "" // will use validationError
 			resp.ValidationError = extractValidationError(err, "request")
-		case internal.ErrorCodeResponseValidation:
+		case models.ErrorCodeResponseValidation:
 			resp.Status = http.StatusInternalServerError
 			resp.Detail = "OpenAPI response validation failed"
 			resp.Error = "" // will use validationError
 			resp.ValidationError = extractValidationError(err, "response")
-		case internal.ErrorCodeAlreadyExists:
+		case models.ErrorCodeAlreadyExists:
 			resp.Status = http.StatusConflict
-		case internal.ErrorCodeUnauthorized:
+		case models.ErrorCodeUnauthorized:
 			resp.Status = http.StatusForbidden
-		case internal.ErrorCodeUnauthenticated:
+		case models.ErrorCodeUnauthenticated:
 			resp.Status = http.StatusUnauthorized
-		case internal.ErrorCodePrivate:
+		case models.ErrorCodePrivate:
 			resp = models.HTTPError{Title: "internal error", Detail: "internal error"}
 
 			fallthrough
-		case internal.ErrorCodeUnknown:
+		case models.ErrorCodeUnknown:
 			fallthrough
 		default:
 			resp.Status = http.StatusInternalServerError

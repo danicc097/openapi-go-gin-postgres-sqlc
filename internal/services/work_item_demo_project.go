@@ -67,7 +67,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		})
 		var ierr *internal.Error
 		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != internal.ErrorCodeAlreadyExists {
+			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
 				return nil, fmt.Errorf("db.CreateWorkItemWorkItemTag: %w", err)
 			}
 		}
@@ -81,7 +81,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		})
 		var ierr *internal.Error
 		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != internal.ErrorCodeAlreadyExists {
+			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
 				return nil, fmt.Errorf("a.AssignMember: %w", err)
 			}
 		}

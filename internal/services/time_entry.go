@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
@@ -44,7 +45,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 	defer newOTELSpan(ctx, "TimeEntry.Create").End()
 
 	if caller.UserID != params.UserID {
-		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot add activity for a different user")
+		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot add activity for a different user")
 	}
 
 	if params.TeamID != nil {
@@ -53,7 +54,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 			teamIDs[i] = t.TeamID
 		}
 		if !slices.Contains(teamIDs, *params.TeamID) {
-			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot link activity to an unassigned team")
+			return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot link activity to an unassigned team")
 		}
 	}
 
@@ -72,7 +73,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 		}
 		if !slices.Contains(memberIDs, caller.UserID) {
 			// FIXME filter where not null for m2m in assigned members not doing what we think
-			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot link activity to an unassigned work item")
+			return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot link activity to an unassigned work item")
 		}
 	}
 

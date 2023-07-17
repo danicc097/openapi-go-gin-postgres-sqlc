@@ -37,6 +37,25 @@ export type Detail = ValidationError[]
  */
 export type Messages = string[]
 /**
+ * Represents standardized HTTP error types.
+ * Notes:
+ * - 'Private' marks an error to be hidden in response.
+ *
+ */
+export type ErrorCode =
+  | 'Unknown'
+  | 'Private'
+  | 'NotFound'
+  | 'InvalidArgument'
+  | 'AlreadyExists'
+  | 'Unauthorized'
+  | 'Unauthenticated'
+  | 'RequestValidation'
+  | 'ResponseValidation'
+  | 'InvalidRole'
+  | 'InvalidScope'
+  | 'InvalidUUID'
+/**
  * string identifiers for SSE event listeners.
  */
 export type Topics = 'GlobalAlerts'
@@ -256,7 +275,7 @@ export interface HTTPError {
   detail: string
   status: number
   error: string
-  type: string
+  type: ErrorCode
   validationError?: HTTPValidationError
 }
 /**

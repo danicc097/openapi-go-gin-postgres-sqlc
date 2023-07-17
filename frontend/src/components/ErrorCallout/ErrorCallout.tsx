@@ -3,6 +3,7 @@ import { IconAlertCircle } from '@tabler/icons'
 import { AxiosError } from 'axios'
 import { useState } from 'react'
 import { ApiError } from 'src/api/mutator'
+import type { HTTPError } from 'src/gen/model'
 import type { AppError } from 'src/types/ui'
 
 export default function ErrorCallout({ title, errors }: { title: string; errors: string[] }) {
@@ -40,9 +41,38 @@ export const useCalloutErrors = () => {
     // return calloutErrors?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`)
   }
 
+  const extractCalloutTitle = () => {
+    if (!calloutErrors) return ''
+
+    const unknownError = 'An unknown error ocurred'
+
+    if (calloutErrors instanceof ApiError) {
+      if (!calloutErrors.response?.data) {
+        return unknownError
+      }
+      const error = calloutErrors.response?.data as HTTPError
+      switch (error.type) {
+        case 'Unauthenticated':
+          return 'Unauthenticated'
+        case 'Unauthorized':
+          return 'Unauthorized'
+        case 'Unknown':
+        default:
+          return unknownError
+          break
+      }
+    }
+
+    // external call error
+    if (calloutErrors instanceof AxiosError) return unknownError
+
+    return unknownError
+  }
+
   return {
     calloutErrors,
     extractCalloutErrors,
     setCalloutErrors,
+    extractCalloutTitle,
   }
 }

@@ -159,7 +159,7 @@ export default function UserPermissionsPage() {
     }
   }, [allUsers, userOptions])
 
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors()
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors()
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
@@ -249,7 +249,7 @@ export default function UserPermissionsPage() {
   const element = (
     <FormProvider {...form}>
       {JSON.stringify(calloutErrors)}
-      <ErrorCallout title="Error updating user" errors={extractCalloutErrors()} />
+      <ErrorCallout title={extractCalloutTitle()} errors={extractCalloutErrors()} />
       <Space pt={12} />
       <Title size={12}>
         <Text>Form</Text>

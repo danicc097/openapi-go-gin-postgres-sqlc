@@ -129,6 +129,40 @@ func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
 	}
 }
 
+// Defines values for ErrorCode.
+const (
+	AlreadyExists      ErrorCode = "AlreadyExists"
+	InvalidArgument    ErrorCode = "InvalidArgument"
+	InvalidRole        ErrorCode = "InvalidRole"
+	InvalidScope       ErrorCode = "InvalidScope"
+	InvalidUUID        ErrorCode = "InvalidUUID"
+	NotFound           ErrorCode = "NotFound"
+	Private            ErrorCode = "Private"
+	RequestValidation  ErrorCode = "RequestValidation"
+	ResponseValidation ErrorCode = "ResponseValidation"
+	Unauthenticated    ErrorCode = "Unauthenticated"
+	Unauthorized       ErrorCode = "Unauthorized"
+	Unknown            ErrorCode = "Unknown"
+)
+
+// AllErrorCodeValues returns all possible values for ErrorCode.
+func AllErrorCodeValues() []ErrorCode {
+	return []ErrorCode{
+		AlreadyExists,
+		InvalidArgument,
+		InvalidRole,
+		InvalidScope,
+		InvalidUUID,
+		NotFound,
+		Private,
+		RequestValidation,
+		ResponseValidation,
+		Unauthenticated,
+		Unauthorized,
+		Unknown,
+	}
+}
+
 // Defines values for NotificationType.
 const (
 	Global   NotificationType = "global"
@@ -428,13 +462,22 @@ type DemoTwoWorkItemTypes string
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
 type DemoWorkItemTypes string
 
+// ErrorCode Represents standardized HTTP error types.
+// Notes:
+// - 'Private' marks an error to be hidden in response.
+type ErrorCode string
+
 // HTTPError represents an error message response.
 type HTTPError struct {
-	Detail          string               `json:"detail"`
-	Error           string               `json:"error"`
-	Status          int                  `json:"status"`
-	Title           string               `json:"title"`
-	Type            string               `json:"type"`
+	Detail string `json:"detail"`
+	Error  string `json:"error"`
+	Status int    `json:"status"`
+	Title  string `json:"title"`
+
+	// Type Represents standardized HTTP error types.
+	// Notes:
+	// - 'Private' marks an error to be hidden in response.
+	Type            ErrorCode            `json:"type"`
 	ValidationError *HTTPValidationError `json:"validationError,omitempty"`
 }
 

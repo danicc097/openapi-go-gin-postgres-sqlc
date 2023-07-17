@@ -89,7 +89,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+		return nil, internal.NewErrorf(models.ErrorCodeInvalidUUID, "could not parse UUID")
 	}
 
 	user, err := u.urepo.ByID(ctx, d, uid)
@@ -101,7 +101,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 
 	if user.UserID != caller.UserID &&
 		caller.RoleRank < adminRole.Rank {
-		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot change another user's information")
+		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
 	// TODO this could be done automatically with an adaptation of updateEntityWithParams
@@ -135,7 +135,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+		return nil, internal.NewErrorf(models.ErrorCodeInvalidUUID, "could not parse UUID")
 	}
 
 	user, err := u.urepo.ByID(ctx, d, uid)
@@ -147,21 +147,21 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 
 	if caller.RoleRank < adminRole.Rank {
 		if user.UserID == caller.UserID { // exit early, though it's not possible to update to something not assigned to self already anyway
-			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot update your own authorization information")
+			return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot update your own authorization information")
 		}
 	}
 
 	if params.Scopes != nil {
 		for _, s := range *params.Scopes {
 			if !slices.Contains(caller.Scopes, s) {
-				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a scope unassigned to self")
+				return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot set a scope unassigned to self")
 			}
 		}
 
 		if caller.RoleRank < adminRole.Rank {
 			for _, s := range user.Scopes {
 				if !slices.Contains(*params.Scopes, s) {
-					return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot unassign a user's scope")
+					return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot unassign a user's scope")
 				}
 			}
 		}
@@ -171,11 +171,11 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 	if params.Role != nil {
 		role := u.authzsvc.RoleByName(*params.Role)
 		if role.Rank > caller.RoleRank {
-			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
+			return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
 		}
 		if caller.RoleRank < adminRole.Rank {
 			if role.Rank < user.RoleRank {
-				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot demote a user role")
+				return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot demote a user role")
 			}
 		}
 		rank = &role.Rank
@@ -281,7 +281,7 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 
 	// uid, err := uuid.Parse(userID)
 	// if err != nil {
-	// 	return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+	// 	return nil, internal.NewErrorf(models.ErrorCodeInvalidUUID, "could not parse UUID")
 	// }
 
 	// user, err := u.notificationrepo.LatestUserNotifications(ctx, d, db.GetUserNotificationsParams{UserID: uid})
