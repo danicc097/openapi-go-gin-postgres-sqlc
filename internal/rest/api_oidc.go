@@ -3,10 +3,11 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/zitadel/oidc/v2/pkg/client/rp"
@@ -38,7 +39,7 @@ func (h *Handlers) MyProviderCallback(c *gin.Context) {
 
 	userinfo := getUserInfoFromCtx(c)
 	if userinfo == nil {
-		renderErrorResponse(c, "user info not found", errors.New("user info not found"))
+		renderErrorResponse(c, "OIDC authentication error", internal.NewErrorf(models.ErrorCodeOIDC, "could not get OIDC userinfo from context"))
 	}
 	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
 	// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}

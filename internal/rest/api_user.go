@@ -67,7 +67,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 
 	caller := getUserFromCtx(c)
 	if caller == nil {
-		renderErrorResponse(c, "Could not get current user", nil)
+		renderErrorResponse(c, "Error fetching current user", nil)
 
 		return
 	}
@@ -81,7 +81,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		renderErrorResponse(c, "Could not save changes", err)
+		renderErrorResponse(c, "Error saving changes", err)
 
 		return
 	}
@@ -108,7 +108,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 
 	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		renderErrorResponse(c, "database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not being tx"))
+		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not being tx"))
 
 		return
 	}
@@ -117,27 +117,27 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 	body := &models.UpdateUserAuthRequest{}
 
 	if err := c.BindJSON(body); err != nil {
-		renderErrorResponse(c, "invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
+		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
 
 		return
 	}
 
 	caller := getUserFromCtx(c)
 	if caller == nil {
-		renderErrorResponse(c, "Could not get current user", nil)
+		renderErrorResponse(c, "Error fetching current user", nil)
 
 		return
 	}
 
 	if _, err := h.usvc.UpdateUserAuthorization(c, tx, id, caller, body); err != nil {
-		renderErrorResponse(c, "could not update user auth", err)
+		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		renderErrorResponse(c, "could not save changes", err)
+		renderErrorResponse(c, "Error saving changes", err)
 
 		return
 	}

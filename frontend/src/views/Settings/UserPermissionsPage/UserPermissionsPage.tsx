@@ -248,7 +248,6 @@ export default function UserPermissionsPage() {
 
   const element = (
     <FormProvider {...form}>
-      {JSON.stringify(calloutErrors)}
       <ErrorCallout title={extractCalloutTitle()} errors={extractCalloutErrors()} />
       <Space pt={12} />
       <Title size={12}>

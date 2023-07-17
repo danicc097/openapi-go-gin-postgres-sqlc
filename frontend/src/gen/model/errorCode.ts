@@ -25,6 +25,7 @@ export const ErrorCode = {
   Unauthenticated: 'Unauthenticated',
   RequestValidation: 'RequestValidation',
   ResponseValidation: 'ResponseValidation',
+  OIDC: 'OIDC',
   InvalidRole: 'InvalidRole',
   InvalidScope: 'InvalidScope',
   InvalidUUID: 'InvalidUUID',

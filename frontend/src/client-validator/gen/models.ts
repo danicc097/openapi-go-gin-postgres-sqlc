@@ -52,6 +52,7 @@ export type ErrorCode =
   | 'Unauthenticated'
   | 'RequestValidation'
   | 'ResponseValidation'
+  | 'OIDC'
   | 'InvalidRole'
   | 'InvalidScope'
   | 'InvalidUUID'

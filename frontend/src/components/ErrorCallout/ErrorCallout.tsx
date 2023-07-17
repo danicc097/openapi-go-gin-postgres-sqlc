@@ -52,6 +52,8 @@ export const useCalloutErrors = () => {
       }
       const error = calloutErrors.response?.data as HTTPError
       switch (error.type) {
+        case 'RequestValidation':
+          return error.title
         case 'Unauthenticated':
           return 'Unauthenticated'
         case 'Unauthorized':
@@ -59,7 +61,6 @@ export const useCalloutErrors = () => {
         case 'Unknown':
         default:
           return unknownError
-          break
       }
     }
 

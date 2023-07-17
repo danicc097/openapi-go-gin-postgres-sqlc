@@ -54,7 +54,7 @@ func TestValidationErrorsResponse(t *testing.T) {
 		wantResp := models.HTTPError{
 			Detail: "OpenAPI response validation failed",
 			Status: 500,
-			Title:  "invalid response",
+			Title:  "Invalid response",
 			Type:   "ResponseValidation",
 			ValidationError: &models.HTTPValidationError{
 				Detail: &[]models.ValidationError{{
@@ -119,7 +119,7 @@ func TestValidationErrorsResponse(t *testing.T) {
 		wantResp := models.HTTPError{
 			Detail: "OpenAPI request validation failed",
 			Status: 400,
-			Title:  "invalid request",
+			Title:  "Invalid request",
 			Type:   "RequestValidation",
 			ValidationError: &models.HTTPValidationError{
 				Detail: &[]models.ValidationError{

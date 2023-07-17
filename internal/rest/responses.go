@@ -14,10 +14,12 @@ import (
 )
 
 // renderErrorResponse writes an error response from title and error.
+// title represents an error title which will be shown to end users.
 // Inspired by https://www.rfc-editor.org/rfc/rfc7807.
 func renderErrorResponse(c *gin.Context, title string, err error) {
 	resp := models.HTTPError{
-		Title: title, Error: err.Error(),
+		Title:  title,
+		Error:  err.Error(),
 		Type:   models.ErrorCodeUnknown,
 		Status: http.StatusInternalServerError,
 	}

@@ -292,7 +292,7 @@ export interface components {
      *  
      * @enum {string}
      */
-    ErrorCode: "Unknown" | "Private" | "NotFound" | "InvalidArgument" | "AlreadyExists" | "Unauthorized" | "Unauthenticated" | "RequestValidation" | "ResponseValidation" | "InvalidRole" | "InvalidScope" | "InvalidUUID";
+    ErrorCode: "Unknown" | "Private" | "NotFound" | "InvalidArgument" | "AlreadyExists" | "Unauthorized" | "Unauthenticated" | "RequestValidation" | "ResponseValidation" | "OIDC" | "InvalidRole" | "InvalidScope" | "InvalidUUID";
     /** @description represents an error message response. */
     HTTPError: {
       title: string;

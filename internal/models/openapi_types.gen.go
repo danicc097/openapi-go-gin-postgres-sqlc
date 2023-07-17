@@ -124,6 +124,7 @@ const (
 	ErrorCodeInvalidScope       ErrorCode = "InvalidScope"
 	ErrorCodeInvalidUUID        ErrorCode = "InvalidUUID"
 	ErrorCodeNotFound           ErrorCode = "NotFound"
+	ErrorCodeOIDC               ErrorCode = "OIDC"
 	ErrorCodePrivate            ErrorCode = "Private"
 	ErrorCodeRequestValidation  ErrorCode = "RequestValidation"
 	ErrorCodeResponseValidation ErrorCode = "ResponseValidation"
@@ -141,6 +142,7 @@ func AllErrorCodeValues() []ErrorCode {
 		ErrorCodeInvalidScope,
 		ErrorCodeInvalidUUID,
 		ErrorCodeNotFound,
+		ErrorCodeOIDC,
 		ErrorCodePrivate,
 		ErrorCodeRequestValidation,
 		ErrorCodeResponseValidation,
