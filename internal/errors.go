@@ -19,6 +19,10 @@ type Error struct {
 // ErrorCode defines supported error codes.
 type ErrorCode uint
 
+// TODO: define in spec instead and use that instead,
+// so that frontend can use HTTPError.type with type: ErrorCode
+// to provide meaningful errors/error titles
+//
 //go:generate stringer -type=ErrorCode -trimprefix=ErrorCode
 const (
 	ErrorCodeUnknown ErrorCode = iota
