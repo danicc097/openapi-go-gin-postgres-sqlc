@@ -26,11 +26,6 @@ func (h *Handlers) Ping(c *gin.Context) {
 	fmt.Printf("internal.Config.AppEnv: %v\n", internal.Config.AppEnv)
 
 	ctx := c.Request.Context()
-	// TODO: tx could be middleware. no need to check if context tx is undefined
-	// because itll always be, else it prematurely renders errors and abort
-	// if we forget to add mw tests just fail since all routes are tested...
-	// easiest would be to by default have tx mw in all routes, but the option
-	// to exclude an array of opIDs that turn the mw into a noop. (auth provider login, etc)
 	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not begin tx"))

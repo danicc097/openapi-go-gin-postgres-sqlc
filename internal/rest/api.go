@@ -88,17 +88,25 @@ func NewHandlers(
 
 // middlewares to be applied after authMiddlewares.
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
+	// TODO: tx could be middleware. no need to check if context tx is undefined
+	// because itll always be, else it prematurely renders errors and abort
+	// if we forget to add mw tests just fail since all routes are tested...
+	// easiest would be to by default have tx mw in all routes, but the option
+	// to exclude an array of opIDs that turn the mw into a noop. (auth provider login, etc)
+	defaultMws := []gin.HandlerFunc{}
 	switch opID {
 	case Events:
-		return []gin.HandlerFunc{
+		return append(
+			defaultMws,
 			SSEHeadersMiddleware(),
 			h.event.serveHTTP(),
-		}
+		)
 	case MyProviderCallback:
-		return []gin.HandlerFunc{
+		return append(
+			defaultMws,
 			h.codeExchange(),
-		}
+		)
 	default:
-		return []gin.HandlerFunc{}
+		return defaultMws
 	}
 }
