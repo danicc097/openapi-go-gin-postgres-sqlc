@@ -5,20 +5,21 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 const (
-	userCtxKey            = "user"
-	userInfoCtxKey        = "user-info"
-	responseWriteCtxKey   = "response-writer"
-	ginContextKey         = "middleware.openapi/gin-context"
-	userDataKey           = "middleware.openapi/user-data"
-	validateResponse      = "skip-response-validation"
-	skipRequestValidation = "skip-request-validation"
+	userCtxKey                  = "user"
+	userInfoCtxKey              = "user-info"
+	ginContextCtxKey            = "middleware.openapi/gin-context"
+	userDataCtxKey              = "middleware.openapi/user-data"
+	validateResponseCtxKey      = "skip-response-validation"
+	skipRequestValidationCtxKey = "skip-request-validation"
+	transactionCtxKey           = "transaction"
 )
 
 func getSkipRequestValidationFromCtx(c *gin.Context) bool {
-	skip, ok := c.Value(skipRequestValidation).(bool)
+	skip, ok := c.Value(skipRequestValidationCtxKey).(bool)
 	if !ok {
 		return false
 	}
@@ -27,7 +28,7 @@ func getSkipRequestValidationFromCtx(c *gin.Context) bool {
 }
 
 func getValidateResponseFromCtx(c *gin.Context) bool {
-	skip, ok := c.Value(validateResponse).(bool)
+	skip, ok := c.Value(validateResponseCtxKey).(bool)
 	if !ok {
 		return false
 	}
@@ -61,11 +62,24 @@ func ctxWithUserInfo(c *gin.Context, userinfo []byte) {
 	c.Set(userInfoCtxKey, userinfo)
 }
 
+func getTxFromCtx(c *gin.Context) pgx.Tx {
+	tx, ok := c.Value(transactionCtxKey).(pgx.Tx)
+	if !ok {
+		return nil
+	}
+
+	return tx
+}
+
+func ctxWithTx(c *gin.Context, txc pgx.Tx) {
+	c.Set(transactionCtxKey, txc)
+}
+
 // Helper function to get the gin context from within requests. It returns
 // nil if not found or wrong type.
 // Useful for kin-openapi functions which only accept context.
 func getGinContextFromCtx(c context.Context) *gin.Context {
-	ginCtx, ok := c.Value(ginContextKey).(*gin.Context)
+	ginCtx, ok := c.Value(ginContextCtxKey).(*gin.Context)
 	if !ok {
 		return nil
 	}
@@ -73,5 +87,5 @@ func getGinContextFromCtx(c context.Context) *gin.Context {
 }
 
 func getUserDataFromCtx(c context.Context) any {
-	return c.Value(userDataKey)
+	return c.Value(userDataCtxKey)
 }

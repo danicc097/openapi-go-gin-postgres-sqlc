@@ -168,7 +168,7 @@ channel use cases,etc:
 // TODO requires query param projectId=...
 // to subscribe to the current project's topics only
 func (h *Handlers) Events(c *gin.Context, params models.EventsParams) {
-	c.Set(skipRequestValidation, true)
+	c.Set(skipRequestValidationCtxKey, true)
 	clientChan, ok := c.Value("clientChan").(ClientChan)
 	if !ok {
 		return

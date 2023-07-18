@@ -49,8 +49,8 @@ func newRateLimitMiddleware(
 }
 
 // Limit is the middleware function to rate limits requests.
-func (r *rateLimitMiddleware) Limit() gin.HandlerFunc {
-	go r.cleanupVisitors(3 * time.Minute)
+func (m *rateLimitMiddleware) Limit() gin.HandlerFunc {
+	go m.cleanupVisitors(3 * time.Minute)
 
 	return func(c *gin.Context) {
 		ip, _, err := net.SplitHostPort(c.Request.RemoteAddr)
@@ -60,9 +60,9 @@ func (r *rateLimitMiddleware) Limit() gin.HandlerFunc {
 				ip = "unknown"
 			}
 		}
-		r.logger.Infof("ip: %v", ip)
+		m.logger.Infof("ip: %v", ip)
 
-		limiter := r.getVisitor(ip)
+		limiter := m.getVisitor(ip)
 		if !limiter.Allow() {
 			c.AbortWithStatus(http.StatusTooManyRequests)
 

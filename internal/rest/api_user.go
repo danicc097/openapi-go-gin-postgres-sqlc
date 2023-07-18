@@ -8,7 +8,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -49,13 +48,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
-	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not begin tx"))
-
-		return
-	}
-	defer tx.Rollback(ctx)
+	tx := getTxFromCtx(c)
 
 	body := &models.UpdateUserRequest{}
 
@@ -106,13 +99,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
-	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not begin tx"))
-
-		return
-	}
-	defer tx.Rollback(ctx)
+	tx := getTxFromCtx(c)
 
 	body := &models.UpdateUserAuthRequest{}
 
@@ -135,8 +122,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 		return
 	}
 
-	err = tx.Commit(ctx)
-	if err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		renderErrorResponse(c, "Error saving changes", err)
 
 		return

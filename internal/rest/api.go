@@ -94,6 +94,13 @@ func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	// easiest would be to by default have tx mw in all routes, but the option
 	// to exclude an array of opIDs that turn the mw into a noop. (auth provider login, etc)
 	defaultMws := []gin.HandlerFunc{}
+
+	dbMw := newDBMiddleware(h.logger, h.pool)
+
+	if opID != MyProviderLogin {
+		defaultMws = append(defaultMws, dbMw.BeginTransaction())
+	}
+
 	switch opID {
 	case Events:
 		return append(

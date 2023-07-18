@@ -43,12 +43,12 @@ func newAuthMiddleware(
 // EnsureAuthenticated checks whether the client is authenticated.
 // TODO check app-specific jwt or api_key
 // else redirect to /auth/{provider}/login (no auth middleware here or in */callback).
-func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
+func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := c.Request.Header.Get("x-api-key")
 		auth := c.Request.Header.Get("Authorization")
 		if apiKey != "" {
-			u, err := a.authnsvc.GetUserFromAPIKey(c.Request.Context(), apiKey)
+			u, err := m.authnsvc.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil || u == nil {
 				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from api key"))
 				c.Abort()
@@ -63,7 +63,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			return
 		}
 		if strings.HasPrefix(auth, "Bearer ") {
-			u, err := a.authnsvc.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
+			u, err := m.authnsvc.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
 			if err != nil || u == nil {
 				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token"))
 				c.Abort()
