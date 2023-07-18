@@ -17,6 +17,8 @@ import (
 func (h *Handlers) MyProviderLogin(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
 
+	gin.WrapH(rp.AuthURLHandler(state, h.provider))(c)
+
 	// use adaptation of https://github.com/zitadel/oidc/blob/main/example/client/app/app.go
 
 	// X TODO if env is dev should have helper func or just use zitadel oidcserver but with dummy data?

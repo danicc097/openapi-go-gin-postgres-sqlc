@@ -98,11 +98,6 @@ func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.codeExchange(),
 		}
-	case MyProviderLogin:
-		// redirects the user to the auth server including state handling with secure cookie and the possibility to use PKCE
-		return []gin.HandlerFunc{
-			gin.WrapH(rp.AuthURLHandler(state, h.provider)),
-		}
 	default:
 		return []gin.HandlerFunc{}
 	}
