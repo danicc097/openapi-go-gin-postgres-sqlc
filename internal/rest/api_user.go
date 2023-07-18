@@ -51,7 +51,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 
 	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not being tx"))
+		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not begin tx"))
 
 		return
 	}
@@ -108,7 +108,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 
 	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not being tx"))
+		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not begin tx"))
 
 		return
 	}
