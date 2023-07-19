@@ -17,14 +17,16 @@ import (
 
 // BookAuthor represents a row from 'xo_tests.book_authors'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookAuthor struct {
-	BookID    int       `json:"bookID" db:"book_id" required:"true"`      // book_id
-	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true"`  // author_id
-	Pseudonym *string   `json:"pseudonym" db:"pseudonym" required:"true"` // pseudonym
+	BookID    int       `json:"bookID" db:"book_id" required:"true"`     // book_id
+	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true"` // author_id
+	Pseudonym *string   `json:"pseudonym" db:"pseudonym"`                // pseudonym
 
 	AuthorBooksJoin *[]Book__BA_BookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
 	BookAuthorsJoin *[]User__BA_BookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
@@ -32,9 +34,9 @@ type BookAuthor struct {
 
 // BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
 type BookAuthorCreateParams struct {
-	BookID    int       `json:"bookID" required:"true"`    // book_id
-	AuthorID  uuid.UUID `json:"authorID" required:"true"`  // author_id
-	Pseudonym *string   `json:"pseudonym" required:"true"` // pseudonym
+	BookID    int       `json:"bookID" required:"true"`   // book_id
+	AuthorID  uuid.UUID `json:"authorID" required:"true"` // author_id
+	Pseudonym *string   `json:"pseudonym"`                // pseudonym
 }
 
 // CreateBookAuthor creates a new BookAuthor in the database with the given params.
@@ -50,9 +52,9 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 
 // BookAuthorUpdateParams represents update params for 'xo_tests.book_authors'.
 type BookAuthorUpdateParams struct {
-	BookID    *int       `json:"bookID" required:"true"`    // book_id
-	AuthorID  *uuid.UUID `json:"authorID" required:"true"`  // author_id
-	Pseudonym **string   `json:"pseudonym" required:"true"` // pseudonym
+	BookID    *int       `json:"bookID" required:"true"`   // book_id
+	AuthorID  *uuid.UUID `json:"authorID" required:"true"` // author_id
+	Pseudonym **string   `json:"pseudonym"`                // pseudonym
 }
 
 // SetUpdateParams updates xo_tests.book_authors struct fields with the specified params.

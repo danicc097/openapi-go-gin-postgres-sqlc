@@ -20,7 +20,9 @@ import (
 
 // User represents a row from 'public.users'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
@@ -28,9 +30,9 @@ type User struct {
 	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true"`                                      // user_id
 	Username                 string        `json:"username" db:"username" required:"true"`                                   // username
 	Email                    string        `json:"email" db:"email" required:"true"`                                         // email
-	FirstName                *string       `json:"firstName" db:"first_name" required:"true"`                                // first_name
-	LastName                 *string       `json:"lastName" db:"last_name" required:"true"`                                  // last_name
-	FullName                 *string       `json:"fullName" db:"full_name" required:"true"`                                  // full_name
+	FirstName                *string       `json:"firstName" db:"first_name"`                                                // first_name
+	LastName                 *string       `json:"lastName" db:"last_name"`                                                  // last_name
+	FullName                 *string       `json:"fullName" db:"full_name"`                                                  // full_name
 	ExternalID               string        `json:"-" db:"external_id"`                                                       // external_id
 	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                        // api_key_id
 	Scopes                   models.Scopes `json:"scopes" db:"scopes" required:"true" ref:"#/components/schemas/Scopes"`     // scopes
@@ -39,7 +41,7 @@ type User struct {
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
 	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true"`                                // created_at
 	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
-	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
+	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                // deleted_at
 
 	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
@@ -56,8 +58,8 @@ type User struct {
 type UserCreateParams struct {
 	Username                 string        `json:"username" required:"true"`                                 // username
 	Email                    string        `json:"email" required:"true"`                                    // email
-	FirstName                *string       `json:"firstName" required:"true"`                                // first_name
-	LastName                 *string       `json:"lastName" required:"true"`                                 // last_name
+	FirstName                *string       `json:"firstName"`                                                // first_name
+	LastName                 *string       `json:"lastName"`                                                 // last_name
 	ExternalID               string        `json:"-"`                                                        // external_id
 	APIKeyID                 *int          `json:"-"`                                                        // api_key_id
 	Scopes                   models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
@@ -88,8 +90,8 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 type UserUpdateParams struct {
 	Username                 *string        `json:"username" required:"true"`                                 // username
 	Email                    *string        `json:"email" required:"true"`                                    // email
-	FirstName                **string       `json:"firstName" required:"true"`                                // first_name
-	LastName                 **string       `json:"lastName" required:"true"`                                 // last_name
+	FirstName                **string       `json:"firstName"`                                                // first_name
+	LastName                 **string       `json:"lastName"`                                                 // last_name
 	ExternalID               *string        `json:"-"`                                                        // external_id
 	APIKeyID                 **int          `json:"-"`                                                        // api_key_id
 	Scopes                   *models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes

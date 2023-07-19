@@ -22,18 +22,17 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 
 	defer newOTELSpan(ctx, "GetCurrentUser", trace.WithAttributes(userIDAttribute(c))).End()
 
-	//  user from context isntead has the appropriate joins already (teams, etc.)
-	user := getUserFromCtx(c)
+	caller := getUserFromCtx(c)
 
-	role, ok := h.authzsvc.RoleByRank(user.RoleRank)
+	role, ok := h.authzsvc.RoleByRank(caller.RoleRank)
 	if !ok {
-		msg := fmt.Sprintf("role with rank %d not found", user.RoleRank)
+		msg := fmt.Sprintf("role with rank %d not found", caller.RoleRank)
 		renderErrorResponse(c, msg, errors.New(msg))
 
 		return
 	}
 
-	res := User{User: *user, Role: role.Name}
+	res := User{User: *caller, Role: role.Name}
 
 	c.JSON(http.StatusOK, res)
 }
@@ -43,6 +42,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
 	ctx := c.Request.Context()
+	caller := getUserFromCtx(c)
 
 	s := newOTELSpan(ctx, "UpdateUser", trace.WithAttributes(userIDAttribute(c)))
 	s.AddEvent("update-user") // filterable with event="update-user"
@@ -54,13 +54,6 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 
 	if err := c.BindJSON(body); err != nil {
 		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
-
-		return
-	}
-
-	caller := getUserFromCtx(c)
-	if caller == nil {
-		renderErrorResponse(c, "Error fetching current user", nil)
 
 		return
 	}
@@ -91,9 +84,10 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	renderResponse(c, res, http.StatusOK)
 }
 
-// UpdateUserAuthorization updates authorizastion information, e.g. roles and scopes.
+// UpdateUserAuthorization updates authorization information, e.g. roles, scopes.
 func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 	ctx := c.Request.Context()
+	caller := getUserFromCtx(c)
 
 	s := newOTELSpan(ctx, "UpdateUserAuthorization", trace.WithAttributes(userIDAttribute(c)))
 	s.AddEvent("update-user") // filterable with event="update-user"
@@ -105,13 +99,6 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 
 	if err := c.BindJSON(body); err != nil {
 		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
-
-		return
-	}
-
-	caller := getUserFromCtx(c)
-	if caller == nil {
-		renderErrorResponse(c, "Error fetching current user", nil)
 
 		return
 	}

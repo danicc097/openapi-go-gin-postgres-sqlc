@@ -17,7 +17,9 @@ import (
 
 // BookAuthorsSurrogateKey represents a row from 'xo_tests.book_authors_surrogate_key'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
@@ -25,7 +27,7 @@ type BookAuthorsSurrogateKey struct {
 	BookAuthorsSurrogateKeyID int       `json:"bookAuthorsSurrogateKeyID" db:"book_authors_surrogate_key_id" required:"true"` // book_authors_surrogate_key_id
 	BookID                    int       `json:"bookID" db:"book_id" required:"true"`                                          // book_id
 	AuthorID                  uuid.UUID `json:"authorID" db:"author_id" required:"true"`                                      // author_id
-	Pseudonym                 *string   `json:"pseudonym" db:"pseudonym" required:"true"`                                     // pseudonym
+	Pseudonym                 *string   `json:"pseudonym" db:"pseudonym"`                                                     // pseudonym
 
 	AuthorBooksJoin *[]Book__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
 	BookAuthorsJoin *[]User__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
@@ -33,9 +35,9 @@ type BookAuthorsSurrogateKey struct {
 
 // BookAuthorsSurrogateKeyCreateParams represents insert params for 'xo_tests.book_authors_surrogate_key'.
 type BookAuthorsSurrogateKeyCreateParams struct {
-	BookID    int       `json:"bookID" required:"true"`    // book_id
-	AuthorID  uuid.UUID `json:"authorID" required:"true"`  // author_id
-	Pseudonym *string   `json:"pseudonym" required:"true"` // pseudonym
+	BookID    int       `json:"bookID" required:"true"`   // book_id
+	AuthorID  uuid.UUID `json:"authorID" required:"true"` // author_id
+	Pseudonym *string   `json:"pseudonym"`                // pseudonym
 }
 
 // CreateBookAuthorsSurrogateKey creates a new BookAuthorsSurrogateKey in the database with the given params.
@@ -51,9 +53,9 @@ func CreateBookAuthorsSurrogateKey(ctx context.Context, db DB, params *BookAutho
 
 // BookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'.
 type BookAuthorsSurrogateKeyUpdateParams struct {
-	BookID    *int       `json:"bookID" required:"true"`    // book_id
-	AuthorID  *uuid.UUID `json:"authorID" required:"true"`  // author_id
-	Pseudonym **string   `json:"pseudonym" required:"true"` // pseudonym
+	BookID    *int       `json:"bookID" required:"true"`   // book_id
+	AuthorID  *uuid.UUID `json:"authorID" required:"true"` // author_id
+	Pseudonym **string   `json:"pseudonym"`                // pseudonym
 }
 
 // SetUpdateParams updates xo_tests.book_authors_surrogate_key struct fields with the specified params.

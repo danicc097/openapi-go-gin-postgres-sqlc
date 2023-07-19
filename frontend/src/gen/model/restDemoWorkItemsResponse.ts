@@ -14,9 +14,9 @@ import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
 
 export interface RestDemoWorkItemsResponse {
-  closedAt: Date | null
+  closedAt?: Date | null
   createdAt: Date
-  deletedAt: Date | null
+  deletedAt?: Date | null
   demoWorkItem: DbDemoWorkItem
   description: string
   kanbanStepID: number

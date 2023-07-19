@@ -15,13 +15,13 @@ import type { UuidUUID } from './uuidUUID'
 export interface User {
   apiKey?: DbUserAPIKey
   createdAt: Date
-  deletedAt: Date | null
+  deletedAt?: Date | null
   email: string
-  firstName: string | null
-  fullName: string | null
+  firstName?: string | null
+  fullName?: string | null
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
-  lastName: string | null
+  lastName?: string | null
   projects?: DbProject[] | null
   role: Role
   scopes: Scopes

@@ -18,20 +18,22 @@ import (
 
 // Notification represents a row from 'public.notifications'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Notification struct {
 	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`                                                 // notification_id
-	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank" required:"true"`                                                     // receiver_rank
+	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank"`                                                                     // receiver_rank
 	Title            string           `json:"title" db:"title" required:"true"`                                                                    // title
 	Body             string           `json:"body" db:"body" required:"true"`                                                                      // body
 	Label            string           `json:"label" db:"label" required:"true"`                                                                    // label
-	Link             *string          `json:"link" db:"link" required:"true"`                                                                      // link
+	Link             *string          `json:"link" db:"link"`                                                                                      // link
 	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true"`                                                           // created_at
 	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true"`                                                                  // sender
-	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
+	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
 	ReceiverJoin                      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
@@ -42,13 +44,13 @@ type Notification struct {
 
 // NotificationCreateParams represents insert params for 'public.notifications'.
 type NotificationCreateParams struct {
-	ReceiverRank     *int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
+	ReceiverRank     *int16           `json:"receiverRank"`                                                                 // receiver_rank
 	Title            string           `json:"title" required:"true"`                                                        // title
 	Body             string           `json:"body" required:"true"`                                                         // body
 	Label            string           `json:"label" required:"true"`                                                        // label
-	Link             *string          `json:"link" required:"true"`                                                         // link
+	Link             *string          `json:"link"`                                                                         // link
 	Sender           uuid.UUID        `json:"sender" required:"true"`                                                       // sender
-	Receiver         *uuid.UUID       `json:"receiver" required:"true"`                                                     // receiver
+	Receiver         *uuid.UUID       `json:"receiver"`                                                                     // receiver
 	NotificationType NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 }
 
@@ -70,13 +72,13 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 
 // NotificationUpdateParams represents update params for 'public.notifications'.
 type NotificationUpdateParams struct {
-	ReceiverRank     **int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
+	ReceiverRank     **int16           `json:"receiverRank"`                                                                 // receiver_rank
 	Title            *string           `json:"title" required:"true"`                                                        // title
 	Body             *string           `json:"body" required:"true"`                                                         // body
 	Label            *string           `json:"label" required:"true"`                                                        // label
-	Link             **string          `json:"link" required:"true"`                                                         // link
+	Link             **string          `json:"link"`                                                                         // link
 	Sender           *uuid.UUID        `json:"sender" required:"true"`                                                       // sender
-	Receiver         **uuid.UUID       `json:"receiver" required:"true"`                                                     // receiver
+	Receiver         **uuid.UUID       `json:"receiver"`                                                                     // receiver
 	NotificationType *NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 }
 

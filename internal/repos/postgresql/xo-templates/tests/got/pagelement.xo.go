@@ -18,7 +18,9 @@ import (
 
 // PagElement represents a row from 'xo_tests.pag_element'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
@@ -26,15 +28,15 @@ type PagElement struct {
 	PaginatedElementID uuid.UUID `json:"paginatedElementID" db:"paginated_element_id" required:"true"` // paginated_element_id
 	Name               string    `json:"name" db:"name" required:"true"`                               // name
 	CreatedAt          time.Time `json:"createdAt" db:"created_at" required:"true"`                    // created_at
-	Dummy              *int      `json:"dummy" db:"dummy" required:"true"`                             // dummy
+	Dummy              *int      `json:"dummy" db:"dummy"`                                             // dummy
 
 	DummyJoin *DummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
 }
 
 // PagElementCreateParams represents insert params for 'xo_tests.pag_element'.
 type PagElementCreateParams struct {
-	Name  string `json:"name" required:"true"`  // name
-	Dummy *int   `json:"dummy" required:"true"` // dummy
+	Name  string `json:"name" required:"true"` // name
+	Dummy *int   `json:"dummy"`                // dummy
 }
 
 // CreatePagElement creates a new PagElement in the database with the given params.
@@ -49,8 +51,8 @@ func CreatePagElement(ctx context.Context, db DB, params *PagElementCreateParams
 
 // PagElementUpdateParams represents update params for 'xo_tests.pag_element'.
 type PagElementUpdateParams struct {
-	Name  *string `json:"name" required:"true"`  // name
-	Dummy **int   `json:"dummy" required:"true"` // dummy
+	Name  *string `json:"name" required:"true"` // name
+	Dummy **int   `json:"dummy"`                // dummy
 }
 
 // SetUpdateParams updates xo_tests.pag_element struct fields with the specified params.

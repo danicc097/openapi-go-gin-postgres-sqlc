@@ -36,6 +36,7 @@ func getValidateResponseFromCtx(c *gin.Context) bool {
 	return skip
 }
 
+// getUserFromCtx returns basic information from the current user.
 func getUserFromCtx(c *gin.Context) *db.User {
 	user, ok := c.Value(userCtxKey).(*db.User)
 	if !ok {

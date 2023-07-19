@@ -162,13 +162,13 @@ export interface components {
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
-      deletedAt: string | null;
+      deletedAt?: string | null;
       email: string;
-      firstName: string | null;
-      fullName: string | null;
+      firstName?: string | null;
+      fullName?: string | null;
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
-      lastName: string | null;
+      lastName?: string | null;
       scopes: components["schemas"]["Scopes"];
       userID: components["schemas"]["UuidUUID"];
       username: string;
@@ -176,13 +176,13 @@ export interface components {
     DbTimeEntry: {
       activityID: number;
       comment: string;
-      durationMinutes: number | null;
+      durationMinutes?: number | null;
       /** Format: date-time */
       start: string;
-      teamID: number | null;
+      teamID?: number | null;
       timeEntryID: number;
       userID: components["schemas"]["UuidUUID"];
-      workItemID: number | null;
+      workItemID?: number | null;
     };
     DbWorkItemComment: {
       /** Format: date-time */
@@ -207,11 +207,11 @@ export interface components {
     };
     RestDemoWorkItemsResponse: {
       /** Format: date-time */
-      closedAt: string | null;
+      closedAt?: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
-      deletedAt: string | null;
+      deletedAt?: string | null;
       demoWorkItem: components["schemas"]["DbDemoWorkItem"];
       description: string;
       kanbanStepID: number;
@@ -258,13 +258,13 @@ export interface components {
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
-      deletedAt: string | null;
+      deletedAt?: string | null;
       email: string;
-      firstName: string | null;
-      fullName: string | null;
+      firstName?: string | null;
+      fullName?: string | null;
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
-      lastName: string | null;
+      lastName?: string | null;
       projects?: (components["schemas"]["DbProject"])[] | null;
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
@@ -371,11 +371,11 @@ export interface components {
     PgtypeJSONB: Record<string, never>;
     DbWorkItem: {
       /** Format: date-time */
-      closedAt: string | null;
+      closedAt?: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
-      deletedAt: string | null;
+      deletedAt?: string | null;
       description: string;
       kanbanStepID: number;
       metadata: {
@@ -456,7 +456,7 @@ export interface components {
     };
     DbWorkItemCreateParams: {
       /** Format: date-time */
-      closedAt: string | null;
+      closedAt?: string | null;
       description: string;
       kanbanStepID: number;
       metadata: {

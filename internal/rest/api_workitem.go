@@ -13,7 +13,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 
 	defer newOTELSpan(ctx, "CreateWorkitem", trace.WithAttributes(userIDAttribute(c))).End()
 
-	// user := getUserFromCtx(c)
+	// caller := getUserFromCtx(c)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -24,7 +24,7 @@ func (h *Handlers) DeleteWorkitem(c *gin.Context, id int) {
 
 	defer newOTELSpan(ctx, "DeleteWorkitem", trace.WithAttributes(userIDAttribute(c))).End()
 
-	// user := getUserFromCtx(c)
+	// caller := getUserFromCtx(c)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -35,7 +35,7 @@ func (h *Handlers) GetWorkitem(c *gin.Context, id int) {
 
 	defer newOTELSpan(ctx, "GetWorkitem", trace.WithAttributes(userIDAttribute(c))).End()
 
-	// user := getUserFromCtx(c)
+	// caller := getUserFromCtx(c)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -46,7 +46,7 @@ func (h *Handlers) UpdateWorkitem(c *gin.Context, id int) {
 
 	defer newOTELSpan(ctx, "UpdateWorkitem", trace.WithAttributes(userIDAttribute(c))).End()
 
-	// user := getUserFromCtx(c)
+	// caller := getUserFromCtx(c)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -57,7 +57,7 @@ func (h *Handlers) CreateWorkitemComment(c *gin.Context, id int) {
 
 	defer newOTELSpan(ctx, "CreateWorkitemComment", trace.WithAttributes(userIDAttribute(c))).End()
 
-	// user := getUserFromCtx(c)
+	// caller := getUserFromCtx(c)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }

@@ -148,13 +148,13 @@ export interface DbUserAPIKey {
 }
 export interface DbUser {
   createdAt: string
-  deletedAt: string | null
+  deletedAt?: string | null
   email: string
-  firstName: string | null
-  fullName: string | null
+  firstName?: string | null
+  fullName?: string | null
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
-  lastName: string | null
+  lastName?: string | null
   scopes: Scopes
   userID: UuidUUID
   username: string
@@ -162,12 +162,12 @@ export interface DbUser {
 export interface DbTimeEntry {
   activityID: number
   comment: string
-  durationMinutes: number | null
+  durationMinutes?: number | null
   start: string
-  teamID: number | null
+  teamID?: number | null
   timeEntryID: number
   userID: UuidUUID
-  workItemID: number | null
+  workItemID?: number | null
 }
 export interface DbWorkItemComment {
   createdAt: string
@@ -178,9 +178,9 @@ export interface DbWorkItemComment {
   workItemID: number
 }
 export interface RestDemoWorkItemsResponse {
-  closedAt: string | null
+  closedAt?: string | null
   createdAt: string
-  deletedAt: string | null
+  deletedAt?: string | null
   demoWorkItem: DbDemoWorkItem
   description: string
   kanbanStepID: number
@@ -236,13 +236,13 @@ export interface RestProjectBoardResponse {
 export interface User {
   apiKey?: DbUserAPIKey
   createdAt: string
-  deletedAt: string | null
+  deletedAt?: string | null
   email: string
-  firstName: string | null
-  fullName: string | null
+  firstName?: string | null
+  fullName?: string | null
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
-  lastName: string | null
+  lastName?: string | null
   projects?: DbProject[] | null
   role: Role
   scopes: Scopes
@@ -301,9 +301,9 @@ export interface UpdateUserAuthRequest {
 }
 export interface PgtypeJSONB {}
 export interface DbWorkItem {
-  closedAt: string | null
+  closedAt?: string | null
   createdAt: string
-  deletedAt: string | null
+  deletedAt?: string | null
   description: string
   kanbanStepID: number
   metadata: {} | null
@@ -327,7 +327,7 @@ export interface RestDemoWorkItemCreateRequest {
   tagIDs: number[] | null
 }
 export interface DbWorkItemCreateParams {
-  closedAt: string | null
+  closedAt?: string | null
   description: string
   kanbanStepID: number
   metadata: {} | null

@@ -18,16 +18,18 @@ import (
 
 // User represents a row from 'xo_tests.users'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type User struct {
 	UserID    uuid.UUID  `json:"userID" db:"user_id" required:"true"`       // user_id
 	Name      string     `json:"name" db:"name" required:"true"`            // name
-	APIKeyID  *int       `json:"apiKeyID" db:"api_key_id" required:"true"`  // api_key_id
+	APIKeyID  *int       `json:"apiKeyID" db:"api_key_id"`                  // api_key_id
 	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true"` // created_at
-	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at" required:"true"` // deleted_at
+	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`                 // deleted_at
 
 	AuthorBooksJoin           *[]Book__BA_User       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
 	AuthorBooksJoinBASK       *[]Book__BASK_User     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
@@ -41,8 +43,8 @@ type User struct {
 
 // UserCreateParams represents insert params for 'xo_tests.users'.
 type UserCreateParams struct {
-	Name     string `json:"name" required:"true"`     // name
-	APIKeyID *int   `json:"apiKeyID" required:"true"` // api_key_id
+	Name     string `json:"name" required:"true"` // name
+	APIKeyID *int   `json:"apiKeyID"`             // api_key_id
 }
 
 // CreateUser creates a new User in the database with the given params.
@@ -57,8 +59,8 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'xo_tests.users'.
 type UserUpdateParams struct {
-	Name     *string `json:"name" required:"true"`     // name
-	APIKeyID **int   `json:"apiKeyID" required:"true"` // api_key_id
+	Name     *string `json:"name" required:"true"` // name
+	APIKeyID **int   `json:"apiKeyID"`             // api_key_id
 }
 
 // SetUpdateParams updates xo_tests.users struct fields with the specified params.

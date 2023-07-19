@@ -36,6 +36,7 @@
     "DbKanbanStep": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -157,6 +158,7 @@
     "DbWorkItemTag": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -189,6 +191,7 @@
     "DbWorkItemType": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -335,14 +338,10 @@
         "userID",
         "username",
         "email",
-        "firstName",
-        "lastName",
-        "fullName",
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
-        "createdAt",
-        "deletedAt"
+        "createdAt"
       ],
       "type": "object",
       "x-postgen-struct": "DbUser",
@@ -390,13 +389,10 @@
       },
       "required": [
         "timeEntryID",
-        "workItemID",
         "activityID",
-        "teamID",
         "userID",
         "comment",
-        "start",
-        "durationMinutes"
+        "start"
       ],
       "type": "object",
       "x-postgen-struct": "DbTimeEntry",
@@ -605,11 +601,9 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
-        "deletedAt",
         "demoWorkItem"
       ],
       "type": "object",
@@ -824,14 +818,10 @@
         "userID",
         "username",
         "email",
-        "firstName",
-        "lastName",
-        "fullName",
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
-        "deletedAt",
         "role"
       ],
       "type": "object",
@@ -1130,11 +1120,9 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ],
       "type": "object",
       "x-postgen-struct": "DbWorkItem",
@@ -1143,6 +1131,7 @@
     "RestWorkItemTagCreateRequest": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -1287,6 +1276,7 @@
     "DbWorkItemTagCreateParams": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -1471,7 +1461,6 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate"
       ],
       "type": "object",

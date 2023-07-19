@@ -236,7 +236,6 @@ create table kanban_steps (
   -- , disabled bool not null default false
   , unique (project_id , step_order)
   , foreign key (project_id) references projects (project_id) on delete cascade
-  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
   , check (step_order >= 0)
 );
 
@@ -260,7 +259,6 @@ create table work_item_types (
   , color text not null
   , unique (name , project_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
-  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 );
 
 comment on column work_item_types.project_id is '"cardinality":M2O';
@@ -353,8 +351,6 @@ create table demo_two_work_items (
 -- FIXME xo cannot properly infer edge case when PK is FK
 comment on column work_items.work_item_id is '"cardinality":O2O';
 
-comment on column demo_work_items.ref is '"tags":pattern:"^[0-9]{8}$"';
-
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
 where (deleted_at is not null);
@@ -383,7 +379,6 @@ create table work_item_tags (
   , description text not null
   , color text not null
   , unique (name , project_id)
-  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
@@ -467,6 +462,14 @@ comment on column time_entries.team_id is '"cardinality":M2O';
 comment on column time_entries.activity_id is '"cardinality":M2O';
 
 comment on column time_entries.user_id is '"cardinality":M2O';
+
+comment on column demo_work_items.ref is '"tags":pattern:"^[0-9]{8}$"';
+
+comment on column work_item_types.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"';
+
+comment on column work_item_tags.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"';
+
+comment on column kanban_steps.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
 -- columns, but the index is most efficient when there are constraints on the leading (leftmost) columns.

@@ -506,6 +506,7 @@ components:
     DbKanbanStep: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -582,6 +583,7 @@ components:
     DbWorkItemTag: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -602,6 +604,7 @@ components:
     DbWorkItemType: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -690,14 +693,10 @@ components:
         - userID
         - username
         - email
-        - firstName
-        - lastName
-        - fullName
         - scopes
         - hasPersonalNotifications
         - hasGlobalNotifications
         - createdAt
-        - deletedAt
       type: object
       x-postgen-struct: DbUser
     DbTimeEntry: # Generated from internal structs. DO NOT EDIT.
@@ -724,13 +723,10 @@ components:
           type: integer
       required:
         - timeEntryID
-        - workItemID
         - activityID
-        - teamID
         - userID
         - comment
         - start
-        - durationMinutes
       type: object
       x-postgen-struct: DbTimeEntry
     DbWorkItemComment: # Generated from internal structs. DO NOT EDIT.
@@ -863,11 +859,9 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closedAt
         - targetDate
         - createdAt
         - updatedAt
-        - deletedAt
         - demoWorkItem
       type: object
       x-postgen-struct: RestDemoWorkItemsResponse
@@ -995,14 +989,10 @@ components:
         - userID
         - username
         - email
-        - firstName
-        - lastName
-        - fullName
         - scopes
         - hasPersonalNotifications
         - hasGlobalNotifications
         - createdAt
-        - deletedAt
         - role
       type: object
       x-postgen-struct: RestUser
@@ -1235,16 +1225,15 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closedAt
         - targetDate
         - createdAt
         - updatedAt
-        - deletedAt
       type: object
       x-postgen-struct: DbWorkItem
     RestWorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -1334,6 +1323,7 @@ components:
     DbWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -1452,7 +1442,6 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closedAt
         - targetDate
       type: object
     ServicesMember: # Generated from internal structs. DO NOT EDIT.

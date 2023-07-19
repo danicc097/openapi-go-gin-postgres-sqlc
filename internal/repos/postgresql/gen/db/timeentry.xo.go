@@ -18,19 +18,21 @@ import (
 
 // TimeEntry represents a row from 'public.time_entries'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type TimeEntry struct {
-	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id" required:"true"`        // time_entry_id
-	WorkItemID      *int64    `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
-	ActivityID      int       `json:"activityID" db:"activity_id" required:"true"`           // activity_id
-	TeamID          *int      `json:"teamID" db:"team_id" required:"true"`                   // team_id
-	UserID          uuid.UUID `json:"userID" db:"user_id" required:"true"`                   // user_id
-	Comment         string    `json:"comment" db:"comment" required:"true"`                  // comment
-	Start           time.Time `json:"start" db:"start" required:"true"`                      // start
-	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes" required:"true"` // duration_minutes
+	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id" required:"true"` // time_entry_id
+	WorkItemID      *int64    `json:"workItemID" db:"work_item_id"`                   // work_item_id
+	ActivityID      int       `json:"activityID" db:"activity_id" required:"true"`    // activity_id
+	TeamID          *int      `json:"teamID" db:"team_id"`                            // team_id
+	UserID          uuid.UUID `json:"userID" db:"user_id" required:"true"`            // user_id
+	Comment         string    `json:"comment" db:"comment" required:"true"`           // comment
+	Start           time.Time `json:"start" db:"start" required:"true"`               // start
+	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes"`          // duration_minutes
 
 	ActivityJoin *Activity `json:"-" db:"activity_activity_id" openapi-go:"ignore"`   // O2O activities (generated from M2O)
 	TeamJoin     *Team     `json:"-" db:"team_team_id" openapi-go:"ignore"`           // O2O teams (generated from M2O)
@@ -41,13 +43,13 @@ type TimeEntry struct {
 
 // TimeEntryCreateParams represents insert params for 'public.time_entries'.
 type TimeEntryCreateParams struct {
-	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
-	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
-	TeamID          *int      `json:"teamID" required:"true"`          // team_id
-	UserID          uuid.UUID `json:"userID" required:"true"`          // user_id
-	Comment         string    `json:"comment" required:"true"`         // comment
-	Start           time.Time `json:"start" required:"true"`           // start
-	DurationMinutes *int      `json:"durationMinutes" required:"true"` // duration_minutes
+	WorkItemID      *int64    `json:"workItemID"`                 // work_item_id
+	ActivityID      int       `json:"activityID" required:"true"` // activity_id
+	TeamID          *int      `json:"teamID"`                     // team_id
+	UserID          uuid.UUID `json:"userID" required:"true"`     // user_id
+	Comment         string    `json:"comment" required:"true"`    // comment
+	Start           time.Time `json:"start" required:"true"`      // start
+	DurationMinutes *int      `json:"durationMinutes"`            // duration_minutes
 }
 
 // CreateTimeEntry creates a new TimeEntry in the database with the given params.
@@ -67,13 +69,13 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'.
 type TimeEntryUpdateParams struct {
-	WorkItemID      **int64    `json:"workItemID" required:"true"`      // work_item_id
-	ActivityID      *int       `json:"activityID" required:"true"`      // activity_id
-	TeamID          **int      `json:"teamID" required:"true"`          // team_id
-	UserID          *uuid.UUID `json:"userID" required:"true"`          // user_id
-	Comment         *string    `json:"comment" required:"true"`         // comment
-	Start           *time.Time `json:"start" required:"true"`           // start
-	DurationMinutes **int      `json:"durationMinutes" required:"true"` // duration_minutes
+	WorkItemID      **int64    `json:"workItemID"`                 // work_item_id
+	ActivityID      *int       `json:"activityID" required:"true"` // activity_id
+	TeamID          **int      `json:"teamID"`                     // team_id
+	UserID          *uuid.UUID `json:"userID" required:"true"`     // user_id
+	Comment         *string    `json:"comment" required:"true"`    // comment
+	Start           *time.Time `json:"start" required:"true"`      // start
+	DurationMinutes **int      `json:"durationMinutes"`            // duration_minutes
 }
 
 // SetUpdateParams updates public.time_entries struct fields with the specified params.
