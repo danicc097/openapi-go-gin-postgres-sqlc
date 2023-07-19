@@ -48,6 +48,7 @@ export const getGetProjectBoardMock = () => ({
     description: faker.random.word(),
     isProductive: faker.datatype.boolean(),
     name: faker.random.word(),
+    projectID: faker.datatype.number({ min: undefined, max: undefined }),
   })),
   boardConfig: {
     fields: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -68,6 +69,7 @@ export const getGetProjectBoardMock = () => ({
     description: faker.random.word(),
     kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
     name: faker.random.word(),
+    projectID: faker.datatype.number({ min: undefined, max: undefined }),
     stepOrder: faker.datatype.number({ min: undefined, max: undefined }),
     timeTrackable: faker.datatype.boolean(),
   })),
@@ -86,12 +88,14 @@ export const getGetProjectBoardMock = () => ({
     color: faker.random.word(),
     description: faker.random.word(),
     name: faker.random.word(),
+    projectID: faker.datatype.number({ min: undefined, max: undefined }),
     workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
   })),
   workItemTypes: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     color: faker.random.word(),
     description: faker.random.word(),
     name: faker.random.word(),
+    projectID: faker.datatype.number({ min: undefined, max: undefined }),
     workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
   })),
 })
@@ -152,12 +156,14 @@ export const getGetProjectWorkitemsMock = () =>
         color: faker.random.word(),
         description: faker.random.word(),
         name: faker.random.word(),
+        projectID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
       workItemType: {
         color: faker.random.word(),
         description: faker.random.word(),
         name: faker.random.word(),
+        projectID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
       },
       workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -213,12 +219,14 @@ export const getGetProjectWorkitemsMock = () =>
         color: faker.random.word(),
         description: faker.random.word(),
         name: faker.random.word(),
+        projectID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
       workItemType: {
         color: faker.random.word(),
         description: faker.random.word(),
         name: faker.random.word(),
+        projectID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
       },
       workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -231,6 +239,7 @@ export const getCreateWorkitemTagMock = () =>
       color: faker.random.word(),
       description: faker.random.word(),
       name: faker.random.word(),
+      projectID: faker.datatype.number({ min: undefined, max: undefined }),
       workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
     },
   ])

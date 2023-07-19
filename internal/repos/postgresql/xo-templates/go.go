@@ -3625,7 +3625,12 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	case "Table":
 	}
 
-	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{"field": field, "ignoreJSON": isPrivate, "required": !isPointer && !isPrivate && !notRequired, "skipExtraTags": skipExtraTags}); err != nil {
+	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{
+		"field":         field,
+		"ignoreJSON":    isPrivate,
+		"required":      !isPointer && !isPrivate && (!notRequired || !skipExtraTags),
+		"skipExtraTags": skipExtraTags,
+	}); err != nil {
 		return "", err
 	}
 	var tag string

@@ -17,10 +17,14 @@
         "name": {
           "type": "string",
           "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
         }
       },
       "required": [
         "activityID",
+        "projectID",
         "name",
         "description",
         "isProductive"
@@ -47,6 +51,9 @@
           "type": "string",
           "minLength": 1
         },
+        "projectID": {
+          "type": "integer"
+        },
         "stepOrder": {
           "type": "integer"
         },
@@ -56,6 +63,7 @@
       },
       "required": [
         "kanbanStepID",
+        "projectID",
         "stepOrder",
         "name",
         "description",
@@ -162,12 +170,16 @@
           "type": "string",
           "minLength": 1
         },
+        "projectID": {
+          "type": "integer"
+        },
         "workItemTagID": {
           "type": "integer"
         }
       },
       "required": [
         "workItemTagID",
+        "projectID",
         "name",
         "description",
         "color"
@@ -191,12 +203,16 @@
           "type": "string",
           "minLength": 1
         },
+        "projectID": {
+          "type": "integer"
+        },
         "workItemTypeID": {
           "type": "integer"
         }
       },
       "required": [
         "workItemTypeID",
+        "projectID",
         "name",
         "description",
         "color"
@@ -1245,6 +1261,9 @@
         "name": {
           "type": "string",
           "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
         }
       },
       "required": [
@@ -1336,6 +1355,9 @@
         "name": {
           "type": "string",
           "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
         }
       },
       "required": [
@@ -1382,6 +1404,9 @@
         "name": {
           "type": "string",
           "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
         }
       },
       "required": [

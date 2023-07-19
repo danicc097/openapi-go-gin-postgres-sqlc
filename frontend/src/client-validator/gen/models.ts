@@ -82,12 +82,14 @@ export interface DbActivity {
   description: string
   isProductive: boolean
   name: string
+  projectID: number
 }
 export interface DbKanbanStep {
   color: string
   description: string
   kanbanStepID: number
   name: string
+  projectID: number
   stepOrder: number
   timeTrackable: boolean
 }
@@ -122,12 +124,14 @@ export interface DbWorkItemTag {
   color: string
   description: string
   name: string
+  projectID: number
   workItemTagID: number
 }
 export interface DbWorkItemType {
   color: string
   description: string
   name: string
+  projectID: number
   workItemTypeID: number
 }
 export interface DbDemoWorkItem {
@@ -227,6 +231,7 @@ export interface DbActivityCreateParams {
   description: string
   isProductive: boolean
   name: string
+  projectID?: number
 }
 export interface DbTeamCreateParams {
   description: string
@@ -237,6 +242,7 @@ export interface DbWorkItemTagCreateParams {
   color: string
   description: string
   name: string
+  projectID?: number
 }
 export interface RestProjectBoardResponse {
   activities: DbActivity[] | null
@@ -336,6 +342,7 @@ export interface RestWorkItemTagCreateRequest {
   color: string
   description: string
   name: string
+  projectID?: number
 }
 export interface RestDemoWorkItemCreateRequest {
   base: DbWorkItemCreateParams

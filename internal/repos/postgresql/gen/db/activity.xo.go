@@ -24,7 +24,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type Activity struct {
 	ActivityID   int    `json:"activityID" db:"activity_id" required:"true"`     // activity_id
-	ProjectID    int    `json:"-" db:"project_id"`                               // project_id
+	ProjectID    int    `json:"projectID" db:"project_id" required:"true"`       // project_id
 	Name         string `json:"name" db:"name" required:"true"`                  // name
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
@@ -36,7 +36,7 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
-	ProjectID    int    `json:"-"`                            // project_id
+	ProjectID    int    `json:"projectID"`                    // project_id
 	Name         string `json:"name" required:"true"`         // name
 	Description  string `json:"description" required:"true"`  // description
 	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
@@ -56,7 +56,7 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {
-	ProjectID    *int    `json:"-"`                            // project_id
+	ProjectID    *int    `json:"projectID"`                    // project_id
 	Name         *string `json:"name" required:"true"`         // name
 	Description  *string `json:"description" required:"true"`  // description
 	IsProductive *bool   `json:"isProductive" required:"true"` // is_productive

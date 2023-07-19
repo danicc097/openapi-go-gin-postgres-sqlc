@@ -471,13 +471,13 @@ comment on column kanban_steps.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa
 
 -- will use project name as path param. Simplifies frontend without the need for model mappings as well.
 -- although it's probably easier to have projectID just be a body parameter as it was
-comment on column activities.project_id is '"cardinality":M2O && "properties":private';
+comment on column activities.project_id is '"cardinality":M2O && "properties":not-required';
 
-comment on column work_item_tags.project_id is '"cardinality":M2O && "properties":private';
+comment on column work_item_tags.project_id is '"cardinality":M2O && "properties":not-required';
 
-comment on column work_item_types.project_id is '"cardinality":M2O && "properties":private';
+comment on column work_item_types.project_id is '"cardinality":M2O && "properties":not-required';
 
-comment on column kanban_steps.project_id is '"cardinality":M2O && "properties":private';
+comment on column kanban_steps.project_id is '"cardinality":M2O && "properties":not-required';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
 -- columns, but the index is most efficient when there are constraints on the leading (leftmost) columns.

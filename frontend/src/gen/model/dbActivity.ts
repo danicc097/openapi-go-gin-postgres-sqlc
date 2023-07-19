@@ -11,4 +11,5 @@ export interface DbActivity {
   description: string
   isProductive: boolean
   name: string
+  projectID: number
 }

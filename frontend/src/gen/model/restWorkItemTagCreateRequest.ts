@@ -10,4 +10,5 @@ export interface RestWorkItemTagCreateRequest {
   color: string
   description: string
   name: string
+  projectID?: number
 }
