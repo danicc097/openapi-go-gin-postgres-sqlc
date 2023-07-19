@@ -129,7 +129,9 @@ func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
 	}
 }
 
-// Defines values for ErrorCode.
+// ErrorCode Represents standardized HTTP error types.
+// Notes:
+// - 'Private' marks an error to be hidden in response.
 const (
 	AlreadyExists      ErrorCode = "AlreadyExists"
 	InvalidArgument    ErrorCode = "InvalidArgument"
@@ -165,7 +167,7 @@ func AllErrorCodeValues() []ErrorCode {
 	}
 }
 
-// Defines values for NotificationType.
+// NotificationType represents a database 'notification_type'
 const (
 	Global   NotificationType = "global"
 	Personal NotificationType = "personal"
@@ -243,7 +245,7 @@ func AllScopeValues() []Scope {
 	}
 }
 
-// Defines values for Topics.
+// Topics string identifiers for SSE event listeners.
 const (
 	GlobalAlerts Topics = "GlobalAlerts"
 )
@@ -255,7 +257,7 @@ func AllTopicsValues() []Topics {
 	}
 }
 
-// Defines values for WorkItemRole.
+// WorkItemRole represents a database 'work_item_role'
 const (
 	Preparer WorkItemRole = "preparer"
 	Reviewer WorkItemRole = "reviewer"
