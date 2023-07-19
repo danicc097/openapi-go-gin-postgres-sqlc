@@ -286,6 +286,12 @@ type DbActivityCreateParams struct {
 	Name         string `json:"name"`
 }
 
+// DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
+type DbDemoTwoWorkItem struct {
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
+	WorkItemID            int        `json:"workItemID"`
+}
+
 // DbDemoWorkItem defines the model for DbDemoWorkItem.
 type DbDemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt"`
@@ -518,6 +524,28 @@ type ProjectConfigField struct {
 	Name          string `json:"name"`
 	Path          string `json:"path"`
 	ShowCollapsed bool   `json:"showCollapsed"`
+}
+
+// RestDemoTwoWorkItemsResponse defines the model for RestDemoTwoWorkItemsResponse.
+type RestDemoTwoWorkItemsResponse struct {
+	ClosedAt         *time.Time              `json:"closedAt"`
+	CreatedAt        time.Time               `json:"createdAt"`
+	DeletedAt        *time.Time              `json:"deletedAt"`
+	DemoTwoWorkItem  DbDemoTwoWorkItem       `json:"demoTwoWorkItem"`
+	Description      string                  `json:"description"`
+	KanbanStepID     int                     `json:"kanbanStepID"`
+	Members          *[]DbUser               `json:"members"`
+	Metadata         *map[string]interface{} `json:"metadata"`
+	TargetDate       time.Time               `json:"targetDate"`
+	TeamID           int                     `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
+	Title            string                  `json:"title"`
+	UpdatedAt        time.Time               `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
+	WorkItemID       int                     `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                     `json:"workItemTypeID"`
 }
 
 // RestDemoWorkItemCreateRequest defines the model for RestDemoWorkItemCreateRequest.

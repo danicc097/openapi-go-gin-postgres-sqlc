@@ -228,6 +228,33 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
+    RestDemoTwoWorkItemsResponse: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      demoTwoWorkItem: components["schemas"]["DbDemoTwoWorkItem"];
+      description: string;
+      kanbanStepID: number;
+      members?: (components["schemas"]["DbUser"])[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemComments?: (components["schemas"]["DbWorkItemComment"])[] | null;
+      workItemID: number;
+      workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTypeID: number;
+    };
     InitializeProjectRequest: {
       activities?: (components["schemas"]["DbActivityCreateParams"])[] | null;
       projectID?: number;
@@ -464,6 +491,11 @@ export interface components {
     ServicesMember: {
       role: components["schemas"]["WorkItemRole"];
       userID: components["schemas"]["UuidUUID"];
+    };
+    DbDemoTwoWorkItem: {
+      /** Format: date-time */
+      customDateForProject2?: string | null;
+      workItemID: number;
     };
   };
   responses: never;
@@ -725,7 +757,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["RestDemoWorkItemsResponse"];
+          "application/json": components["schemas"]["RestDemoWorkItemsResponse"] | components["schemas"]["RestDemoTwoWorkItemsResponse"];
         };
       };
     };

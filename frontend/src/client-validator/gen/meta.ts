@@ -18,6 +18,7 @@ import {
   ProjectConfig,
   ProjectConfigField,
   RestDemoWorkItemsResponse,
+  RestDemoTwoWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
   User,
@@ -54,6 +55,7 @@ import {
   DbDemoWorkItemCreateParams,
   DbWorkItemCreateParams,
   ServicesMember,
+  DbDemoTwoWorkItem,
 } from './models'
 
 export const schemaDefinitions = {
@@ -73,6 +75,10 @@ export const schemaDefinitions = {
   RestDemoWorkItemsResponse: info<RestDemoWorkItemsResponse>(
     'RestDemoWorkItemsResponse',
     '#/definitions/RestDemoWorkItemsResponse',
+  ),
+  RestDemoTwoWorkItemsResponse: info<RestDemoTwoWorkItemsResponse>(
+    'RestDemoTwoWorkItemsResponse',
+    '#/definitions/RestDemoTwoWorkItemsResponse',
   ),
   InitializeProjectRequest: info<InitializeProjectRequest>(
     'InitializeProjectRequest',
@@ -143,6 +149,7 @@ export const schemaDefinitions = {
     '#/definitions/DbWorkItemCreateParams',
   ),
   ServicesMember: info<ServicesMember>('ServicesMember', '#/definitions/ServicesMember'),
+  DbDemoTwoWorkItem: info<DbDemoTwoWorkItem>('DbDemoTwoWorkItem', '#/definitions/DbDemoTwoWorkItem'),
 }
 
 export interface SchemaInfo<T> {

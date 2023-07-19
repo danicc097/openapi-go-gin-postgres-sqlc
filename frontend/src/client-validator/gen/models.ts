@@ -193,6 +193,30 @@ export interface RestDemoWorkItemsResponse {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
+export interface RestDemoTwoWorkItemsResponse {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  demoTwoWorkItem: DbDemoTwoWorkItem
+  description: string
+  kanbanStepID: number
+  members?: DbUser[] | null
+  metadata: {} | null
+  targetDate: string
+  teamID: number
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
+}
+export interface DbDemoTwoWorkItem {
+  customDateForProject2?: string | null
+  workItemID: number
+}
 export interface InitializeProjectRequest {
   activities?: DbActivityCreateParams[] | null
   projectID?: number

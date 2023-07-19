@@ -324,6 +324,7 @@ paths:
               schema:
                 oneOf:
                   - $ref: '#/components/schemas/RestDemoWorkItemsResponse'
+                  - $ref: '#/components/schemas/RestDemoTwoWorkItemsResponse'
       tags:
         - project
   /project/{projectName}/tag/:
@@ -853,6 +854,79 @@ components:
         - demoWorkItem
       type: object
       x-postgen-struct: RestDemoWorkItemsResponse
+    RestDemoTwoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        closedAt:
+          format: date-time
+          nullable: true
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        demoTwoWorkItem:
+          $ref: '#/components/schemas/DbDemoTwoWorkItem'
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        members:
+          items:
+            $ref: '#/components/schemas/DbUser'
+          nullable: true
+          type: array
+        metadata:
+          additionalProperties: {}
+          nullable: true
+          type: object
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          type: integer
+        timeEntries:
+          items:
+            $ref: '#/components/schemas/DbTimeEntry'
+          nullable: true
+          type: array
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        workItemComments:
+          items:
+            $ref: '#/components/schemas/DbWorkItemComment'
+          nullable: true
+          type: array
+        workItemID:
+          type: integer
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTag'
+          nullable: true
+          type: array
+        workItemType:
+          $ref: '#/components/schemas/DbWorkItemType'
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemID
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - targetDate
+        - createdAt
+        - updatedAt
+        - demoTwoWorkItem
+      type: object
+      x-postgen-struct: RestDemoTwoWorkItemsResponse
     InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
@@ -1432,6 +1506,17 @@ components:
       required:
         - userID
         - role
+      type: object
+    DbDemoTwoWorkItem: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        customDateForProject2:
+          format: date-time
+          nullable: true
+          type: string
+        workItemID:
+          type: integer
+      required:
+        - workItemID
       type: object
   examples:
     User:

@@ -594,6 +594,125 @@
       "x-postgen-struct": "RestDemoWorkItemsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "RestDemoTwoWorkItemsResponse": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "demoTwoWorkItem": {
+          "$ref": "#/definitions/DbDemoTwoWorkItem"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/DbUser"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemType"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "demoTwoWorkItem"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoTwoWorkItemsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "InitializeProjectRequest": {
       "properties": {
         "activities": {
@@ -1453,6 +1572,24 @@
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoTwoWorkItem": {
+      "properties": {
+        "customDateForProject2": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1497,6 +1634,9 @@
     },
     "RestDemoWorkItemsResponse": {
       "$ref": "#/definitions/RestDemoWorkItemsResponse"
+    },
+    "RestDemoTwoWorkItemsResponse": {
+      "$ref": "#/definitions/RestDemoTwoWorkItemsResponse"
     },
     "InitializeProjectRequest": {
       "$ref": "#/definitions/InitializeProjectRequest"
@@ -1605,6 +1745,9 @@
     },
     "ServicesMember": {
       "$ref": "#/definitions/ServicesMember"
+    },
+    "DbDemoTwoWorkItem": {
+      "$ref": "#/definitions/DbDemoTwoWorkItem"
     }
   }
 }

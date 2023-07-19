@@ -82,5 +82,5 @@ func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 		return
 	}
 
-	c.JSON(http.StatusOK, wit)
+	c.JSON(http.StatusCreated, wit)
 }

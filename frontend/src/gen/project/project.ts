@@ -21,7 +21,7 @@ import type {
   DbProject,
   ProjectConfig,
   RestProjectBoardResponse,
-  RestDemoWorkItemsResponse,
+  GetProjectWorkitems200,
   GetProjectWorkitemsParams,
   DbWorkItemTag,
   RestWorkItemTagCreateRequest,
@@ -438,7 +438,7 @@ export const getProjectWorkitems = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
-  return customInstance<RestDemoWorkItemsResponse>(
+  return customInstance<GetProjectWorkitems200>(
     { url: `/project/${projectName}/workitems`, method: 'get', params, signal },
     options,
   )

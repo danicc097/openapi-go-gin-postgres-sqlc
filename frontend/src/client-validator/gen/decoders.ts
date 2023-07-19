@@ -22,6 +22,7 @@ import {
   ProjectConfig,
   ProjectConfigField,
   RestDemoWorkItemsResponse,
+  RestDemoTwoWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
   User,
@@ -58,6 +59,7 @@ import {
   DbDemoWorkItemCreateParams,
   DbWorkItemCreateParams,
   ServicesMember,
+  DbDemoTwoWorkItem,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -232,6 +234,18 @@ export const RestDemoWorkItemsResponseDecoder: Decoder<RestDemoWorkItemsResponse
       throw new Error(`Schema ${RestDemoWorkItemsResponseDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, RestDemoWorkItemsResponseDecoder.definitionName)
+  },
+}
+export const RestDemoTwoWorkItemsResponseDecoder: Decoder<RestDemoTwoWorkItemsResponse> = {
+  definitionName: 'RestDemoTwoWorkItemsResponse',
+  schemaRef: '#/definitions/RestDemoTwoWorkItemsResponse',
+
+  decode(json: unknown): RestDemoTwoWorkItemsResponse {
+    const schema = ajv.getSchema(RestDemoTwoWorkItemsResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestDemoTwoWorkItemsResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestDemoTwoWorkItemsResponseDecoder.definitionName)
   },
 }
 export const InitializeProjectRequestDecoder: Decoder<InitializeProjectRequest> = {
@@ -664,5 +678,17 @@ export const ServicesMemberDecoder: Decoder<ServicesMember> = {
       throw new Error(`Schema ${ServicesMemberDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ServicesMemberDecoder.definitionName)
+  },
+}
+export const DbDemoTwoWorkItemDecoder: Decoder<DbDemoTwoWorkItem> = {
+  definitionName: 'DbDemoTwoWorkItem',
+  schemaRef: '#/definitions/DbDemoTwoWorkItem',
+
+  decode(json: unknown): DbDemoTwoWorkItem {
+    const schema = ajv.getSchema(DbDemoTwoWorkItemDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbDemoTwoWorkItemDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbDemoTwoWorkItemDecoder.definitionName)
   },
 }
