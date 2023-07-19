@@ -24,7 +24,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type KanbanStep struct {
 	KanbanStepID  int    `json:"kanbanStepID" db:"kanban_step_id" required:"true"`                              // kanban_step_id
-	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`                                     // project_id
+	ProjectID     int    `json:"-" db:"project_id"`                                                             // project_id
 	StepOrder     int    `json:"stepOrder" db:"step_order" required:"true"`                                     // step_order
 	Name          string `json:"name" db:"name" required:"true"`                                                // name
 	Description   string `json:"description" db:"description" required:"true"`                                  // description
@@ -37,7 +37,7 @@ type KanbanStep struct {
 
 // KanbanStepCreateParams represents insert params for 'public.kanban_steps'.
 type KanbanStepCreateParams struct {
-	ProjectID     int    `json:"projectID" required:"true"`                                          // project_id
+	ProjectID     int    `json:"-"`                                                                  // project_id
 	StepOrder     int    `json:"stepOrder" required:"true"`                                          // step_order
 	Name          string `json:"name" required:"true"`                                               // name
 	Description   string `json:"description" required:"true"`                                        // description
@@ -61,7 +61,7 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'.
 type KanbanStepUpdateParams struct {
-	ProjectID     *int    `json:"projectID" required:"true"`                                          // project_id
+	ProjectID     *int    `json:"-"`                                                                  // project_id
 	StepOrder     *int    `json:"stepOrder" required:"true"`                                          // step_order
 	Name          *string `json:"name" required:"true"`                                               // name
 	Description   *string `json:"description" required:"true"`                                        // description

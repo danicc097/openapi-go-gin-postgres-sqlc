@@ -24,7 +24,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemType struct {
 	WorkItemTypeID int    `json:"workItemTypeID" db:"work_item_type_id" required:"true"`                         // work_item_type_id
-	ProjectID      int    `json:"projectID" db:"project_id" required:"true"`                                     // project_id
+	ProjectID      int    `json:"-" db:"project_id"`                                                             // project_id
 	Name           string `json:"name" db:"name" required:"true"`                                                // name
 	Description    string `json:"description" db:"description" required:"true"`                                  // description
 	Color          string `json:"color" db:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
@@ -35,7 +35,7 @@ type WorkItemType struct {
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'.
 type WorkItemTypeCreateParams struct {
-	ProjectID   int    `json:"projectID" required:"true"`                                          // project_id
+	ProjectID   int    `json:"-"`                                                                  // project_id
 	Name        string `json:"name" required:"true"`                                               // name
 	Description string `json:"description" required:"true"`                                        // description
 	Color       string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
@@ -55,7 +55,7 @@ func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreatePa
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'.
 type WorkItemTypeUpdateParams struct {
-	ProjectID   *int    `json:"projectID" required:"true"`                                          // project_id
+	ProjectID   *int    `json:"-"`                                                                  // project_id
 	Name        *string `json:"name" required:"true"`                                               // name
 	Description *string `json:"description" required:"true"`                                        // description
 	Color       *string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color

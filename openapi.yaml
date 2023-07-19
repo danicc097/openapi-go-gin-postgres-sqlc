@@ -493,11 +493,8 @@ components:
           type: boolean
         name:
           type: string
-        projectID:
-          type: integer
       required:
         - activityID
-        - projectID
         - name
         - description
         - isProductive
@@ -514,15 +511,12 @@ components:
           type: integer
         name:
           type: string
-        projectID:
-          type: integer
         stepOrder:
           type: integer
         timeTrackable:
           type: boolean
       required:
         - kanbanStepID
-        - projectID
         - stepOrder
         - name
         - description
@@ -589,13 +583,10 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
         workItemTagID:
           type: integer
       required:
         - workItemTagID
-        - projectID
         - name
         - description
         - color
@@ -610,13 +601,10 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
         workItemTypeID:
           type: integer
       required:
         - workItemTypeID
-        - projectID
         - name
         - description
         - color
@@ -1239,10 +1227,7 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
       required:
-        - projectID
         - name
         - description
         - color
@@ -1299,10 +1284,7 @@ components:
           type: boolean
         name:
           type: string
-        projectID:
-          type: integer
       required:
-        - projectID
         - name
         - description
         - isProductive
@@ -1329,10 +1311,7 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
       required:
-        - projectID
         - name
         - description
         - color

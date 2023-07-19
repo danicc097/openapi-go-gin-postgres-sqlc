@@ -433,8 +433,6 @@ create table activities (
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
-comment on column activities.project_id is '"cardinality":M2O';
-
 -- will restrict available activities on a per-project basis
 -- where project_id is null (shared) or project_id = @project_id
 -- table will be tiny, don't even index
@@ -470,6 +468,16 @@ comment on column work_item_types.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A
 comment on column work_item_tags.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"';
 
 comment on column kanban_steps.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"';
+
+-- will use project name as path param. Simplifies frontend without the need for model mappings as well.
+-- although it's probably easier to have projectID just be a body parameter as it was
+comment on column activities.project_id is '"cardinality":M2O && "properties":private';
+
+comment on column work_item_tags.project_id is '"cardinality":M2O && "properties":private';
+
+comment on column work_item_types.project_id is '"cardinality":M2O && "properties":private';
+
+comment on column kanban_steps.project_id is '"cardinality":M2O && "properties":private';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
 -- columns, but the index is most efficient when there are constraints on the leading (leftmost) columns.

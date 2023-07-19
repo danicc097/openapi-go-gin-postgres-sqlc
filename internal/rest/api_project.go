@@ -71,9 +71,10 @@ func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 	}
 
 	wit, err := h.workitemtagsvc.Create(c, h.pool, caller, &db.WorkItemTagCreateParams{
-		ProjectID: internal.ProjectIDByName[project],
-		Name:      body.Name,
-		// TODO params + oapi path parameters override name
+		ProjectID:   internal.ProjectIDByName[project],
+		Name:        body.Name,
+		Description: body.Description,
+		Color:       body.Color,
 	})
 	if err != nil {
 		renderErrorResponse(c, "Could not create workitem tag", err)

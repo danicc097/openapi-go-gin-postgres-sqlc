@@ -99,14 +99,12 @@ export interface components {
       description: string;
       isProductive: boolean;
       name: string;
-      projectID: number;
     };
     DbKanbanStep: {
       color: string;
       description: string;
       kanbanStepID: number;
       name: string;
-      projectID: number;
       stepOrder: number;
       timeTrackable: boolean;
     };
@@ -134,14 +132,12 @@ export interface components {
       color: string;
       description: string;
       name: string;
-      projectID: number;
       workItemTagID: number;
     };
     DbWorkItemType: {
       color: string;
       description: string;
       name: string;
-      projectID: number;
       workItemTypeID: number;
     };
     DbDemoWorkItem: {
@@ -394,7 +390,6 @@ export interface components {
       color: string;
       description: string;
       name: string;
-      projectID: number;
     };
     RestDemoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
@@ -413,7 +408,6 @@ export interface components {
       description: string;
       isProductive: boolean;
       name: string;
-      projectID: number;
     };
     DbTeamCreateParams: {
       description: string;
@@ -424,7 +418,6 @@ export interface components {
       color: string;
       description: string;
       name: string;
-      projectID: number;
     };
     DbWorkItemRole: string;
     /**

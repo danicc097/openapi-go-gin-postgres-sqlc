@@ -264,7 +264,6 @@ type DbActivity struct {
 	Description  string `json:"description"`
 	IsProductive bool   `json:"isProductive"`
 	Name         string `json:"name"`
-	ProjectID    int    `json:"projectID"`
 }
 
 // DbActivityCreateParams defines the model for DbActivityCreateParams.
@@ -272,7 +271,6 @@ type DbActivityCreateParams struct {
 	Description  string `json:"description"`
 	IsProductive bool   `json:"isProductive"`
 	Name         string `json:"name"`
-	ProjectID    int    `json:"projectID"`
 }
 
 // DbDemoWorkItem defines the model for DbDemoWorkItem.
@@ -299,7 +297,6 @@ type DbKanbanStep struct {
 	Description   string `json:"description"`
 	KanbanStepID  int    `json:"kanbanStepID"`
 	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
 	StepOrder     int    `json:"stepOrder"`
 	TimeTrackable bool   `json:"timeTrackable"`
 }
@@ -411,7 +408,6 @@ type DbWorkItemTag struct {
 	Color         string `json:"color"`
 	Description   string `json:"description"`
 	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
 	WorkItemTagID int    `json:"workItemTagID"`
 }
 
@@ -420,7 +416,6 @@ type DbWorkItemTagCreateParams struct {
 	Color       string `json:"color"`
 	Description string `json:"description"`
 	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
 }
 
 // DbWorkItemType defines the model for DbWorkItemType.
@@ -428,7 +423,6 @@ type DbWorkItemType struct {
 	Color          string `json:"color"`
 	Description    string `json:"description"`
 	Name           string `json:"name"`
-	ProjectID      int    `json:"projectID"`
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
@@ -570,7 +564,6 @@ type RestWorkItemTagCreateRequest struct {
 	Color       string `json:"color"`
 	Description string `json:"description"`
 	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
 }
 
 // Role defines the model for Role.
