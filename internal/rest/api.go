@@ -38,7 +38,7 @@ func NewHandlers(
 	workitemtagsvc *services.WorkItemTag,
 	authzsvc *services.Authorization,
 	authnsvc *services.Authentication,
-	authmw *authMiddleware,
+	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
 ) *Handlers {
 	event := newSSEServer()
@@ -86,7 +86,7 @@ func NewHandlers(
 	}
 }
 
-// middlewares to be applied after authMiddlewares.
+// middlewares to be applied after authMiddlewares, based on operation IDs.
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	// TODO: tx could be middleware. no need to check if context tx is undefined
 	// because itll always be, else it prematurely renders errors and abort

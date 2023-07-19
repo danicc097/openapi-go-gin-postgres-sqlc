@@ -152,6 +152,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	for _, mw := range srv.middlewares {
 		router.Use(mw)
 	}
+
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	vg := router.Group(cfg.APIVersion)
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
@@ -255,7 +256,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		workitemtagsvc,
 		authzsvc,
 		authnsvc,
-		authmw,
+		authmw, // middleware needed here since it's generated code
 		provider,
 	)
 
