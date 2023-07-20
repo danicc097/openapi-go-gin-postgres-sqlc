@@ -97,7 +97,8 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 	}
 
 	srv, err := NewServer(Config{
-		Address:         ":0", // random next available for each test server
+		// not necessary when using ServeHTTP. Won't actually listen.
+		// Address:         ":0", // random next available for each test server
 		Pool:            testPool,
 		Redis:           rdb,
 		Logger:          logger.Sugar(),

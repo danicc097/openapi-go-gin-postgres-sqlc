@@ -64,7 +64,7 @@ type Config struct {
 
 // TODO BuildServerConfig with implicit validation instead
 func (c *Config) validate() error {
-	if c.Address == "" {
+	if c.Address == "" && os.Getenv("IS_TESTING") == "" {
 		return fmt.Errorf("no server address provided")
 	}
 	if c.SpecPath == "" {
