@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
@@ -21,7 +20,7 @@ import (
 func TestGetUserRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv, _, err := runTestServer(t, testPool, []gin.HandlerFunc{})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)
 	}
@@ -72,10 +71,9 @@ func TestGetUserRoute(t *testing.T) {
 func TestUpdateUserRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
-	if err != nil {
-		t.Fatalf("Couldn't run test server: %s\n", err)
-	}
+	// TODO: returns client as well
+	srv, client, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	assert.NoError(t, err, "Couldn't run test server: %s\n")
 
 	t.Cleanup(func() {
 		srv.Close()
@@ -158,14 +156,6 @@ func TestUpdateUserRoute(t *testing.T) {
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
 
-		// resp := httptest.NewRecorder()
-
-		// TODO: codegen for NewTestClient that instead has ServeHTTP so that
-		// we dont have multiple servers listening
-		// client does `return c.Client.Do(req)` but instead we want it to do srv.Handler.ServeHTTP(resp, req)
-		// with a response recorder
-		// so we just need a http.Handler parameter for NewTestClient
-		client, err := client.NewTestClient("/v2", srv.Handler)
 		assert.NoError(t, err)
 		fmt.Printf("srv.Addr: %v\n", srv.Addr)
 		res, err := client.GetCurrentUserWithResponse(context.Background(), func(ctx context.Context, req *http.Request) error {

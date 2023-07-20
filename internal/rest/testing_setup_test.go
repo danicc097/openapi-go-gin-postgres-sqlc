@@ -11,10 +11,12 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -60,7 +62,8 @@ func testMain(m *testing.M) int {
 	return m.Run()
 }
 
-func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, error) {
+// runTestServer returns a test server and client.
+func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, *client.ClientWithResponses, error) {
 	t.Helper()
 
 	ctx := context.Background()
@@ -88,7 +91,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.zapNew")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.zapNew")
 	}
 
 	_, err = openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
@@ -108,10 +111,15 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 		RolePolicyPath:  "../../roles.json",
 	}, WithMiddlewares(middlewares...))
 	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
 	}
 
-	return srv.httpsrv, nil
+	client, err := client.NewTestClient(resttestutil.MustConstructInternalPath(""), srv.httpsrv.Handler)
+	if err != nil {
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "client.NewTestClient")
+	}
+
+	return srv.httpsrv, client, nil
 }
 
 func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {

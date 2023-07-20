@@ -26,9 +26,11 @@ func TestAdminPingRoute(t *testing.T) {
 		t.Fatalf("ff.CreateUser: %s", err)
 	}
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{func(c *gin.Context) {
-		c.Next()
-	}})
+	srv, _, err := runTestServer(t, testPool, []gin.HandlerFunc{
+		func(c *gin.Context) {
+			c.Next()
+		},
+	})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)
 	}
