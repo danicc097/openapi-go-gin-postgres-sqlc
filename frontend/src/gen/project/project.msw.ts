@@ -21,6 +21,7 @@ export const getGetProjectMock = () => ({
     header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
       faker.random.word(),
     ),
+    visualization: {},
   },
   createdAt: (() => faker.date.past())(),
   description: faker.random.word(),
@@ -40,6 +41,7 @@ export const getGetProjectConfigMock = () => ({
   header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
     faker.random.word(),
   ),
+  visualization: {},
 })
 
 export const getGetProjectBoardMock = () => ({
@@ -61,6 +63,7 @@ export const getGetProjectBoardMock = () => ({
     header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
       faker.random.word(),
     ),
+    visualization: {},
   },
   createdAt: (() => faker.date.past())(),
   description: faker.random.word(),

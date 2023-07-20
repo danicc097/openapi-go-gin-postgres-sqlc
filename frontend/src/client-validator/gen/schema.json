@@ -452,6 +452,9 @@
           },
           "type": "array",
           "minLength": 1
+        },
+        "visualization": {
+          "type": "object"
         }
       },
       "required": [

@@ -770,6 +770,8 @@ components:
             type: string
           nullable: false
           type: array
+        visualization:
+          type: object
       required:
         - header
         - fields

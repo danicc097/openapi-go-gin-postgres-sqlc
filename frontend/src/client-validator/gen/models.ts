@@ -104,6 +104,7 @@ export interface DbProject {
 export interface ProjectConfig {
   fields: ProjectConfigField[]
   header: string[]
+  visualization?: {}
 }
 export interface ProjectConfigField {
   isEditable: boolean

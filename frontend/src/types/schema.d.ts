@@ -197,6 +197,7 @@ export interface components {
     ProjectConfig: {
       fields: (components["schemas"]["ProjectConfigField"])[];
       header: (string)[];
+      visualization?: Record<string, never>;
     };
     ProjectConfigField: {
       isEditable: boolean;

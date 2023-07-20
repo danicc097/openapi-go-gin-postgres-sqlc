@@ -11,6 +11,35 @@ create extension if not exists btree_gin schema extensions;
 
 create extension if not exists rum schema extensions;
 
+create or replace function jsonb_set_deep (target jsonb , path text[] , val jsonb)
+  returns jsonb
+  as $$
+declare
+  k text;
+  p text[];
+begin
+  if (path = '{}') then
+    return val;
+  else
+    if (target is null) then
+      target = '{}'::jsonb;
+    end if;
+
+    FOREACH k in array path loop
+      p := p || k;
+      if (target #> p is null) then
+        target := JSONB_SET(target , p , '{}'::jsonb);
+      else
+        target := JSONB_SET(target , p , target #> p);
+      end if;
+    end loop;
+    -- Set the value like normal.
+    return JSONB_SET(target , path , val);
+  end if;
+end;
+$$
+language plpgsql;
+
 -- internal use. update whenever a project with its related workitems,
 --  etc. tables are created in migrations
 create table projects (

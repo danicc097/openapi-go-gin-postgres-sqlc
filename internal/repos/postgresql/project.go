@@ -40,3 +40,16 @@ func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 
 	return project, nil
 }
+
+func (u *Project) UpdateBoardConfig(ctx context.Context, d db.DBTX, projectID int, paths []string, obj any) error {
+	sqlstr := `
+	UPDATE public.projects
+	SET board_config = jsonb_set_deep(board_config, $1, $2)
+	WHERE project_id = $3`
+
+	if _, err := d.Exec(ctx, sqlstr, paths, obj, projectID); err != nil {
+		return fmt.Errorf("could not update project board config: %w", parseErrorDetail(err))
+	}
+
+	return nil
+}
