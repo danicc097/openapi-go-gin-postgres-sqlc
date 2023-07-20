@@ -107,7 +107,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 		RolePolicyPath:  "../../roles.json",
 	}, WithMiddlewares(middlewares...))
 	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "New")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
 	}
 
 	return srv.httpsrv, nil

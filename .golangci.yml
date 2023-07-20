@@ -3,6 +3,7 @@
 linters:
   enable-all: true
   disable:
+    - depguard
     # - json(camel)
     - funlen
     - lll

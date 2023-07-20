@@ -51,7 +51,7 @@ func TestGetUserRoute(t *testing.T) {
 		if err != nil {
 			t.Errorf("%v", err)
 		}
-		req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
+		req.Header.Add(apiKeyHeaderKey, ufixture.APIKey.APIKey)
 
 		resp := httptest.NewRecorder()
 
@@ -120,7 +120,7 @@ func TestUpdateUserRoute(t *testing.T) {
 			t.Errorf("unexpected error %v", err)
 		}
 		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("x-api-key", manager.APIKey.APIKey)
+		req.Header.Add(apiKeyHeaderKey, manager.APIKey.APIKey)
 
 		resp := httptest.NewRecorder()
 
@@ -156,7 +156,7 @@ func TestUpdateUserRoute(t *testing.T) {
 			t.Errorf("unexpected error %v", err)
 		}
 		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("x-api-key", normalUser.APIKey.APIKey)
+		req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
 
 		resp := httptest.NewRecorder()
 

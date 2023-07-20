@@ -12,6 +12,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	apiKeyHeaderKey = "x-api-key"
+)
+
 // Handlers implements ServerInterface.
 type Handlers struct {
 	usvc            *services.User
