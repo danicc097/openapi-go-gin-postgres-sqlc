@@ -9,10 +9,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -158,11 +158,27 @@ func TestUpdateUserRoute(t *testing.T) {
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
 
-		resp := httptest.NewRecorder()
+		// resp := httptest.NewRecorder()
 
-		srv.Handler.ServeHTTP(resp, req)
+		// TODO: codegen for NewTestClient that instead has ServeHTTP so that
+		// we dont have multiple servers listening
+		// client does `return c.Client.Do(req)` but instead we want it to do srv.Handler.ServeHTTP(resp, req)
+		// with a response recorder
+		// so we just need a http.Handler parameter for NewTestClient
+		client, err := client.NewTestClient("/v2", srv.Handler)
+		assert.NoError(t, err)
+		fmt.Printf("srv.Addr: %v\n", srv.Addr)
+		res, err := client.GetCurrentUserWithResponse(context.Background(), func(ctx context.Context, req *http.Request) error {
+			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
+			return nil
+		})
+		assert.NoError(t, err)
+		t.Logf("res: %v\n", res.JSON200)
 
-		format.PrintJSON(resp)
-		assert.Equal(t, http.StatusOK, resp.Code)
+		// srv.Handler.ServeHTTP(resp, req)
+
+		// format.PrintJSON(resp)
+		assert.Equal(t, http.StatusOK, res.StatusCode())
 	})
 }

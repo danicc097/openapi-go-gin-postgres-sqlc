@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"time"
@@ -757,6 +758,8 @@ type Client struct {
 	// A list of callbacks for modifying requests which are generated before sending over
 	// the network.
 	RequestEditors []RequestEditorFn
+
+	testHandler http.Handler
 }
 
 // ClientOption allows setting custom parameters during construction
@@ -764,9 +767,14 @@ type ClientOption func(*Client) error
 
 // Creates a new Client, with reasonable defaults
 func NewClient(server string, opts ...ClientOption) (*Client, error) {
+	return newClient(server, nil, opts...)
+}
+
+func newClient(server string, testHandler http.Handler, opts ...ClientOption) (*Client, error) {
 	// create a client with sane default values
 	client := Client{
 		Server: server,
+		testHandler:testHandler,
 	}
 	// mutate client and add all optional params
 	for _, o := range opts {
@@ -1078,7 +1086,7 @@ func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectNam
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn)  (*http.Response, error) {
 	req, err := NewGetCurrentUserRequest(c.Server)
 	if err != nil {
 		return nil, err
@@ -1087,7 +1095,17 @@ func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditor
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+
+	if (c.testHandler != nil) {
+
+		resp := httptest.NewRecorder()
+
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2088,10 +2106,19 @@ type ClientWithResponses struct {
 	ClientInterface
 }
 
+// NewTestClient creates a new ClientWithResponses for testing.
+func NewTestClient(server string, testHandler http.Handler, opts ...ClientOption) (*ClientWithResponses, error) {
+	client, err := newClient(server, testHandler, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &ClientWithResponses{client}, nil
+}
+
 // NewClientWithResponses creates a new ClientWithResponses, which wraps
 // Client with return type handling
 func NewClientWithResponses(server string, opts ...ClientOption) (*ClientWithResponses, error) {
-	client, err := NewClient(server, opts...)
+	client, err := newClient(server, nil, opts...)
 	if err != nil {
 		return nil, err
 	}
