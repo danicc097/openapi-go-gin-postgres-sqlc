@@ -552,6 +552,7 @@ x.gen.client-server() {
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
+    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go # templates are embedded, required rebuild
 
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
@@ -710,7 +711,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in pregen postgen oapi-codegen jet; do
+    for cmd in pregen postgen jet; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &

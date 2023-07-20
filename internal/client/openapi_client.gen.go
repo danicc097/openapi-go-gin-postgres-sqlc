@@ -765,16 +765,20 @@ type Client struct {
 // ClientOption allows setting custom parameters during construction
 type ClientOption func(*Client) error
 
-// Creates a new Client, with reasonable defaults
-func NewClient(server string, opts ...ClientOption) (*Client, error) {
-	return newClient(server, nil, opts...)
+// NewTestClient creates a new ClientWithResponses for testing.
+func NewTestClient(server string, testHandler http.Handler, opts ...ClientOption) (*ClientWithResponses, error) {
+	client, err := newClient(server, testHandler, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &ClientWithResponses{client}, nil
 }
 
 func newClient(server string, testHandler http.Handler, opts ...ClientOption) (*Client, error) {
 	// create a client with sane default values
 	client := Client{
-		Server: server,
-		testHandler:testHandler,
+		Server:      server,
+		testHandler: testHandler,
 	}
 	// mutate client and add all optional params
 	for _, o := range opts {
@@ -903,7 +907,14 @@ func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) MyProviderCallback(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -915,7 +926,14 @@ func (c *Client) MyProviderCallback(ctx context.Context, reqEditors ...RequestEd
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -927,7 +945,14 @@ func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEdito
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -939,7 +964,14 @@ func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ..
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -951,7 +983,14 @@ func (c *Client) OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditor
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -963,7 +1002,14 @@ func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetProject(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -975,7 +1021,14 @@ func (c *Client) GetProject(ctx context.Context, projectName ProjectName, reqEdi
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetProjectBoard(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -987,7 +1040,14 @@ func (c *Client) GetProjectBoard(ctx context.Context, projectName ProjectName, r
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetProjectConfig(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -999,7 +1059,14 @@ func (c *Client) GetProjectConfig(ctx context.Context, projectName ProjectName, 
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1011,7 +1078,14 @@ func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, projectName Pr
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateProjectConfig(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1023,7 +1097,14 @@ func (c *Client) UpdateProjectConfig(ctx context.Context, projectName ProjectNam
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) InitializeProjectWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1035,7 +1116,14 @@ func (c *Client) InitializeProjectWithBody(ctx context.Context, projectName Proj
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) InitializeProject(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1047,7 +1135,14 @@ func (c *Client) InitializeProject(ctx context.Context, projectName ProjectName,
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1059,7 +1154,14 @@ func (c *Client) CreateWorkitemTagWithBody(ctx context.Context, projectName Proj
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemTag(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1071,7 +1173,14 @@ func (c *Client) CreateWorkitemTag(ctx context.Context, projectName ProjectName,
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1083,10 +1192,17 @@ func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectNam
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
-func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn)  (*http.Response, error) {
+func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCurrentUserRequest(c.Server)
 	if err != nil {
 		return nil, err
@@ -1095,11 +1211,8 @@ func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditor
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-
-	if (c.testHandler != nil) {
-
+	if c.testHandler != nil {
 		resp := httptest.NewRecorder()
-
 		c.testHandler.ServeHTTP(resp, req)
 
 		return resp.Result(), nil
@@ -1117,7 +1230,14 @@ func (c *Client) DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestE
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateUserWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1129,7 +1249,14 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id UUID, contentType st
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1141,7 +1268,14 @@ func (c *Client) UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONReq
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1153,7 +1287,14 @@ func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, c
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateUserAuthorization(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1165,7 +1306,14 @@ func (c *Client) UpdateUserAuthorization(ctx context.Context, id UUID, body Upda
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1177,7 +1325,14 @@ func (c *Client) CreateWorkitemWithBody(ctx context.Context, contentType string,
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1189,7 +1344,14 @@ func (c *Client) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequ
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) DeleteWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1201,7 +1363,14 @@ func (c *Client) DeleteWorkitem(ctx context.Context, id Serial, reqEditors ...Re
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1213,7 +1382,14 @@ func (c *Client) GetWorkitem(ctx context.Context, id Serial, reqEditors ...Reque
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1225,7 +1401,14 @@ func (c *Client) UpdateWorkitem(ctx context.Context, id Serial, reqEditors ...Re
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemCommentWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1237,7 +1420,14 @@ func (c *Client) CreateWorkitemCommentWithBody(ctx context.Context, id Serial, c
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemComment(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1249,7 +1439,14 @@ func (c *Client) CreateWorkitemComment(ctx context.Context, id Serial, body Crea
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 // NewAdminPingRequest generates requests for AdminPing
@@ -2104,15 +2301,6 @@ func (c *Client) applyEditors(ctx context.Context, req *http.Request, additional
 // ClientWithResponses builds on ClientInterface to offer response payloads
 type ClientWithResponses struct {
 	ClientInterface
-}
-
-// NewTestClient creates a new ClientWithResponses for testing.
-func NewTestClient(server string, testHandler http.Handler, opts ...ClientOption) (*ClientWithResponses, error) {
-	client, err := newClient(server, testHandler, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &ClientWithResponses{client}, nil
 }
 
 // NewClientWithResponses creates a new ClientWithResponses, which wraps
