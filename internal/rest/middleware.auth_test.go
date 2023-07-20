@@ -28,6 +28,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		requiredScopes models.Scopes
 		status         int
 		body           string
+		withoutUser    bool
 	}{
 		{
 			name:         "unauthorized_user",
@@ -74,6 +75,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			status:         http.StatusForbidden,
 			body:           "Unauthorized",
 		},
+		{
+			name:        "unauthorized_if_no_user",
+			withoutUser: true,
+			status:      http.StatusInternalServerError,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -103,9 +109,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 				t.Fatalf("ff.CreateUser: %s", err)
 			}
 
-			engine.Use(func(c *gin.Context) {
-				ctxWithUser(c, ufixture.User)
-			})
+			if !tc.withoutUser {
+				engine.Use(func(c *gin.Context) {
+					ctxWithUser(c, ufixture.User)
+				})
+			}
 
 			engine.Use(authMw.EnsureAuthorized(AuthRestriction{
 				MinimumRole:    tc.requiredRole,
@@ -119,7 +127,9 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			engine.ServeHTTP(resp, req)
 
 			assert.Equal(t, tc.status, resp.Code)
-			assert.Contains(t, resp.Body.String(), tc.body)
+			if tc.body != "" {
+				assert.Contains(t, resp.Body.String(), tc.body)
+			}
 		})
 	}
 }
