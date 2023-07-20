@@ -32,6 +32,7 @@ func (m *dbMiddleware) BeginTransaction() gin.HandlerFunc {
 		if err != nil {
 			renderErrorResponse(c, "", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not begin tx"))
 			c.Abort()
+
 			return
 		}
 		defer tx.Rollback(ctx)

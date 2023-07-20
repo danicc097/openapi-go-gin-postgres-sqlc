@@ -81,15 +81,14 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	}
 }
 
-type operationIDScopes = map[OperationID][]string
-
 type AuthRestriction struct {
 	MinimumRole    models.Role
 	RequiredScopes models.Scopes
 }
 
-// EnsureAuthorized checks whether the client is authorized.
-func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFunc {
+// EnsureAuthorized checks whether the client is authorized with either a
+// minimum role or has all required scopes.
+func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := getUserFromCtx(c)
 		if user == nil {
@@ -100,7 +99,7 @@ func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 		}
 
 		if config.MinimumRole != "" {
-			userRole, ok := a.authzsvc.RoleByRank(user.RoleRank)
+			userRole, ok := m.authzsvc.RoleByRank(user.RoleRank)
 			if !ok {
 				renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"))
 				c.Abort()
@@ -108,24 +107,23 @@ func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 				return
 			}
 
-			if err := a.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err != nil {
-				renderErrorResponse(c, "Unauthorized", err)
-				c.Abort()
+			if err := m.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err == nil {
+				c.Next()
 
 				return
 			}
 		}
 
 		if len(config.RequiredScopes) > 0 {
-			if err := a.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err != nil {
-				renderErrorResponse(c, "Unauthorized", err)
-				c.Abort()
+			if err := m.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err == nil {
+				c.Next()
 
 				return
 			}
 		}
 
-		c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
+		renderErrorResponse(c, "Unauthorized", internal.NewErrorf(models.ErrorCodeUnauthorized, "unauthorized"))
+		c.Abort()
 	}
 }
 
