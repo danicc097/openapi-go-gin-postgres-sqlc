@@ -114,6 +114,8 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 }
 
 func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
+	t.Helper()
+
 	logger := zaptest.NewLogger(t).Sugar()
 	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
 	if err != nil {

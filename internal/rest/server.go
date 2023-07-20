@@ -92,16 +92,16 @@ func (c *Config) validate() error {
 	return nil
 }
 
-type server struct {
+type Server struct {
 	httpsrv     *http.Server
 	middlewares []gin.HandlerFunc
 }
 
-type ServerOption func(*server)
+type ServerOption func(*Server)
 
 // WithMiddlewares adds the given middlewares before registering the main routers.
 func WithMiddlewares(mws ...gin.HandlerFunc) ServerOption {
-	return func(s *server) {
+	return func(s *Server) {
 		s.middlewares = mws
 	}
 }
@@ -109,12 +109,12 @@ func WithMiddlewares(mws ...gin.HandlerFunc) ServerOption {
 var key = []byte("test1234test1234")
 
 // NewServer returns a new http server.
-func NewServer(conf Config, opts ...ServerOption) (*server, error) {
+func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	if err := conf.validate(); err != nil {
 		return nil, fmt.Errorf("server config validation: %w", err)
 	}
 
-	srv := &server{}
+	srv := &Server{}
 	for _, o := range opts {
 		o(srv)
 	}
