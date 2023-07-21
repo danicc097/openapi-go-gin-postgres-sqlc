@@ -99,20 +99,12 @@ func TestUpdateUserRoutes(t *testing.T) {
 			Role: pointers.New(models.RoleManager),
 		}
 
-		res, err := cl.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, func(ctx context.Context, req *http.Request) error {
-			req.Header.Add("Content-Type", "application/json")
-			req.Header.Add(apiKeyHeaderKey, manager.APIKey.APIKey)
-			return nil
-		})
+		res, err := cl.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusNoContent, res.StatusCode())
 
-		ures, err := cl.GetCurrentUserWithResponse(context.Background(), func(ctx context.Context, req *http.Request) error {
-			req.Header.Add("Content-Type", "application/json")
-			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
-			return nil
-		})
+		ures, err := cl.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, *updateAuthParams.Role, ures.JSON200.Role)
@@ -132,21 +124,13 @@ func TestUpdateUserRoutes(t *testing.T) {
 			LastName:  pointers.New("new name two"),
 		}
 
-		res, err := cl.UpdateUserWithResponse(context.Background(), normalUser.User.UserID, updateParams, func(ctx context.Context, req *http.Request) error {
-			req.Header.Add("Content-Type", "application/json")
-			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
-			return nil
-		})
+		res, err := cl.UpdateUserWithResponse(context.Background(), normalUser.User.UserID, updateParams, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode())
 		assert.Equal(t, normalUser.User.UserID, res.JSON200.UserID)
 
-		ures, err := cl.GetCurrentUserWithResponse(context.Background(), func(ctx context.Context, req *http.Request) error {
-			req.Header.Add("Content-Type", "application/json")
-			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
-			return nil
-		})
+		ures, err := cl.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, updateParams.FirstName, ures.JSON200.FirstName)
