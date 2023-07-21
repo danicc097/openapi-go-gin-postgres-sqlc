@@ -29,9 +29,22 @@ func TestAdminPingRoute(t *testing.T) {
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 	srv.cleanup(t)
 
-	res, err := srv.client.AdminPingWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
-	require.NoError(t, err)
+	t.Run("authorized", func(t *testing.T) {
+		t.Parallel()
 
-	assert.Equal(t, http.StatusOK, res.StatusCode())
-	assert.Equal(t, "pong", string(res.Body))
+		res, err := srv.client.AdminPingWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+		require.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+		assert.Equal(t, "pong", string(res.Body))
+	})
+	t.Run("missing auth header", func(t *testing.T) {
+		t.Parallel()
+
+		res, err := srv.client.AdminPingWithResponse(context.Background())
+		require.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode())
+		assert.Equal(t, models.ErrorCodeRequestValidation, res.JSON4XX.Type)
+	})
 }
