@@ -44,7 +44,7 @@ func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token strin
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
-	user, err := a.usvc.ByEmail(ctx, a.pool, claims.Email)
+	user, err := a.usvc.ByExternalID(ctx, a.pool, claims.Subject)
 	if err != nil {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeNotFound, "user from token not found: %s", err)
 	}
