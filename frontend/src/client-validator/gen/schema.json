@@ -494,7 +494,7 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemsResponse": {
+    "DemoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -613,7 +613,7 @@
       "x-postgen-struct": "RestDemoWorkItemsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoTwoWorkItemsResponse": {
+    "DemoTwoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -769,7 +769,7 @@
       "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestProjectBoardResponse": {
+    "ProjectBoardResponse": {
       "properties": {
         "activities": {
           "items": {
@@ -1251,7 +1251,7 @@
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemTagCreateRequest": {
+    "WorkItemTagCreateRequest": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -1279,7 +1279,7 @@
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemCreateRequest": {
+    "DemoWorkItemCreateRequest": {
       "properties": {
         "base": {
           "$ref": "#/definitions/DbWorkItemCreateParams"
@@ -1316,7 +1316,7 @@
       "x-postgen-struct": "RestDemoWorkItemCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemCommentCreateRequest": {
+    "WorkItemCommentCreateRequest": {
       "properties": {
         "message": {
           "type": "string",
@@ -1661,17 +1661,17 @@
     "ProjectConfigField": {
       "$ref": "#/definitions/ProjectConfigField"
     },
-    "RestDemoWorkItemsResponse": {
-      "$ref": "#/definitions/RestDemoWorkItemsResponse"
+    "DemoWorkItemsResponse": {
+      "$ref": "#/definitions/DemoWorkItemsResponse"
     },
-    "RestDemoTwoWorkItemsResponse": {
-      "$ref": "#/definitions/RestDemoTwoWorkItemsResponse"
+    "DemoTwoWorkItemsResponse": {
+      "$ref": "#/definitions/DemoTwoWorkItemsResponse"
     },
     "InitializeProjectRequest": {
       "$ref": "#/definitions/InitializeProjectRequest"
     },
-    "RestProjectBoardResponse": {
-      "$ref": "#/definitions/RestProjectBoardResponse"
+    "ProjectBoardResponse": {
+      "$ref": "#/definitions/ProjectBoardResponse"
     },
     "User": {
       "$ref": "#/definitions/User"
@@ -1715,14 +1715,14 @@
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
     },
-    "RestWorkItemTagCreateRequest": {
-      "$ref": "#/definitions/RestWorkItemTagCreateRequest"
+    "WorkItemTagCreateRequest": {
+      "$ref": "#/definitions/WorkItemTagCreateRequest"
     },
-    "RestDemoWorkItemCreateRequest": {
-      "$ref": "#/definitions/RestDemoWorkItemCreateRequest"
+    "DemoWorkItemCreateRequest": {
+      "$ref": "#/definitions/DemoWorkItemCreateRequest"
     },
-    "RestWorkItemCommentCreateRequest": {
-      "$ref": "#/definitions/RestWorkItemCommentCreateRequest"
+    "WorkItemCommentCreateRequest": {
+      "$ref": "#/definitions/WorkItemCommentCreateRequest"
     },
     "Project": {
       "$ref": "#/definitions/Project"

@@ -178,7 +178,7 @@ export interface DbWorkItemComment {
   workItemCommentID: number
   workItemID: number
 }
-export interface RestDemoWorkItemsResponse {
+export interface DemoWorkItemsResponse {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -198,7 +198,7 @@ export interface RestDemoWorkItemsResponse {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface RestDemoTwoWorkItemsResponse {
+export interface DemoTwoWorkItemsResponse {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -245,7 +245,7 @@ export interface DbWorkItemTagCreateParams {
   name: string
   projectID?: number
 }
-export interface RestProjectBoardResponse {
+export interface ProjectBoardResponse {
   activities: DbActivity[] | null
   boardConfig: ProjectConfig
   createdAt: string
@@ -338,13 +338,13 @@ export interface DbWorkItem {
   workItemID: number
   workItemTypeID: number
 }
-export interface RestWorkItemTagCreateRequest {
+export interface WorkItemTagCreateRequest {
   color: string
   description: string
   name: string
   projectID?: number
 }
-export interface RestDemoWorkItemCreateRequest {
+export interface DemoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
   members: ServicesMember[] | null
@@ -371,7 +371,7 @@ export interface ServicesMember {
   role: WorkItemRole
   userID: UuidUUID
 }
-export interface RestWorkItemCommentCreateRequest {
+export interface WorkItemCommentCreateRequest {
   message: string
   userID: UuidUUID
   workItemID: number

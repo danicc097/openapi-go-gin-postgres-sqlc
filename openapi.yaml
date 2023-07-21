@@ -315,7 +315,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RestProjectBoardResponse'
+                $ref: '#/components/schemas/ProjectBoardResponse'
       tags:
         - project
   /project/{projectName}/workitems:
@@ -342,8 +342,8 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/RestDemoWorkItemsResponse'
-                  - $ref: '#/components/schemas/RestDemoTwoWorkItemsResponse'
+                  - $ref: '#/components/schemas/DemoWorkItemsResponse'
+                  - $ref: '#/components/schemas/DemoTwoWorkItemsResponse'
       tags:
         - project
   /project/{projectName}/tag/:
@@ -357,7 +357,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RestWorkItemTagCreateRequest'
+              $ref: '#/components/schemas/WorkItemTagCreateRequest'
         required: true
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -382,7 +382,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RestDemoWorkItemCreateRequest'
+              $ref: '#/components/schemas/DemoWorkItemCreateRequest'
         required: true
       responses:
         "201":
@@ -455,7 +455,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RestWorkItemCommentCreateRequest'
+              $ref: '#/components/schemas/WorkItemCommentCreateRequest'
         required: true
       parameters:
         - $ref: '#/components/parameters/Serial'
@@ -804,7 +804,7 @@ components:
         - path
         - name
       type: object
-    RestDemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+    DemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -877,7 +877,7 @@ components:
         - demoWorkItem
       type: object
       x-postgen-struct: RestDemoWorkItemsResponse
-    RestDemoTwoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+    DemoTwoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -971,7 +971,7 @@ components:
           type: array
       type: object
       x-postgen-struct: RestProjectBoardCreateRequest
-    RestProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
+    ProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
           items:
@@ -1317,7 +1317,7 @@ components:
         - updatedAt
       type: object
       x-postgen-struct: DbWorkItem
-    RestWorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    WorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -1334,7 +1334,7 @@ components:
         - color
       type: object
       x-postgen-struct: RestWorkItemTagCreateRequest
-    RestDemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    DemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         base:
           $ref: '#/components/schemas/DbWorkItemCreateParams'
@@ -1357,7 +1357,7 @@ components:
         - members
       type: object
       x-postgen-struct: RestDemoWorkItemCreateRequest
-    RestWorkItemCommentCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    WorkItemCommentCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         message:
           type: string

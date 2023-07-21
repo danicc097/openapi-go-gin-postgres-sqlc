@@ -1851,7 +1851,7 @@ func (r GetProjectResponse) StatusCode() int {
 type GetProjectBoardResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *RestProjectBoardResponse
+	JSON200      *ProjectBoardResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -2606,7 +2606,7 @@ func ParseGetProjectBoardResponse(rsp *http.Response) (*GetProjectBoardResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RestProjectBoardResponse
+		var dest ProjectBoardResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

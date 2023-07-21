@@ -17,10 +17,10 @@ import {
   DbWorkItemComment,
   ProjectConfig,
   ProjectConfigField,
-  RestDemoWorkItemsResponse,
-  RestDemoTwoWorkItemsResponse,
+  DemoWorkItemsResponse,
+  DemoTwoWorkItemsResponse,
   InitializeProjectRequest,
-  RestProjectBoardResponse,
+  ProjectBoardResponse,
   User,
   HTTPValidationError,
   ErrorCode,
@@ -35,9 +35,9 @@ import {
   ValidationError,
   UuidUUID,
   DbWorkItem,
-  RestWorkItemTagCreateRequest,
-  RestDemoWorkItemCreateRequest,
-  RestWorkItemCommentCreateRequest,
+  WorkItemTagCreateRequest,
+  DemoWorkItemCreateRequest,
+  WorkItemCommentCreateRequest,
   Project,
   DbActivityCreateParams,
   DbTeamCreateParams,
@@ -71,22 +71,16 @@ export const schemaDefinitions = {
   DbWorkItemComment: info<DbWorkItemComment>('DbWorkItemComment', '#/definitions/DbWorkItemComment'),
   ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
   ProjectConfigField: info<ProjectConfigField>('ProjectConfigField', '#/definitions/ProjectConfigField'),
-  RestDemoWorkItemsResponse: info<RestDemoWorkItemsResponse>(
-    'RestDemoWorkItemsResponse',
-    '#/definitions/RestDemoWorkItemsResponse',
-  ),
-  RestDemoTwoWorkItemsResponse: info<RestDemoTwoWorkItemsResponse>(
-    'RestDemoTwoWorkItemsResponse',
-    '#/definitions/RestDemoTwoWorkItemsResponse',
+  DemoWorkItemsResponse: info<DemoWorkItemsResponse>('DemoWorkItemsResponse', '#/definitions/DemoWorkItemsResponse'),
+  DemoTwoWorkItemsResponse: info<DemoTwoWorkItemsResponse>(
+    'DemoTwoWorkItemsResponse',
+    '#/definitions/DemoTwoWorkItemsResponse',
   ),
   InitializeProjectRequest: info<InitializeProjectRequest>(
     'InitializeProjectRequest',
     '#/definitions/InitializeProjectRequest',
   ),
-  RestProjectBoardResponse: info<RestProjectBoardResponse>(
-    'RestProjectBoardResponse',
-    '#/definitions/RestProjectBoardResponse',
-  ),
+  ProjectBoardResponse: info<ProjectBoardResponse>('ProjectBoardResponse', '#/definitions/ProjectBoardResponse'),
   User: info<User>('User', '#/definitions/User'),
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
   ErrorCode: info<ErrorCode>('ErrorCode', '#/definitions/ErrorCode'),
@@ -101,17 +95,17 @@ export const schemaDefinitions = {
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
-  RestWorkItemTagCreateRequest: info<RestWorkItemTagCreateRequest>(
-    'RestWorkItemTagCreateRequest',
-    '#/definitions/RestWorkItemTagCreateRequest',
+  WorkItemTagCreateRequest: info<WorkItemTagCreateRequest>(
+    'WorkItemTagCreateRequest',
+    '#/definitions/WorkItemTagCreateRequest',
   ),
-  RestDemoWorkItemCreateRequest: info<RestDemoWorkItemCreateRequest>(
-    'RestDemoWorkItemCreateRequest',
-    '#/definitions/RestDemoWorkItemCreateRequest',
+  DemoWorkItemCreateRequest: info<DemoWorkItemCreateRequest>(
+    'DemoWorkItemCreateRequest',
+    '#/definitions/DemoWorkItemCreateRequest',
   ),
-  RestWorkItemCommentCreateRequest: info<RestWorkItemCommentCreateRequest>(
-    'RestWorkItemCommentCreateRequest',
-    '#/definitions/RestWorkItemCommentCreateRequest',
+  WorkItemCommentCreateRequest: info<WorkItemCommentCreateRequest>(
+    'WorkItemCommentCreateRequest',
+    '#/definitions/WorkItemCommentCreateRequest',
   ),
   Project: info<Project>('Project', '#/definitions/Project'),
   DbActivityCreateParams: info<DbActivityCreateParams>(

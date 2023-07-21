@@ -6,9 +6,4 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface RestWorkItemTagCreateRequest {
-  color: string
-  description: string
-  name: string
-  projectID?: number
-}
+export type DemoWorkItemsResponseMetadata = { [key: string]: unknown } | null

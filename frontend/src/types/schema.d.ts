@@ -206,7 +206,7 @@ export interface components {
       path: string;
       showCollapsed: boolean;
     };
-    RestDemoWorkItemsResponse: {
+    DemoWorkItemsResponse: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -233,7 +233,7 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
-    RestDemoTwoWorkItemsResponse: {
+    DemoTwoWorkItemsResponse: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -266,7 +266,7 @@ export interface components {
       teams?: (components["schemas"]["DbTeamCreateParams"])[] | null;
       workItemTags?: (components["schemas"]["DbWorkItemTagCreateParams"])[] | null;
     };
-    RestProjectBoardResponse: {
+    ProjectBoardResponse: {
       activities: (components["schemas"]["DbActivity"])[] | null;
       boardConfig: components["schemas"]["ProjectConfig"];
       /** Format: date-time */
@@ -417,19 +417,19 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
-    RestWorkItemTagCreateRequest: {
+    WorkItemTagCreateRequest: {
       color: string;
       description: string;
       name: string;
       projectID?: number;
     };
-    RestDemoWorkItemCreateRequest: {
+    DemoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
       members: (components["schemas"]["ServicesMember"])[] | null;
       tagIDs: (number)[] | null;
     };
-    RestWorkItemCommentCreateRequest: {
+    WorkItemCommentCreateRequest: {
       message: string;
       userID: components["schemas"]["UuidUUID"];
       workItemID: number;
@@ -756,7 +756,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["RestProjectBoardResponse"];
+          "application/json": components["schemas"]["ProjectBoardResponse"];
         };
       };
     };
@@ -776,7 +776,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["RestDemoWorkItemsResponse"] | components["schemas"]["RestDemoTwoWorkItemsResponse"];
+          "application/json": components["schemas"]["DemoWorkItemsResponse"] | components["schemas"]["DemoTwoWorkItemsResponse"];
         };
       };
     };
@@ -790,7 +790,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["RestWorkItemTagCreateRequest"];
+        "application/json": components["schemas"]["WorkItemTagCreateRequest"];
       };
     };
     responses: {
@@ -806,7 +806,7 @@ export interface operations {
   CreateWorkitem: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["RestDemoWorkItemCreateRequest"];
+        "application/json": components["schemas"]["DemoWorkItemCreateRequest"];
       };
     };
     responses: {
@@ -871,7 +871,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["RestWorkItemCommentCreateRequest"];
+        "application/json": components["schemas"]["WorkItemCommentCreateRequest"];
       };
     };
     responses: {

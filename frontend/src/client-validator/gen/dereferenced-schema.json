@@ -618,7 +618,7 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemsResponse": {
+    "DemoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -1012,7 +1012,7 @@
       "x-postgen-struct": "RestDemoWorkItemsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoTwoWorkItemsResponse": {
+    "DemoTwoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -1491,7 +1491,7 @@
       "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestProjectBoardResponse": {
+    "ProjectBoardResponse": {
       "properties": {
         "activities": {
           "items": {
@@ -2558,7 +2558,7 @@
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemTagCreateRequest": {
+    "WorkItemTagCreateRequest": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -2586,7 +2586,7 @@
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemCreateRequest": {
+    "DemoWorkItemCreateRequest": {
       "properties": {
         "base": {
           "properties": {
@@ -2729,7 +2729,7 @@
       "x-postgen-struct": "RestDemoWorkItemCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemCommentCreateRequest": {
+    "WorkItemCommentCreateRequest": {
       "properties": {
         "message": {
           "type": "string",
@@ -3671,7 +3671,7 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemsResponse": {
+    "DemoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -4065,7 +4065,7 @@
       "x-postgen-struct": "RestDemoWorkItemsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoTwoWorkItemsResponse": {
+    "DemoTwoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -4544,7 +4544,7 @@
       "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestProjectBoardResponse": {
+    "ProjectBoardResponse": {
       "properties": {
         "activities": {
           "items": {
@@ -5611,7 +5611,7 @@
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemTagCreateRequest": {
+    "WorkItemTagCreateRequest": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -5639,7 +5639,7 @@
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemCreateRequest": {
+    "DemoWorkItemCreateRequest": {
       "properties": {
         "base": {
           "properties": {
@@ -5782,7 +5782,7 @@
       "x-postgen-struct": "RestDemoWorkItemCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemCommentCreateRequest": {
+    "WorkItemCommentCreateRequest": {
       "properties": {
         "message": {
           "type": "string",

@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { UuidUUID } from './uuidUUID'
 
-export interface RestWorkItemCommentCreateRequest {
-  message: string
-  userID: UuidUUID
-  workItemID: number
+export interface WorkItemTagCreateRequest {
+  color: string
+  description: string
+  name: string
+  projectID?: number
 }
