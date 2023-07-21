@@ -27,19 +27,19 @@ func TestAdminPingRoute(t *testing.T) {
 		t.Fatalf("ff.CreateUser: %s", err)
 	}
 
-	srv, _, err := runTestServer(t, testPool, []gin.HandlerFunc{
+	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{
 		func(c *gin.Context) {
 			c.Next()
 		},
 	})
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-	defer srv.Close()
+	srv.cleanup(t)
 
 	resp := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/admin/ping"), nil)
 	req.Header.Add(apiKeyHeaderKey, ufixture.APIKey.APIKey)
 
-	srv.Handler.ServeHTTP(resp, req)
+	srv.server.Handler.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
 	assert.Equal(t, "pong", resp.Body.String())

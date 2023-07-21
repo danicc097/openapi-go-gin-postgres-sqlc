@@ -62,8 +62,19 @@ func testMain(m *testing.M) int {
 	return m.Run()
 }
 
+type testServer struct {
+	server *http.Server
+	client *client.ClientWithResponses
+}
+
+func (s *testServer) cleanup(t *testing.T) {
+	t.Cleanup(func() {
+		s.server.Close()
+	})
+}
+
 // runTestServer returns a test server and client.
-func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, *client.ClientWithResponses, error) {
+func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*testServer, error) {
 	t.Helper()
 
 	ctx := context.Background()
@@ -91,7 +102,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.zapNew")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.zapNew")
 	}
 
 	_, err = openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
@@ -111,15 +122,15 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 		RolePolicyPath:  "../../roles.json",
 	}, WithMiddlewares(middlewares...))
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
 	}
 
 	client, err := client.NewTestClient(resttestutil.MustConstructInternalPath(""), srv.httpsrv.Handler)
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "client.NewTestClient")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "client.NewTestClient")
 	}
 
-	return srv.httpsrv, client, nil
+	return &testServer{server: srv.httpsrv, client: client}, nil
 }
 
 func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {

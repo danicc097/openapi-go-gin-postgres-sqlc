@@ -14,13 +14,13 @@ import (
 func TestPingRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, _, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-	defer srv.Close()
+	srv.cleanup(t)
 
 	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/ping"), nil)
 	resp := httptest.NewRecorder()
-	srv.Handler.ServeHTTP(resp, req)
+	srv.server.Handler.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
 	assert.Equal(t, "pong", resp.Body.String())

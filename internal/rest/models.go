@@ -1,5 +1,9 @@
 package rest
 
+/**
+ * IMPORTANT: do not use omitempty for json arrays. oapi generated models will not include it and break equality tests
+ */
+
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
@@ -14,8 +18,8 @@ type User struct {
 	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
 	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
-	Teams    *[]db.Team     `json:"teams,omitempty"`
-	Projects *[]db.Project  `json:"projects,omitempty"`
+	Teams    *[]db.Team     `json:"teams"`
+	Projects *[]db.Project  `json:"projects"`
 }
 
 type SharedWorkItemFields struct {

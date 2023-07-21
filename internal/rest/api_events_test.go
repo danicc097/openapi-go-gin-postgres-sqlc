@@ -70,13 +70,13 @@ func TestSSEStream(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req = req.WithContext(ctx)
 
-	srv, _, err := runTestServer(t, testPool, []gin.HandlerFunc{
+	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{
 		func(c *gin.Context) {
 			c.Next()
 		},
 	})
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-	defer srv.Close()
+	srv.cleanup(t)
 
 	stopCh := make(chan bool)
 	go func() {
@@ -86,7 +86,7 @@ func TestSSEStream(t *testing.T) {
 				return
 			default:
 				time.Sleep(1 * time.Second) // TODO remove when actually testing something
-				srv.Handler.ServeHTTP(res, req)
+				srv.server.Handler.ServeHTTP(res, req)
 			}
 		}
 	}()

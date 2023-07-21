@@ -1,11 +1,9 @@
 package rest
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -20,12 +18,9 @@ import (
 func TestGetUserRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, _, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-
-	t.Cleanup(func() {
-		srv.Close()
-	})
 
 	ff := newTestFixtureFactory(t)
 
@@ -42,37 +37,28 @@ func TestGetUserRoute(t *testing.T) {
 		})
 		require.NoError(t, err, "ff.CreateUser: %s")
 
-		req, err := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/user/me"), &bytes.Buffer{})
-		if err != nil {
-			t.Errorf("%v", err)
-		}
-		req.Header.Add(apiKeyHeaderKey, ufixture.APIKey.APIKey)
+		ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
 
-		resp := httptest.NewRecorder()
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, ures.StatusCode())
 
-		srv.Handler.ServeHTTP(resp, req)
+		got, err := json.Marshal(ures.JSON200)
+		require.NoError(t, err)
+		want, err := json.Marshal(&User{User: *ufixture.User, Role: role})
+		require.NoError(t, err)
 
-		ures := User{User: *ufixture.User, Role: role}
-
-		res, err := json.Marshal(ures)
-		if err != nil {
-			t.Fatalf("could not marshal user fixture")
-		}
-
-		assert.Equal(t, http.StatusOK, resp.Code)
-		assert.Equal(t, string(res), resp.Body.String())
+		// IMPORTANT: don't use omitempty in rest models arrays
+		// should fix oapi-codegen upstream most likely to respect omitempty
+		assert.JSONEqf(t, string(want), string(got), "")
 	})
 }
 
 func TestUpdateUserRoutes(t *testing.T) {
 	t.Parallel()
 
-	srv, cl, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-
-	t.Cleanup(func() {
-		srv.Close()
-	})
 
 	ff := newTestFixtureFactory(t)
 
@@ -99,12 +85,12 @@ func TestUpdateUserRoutes(t *testing.T) {
 			Role: pointers.New(models.RoleManager),
 		}
 
-		res, err := cl.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
+		res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusNoContent, res.StatusCode())
 
-		ures, err := cl.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+		ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, *updateAuthParams.Role, ures.JSON200.Role)
@@ -124,13 +110,13 @@ func TestUpdateUserRoutes(t *testing.T) {
 			LastName:  pointers.New("new name two"),
 		}
 
-		res, err := cl.UpdateUserWithResponse(context.Background(), normalUser.User.UserID, updateParams, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+		res, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID, updateParams, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode())
 		assert.Equal(t, normalUser.User.UserID, res.JSON200.UserID)
 
-		ures, err := cl.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+		ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, updateParams.FirstName, ures.JSON200.FirstName)
