@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestProject_ByIndexedQueries(t *testing.T) {
@@ -128,14 +129,14 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 
 		obj := map[string]any{"a": []string{"a.a", "a.b"}}
 		err := projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path}, obj)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		p, err := projectRepo.ByID(ctx, tx, projectID)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		got, err := json.Marshal((*p.BoardConfig.Visualization)[path])
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		want, err := json.Marshal(obj)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		if diff := cmp.Diff(got, want); diff != "" {
 			t.Errorf("board config mismatch (-want +got):\n%s", diff)
@@ -143,14 +144,14 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 
 		obj2 := map[string]any{"b": "1"}
 		err = projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path}, obj2)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		p, err = projectRepo.ByID(ctx, tx, projectID)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		got, err = json.Marshal((*p.BoardConfig.Visualization)[path])
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		want, err = json.Marshal(obj2)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		if diff := cmp.Diff(got, want); diff != "" {
 			t.Errorf("board config mismatch (-want +got):\n%s", diff)
@@ -168,18 +169,18 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 
 		obj1 := map[string]any{"a": []string{"a.a", "a.b"}}
 		err := projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path1}, obj1)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		obj2 := map[string]any{"b": "1"}
 		err = projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path2}, obj2)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		p, err := projectRepo.ByID(ctx, tx, projectID)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		got, err := json.Marshal(p.BoardConfig.Visualization)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		want, err := json.Marshal(map[string]any{path1: obj1, path2: obj2})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		if diff := cmp.Diff(got, want); diff != "" {
 			t.Errorf("board config mismatch (-want +got):\n%s", diff)

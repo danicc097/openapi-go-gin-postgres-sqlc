@@ -9,7 +9,7 @@ import (
 )
 
 type FakeMovieGenreServer struct {
-v1.UnimplementedMovieGenreServer
+	v1.UnimplementedMovieGenreServer
 	PredictStub        func(context.Context, *v1.PredictRequest) (*v1.PredictReply, error)
 	predictMutex       sync.RWMutex
 	predictArgsForCall []struct {

@@ -11,6 +11,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAdminPingRoute(t *testing.T) {
@@ -31,9 +32,7 @@ func TestAdminPingRoute(t *testing.T) {
 			c.Next()
 		},
 	})
-	if err != nil {
-		t.Fatalf("Couldn't run test server: %s\n", err)
-	}
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 	defer srv.Close()
 
 	resp := httptest.NewRecorder()

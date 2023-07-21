@@ -14,6 +14,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TODO see e.g. https://dev.lucaskatayama.com/posts/go/2020/08/sse-with-gin/
@@ -74,9 +75,7 @@ func TestSSEStream(t *testing.T) {
 			c.Next()
 		},
 	})
-	if err != nil {
-		t.Fatalf("Couldn't run test server: %s\n", err)
-	}
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 	defer srv.Close()
 
 	stopCh := make(chan bool)

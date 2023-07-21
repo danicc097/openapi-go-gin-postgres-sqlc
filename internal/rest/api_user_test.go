@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,15 +14,14 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetUserRoute(t *testing.T) {
 	t.Parallel()
 
 	srv, _, err := runTestServer(t, testPool, []gin.HandlerFunc{})
-	if err != nil {
-		t.Fatalf("Couldn't run test server: %s\n", err)
-	}
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	t.Cleanup(func() {
 		srv.Close()
@@ -42,9 +40,7 @@ func TestGetUserRoute(t *testing.T) {
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		if err != nil {
-			t.Fatalf("ff.CreateUser: %s", err)
-		}
+		require.NoError(t, err, "ff.CreateUser: %s")
 
 		req, err := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/user/me"), &bytes.Buffer{})
 		if err != nil {
@@ -68,11 +64,11 @@ func TestGetUserRoute(t *testing.T) {
 	})
 }
 
-func TestUpdateUserRoute(t *testing.T) {
+func TestUpdateUserRoutes(t *testing.T) {
 	t.Parallel()
 
 	srv, cl, err := runTestServer(t, testPool, []gin.HandlerFunc{})
-	assert.NoError(t, err, "Couldn't run test server: %s\n")
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	t.Cleanup(func() {
 		srv.Close()
@@ -90,39 +86,36 @@ func TestUpdateUserRoute(t *testing.T) {
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		if err != nil {
-			t.Fatalf("ff.CreateUser: %s", err)
-		}
+		require.NoError(t, err, "ff.CreateUser: %s")
+
 		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleUser,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		if err != nil {
-			t.Fatalf("ff.CreateUser: %s", err)
-		}
-		var buf bytes.Buffer
+		require.NoError(t, err, "ff.CreateUser: %s")
 
 		updateAuthParams := models.UpdateUserAuthRequest{
 			Role: pointers.New(models.RoleManager),
 		}
 
-		if err := json.NewEncoder(&buf).Encode(updateAuthParams); err != nil {
-			t.Errorf("unexpected error %v", err)
-		}
+		res, err := cl.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, func(ctx context.Context, req *http.Request) error {
+			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add(apiKeyHeaderKey, manager.APIKey.APIKey)
+			return nil
+		})
 
-		path := resttestutil.MustConstructInternalPath(fmt.Sprintf("/user/%s/authorization", normalUser.User.UserID))
-		req, err := http.NewRequest(http.MethodPatch, path, &buf)
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusNoContent, res.StatusCode())
 
-		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add(apiKeyHeaderKey, manager.APIKey.APIKey)
+		ures, err := cl.GetCurrentUserWithResponse(context.Background(), func(ctx context.Context, req *http.Request) error {
+			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
+			return nil
+		})
 
-		resp := httptest.NewRecorder()
-
-		srv.Handler.ServeHTTP(resp, req)
-
-		assert.Equal(t, http.StatusNoContent, resp.Code)
+		require.NoError(t, err)
+		assert.Equal(t, *updateAuthParams.Role, ures.JSON200.Role)
 	})
 
 	t.Run("user updates itself", func(t *testing.T) {
@@ -132,23 +125,22 @@ func TestUpdateUserRoute(t *testing.T) {
 			Role:       models.RoleUser,
 			WithAPIKey: true,
 		})
-		if err != nil {
-			t.Fatalf("ff.CreateUser: %s", err)
-		}
+		require.NoError(t, err, "ff.CreateUser: %s")
 
 		updateParams := models.UpdateUserRequest{
 			FirstName: pointers.New("new name"),
-			LastName:  pointers.New("new name2"),
+			LastName:  pointers.New("new name two"),
 		}
 
-		res, err := cl.UpdateUser(context.Background(), normalUser.User.UserID, updateParams, func(ctx context.Context, req *http.Request) error {
+		res, err := cl.UpdateUserWithResponse(context.Background(), normalUser.User.UserID, updateParams, func(ctx context.Context, req *http.Request) error {
 			req.Header.Add("Content-Type", "application/json")
 			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
 			return nil
 		})
 
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusOK, res.StatusCode)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+		assert.Equal(t, normalUser.User.UserID, res.JSON200.UserID)
 
 		ures, err := cl.GetCurrentUserWithResponse(context.Background(), func(ctx context.Context, req *http.Request) error {
 			req.Header.Add("Content-Type", "application/json")
@@ -156,7 +148,7 @@ func TestUpdateUserRoute(t *testing.T) {
 			return nil
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, updateParams.FirstName, ures.JSON200.FirstName)
 		assert.Equal(t, updateParams.LastName, ures.JSON200.LastName)
 	})
