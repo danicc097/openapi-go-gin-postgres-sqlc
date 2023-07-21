@@ -2,7 +2,7 @@
 package: client
 generate:
   client: true
-  models: true
 output: internal/client/openapi_client.gen.go
-output-options:
-  skip-prune: true
+additional-imports:
+  - alias: .
+    package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models

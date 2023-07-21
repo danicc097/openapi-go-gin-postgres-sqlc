@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
@@ -142,7 +141,7 @@ func TestUpdateUserRoute(t *testing.T) {
 			LastName:  pointers.New("new name2"),
 		}
 
-		res, err := cl.UpdateUser(context.Background(), normalUser.User.UserID, client.UpdateUserRequest(updateParams), func(ctx context.Context, req *http.Request) error {
+		res, err := cl.UpdateUser(context.Background(), normalUser.User.UserID, updateParams, func(ctx context.Context, req *http.Request) error {
 			req.Header.Add("Content-Type", "application/json")
 			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
 			return nil
