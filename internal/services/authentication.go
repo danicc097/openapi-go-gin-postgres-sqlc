@@ -121,14 +121,13 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 		}
 	}
 
-	// update out of sync editable fields
-	if u.FirstName != pointers.New(userinfo.GivenName) || u.LastName != pointers.New(userinfo.FamilyName) {
-		u, err = a.usvc.Update(ctx, a.pool, u.UserID.String(), superAdmin, &models.UpdateUserRequest{
-			FirstName: pointers.New(userinfo.GivenName),
-			LastName:  pointers.New(userinfo.FamilyName),
-		})
+	// update out of sync non editable fields
+	if u.Email != userinfo.Email || u.Username != userinfo.PreferredUsername {
+		u.Email = userinfo.Email
+		u.Username = userinfo.PreferredUsername
+		u, err = u.Update(ctx, a.pool)
 		if err != nil {
-			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not get update out of sync userinfo: %s", err)
+			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not update out of sync userinfo: %s", err)
 		}
 	}
 
