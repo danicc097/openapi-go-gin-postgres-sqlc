@@ -177,9 +177,10 @@ paths:
       responses:
         "204":
           description: User auth updated successfully.
+      x-required-scopes:
+        - scopes:write
       tags:
         - user
-      x-required-role: user
   /user/{id}:
     delete:
       security:

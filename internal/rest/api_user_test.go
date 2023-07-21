@@ -47,8 +47,6 @@ func TestGetUserRoute(t *testing.T) {
 		want, err := json.Marshal(&User{User: *ufixture.User, Role: role})
 		require.NoError(t, err)
 
-		// IMPORTANT: don't use omitempty in rest models arrays
-		// should fix oapi-codegen upstream most likely to respect omitempty
 		assert.JSONEqf(t, string(want), string(got), "")
 	})
 }
@@ -62,15 +60,22 @@ func TestUpdateUserRoutes(t *testing.T) {
 
 	ff := newTestFixtureFactory(t)
 
-	t.Run("manager updates another user authorization", func(t *testing.T) {
+	// scopes and roles part of rest layer. don't test any actual logic here, done in services
+	t.Run("user with valid scopes can update another user's authorization info", func(t *testing.T) {
 		t.Parallel()
 
-		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
+		scopes := models.Scopes{models.ScopeScopesWrite}
 
 		manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleManager,
 			WithAPIKey: true,
 			Scopes:     scopes,
+		})
+		require.NoError(t, err, "ff.CreateUser: %s")
+
+		managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			Role:       models.RoleManager,
+			WithAPIKey: true,
 		})
 		require.NoError(t, err, "ff.CreateUser: %s")
 
@@ -84,6 +89,9 @@ func TestUpdateUserRoutes(t *testing.T) {
 		updateAuthParams := models.UpdateUserAuthRequest{
 			Role: pointers.New(models.RoleManager),
 		}
+		badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusForbidden, badres.StatusCode())
 
 		res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
@@ -96,7 +104,7 @@ func TestUpdateUserRoutes(t *testing.T) {
 		assert.Equal(t, *updateAuthParams.Role, ures.JSON200.Role)
 	})
 
-	t.Run("user updates itself", func(t *testing.T) {
+	t.Run("user can update itself", func(t *testing.T) {
 		t.Parallel()
 
 		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{

@@ -35,8 +35,10 @@
     "requiresAuthentication": true
   },
   "UpdateUserAuthorization": {
-    "scopes": null,
-    "role": "user",
+    "scopes": [
+      "scopes:write"
+    ],
+    "role": null,
     "requiresAuthentication": true
   },
   "DeleteUser": {
