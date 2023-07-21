@@ -549,6 +549,15 @@ x.gen.client-server() {
     echo "Running generation"
     paths=".openapi.paths.yaml"
 
+    yq e '.components.schemas.UuidUUID = {
+        "type": "string",
+        "x-go-type": "uuid.UUID",
+        "x-go-type-import":{
+          "name": "uuid",
+          "path": "github.com/google/uuid"
+        }
+      }' -i $SPEC
+
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types

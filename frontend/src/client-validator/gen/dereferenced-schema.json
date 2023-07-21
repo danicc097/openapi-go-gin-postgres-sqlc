@@ -326,6 +326,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -402,6 +407,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -454,6 +464,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -494,6 +509,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemCommentID": {
@@ -725,6 +745,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -799,6 +824,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -855,6 +885,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -1087,6 +1122,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -1161,6 +1201,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -1217,6 +1262,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -1767,6 +1817,11 @@
             },
             "userID": {
               "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
               "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
@@ -2003,6 +2058,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -2415,10 +2475,11 @@
     },
     "UuidUUID": {
       "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "PgtypeJSONB": {
-      "type": "object",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {
@@ -2628,6 +2689,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
@@ -2671,6 +2737,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -2949,6 +3020,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -3303,6 +3379,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -3379,6 +3460,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -3431,6 +3517,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -3471,6 +3562,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemCommentID": {
@@ -3702,6 +3798,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -3776,6 +3877,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -3832,6 +3938,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -4064,6 +4175,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -4138,6 +4254,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -4194,6 +4315,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -4744,6 +4870,11 @@
             },
             "userID": {
               "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
               "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
@@ -4980,6 +5111,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -5392,10 +5528,11 @@
     },
     "UuidUUID": {
       "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "PgtypeJSONB": {
-      "type": "object",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {
@@ -5605,6 +5742,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
@@ -5648,6 +5790,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -5926,6 +6073,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },

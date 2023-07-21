@@ -5,6 +5,8 @@ package models
 
 import (
 	"time"
+
+	uuid "github.com/google/uuid"
 )
 
 const (
@@ -498,9 +500,6 @@ type InitializeProjectRequest struct {
 // NotificationType represents a database 'notification_type'
 type NotificationType string
 
-// PgtypeJSONB defines the model for PgtypeJSONB.
-type PgtypeJSONB = map[string]interface{}
-
 // Project defines the model for Project.
 type Project string
 
@@ -656,7 +655,7 @@ type User struct {
 }
 
 // UuidUUID defines the model for UuidUUID.
-type UuidUUID = string
+type UuidUUID = uuid.UUID
 
 // ValidationError defines the model for ValidationError.
 type ValidationError struct {
@@ -685,7 +684,7 @@ type ProjectName = Project
 type Serial = int
 
 // UUID defines the model for UUID.
-type UUID = string
+type UUID = uuid.UUID
 
 // EventsParams defines parameters for Events.
 type EventsParams struct {

@@ -38,7 +38,6 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
-  PgtypeJSONB,
   DbWorkItem,
   RestWorkItemTagCreateRequest,
   RestDemoWorkItemCreateRequest,
@@ -426,18 +425,6 @@ export const UuidUUIDDecoder: Decoder<UuidUUID> = {
       throw new Error(`Schema ${UuidUUIDDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, UuidUUIDDecoder.definitionName)
-  },
-}
-export const PgtypeJSONBDecoder: Decoder<PgtypeJSONB> = {
-  definitionName: 'PgtypeJSONB',
-  schemaRef: '#/definitions/PgtypeJSONB',
-
-  decode(json: unknown): PgtypeJSONB {
-    const schema = ajv.getSchema(PgtypeJSONBDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${PgtypeJSONBDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, PgtypeJSONBDecoder.definitionName)
   },
 }
 export const DbWorkItemDecoder: Decoder<DbWorkItem> = {

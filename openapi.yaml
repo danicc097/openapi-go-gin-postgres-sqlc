@@ -18,6 +18,24 @@
 #
 #
 #######################################
+# https://github.com/deepmap/oapi-codegen/issues/760 does not work with ref
+x-uuidParameter: &x-uuidParameter
+  description: UUID identifier
+  explode: false
+  in: path
+  name: id
+  required: true
+  schema:
+    type: string
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+    # https://github.com/deepmap/oapi-codegen/issues/760
+    x-go-type: uuid.UUID
+    x-go-type-import:
+      name: uuid
+      path: github.com/google/uuid
+  example: 123e4567-e89b-12d3-a456-426614174000
+  style: simple
+#######################################
 openapi: 3.0.3
 info:
   description: openapi-go-gin-postgres-sqlc
@@ -148,7 +166,7 @@ paths:
       summary: updates user role and scopes by id
       operationId: UpdateUserAuthorization
       parameters:
-        - $ref: '#/components/parameters/UUID'
+        - *x-uuidParameter
       requestBody:
         content:
           application/json:
@@ -170,7 +188,7 @@ paths:
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
-        - $ref: '#/components/parameters/UUID'
+        - *x-uuidParameter
       responses:
         "404":
           description: User not found
@@ -186,7 +204,7 @@ paths:
       summary: updates the user by id
       operationId: UpdateUser
       parameters:
-        - $ref: '#/components/parameters/UUID'
+        - *x-uuidParameter
       requestBody:
         content:
           application/json:
@@ -462,17 +480,7 @@ components:
         $ref: '#/components/schemas/Project'
       example: demo
       style: simple
-    UUID:
-      description: UUID identifier
-      explode: false
-      in: path
-      name: id
-      required: true
-      schema:
-        type: string
-        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-      example: 123e4567-e89b-12d3-a456-426614174000
-      style: simple
+    UUID: *x-uuidParameter
     Serial:
       description: integer identifier
       explode: false
@@ -1256,8 +1264,10 @@ components:
           type: object
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string
-    PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
-      type: object
+      x-go-type: uuid.UUID
+      x-go-type-import:
+        name: uuid
+        path: github.com/google/uuid
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:

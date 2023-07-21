@@ -324,7 +324,6 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
-export interface PgtypeJSONB {}
 export interface DbWorkItem {
   closedAt?: string | null
   createdAt: string

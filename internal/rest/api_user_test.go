@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
@@ -71,8 +72,7 @@ func TestGetUserRoute(t *testing.T) {
 func TestUpdateUserRoute(t *testing.T) {
 	t.Parallel()
 
-	// TODO: returns client as well
-	srv, client, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv, cl, err := runTestServer(t, testPool, []gin.HandlerFunc{})
 	assert.NoError(t, err, "Couldn't run test server: %s\n")
 
 	t.Cleanup(func() {
@@ -114,9 +114,8 @@ func TestUpdateUserRoute(t *testing.T) {
 
 		path := resttestutil.MustConstructInternalPath(fmt.Sprintf("/user/%s/authorization", normalUser.User.UserID))
 		req, err := http.NewRequest(http.MethodPatch, path, &buf)
-		if err != nil {
-			t.Errorf("unexpected error %v", err)
-		}
+		assert.NoError(t, err)
+
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add(apiKeyHeaderKey, manager.APIKey.APIKey)
 
@@ -137,38 +136,29 @@ func TestUpdateUserRoute(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ff.CreateUser: %s", err)
 		}
-		var buf bytes.Buffer
 
 		updateParams := models.UpdateUserRequest{
 			FirstName: pointers.New("new name"),
-			LastName:  pointers.New("new name"),
+			LastName:  pointers.New("new name2"),
 		}
 
-		if err := json.NewEncoder(&buf).Encode(updateParams); err != nil {
-			t.Errorf("unexpected error %v", err)
-		}
-
-		path := resttestutil.MustConstructInternalPath(fmt.Sprintf("/user/%s", normalUser.User.UserID))
-		req, err := http.NewRequest(http.MethodPatch, path, &buf)
-		if err != nil {
-			t.Errorf("unexpected error %v", err)
-		}
-		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
-
-		assert.NoError(t, err)
-		fmt.Printf("srv.Addr: %v\n", srv.Addr)
-		res, err := client.GetCurrentUserWithResponse(context.Background(), func(ctx context.Context, req *http.Request) error {
+		res, err := cl.UpdateUser(context.Background(), normalUser.User.UserID, client.UpdateUserRequest(updateParams), func(ctx context.Context, req *http.Request) error {
 			req.Header.Add("Content-Type", "application/json")
 			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
 			return nil
 		})
+
 		assert.NoError(t, err)
-		t.Logf("res: %v\n", res.JSON200)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
 
-		// srv.Handler.ServeHTTP(resp, req)
+		ures, err := cl.GetCurrentUserWithResponse(context.Background(), func(ctx context.Context, req *http.Request) error {
+			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add(apiKeyHeaderKey, normalUser.APIKey.APIKey)
+			return nil
+		})
 
-		// format.PrintJSON(resp)
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		assert.NoError(t, err)
+		assert.Equal(t, updateParams.FirstName, ures.JSON200.FirstName)
+		assert.Equal(t, updateParams.LastName, ures.JSON200.LastName)
 	})
 }

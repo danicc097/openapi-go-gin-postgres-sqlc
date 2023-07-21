@@ -19,6 +19,7 @@ import (
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
+	uuid "github.com/google/uuid"
 )
 
 const (
@@ -512,9 +513,6 @@ type InitializeProjectRequest struct {
 // NotificationType represents a database 'notification_type'
 type NotificationType string
 
-// PgtypeJSONB defines the model for PgtypeJSONB.
-type PgtypeJSONB = map[string]interface{}
-
 // Project defines the model for Project.
 type Project string
 
@@ -670,7 +668,7 @@ type User struct {
 }
 
 // UuidUUID defines the model for UuidUUID.
-type UuidUUID = string
+type UuidUUID = uuid.UUID
 
 // ValidationError defines the model for ValidationError.
 type ValidationError struct {
@@ -699,7 +697,7 @@ type ProjectName = Project
 type Serial = int
 
 // UUID defines the model for UUID.
-type UUID = string
+type UUID = uuid.UUID
 
 // EventsParams defines parameters for Events.
 type EventsParams struct {
@@ -866,17 +864,17 @@ type ClientInterface interface {
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
-	DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteUser(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUser(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUserAuthorization request with any body
-	UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserAuthorizationWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUserAuthorization(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserAuthorization(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1221,7 +1219,7 @@ func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditor
 	}
 }
 
-func (c *Client) DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteUser(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteUserRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -1240,7 +1238,7 @@ func (c *Client) DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestE
 	}
 }
 
-func (c *Client) UpdateUserWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1259,7 +1257,7 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id UUID, contentType st
 	}
 }
 
-func (c *Client) UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUser(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -1278,7 +1276,7 @@ func (c *Client) UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONReq
 	}
 }
 
-func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1297,7 +1295,7 @@ func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, c
 	}
 }
 
-func (c *Client) UpdateUserAuthorization(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorization(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -1968,7 +1966,7 @@ func NewGetCurrentUserRequest(server string) (*http.Request, error) {
 }
 
 // NewDeleteUserRequest generates requests for DeleteUser
-func NewDeleteUserRequest(server string, id UUID) (*http.Request, error) {
+func NewDeleteUserRequest(server string, id uuid.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2002,7 +2000,7 @@ func NewDeleteUserRequest(server string, id UUID) (*http.Request, error) {
 }
 
 // NewUpdateUserRequest calls the generic UpdateUser builder with application/json body
-func NewUpdateUserRequest(server string, id UUID, body UpdateUserJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserRequest(server string, id uuid.UUID, body UpdateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2013,7 +2011,7 @@ func NewUpdateUserRequest(server string, id UUID, body UpdateUserJSONRequestBody
 }
 
 // NewUpdateUserRequestWithBody generates requests for UpdateUser with any type of body
-func NewUpdateUserRequestWithBody(server string, id UUID, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserRequestWithBody(server string, id uuid.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2049,7 +2047,7 @@ func NewUpdateUserRequestWithBody(server string, id UUID, contentType string, bo
 }
 
 // NewUpdateUserAuthorizationRequest calls the generic UpdateUserAuthorization builder with application/json body
-func NewUpdateUserAuthorizationRequest(server string, id UUID, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserAuthorizationRequest(server string, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2060,7 +2058,7 @@ func NewUpdateUserAuthorizationRequest(server string, id UUID, body UpdateUserAu
 }
 
 // NewUpdateUserAuthorizationRequestWithBody generates requests for UpdateUserAuthorization with any type of body
-func NewUpdateUserAuthorizationRequestWithBody(server string, id UUID, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserAuthorizationRequestWithBody(server string, id uuid.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2376,17 +2374,17 @@ type ClientWithResponsesInterface interface {
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
 
 	// DeleteUser request
-	DeleteUserWithResponse(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
+	DeleteUserWithResponse(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
-	UpdateUserWithResponse(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
 	// UpdateUserAuthorization request with any body
-	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
-	UpdateUserAuthorizationWithResponse(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
@@ -3047,7 +3045,7 @@ func (c *ClientWithResponses) GetCurrentUserWithResponse(ctx context.Context, re
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
-func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
+func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
 	rsp, err := c.DeleteUser(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3056,7 +3054,7 @@ func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id UUI
 }
 
 // UpdateUserWithBodyWithResponse request with arbitrary body returning *UpdateUserResponse
-func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUserWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3064,7 +3062,7 @@ func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context
 	return ParseUpdateUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUser(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3073,7 +3071,7 @@ func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id UUI
 }
 
 // UpdateUserAuthorizationWithBodyWithResponse request with arbitrary body returning *UpdateUserAuthorizationResponse
-func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
 	rsp, err := c.UpdateUserAuthorizationWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3081,7 +3079,7 @@ func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx co
 	return ParseUpdateUserAuthorizationResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
 	rsp, err := c.UpdateUserAuthorization(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err

@@ -8,11 +8,12 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 )
 
 // DeleteUser deletes the user by id.
-func (h *Handlers) DeleteUser(c *gin.Context, id string) {
+func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
@@ -38,7 +39,7 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 }
 
 // UpdateUser updates the user by id.
-func (h *Handlers) UpdateUser(c *gin.Context, id string) {
+func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
 	ctx := c.Request.Context()
@@ -58,7 +59,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 		return
 	}
 
-	user, err := h.usvc.Update(c, tx, id, caller, body)
+	user, err := h.usvc.Update(c, tx, id.String(), caller, body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
@@ -85,7 +86,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 }
 
 // UpdateUserAuthorization updates authorization information, e.g. roles, scopes.
-func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
+func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
@@ -103,7 +104,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 		return
 	}
 
-	if _, err := h.usvc.UpdateUserAuthorization(c, tx, id, caller, body); err != nil {
+	if _, err := h.usvc.UpdateUserAuthorization(c, tx, id.String(), caller, body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return

@@ -34,7 +34,6 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
-  PgtypeJSONB,
   DbWorkItem,
   RestWorkItemTagCreateRequest,
   RestDemoWorkItemCreateRequest,
@@ -101,7 +100,6 @@ export const schemaDefinitions = {
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
-  PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
   RestWorkItemTagCreateRequest: info<RestWorkItemTagCreateRequest>(
     'RestWorkItemTagCreateRequest',

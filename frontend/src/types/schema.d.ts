@@ -396,7 +396,6 @@ export interface components {
       ctx?: Record<string, never>;
     };
     UuidUUID: string;
-    PgtypeJSONB: Record<string, never>;
     DbWorkItem: {
       /** Format: date-time */
       closedAt?: string | null;
@@ -620,7 +619,11 @@ export interface operations {
   UpdateUserAuthorization: {
     parameters: {
       path: {
-        id: components["parameters"]["UUID"];
+        /**
+         * @description UUID identifier 
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        id: string;
       };
     };
     /** @description Updated user object */
@@ -638,7 +641,11 @@ export interface operations {
   DeleteUser: {
     parameters: {
       path: {
-        id: components["parameters"]["UUID"];
+        /**
+         * @description UUID identifier 
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        id: string;
       };
     };
     responses: {
@@ -650,7 +657,11 @@ export interface operations {
   UpdateUser: {
     parameters: {
       path: {
-        id: components["parameters"]["UUID"];
+        /**
+         * @description UUID identifier 
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        id: string;
       };
     };
     /** @description Updated user object */

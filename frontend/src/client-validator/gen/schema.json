@@ -1168,10 +1168,11 @@
     },
     "UuidUUID": {
       "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "PgtypeJSONB": {
-      "type": "object",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {
@@ -1710,9 +1711,6 @@
     },
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
-    },
-    "PgtypeJSONB": {
-      "$ref": "#/definitions/PgtypeJSONB"
     },
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
