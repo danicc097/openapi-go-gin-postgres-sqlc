@@ -1,7 +1,7 @@
 package rest
 
 /**
- * IMPORTANT: do not use omitempty for json arrays. oapi generated models will not include it and break equality tests
+ * IMPORTANT: add omitempty tag option for pointer to structs. If adding to slice of structs, include a x-omitempty:"true" tag.
  */
 
 import (
@@ -17,9 +17,9 @@ type User struct {
 	db.User
 	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
-	APIKey   *db.UserAPIKey `json:"apiKey,omitempty" x-omitempty:"true"`
-	Teams    *[]db.Team     `json:"teams,omitempty" x-omitempty:"true"`
-	Projects *[]db.Project  `json:"projects,omitempty" x-omitempty:"true"`
+	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
+	Teams    *[]db.Team     `json:"teams"`
+	Projects *[]db.Project  `json:"projects"`
 }
 
 type SharedWorkItemFields struct {

@@ -1974,8 +1974,7 @@
           "type": [
             "array",
             "null"
-          ],
-          "x-omitempty": true
+          ]
         },
         "role": {
           "type": "string",
@@ -2055,8 +2054,7 @@
           "type": [
             "array",
             "null"
-          ],
-          "x-omitempty": true
+          ]
         },
         "userID": {
           "type": "string",
@@ -5029,8 +5027,7 @@
           "type": [
             "array",
             "null"
-          ],
-          "x-omitempty": true
+          ]
         },
         "role": {
           "type": "string",
@@ -5110,8 +5107,7 @@
           "type": [
             "array",
             "null"
-          ],
-          "x-omitempty": true
+          ]
         },
         "userID": {
           "type": "string",

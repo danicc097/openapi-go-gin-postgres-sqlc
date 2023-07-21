@@ -646,10 +646,10 @@ type User struct {
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
 	LastName                 *string       `json:"lastName"`
-	Projects                 *[]DbProject  `json:"projects,omitempty"`
+	Projects                 *[]DbProject  `json:"projects"`
 	Role                     Role          `json:"role"`
 	Scopes                   Scopes        `json:"scopes"`
-	Teams                    *[]DbTeam     `json:"teams,omitempty"`
+	Teams                    *[]DbTeam     `json:"teams"`
 	UserID                   UuidUUID      `json:"userID"`
 	Username                 string        `json:"username"`
 }

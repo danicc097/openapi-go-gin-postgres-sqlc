@@ -911,8 +911,7 @@
           "type": [
             "array",
             "null"
-          ],
-          "x-omitempty": true
+          ]
         },
         "role": {
           "$ref": "#/definitions/Role"
@@ -927,8 +926,7 @@
           "type": [
             "array",
             "null"
-          ],
-          "x-omitempty": true
+          ]
         },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
