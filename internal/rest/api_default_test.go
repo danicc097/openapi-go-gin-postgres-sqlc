@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +13,7 @@ import (
 func TestPingRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, testPool)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 	srv.cleanup(t)
 

@@ -76,7 +76,7 @@ func (s *testServer) cleanup(t *testing.T) {
 // runTestServer returns a test server and client.
 // We will require different middlewares depending on the test case, so a shared a global instance
 // is not possible.
-func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*testServer, error) {
+func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.HandlerFunc) (*testServer, error) {
 	t.Helper()
 
 	ctx := context.Background()

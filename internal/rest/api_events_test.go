@@ -70,11 +70,11 @@ func TestSSEStream(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req = req.WithContext(ctx)
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{
+	srv, err := runTestServer(t, testPool,
 		func(c *gin.Context) {
 			c.Next()
 		},
-	})
+	)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 	srv.cleanup(t)
 

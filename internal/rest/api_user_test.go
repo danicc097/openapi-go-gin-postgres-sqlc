@@ -10,7 +10,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +17,7 @@ import (
 func TestGetUserRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, testPool)
 	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -54,7 +53,7 @@ func TestGetUserRoute(t *testing.T) {
 func TestUpdateUserRoutes(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, testPool)
 	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
