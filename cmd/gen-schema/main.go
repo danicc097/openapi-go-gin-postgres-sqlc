@@ -78,11 +78,36 @@ func main() {
 
 			return nil
 		}),
+		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
+			if params.Field.Tag.Get("x-omitempty") == "true" {
+				if params.PropertySchema == nil {
+					return nil
+				}
+				if params.PropertySchema.ExtraProperties == nil {
+					params.PropertySchema.ExtraProperties = map[string]any{}
+				}
+				params.PropertySchema.ExtraProperties["x-omitempty"] = true
+			}
+
+			return nil
+		}),
 		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
 			if params.Schema.ReflectType == reflect.TypeOf(uuid.New()) {
 				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
 				params.Schema.Items = &jsonschema.Items{}
 			}
+
+			// nullable prop not exposed
+			// if params.Schema.Type != nil && params.Schema.Type.SimpleTypes != nil {
+			// 	if *params.Schema.Type.SimpleTypes == jsonschema.Array {
+			// 		if params.Schema.ExtraProperties == nil {
+			// 			params.Schema.ExtraProperties = make(map[string]interface{})
+			// 		}
+			// 		// if params.Schema.ExtraProperties["nullable"] == true {
+			// 		// params.Schema.ExtraProperties["x-omitempty"] = "true"
+			// 		// }
+			// 	}
+			// }
 
 			return false, nil
 		}),

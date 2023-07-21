@@ -1056,6 +1056,7 @@ components:
             $ref: '#/components/schemas/DbProject'
           nullable: true
           type: array
+          x-omitempty: true
         role:
           $ref: '#/components/schemas/Role'
         scopes:
@@ -1065,6 +1066,7 @@ components:
             $ref: '#/components/schemas/DbTeam'
           nullable: true
           type: array
+          x-omitempty: true
         userID:
           $ref: '#/components/schemas/UuidUUID'
         username:

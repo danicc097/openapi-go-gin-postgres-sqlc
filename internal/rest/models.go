@@ -17,9 +17,9 @@ type User struct {
 	db.User
 	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
-	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
-	Teams    *[]db.Team     `json:"teams"`
-	Projects *[]db.Project  `json:"projects"`
+	APIKey   *db.UserAPIKey `json:"apiKey,omitempty" x-omitempty:"true"`
+	Teams    *[]db.Team     `json:"teams,omitempty" x-omitempty:"true"`
+	Projects *[]db.Project  `json:"projects,omitempty" x-omitempty:"true"`
 }
 
 type SharedWorkItemFields struct {
