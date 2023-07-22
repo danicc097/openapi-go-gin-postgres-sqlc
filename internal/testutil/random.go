@@ -9,26 +9,28 @@ import (
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-var r *rand.Rand
-
+// alternative r = rand.New(rand.NewSource(time.Now().UnixNano()))
+// is not concurrency safe. Would need something like:
+// https://github.com/cilium/cilium/blob/32118ccaa8677a3b836e60542a52a2af94693533/pkg/rand/safe_rand.go#L23
+// we don't really care since these are exclusively used for tests
 // nolint: gochecknoinits
 func init() {
-	r = rand.New(rand.NewSource(time.Now().UnixNano()))
+	rand.Seed(time.Now().UnixNano())
 }
 
 // RandomInt64 generates a random int64 between min and max.
 func RandomInt64(min, max int64) int64 {
-	return min + r.Int63n(max-min+1)
+	return min + rand.Int63n(max-min+1)
 }
 
 // RandomInt generates a random int between min and max.
 func RandomInt(min, max int) int {
-	return min + r.Intn(max-min+1)
+	return min + rand.Intn(max-min+1)
 }
 
 // RandomBool generates a random boolean.
 func RandomBool() bool {
-	return []bool{true, false}[r.Intn(2)]
+	return []bool{true, false}[rand.Intn(2)]
 }
 
 // RandomDate generates a random date.
@@ -48,7 +50,7 @@ func RandomString(n int) string {
 	k := len(alphabet)
 
 	for i := 0; i < n; i++ {
-		c := alphabet[r.Intn(k)]
+		c := alphabet[rand.Intn(k)]
 		sb.WriteByte(c)
 	}
 
@@ -67,12 +69,12 @@ func RandomMoney() int64 {
 
 // RandomFirstName generates a random first name.
 func RandomFirstName() string {
-	return firstNames[r.Intn(len(firstNames))]
+	return firstNames[rand.Intn(len(firstNames))]
 }
 
 // RandomLastName generates a random last name.
 func RandomLastName() string {
-	return lastNames[r.Intn(len(lastNames))]
+	return lastNames[rand.Intn(len(lastNames))]
 }
 
 // RandomEmail generates a random email.
@@ -84,9 +86,9 @@ func RandomEmail() string {
 // such as eminently-sincere-mollusk-aksticpemgicjrtb.
 // Prefix count is configurable via n.
 func RandomNameIdentifier(n int, sep string) string {
-	adv := adverbs[r.Intn(len(adverbs))]
-	adj := adjectives[r.Intn(len(adjectives))]
-	nam := names[r.Intn(len(names))]
+	adv := adverbs[rand.Intn(len(adverbs))]
+	adj := adjectives[rand.Intn(len(adjectives))]
+	nam := names[rand.Intn(len(names))]
 
 	var ss []string
 	switch n {
