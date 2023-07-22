@@ -59,34 +59,34 @@ func TestUpdateUserRoutes(t *testing.T) {
 
 	ff := newTestFixtureFactory(t)
 
-	scopes := models.Scopes{models.ScopeScopesWrite}
-
-	manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-		Role:       models.RoleManager,
-		WithAPIKey: true,
-		Scopes:     scopes,
-	})
-	require.NoError(t, err, "ff.CreateUser: %s")
-
-	managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-		Role:       models.RoleManager,
-		WithAPIKey: true,
-	})
-	require.NoError(t, err, "ff.CreateUser: %s")
-
-	normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-		Role:       models.RoleUser,
-		WithAPIKey: true,
-		Scopes:     scopes,
-	})
-	require.NoError(t, err, "ff.CreateUser: %s")
-
 	// NOTE:
 	// scopes and roles part of rest layer. don't test any actual logic here, done in services
 	// but we do need to test spec validation
 
 	t.Run("user_authorization", func(t *testing.T) {
 		t.Parallel()
+
+		scopes := models.Scopes{models.ScopeScopesWrite}
+
+		manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			Role:       models.RoleManager,
+			WithAPIKey: true,
+			Scopes:     scopes,
+		})
+		require.NoError(t, err, "ff.CreateUser: %s")
+
+		managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			Role:       models.RoleManager,
+			WithAPIKey: true,
+		})
+		require.NoError(t, err, "ff.CreateUser: %s")
+
+		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			Role:       models.RoleUser,
+			WithAPIKey: true,
+			Scopes:     scopes,
+		})
+		require.NoError(t, err, "ff.CreateUser: %s")
 
 		t.Run("valid_update", func(t *testing.T) {
 			t.Parallel()
@@ -135,7 +135,6 @@ func TestUpdateUserRoutes(t *testing.T) {
 			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
-			t.Logf("res.Body: %v\n", string(res.Body))
 			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
 		})
 	})

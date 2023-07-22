@@ -10,10 +10,10 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
+
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 // NewDB returns a new (shared) testing Postgres pool with up-to-date migrations.
