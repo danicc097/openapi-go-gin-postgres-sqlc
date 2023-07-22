@@ -10,7 +10,7 @@ import (
 func TestGetKeys(t *testing.T) {
 	t.Parallel()
 
-	t.Run("regular keys", func(t *testing.T) {
+	t.Run("regular_keys", func(t *testing.T) {
 		t.Parallel()
 
 		ex := Example{}
@@ -27,7 +27,7 @@ func TestGetKeys(t *testing.T) {
 		}
 	})
 
-	t.Run("nested keys initialized", func(t *testing.T) {
+	t.Run("nested_keys_initialized", func(t *testing.T) {
 		t.Parallel()
 
 		ex := Example{}
@@ -56,7 +56,7 @@ func TestGetKeys(t *testing.T) {
 		}
 	})
 
-	t.Run("pointer and array fields initialized", func(t *testing.T) {
+	t.Run("pointer_and_array_fields_initialized", func(t *testing.T) {
 		t.Parallel()
 
 		ex := Example{}

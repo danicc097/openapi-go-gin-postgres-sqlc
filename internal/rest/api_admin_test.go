@@ -38,7 +38,7 @@ func TestAdminPingRoute(t *testing.T) {
 		assert.Equal(t, http.StatusOK, res.StatusCode())
 		assert.Equal(t, "pong", string(res.Body))
 	})
-	t.Run("missing auth header", func(t *testing.T) {
+	t.Run("missing_auth_header", func(t *testing.T) {
 		t.Parallel()
 
 		res, err := srv.client.AdminPingWithResponse(context.Background())

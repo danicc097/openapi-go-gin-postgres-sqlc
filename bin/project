@@ -124,6 +124,9 @@ x.install-tools() {
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
     # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0 &
     go install github.com/danicc097/sqlc/cmd/sqlc@custom &
+    # for easier test search.
+    # NOTE: unrelated run test broken discovery: https://github.com/golang/vscode-go/issues/2719
+    go install github.com/danicc097/go-test-renamer@v0.2.0 &
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2 &
     go install github.com/joho/godotenv/cmd/godotenv@latest &
     go install github.com/tufin/oasdiff@latest &
@@ -814,6 +817,10 @@ x.test.backend.setup() {
 # Args: [...]
 x.test.backend() {
   { { {
+    x.lint.go &
+    x.lint.sql &
+    wait
+
     x.test.xo
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true

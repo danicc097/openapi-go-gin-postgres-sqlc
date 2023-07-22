@@ -230,7 +230,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 	userRepo := postgresql.NewUser()
 
-	t.Run("correct api key creation", func(t *testing.T) {
+	t.Run("correct_api_key_creation", func(t *testing.T) {
 		t.Parallel()
 
 		user, _ := postgresqltestutil.NewRandomUser(t, testPool)
@@ -244,7 +244,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		assert.Equal(t, uak.UserAPIKeyID, *user.APIKeyID)
 	})
 
-	t.Run("no api key created when user does not exist", func(t *testing.T) {
+	t.Run("no_api_key_created_when_user_does_not_exist", func(t *testing.T) {
 		t.Parallel()
 
 		errContains := "could not save api key"
@@ -256,7 +256,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		assert.Contains(t, err.Error(), errContains)
 	})
 
-	t.Run("can get user by api key", func(t *testing.T) {
+	t.Run("can_get_user_by_api_key", func(t *testing.T) {
 		t.Parallel()
 
 		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
@@ -275,7 +275,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		assert.Equal(t, *user.APIKeyID, uak.UserAPIKeyID)
 	})
 
-	t.Run("cannot get user by api key if key does not exist", func(t *testing.T) {
+	t.Run("cannot_get_user_by_api_key_if_key_does_not_exist", func(t *testing.T) {
 		t.Parallel()
 
 		errContains := errNoRows
@@ -287,7 +287,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		assert.Contains(t, err.Error(), errContains)
 	})
 
-	t.Run("can delete an api key", func(t *testing.T) {
+	t.Run("can_delete_an_api_key", func(t *testing.T) {
 		// TODO
 		t.Parallel()
 	})
@@ -307,7 +307,7 @@ func TestUser_Create(t *testing.T) {
 		params db.UserCreateParams
 	}
 
-	t.Run("correct user", func(t *testing.T) {
+	t.Run("correct_user", func(t *testing.T) {
 		t.Parallel()
 
 		ucp := postgresqltestutil.RandomUserCreateParams(t)
@@ -336,7 +336,7 @@ func TestUser_Create(t *testing.T) {
 		assert.Equal(t, want.LastName, got.LastName)
 	})
 
-	t.Run("role rank less than zero", func(t *testing.T) {
+	t.Run("role_rank_less_than_zero", func(t *testing.T) {
 		t.Parallel()
 
 		ucp := postgresqltestutil.RandomUserCreateParams(t)

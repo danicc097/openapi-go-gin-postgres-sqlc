@@ -42,7 +42,7 @@ func Setup() {
 
 		cmd := exec.Command(
 			"bash", "-c",
-			"source .envrc",
+			"source .envrc && go-test-renamer",
 		)
 		cmd.Dir = rootDir
 		if out, err := cmd.CombinedOutput(); err != nil {

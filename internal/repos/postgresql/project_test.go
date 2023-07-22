@@ -119,7 +119,7 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 
 	ctx := context.Background()
 
-	t.Run("valid subpath replacement", func(t *testing.T) {
+	t.Run("valid_subpath_replacement", func(t *testing.T) {
 		t.Parallel()
 
 		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
@@ -158,7 +158,7 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 		}
 	})
 
-	t.Run("valid subpath merge", func(t *testing.T) {
+	t.Run("valid_subpath_merge", func(t *testing.T) {
 		t.Parallel()
 
 		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
