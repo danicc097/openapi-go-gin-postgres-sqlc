@@ -59,74 +59,143 @@ func TestUpdateUserRoutes(t *testing.T) {
 
 	ff := newTestFixtureFactory(t)
 
+	scopes := models.Scopes{models.ScopeScopesWrite}
+
+	manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		Role:       models.RoleManager,
+		WithAPIKey: true,
+		Scopes:     scopes,
+	})
+	require.NoError(t, err, "ff.CreateUser: %s")
+
+	managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		Role:       models.RoleManager,
+		WithAPIKey: true,
+	})
+	require.NoError(t, err, "ff.CreateUser: %s")
+
+	normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		Role:       models.RoleUser,
+		WithAPIKey: true,
+		Scopes:     scopes,
+	})
+	require.NoError(t, err, "ff.CreateUser: %s")
+
+	// NOTE:
 	// scopes and roles part of rest layer. don't test any actual logic here, done in services
-	t.Run("user with valid scopes can update another user's authorization info", func(t *testing.T) {
+	// but we do need to test spec validation
+
+	t.Run("user authorization", func(t *testing.T) {
 		t.Parallel()
 
-		scopes := models.Scopes{models.ScopeScopesWrite}
+		t.Run("valid update", func(t *testing.T) {
+			t.Parallel()
 
-		manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-			Role:       models.RoleManager,
-			WithAPIKey: true,
-			Scopes:     scopes,
+			updateAuthParams := models.UpdateUserAuthRequest{
+				Role: pointers.New(models.RoleManager),
+			}
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusNoContent, res.StatusCode())
+
+			ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, *updateAuthParams.Role, ures.JSON200.Role)
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
 
-		managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-			Role:       models.RoleManager,
-			WithAPIKey: true,
+		t.Run("insufficient caller scopes", func(t *testing.T) {
+			t.Parallel()
+
+			updateAuthParams := models.UpdateUserAuthRequest{
+				Role: pointers.New(models.RoleManager),
+			}
+			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusForbidden, badres.StatusCode())
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
 
-		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-			Role:       models.RoleUser,
-			WithAPIKey: true,
-			Scopes:     scopes,
+		t.Run("invalid role update", func(t *testing.T) {
+			t.Parallel()
+			updateAuthParams := models.UpdateUserAuthRequest{
+				Role: pointers.New(models.Role("bad")),
+			}
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
 
-		updateAuthParams := models.UpdateUserAuthRequest{
-			Role: pointers.New(models.RoleManager),
-		}
-		badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusForbidden, badres.StatusCode())
+		// FIXME: cli to modify all t.Run calls. spaces break ``run test`` regex - no tests to run
+		t.Run("invalid scopes update", func(t *testing.T) {
+			t.Parallel()
+			updateAuthParams := models.UpdateUserAuthRequest{
+				Scopes: &[]models.Scope{models.Scope("bad")},
+			}
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
-		res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
-
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusNoContent, res.StatusCode())
-
-		ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
-
-		require.NoError(t, err)
-		assert.Equal(t, *updateAuthParams.Role, ures.JSON200.Role)
+			require.NoError(t, err)
+			t.Logf("res.Body: %v\n", string(res.Body))
+			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
+		})
 	})
 
-	t.Run("user can update itself", func(t *testing.T) {
-		t.Parallel()
+	tests := []struct {
+		name                    string
+		status                  int
+		body                    models.UpdateUserRequest
+		validationErrorContains []string
+	}{
+		{
+			name:   "valid user update",
+			status: http.StatusOK,
+			body: models.UpdateUserRequest{
+				FirstName: pointers.New("new name"),
+				LastName:  pointers.New("new name two"),
+			},
+		},
+		{
+			name:   "invalid user update param",
+			status: http.StatusBadRequest,
+			body: models.UpdateUserRequest{
+				FirstName: pointers.New("new name"),
+				LastName:  pointers.New("new name 43412"),
+			},
+			validationErrorContains: []string{"[\"lastName\"]", "regular expression"},
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 
-		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-			Role:       models.RoleUser,
-			WithAPIKey: true,
+			normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+				Role:       models.RoleUser,
+				WithAPIKey: true,
+			})
+			require.NoError(t, err, "ff.CreateUser: %s")
+
+			res, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID, tc.body, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.status, res.StatusCode())
+
+			if len(tc.validationErrorContains) > 0 {
+				for _, ve := range tc.validationErrorContains {
+					assert.Contains(t, string(res.Body), ve)
+				}
+
+				return
+			}
+
+			assert.Equal(t, normalUser.User.UserID, res.JSON200.UserID)
+
+			ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.body.FirstName, ures.JSON200.FirstName)
+			assert.Equal(t, tc.body.LastName, ures.JSON200.LastName)
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
-
-		updateParams := models.UpdateUserRequest{
-			FirstName: pointers.New("new name"),
-			LastName:  pointers.New("new name two"),
-		}
-
-		res, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID, updateParams, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
-
-		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, res.StatusCode())
-		assert.Equal(t, normalUser.User.UserID, res.JSON200.UserID)
-
-		ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
-
-		require.NoError(t, err)
-		assert.Equal(t, updateParams.FirstName, ures.JSON200.FirstName)
-		assert.Equal(t, updateParams.LastName, ures.JSON200.LastName)
-	})
+	}
 }
