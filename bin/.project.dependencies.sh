@@ -197,7 +197,7 @@ check.bin.pnpm() {
 
 install.bin.pnpm() {
   { { {
-    npm i -g pnpm@8.3.1
+    npm install --prefix ./bin/tools/ -g pnpm@8.3.1
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
