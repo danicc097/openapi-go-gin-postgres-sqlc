@@ -172,10 +172,10 @@ export const useUpdateUserAuthorization = <TError = unknown, TContext = unknown>
  * @summary deletes the user by id
  */
 export const deleteUser = (id: string, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<unknown>({ url: `/user/${id}`, method: 'delete' }, options)
+  return customInstance<void>({ url: `/user/${id}`, method: 'delete' }, options)
 }
 
-export const getDeleteUserMutationOptions = <TError = void, TContext = unknown>(options?: {
+export const getDeleteUserMutationOptions = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext>
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext> => {
@@ -192,9 +192,9 @@ export const getDeleteUserMutationOptions = <TError = void, TContext = unknown>(
 
 export type DeleteUserMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>
 
-export type DeleteUserMutationError = void
+export type DeleteUserMutationError = unknown
 
-export const useDeleteUser = <TError = void, TContext = unknown>(options?: {
+export const useDeleteUser = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext>
   request?: SecondParameter<typeof customInstance>
 }) => {

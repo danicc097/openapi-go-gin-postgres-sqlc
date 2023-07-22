@@ -43,7 +43,7 @@
   },
   "DeleteUser": {
     "scopes": [
-      "users:write"
+      "users:delete"
     ],
     "role": "admin",
     "requiresAuthentication": true

@@ -12,6 +12,7 @@ export type Scope = typeof Scope[keyof typeof Scope]
 export const Scope = {
   'users:read': 'users:read',
   'users:write': 'users:write',
+  'users:delete': 'users:delete',
   'scopes:write': 'scopes:write',
   'team-settings:write': 'team-settings:write',
   'project-settings:write': 'project-settings:write',

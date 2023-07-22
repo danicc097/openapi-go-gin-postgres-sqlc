@@ -392,6 +392,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -730,6 +731,7 @@
                   "enum": [
                     "users:read",
                     "users:write",
+                    "users:delete",
                     "scopes:write",
                     "team-settings:write",
                     "project-settings:write",
@@ -1107,6 +1109,7 @@
                   "enum": [
                     "users:read",
                     "users:write",
+                    "users:delete",
                     "scopes:write",
                     "team-settings:write",
                     "project-settings:write",
@@ -1996,6 +1999,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -2312,6 +2316,7 @@
       "enum": [
         "users:read",
         "users:write",
+        "users:delete",
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
@@ -2330,6 +2335,7 @@
         "enum": [
           "users:read",
           "users:write",
+          "users:delete",
           "scopes:write",
           "team-settings:write",
           "project-settings:write",
@@ -2407,6 +2413,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -3445,6 +3452,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -3783,6 +3791,7 @@
                   "enum": [
                     "users:read",
                     "users:write",
+                    "users:delete",
                     "scopes:write",
                     "team-settings:write",
                     "project-settings:write",
@@ -4160,6 +4169,7 @@
                   "enum": [
                     "users:read",
                     "users:write",
+                    "users:delete",
                     "scopes:write",
                     "team-settings:write",
                     "project-settings:write",
@@ -5049,6 +5059,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -5365,6 +5376,7 @@
       "enum": [
         "users:read",
         "users:write",
+        "users:delete",
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
@@ -5383,6 +5395,7 @@
         "enum": [
           "users:read",
           "users:write",
+          "users:delete",
           "scopes:write",
           "team-settings:write",
           "project-settings:write",
@@ -5460,6 +5473,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",

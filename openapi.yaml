@@ -191,12 +191,14 @@ paths:
       parameters:
         - *x-uuidParameter
       responses:
+        "204":
+          description: User deleted successfully
         "404":
           description: User not found
       tags:
         - user
       x-required-scopes:
-        - users:write
+        - users:delete
       x-required-role: admin
     patch:
       security:
@@ -1160,6 +1162,7 @@ components:
       enum:
         - users:read
         - users:write
+        - users:delete
         - scopes:write
         - team-settings:write
         - project-settings:write

@@ -14,7 +14,20 @@ import (
 
 // DeleteUser deletes the user by id.
 func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
+	ctx := c.Request.Context()
+
+	defer newOTELSpan(ctx, "DeleteUser", trace.WithAttributes(userIDAttribute(c))).End()
+
+	tx := getTxFromCtx(c)
+
+	_, err := h.usvc.Delete(c, tx, id)
+	if err != nil {
+		renderErrorResponse(c, "Could not delete user", err)
+
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 // GetCurrentUser returns the logged in user.

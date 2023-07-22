@@ -336,7 +336,7 @@ export interface components {
      */
     Topics: "GlobalAlerts";
     /** @enum {string} */
-    Scope: "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
+    Scope: "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
     Scopes: (components["schemas"]["Scope"])[];
     /** @enum {string} */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
@@ -649,6 +649,8 @@ export interface operations {
       };
     };
     responses: {
+      /** @description User deleted successfully */
+      204: never;
       /** @description User not found */
       404: never;
     };

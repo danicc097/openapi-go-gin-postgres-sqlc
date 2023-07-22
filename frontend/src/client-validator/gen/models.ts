@@ -11,6 +11,7 @@ export type UuidUUID = string
 export type Scope =
   | 'users:read'
   | 'users:write'
+  | 'users:delete'
   | 'scopes:write'
   | 'team-settings:write'
   | 'project-settings:write'

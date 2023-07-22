@@ -36,7 +36,7 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 				AuthRestriction{
 					MinimumRole: models.Role("admin"),
 					RequiredScopes: models.Scopes{
-						models.Scope("users:write")},
+						models.Scope("users:delete")},
 				}),
 		}
 	case DeleteWorkitem:

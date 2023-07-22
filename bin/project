@@ -1600,7 +1600,7 @@ backup-gen.cleanup() {
 backup-gen.restore() {
   echo "Restoring previously generated code..."
   wait
-  mv "$GEN_BACKUP/$SPEC" "$SPEC"
+  mv "$GEN_BACKUP/$SPEC" "$SPEC" || true
   rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
   rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
   restore_gen_files "$GEN_BACKUP" internal
