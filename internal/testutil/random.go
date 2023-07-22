@@ -9,24 +9,26 @@ import (
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
+var r *rand.Rand
+
 // nolint: gochecknoinits
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	r = rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
 // RandomInt64 generates a random int64 between min and max.
 func RandomInt64(min, max int64) int64 {
-	return min + rand.Int63n(max-min+1)
+	return min + r.Int63n(max-min+1)
 }
 
 // RandomInt generates a random int between min and max.
 func RandomInt(min, max int) int {
-	return min + rand.Intn(max-min+1)
+	return min + r.Intn(max-min+1)
 }
 
 // RandomBool generates a random boolean.
 func RandomBool() bool {
-	return []bool{true, false}[rand.Intn(2)]
+	return []bool{true, false}[r.Intn(2)]
 }
 
 // RandomDate generates a random date.
@@ -46,7 +48,7 @@ func RandomString(n int) string {
 	k := len(alphabet)
 
 	for i := 0; i < n; i++ {
-		c := alphabet[rand.Intn(k)]
+		c := alphabet[r.Intn(k)]
 		sb.WriteByte(c)
 	}
 
@@ -65,12 +67,12 @@ func RandomMoney() int64 {
 
 // RandomFirstName generates a random first name.
 func RandomFirstName() string {
-	return firstNames[rand.Intn(len(firstNames))]
+	return firstNames[r.Intn(len(firstNames))]
 }
 
 // RandomLastName generates a random last name.
 func RandomLastName() string {
-	return lastNames[rand.Intn(len(lastNames))]
+	return lastNames[r.Intn(len(lastNames))]
 }
 
 // RandomEmail generates a random email.
@@ -82,9 +84,9 @@ func RandomEmail() string {
 // such as eminently-sincere-mollusk-aksticpemgicjrtb.
 // Prefix count is configurable via n.
 func RandomNameIdentifier(n int, sep string) string {
-	adv := adverbs[rand.Intn(len(adverbs))]
-	adj := adjectives[rand.Intn(len(adjectives))]
-	nam := names[rand.Intn(len(names))]
+	adv := adverbs[r.Intn(len(adverbs))]
+	adj := adjectives[r.Intn(len(adjectives))]
+	nam := names[r.Intn(len(names))]
 
 	var ss []string
 	switch n {
