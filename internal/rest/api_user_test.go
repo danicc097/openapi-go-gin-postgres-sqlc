@@ -14,6 +14,55 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDeleteUserRoute(t *testing.T) {
+	t.Parallel()
+
+	srv, err := runTestServer(t, testPool)
+	srv.cleanup(t)
+	require.NoError(t, err, "Couldn't run test server: %s\n")
+
+	ff := newTestFixtureFactory(t)
+
+	tests := []struct {
+		name   string
+		status int
+		role   models.Role
+		scopes models.Scopes
+	}{
+		{
+			name:   "valid user deletion 1",
+			status: http.StatusNoContent,
+			role:   models.RoleAdmin,
+		},
+		{
+			name:   "valid user deletion 2",
+			status: http.StatusNoContent,
+			scopes: []models.Scope{models.ScopeUsersDelete},
+		},
+		{
+			name:   "unauthorized user call",
+			status: http.StatusForbidden,
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+				Role:       tc.role,
+				WithAPIKey: true,
+				Scopes:     tc.scopes,
+			})
+			require.NoError(t, err, "ff.CreateUser: %s")
+
+			ures, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.status, ures.StatusCode())
+		})
+	}
+}
+
 func TestGetUserRoute(t *testing.T) {
 	t.Parallel()
 
