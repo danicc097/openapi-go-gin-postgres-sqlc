@@ -1,4 +1,4 @@
-package pregen
+package codegen
 
 import (
 	"bytes"

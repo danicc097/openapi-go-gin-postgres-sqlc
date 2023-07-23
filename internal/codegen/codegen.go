@@ -1,4 +1,4 @@
-package pregen
+package codegen
 
 import (
 	"bytes"
@@ -61,7 +61,7 @@ type PreGen struct {
 	operations   map[string][]string
 }
 
-// New returns a new pre-generator.
+// New returns a new internal code generator.
 func New(stderr io.Writer, specPath string, opIDAuthPath string) *PreGen {
 	operations := make(map[string][]string)
 
