@@ -12,6 +12,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	apiKeyHeaderKey = "x-api-key"
+)
+
 // Handlers implements ServerInterface.
 type Handlers struct {
 	usvc            *services.User
@@ -38,7 +42,7 @@ func NewHandlers(
 	workitemtagsvc *services.WorkItemTag,
 	authzsvc *services.Authorization,
 	authnsvc *services.Authentication,
-	authmw *authMiddleware,
+	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
 ) *Handlers {
 	event := newSSEServer()
@@ -86,24 +90,34 @@ func NewHandlers(
 	}
 }
 
-// middlewares to be applied after authMiddlewares.
+// middlewares to be applied after authMiddlewares, based on operation IDs.
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
+	// TODO: tx could be middleware. no need to check if context tx is undefined
+	// because itll always be, else it prematurely renders errors and abort
+	// if we forget to add mw tests just fail since all routes are tested...
+	// easiest would be to by default have tx mw in all routes, but the option
+	// to exclude an array of opIDs that turn the mw into a noop. (auth provider login, etc)
+	defaultMws := []gin.HandlerFunc{}
+
+	dbMw := newDBMiddleware(h.logger, h.pool)
+
+	if opID != MyProviderLogin {
+		defaultMws = append(defaultMws, dbMw.BeginTransaction())
+	}
+
 	switch opID {
 	case Events:
-		return []gin.HandlerFunc{
+		return append(
+			defaultMws,
 			SSEHeadersMiddleware(),
 			h.event.serveHTTP(),
-		}
+		)
 	case MyProviderCallback:
-		return []gin.HandlerFunc{
+		return append(
+			defaultMws,
 			h.codeExchange(),
-		}
-	case MyProviderLogin:
-		// redirects the user to the auth server including state handling with secure cookie and the possibility to use PKCE
-		return []gin.HandlerFunc{
-			gin.WrapH(rp.AuthURLHandler(state, h.provider)),
-		}
+		)
 	default:
-		return []gin.HandlerFunc{}
+		return defaultMws
 	}
 }

@@ -11,6 +11,35 @@ create extension if not exists btree_gin schema extensions;
 
 create extension if not exists rum schema extensions;
 
+create or replace function jsonb_set_deep (target jsonb , path text[] , val jsonb)
+  returns jsonb
+  as $$
+declare
+  k text;
+  p text[];
+begin
+  if (path = '{}') then
+    return val;
+  else
+    if (target is null) then
+      target = '{}'::jsonb;
+    end if;
+
+    FOREACH k in array path loop
+      p := p || k;
+      if (target #> p is null) then
+        target := JSONB_SET(target , p , '{}'::jsonb);
+      else
+        target := JSONB_SET(target , p , target #> p);
+      end if;
+    end loop;
+    -- Set the value like normal.
+    return JSONB_SET(target , path , val);
+  end if;
+end;
+$$
+language plpgsql;
+
 -- internal use. update whenever a project with its related workitems,
 --  etc. tables are created in migrations
 create table projects (
@@ -236,7 +265,6 @@ create table kanban_steps (
   -- , disabled bool not null default false
   , unique (project_id , step_order)
   , foreign key (project_id) references projects (project_id) on delete cascade
-  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
   , check (step_order >= 0)
 );
 
@@ -260,7 +288,6 @@ create table work_item_types (
   , color text not null
   , unique (name , project_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
-  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 );
 
 comment on column work_item_types.project_id is '"cardinality":M2O';
@@ -353,8 +380,6 @@ create table demo_two_work_items (
 -- FIXME xo cannot properly infer edge case when PK is FK
 comment on column work_items.work_item_id is '"cardinality":O2O';
 
-comment on column demo_work_items.ref is '"tags":pattern:"^[0-9]{8}$"';
-
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
 where (deleted_at is not null);
@@ -383,7 +408,6 @@ create table work_item_tags (
   , description text not null
   , color text not null
   , unique (name , project_id)
-  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
@@ -438,8 +462,6 @@ create table activities (
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
-comment on column activities.project_id is '"cardinality":M2O';
-
 -- will restrict available activities on a per-project basis
 -- where project_id is null (shared) or project_id = @project_id
 -- table will be tiny, don't even index
@@ -467,6 +489,24 @@ comment on column time_entries.team_id is '"cardinality":M2O';
 comment on column time_entries.activity_id is '"cardinality":M2O';
 
 comment on column time_entries.user_id is '"cardinality":M2O';
+
+comment on column demo_work_items.ref is '"tags":pattern:"^[0-9]{8}$"';
+
+comment on column work_item_types.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"';
+
+comment on column work_item_tags.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"';
+
+comment on column kanban_steps.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"';
+
+-- will use project name as path param. Simplifies frontend without the need for model mappings as well.
+-- although it's probably easier to have projectID just be a body parameter as it was
+comment on column activities.project_id is '"cardinality":M2O && "properties":not-required';
+
+comment on column work_item_tags.project_id is '"cardinality":M2O && "properties":not-required';
+
+comment on column work_item_types.project_id is '"cardinality":M2O && "properties":not-required';
+
+comment on column kanban_steps.project_id is '"cardinality":M2O && "properties":not-required';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
 -- columns, but the index is most efficient when there are constraints on the leading (leftmost) columns.

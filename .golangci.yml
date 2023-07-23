@@ -3,6 +3,8 @@
 linters:
   enable-all: true
   disable:
+    - depguard
+    - tagalign
     # - json(camel)
     - funlen
     - lll
@@ -73,6 +75,9 @@ linters-settings:
     ignore-type-assert-ok: true
     ignore-map-index-ok: true
     ignore-chan-recv-ok: true
+    ignore-names:
+      - tx
+      - ctx
     ignore-decls:
       - d db.DBTX
       - c *gin.Context

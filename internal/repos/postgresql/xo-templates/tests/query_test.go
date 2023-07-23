@@ -12,6 +12,7 @@ import (
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests/got"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 /**
@@ -33,12 +34,12 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 	ctx := context.Background()
 
 	ee, err := db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, ee, 1)
 	assert.Equal(t, ee[0].Name, "element -2 days")
 
 	ee, err = db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, ee[0].CreatedAt, db.WithPagElementLimit(2))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, ee, 2)
 	assert.Equal(t, ee[0].Name, "element -3 days")
 	assert.Equal(t, ee[1].Name, "element -4 days")
@@ -50,12 +51,12 @@ func Test_Filters(t *testing.T) {
 	ctx := context.Background()
 
 	ee, err := db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, ee, 1)
 	assert.Equal(t, ee[0].Name, "element -2 days")
 
 	ee, err = db.PagElementPaginatedByCreatedAtDesc(ctx, testPool, ee[0].CreatedAt, db.WithPagElementLimit(2))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, ee, 2)
 	assert.Equal(t, ee[0].Name, "element -3 days")
 	assert.Equal(t, ee[1].Name, "element -4 days")
@@ -67,7 +68,7 @@ func TestTrigram_Filters(t *testing.T) {
 	ctx := context.Background()
 
 	ww, err := db.WorkItems(ctx, testPool, db.WithWorkItemFilters(map[string][]any{"description ILIKE  '%' || $1 || '%'": {"rome"}}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, ww, 1)
 	assert.Contains(t, *ww[0].Description, "Rome")
 }
@@ -78,7 +79,7 @@ func TestM2M_SelectFilter(t *testing.T) {
 	ctx := context.Background()
 
 	wi, err := db.WorkItemByWorkItemID(ctx, testPool, 1, db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, *wi.WorkItemAssignedUsersJoin)
 	assert.Len(t, *wi.WorkItemAssignedUsersJoin, 2)
 	for _, member := range *wi.WorkItemAssignedUsersJoin {
@@ -95,15 +96,15 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	ctx := context.Background()
 
 	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{BooksAuthor: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, *u.AuthorBooksJoin, 0)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, u.AuthorBooksJoin)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksAuthor: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, *u.AuthorBooksJoin, 2)
 	for _, b := range *u.AuthorBooksJoin {
 		if b.Book.BookID == 1 {
@@ -118,15 +119,15 @@ func TestM2M_SurrogatePK(t *testing.T) {
 	ctx := context.Background()
 
 	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, *u.AuthorBooksJoinBASK, 0)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, u.AuthorBooksJoinBASK)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, *u.AuthorBooksJoinBASK, 2)
 	for _, b := range *u.AuthorBooksJoinBASK {
 		if b.Book.BookID == 1 {
@@ -141,15 +142,15 @@ func TestM2M_TwoFKs(t *testing.T) {
 	ctx := context.Background()
 
 	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksSeller: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, *u.SellerBooksJoin, 0)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, u.SellerBooksJoin)
 
 	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a"), db.WithUserJoin(db.UserJoins{BooksSeller: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, *u.SellerBooksJoin, 1)
 	assert.Equal(t, (*u.SellerBooksJoin)[0].BookID, 1)
 }
@@ -161,12 +162,12 @@ func TestM2O(t *testing.T) {
 	userID := uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{NotificationsSender: true, NotificationsReceiver: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, *u.ReceiverNotificationsJoin, 1)
 	assert.Len(t, *u.SenderNotificationsJoin, 2)
 
 	n, err := db.NotificationsBySender(ctx, testPool, userID, db.WithNotificationJoin(db.NotificationJoins{UserSender: true, UserReceiver: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, n, 2)
 	assert.Equal(t, n[0].SenderJoin.UserID, userID)
 }
@@ -179,12 +180,12 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 	workitemID := int64(1)
 
 	dwi, err := db.DemoWorkItemByWorkItemID(ctx, testPool, workitemID, db.WithDemoWorkItemJoin(db.DemoWorkItemJoins{WorkItem: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, dwi.WorkItemID, workitemID)
 	assert.Equal(t, dwi.WorkItemJoin.WorkItemID, workitemID)
 
 	wi, err := db.WorkItemByWorkItemID(ctx, testPool, workitemID, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, wi.DemoWorkItemJoin.WorkItemID, workitemID)
 	assert.Equal(t, wi.WorkItemID, workitemID)
 }
@@ -197,11 +198,11 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 	userID := uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, u.APIKeyJoin.UserID, userID)
 
 	uak, err := db.UserAPIKeyByUserID(ctx, testPool, userID, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, uak.UserJoin.UserID, userID)
 	assert.Equal(t, uak.UserID, userID)
 }
@@ -219,7 +220,7 @@ func TestCustomFilters(t *testing.T) {
 			`(xo_tests.users.created_at > $i OR
 		true = $i)`: {time.Now().Add(-24 * time.Hour), true},
 		}))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, uu, 1)
 	assert.NotNil(t, uu[0].AuthorBooksJoin)
 	assert.Len(t, *uu[0].AuthorBooksJoin, 2)
@@ -231,19 +232,19 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 	ctx := context.Background()
 
 	u1, err := db.CreateUser(ctx, testPool, &db.UserCreateParams{Name: "test_user_1"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "test_user_1", u1.Name)
 	u2, err := db.CreateUser(ctx, testPool, &db.UserCreateParams{Name: "test_user_2"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	u1.Name = "test_user_1_update"
 	u1, err = u1.Update(ctx, testPool)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "test_user_1_update", u1.Name)
 
 	// test hard delete
 	err = u1.Delete(ctx, testPool)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = db.UserByName(ctx, testPool, u1.Name)
 	fmt.Printf("err: %v\n", err)
@@ -251,19 +252,19 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 
 	// test soft delete and restore
 	err = u2.SoftDelete(ctx, testPool)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, u2.DeletedAt)
 
 	_, err = db.UserByName(ctx, testPool, u2.Name) // default deleted_at null
 	assert.ErrorContains(t, err, errNoRows)
 
 	deletedUser, err := db.UserByName(ctx, testPool, u2.Name, db.WithDeletedUserOnly())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, u2.Name, deletedUser.Name)
 	assert.NotNil(t, deletedUser.DeletedAt)
 
 	restoredUser, err := deletedUser.Restore(ctx, testPool)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, restoredUser.DeletedAt)
 	assert.Equal(t, u2.Name, restoredUser.Name)
 

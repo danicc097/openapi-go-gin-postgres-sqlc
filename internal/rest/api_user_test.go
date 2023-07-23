@@ -1,38 +1,78 @@
 package rest
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestDeleteUserRoute(t *testing.T) {
+	t.Parallel()
+
+	srv, err := runTestServer(t, testPool)
+	srv.cleanup(t)
+	require.NoError(t, err, "Couldn't run test server: %s\n")
+
+	ff := newTestFixtureFactory(t)
+
+	tests := []struct {
+		name   string
+		status int
+		role   models.Role
+		scopes models.Scopes
+	}{
+		{
+			name:   "valid user deletion 1",
+			status: http.StatusNoContent,
+			role:   models.RoleAdmin,
+		},
+		{
+			name:   "valid user deletion 2",
+			status: http.StatusNoContent,
+			scopes: []models.Scope{models.ScopeUsersDelete},
+		},
+		{
+			name:   "unauthorized user call",
+			status: http.StatusForbidden,
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+				Role:       tc.role,
+				WithAPIKey: true,
+				Scopes:     tc.scopes,
+			})
+			require.NoError(t, err, "ff.CreateUser: %s")
+
+			ures, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.status, ures.StatusCode())
+		})
+	}
+}
 
 func TestGetUserRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
-	if err != nil {
-		t.Fatalf("Couldn't run test server: %s\n", err)
-	}
-
-	t.Cleanup(func() {
-		srv.Close()
-	})
+	srv, err := runTestServer(t, testPool)
+	srv.cleanup(t)
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	ff := newTestFixtureFactory(t)
 
-	t.Run("authenticated user", func(t *testing.T) {
+	t.Run("authenticated_user", func(t *testing.T) {
 		t.Parallel()
 
 		role := models.RoleAdvancedUser
@@ -43,126 +83,166 @@ func TestGetUserRoute(t *testing.T) {
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		if err != nil {
-			t.Fatalf("ff.CreateUser: %s", err)
-		}
+		require.NoError(t, err, "ff.CreateUser: %s")
 
-		req, err := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/user/me"), &bytes.Buffer{})
-		if err != nil {
-			t.Errorf("%v", err)
-		}
-		req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
+		ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
 
-		resp := httptest.NewRecorder()
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, ures.StatusCode())
 
-		srv.Handler.ServeHTTP(resp, req)
+		got, err := json.Marshal(ures.JSON200)
+		require.NoError(t, err)
+		want, err := json.Marshal(&User{User: *ufixture.User, Role: role})
+		require.NoError(t, err)
 
-		ures := User{User: *ufixture.User, Role: role}
-
-		res, err := json.Marshal(ures)
-		if err != nil {
-			t.Fatalf("could not marshal user fixture")
-		}
-
-		assert.Equal(t, http.StatusOK, resp.Code)
-		assert.Equal(t, string(res), resp.Body.String())
+		assert.JSONEqf(t, string(want), string(got), "")
 	})
 }
 
-func TestUpdateUserRoute(t *testing.T) {
+func TestUpdateUserRoutes(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
-	if err != nil {
-		t.Fatalf("Couldn't run test server: %s\n", err)
-	}
-
-	t.Cleanup(func() {
-		srv.Close()
-	})
+	srv, err := runTestServer(t, testPool)
+	srv.cleanup(t)
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	ff := newTestFixtureFactory(t)
 
-	t.Run("manager updates another user authorization", func(t *testing.T) {
+	// NOTE:
+	// scopes and roles part of rest layer. don't test any actual logic here, done in services
+	// but we do need to test spec validation
+
+	t.Run("user_authorization", func(t *testing.T) {
 		t.Parallel()
 
-		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
+		scopes := models.Scopes{models.ScopeScopesWrite}
 
 		manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleManager,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		if err != nil {
-			t.Fatalf("ff.CreateUser: %s", err)
-		}
+		require.NoError(t, err, "ff.CreateUser: %s")
+
+		managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			Role:       models.RoleManager,
+			WithAPIKey: true,
+		})
+		require.NoError(t, err, "ff.CreateUser: %s")
+
 		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleUser,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		if err != nil {
-			t.Fatalf("ff.CreateUser: %s", err)
-		}
-		var buf bytes.Buffer
+		require.NoError(t, err, "ff.CreateUser: %s")
 
-		updateAuthParams := models.UpdateUserAuthRequest{
-			Role: pointers.New(models.RoleManager),
-		}
+		t.Run("valid_update", func(t *testing.T) {
+			t.Parallel()
 
-		if err := json.NewEncoder(&buf).Encode(updateAuthParams); err != nil {
-			t.Errorf("unexpected error %v", err)
-		}
+			updateAuthParams := models.UpdateUserAuthRequest{
+				Role: pointers.New(models.RoleManager),
+			}
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
-		path := resttestutil.MustConstructInternalPath(fmt.Sprintf("/user/%s/authorization", normalUser.User.UserID))
-		req, err := http.NewRequest(http.MethodPatch, path, &buf)
-		if err != nil {
-			t.Errorf("unexpected error %v", err)
-		}
-		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("x-api-key", manager.APIKey.APIKey)
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusNoContent, res.StatusCode())
 
-		resp := httptest.NewRecorder()
+			ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
-		srv.Handler.ServeHTTP(resp, req)
-
-		assert.Equal(t, http.StatusNoContent, resp.Code)
-	})
-
-	t.Run("user updates itself", func(t *testing.T) {
-		t.Parallel()
-
-		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-			Role:       models.RoleUser,
-			WithAPIKey: true,
+			require.NoError(t, err)
+			assert.Equal(t, *updateAuthParams.Role, ures.JSON200.Role)
 		})
-		if err != nil {
-			t.Fatalf("ff.CreateUser: %s", err)
-		}
-		var buf bytes.Buffer
 
-		updateParams := models.UpdateUserRequest{
-			FirstName: pointers.New("new name"),
-			LastName:  pointers.New("new name"),
-		}
+		t.Run("insufficient_caller_scopes", func(t *testing.T) {
+			t.Parallel()
 
-		if err := json.NewEncoder(&buf).Encode(updateParams); err != nil {
-			t.Errorf("unexpected error %v", err)
-		}
+			updateAuthParams := models.UpdateUserAuthRequest{
+				Role: pointers.New(models.RoleManager),
+			}
+			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusForbidden, badres.StatusCode())
+		})
 
-		path := resttestutil.MustConstructInternalPath(fmt.Sprintf("/user/%s", normalUser.User.UserID))
-		req, err := http.NewRequest(http.MethodPatch, path, &buf)
-		if err != nil {
-			t.Errorf("unexpected error %v", err)
-		}
-		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("x-api-key", normalUser.APIKey.APIKey)
+		t.Run("invalid_role_update", func(t *testing.T) {
+			t.Parallel()
+			updateAuthParams := models.UpdateUserAuthRequest{
+				Role: pointers.New(models.Role("bad")),
+			}
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
-		resp := httptest.NewRecorder()
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
+		})
 
-		srv.Handler.ServeHTTP(resp, req)
+		t.Run("invalid_scopes_update", func(t *testing.T) {
+			t.Parallel()
+			updateAuthParams := models.UpdateUserAuthRequest{
+				Scopes: &[]models.Scope{models.Scope("bad")},
+			}
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
-		format.PrintJSON(resp)
-		assert.Equal(t, http.StatusOK, resp.Code)
+			require.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
+		})
 	})
+
+	tests := []struct {
+		name                    string
+		status                  int
+		body                    models.UpdateUserRequest
+		validationErrorContains []string
+	}{
+		{
+			name:   "valid user update",
+			status: http.StatusOK,
+			body: models.UpdateUserRequest{
+				FirstName: pointers.New("new name"),
+				LastName:  pointers.New("new name two"),
+			},
+		},
+		{
+			name:   "invalid user update param",
+			status: http.StatusBadRequest,
+			body: models.UpdateUserRequest{
+				FirstName: pointers.New("new name"),
+				LastName:  pointers.New("new name 43412"),
+			},
+			validationErrorContains: []string{"[\"lastName\"]", "regular expression"},
+		},
+	}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+				Role:       models.RoleUser,
+				WithAPIKey: true,
+			})
+			require.NoError(t, err, "ff.CreateUser: %s")
+
+			res, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID, tc.body, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.status, res.StatusCode())
+
+			if len(tc.validationErrorContains) > 0 {
+				for _, ve := range tc.validationErrorContains {
+					assert.Contains(t, string(res.Body), ve)
+				}
+
+				return
+			}
+
+			assert.Equal(t, normalUser.User.UserID, res.JSON200.UserID)
+
+			ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.body.FirstName, ures.JSON200.FirstName)
+			assert.Equal(t, tc.body.LastName, ures.JSON200.LastName)
+		})
+	}
 }

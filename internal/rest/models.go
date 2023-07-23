@@ -1,5 +1,9 @@
 package rest
 
+/**
+ * IMPORTANT: add omitempty tag option for pointer to structs. If adding to slice of structs, include a x-omitempty:"true" tag.
+ */
+
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
@@ -14,19 +18,30 @@ type User struct {
 	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
 	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
-	Teams    *[]db.Team     `json:"teams,omitempty"`
-	Projects *[]db.Project  `json:"projects,omitempty"`
+	Teams    *[]db.Team     `json:"teams"`
+	Projects *[]db.Project  `json:"projects"`
 }
 
-// DemoWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
-type DemoWorkItemsResponse struct {
-	db.WorkItem
-	DemoWorkItem     db.DemoWorkItem       `json:"demoWorkItem" required:"true"`
+type SharedWorkItemFields struct {
 	TimeEntries      *[]db.TimeEntry       `json:"timeEntries"`
 	WorkItemComments *[]db.WorkItemComment `json:"workItemComments"`
 	Members          *[]db.User            `json:"members"`
 	WorkItemTags     *[]db.WorkItemTag     `json:"workItemTags"`
 	WorkItemType     *db.WorkItemType      `json:"workItemType"`
+}
+
+// DemoWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
+type DemoWorkItemsResponse struct {
+	db.WorkItem
+	SharedWorkItemFields
+	DemoWorkItem db.DemoWorkItem `json:"demoWorkItem" required:"true"`
+}
+
+// DemoTwoWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
+type DemoTwoWorkItemsResponse struct {
+	db.WorkItem
+	SharedWorkItemFields
+	DemoTwoWorkItem db.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
 }
 
 // ProjectBoardResponse represents an OpenAPI schema response for a ProjectBoard.

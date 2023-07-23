@@ -5,6 +5,9 @@
   "users:write": {
     "description": "Can edit user data."
   },
+  "users:delete": {
+    "description": "Can delete users."
+  },
   "scopes:write": {
     "description": "Can change other user scopes up to its own scopes."
   },

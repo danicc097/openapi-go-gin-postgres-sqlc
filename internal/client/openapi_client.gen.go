@@ -10,696 +10,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
-	"time"
 
 	"gopkg.in/yaml.v2"
 
+	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
+	uuid "github.com/google/uuid"
 )
-
-const (
-	Api_keyScopes     = "api_key.Scopes"
-	Bearer_authScopes = "bearer_auth.Scopes"
-)
-
-// Defines values for Demo2WorkItemTypes.
-const (
-	Demo2WorkItemTypesAnotherType Demo2WorkItemTypes = "Another type"
-	Demo2WorkItemTypesType1       Demo2WorkItemTypes = "Type 1"
-	Demo2WorkItemTypesType2       Demo2WorkItemTypes = "Type 2"
-)
-
-// AllDemo2WorkItemTypesValues returns all possible values for Demo2WorkItemTypes.
-func AllDemo2WorkItemTypesValues() []Demo2WorkItemTypes {
-	return []Demo2WorkItemTypes{
-		Demo2WorkItemTypesAnotherType,
-		Demo2WorkItemTypesType1,
-		Demo2WorkItemTypesType2,
-	}
-}
-
-// Defines values for DemoKanbanSteps.
-const (
-	DemoKanbanStepsDisabled       DemoKanbanSteps = "Disabled"
-	DemoKanbanStepsReceived       DemoKanbanSteps = "Received"
-	DemoKanbanStepsUnderReview    DemoKanbanSteps = "Under review"
-	DemoKanbanStepsWorkInProgress DemoKanbanSteps = "Work in progress"
-)
-
-// AllDemoKanbanStepsValues returns all possible values for DemoKanbanSteps.
-func AllDemoKanbanStepsValues() []DemoKanbanSteps {
-	return []DemoKanbanSteps{
-		DemoKanbanStepsDisabled,
-		DemoKanbanStepsReceived,
-		DemoKanbanStepsUnderReview,
-		DemoKanbanStepsWorkInProgress,
-	}
-}
-
-// Defines values for DemoProject2KanbanSteps.
-const (
-	DemoProject2KanbanStepsReceived DemoProject2KanbanSteps = "Received"
-)
-
-// AllDemoProject2KanbanStepsValues returns all possible values for DemoProject2KanbanSteps.
-func AllDemoProject2KanbanStepsValues() []DemoProject2KanbanSteps {
-	return []DemoProject2KanbanSteps{
-		DemoProject2KanbanStepsReceived,
-	}
-}
-
-// Defines values for DemoProjectKanbanSteps.
-const (
-	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
-	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
-	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
-	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
-)
-
-// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
-func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
-	return []DemoProjectKanbanSteps{
-		DemoProjectKanbanStepsDisabled,
-		DemoProjectKanbanStepsReceived,
-		DemoProjectKanbanStepsUnderReview,
-		DemoProjectKanbanStepsWorkInProgress,
-	}
-}
-
-// Defines values for DemoTwoKanbanSteps.
-const (
-	DemoTwoKanbanStepsReceived DemoTwoKanbanSteps = "Received"
-)
-
-// AllDemoTwoKanbanStepsValues returns all possible values for DemoTwoKanbanSteps.
-func AllDemoTwoKanbanStepsValues() []DemoTwoKanbanSteps {
-	return []DemoTwoKanbanSteps{
-		DemoTwoKanbanStepsReceived,
-	}
-}
-
-// Defines values for DemoTwoWorkItemTypes.
-const (
-	DemoTwoWorkItemTypesAnotherType DemoTwoWorkItemTypes = "Another type"
-	DemoTwoWorkItemTypesType1       DemoTwoWorkItemTypes = "Type 1"
-	DemoTwoWorkItemTypesType2       DemoTwoWorkItemTypes = "Type 2"
-)
-
-// AllDemoTwoWorkItemTypesValues returns all possible values for DemoTwoWorkItemTypes.
-func AllDemoTwoWorkItemTypesValues() []DemoTwoWorkItemTypes {
-	return []DemoTwoWorkItemTypes{
-		DemoTwoWorkItemTypesAnotherType,
-		DemoTwoWorkItemTypesType1,
-		DemoTwoWorkItemTypesType2,
-	}
-}
-
-// Defines values for DemoWorkItemTypes.
-const (
-	Type1 DemoWorkItemTypes = "Type 1"
-)
-
-// AllDemoWorkItemTypesValues returns all possible values for DemoWorkItemTypes.
-func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
-	return []DemoWorkItemTypes{
-		Type1,
-	}
-}
-
-// Defines values for ErrorCode.
-const (
-	AlreadyExists      ErrorCode = "AlreadyExists"
-	InvalidArgument    ErrorCode = "InvalidArgument"
-	InvalidRole        ErrorCode = "InvalidRole"
-	InvalidScope       ErrorCode = "InvalidScope"
-	InvalidUUID        ErrorCode = "InvalidUUID"
-	NotFound           ErrorCode = "NotFound"
-	OIDC               ErrorCode = "OIDC"
-	Private            ErrorCode = "Private"
-	RequestValidation  ErrorCode = "RequestValidation"
-	ResponseValidation ErrorCode = "ResponseValidation"
-	Unauthenticated    ErrorCode = "Unauthenticated"
-	Unauthorized       ErrorCode = "Unauthorized"
-	Unknown            ErrorCode = "Unknown"
-)
-
-// AllErrorCodeValues returns all possible values for ErrorCode.
-func AllErrorCodeValues() []ErrorCode {
-	return []ErrorCode{
-		AlreadyExists,
-		InvalidArgument,
-		InvalidRole,
-		InvalidScope,
-		InvalidUUID,
-		NotFound,
-		OIDC,
-		Private,
-		RequestValidation,
-		ResponseValidation,
-		Unauthenticated,
-		Unauthorized,
-		Unknown,
-	}
-}
-
-// Defines values for NotificationType.
-const (
-	Global   NotificationType = "global"
-	Personal NotificationType = "personal"
-)
-
-// AllNotificationTypeValues returns all possible values for NotificationType.
-func AllNotificationTypeValues() []NotificationType {
-	return []NotificationType{
-		Global,
-		Personal,
-	}
-}
-
-// Defines values for Project.
-const (
-	Demo    Project = "demo"
-	DemoTwo Project = "demo_two"
-)
-
-// AllProjectValues returns all possible values for Project.
-func AllProjectValues() []Project {
-	return []Project{
-		Demo,
-		DemoTwo,
-	}
-}
-
-// Defines values for Role.
-const (
-	RoleAdmin        Role = "admin"
-	RoleAdvancedUser Role = "advancedUser"
-	RoleGuest        Role = "guest"
-	RoleManager      Role = "manager"
-	RoleSuperAdmin   Role = "superAdmin"
-	RoleUser         Role = "user"
-)
-
-// AllRoleValues returns all possible values for Role.
-func AllRoleValues() []Role {
-	return []Role{
-		RoleAdmin,
-		RoleAdvancedUser,
-		RoleGuest,
-		RoleManager,
-		RoleSuperAdmin,
-		RoleUser,
-	}
-}
-
-// Defines values for Scope.
-const (
-	ProjectSettingsWrite Scope = "project-settings:write"
-	ScopesWrite          Scope = "scopes:write"
-	TeamSettingsWrite    Scope = "team-settings:write"
-	UsersRead            Scope = "users:read"
-	UsersWrite           Scope = "users:write"
-	WorkItemReview       Scope = "work-item:review"
-	WorkItemTagCreate    Scope = "work-item-tag:create"
-	WorkItemTagDelete    Scope = "work-item-tag:delete"
-	WorkItemTagEdit      Scope = "work-item-tag:edit"
-)
-
-// AllScopeValues returns all possible values for Scope.
-func AllScopeValues() []Scope {
-	return []Scope{
-		ProjectSettingsWrite,
-		ScopesWrite,
-		TeamSettingsWrite,
-		UsersRead,
-		UsersWrite,
-		WorkItemReview,
-		WorkItemTagCreate,
-		WorkItemTagDelete,
-		WorkItemTagEdit,
-	}
-}
-
-// Defines values for Topics.
-const (
-	GlobalAlerts Topics = "GlobalAlerts"
-)
-
-// AllTopicsValues returns all possible values for Topics.
-func AllTopicsValues() []Topics {
-	return []Topics{
-		GlobalAlerts,
-	}
-}
-
-// Defines values for WorkItemRole.
-const (
-	Preparer WorkItemRole = "preparer"
-	Reviewer WorkItemRole = "reviewer"
-)
-
-// AllWorkItemRoleValues returns all possible values for WorkItemRole.
-func AllWorkItemRoleValues() []WorkItemRole {
-	return []WorkItemRole{
-		Preparer,
-		Reviewer,
-	}
-}
-
-// DbActivity defines the model for DbActivity.
-type DbActivity struct {
-	ActivityID   int    `json:"activityID"`
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-	ProjectID    int    `json:"projectID"`
-}
-
-// DbActivityCreateParams defines the model for DbActivityCreateParams.
-type DbActivityCreateParams struct {
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-	ProjectID    int    `json:"projectID"`
-}
-
-// DbDemoWorkItem defines the model for DbDemoWorkItem.
-type DbDemoWorkItem struct {
-	LastMessageAt time.Time `json:"lastMessageAt"`
-	Line          string    `json:"line"`
-	Ref           string    `json:"ref"`
-	Reopened      bool      `json:"reopened"`
-	WorkItemID    int       `json:"workItemID"`
-}
-
-// DbDemoWorkItemCreateParams defines the model for DbDemoWorkItemCreateParams.
-type DbDemoWorkItemCreateParams struct {
-	LastMessageAt time.Time `json:"lastMessageAt"`
-	Line          string    `json:"line"`
-	Ref           string    `json:"ref"`
-	Reopened      bool      `json:"reopened"`
-	WorkItemID    int       `json:"workItemID"`
-}
-
-// DbKanbanStep defines the model for DbKanbanStep.
-type DbKanbanStep struct {
-	Color         string `json:"color"`
-	Description   string `json:"description"`
-	KanbanStepID  int    `json:"kanbanStepID"`
-	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
-	StepOrder     int    `json:"stepOrder"`
-	TimeTrackable bool   `json:"timeTrackable"`
-}
-
-// DbProject defines the model for DbProject.
-type DbProject struct {
-	BoardConfig ProjectConfig `json:"boardConfig"`
-	CreatedAt   time.Time     `json:"createdAt"`
-	Description string        `json:"description"`
-	Name        Project       `json:"name"`
-	ProjectID   int           `json:"projectID"`
-	UpdatedAt   time.Time     `json:"updatedAt"`
-}
-
-// DbTeam defines the model for DbTeam.
-type DbTeam struct {
-	CreatedAt   time.Time `json:"createdAt"`
-	Description string    `json:"description"`
-	Name        string    `json:"name"`
-	ProjectID   int       `json:"projectID"`
-	TeamID      int       `json:"teamID"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-}
-
-// DbTeamCreateParams defines the model for DbTeamCreateParams.
-type DbTeamCreateParams struct {
-	Description string `json:"description"`
-	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
-}
-
-// DbTimeEntry defines the model for DbTimeEntry.
-type DbTimeEntry struct {
-	ActivityID      int       `json:"activityID"`
-	Comment         string    `json:"comment"`
-	DurationMinutes *int      `json:"durationMinutes"`
-	Start           time.Time `json:"start"`
-	TeamID          *int      `json:"teamID"`
-	TimeEntryID     int       `json:"timeEntryID"`
-	UserID          UuidUUID  `json:"userID"`
-	WorkItemID      *int      `json:"workItemID"`
-}
-
-// DbUser defines the model for DbUser.
-type DbUser struct {
-	CreatedAt                time.Time  `json:"createdAt"`
-	DeletedAt                *time.Time `json:"deletedAt"`
-	Email                    string     `json:"email"`
-	FirstName                *string    `json:"firstName"`
-	FullName                 *string    `json:"fullName"`
-	HasGlobalNotifications   bool       `json:"hasGlobalNotifications"`
-	HasPersonalNotifications bool       `json:"hasPersonalNotifications"`
-	LastName                 *string    `json:"lastName"`
-	Scopes                   Scopes     `json:"scopes"`
-	UserID                   UuidUUID   `json:"userID"`
-	Username                 string     `json:"username"`
-}
-
-// DbUserAPIKey defines the model for DbUserAPIKey.
-type DbUserAPIKey struct {
-	ApiKey    string    `json:"apiKey"`
-	ExpiresOn time.Time `json:"expiresOn"`
-	UserID    UuidUUID  `json:"userID"`
-}
-
-// DbWorkItem defines the model for DbWorkItem.
-type DbWorkItem struct {
-	ClosedAt       *time.Time              `json:"closedAt"`
-	CreatedAt      time.Time               `json:"createdAt"`
-	DeletedAt      *time.Time              `json:"deletedAt"`
-	Description    string                  `json:"description"`
-	KanbanStepID   int                     `json:"kanbanStepID"`
-	Metadata       *map[string]interface{} `json:"metadata"`
-	TargetDate     time.Time               `json:"targetDate"`
-	TeamID         int                     `json:"teamID"`
-	Title          string                  `json:"title"`
-	UpdatedAt      time.Time               `json:"updatedAt"`
-	WorkItemID     int                     `json:"workItemID"`
-	WorkItemTypeID int                     `json:"workItemTypeID"`
-}
-
-// DbWorkItemComment defines the model for DbWorkItemComment.
-type DbWorkItemComment struct {
-	CreatedAt         time.Time `json:"createdAt"`
-	Message           string    `json:"message"`
-	UpdatedAt         time.Time `json:"updatedAt"`
-	UserID            UuidUUID  `json:"userID"`
-	WorkItemCommentID int       `json:"workItemCommentID"`
-	WorkItemID        int       `json:"workItemID"`
-}
-
-// DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
-type DbWorkItemCreateParams struct {
-	ClosedAt       *time.Time              `json:"closedAt"`
-	Description    string                  `json:"description"`
-	KanbanStepID   int                     `json:"kanbanStepID"`
-	Metadata       *map[string]interface{} `json:"metadata"`
-	TargetDate     time.Time               `json:"targetDate"`
-	TeamID         int                     `json:"teamID"`
-	Title          string                  `json:"title"`
-	WorkItemTypeID int                     `json:"workItemTypeID"`
-}
-
-// DbWorkItemRole defines the model for DbWorkItemRole.
-type DbWorkItemRole = string
-
-// DbWorkItemTag defines the model for DbWorkItemTag.
-type DbWorkItemTag struct {
-	Color         string `json:"color"`
-	Description   string `json:"description"`
-	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
-	WorkItemTagID int    `json:"workItemTagID"`
-}
-
-// DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
-type DbWorkItemTagCreateParams struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
-}
-
-// DbWorkItemType defines the model for DbWorkItemType.
-type DbWorkItemType struct {
-	Color          string `json:"color"`
-	Description    string `json:"description"`
-	Name           string `json:"name"`
-	ProjectID      int    `json:"projectID"`
-	WorkItemTypeID int    `json:"workItemTypeID"`
-}
-
-// Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
-type Demo2WorkItemTypes string
-
-// DemoKanbanSteps defines the model for DemoKanbanSteps.
-type DemoKanbanSteps string
-
-// DemoProject2KanbanSteps defines the model for DemoProject2KanbanSteps.
-type DemoProject2KanbanSteps string
-
-// DemoProjectKanbanSteps defines the model for DemoProjectKanbanSteps.
-type DemoProjectKanbanSteps string
-
-// DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
-type DemoTwoKanbanSteps string
-
-// DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
-type DemoTwoWorkItemTypes string
-
-// DemoWorkItemTypes defines the model for DemoWorkItemTypes.
-type DemoWorkItemTypes string
-
-// ErrorCode Represents standardized HTTP error types.
-// Notes:
-// - 'Private' marks an error to be hidden in response.
-type ErrorCode string
-
-// HTTPError represents an error message response.
-type HTTPError struct {
-	Detail string `json:"detail"`
-	Error  string `json:"error"`
-	Status int    `json:"status"`
-	Title  string `json:"title"`
-
-	// Type Represents standardized HTTP error types.
-	// Notes:
-	// - 'Private' marks an error to be hidden in response.
-	Type            ErrorCode            `json:"type"`
-	ValidationError *HTTPValidationError `json:"validationError,omitempty"`
-}
-
-// HTTPValidationError defines the model for HTTPValidationError.
-type HTTPValidationError struct {
-	// Detail Additional details for validation errors
-	Detail *[]ValidationError `json:"detail,omitempty"`
-
-	// Messages Descriptive error messages to show in a callout
-	Messages []string `json:"messages"`
-}
-
-// InitializeProjectRequest defines the model for InitializeProjectRequest.
-type InitializeProjectRequest struct {
-	Activities   *[]DbActivityCreateParams    `json:"activities"`
-	ProjectID    *int                         `json:"projectID,omitempty"`
-	Teams        *[]DbTeamCreateParams        `json:"teams"`
-	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
-}
-
-// NotificationType represents a database 'notification_type'
-type NotificationType string
-
-// PgtypeJSONB defines the model for PgtypeJSONB.
-type PgtypeJSONB = map[string]interface{}
-
-// Project defines the model for Project.
-type Project string
-
-// ProjectConfig defines the model for ProjectConfig.
-type ProjectConfig struct {
-	Fields []ProjectConfigField `json:"fields"`
-	Header []string             `json:"header"`
-}
-
-// ProjectConfigField defines the model for ProjectConfigField.
-type ProjectConfigField struct {
-	IsEditable    bool   `json:"isEditable"`
-	IsVisible     bool   `json:"isVisible"`
-	Name          string `json:"name"`
-	Path          string `json:"path"`
-	ShowCollapsed bool   `json:"showCollapsed"`
-}
-
-// RestDemoWorkItemCreateRequest defines the model for RestDemoWorkItemCreateRequest.
-type RestDemoWorkItemCreateRequest struct {
-	Base        DbWorkItemCreateParams     `json:"base"`
-	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
-	Members     *[]ServicesMember          `json:"members"`
-	TagIDs      *[]int                     `json:"tagIDs"`
-}
-
-// RestDemoWorkItemsResponse defines the model for RestDemoWorkItemsResponse.
-type RestDemoWorkItemsResponse struct {
-	ClosedAt         *time.Time              `json:"closedAt"`
-	CreatedAt        time.Time               `json:"createdAt"`
-	DeletedAt        *time.Time              `json:"deletedAt"`
-	DemoWorkItem     DbDemoWorkItem          `json:"demoWorkItem"`
-	Description      string                  `json:"description"`
-	KanbanStepID     int                     `json:"kanbanStepID"`
-	Members          *[]DbUser               `json:"members"`
-	Metadata         *map[string]interface{} `json:"metadata"`
-	TargetDate       time.Time               `json:"targetDate"`
-	TeamID           int                     `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
-	Title            string                  `json:"title"`
-	UpdatedAt        time.Time               `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
-	WorkItemID       int                     `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                     `json:"workItemTypeID"`
-}
-
-// RestProjectBoardResponse defines the model for RestProjectBoardResponse.
-type RestProjectBoardResponse struct {
-	Activities    *[]DbActivity     `json:"activities"`
-	BoardConfig   ProjectConfig     `json:"boardConfig"`
-	CreatedAt     time.Time         `json:"createdAt"`
-	Description   string            `json:"description"`
-	KanbanSteps   *[]DbKanbanStep   `json:"kanbanSteps"`
-	Name          Project           `json:"name"`
-	ProjectID     int               `json:"projectID"`
-	Teams         *[]DbTeam         `json:"teams"`
-	UpdatedAt     time.Time         `json:"updatedAt"`
-	WorkItemTags  *[]DbWorkItemTag  `json:"workItemTags"`
-	WorkItemTypes *[]DbWorkItemType `json:"workItemTypes"`
-}
-
-// RestWorkItemCommentCreateRequest defines the model for RestWorkItemCommentCreateRequest.
-type RestWorkItemCommentCreateRequest struct {
-	Message    string   `json:"message"`
-	UserID     UuidUUID `json:"userID"`
-	WorkItemID int      `json:"workItemID"`
-}
-
-// RestWorkItemTagCreateRequest defines the model for RestWorkItemTagCreateRequest.
-type RestWorkItemTagCreateRequest struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
-}
-
-// Role defines the model for Role.
-type Role string
-
-// Scope defines the model for Scope.
-type Scope string
-
-// Scopes defines the model for Scopes.
-type Scopes = []Scope
-
-// ServicesMember defines the model for ServicesMember.
-type ServicesMember struct {
-	// Role represents a database 'work_item_role'
-	Role   WorkItemRole `json:"role"`
-	UserID UuidUUID     `json:"userID"`
-}
-
-// Topics string identifiers for SSE event listeners.
-type Topics string
-
-// UpdateUserAuthRequest represents User authorization data to update
-type UpdateUserAuthRequest struct {
-	Role   *Role   `json:"role,omitempty"`
-	Scopes *Scopes `json:"scopes,omitempty"`
-}
-
-// UpdateUserRequest represents User data to update
-type UpdateUserRequest struct {
-	// FirstName originally from auth server but updatable
-	FirstName *string `json:"firstName,omitempty"`
-
-	// LastName originally from auth server but updatable
-	LastName *string `json:"lastName,omitempty"`
-}
-
-// User defines the model for User.
-type User struct {
-	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
-	CreatedAt                time.Time     `json:"createdAt"`
-	DeletedAt                *time.Time    `json:"deletedAt"`
-	Email                    string        `json:"email"`
-	FirstName                *string       `json:"firstName"`
-	FullName                 *string       `json:"fullName"`
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
-	LastName                 *string       `json:"lastName"`
-	Projects                 *[]DbProject  `json:"projects"`
-	Role                     Role          `json:"role"`
-	Scopes                   Scopes        `json:"scopes"`
-	Teams                    *[]DbTeam     `json:"teams"`
-	UserID                   UuidUUID      `json:"userID"`
-	Username                 string        `json:"username"`
-}
-
-// UuidUUID defines the model for UuidUUID.
-type UuidUUID = string
-
-// ValidationError defines the model for ValidationError.
-type ValidationError struct {
-	Ctx *map[string]interface{} `json:"ctx,omitempty"`
-
-	// Detail verbose details of the error
-	Detail struct {
-		Schema map[string]interface{} `json:"schema"`
-		Value  string                 `json:"value"`
-	} `json:"detail"`
-
-	// Loc location in body path, if any
-	Loc []string `json:"loc"`
-
-	// Msg should always be shown to the user
-	Msg string `json:"msg"`
-}
-
-// WorkItemRole represents a database 'work_item_role'
-type WorkItemRole string
-
-// ProjectName defines the model for ProjectName.
-type ProjectName = Project
-
-// Serial defines the model for Serial.
-type Serial = int
-
-// UUID defines the model for UUID.
-type UUID = string
-
-// EventsParams defines parameters for Events.
-type EventsParams struct {
-	ProjectName Project `form:"projectName" json:"projectName"`
-}
-
-// GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
-type GetProjectWorkitemsParams struct {
-	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
-	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
-}
-
-// UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
-type UpdateProjectConfigJSONRequestBody = ProjectConfig
-
-// InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
-type InitializeProjectJSONRequestBody = InitializeProjectRequest
-
-// CreateWorkitemTagJSONRequestBody defines body for CreateWorkitemTag for application/json ContentType.
-type CreateWorkitemTagJSONRequestBody = RestWorkItemTagCreateRequest
-
-// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
-type UpdateUserJSONRequestBody = UpdateUserRequest
-
-// UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
-type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
-
-// CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-type CreateWorkitemJSONRequestBody = RestDemoWorkItemCreateRequest
-
-// CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
-type CreateWorkitemCommentJSONRequestBody = RestWorkItemCommentCreateRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -726,16 +47,27 @@ type Client struct {
 	// A list of callbacks for modifying requests which are generated before sending over
 	// the network.
 	RequestEditors []RequestEditorFn
+
+	testHandler http.Handler
 }
 
 // ClientOption allows setting custom parameters during construction
 type ClientOption func(*Client) error
 
-// Creates a new Client, with reasonable defaults
-func NewClient(server string, opts ...ClientOption) (*Client, error) {
+// NewTestClient creates a new ClientWithResponses for testing.
+func NewTestClient(server string, testHandler http.Handler, opts ...ClientOption) (*ClientWithResponses, error) {
+	client, err := newClient(server, testHandler, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &ClientWithResponses{client}, nil
+}
+
+func newClient(server string, testHandler http.Handler, opts ...ClientOption) (*Client, error) {
 	// create a client with sane default values
 	client := Client{
-		Server: server,
+		Server:      server,
+		testHandler: testHandler,
 	}
 	// mutate client and add all optional params
 	for _, o := range opts {
@@ -823,17 +155,17 @@ type ClientInterface interface {
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
-	DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteUser(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUser(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUserAuthorization request with any body
-	UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserAuthorizationWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUserAuthorization(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserAuthorization(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -864,7 +196,14 @@ func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) MyProviderCallback(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -876,7 +215,14 @@ func (c *Client) MyProviderCallback(ctx context.Context, reqEditors ...RequestEd
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -888,7 +234,14 @@ func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEdito
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -900,7 +253,14 @@ func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ..
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -912,7 +272,14 @@ func (c *Client) OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditor
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -924,7 +291,14 @@ func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetProject(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -936,7 +310,14 @@ func (c *Client) GetProject(ctx context.Context, projectName ProjectName, reqEdi
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetProjectBoard(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -948,7 +329,14 @@ func (c *Client) GetProjectBoard(ctx context.Context, projectName ProjectName, r
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetProjectConfig(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -960,7 +348,14 @@ func (c *Client) GetProjectConfig(ctx context.Context, projectName ProjectName, 
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -972,7 +367,14 @@ func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, projectName Pr
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateProjectConfig(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -984,7 +386,14 @@ func (c *Client) UpdateProjectConfig(ctx context.Context, projectName ProjectNam
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) InitializeProjectWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -996,7 +405,14 @@ func (c *Client) InitializeProjectWithBody(ctx context.Context, projectName Proj
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) InitializeProject(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1008,7 +424,14 @@ func (c *Client) InitializeProject(ctx context.Context, projectName ProjectName,
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1020,7 +443,14 @@ func (c *Client) CreateWorkitemTagWithBody(ctx context.Context, projectName Proj
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemTag(ctx context.Context, projectName ProjectName, body CreateWorkitemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1032,7 +462,14 @@ func (c *Client) CreateWorkitemTag(ctx context.Context, projectName ProjectName,
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1044,7 +481,14 @@ func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectNam
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1056,10 +500,17 @@ func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditor
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
-func (c *Client) DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteUser(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteUserRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -1068,10 +519,17 @@ func (c *Client) DeleteUser(ctx context.Context, id UUID, reqEditors ...RequestE
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
-func (c *Client) UpdateUserWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1080,10 +538,17 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id UUID, contentType st
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
-func (c *Client) UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUser(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -1092,10 +557,17 @@ func (c *Client) UpdateUser(ctx context.Context, id UUID, body UpdateUserJSONReq
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
-func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1104,10 +576,17 @@ func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UUID, c
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
-func (c *Client) UpdateUserAuthorization(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorization(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -1116,7 +595,14 @@ func (c *Client) UpdateUserAuthorization(ctx context.Context, id UUID, body Upda
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1128,7 +614,14 @@ func (c *Client) CreateWorkitemWithBody(ctx context.Context, contentType string,
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1140,7 +633,14 @@ func (c *Client) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequ
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) DeleteWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1152,7 +652,14 @@ func (c *Client) DeleteWorkitem(ctx context.Context, id Serial, reqEditors ...Re
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) GetWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1164,7 +671,14 @@ func (c *Client) GetWorkitem(ctx context.Context, id Serial, reqEditors ...Reque
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) UpdateWorkitem(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1176,7 +690,14 @@ func (c *Client) UpdateWorkitem(ctx context.Context, id Serial, reqEditors ...Re
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemCommentWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1188,7 +709,14 @@ func (c *Client) CreateWorkitemCommentWithBody(ctx context.Context, id Serial, c
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 func (c *Client) CreateWorkitemComment(ctx context.Context, id Serial, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1200,7 +728,14 @@ func (c *Client) CreateWorkitemComment(ctx context.Context, id Serial, body Crea
 	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-	return c.Client.Do(req)
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
 }
 
 // NewAdminPingRequest generates requests for AdminPing
@@ -1722,7 +1257,7 @@ func NewGetCurrentUserRequest(server string) (*http.Request, error) {
 }
 
 // NewDeleteUserRequest generates requests for DeleteUser
-func NewDeleteUserRequest(server string, id UUID) (*http.Request, error) {
+func NewDeleteUserRequest(server string, id uuid.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1756,7 +1291,7 @@ func NewDeleteUserRequest(server string, id UUID) (*http.Request, error) {
 }
 
 // NewUpdateUserRequest calls the generic UpdateUser builder with application/json body
-func NewUpdateUserRequest(server string, id UUID, body UpdateUserJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserRequest(server string, id uuid.UUID, body UpdateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -1767,7 +1302,7 @@ func NewUpdateUserRequest(server string, id UUID, body UpdateUserJSONRequestBody
 }
 
 // NewUpdateUserRequestWithBody generates requests for UpdateUser with any type of body
-func NewUpdateUserRequestWithBody(server string, id UUID, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserRequestWithBody(server string, id uuid.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1803,7 +1338,7 @@ func NewUpdateUserRequestWithBody(server string, id UUID, contentType string, bo
 }
 
 // NewUpdateUserAuthorizationRequest calls the generic UpdateUserAuthorization builder with application/json body
-func NewUpdateUserAuthorizationRequest(server string, id UUID, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserAuthorizationRequest(server string, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -1814,7 +1349,7 @@ func NewUpdateUserAuthorizationRequest(server string, id UUID, body UpdateUserAu
 }
 
 // NewUpdateUserAuthorizationRequestWithBody generates requests for UpdateUserAuthorization with any type of body
-func NewUpdateUserAuthorizationRequestWithBody(server string, id UUID, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserAuthorizationRequestWithBody(server string, id uuid.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2060,7 +1595,7 @@ type ClientWithResponses struct {
 // NewClientWithResponses creates a new ClientWithResponses, which wraps
 // Client with return type handling
 func NewClientWithResponses(server string, opts ...ClientOption) (*ClientWithResponses, error) {
-	client, err := NewClient(server, opts...)
+	client, err := newClient(server, nil, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2130,17 +1665,17 @@ type ClientWithResponsesInterface interface {
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
 
 	// DeleteUser request
-	DeleteUserWithResponse(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
+	DeleteUserWithResponse(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
-	UpdateUserWithResponse(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
 	// UpdateUserAuthorization request with any body
-	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
-	UpdateUserAuthorizationWithResponse(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
@@ -2316,7 +1851,7 @@ func (r GetProjectResponse) StatusCode() int {
 type GetProjectBoardResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *RestProjectBoardResponse
+	JSON200      *ProjectBoardResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -2801,7 +2336,7 @@ func (c *ClientWithResponses) GetCurrentUserWithResponse(ctx context.Context, re
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
-func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
+func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
 	rsp, err := c.DeleteUser(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -2810,7 +2345,7 @@ func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id UUI
 }
 
 // UpdateUserWithBodyWithResponse request with arbitrary body returning *UpdateUserResponse
-func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUserWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -2818,7 +2353,7 @@ func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context
 	return ParseUpdateUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUser(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -2827,7 +2362,7 @@ func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id UUI
 }
 
 // UpdateUserAuthorizationWithBodyWithResponse request with arbitrary body returning *UpdateUserAuthorizationResponse
-func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
 	rsp, err := c.UpdateUserAuthorizationWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -2835,7 +2370,7 @@ func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx co
 	return ParseUpdateUserAuthorizationResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
 	rsp, err := c.UpdateUserAuthorization(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3071,7 +2606,7 @@ func ParseGetProjectBoardResponse(rsp *http.Response) (*GetProjectBoardResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RestProjectBoardResponse
+		var dest ProjectBoardResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

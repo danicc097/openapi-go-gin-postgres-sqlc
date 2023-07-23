@@ -53,6 +53,8 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	}
 	role := u.authzsvc.RoleByName(params.Role)
 
+	fmt.Printf("role: %v\n", role)
+
 	// append default scopes for role upon registration regardless of provided params
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
 

@@ -16,7 +16,9 @@ import (
 
 // Activity represents a row from 'public.activities'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
@@ -34,7 +36,7 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
-	ProjectID    int    `json:"projectID" required:"true"`    // project_id
+	ProjectID    int    `json:"projectID"`                    // project_id
 	Name         string `json:"name" required:"true"`         // name
 	Description  string `json:"description" required:"true"`  // description
 	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
@@ -54,7 +56,7 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {
-	ProjectID    *int    `json:"projectID" required:"true"`    // project_id
+	ProjectID    *int    `json:"projectID"`                    // project_id
 	Name         *string `json:"name" required:"true"`         // name
 	Description  *string `json:"description" required:"true"`  // description
 	IsProductive *bool   `json:"isProductive" required:"true"` // is_productive

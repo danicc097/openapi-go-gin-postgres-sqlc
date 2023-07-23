@@ -3,14 +3,13 @@ package rest
 import (
 	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAdminPingRoute(t *testing.T) {
@@ -26,20 +25,26 @@ func TestAdminPingRoute(t *testing.T) {
 		t.Fatalf("ff.CreateUser: %s", err)
 	}
 
-	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{func(c *gin.Context) {
-		c.Next()
-	}})
-	if err != nil {
-		t.Fatalf("Couldn't run test server: %s\n", err)
-	}
-	defer srv.Close()
+	srv, err := runTestServer(t, testPool)
+	require.NoError(t, err, "Couldn't run test server: %s\n")
+	srv.cleanup(t)
 
-	resp := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/admin/ping"), nil)
-	req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
+	t.Run("authorized", func(t *testing.T) {
+		t.Parallel()
 
-	srv.Handler.ServeHTTP(resp, req)
+		res, err := srv.client.AdminPingWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+		require.NoError(t, err)
 
-	assert.Equal(t, http.StatusOK, resp.Code)
-	assert.Equal(t, "pong", resp.Body.String())
+		assert.Equal(t, http.StatusOK, res.StatusCode())
+		assert.Equal(t, "pong", string(res.Body))
+	})
+	t.Run("missing_auth_header", func(t *testing.T) {
+		t.Parallel()
+
+		res, err := srv.client.AdminPingWithResponse(context.Background())
+		require.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode())
+		assert.Equal(t, models.ErrorCodeRequestValidation, res.JSON4XX.Type)
+	})
 }

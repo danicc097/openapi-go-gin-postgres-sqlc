@@ -31,6 +31,7 @@ export const getGetCurrentUserMock = () => ({
       header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
         faker.random.word(),
       ),
+      visualization: {},
     },
     createdAt: (() => faker.date.past())(),
     description: faker.random.word(),
@@ -74,6 +75,7 @@ export const getUpdateUserMock = () => ({
       header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
         faker.random.word(),
       ),
+      visualization: {},
     },
     createdAt: (() => faker.date.past())(),
     description: faker.random.word(),

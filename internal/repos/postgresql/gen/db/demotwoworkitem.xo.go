@@ -17,13 +17,15 @@ import (
 
 // DemoTwoWorkItem represents a row from 'public.demo_two_work_items'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoTwoWorkItem struct {
-	WorkItemID            int64      `json:"workItemID" db:"work_item_id" required:"true"`                         // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2" required:"true"` // custom_date_for_project_2
+	WorkItemID            int64      `json:"workItemID" db:"work_item_id" required:"true"`         // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"` // custom_date_for_project_2
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
@@ -31,8 +33,8 @@ type DemoTwoWorkItem struct {
 
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemCreateParams struct {
-	WorkItemID            int64      `json:"workItemID" required:"true"`            // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2" required:"true"` // custom_date_for_project_2
+	WorkItemID            int64      `json:"workItemID" required:"true"` // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`      // custom_date_for_project_2
 }
 
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.
@@ -47,7 +49,7 @@ func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCr
 
 // DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemUpdateParams struct {
-	CustomDateForProject2 **time.Time `json:"customDateForProject2" required:"true"` // custom_date_for_project_2
+	CustomDateForProject2 **time.Time `json:"customDateForProject2"` // custom_date_for_project_2
 }
 
 // SetUpdateParams updates public.demo_two_work_items struct fields with the specified params.

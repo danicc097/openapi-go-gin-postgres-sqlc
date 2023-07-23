@@ -47,7 +47,7 @@ function saveSchemaToFile(schema, filePath) {
 
   fs.writeFile(filePath, schemaString, (err) => {
     if (err) {
-      throw new Error('Error saving schema:' + err)
+      throw new Error(`Error saving schema: ${err}`)
     }
   })
 }

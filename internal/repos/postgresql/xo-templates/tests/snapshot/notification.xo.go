@@ -17,7 +17,9 @@ import (
 
 // Notification represents a row from 'xo_tests.notifications'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
@@ -25,7 +27,7 @@ type Notification struct {
 	NotificationID int        `json:"notificationID" db:"notification_id" required:"true"` // notification_id
 	Body           string     `json:"-" db:"body" pattern:"^[A-Za-z0-9]*$"`                // body
 	Sender         uuid.UUID  `json:"sender" db:"sender" required:"true"`                  // sender
-	Receiver       *uuid.UUID `json:"receiver" db:"receiver" required:"true"`              // receiver
+	Receiver       *uuid.UUID `json:"receiver" db:"receiver"`                              // receiver
 
 	ReceiverJoin *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
 	SenderJoin   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
@@ -35,7 +37,7 @@ type Notification struct {
 type NotificationCreateParams struct {
 	Body     string     `json:"-" pattern:"^[A-Za-z0-9]*$"` // body
 	Sender   uuid.UUID  `json:"sender" required:"true"`     // sender
-	Receiver *uuid.UUID `json:"receiver" required:"true"`   // receiver
+	Receiver *uuid.UUID `json:"receiver"`                   // receiver
 }
 
 // CreateNotification creates a new Notification in the database with the given params.
@@ -53,7 +55,7 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 type NotificationUpdateParams struct {
 	Body     *string     `json:"-" pattern:"^[A-Za-z0-9]*$"` // body
 	Sender   *uuid.UUID  `json:"sender" required:"true"`     // sender
-	Receiver **uuid.UUID `json:"receiver" required:"true"`   // receiver
+	Receiver **uuid.UUID `json:"receiver"`                   // receiver
 }
 
 // SetUpdateParams updates xo_tests.notifications struct fields with the specified params.

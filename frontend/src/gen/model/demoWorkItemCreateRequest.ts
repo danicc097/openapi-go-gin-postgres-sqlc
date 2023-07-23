@@ -9,7 +9,7 @@ import type { DbWorkItemCreateParams } from './dbWorkItemCreateParams'
 import type { DbDemoWorkItemCreateParams } from './dbDemoWorkItemCreateParams'
 import type { ServicesMember } from './servicesMember'
 
-export interface RestDemoWorkItemCreateRequest {
+export interface DemoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
   members: ServicesMember[] | null

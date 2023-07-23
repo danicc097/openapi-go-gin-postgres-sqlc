@@ -18,7 +18,9 @@ import (
 
 // WorkItem represents a row from 'public.work_items'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
@@ -30,11 +32,11 @@ type WorkItem struct {
 	Metadata       map[string]any `json:"metadata" db:"metadata" required:"true"`                // metadata
 	TeamID         int            `json:"teamID" db:"team_id" required:"true"`                   // team_id
 	KanbanStepID   int            `json:"kanbanStepID" db:"kanban_step_id" required:"true"`      // kanban_step_id
-	ClosedAt       *time.Time     `json:"closedAt" db:"closed_at" required:"true"`               // closed_at
+	ClosedAt       *time.Time     `json:"closedAt" db:"closed_at"`                               // closed_at
 	TargetDate     time.Time      `json:"targetDate" db:"target_date" required:"true"`           // target_date
 	CreatedAt      time.Time      `json:"createdAt" db:"created_at" required:"true"`             // created_at
 	UpdatedAt      time.Time      `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
-	DeletedAt      *time.Time     `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
+	DeletedAt      *time.Time     `json:"deletedAt" db:"deleted_at"`                             // deleted_at
 
 	DemoTwoWorkItemJoin          *DemoTwoWorkItem       `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O demo_two_work_items (inferred)
 	DemoWorkItemJoin             *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
@@ -56,7 +58,7 @@ type WorkItemCreateParams struct {
 	Metadata       map[string]any `json:"metadata" required:"true"`       // metadata
 	TeamID         int            `json:"teamID" required:"true"`         // team_id
 	KanbanStepID   int            `json:"kanbanStepID" required:"true"`   // kanban_step_id
-	ClosedAt       *time.Time     `json:"closedAt" required:"true"`       // closed_at
+	ClosedAt       *time.Time     `json:"closedAt"`                       // closed_at
 	TargetDate     time.Time      `json:"targetDate" required:"true"`     // target_date
 }
 
@@ -84,7 +86,7 @@ type WorkItemUpdateParams struct {
 	Metadata       *map[string]any `json:"metadata" required:"true"`       // metadata
 	TeamID         *int            `json:"teamID" required:"true"`         // team_id
 	KanbanStepID   *int            `json:"kanbanStepID" required:"true"`   // kanban_step_id
-	ClosedAt       **time.Time     `json:"closedAt" required:"true"`       // closed_at
+	ClosedAt       **time.Time     `json:"closedAt"`                       // closed_at
 	TargetDate     *time.Time      `json:"targetDate" required:"true"`     // target_date
 }
 

@@ -16,16 +16,18 @@ import (
 
 // WorkItemTag represents a row from 'public.work_item_tags'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemTag struct {
-	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
-	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`           // project_id
-	Name          string `json:"name" db:"name" required:"true"`                      // name
-	Description   string `json:"description" db:"description" required:"true"`        // description
-	Color         string `json:"color" db:"color" required:"true"`                    // color
+	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true"`                           // work_item_tag_id
+	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`                                     // project_id
+	Name          string `json:"name" db:"name" required:"true"`                                                // name
+	Description   string `json:"description" db:"description" required:"true"`                                  // description
+	Color         string `json:"color" db:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 
 	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
 	WorkItemTagWorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
@@ -34,10 +36,10 @@ type WorkItemTag struct {
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'.
 type WorkItemTagCreateParams struct {
-	ProjectID   int    `json:"projectID" required:"true"`   // project_id
-	Name        string `json:"name" required:"true"`        // name
-	Description string `json:"description" required:"true"` // description
-	Color       string `json:"color" required:"true"`       // color
+	ProjectID   int    `json:"projectID"`                                                          // project_id
+	Name        string `json:"name" required:"true"`                                               // name
+	Description string `json:"description" required:"true"`                                        // description
+	Color       string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 }
 
 // CreateWorkItemTag creates a new WorkItemTag in the database with the given params.
@@ -54,10 +56,10 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'.
 type WorkItemTagUpdateParams struct {
-	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
-	Name        *string `json:"name" required:"true"`        // name
-	Description *string `json:"description" required:"true"` // description
-	Color       *string `json:"color" required:"true"`       // color
+	ProjectID   *int    `json:"projectID"`                                                          // project_id
+	Name        *string `json:"name" required:"true"`                                               // name
+	Description *string `json:"description" required:"true"`                                        // description
+	Color       *string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 }
 
 // SetUpdateParams updates public.work_item_tags struct fields with the specified params.

@@ -15,7 +15,9 @@ import (
 )
 
 func (h *Handlers) MyProviderLogin(c *gin.Context) {
-	c.Set(skipRequestValidation, true)
+	c.Set(skipRequestValidationCtxKey, true)
+
+	gin.WrapH(rp.AuthURLHandler(state, h.provider))(c)
 
 	// use adaptation of https://github.com/zitadel/oidc/blob/main/example/client/app/app.go
 
@@ -35,7 +37,7 @@ func (h *Handlers) MyProviderLogin(c *gin.Context) {
 }
 
 func (h *Handlers) MyProviderCallback(c *gin.Context) {
-	c.Set(skipRequestValidation, true)
+	c.Set(skipRequestValidationCtxKey, true)
 
 	userinfo := getUserInfoFromCtx(c)
 	if userinfo == nil {

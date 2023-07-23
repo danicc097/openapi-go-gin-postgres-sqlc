@@ -8,9 +8,9 @@
 import type { DbWorkItemMetadata } from './dbWorkItemMetadata'
 
 export interface DbWorkItem {
-  closedAt: Date | null
+  closedAt?: Date | null
   createdAt: Date
-  deletedAt: Date | null
+  deletedAt?: Date | null
   description: string
   kanbanStepID: number
   metadata: DbWorkItemMetadata

@@ -10,5 +10,5 @@ export interface DbWorkItemTagCreateParams {
   color: string
   description: string
   name: string
-  projectID: number
+  projectID?: number
 }

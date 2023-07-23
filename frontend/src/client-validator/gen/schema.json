@@ -36,6 +36,7 @@
     "DbKanbanStep": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -157,6 +158,7 @@
     "DbWorkItemTag": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -189,6 +191,7 @@
     "DbWorkItemType": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -335,14 +338,10 @@
         "userID",
         "username",
         "email",
-        "firstName",
-        "lastName",
-        "fullName",
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
-        "createdAt",
-        "deletedAt"
+        "createdAt"
       ],
       "type": "object",
       "x-postgen-struct": "DbUser",
@@ -390,13 +389,10 @@
       },
       "required": [
         "timeEntryID",
-        "workItemID",
         "activityID",
-        "teamID",
         "userID",
         "comment",
-        "start",
-        "durationMinutes"
+        "start"
       ],
       "type": "object",
       "x-postgen-struct": "DbTimeEntry",
@@ -456,6 +452,9 @@
           },
           "type": "array",
           "minLength": 1
+        },
+        "visualization": {
+          "type": "object"
         }
       },
       "required": [
@@ -495,7 +494,7 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemsResponse": {
+    "DemoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -605,15 +604,132 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
-        "deletedAt",
         "demoWorkItem"
       ],
       "type": "object",
       "x-postgen-struct": "RestDemoWorkItemsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoWorkItemsResponse": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "demoTwoWorkItem": {
+          "$ref": "#/definitions/DbDemoTwoWorkItem"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/DbUser"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemType"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "demoTwoWorkItem"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoTwoWorkItemsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "InitializeProjectRequest": {
@@ -653,7 +769,7 @@
       "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestProjectBoardResponse": {
+    "ProjectBoardResponse": {
       "properties": {
         "activities": {
           "items": {
@@ -824,14 +940,10 @@
         "userID",
         "username",
         "email",
-        "firstName",
-        "lastName",
-        "fullName",
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
-        "deletedAt",
         "role"
       ],
       "type": "object",
@@ -933,6 +1045,7 @@
       "enum": [
         "users:read",
         "users:write",
+        "users:delete",
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
@@ -1056,10 +1169,11 @@
     },
     "UuidUUID": {
       "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "PgtypeJSONB": {
-      "type": "object",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {
@@ -1130,19 +1244,18 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ],
       "type": "object",
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemTagCreateRequest": {
+    "WorkItemTagCreateRequest": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -1159,7 +1272,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "color"
@@ -1168,7 +1280,7 @@
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemCreateRequest": {
+    "DemoWorkItemCreateRequest": {
       "properties": {
         "base": {
           "$ref": "#/definitions/DbWorkItemCreateParams"
@@ -1205,7 +1317,7 @@
       "x-postgen-struct": "RestDemoWorkItemCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemCommentCreateRequest": {
+    "WorkItemCommentCreateRequest": {
       "properties": {
         "message": {
           "type": "string",
@@ -1254,7 +1366,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "isProductive"
@@ -1287,6 +1398,7 @@
     "DbWorkItemTagCreateParams": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -1303,7 +1415,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "color"
@@ -1471,7 +1582,6 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate"
       ],
       "type": "object",
@@ -1489,6 +1599,24 @@
       "required": [
         "userID",
         "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoTwoWorkItem": {
+      "properties": {
+        "customDateForProject2": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1534,14 +1662,17 @@
     "ProjectConfigField": {
       "$ref": "#/definitions/ProjectConfigField"
     },
-    "RestDemoWorkItemsResponse": {
-      "$ref": "#/definitions/RestDemoWorkItemsResponse"
+    "DemoWorkItemsResponse": {
+      "$ref": "#/definitions/DemoWorkItemsResponse"
+    },
+    "DemoTwoWorkItemsResponse": {
+      "$ref": "#/definitions/DemoTwoWorkItemsResponse"
     },
     "InitializeProjectRequest": {
       "$ref": "#/definitions/InitializeProjectRequest"
     },
-    "RestProjectBoardResponse": {
-      "$ref": "#/definitions/RestProjectBoardResponse"
+    "ProjectBoardResponse": {
+      "$ref": "#/definitions/ProjectBoardResponse"
     },
     "User": {
       "$ref": "#/definitions/User"
@@ -1582,20 +1713,17 @@
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
     },
-    "PgtypeJSONB": {
-      "$ref": "#/definitions/PgtypeJSONB"
-    },
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
     },
-    "RestWorkItemTagCreateRequest": {
-      "$ref": "#/definitions/RestWorkItemTagCreateRequest"
+    "WorkItemTagCreateRequest": {
+      "$ref": "#/definitions/WorkItemTagCreateRequest"
     },
-    "RestDemoWorkItemCreateRequest": {
-      "$ref": "#/definitions/RestDemoWorkItemCreateRequest"
+    "DemoWorkItemCreateRequest": {
+      "$ref": "#/definitions/DemoWorkItemCreateRequest"
     },
-    "RestWorkItemCommentCreateRequest": {
-      "$ref": "#/definitions/RestWorkItemCommentCreateRequest"
+    "WorkItemCommentCreateRequest": {
+      "$ref": "#/definitions/WorkItemCommentCreateRequest"
     },
     "Project": {
       "$ref": "#/definitions/Project"
@@ -1644,6 +1772,9 @@
     },
     "ServicesMember": {
       "$ref": "#/definitions/ServicesMember"
+    },
+    "DbDemoTwoWorkItem": {
+      "$ref": "#/definitions/DbDemoTwoWorkItem"
     }
   }
 }

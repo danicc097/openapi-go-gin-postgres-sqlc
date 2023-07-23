@@ -16,14 +16,16 @@ import (
 
 // WorkItem represents a row from 'xo_tests.work_items'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItem struct {
 	WorkItemID  int64   `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
-	Title       *string `json:"title" db:"title" required:"true"`             // title
-	Description *string `json:"description" db:"description" required:"true"` // description
+	Title       *string `json:"title" db:"title"`                             // title
+	Description *string `json:"description" db:"description"`                 // description
 
 	DemoWorkItemJoin          *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
 	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -31,8 +33,8 @@ type WorkItem struct {
 
 // WorkItemCreateParams represents insert params for 'xo_tests.work_items'.
 type WorkItemCreateParams struct {
-	Title       *string `json:"title" required:"true"`       // title
-	Description *string `json:"description" required:"true"` // description
+	Title       *string `json:"title"`       // title
+	Description *string `json:"description"` // description
 }
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
@@ -47,8 +49,8 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 
 // WorkItemUpdateParams represents update params for 'xo_tests.work_items'.
 type WorkItemUpdateParams struct {
-	Title       **string `json:"title" required:"true"`       // title
-	Description **string `json:"description" required:"true"` // description
+	Title       **string `json:"title"`       // title
+	Description **string `json:"description"` // description
 }
 
 // SetUpdateParams updates xo_tests.work_items struct fields with the specified params.

@@ -61,7 +61,10 @@ const (
 	// example: "properties":private,another-property && "type":models.Project && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
 )
 
-const privateFieldProperty = "private"
+const (
+	privateFieldProperty     = "private"
+	notRequiredFieldProperty = "not-required"
+)
 
 // to not have to analyze everything for convertConstraints
 var cardinalityRE = regexp.MustCompile(string(cardinalityAnnot) + annotationAssignmentOperator + "([A-Za-z0-9_-]*)")
@@ -313,7 +316,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}"
 {{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
 {{- end }}
-{{- if not .ignoreJSON }} required:"true"
+{{- if .required }} required:"true"
 {{- end }}
 {{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
 {{- end }}
@@ -3598,6 +3601,8 @@ func (f *Funcs) typefn(typ string) string {
 func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	isPrivate := contains(field.Properties, privateFieldProperty)
+	notRequired := contains(field.Properties, notRequiredFieldProperty)
+	isPointer := strings.HasPrefix(field.Type, "*")
 	isSingleFK, isSinglePK := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
 
@@ -3620,7 +3625,12 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	case "Table":
 	}
 
-	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{"field": field, "ignoreJSON": isPrivate, "skipExtraTags": skipExtraTags}); err != nil {
+	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{
+		"field":         field,
+		"ignoreJSON":    isPrivate,
+		"required":      !isPointer && !isPrivate && (!notRequired || !skipExtraTags),
+		"skipExtraTags": skipExtraTags,
+	}); err != nil {
 		return "", err
 	}
 	var tag string

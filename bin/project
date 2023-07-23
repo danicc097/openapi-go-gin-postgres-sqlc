@@ -124,6 +124,9 @@ x.install-tools() {
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
     # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0 &
     go install github.com/danicc097/sqlc/cmd/sqlc@custom &
+    # for easier test search.
+    # NOTE: unrelated run test broken discovery: https://github.com/golang/vscode-go/issues/2719
+    go install github.com/danicc097/go-test-renamer@v0.2.0 &
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2 &
     go install github.com/joho/godotenv/cmd/godotenv@latest &
     go install github.com/tufin/oasdiff@latest &
@@ -131,7 +134,7 @@ x.install-tools() {
     go install mvdan.cc/gofumpt@latest &
     go install github.com/danicc097/air@latest &
     go install github.com/danicc097/xo/v5@v5.0.0 &
-    go install github.com/mikefarah/yq/v4@v4.27.2 &
+    go install github.com/mikefarah/yq/v4@v4.34.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
     go install golang.org/x/tools/cmd/stringer@latest &
 
@@ -170,7 +173,7 @@ x.gen.pregen() {
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
     # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
-    pregen -env=".env.$env" --validate-spec-only
+    codegen validate-spec -env=".env.$env"
 
     sync_db_enums_with_spec
 
@@ -179,9 +182,7 @@ x.gen.pregen() {
     mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
 
     [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-
-    src_comment="projects table"
-    replace_enum_in_spec "Project" db_projects "$src_comment"
+    replace_enum_in_spec "Project" db_projects "projects table"
 
     for project in ${db_projects[@]}; do
       ### kanban steps
@@ -193,8 +194,7 @@ x.gen.pregen() {
         echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue
       }
       schema_name="$(to_pascal $project)KanbanSteps"
-      src_comment="kanban_steps table"
-      replace_enum_in_spec "$schema_name" kanban_steps "$src_comment"
+      replace_enum_in_spec "$schema_name" kanban_steps "kanban_steps table"
 
       ### work item types
       mapfile -t work_item_types < <(dockerdb_psql -d $POSTGRES_DB -c "
@@ -205,8 +205,7 @@ x.gen.pregen() {
         echo "${YELLOW}[WARNING] No work item types found for project '$project' in database $POSTGRES_DB${OFF}" && continue
       }
       schema_name="$(to_pascal $project)WorkItemTypes"
-      src_comment="work_item_types table"
-      replace_enum_in_spec "$schema_name" work_item_types "$src_comment"
+      replace_enum_in_spec "$schema_name" work_item_types "work_item_types table"
     done
 
     generate_models_mappings
@@ -224,7 +223,6 @@ x.gen.pregen() {
 
     ######## Sync enums with external sources and validate
     ######## external json files are the source of truth
-    # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
     # arrays can't be nested
     declare -A enum_src_files=(
       [Scope]="scopes.json"
@@ -241,7 +239,7 @@ x.gen.pregen() {
       local src_file="${enum_src_files[$enum]}"
       vendor_ext="${enum_vext[$enum]}"
 
-      enums=$(yq -P '.[] | key' $src_file)
+      enums=$(yq -P --output-format=yaml '.[] | key' $src_file)
       mapfile -t enums <<<$enums
 
       src_comment="$src_file keys"
@@ -259,21 +257,33 @@ x.gen.pregen() {
 
     ######## Generate shared policies once the spec has been validated
     echo "Writing shared auth policies"
+    # NOTE: https://github.com/mikefarah/yq/issues/1738
     yq -o=json e "
     .paths[][]
+    | explode(.)
     | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
     | select(.[]) as \$i ireduce ({}; . + \$i)
-  " openapi.yaml >$OPID_AUTH
+  " $SPEC >$OPID_AUTH
 
     yq --prettyPrint '.. style="single"' -i $SPEC
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
-    sed -i 's/!!merge //' $SPEC
 
-    pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
+    codegen pre -env=".env.$env" -op-id-auth="$OPID_AUTH"
+
+    generate_structs_map
+
+    update_spec_with_structs
+
+    delete_duplicate_schemas
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
+
+# shouldn't be needed anymore at all.
+# remove_yaml_merge_alias() {
+#   sed -i 's/!!merge //' $SPEC
+# }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
 # generate 2-way maps id<- ->name to save up useless db calls and make logic switching
@@ -281,7 +291,7 @@ x.gen.pregen() {
 generate_models_mappings() {
   local model_mappings_path="internal/models_mappings.gen.go"
   cat <<EOF >$model_mappings_path
-// Code generated by 'project gen.pregen'. DO NOT EDIT.
+// Code generated by project. DO NOT EDIT.
 
 package internal
 
@@ -387,13 +397,7 @@ x.gen.postgen() {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
     echo "Running generation"
-    generate_structs_map
 
-    update_spec_with_structs
-
-    delete_duplicate_schemas
-
-    postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -543,15 +547,25 @@ x.gen.gowrap() {
   backup-gen.cleanup
 }
 
-# Generate Go client and server.
+# Generate Go client and server from spec.
 x.gen.client-server() {
   { { {
     echo "Running generation"
     paths=".openapi.paths.yaml"
 
+    yq e '.components.schemas.UuidUUID = {
+        "type": "string",
+        "x-go-type": "uuid.UUID",
+        "x-go-type-import":{
+          "name": "uuid",
+          "path": "github.com/google/uuid"
+        }
+      }' -i $SPEC
+
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
+    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go # templates are embedded, required rebuild
 
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
@@ -682,12 +696,12 @@ x.gen() {
 
     x.gen.pregen
 
-    x.gen.postgen &
+    x.gen.client-server & # depends on schemas generated in postgen
     x.gen.counterfeiter & # delay since it depends on generated output too
 
     wait_without_error
 
-    x.gen.client-server # depends on schemas generated in postgen
+    x.gen.postgen
 
     # restart is not robust
     # vscode will randomly lose connection when restarting
@@ -695,9 +709,7 @@ x.gen() {
     #   restart_pid $pid &
     # done
 
-    x.lint.sql &
-    x.lint.go &
-    wait
+    x.lint.go
 
     x.gen.frontend
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -710,7 +722,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in pregen postgen oapi-codegen jet; do
+    for cmd in codegen jet; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -804,6 +816,10 @@ x.test.backend.setup() {
 # Args: [...]
 x.test.backend() {
   { { {
+    x.lint.go &
+    x.lint.sql &
+    wait
+
     x.test.xo
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
@@ -1321,11 +1337,11 @@ generate_structs_map() {
     map_fields+=("\"Models$struct\": repomodels.$struct{},")
   done
 
-  out="internal/postgen/structs/main.gen.go"
+  out="internal/codegen/structs.gen.go"
   cat <<EOF >$out
-// Code generated by 'project gen.postgen'. DO NOT EDIT.
+// Code generated by project. DO NOT EDIT.
 
-package structs
+package codegen
 
 import (
   db "$GOMOD_PKG/$PG_REPO_GEN/db"
@@ -1474,7 +1490,7 @@ update_spec_with_structs() {
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
-  # go build -buildmode=plugin -o internal/postgen/structs/main.gen.so $GOMOD_PKG/internal/postgen/structs
+  # go build -buildmode=plugin -o internal/codegen/structs.gen.so $GOMOD_PKG/internal/codegen/structs
 
   # need new PublicStructs compiled
   go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
@@ -1506,7 +1522,6 @@ update_spec_with_structs() {
     mv /tmp/final-spec "$SPEC"
   done
 
-  sed -i 's/!!merge //' $SPEC
 }
 
 delete_duplicate_schemas() {
@@ -1583,7 +1598,7 @@ backup-gen.cleanup() {
 backup-gen.restore() {
   echo "Restoring previously generated code..."
   wait
-  mv "$GEN_BACKUP/$SPEC" "$SPEC"
+  mv "$GEN_BACKUP/$SPEC" "$SPEC" || true
   rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
   rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
   restore_gen_files "$GEN_BACKUP" internal

@@ -36,6 +36,7 @@
     "DbKanbanStep": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -116,6 +117,9 @@
               },
               "type": "array",
               "minLength": 1
+            },
+            "visualization": {
+              "type": "object"
             }
           },
           "required": [
@@ -210,6 +214,7 @@
     "DbWorkItemTag": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -242,6 +247,7 @@
     "DbWorkItemType": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -320,6 +326,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -381,6 +392,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -396,6 +408,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -407,14 +424,10 @@
         "userID",
         "username",
         "email",
-        "firstName",
-        "lastName",
-        "fullName",
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
-        "createdAt",
-        "deletedAt"
+        "createdAt"
       ],
       "type": "object",
       "x-postgen-struct": "DbUser",
@@ -452,6 +465,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -463,13 +481,10 @@
       },
       "required": [
         "timeEntryID",
-        "workItemID",
         "activityID",
-        "teamID",
         "userID",
         "comment",
-        "start",
-        "durationMinutes"
+        "start"
       ],
       "type": "object",
       "x-postgen-struct": "DbTimeEntry",
@@ -495,6 +510,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemCommentID": {
@@ -557,6 +577,9 @@
           },
           "type": "array",
           "minLength": 1
+        },
+        "visualization": {
+          "type": "object"
         }
       },
       "required": [
@@ -596,7 +619,7 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemsResponse": {
+    "DemoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -708,6 +731,7 @@
                   "enum": [
                     "users:read",
                     "users:write",
+                    "users:delete",
                     "scopes:write",
                     "team-settings:write",
                     "project-settings:write",
@@ -723,6 +747,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -734,14 +763,10 @@
               "userID",
               "username",
               "email",
-              "firstName",
-              "lastName",
-              "fullName",
               "scopes",
               "hasPersonalNotifications",
               "hasGlobalNotifications",
-              "createdAt",
-              "deletedAt"
+              "createdAt"
             ],
             "type": "object",
             "x-postgen-struct": "DbUser",
@@ -801,6 +826,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -812,13 +842,10 @@
             },
             "required": [
               "timeEntryID",
-              "workItemID",
               "activityID",
-              "teamID",
               "userID",
               "comment",
-              "start",
-              "durationMinutes"
+              "start"
             ],
             "type": "object",
             "x-postgen-struct": "DbTimeEntry",
@@ -860,6 +887,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -893,6 +925,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -930,6 +963,7 @@
         "workItemType": {
           "properties": {
             "color": {
+              "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
               "type": "string",
               "minLength": 1
             },
@@ -971,15 +1005,391 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
-        "deletedAt",
         "demoWorkItem"
       ],
       "type": "object",
       "x-postgen-struct": "RestDemoWorkItemsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoWorkItemsResponse": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "demoTwoWorkItem": {
+          "properties": {
+            "customDateForProject2": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "workItemID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemID"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "deletedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "email": {
+                "type": "string",
+                "minLength": 1
+              },
+              "firstName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fullName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hasGlobalNotifications": {
+                "type": "boolean"
+              },
+              "hasPersonalNotifications": {
+                "type": "boolean"
+              },
+              "lastName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "users:read",
+                    "users:write",
+                    "users:delete",
+                    "scopes:write",
+                    "team-settings:write",
+                    "project-settings:write",
+                    "work-item-tag:create",
+                    "work-item-tag:edit",
+                    "work-item-tag:delete",
+                    "work-item:review"
+                  ],
+                  "x-generated": "-",
+                  "$schema": "http://json-schema.org/draft-04/schema#"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "userID": {
+                "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "username": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "userID",
+              "username",
+              "email",
+              "scopes",
+              "hasPersonalNotifications",
+              "hasGlobalNotifications",
+              "createdAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbUser",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "properties": {
+              "activityID": {
+                "type": "integer"
+              },
+              "comment": {
+                "type": "string",
+                "minLength": 1
+              },
+              "durationMinutes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "start": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "teamID": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "timeEntryID": {
+                "type": "integer"
+              },
+              "userID": {
+                "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "workItemID": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "timeEntryID",
+              "activityID",
+              "userID",
+              "comment",
+              "start"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbTimeEntry",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "userID": {
+                "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "workItemCommentID": {
+                "type": "integer"
+              },
+              "workItemID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemCommentID",
+              "workItemID",
+              "userID",
+              "message",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemComment",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "properties": {
+              "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "workItemTagID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemTagID",
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemTag",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "properties": {
+            "color": {
+              "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "projectID": {
+              "type": "integer"
+            },
+            "workItemTypeID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemTypeID",
+            "projectID",
+            "name",
+            "description",
+            "color"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbWorkItemType",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "demoTwoWorkItem"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoTwoWorkItemsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "InitializeProjectRequest": {
@@ -1003,7 +1413,6 @@
               }
             },
             "required": [
-              "projectID",
               "name",
               "description",
               "isProductive"
@@ -1051,6 +1460,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -1067,7 +1477,6 @@
               }
             },
             "required": [
-              "projectID",
               "name",
               "description",
               "color"
@@ -1085,7 +1494,7 @@
       "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestProjectBoardResponse": {
+    "ProjectBoardResponse": {
       "properties": {
         "activities": {
           "items": {
@@ -1165,6 +1574,9 @@
               },
               "type": "array",
               "minLength": 1
+            },
+            "visualization": {
+              "type": "object"
             }
           },
           "required": [
@@ -1188,6 +1600,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -1299,6 +1712,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -1337,6 +1751,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -1405,6 +1820,11 @@
             },
             "userID": {
               "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
               "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
@@ -1501,6 +1921,9 @@
                     },
                     "type": "array",
                     "minLength": 1
+                  },
+                  "visualization": {
+                    "type": "object"
                   }
                 },
                 "required": [
@@ -1576,6 +1999,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -1638,6 +2062,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -1649,14 +2078,10 @@
         "userID",
         "username",
         "email",
-        "firstName",
-        "lastName",
-        "fullName",
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
-        "deletedAt",
         "role"
       ],
       "type": "object",
@@ -1891,6 +2316,7 @@
       "enum": [
         "users:read",
         "users:write",
+        "users:delete",
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
@@ -1909,6 +2335,7 @@
         "enum": [
           "users:read",
           "users:write",
+          "users:delete",
           "scopes:write",
           "team-settings:write",
           "project-settings:write",
@@ -1986,6 +2413,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -2054,10 +2482,11 @@
     },
     "UuidUUID": {
       "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "PgtypeJSONB": {
-      "type": "object",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {
@@ -2128,19 +2557,18 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ],
       "type": "object",
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemTagCreateRequest": {
+    "WorkItemTagCreateRequest": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -2157,7 +2585,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "color"
@@ -2166,7 +2593,7 @@
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemCreateRequest": {
+    "DemoWorkItemCreateRequest": {
       "properties": {
         "base": {
           "properties": {
@@ -2214,7 +2641,6 @@
             "metadata",
             "teamID",
             "kanbanStepID",
-            "closedAt",
             "targetDate"
           ],
           "type": "object",
@@ -2270,6 +2696,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
@@ -2305,7 +2736,7 @@
       "x-postgen-struct": "RestDemoWorkItemCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemCommentCreateRequest": {
+    "WorkItemCommentCreateRequest": {
       "properties": {
         "message": {
           "type": "string",
@@ -2313,6 +2744,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -2355,7 +2791,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "isProductive"
@@ -2388,6 +2823,7 @@
     "DbWorkItemTagCreateParams": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -2404,7 +2840,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "color"
@@ -2572,7 +3007,6 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate"
       ],
       "type": "object",
@@ -2593,12 +3027,35 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
         "userID",
         "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoTwoWorkItem": {
+      "properties": {
+        "customDateForProject2": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -2639,6 +3096,7 @@
     "DbKanbanStep": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -2719,6 +3177,9 @@
               },
               "type": "array",
               "minLength": 1
+            },
+            "visualization": {
+              "type": "object"
             }
           },
           "required": [
@@ -2813,6 +3274,7 @@
     "DbWorkItemTag": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -2845,6 +3307,7 @@
     "DbWorkItemType": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -2923,6 +3386,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -2984,6 +3452,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -2999,6 +3468,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -3010,14 +3484,10 @@
         "userID",
         "username",
         "email",
-        "firstName",
-        "lastName",
-        "fullName",
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
-        "createdAt",
-        "deletedAt"
+        "createdAt"
       ],
       "type": "object",
       "x-postgen-struct": "DbUser",
@@ -3055,6 +3525,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -3066,13 +3541,10 @@
       },
       "required": [
         "timeEntryID",
-        "workItemID",
         "activityID",
-        "teamID",
         "userID",
         "comment",
-        "start",
-        "durationMinutes"
+        "start"
       ],
       "type": "object",
       "x-postgen-struct": "DbTimeEntry",
@@ -3098,6 +3570,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemCommentID": {
@@ -3160,6 +3637,9 @@
           },
           "type": "array",
           "minLength": 1
+        },
+        "visualization": {
+          "type": "object"
         }
       },
       "required": [
@@ -3199,7 +3679,7 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemsResponse": {
+    "DemoWorkItemsResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -3311,6 +3791,7 @@
                   "enum": [
                     "users:read",
                     "users:write",
+                    "users:delete",
                     "scopes:write",
                     "team-settings:write",
                     "project-settings:write",
@@ -3326,6 +3807,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -3337,14 +3823,10 @@
               "userID",
               "username",
               "email",
-              "firstName",
-              "lastName",
-              "fullName",
               "scopes",
               "hasPersonalNotifications",
               "hasGlobalNotifications",
-              "createdAt",
-              "deletedAt"
+              "createdAt"
             ],
             "type": "object",
             "x-postgen-struct": "DbUser",
@@ -3404,6 +3886,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -3415,13 +3902,10 @@
             },
             "required": [
               "timeEntryID",
-              "workItemID",
               "activityID",
-              "teamID",
               "userID",
               "comment",
-              "start",
-              "durationMinutes"
+              "start"
             ],
             "type": "object",
             "x-postgen-struct": "DbTimeEntry",
@@ -3463,6 +3947,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -3496,6 +3985,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -3533,6 +4023,7 @@
         "workItemType": {
           "properties": {
             "color": {
+              "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
               "type": "string",
               "minLength": 1
             },
@@ -3574,15 +4065,391 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate",
         "createdAt",
         "updatedAt",
-        "deletedAt",
         "demoWorkItem"
       ],
       "type": "object",
       "x-postgen-struct": "RestDemoWorkItemsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoWorkItemsResponse": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "demoTwoWorkItem": {
+          "properties": {
+            "customDateForProject2": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "workItemID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemID"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "deletedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "email": {
+                "type": "string",
+                "minLength": 1
+              },
+              "firstName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fullName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hasGlobalNotifications": {
+                "type": "boolean"
+              },
+              "hasPersonalNotifications": {
+                "type": "boolean"
+              },
+              "lastName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "users:read",
+                    "users:write",
+                    "users:delete",
+                    "scopes:write",
+                    "team-settings:write",
+                    "project-settings:write",
+                    "work-item-tag:create",
+                    "work-item-tag:edit",
+                    "work-item-tag:delete",
+                    "work-item:review"
+                  ],
+                  "x-generated": "-",
+                  "$schema": "http://json-schema.org/draft-04/schema#"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "userID": {
+                "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "username": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "userID",
+              "username",
+              "email",
+              "scopes",
+              "hasPersonalNotifications",
+              "hasGlobalNotifications",
+              "createdAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbUser",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "properties": {
+              "activityID": {
+                "type": "integer"
+              },
+              "comment": {
+                "type": "string",
+                "minLength": 1
+              },
+              "durationMinutes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "start": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "teamID": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "timeEntryID": {
+                "type": "integer"
+              },
+              "userID": {
+                "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "workItemID": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "timeEntryID",
+              "activityID",
+              "userID",
+              "comment",
+              "start"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbTimeEntry",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "userID": {
+                "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "workItemCommentID": {
+                "type": "integer"
+              },
+              "workItemID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemCommentID",
+              "workItemID",
+              "userID",
+              "message",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemComment",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "properties": {
+              "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "workItemTagID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "workItemTagID",
+              "projectID",
+              "name",
+              "description",
+              "color"
+            ],
+            "type": "object",
+            "x-postgen-struct": "DbWorkItemTag",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "properties": {
+            "color": {
+              "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "projectID": {
+              "type": "integer"
+            },
+            "workItemTypeID": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workItemTypeID",
+            "projectID",
+            "name",
+            "description",
+            "color"
+          ],
+          "type": "object",
+          "x-postgen-struct": "DbWorkItemType",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "demoTwoWorkItem"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoTwoWorkItemsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "InitializeProjectRequest": {
@@ -3606,7 +4473,6 @@
               }
             },
             "required": [
-              "projectID",
               "name",
               "description",
               "isProductive"
@@ -3654,6 +4520,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -3670,7 +4537,6 @@
               }
             },
             "required": [
-              "projectID",
               "name",
               "description",
               "color"
@@ -3688,7 +4554,7 @@
       "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestProjectBoardResponse": {
+    "ProjectBoardResponse": {
       "properties": {
         "activities": {
           "items": {
@@ -3768,6 +4634,9 @@
               },
               "type": "array",
               "minLength": 1
+            },
+            "visualization": {
+              "type": "object"
             }
           },
           "required": [
@@ -3791,6 +4660,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -3902,6 +4772,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -3940,6 +4811,7 @@
           "items": {
             "properties": {
               "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
@@ -4008,6 +4880,11 @@
             },
             "userID": {
               "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
               "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
@@ -4104,6 +4981,9 @@
                     },
                     "type": "array",
                     "minLength": 1
+                  },
+                  "visualization": {
+                    "type": "object"
                   }
                 },
                 "required": [
@@ -4179,6 +5059,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -4241,6 +5122,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -4252,14 +5138,10 @@
         "userID",
         "username",
         "email",
-        "firstName",
-        "lastName",
-        "fullName",
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
-        "deletedAt",
         "role"
       ],
       "type": "object",
@@ -4494,6 +5376,7 @@
       "enum": [
         "users:read",
         "users:write",
+        "users:delete",
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
@@ -4512,6 +5395,7 @@
         "enum": [
           "users:read",
           "users:write",
+          "users:delete",
           "scopes:write",
           "team-settings:write",
           "project-settings:write",
@@ -4589,6 +5473,7 @@
             "enum": [
               "users:read",
               "users:write",
+              "users:delete",
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
@@ -4657,10 +5542,11 @@
     },
     "UuidUUID": {
       "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "PgtypeJSONB": {
-      "type": "object",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {
@@ -4731,19 +5617,18 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ],
       "type": "object",
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemTagCreateRequest": {
+    "WorkItemTagCreateRequest": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -4760,7 +5645,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "color"
@@ -4769,7 +5653,7 @@
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoWorkItemCreateRequest": {
+    "DemoWorkItemCreateRequest": {
       "properties": {
         "base": {
           "properties": {
@@ -4817,7 +5701,6 @@
             "metadata",
             "teamID",
             "kanbanStepID",
-            "closedAt",
             "targetDate"
           ],
           "type": "object",
@@ -4873,6 +5756,11 @@
               },
               "userID": {
                 "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
@@ -4908,7 +5796,7 @@
       "x-postgen-struct": "RestDemoWorkItemCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestWorkItemCommentCreateRequest": {
+    "WorkItemCommentCreateRequest": {
       "properties": {
         "message": {
           "type": "string",
@@ -4916,6 +5804,11 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -4958,7 +5851,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "isProductive"
@@ -4991,6 +5883,7 @@
     "DbWorkItemTagCreateParams": {
       "properties": {
         "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
         },
@@ -5007,7 +5900,6 @@
         }
       },
       "required": [
-        "projectID",
         "name",
         "description",
         "color"
@@ -5175,7 +6067,6 @@
         "metadata",
         "teamID",
         "kanbanStepID",
-        "closedAt",
         "targetDate"
       ],
       "type": "object",
@@ -5196,12 +6087,35 @@
         },
         "userID": {
           "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
         "userID",
         "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoTwoWorkItem": {
+      "properties": {
+        "customDateForProject2": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"

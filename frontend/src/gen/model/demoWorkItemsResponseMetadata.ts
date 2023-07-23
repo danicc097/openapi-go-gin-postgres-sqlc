@@ -6,6 +6,4 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface PgtypeJSONB {
-  [key: string]: any
-}
+export type DemoWorkItemsResponseMetadata = { [key: string]: unknown } | null

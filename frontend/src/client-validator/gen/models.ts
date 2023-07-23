@@ -11,6 +11,7 @@ export type UuidUUID = string
 export type Scope =
   | 'users:read'
   | 'users:write'
+  | 'users:delete'
   | 'scopes:write'
   | 'team-settings:write'
   | 'project-settings:write'
@@ -104,6 +105,7 @@ export interface DbProject {
 export interface ProjectConfig {
   fields: ProjectConfigField[]
   header: string[]
+  visualization?: {}
 }
 export interface ProjectConfigField {
   isEditable: boolean
@@ -148,13 +150,13 @@ export interface DbUserAPIKey {
 }
 export interface DbUser {
   createdAt: string
-  deletedAt: string | null
+  deletedAt?: string | null
   email: string
-  firstName: string | null
-  fullName: string | null
+  firstName?: string | null
+  fullName?: string | null
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
-  lastName: string | null
+  lastName?: string | null
   scopes: Scopes
   userID: UuidUUID
   username: string
@@ -162,12 +164,12 @@ export interface DbUser {
 export interface DbTimeEntry {
   activityID: number
   comment: string
-  durationMinutes: number | null
+  durationMinutes?: number | null
   start: string
-  teamID: number | null
+  teamID?: number | null
   timeEntryID: number
   userID: UuidUUID
-  workItemID: number | null
+  workItemID?: number | null
 }
 export interface DbWorkItemComment {
   createdAt: string
@@ -177,10 +179,10 @@ export interface DbWorkItemComment {
   workItemCommentID: number
   workItemID: number
 }
-export interface RestDemoWorkItemsResponse {
-  closedAt: string | null
+export interface DemoWorkItemsResponse {
+  closedAt?: string | null
   createdAt: string
-  deletedAt: string | null
+  deletedAt?: string | null
   demoWorkItem: DbDemoWorkItem
   description: string
   kanbanStepID: number
@@ -197,6 +199,30 @@ export interface RestDemoWorkItemsResponse {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
+export interface DemoTwoWorkItemsResponse {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  demoTwoWorkItem: DbDemoTwoWorkItem
+  description: string
+  kanbanStepID: number
+  members?: DbUser[] | null
+  metadata: {} | null
+  targetDate: string
+  teamID: number
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
+}
+export interface DbDemoTwoWorkItem {
+  customDateForProject2?: string | null
+  workItemID: number
+}
 export interface InitializeProjectRequest {
   activities?: DbActivityCreateParams[] | null
   projectID?: number
@@ -207,7 +233,7 @@ export interface DbActivityCreateParams {
   description: string
   isProductive: boolean
   name: string
-  projectID: number
+  projectID?: number
 }
 export interface DbTeamCreateParams {
   description: string
@@ -218,9 +244,9 @@ export interface DbWorkItemTagCreateParams {
   color: string
   description: string
   name: string
-  projectID: number
+  projectID?: number
 }
-export interface RestProjectBoardResponse {
+export interface ProjectBoardResponse {
   activities: DbActivity[] | null
   boardConfig: ProjectConfig
   createdAt: string
@@ -236,13 +262,13 @@ export interface RestProjectBoardResponse {
 export interface User {
   apiKey?: DbUserAPIKey
   createdAt: string
-  deletedAt: string | null
+  deletedAt?: string | null
   email: string
-  firstName: string | null
-  fullName: string | null
+  firstName?: string | null
+  fullName?: string | null
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
-  lastName: string | null
+  lastName?: string | null
   projects?: DbProject[] | null
   role: Role
   scopes: Scopes
@@ -299,11 +325,10 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
-export interface PgtypeJSONB {}
 export interface DbWorkItem {
-  closedAt: string | null
+  closedAt?: string | null
   createdAt: string
-  deletedAt: string | null
+  deletedAt?: string | null
   description: string
   kanbanStepID: number
   metadata: {} | null
@@ -314,20 +339,20 @@ export interface DbWorkItem {
   workItemID: number
   workItemTypeID: number
 }
-export interface RestWorkItemTagCreateRequest {
+export interface WorkItemTagCreateRequest {
   color: string
   description: string
   name: string
-  projectID: number
+  projectID?: number
 }
-export interface RestDemoWorkItemCreateRequest {
+export interface DemoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
   members: ServicesMember[] | null
   tagIDs: number[] | null
 }
 export interface DbWorkItemCreateParams {
-  closedAt: string | null
+  closedAt?: string | null
   description: string
   kanbanStepID: number
   metadata: {} | null
@@ -347,7 +372,7 @@ export interface ServicesMember {
   role: WorkItemRole
   userID: UuidUUID
 }
-export interface RestWorkItemCommentCreateRequest {
+export interface WorkItemCommentCreateRequest {
   message: string
   userID: UuidUUID
   workItemID: number

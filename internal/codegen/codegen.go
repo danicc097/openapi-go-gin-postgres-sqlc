@@ -1,11 +1,14 @@
-package pregen
+package codegen
 
 import (
 	"bytes"
 	"embed"
 	"encoding/json"
 	"fmt"
+	"go/ast"
 	"go/format"
+	"go/parser"
+	"go/token"
 	"io"
 	"os"
 	"path"
@@ -58,7 +61,7 @@ type PreGen struct {
 	operations   map[string][]string
 }
 
-// New returns a new pre-generator.
+// New returns a new internal code generator.
 func New(stderr io.Writer, specPath string, opIDAuthPath string) *PreGen {
 	operations := make(map[string][]string)
 
@@ -278,4 +281,47 @@ func (o *PreGen) generateOpIDs() error {
 	}
 
 	return nil
+}
+
+// EnsureFunctionsForOperationIDs checks if each operation ID has a corresponding function in the Go AST.
+
+func parseAST(reader io.Reader) (*ast.File, error) {
+	fileContents, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "", fileContents, parser.AllErrors)
+	if err != nil {
+		return nil, fmt.Errorf("parser.ParseFile: %w", err)
+	}
+
+	return file, nil
+}
+
+func getHandlersMethods(file *ast.File) []string {
+	var functions []string
+
+	ast.Inspect(file, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.FuncDecl:
+			if x.Recv == nil {
+				return false
+			}
+			if len(x.Recv.List) == 1 {
+				recvType, ok := x.Recv.List[0].Type.(*ast.StarExpr)
+				if ok {
+					ident, ok := recvType.X.(*ast.Ident)
+					if ok && ident.Name == "Handlers" {
+						functions = append(functions, x.Name.Name)
+					}
+				}
+			}
+		}
+
+		return true
+	})
+
+	return functions
 }

@@ -5,5 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { UuidUUID } from './uuidUUID'
 
-export type RestDemoWorkItemsResponseMetadata = { [key: string]: unknown } | null
+export interface WorkItemCommentCreateRequest {
+  message: string
+  userID: UuidUUID
+  workItemID: number
+}

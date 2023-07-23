@@ -17,9 +17,10 @@ import {
   DbWorkItemComment,
   ProjectConfig,
   ProjectConfigField,
-  RestDemoWorkItemsResponse,
+  DemoWorkItemsResponse,
+  DemoTwoWorkItemsResponse,
   InitializeProjectRequest,
-  RestProjectBoardResponse,
+  ProjectBoardResponse,
   User,
   HTTPValidationError,
   ErrorCode,
@@ -33,11 +34,10 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
-  PgtypeJSONB,
   DbWorkItem,
-  RestWorkItemTagCreateRequest,
-  RestDemoWorkItemCreateRequest,
-  RestWorkItemCommentCreateRequest,
+  WorkItemTagCreateRequest,
+  DemoWorkItemCreateRequest,
+  WorkItemCommentCreateRequest,
   Project,
   DbActivityCreateParams,
   DbTeamCreateParams,
@@ -54,6 +54,7 @@ import {
   DbDemoWorkItemCreateParams,
   DbWorkItemCreateParams,
   ServicesMember,
+  DbDemoTwoWorkItem,
 } from './models'
 
 export const schemaDefinitions = {
@@ -70,18 +71,16 @@ export const schemaDefinitions = {
   DbWorkItemComment: info<DbWorkItemComment>('DbWorkItemComment', '#/definitions/DbWorkItemComment'),
   ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
   ProjectConfigField: info<ProjectConfigField>('ProjectConfigField', '#/definitions/ProjectConfigField'),
-  RestDemoWorkItemsResponse: info<RestDemoWorkItemsResponse>(
-    'RestDemoWorkItemsResponse',
-    '#/definitions/RestDemoWorkItemsResponse',
+  DemoWorkItemsResponse: info<DemoWorkItemsResponse>('DemoWorkItemsResponse', '#/definitions/DemoWorkItemsResponse'),
+  DemoTwoWorkItemsResponse: info<DemoTwoWorkItemsResponse>(
+    'DemoTwoWorkItemsResponse',
+    '#/definitions/DemoTwoWorkItemsResponse',
   ),
   InitializeProjectRequest: info<InitializeProjectRequest>(
     'InitializeProjectRequest',
     '#/definitions/InitializeProjectRequest',
   ),
-  RestProjectBoardResponse: info<RestProjectBoardResponse>(
-    'RestProjectBoardResponse',
-    '#/definitions/RestProjectBoardResponse',
-  ),
+  ProjectBoardResponse: info<ProjectBoardResponse>('ProjectBoardResponse', '#/definitions/ProjectBoardResponse'),
   User: info<User>('User', '#/definitions/User'),
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
   ErrorCode: info<ErrorCode>('ErrorCode', '#/definitions/ErrorCode'),
@@ -95,19 +94,18 @@ export const schemaDefinitions = {
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
-  PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
-  RestWorkItemTagCreateRequest: info<RestWorkItemTagCreateRequest>(
-    'RestWorkItemTagCreateRequest',
-    '#/definitions/RestWorkItemTagCreateRequest',
+  WorkItemTagCreateRequest: info<WorkItemTagCreateRequest>(
+    'WorkItemTagCreateRequest',
+    '#/definitions/WorkItemTagCreateRequest',
   ),
-  RestDemoWorkItemCreateRequest: info<RestDemoWorkItemCreateRequest>(
-    'RestDemoWorkItemCreateRequest',
-    '#/definitions/RestDemoWorkItemCreateRequest',
+  DemoWorkItemCreateRequest: info<DemoWorkItemCreateRequest>(
+    'DemoWorkItemCreateRequest',
+    '#/definitions/DemoWorkItemCreateRequest',
   ),
-  RestWorkItemCommentCreateRequest: info<RestWorkItemCommentCreateRequest>(
-    'RestWorkItemCommentCreateRequest',
-    '#/definitions/RestWorkItemCommentCreateRequest',
+  WorkItemCommentCreateRequest: info<WorkItemCommentCreateRequest>(
+    'WorkItemCommentCreateRequest',
+    '#/definitions/WorkItemCommentCreateRequest',
   ),
   Project: info<Project>('Project', '#/definitions/Project'),
   DbActivityCreateParams: info<DbActivityCreateParams>(
@@ -143,6 +141,7 @@ export const schemaDefinitions = {
     '#/definitions/DbWorkItemCreateParams',
   ),
   ServicesMember: info<ServicesMember>('ServicesMember', '#/definitions/ServicesMember'),
+  DbDemoTwoWorkItem: info<DbDemoTwoWorkItem>('DbDemoTwoWorkItem', '#/definitions/DbDemoTwoWorkItem'),
 }
 
 export interface SchemaInfo<T> {

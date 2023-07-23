@@ -29,7 +29,9 @@ func TestRateLimitMiddleware(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	for i := 0; i < bl; i++ {
 		engine.ServeHTTP(resp, req)
+		assert.Equal(t, http.StatusOK, resp.Code)
 	}
+
 	resp = httptest.NewRecorder()
 	engine.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusTooManyRequests, resp.Code)

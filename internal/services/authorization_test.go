@@ -6,6 +6,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -25,7 +26,7 @@ func TestAuthorization_Roles(t *testing.T) {
 	assert.ErrorContains(t, svc.HasRequiredRole(managerRole, models.RoleAdmin), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredRole(services.Role{}, models.RoleAdmin), "access restricted")
 
-	assert.NoError(t, svc.HasRequiredRole(services.Role{Rank: managerRole.Rank, Name: models.RoleManager}, models.RoleManager))
+	require.NoError(t, svc.HasRequiredRole(services.Role{Rank: managerRole.Rank, Name: models.RoleManager}, models.RoleManager))
 }
 
 func TestAuthorization_Scopes(t *testing.T) {
@@ -39,7 +40,7 @@ func TestAuthorization_Scopes(t *testing.T) {
 	req := models.Scopes{models.ScopeTeamSettingsWrite}
 	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{}, req), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
-	assert.NoError(t, svc.HasRequiredScopes(models.Scopes{models.ScopeTeamSettingsWrite}, req))
+	require.NoError(t, svc.HasRequiredScopes(models.Scopes{models.ScopeTeamSettingsWrite}, req))
 
 	req = models.Scopes{models.ScopeTeamSettingsWrite, models.ScopeUsersRead}
 	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")

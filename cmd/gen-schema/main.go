@@ -14,7 +14,7 @@ import (
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen/structs"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/swaggest/jsonschema-go"
@@ -78,11 +78,36 @@ func main() {
 
 			return nil
 		}),
+		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
+			if params.Field.Tag.Get("x-omitempty") == "true" {
+				if params.PropertySchema == nil {
+					return nil
+				}
+				if params.PropertySchema.ExtraProperties == nil {
+					params.PropertySchema.ExtraProperties = map[string]any{}
+				}
+				params.PropertySchema.ExtraProperties["x-omitempty"] = true
+			}
+
+			return nil
+		}),
 		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
 			if params.Schema.ReflectType == reflect.TypeOf(uuid.New()) {
 				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
 				params.Schema.Items = &jsonschema.Items{}
 			}
+
+			// nullable prop not exposed
+			// if params.Schema.Type != nil && params.Schema.Type.SimpleTypes != nil {
+			// 	if *params.Schema.Type.SimpleTypes == jsonschema.Array {
+			// 		if params.Schema.ExtraProperties == nil {
+			// 			params.Schema.ExtraProperties = make(map[string]interface{})
+			// 		}
+			// 		// if params.Schema.ExtraProperties["nullable"] == true {
+			// 		// params.Schema.ExtraProperties["x-omitempty"] = "true"
+			// 		// }
+			// 	}
+			// }
 
 			return false, nil
 		}),
@@ -94,7 +119,7 @@ func main() {
 		// cannot import packages at runtime
 		// if we have an uncompilable state then we need workarounds to compile regardless
 		// UDPATE: use https://github.com/pkujhd/goloader instead of plugin pkg which cant reload changed go file at runtime
-		st, ok := structs.PublicStructs[sn]
+		st, ok := codegen.PublicStructs[sn]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)
 		}

@@ -13,7 +13,7 @@ import type { DbTeam } from './dbTeam'
 import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
 
-export interface RestProjectBoardResponse {
+export interface ProjectBoardResponse {
   activities: DbActivity[] | null
   boardConfig: ProjectConfig
   createdAt: Date

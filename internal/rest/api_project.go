@@ -55,17 +55,32 @@ func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 	// c.JSON(http.StatusOK, res)
 }
 
-// create workitem tag
 func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 	ctx := c.Request.Context()
 
 	defer newOTELSpan(ctx, "CreateWorkitemTag", trace.WithAttributes(userIDAttribute(c))).End()
 
-	user := getUserFromCtx(c)
+	caller := getUserFromCtx(c)
 
-	h.workitemtagsvc.Create(c, h.pool, user, &db.WorkItemTagCreateParams{
-		ProjectID: internal.ProjectIDByName[project],
-		// TODO params + oapi path parameters override name
+	body := &WorkItemTagCreateRequest{}
+
+	if err := c.BindJSON(body); err != nil {
+		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
+
+		return
+	}
+
+	wit, err := h.workitemtagsvc.Create(c, h.pool, caller, &db.WorkItemTagCreateParams{
+		ProjectID:   internal.ProjectIDByName[project],
+		Name:        body.Name,
+		Description: body.Description,
+		Color:       body.Color,
 	})
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	if err != nil {
+		renderErrorResponse(c, "Could not create workitem tag", err)
+
+		return
+	}
+
+	c.JSON(http.StatusCreated, wit)
 }

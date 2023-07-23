@@ -28,7 +28,7 @@ type rateLimitMiddleware struct {
 	logger *zap.SugaredLogger
 	// rlim is the number of events per second allowed.
 	rlim rate.Limit
-	// rlim is the number of burst allowed.
+	// blim is the number of burst allowed.
 	blim     int
 	visitors map[string]*visitor // don't mind pointers, it's for internal struct use only
 
@@ -49,8 +49,8 @@ func newRateLimitMiddleware(
 }
 
 // Limit is the middleware function to rate limits requests.
-func (r *rateLimitMiddleware) Limit() gin.HandlerFunc {
-	go r.cleanupVisitors(3 * time.Minute)
+func (m *rateLimitMiddleware) Limit() gin.HandlerFunc {
+	go m.cleanupVisitors(3 * time.Minute)
 
 	return func(c *gin.Context) {
 		ip, _, err := net.SplitHostPort(c.Request.RemoteAddr)
@@ -60,9 +60,9 @@ func (r *rateLimitMiddleware) Limit() gin.HandlerFunc {
 				ip = "unknown"
 			}
 		}
-		r.logger.Infof("ip: %v", ip)
+		m.logger.Infof("ip: %v", ip)
 
-		limiter := r.getVisitor(ip)
+		limiter := m.getVisitor(ip)
 		if !limiter.Allow() {
 			c.AbortWithStatus(http.StatusTooManyRequests)
 
@@ -73,15 +73,15 @@ func (r *rateLimitMiddleware) Limit() gin.HandlerFunc {
 	}
 }
 
-func (r *rateLimitMiddleware) getVisitor(ip string) *rate.Limiter {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (m *rateLimitMiddleware) getVisitor(ip string) *rate.Limiter {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
-	v, exists := r.visitors[ip]
+	v, exists := m.visitors[ip]
 	if !exists {
-		limiter := rate.NewLimiter(r.rlim, r.blim)
+		limiter := rate.NewLimiter(m.rlim, m.blim)
 		// Include the current time when creating a new visitor.
-		r.visitors[ip] = &visitor{limiter, time.Now()}
+		m.visitors[ip] = &visitor{limiter, time.Now()}
 
 		return limiter
 	}
@@ -94,16 +94,16 @@ func (r *rateLimitMiddleware) getVisitor(ip string) *rate.Limiter {
 
 // Every minute check the map for visitors that haven't been seen for
 // more than the given duration and delete the entries.
-func (r *rateLimitMiddleware) cleanupVisitors(d time.Duration) {
+func (m *rateLimitMiddleware) cleanupVisitors(d time.Duration) {
 	for {
 		time.Sleep(time.Minute)
 
-		r.mu.Lock()
-		for ip, v := range r.visitors {
+		m.mu.Lock()
+		for ip, v := range m.visitors {
 			if time.Since(v.lastSeen) > d {
-				delete(r.visitors, ip)
+				delete(m.visitors, ip)
 			}
 		}
-		r.mu.Unlock()
+		m.mu.Unlock()
 	}
 }

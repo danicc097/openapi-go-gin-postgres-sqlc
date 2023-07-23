@@ -17,6 +17,10 @@ import (
 // title represents an error title which will be shown to end users.
 // Inspired by https://www.rfc-editor.org/rfc/rfc7807.
 func renderErrorResponse(c *gin.Context, title string, err error) {
+	if err == nil {
+		err = errors.New("unknown error")
+	}
+
 	resp := models.HTTPError{
 		Title:  title,
 		Error:  err.Error(),

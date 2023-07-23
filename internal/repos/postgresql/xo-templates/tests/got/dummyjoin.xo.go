@@ -16,18 +16,20 @@ import (
 
 // DummyJoin represents a row from 'xo_tests.dummy_join'.
 // Change properties via SQL column comments, joined with " && ":
-//   - "properties":private to exclude a field from JSON.
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
 //   - "type":<pkg.type> to override the type annotation.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DummyJoin struct {
 	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true"` // dummy_join_id
-	Name        *string `json:"name" db:"name" required:"true"`                 // name
+	Name        *string `json:"name" db:"name"`                                 // name
 }
 
 // DummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
 type DummyJoinCreateParams struct {
-	Name *string `json:"name" required:"true"` // name
+	Name *string `json:"name"` // name
 }
 
 // CreateDummyJoin creates a new DummyJoin in the database with the given params.
@@ -41,7 +43,7 @@ func CreateDummyJoin(ctx context.Context, db DB, params *DummyJoinCreateParams) 
 
 // DummyJoinUpdateParams represents update params for 'xo_tests.dummy_join'.
 type DummyJoinUpdateParams struct {
-	Name **string `json:"name" required:"true"` // name
+	Name **string `json:"name"` // name
 }
 
 // SetUpdateParams updates xo_tests.dummy_join struct fields with the specified params.

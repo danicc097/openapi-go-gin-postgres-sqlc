@@ -63,7 +63,7 @@ func newOpenapiMiddleware(
 // TODO validate responses for dev and ci at least (with openapi3filter.Strict(true)).
 // need custom response writer for gin: https://github.com/gin-gonic/gin/issues/1363#issuecomment-577722498
 // for reference middelware see https://github.com/aereal/go-openapi3-validation-middleware/blob/main/middleware.go
-func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOptions) gin.HandlerFunc {
+func (m *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOptions) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if getSkipRequestValidationFromCtx(c) {
 			c.Next()
@@ -76,7 +76,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
 		c.Writer = rbw
 
-		err := ValidateRequestFromContext(c, o.router, options)
+		err := ValidateRequestFromContext(c, m.router, options)
 		if err != nil {
 			if options != nil && options.ErrorHandler != nil {
 				options.ErrorHandler(c, err.Error(), http.StatusBadRequest)
@@ -99,7 +99,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 			return
 		}
 
-		rvi, err := buildRequestValidationInput(o.router, c.Request, &options.Options)
+		rvi, err := buildRequestValidationInput(m.router, c.Request, &options.Options)
 		if err != nil {
 			// error response customized via WithCustomSchemaErrorFunc
 			renderErrorResponse(c, fmt.Sprintf("openapi request validation input: %v", err), err)
@@ -180,12 +180,12 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 
 	// Pass the gin context into the request validator, so that any callbacks
 	// which it invokes make it available.
-	requestContext := context.WithValue(context.Background(), ginContextKey, c)
+	requestContext := context.WithValue(context.Background(), ginContextCtxKey, c)
 
 	if options != nil {
 		validationInput.Options = &options.Options
 		validationInput.ParamDecoder = options.ParamDecoder
-		requestContext = context.WithValue(requestContext, userDataKey, options.UserData)
+		requestContext = context.WithValue(requestContext, userDataCtxKey, options.UserData)
 	}
 
 	err = openapi3filter.ValidateRequest(requestContext, validationInput)

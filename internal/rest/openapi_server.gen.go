@@ -10,6 +10,7 @@ import (
 	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/gin-gonic/gin"
+	uuid "github.com/google/uuid"
 )
 
 // ServerInterface represents all server handlers.
@@ -58,13 +59,13 @@ type ServerInterface interface {
 	GetCurrentUser(c *gin.Context)
 	// deletes the user by id
 	// (DELETE /user/{id})
-	DeleteUser(c *gin.Context, id externalRef0.UUID)
+	DeleteUser(c *gin.Context, id uuid.UUID)
 	// updates the user by id
 	// (PATCH /user/{id})
-	UpdateUser(c *gin.Context, id externalRef0.UUID)
+	UpdateUser(c *gin.Context, id uuid.UUID)
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
-	UpdateUserAuthorization(c *gin.Context, id externalRef0.UUID)
+	UpdateUserAuthorization(c *gin.Context, id uuid.UUID)
 	// create workitem
 	// (POST /workitem/)
 	CreateWorkitem(c *gin.Context)
@@ -334,7 +335,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UUID
+	var id uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -355,7 +356,7 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UUID
+	var id uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -376,7 +377,7 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UUID
+	var id uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {

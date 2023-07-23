@@ -9,6 +9,10 @@ import (
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
+// alternative r = rand.New(rand.NewSource(time.Now().UnixNano()))
+// is not concurrency safe. Would need something like:
+// https://github.com/cilium/cilium/blob/32118ccaa8677a3b836e60542a52a2af94693533/pkg/rand/safe_rand.go#L23
+// we don't really care since these are exclusively used for tests
 // nolint: gochecknoinits
 func init() {
 	rand.Seed(time.Now().UnixNano())

@@ -18,6 +18,40 @@
 #
 #
 #######################################
+# https://github.com/deepmap/oapi-codegen/issues/760 does not work with ref
+x-uuidParameter: &x-uuidParameter
+  description: UUID identifier
+  explode: false
+  in: path
+  name: id
+  required: true
+  schema:
+    type: string
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+    # https://github.com/deepmap/oapi-codegen/issues/760
+    x-go-type: uuid.UUID
+    x-go-type-import:
+      name: uuid
+      path: github.com/google/uuid
+  example: 123e4567-e89b-12d3-a456-426614174000
+  style: simple
+x-require-authenticated: &x-require-authenticated
+  security:
+    - bearer_auth: []
+    - api_key: []
+# TODO: 403 and 401 separated, just when require-authenticated
+x-error-response: &x-error-response
+  4XX:
+    description: Error response
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/HTTPError'
+#
+#
+#######################################
+#
+#
 openapi: 3.0.3
 info:
   description: openapi-go-gin-postgres-sqlc
@@ -82,12 +116,7 @@ paths:
               schema:
                 type: string
                 example: pong
-        4XX:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPError'
+        !!merge <<: *x-error-response
   /openapi.yaml:
     get:
       summary: Returns this very OpenAPI spec.
@@ -102,10 +131,8 @@ paths:
                 format: binary
   /admin/ping:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: Ping pongs
+      !!merge <<: *x-require-authenticated
       operationId: AdminPing
       responses:
         "200":
@@ -115,21 +142,14 @@ paths:
               schema:
                 type: string
                 example: pong
-        4XX:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPError'
+        !!merge <<: *x-error-response
       tags:
         - admin
       x-required-role: admin
   /user/me:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: returns the logged in user
+      !!merge <<: *x-require-authenticated
       operationId: GetCurrentUser
       responses:
         "200":
@@ -142,13 +162,11 @@ paths:
         - user
   /user/{id}/authorization:
     patch:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: updates user role and scopes by id
+      !!merge <<: *x-require-authenticated
       operationId: UpdateUserAuthorization
       parameters:
-        - $ref: '#/components/parameters/UUID'
+        - *x-uuidParameter
       requestBody:
         content:
           application/json:
@@ -159,34 +177,33 @@ paths:
       responses:
         "204":
           description: User auth updated successfully.
+      x-required-scopes:
+        - scopes:write
       tags:
         - user
-      x-required-role: user
   /user/{id}:
     delete:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: deletes the user by id
+      !!merge <<: *x-require-authenticated
       operationId: DeleteUser
       parameters:
-        - $ref: '#/components/parameters/UUID'
+        - *x-uuidParameter
       responses:
+        "204":
+          description: User deleted successfully
         "404":
           description: User not found
       tags:
         - user
       x-required-scopes:
-        - users:write
+        - users:delete
       x-required-role: admin
     patch:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: updates the user by id
+      !!merge <<: *x-require-authenticated
       operationId: UpdateUser
       parameters:
-        - $ref: '#/components/parameters/UUID'
+        - *x-uuidParameter
       requestBody:
         content:
           application/json:
@@ -206,10 +223,8 @@ paths:
       x-required-role: user
   /project/{projectName}/initialize:
     post:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: creates initial data (teams, work item types, tags...) for a new project
+      !!merge <<: *x-require-authenticated
       operationId: InitializeProject
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -227,10 +242,8 @@ paths:
       x-required-role: admin
   /project/{projectName}/:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: returns board data for a project
+      !!merge <<: *x-require-authenticated
       operationId: GetProject
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -245,10 +258,8 @@ paths:
         - project
   /project/{projectName}/config:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: returns the project configuration
+      !!merge <<: *x-require-authenticated
       operationId: GetProjectConfig
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -263,10 +274,8 @@ paths:
       tags:
         - project
     put:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: updates the project configuration
+      !!merge <<: *x-require-authenticated
       operationId: UpdateProjectConfig
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -283,10 +292,8 @@ paths:
         - project
   /project/{projectName}/board:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: returns board data for a project
+      !!merge <<: *x-require-authenticated
       operationId: GetProjectBoard
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -296,15 +303,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RestProjectBoardResponse'
+                $ref: '#/components/schemas/ProjectBoardResponse'
       tags:
         - project
   /project/{projectName}/workitems:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: returns workitems for a project
+      !!merge <<: *x-require-authenticated
       operationId: GetProjectWorkitems
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -323,21 +328,20 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/RestDemoWorkItemsResponse'
+                  - $ref: '#/components/schemas/DemoWorkItemsResponse'
+                  - $ref: '#/components/schemas/DemoTwoWorkItemsResponse'
       tags:
         - project
   /project/{projectName}/tag/:
     post:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: create workitem tag
+      !!merge <<: *x-require-authenticated
       operationId: CreateWorkitemTag
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RestWorkItemTagCreateRequest'
+              $ref: '#/components/schemas/WorkItemTagCreateRequest'
         required: true
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -353,16 +357,14 @@ paths:
         - project
   /workitem/:
     post:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: create workitem
+      !!merge <<: *x-require-authenticated
       operationId: CreateWorkitem
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RestDemoWorkItemCreateRequest'
+              $ref: '#/components/schemas/DemoWorkItemCreateRequest'
         required: true
       responses:
         "201":
@@ -376,10 +378,8 @@ paths:
         - workitem
   /workitem/{id}/:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: get workitem
+      !!merge <<: *x-require-authenticated
       operationId: GetWorkitem
       parameters:
         - $ref: '#/components/parameters/Serial'
@@ -394,10 +394,8 @@ paths:
       tags:
         - workitem
     patch:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: update workitem
+      !!merge <<: *x-require-authenticated
       operationId: UpdateWorkitem
       parameters:
         - $ref: '#/components/parameters/Serial'
@@ -412,10 +410,8 @@ paths:
       tags:
         - workitem
     delete:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: delete workitem
+      !!merge <<: *x-require-authenticated
       operationId: DeleteWorkitem
       parameters:
         - $ref: '#/components/parameters/Serial'
@@ -426,16 +422,14 @@ paths:
         - workitem
   /workitem/{id}/comments/:
     post:
-      security:
-        - bearer_auth: []
-        - api_key: []
       summary: create workitem comment
+      !!merge <<: *x-require-authenticated
       operationId: CreateWorkitemComment
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RestWorkItemCommentCreateRequest'
+              $ref: '#/components/schemas/WorkItemCommentCreateRequest'
         required: true
       parameters:
         - $ref: '#/components/parameters/Serial'
@@ -461,17 +455,7 @@ components:
         $ref: '#/components/schemas/Project'
       example: demo
       style: simple
-    UUID:
-      description: UUID identifier
-      explode: false
-      in: path
-      name: id
-      required: true
-      schema:
-        type: string
-        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-      example: 123e4567-e89b-12d3-a456-426614174000
-      style: simple
+    UUID: *x-uuidParameter
     Serial:
       description: integer identifier
       explode: false
@@ -506,6 +490,7 @@ components:
     DbKanbanStep: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -582,6 +567,7 @@ components:
     DbWorkItemTag: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -602,6 +588,7 @@ components:
     DbWorkItemType: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -690,14 +677,10 @@ components:
         - userID
         - username
         - email
-        - firstName
-        - lastName
-        - fullName
         - scopes
         - hasPersonalNotifications
         - hasGlobalNotifications
         - createdAt
-        - deletedAt
       type: object
       x-postgen-struct: DbUser
     DbTimeEntry: # Generated from internal structs. DO NOT EDIT.
@@ -724,13 +707,10 @@ components:
           type: integer
       required:
         - timeEntryID
-        - workItemID
         - activityID
-        - teamID
         - userID
         - comment
         - start
-        - durationMinutes
       type: object
       x-postgen-struct: DbTimeEntry
     DbWorkItemComment: # Generated from internal structs. DO NOT EDIT.
@@ -773,6 +753,8 @@ components:
             type: string
           nullable: false
           type: array
+        visualization:
+          type: object
       required:
         - header
         - fields
@@ -796,7 +778,7 @@ components:
         - path
         - name
       type: object
-    RestDemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+    DemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -863,14 +845,85 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closedAt
         - targetDate
         - createdAt
         - updatedAt
-        - deletedAt
         - demoWorkItem
       type: object
       x-postgen-struct: RestDemoWorkItemsResponse
+    DemoTwoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        closedAt:
+          format: date-time
+          nullable: true
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        demoTwoWorkItem:
+          $ref: '#/components/schemas/DbDemoTwoWorkItem'
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        members:
+          items:
+            $ref: '#/components/schemas/DbUser'
+          nullable: true
+          type: array
+        metadata:
+          additionalProperties: {}
+          nullable: true
+          type: object
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          type: integer
+        timeEntries:
+          items:
+            $ref: '#/components/schemas/DbTimeEntry'
+          nullable: true
+          type: array
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        workItemComments:
+          items:
+            $ref: '#/components/schemas/DbWorkItemComment'
+          nullable: true
+          type: array
+        workItemID:
+          type: integer
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTag'
+          nullable: true
+          type: array
+        workItemType:
+          $ref: '#/components/schemas/DbWorkItemType'
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemID
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - targetDate
+        - createdAt
+        - updatedAt
+        - demoTwoWorkItem
+      type: object
+      x-postgen-struct: RestDemoTwoWorkItemsResponse
     InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
@@ -892,7 +945,7 @@ components:
           type: array
       type: object
       x-postgen-struct: RestProjectBoardCreateRequest
-    RestProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
+    ProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
           items:
@@ -995,14 +1048,10 @@ components:
         - userID
         - username
         - email
-        - firstName
-        - lastName
-        - fullName
         - scopes
         - hasPersonalNotifications
         - hasGlobalNotifications
         - createdAt
-        - deletedAt
         - role
       type: object
       x-postgen-struct: RestUser
@@ -1085,6 +1134,7 @@ components:
       enum:
         - users:read
         - users:write
+        - users:delete
         - scopes:write
         - team-settings:write
         - project-settings:write
@@ -1190,8 +1240,10 @@ components:
           type: object
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string
-    PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
-      type: object
+      x-go-type: uuid.UUID
+      x-go-type-import:
+        name: uuid
+        path: github.com/google/uuid
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:
@@ -1235,16 +1287,15 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closedAt
         - targetDate
         - createdAt
         - updatedAt
-        - deletedAt
       type: object
       x-postgen-struct: DbWorkItem
-    RestWorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    WorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -1253,13 +1304,12 @@ components:
         projectID:
           type: integer
       required:
-        - projectID
         - name
         - description
         - color
       type: object
       x-postgen-struct: RestWorkItemTagCreateRequest
-    RestDemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    DemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         base:
           $ref: '#/components/schemas/DbWorkItemCreateParams'
@@ -1282,7 +1332,7 @@ components:
         - members
       type: object
       x-postgen-struct: RestDemoWorkItemCreateRequest
-    RestWorkItemCommentCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    WorkItemCommentCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         message:
           type: string
@@ -1313,7 +1363,6 @@ components:
         projectID:
           type: integer
       required:
-        - projectID
         - name
         - description
         - isProductive
@@ -1334,6 +1383,7 @@ components:
     DbWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
           type: string
         description:
           type: string
@@ -1342,7 +1392,6 @@ components:
         projectID:
           type: integer
       required:
-        - projectID
         - name
         - description
         - color
@@ -1452,7 +1501,6 @@ components:
         - metadata
         - teamID
         - kanbanStepID
-        - closedAt
         - targetDate
       type: object
     ServicesMember: # Generated from internal structs. DO NOT EDIT.
@@ -1464,6 +1512,17 @@ components:
       required:
         - userID
         - role
+      type: object
+    DbDemoTwoWorkItem: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        customDateForProject2:
+          format: date-time
+          nullable: true
+          type: string
+        workItemID:
+          type: integer
+      required:
+        - workItemID
       type: object
   examples:
     User:

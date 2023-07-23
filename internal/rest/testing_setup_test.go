@@ -11,10 +11,12 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -60,7 +62,21 @@ func testMain(m *testing.M) int {
 	return m.Run()
 }
 
-func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, error) {
+type testServer struct {
+	server *http.Server
+	client *client.ClientWithResponses
+}
+
+func (s *testServer) cleanup(t *testing.T) {
+	t.Cleanup(func() {
+		s.server.Close()
+	})
+}
+
+// runTestServer returns a test server and client.
+// We will require different middlewares depending on the test case, so a shared a global instance
+// is not possible.
+func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.HandlerFunc) (*testServer, error) {
 	t.Helper()
 
 	ctx := context.Background()
@@ -97,7 +113,8 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 	}
 
 	srv, err := NewServer(Config{
-		Address:         ":0", // random next available for each test server
+		// not necessary when using ServeHTTP. Won't actually listen.
+		// Address:         ":0", // random next available for each test server
 		Pool:            testPool,
 		Redis:           rdb,
 		Logger:          logger.Sugar(),
@@ -107,13 +124,20 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 		RolePolicyPath:  "../../roles.json",
 	}, WithMiddlewares(middlewares...))
 	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "New")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
 	}
 
-	return srv.httpsrv, nil
+	client, err := client.NewTestClient(resttestutil.MustConstructInternalPath(""), srv.httpsrv.Handler)
+	if err != nil {
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "client.NewTestClient")
+	}
+
+	return &testServer{server: srv.httpsrv, client: client}, nil
 }
 
 func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
+	t.Helper()
+
 	logger := zaptest.NewLogger(t).Sugar()
 	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
 	if err != nil {

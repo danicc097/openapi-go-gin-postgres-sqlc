@@ -6,7 +6,11 @@ const (
 )
 {{end}}
 {{range $Enum := .EnumDefinitions}}
+{{- if $Enum.Schema.Description }}
+  {{ toGoComment $Enum.Schema.Description $Enum.TypeName  }}
+{{- else }}
 // Defines values for {{$Enum.TypeName}}.
+{{- end }}
 const (
 {{range $name, $value := $Enum.GetValues}}
   {{$name}} {{$Enum.TypeName}} = {{$Enum.ValueWrapper}}{{$value}}{{$Enum.ValueWrapper -}}

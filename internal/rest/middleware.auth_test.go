@@ -17,15 +17,18 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestAuthorizationMiddleware_Roles(t *testing.T) {
+func TestAuthorizationMiddleware(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name         string
-		role         models.Role
-		requiredRole models.Role
-		status       int
-		body         string
+		name           string
+		role           models.Role
+		requiredRole   models.Role
+		scopes         models.Scopes
+		requiredScopes models.Scopes
+		status         int
+		body           string
+		withoutUser    bool
 	}{
 		{
 			name:         "unauthorized_user",
@@ -48,6 +51,35 @@ func TestAuthorizationMiddleware_Roles(t *testing.T) {
 			status:       http.StatusOK,
 			body:         "ok",
 		},
+		{
+			name:           "authorized_with_missing_scopes_but_valid_rank",
+			role:           models.RoleAdmin,
+			requiredScopes: []models.Scope{models.ScopeUsersWrite},
+			requiredRole:   models.RoleAdmin,
+			status:         http.StatusOK,
+			body:           "ok",
+		},
+		{
+			name:           "authorized_with_missing_role_but_valid_scopes",
+			role:           models.RoleUser,
+			scopes:         []models.Scope{models.ScopeUsersWrite},
+			requiredScopes: []models.Scope{models.ScopeUsersWrite},
+			requiredRole:   models.RoleAdmin,
+			status:         http.StatusOK,
+			body:           "ok",
+		},
+		{
+			name:           "unauthorized_with_missing_scope",
+			scopes:         []models.Scope{models.ScopeUsersWrite},
+			requiredScopes: []models.Scope{models.ScopeUsersWrite, models.ScopeScopesWrite},
+			status:         http.StatusForbidden,
+			body:           "Unauthorized",
+		},
+		{
+			name:        "unauthorized_if_no_user",
+			withoutUser: true,
+			status:      http.StatusInternalServerError,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -67,29 +99,37 @@ func TestAuthorizationMiddleware_Roles(t *testing.T) {
 
 			authMw := newAuthMiddleware(logger.Sugar(), testPool, authnsvc, authzsvc, usvc)
 
-			req, _ := http.NewRequest(http.MethodGet, "/", nil)
-
 			ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
 			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
+				Scopes:     tc.scopes,
 				WithAPIKey: true,
 			})
 			if err != nil {
 				t.Fatalf("ff.CreateUser: %s", err)
 			}
 
-			engine.Use(func(c *gin.Context) {
-				ctxWithUser(c, ufixture.User)
-			})
+			if !tc.withoutUser {
+				engine.Use(func(c *gin.Context) {
+					ctxWithUser(c, ufixture.User)
+				})
+			}
 
-			engine.Use(authMw.EnsureAuthorized(AuthRestriction{MinimumRole: tc.requiredRole}))
+			engine.Use(authMw.EnsureAuthorized(AuthRestriction{
+				MinimumRole:    tc.requiredRole,
+				RequiredScopes: tc.requiredScopes,
+			}))
 			engine.GET("/", func(c *gin.Context) {
 				c.String(http.StatusOK, "ok")
 			})
+
+			req, _ := http.NewRequest(http.MethodGet, "/", nil)
 			engine.ServeHTTP(resp, req)
 
 			assert.Equal(t, tc.status, resp.Code)
-			assert.Contains(t, resp.Body.String(), tc.body)
+			if tc.body != "" {
+				assert.Contains(t, resp.Body.String(), tc.body)
+			}
 		})
 	}
 }
