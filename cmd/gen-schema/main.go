@@ -14,7 +14,7 @@ import (
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen/structs"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen/structs"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/swaggest/jsonschema-go"

@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
+	pregen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pregen"
 )
 
 // nolint: gochecknoglobals
