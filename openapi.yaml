@@ -36,8 +36,9 @@ x-uuidParameter: &x-uuidParameter
   example: 123e4567-e89b-12d3-a456-426614174000
   style: simple
 x-require-authenticated: &x-require-authenticated
-  - bearer_auth: []
-  - api_key: []
+  security:
+    - bearer_auth: []
+    - api_key: []
 # TODO: 403 and 401 separated, just when require-authenticated
 x-error-response: &x-error-response
   4XX:
@@ -130,8 +131,8 @@ paths:
                 format: binary
   /admin/ping:
     get:
-      security: *x-require-authenticated
       summary: Ping pongs
+      !!merge <<: *x-require-authenticated
       operationId: AdminPing
       responses:
         "200":
@@ -147,8 +148,8 @@ paths:
       x-required-role: admin
   /user/me:
     get:
-      security: *x-require-authenticated
       summary: returns the logged in user
+      !!merge <<: *x-require-authenticated
       operationId: GetCurrentUser
       responses:
         "200":
@@ -161,8 +162,8 @@ paths:
         - user
   /user/{id}/authorization:
     patch:
-      security: *x-require-authenticated
       summary: updates user role and scopes by id
+      !!merge <<: *x-require-authenticated
       operationId: UpdateUserAuthorization
       parameters:
         - *x-uuidParameter
@@ -182,8 +183,8 @@ paths:
         - user
   /user/{id}:
     delete:
-      security: *x-require-authenticated
       summary: deletes the user by id
+      !!merge <<: *x-require-authenticated
       operationId: DeleteUser
       parameters:
         - *x-uuidParameter
@@ -198,8 +199,8 @@ paths:
         - users:delete
       x-required-role: admin
     patch:
-      security: *x-require-authenticated
       summary: updates the user by id
+      !!merge <<: *x-require-authenticated
       operationId: UpdateUser
       parameters:
         - *x-uuidParameter
@@ -222,8 +223,8 @@ paths:
       x-required-role: user
   /project/{projectName}/initialize:
     post:
-      security: *x-require-authenticated
       summary: creates initial data (teams, work item types, tags...) for a new project
+      !!merge <<: *x-require-authenticated
       operationId: InitializeProject
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -241,8 +242,8 @@ paths:
       x-required-role: admin
   /project/{projectName}/:
     get:
-      security: *x-require-authenticated
       summary: returns board data for a project
+      !!merge <<: *x-require-authenticated
       operationId: GetProject
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -257,8 +258,8 @@ paths:
         - project
   /project/{projectName}/config:
     get:
-      security: *x-require-authenticated
       summary: returns the project configuration
+      !!merge <<: *x-require-authenticated
       operationId: GetProjectConfig
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -273,8 +274,8 @@ paths:
       tags:
         - project
     put:
-      security: *x-require-authenticated
       summary: updates the project configuration
+      !!merge <<: *x-require-authenticated
       operationId: UpdateProjectConfig
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -291,8 +292,8 @@ paths:
         - project
   /project/{projectName}/board:
     get:
-      security: *x-require-authenticated
       summary: returns board data for a project
+      !!merge <<: *x-require-authenticated
       operationId: GetProjectBoard
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -307,8 +308,8 @@ paths:
         - project
   /project/{projectName}/workitems:
     get:
-      security: *x-require-authenticated
       summary: returns workitems for a project
+      !!merge <<: *x-require-authenticated
       operationId: GetProjectWorkitems
       parameters:
         - $ref: '#/components/parameters/ProjectName'
@@ -333,8 +334,8 @@ paths:
         - project
   /project/{projectName}/tag/:
     post:
-      security: *x-require-authenticated
       summary: create workitem tag
+      !!merge <<: *x-require-authenticated
       operationId: CreateWorkitemTag
       requestBody:
         content:
@@ -356,8 +357,8 @@ paths:
         - project
   /workitem/:
     post:
-      security: *x-require-authenticated
       summary: create workitem
+      !!merge <<: *x-require-authenticated
       operationId: CreateWorkitem
       requestBody:
         content:
@@ -377,8 +378,8 @@ paths:
         - workitem
   /workitem/{id}/:
     get:
-      security: *x-require-authenticated
       summary: get workitem
+      !!merge <<: *x-require-authenticated
       operationId: GetWorkitem
       parameters:
         - $ref: '#/components/parameters/Serial'
@@ -393,8 +394,8 @@ paths:
       tags:
         - workitem
     patch:
-      security: *x-require-authenticated
       summary: update workitem
+      !!merge <<: *x-require-authenticated
       operationId: UpdateWorkitem
       parameters:
         - $ref: '#/components/parameters/Serial'
@@ -409,8 +410,8 @@ paths:
       tags:
         - workitem
     delete:
-      security: *x-require-authenticated
       summary: delete workitem
+      !!merge <<: *x-require-authenticated
       operationId: DeleteWorkitem
       parameters:
         - $ref: '#/components/parameters/Serial'
@@ -421,8 +422,8 @@ paths:
         - workitem
   /workitem/{id}/comments/:
     post:
-      security: *x-require-authenticated
       summary: create workitem comment
+      !!merge <<: *x-require-authenticated
       operationId: CreateWorkitemComment
       requestBody:
         content:

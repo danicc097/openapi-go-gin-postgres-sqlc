@@ -265,6 +265,7 @@ x.gen.pregen() {
     # NOTE: https://github.com/mikefarah/yq/issues/1738
     yq -o=json e "
     .paths[][]
+    | explode(.)
     | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
     | select(.[]) as \$i ireduce ({}; . + \$i)
   " openapi.yaml >$OPID_AUTH
