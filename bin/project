@@ -182,9 +182,7 @@ x.gen.pregen() {
     mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
 
     [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-
-    src_comment="projects table"
-    replace_enum_in_spec "Project" db_projects "$src_comment"
+    replace_enum_in_spec "Project" db_projects "projects table"
 
     for project in ${db_projects[@]}; do
       ### kanban steps
@@ -196,8 +194,7 @@ x.gen.pregen() {
         echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue
       }
       schema_name="$(to_pascal $project)KanbanSteps"
-      src_comment="kanban_steps table"
-      replace_enum_in_spec "$schema_name" kanban_steps "$src_comment"
+      replace_enum_in_spec "$schema_name" kanban_steps "kanban_steps table"
 
       ### work item types
       mapfile -t work_item_types < <(dockerdb_psql -d $POSTGRES_DB -c "
@@ -208,8 +205,7 @@ x.gen.pregen() {
         echo "${YELLOW}[WARNING] No work item types found for project '$project' in database $POSTGRES_DB${OFF}" && continue
       }
       schema_name="$(to_pascal $project)WorkItemTypes"
-      src_comment="work_item_types table"
-      replace_enum_in_spec "$schema_name" work_item_types "$src_comment"
+      replace_enum_in_spec "$schema_name" work_item_types "work_item_types table"
     done
 
     generate_models_mappings
@@ -227,7 +223,6 @@ x.gen.pregen() {
 
     ######## Sync enums with external sources and validate
     ######## external json files are the source of truth
-    # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
     # arrays can't be nested
     declare -A enum_src_files=(
       [Scope]="scopes.json"
@@ -268,13 +263,19 @@ x.gen.pregen() {
     | explode(.)
     | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
     | select(.[]) as \$i ireduce ({}; . + \$i)
-  " openapi.yaml >$OPID_AUTH
+  " $SPEC >$OPID_AUTH
 
     yq --prettyPrint '.. style="single"' -i $SPEC
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
 
     pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
+
+    generate_structs_map
+
+    update_spec_with_structs
+
+    delete_duplicate_schemas
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -396,11 +397,6 @@ x.gen.postgen() {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
     echo "Running generation"
-    generate_structs_map
-
-    update_spec_with_structs
-
-    delete_duplicate_schemas
 
     postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -552,7 +548,7 @@ x.gen.gowrap() {
   backup-gen.cleanup
 }
 
-# Generate Go client and server.
+# Generate Go client and server from spec.
 x.gen.client-server() {
   { { {
     echo "Running generation"
@@ -701,12 +697,12 @@ x.gen() {
 
     x.gen.pregen
 
-    x.gen.postgen &
+    x.gen.client-server & # depends on schemas generated in postgen
     x.gen.counterfeiter & # delay since it depends on generated output too
 
     wait_without_error
 
-    x.gen.client-server # depends on schemas generated in postgen
+    x.gen.postgen
 
     # restart is not robust
     # vscode will randomly lose connection when restarting
@@ -714,9 +710,7 @@ x.gen() {
     #   restart_pid $pid &
     # done
 
-    x.lint.sql &
-    x.lint.go &
-    wait
+    x.lint.go
 
     x.gen.frontend
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
