@@ -87,7 +87,7 @@ func (o *CodeGen) validateSpec() error {
 
 func (o *CodeGen) EnsureCorrectMethodsPerTag() error {
 	if err := o.ensureFunctionMethods(); err != nil {
-		return fmt.Errorf("ensureFunctionMethods: %w", err)
+		return fmt.Errorf("tag methods: %w", err)
 	}
 
 	return nil
@@ -344,6 +344,8 @@ func parseAndCheckFunctions(fileContent io.Reader, opIDs []string) error {
 
 	functions := getHandlersMethods(file)
 
+	// TODO: should not exit early, instead accumulate errors and detect wrongly placed
+	// methods to reorder them automagically
 	for _, opID := range opIDs {
 		if !contains(functions, opID) {
 			return fmt.Errorf("missing function method for operation ID '%s'", opID)
@@ -365,7 +367,7 @@ func (o *CodeGen) ensureFunctionMethods() error {
 
 		err = parseAndCheckFunctions(bytes.NewReader(apiFileContent), opIDs)
 		if err != nil {
-			return fmt.Errorf("parsing and checking functions for %s: %w", apiFilePath, err)
+			return fmt.Errorf("tag %q: %w", tag, err)
 		}
 	}
 

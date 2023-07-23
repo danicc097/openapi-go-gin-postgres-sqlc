@@ -64,5 +64,11 @@ func main() {
 			fmt.Fprintln(os.Stderr, stderr.String())
 			os.Exit(1)
 		}
+
+		if err := cg.EnsureCorrectMethodsPerTag(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, stderr.String())
+			os.Exit(1)
+		}
 	}
 }

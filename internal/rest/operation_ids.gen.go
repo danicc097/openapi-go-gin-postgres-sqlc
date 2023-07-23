@@ -9,11 +9,15 @@ const (
 	AdminPing OperationID = "AdminPing"
 
 	// Operation IDs for the 'default' tag.
-	Events             OperationID = "Events"
+	OpenapiYamlGet OperationID = "OpenapiYamlGet"
+	Ping           OperationID = "Ping"
+
+	// Operation IDs for the 'events' tag.
+	Events OperationID = "Events"
+
+	// Operation IDs for the 'oidc' tag.
 	MyProviderCallback OperationID = "MyProviderCallback"
 	MyProviderLogin    OperationID = "MyProviderLogin"
-	OpenapiYamlGet     OperationID = "OpenapiYamlGet"
-	Ping               OperationID = "Ping"
 
 	// Operation IDs for the 'project' tag.
 	CreateWorkitemTag   OperationID = "CreateWorkitemTag"
