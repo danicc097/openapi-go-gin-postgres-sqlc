@@ -38,6 +38,7 @@ x-uuidParameter: &x-uuidParameter
 x-require-authenticated: &x-require-authenticated
   - bearer_auth: []
   - api_key: []
+# TODO: 403 and 401 separated, just when require-authenticated
 x-error-response: &x-error-response
   4XX:
     description: Error response

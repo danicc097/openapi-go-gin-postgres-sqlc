@@ -262,6 +262,7 @@ x.gen.pregen() {
 
     ######## Generate shared policies once the spec has been validated
     echo "Writing shared auth policies"
+    # NOTE: https://github.com/mikefarah/yq/issues/1738
     yq -o=json e "
     .paths[][]
     | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
