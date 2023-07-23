@@ -2,15 +2,13 @@ package codegen
 
 import (
 	"bytes"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAnalyzeSpec(t *testing.T) {
@@ -52,7 +50,7 @@ func TestAnalyzeSpec(t *testing.T) {
 
 			var stderr bytes.Buffer
 
-			og := New(&stderr, path.Join(baseDir, tc.File), "")
+			og := New(&stderr, path.Join(baseDir, tc.File), "", "")
 
 			err := og.analyzeSpec()
 			if err != nil && tc.ErrContains != "" {
@@ -62,66 +60,6 @@ func TestAnalyzeSpec(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestEnsureFunctionsForOperationIDs(t *testing.T) {
-	t.Parallel()
-
-	tempDir, err := ioutil.TempDir("", "test_pregen")
-	assert.NoError(t, err)
-	defer os.RemoveAll(tempDir)
-
-	defaultAPISource := `
-package rest
-
-type Handlers struct{}
-
-func (h *Handlers) MyProviderLogin(c *gin.Context) {}
-
-func someOtherFunction() {}
-`
-	defaultAPIFilePath := filepath.Join(tempDir, "api_default.go")
-	assert.NoError(t, ioutil.WriteFile(defaultAPIFilePath, []byte(defaultAPISource), 0o666))
-
-	customAPISource := `
-package rest
-
-type Handlers struct{}
-
-func (h *Handlers) MyCustomFunction(c *gin.Context) {}
-
-func (h *Handlers) UnRelatedFunction(c *gin.Context) {}
-
-func anotherFunction() {}
-`
-	customAPIFilePath := filepath.Join(tempDir, "api_custom.go")
-	assert.NoError(t, ioutil.WriteFile(customAPIFilePath, []byte(customAPISource), 0o666))
-
-	specSource := `
-{
-  "openapi": "3.0.0",
-	"info": {"description": "a", "version":"1", "title": "1"},
-  "paths": {
-    "/my-provider/login": {
-      "post": {
-        "operationId": "MyProviderLogin",
-        "tags": ["default"],
-        "responses": { "200": { "description": "Successful response" } }
-      }
-    },
-    "/my-custom/function": {
-      "get": {
-        "operationId": "MyCustomFunction",
-        "tags": ["custom"],
-        "responses": { "200": { "description": "Successful response" } }
-      }
-    }
-  }
-}
-`
-	fmt.Printf("specSource: %v\n", specSource)
-	// err = EnsureFunctionsForOperationIDs(specFilePath, opIDAuthInfoFilePath)
-	assert.NoError(t, err)
 }
 
 func TestGetHandlersMethods(t *testing.T) {
@@ -148,4 +86,68 @@ func (h *SomeOtherStruct) NotHandlersMethod() {}
 
 	functions := getHandlersMethods(file)
 	assert.ElementsMatch(t, []string{"MyFunction1", "MyFunction2", "UnrelatedFunction"}, functions)
+}
+
+func TestParseAndCheckFunctions(t *testing.T) {
+	t.Parallel()
+
+	fileContent := `
+package rest
+
+type Handlers struct{}
+
+func (h *Handlers) Foo() {}
+func (h *Handlers) Bar() {}
+`
+
+	opIDs := []string{"Foo", "Bar", "Baz"}
+
+	err := parseAndCheckFunctions(strings.NewReader(fileContent), opIDs)
+	require.Error(t, err, "expected error due to missing Baz")
+
+	assert.Contains(t, err.Error(), "missing function method for operation ID 'Baz'")
+
+	opIDs = []string{"Foo", "Bar"}
+	err = parseAndCheckFunctions(strings.NewReader(fileContent), opIDs)
+	require.NoError(t, err)
+}
+
+func TestEnsureFunctionMethods(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+
+	fileContent := `
+package rest
+
+type Handlers struct{}
+
+func (h *Handlers) Foo() {}
+func (h *Handlers) Bar() {}
+`
+
+	apiFilePath := tmpDir + "/api_foo.go"
+	file, err := os.Create(apiFilePath)
+	require.NoError(t, err, "Failed to create test file")
+	defer file.Close()
+
+	_, err = file.WriteString(fileContent)
+	require.NoError(t, err, "Failed to write test file")
+
+	cg := &CodeGen{
+		stderr:       &bytes.Buffer{},
+		specPath:     "",
+		operations:   map[string][]string{"foo": {"Foo", "Bar"}},
+		handlersPath: tmpDir,
+	}
+
+	err = cg.ensureFunctionMethods()
+	require.NoError(t, err)
+
+	cg.operations["foo"] = []string{"Foo", "Bar", "Baz"}
+
+	err = cg.ensureFunctionMethods()
+	require.Error(t, err, "expected error due to missing Baz")
+
+	assert.Contains(t, err.Error(), "missing function method for operation ID 'Baz'")
 }

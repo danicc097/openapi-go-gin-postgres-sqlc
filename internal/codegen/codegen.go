@@ -54,27 +54,29 @@ func ensureUnique[T comparable](s []T) error {
 //go:embed templates
 var templateFiles embed.FS
 
-type PreGen struct {
+type CodeGen struct {
 	stderr       io.Writer
 	specPath     string
 	opIDAuthPath string
+	handlersPath string
 	operations   map[string][]string
 }
 
 // New returns a new internal code generator.
-func New(stderr io.Writer, specPath string, opIDAuthPath string) *PreGen {
+func New(stderr io.Writer, specPath, opIDAuthPath, handlersPath string) *CodeGen {
 	operations := make(map[string][]string)
 
-	return &PreGen{
+	return &CodeGen{
 		stderr:       stderr,
 		specPath:     specPath,
 		opIDAuthPath: opIDAuthPath,
 		operations:   operations,
+		handlersPath: handlersPath,
 	}
 }
 
 // validateSpec validates an OpenAPI 3.0 specification.
-func (o *PreGen) validateSpec() error {
+func (o *CodeGen) validateSpec() error {
 	_, err := rest.ReadOpenAPI(o.specPath)
 	if err != nil {
 		return err
@@ -83,7 +85,15 @@ func (o *PreGen) validateSpec() error {
 	return nil
 }
 
-func (o *PreGen) ValidateProjectSpec() error {
+func (o *CodeGen) EnsureCorrectMethodsPerTag() error {
+	if err := o.ensureFunctionMethods(); err != nil {
+		return fmt.Errorf("ensureFunctionMethods: %w", err)
+	}
+
+	return nil
+}
+
+func (o *CodeGen) ValidateProjectSpec() error {
 	if err := o.validateSpec(); err != nil {
 		return fmt.Errorf("validate spec: %w", err)
 	}
@@ -95,7 +105,7 @@ func (o *PreGen) ValidateProjectSpec() error {
 	return nil
 }
 
-func (o *PreGen) Generate() error {
+func (o *CodeGen) Generate() error {
 	// if err := o.validateSpec(); err != nil {
 	// 	return fmt.Errorf("validate spec: %w", err)
 	// }
@@ -129,7 +139,7 @@ type AuthInfo struct {
 type opIDAuthInfo = map[rest.OperationID]AuthInfo
 
 // generateOpIDAuthMiddlewares generates middlewares based on role and scopes restrictions on an operation ID.
-func (o *PreGen) generateOpIDAuthMiddlewares() error {
+func (o *CodeGen) generateOpIDAuthMiddlewares() error {
 	opIDAuthInfos := make(opIDAuthInfo)
 
 	opIDAuthInfoBlob, err := os.ReadFile(o.opIDAuthPath)
@@ -172,7 +182,7 @@ func (o *PreGen) generateOpIDAuthMiddlewares() error {
 		return fmt.Errorf("could not format opID auth middlewares: %w", err)
 	}
 
-	fname := "internal/rest/api_auth_middlewares.gen.go"
+	fname := path.Join(o.handlersPath, "api_auth_middlewares.gen.go")
 
 	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o660)
 	if err != nil {
@@ -187,7 +197,7 @@ func (o *PreGen) generateOpIDAuthMiddlewares() error {
 }
 
 // analyzeSpec ensures specific rules for codegen are met and extracts necessary data.
-func (o *PreGen) analyzeSpec() error {
+func (o *CodeGen) analyzeSpec() error {
 	schemaBlob, err := os.ReadFile(o.specPath)
 	if err != nil {
 		return fmt.Errorf("error opening schema file: %w", err)
@@ -239,7 +249,7 @@ func (o *PreGen) analyzeSpec() error {
 }
 
 // generateOpIDs fills in a template with all operation IDs to a dest.
-func (o *PreGen) generateOpIDs() error {
+func (o *CodeGen) generateOpIDs() error {
 	funcs := template.FuncMap{
 		// "stringsJoin": func(elems []string, prefix string, suffix string, sep string) string {
 		// 	for i, e := range elems {
@@ -269,7 +279,7 @@ func (o *PreGen) generateOpIDs() error {
 		return fmt.Errorf("could not format opId template: %w", err)
 	}
 
-	fname := path.Join("internal/rest/operation_ids.gen.go")
+	fname := path.Join(o.handlersPath, "operation_ids.gen.go")
 
 	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o660)
 	if err != nil {
@@ -283,12 +293,10 @@ func (o *PreGen) generateOpIDs() error {
 	return nil
 }
 
-// EnsureFunctionsForOperationIDs checks if each operation ID has a corresponding function in the Go AST.
-
 func parseAST(reader io.Reader) (*ast.File, error) {
 	fileContents, err := io.ReadAll(reader)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("io.ReadAll: %w", err)
 	}
 
 	fset := token.NewFileSet()
@@ -324,4 +332,42 @@ func getHandlersMethods(file *ast.File) []string {
 	})
 
 	return functions
+}
+
+// parseAndCheckFunctions parses a tag's handlers file and checks if
+// each operation ID has a corresponding function method.
+func parseAndCheckFunctions(fileContent io.Reader, opIDs []string) error {
+	file, err := parseAST(fileContent)
+	if err != nil {
+		return err
+	}
+
+	functions := getHandlersMethods(file)
+
+	for _, opID := range opIDs {
+		if !contains(functions, opID) {
+			return fmt.Errorf("missing function method for operation ID '%s'", opID)
+		}
+	}
+
+	return nil
+}
+
+// ensureFunctionMethods parses the AST of each api_<lowercase of tag>.go file and
+// ensure it contains function methods for each operation ID.
+func (o *CodeGen) ensureFunctionMethods() error {
+	for tag, opIDs := range o.operations {
+		apiFilePath := path.Join(o.handlersPath, fmt.Sprintf("api_%s.go", strings.ToLower(tag)))
+		apiFileContent, err := os.ReadFile(apiFilePath)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %w", apiFilePath, err)
+		}
+
+		err = parseAndCheckFunctions(bytes.NewReader(apiFileContent), opIDs)
+		if err != nil {
+			return fmt.Errorf("parsing and checking functions for %s: %w", apiFilePath, err)
+		}
+	}
+
+	return nil
 }
