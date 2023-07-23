@@ -571,7 +571,7 @@ export interface operations {
       /** @description Error response */
       "4XX": {
         content: {
-          "application/json": components["schemas"]["HTTPError"];
+          "application/json": external["external[%22components[%22schemas%22][%22HTTPError%22]%22]"];
         };
       };
     };
@@ -599,7 +599,7 @@ export interface operations {
       /** @description Error response */
       "4XX": {
         content: {
-          "application/json": components["schemas"]["HTTPError"];
+          "application/json": external["external[%22components[%22schemas%22][%22HTTPError%22]%22]"];
         };
       };
     };

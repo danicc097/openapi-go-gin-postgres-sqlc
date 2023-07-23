@@ -271,11 +271,14 @@ x.gen.pregen() {
     yq --prettyPrint '.. style="single"' -i $SPEC
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
-    sed -i 's/!!merge //' $SPEC
 
     pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
+}
+
+remove_yaml_merge_alias() {
+  sed -i 's/!!merge //' $SPEC
 }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
@@ -1523,7 +1526,6 @@ update_spec_with_structs() {
     mv /tmp/final-spec "$SPEC"
   done
 
-  sed -i 's/!!merge //' $SPEC
 }
 
 delete_duplicate_schemas() {

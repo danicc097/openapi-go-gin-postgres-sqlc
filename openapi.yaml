@@ -35,7 +35,21 @@ x-uuidParameter: &x-uuidParameter
       path: github.com/google/uuid
   example: 123e4567-e89b-12d3-a456-426614174000
   style: simple
+x-require-authenticated: &x-require-authenticated
+  - bearer_auth: []
+  - api_key: []
+x-error-response: &x-error-response
+  4XX:
+    description: Error response
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/HTTPError'
+#
+#
 #######################################
+#
+#
 openapi: 3.0.3
 info:
   description: openapi-go-gin-postgres-sqlc
@@ -100,12 +114,7 @@ paths:
               schema:
                 type: string
                 example: pong
-        4XX:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPError'
+        !!merge <<: *x-error-response
   /openapi.yaml:
     get:
       summary: Returns this very OpenAPI spec.
@@ -120,9 +129,7 @@ paths:
                 format: binary
   /admin/ping:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: Ping pongs
       operationId: AdminPing
       responses:
@@ -133,20 +140,13 @@ paths:
               schema:
                 type: string
                 example: pong
-        4XX:
-          description: Error response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPError'
+        !!merge <<: *x-error-response
       tags:
         - admin
       x-required-role: admin
   /user/me:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: returns the logged in user
       operationId: GetCurrentUser
       responses:
@@ -160,9 +160,7 @@ paths:
         - user
   /user/{id}/authorization:
     patch:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: updates user role and scopes by id
       operationId: UpdateUserAuthorization
       parameters:
@@ -183,9 +181,7 @@ paths:
         - user
   /user/{id}:
     delete:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
@@ -201,9 +197,7 @@ paths:
         - users:delete
       x-required-role: admin
     patch:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: updates the user by id
       operationId: UpdateUser
       parameters:
@@ -227,9 +221,7 @@ paths:
       x-required-role: user
   /project/{projectName}/initialize:
     post:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: creates initial data (teams, work item types, tags...) for a new project
       operationId: InitializeProject
       parameters:
@@ -248,9 +240,7 @@ paths:
       x-required-role: admin
   /project/{projectName}/:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: returns board data for a project
       operationId: GetProject
       parameters:
@@ -266,9 +256,7 @@ paths:
         - project
   /project/{projectName}/config:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: returns the project configuration
       operationId: GetProjectConfig
       parameters:
@@ -284,9 +272,7 @@ paths:
       tags:
         - project
     put:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: updates the project configuration
       operationId: UpdateProjectConfig
       parameters:
@@ -304,9 +290,7 @@ paths:
         - project
   /project/{projectName}/board:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: returns board data for a project
       operationId: GetProjectBoard
       parameters:
@@ -322,9 +306,7 @@ paths:
         - project
   /project/{projectName}/workitems:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: returns workitems for a project
       operationId: GetProjectWorkitems
       parameters:
@@ -350,9 +332,7 @@ paths:
         - project
   /project/{projectName}/tag/:
     post:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: create workitem tag
       operationId: CreateWorkitemTag
       requestBody:
@@ -375,9 +355,7 @@ paths:
         - project
   /workitem/:
     post:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: create workitem
       operationId: CreateWorkitem
       requestBody:
@@ -398,9 +376,7 @@ paths:
         - workitem
   /workitem/{id}/:
     get:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: get workitem
       operationId: GetWorkitem
       parameters:
@@ -416,9 +392,7 @@ paths:
       tags:
         - workitem
     patch:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: update workitem
       operationId: UpdateWorkitem
       parameters:
@@ -434,9 +408,7 @@ paths:
       tags:
         - workitem
     delete:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: delete workitem
       operationId: DeleteWorkitem
       parameters:
@@ -448,9 +420,7 @@ paths:
         - workitem
   /workitem/{id}/comments/:
     post:
-      security:
-        - bearer_auth: []
-        - api_key: []
+      security: *x-require-authenticated
       summary: create workitem comment
       operationId: CreateWorkitemComment
       requestBody:
