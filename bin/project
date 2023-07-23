@@ -173,7 +173,7 @@ x.gen.pregen() {
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
     # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
-    pregen -env=".env.$env" --validate-spec-only
+    codegen validate-spec -env=".env.$env"
 
     sync_db_enums_with_spec
 
@@ -269,7 +269,7 @@ x.gen.pregen() {
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
 
-    pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
+    codegen pre -env=".env.$env" -op-id-auth="$OPID_AUTH"
 
     generate_structs_map
 
@@ -398,7 +398,6 @@ x.gen.postgen() {
 
     echo "Running generation"
 
-    postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -723,7 +722,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in pregen postgen jet; do
+    for cmd in codegen jet; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
