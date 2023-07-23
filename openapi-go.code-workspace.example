@@ -12,8 +12,7 @@
       "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
     },
     "yaml.customTags": [
-      "!merge",
-      "!!merge",
+      "tag:yaml.org,2002:merge", // required for broken
     ],
     "go.testEnvVars": {
       "POSTGRES_TRACE": "false",

@@ -277,9 +277,10 @@ x.gen.pregen() {
   backup-gen.cleanup
 }
 
-remove_yaml_merge_alias() {
-  sed -i 's/!!merge //' $SPEC
-}
+# shouldn't be needed anymore at all.
+# remove_yaml_merge_alias() {
+#   sed -i 's/!!merge //' $SPEC
+# }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
 # generate 2-way maps id<- ->name to save up useless db calls and make logic switching
