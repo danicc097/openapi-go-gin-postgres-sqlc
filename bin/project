@@ -134,7 +134,7 @@ x.install-tools() {
     go install mvdan.cc/gofumpt@latest &
     go install github.com/danicc097/air@latest &
     go install github.com/danicc097/xo/v5@v5.0.0 &
-    go install github.com/mikefarah/yq/v4@v4.27.2 &
+    go install github.com/mikefarah/yq/v4@v4.34.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
     go install golang.org/x/tools/cmd/stringer@latest &
 
@@ -244,7 +244,7 @@ x.gen.pregen() {
       local src_file="${enum_src_files[$enum]}"
       vendor_ext="${enum_vext[$enum]}"
 
-      enums=$(yq -P '.[] | key' $src_file)
+      enums=$(yq -P --output-format=yaml '.[] | key' $src_file)
       mapfile -t enums <<<$enums
 
       src_comment="$src_file keys"
