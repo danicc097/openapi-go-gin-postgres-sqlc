@@ -32,7 +32,7 @@ func TestAnalyzeSpec(t *testing.T) {
 		{
 			"invalid_operationid",
 			"invalid_operationid.yaml",
-			`path "/pet/ConflictEndpointPet": method "GET": operationId "Conflict-Endpoint-Pet" does not match pattern "^[a-zA-Z0-9]*$"`,
+			fmt.Sprintf(`path "/pet/ConflictEndpointPet": method "GET": operationId "Conflict-Endpoint-Pet" does not match pattern %q`, OperationIDRE.String()),
 		},
 		{
 			"missing_operationid",
@@ -43,6 +43,11 @@ func TestAnalyzeSpec(t *testing.T) {
 			"more_than_one_tag",
 			"more_than_one_tag.yaml",
 			`path "/pet/ConflictEndpointPet": method "GET": at most one tag is permitted for codegen`,
+		},
+		{
+			"invalid_tag",
+			"invalid_tag.yaml",
+			fmt.Sprintf(`path "/pet/ConflictEndpointPet": method "GET": tag must be a valid filename with pattern %q`, validFilenameRE.String()),
 		},
 	}
 
@@ -56,7 +61,7 @@ func TestAnalyzeSpec(t *testing.T) {
 			og := New(&stderr, path.Join(baseDir, tc.File), "", "")
 
 			err := og.analyzeSpec()
-			if err != nil && tc.ErrContains != "" {
+			if tc.ErrContains != "" {
 				assert.ErrorContains(t, err, tc.ErrContains)
 			} else if err != nil {
 				t.Fatalf("err: %s\nstderr: %s\n", err, &stderr)
@@ -156,7 +161,7 @@ func (h *Handlers) Qux() {}
 
 	err = o.ensureFunctionMethods()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), fmt.Sprintf("misplaced method for operation ID %q", newMethod))
+	assert.Contains(t, err.Error(), fmt.Sprintf("misplaced method for operation ID %q - should be api_%s.go", newMethod, tag))
 }
 
 func TestEnsureFunctionMethods_MissingMethod(t *testing.T) {

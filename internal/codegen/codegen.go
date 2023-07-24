@@ -26,7 +26,12 @@ import (
 var (
 	handlersFileTagRE = regexp.MustCompile("api_(.*).go")
 	OperationIDRE     = regexp.MustCompile("^[a-zA-Z0-9]*$")
+	validFilenameRE   = regexp.MustCompile("^[a-zA-Z0-9_-]+$")
 )
+
+func isValidFilename(s string) bool {
+	return validFilenameRE.MatchString(s)
+}
 
 func contains[T comparable](elems []T, v T) bool {
 	for _, s := range elems {
@@ -197,41 +202,47 @@ func (o *CodeGen) generateOpIDAuthMiddlewares() error {
 
 // analyzeSpec ensures specific rules for codegen are met and extracts necessary data.
 func (o *CodeGen) analyzeSpec() error {
+	var errors []string
+
 	schemaBlob, err := os.ReadFile(o.specPath)
 	if err != nil {
-		return fmt.Errorf("error opening schema file: %w", err)
+		errors = append(errors, fmt.Errorf("error opening schema file: %w", err).Error())
 	}
 
 	sl := openapi3.NewLoader()
 
 	openapi, err := sl.LoadFromData(schemaBlob)
 	if err != nil {
-		return fmt.Errorf("error loading openapi spec: %w", err)
+		errors = append(errors, fmt.Errorf("error loading openapi spec: %w", err).Error())
 	}
 
 	if err = openapi.Validate(sl.Context); err != nil {
-		return fmt.Errorf("error validating openapi spec: %w", err)
+		errors = append(errors, fmt.Errorf("error validating openapi spec: %w", err).Error())
 	}
 
 	for path, pi := range openapi.Paths {
 		ops := pi.Operations()
 		for method, v := range ops {
 			if v.OperationID == "" {
-				return fmt.Errorf("path %q: method %q: operationId is required for codegen", path, method)
+				errors = append(errors, fmt.Errorf("path %q: method %q: operationId is required for codegen", path, method).Error())
 			}
 
 			if !OperationIDRE.MatchString(v.OperationID) {
-				return fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q",
-					path, method, v.OperationID, OperationIDRE.String())
+				errors = append(errors, fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q",
+					path, method, v.OperationID, OperationIDRE.String()).Error())
 			}
 
 			if len(v.Tags) > 1 {
-				return fmt.Errorf("path %q: method %q: at most one tag is permitted for codegen", path, method)
+				errors = append(errors, fmt.Errorf("path %q: method %q: at most one tag is permitted for codegen", path, method).Error())
 			}
 
 			t := "default"
 			if len(v.Tags) > 0 {
-				t = strings.ToLower(v.Tags[0])
+				t = v.Tags[0]
+			}
+
+			if !isValidFilename(t) {
+				errors = append(errors, fmt.Errorf("path %q: method %q: tag must be a valid filename with pattern %q", path, method, validFilenameRE.String()).Error())
 			}
 
 			o.operations[t] = append(o.operations[t], v.OperationID)
@@ -242,6 +253,10 @@ func (o *CodeGen) analyzeSpec() error {
 			})
 			o.operations[t] = opIDs
 		}
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf(strings.Join(errors, "\n"))
 	}
 
 	return nil
@@ -402,7 +417,8 @@ func (o *CodeGen) ensureFunctionMethods() error {
 
 		for _, opID := range functions {
 			if contains(restOfOpIDs, opID) {
-				errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q", opID))
+				correspondingTag := o.findTagByOpID(opID)
+				errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be api_%s.go", opID, correspondingTag))
 				// TODO: should filter handlerMethodsPerTag values, find the tag and append dst node (with comments) there if file exists
 			}
 		}
@@ -419,4 +435,14 @@ func (o *CodeGen) ensureFunctionMethods() error {
 	}
 
 	return nil
+}
+
+// findTagByOpID returns the corresponding tag for a given operation ID.
+func (o *CodeGen) findTagByOpID(opID string) string {
+	for tag, opIDs := range o.operations {
+		if contains(opIDs, opID) {
+			return tag
+		}
+	}
+	return ""
 }
