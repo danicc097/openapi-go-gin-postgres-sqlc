@@ -2,8 +2,10 @@ package codegen
 
 import (
 	"bytes"
+	"go/ast"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -88,10 +90,12 @@ func (h *SomeOtherStruct) NotHandlersMethod() {}
 	assert.ElementsMatch(t, []string{"MyFunction1", "MyFunction2", "UnrelatedFunction"}, functions)
 }
 
-func TestParseAndCheckFunctions(t *testing.T) {
+func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {
 	t.Parallel()
 
-	fileContent := `
+	tmpDir := t.TempDir()
+
+	fileContentFoo := `
 package rest
 
 type Handlers struct{}
@@ -100,19 +104,59 @@ func (h *Handlers) Foo() {}
 func (h *Handlers) Bar() {}
 `
 
-	opIDs := []string{"Foo", "Bar", "Baz"}
+	fileContentBar := `
+package rest
 
-	err := parseAndCheckFunctions(strings.NewReader(fileContent), opIDs)
-	require.Error(t, err, "expected error due to missing Baz")
+type Handlers struct{}
 
-	assert.Contains(t, err.Error(), "missing function method for operation ID 'Baz'")
+func (h *Handlers) Baz() {}
+func (h *Handlers) Qux() {}
+`
 
-	opIDs = []string{"Foo", "Bar"}
-	err = parseAndCheckFunctions(strings.NewReader(fileContent), opIDs)
+	apiFilePathFoo := filepath.Join(tmpDir, "api_foo.go")
+	apiFilePathBar := filepath.Join(tmpDir, "api_bar.go")
+
+	file, err := os.Create(apiFilePathFoo)
+	require.NoError(t, err, "Failed to create test file")
+	defer file.Close()
+
+	_, err = file.WriteString(fileContentFoo)
+	require.NoError(t, err, "Failed to write test file")
+
+	file, err = os.Create(apiFilePathBar)
+	require.NoError(t, err, "Failed to create test file")
+	defer file.Close()
+
+	_, err = file.WriteString(fileContentBar)
+	require.NoError(t, err, "Failed to write test file")
+
+	o := &CodeGen{
+		stderr:       &bytes.Buffer{},
+		specPath:     "",
+		operations:   map[string][]string{"foo": {"Foo", "Bar"}, "bar": {"Baz", "Qux"}},
+		handlersPath: tmpDir,
+	}
+
+	err = o.ensureFunctionMethods()
 	require.NoError(t, err)
+
+	// Now an extra operation from another tag is misplaced
+	o.operations["bar"] = append(o.operations["bar"], "ExtraFoo")
+	fileContentFooExtra := fileContentFoo + "\nfunc (h *Handlers) ExtraFoo() {}"
+
+	file, err = os.Create(apiFilePathFoo)
+	require.NoError(t, err, "Failed to create test file")
+	defer file.Close()
+
+	_, err = file.WriteString(fileContentFooExtra)
+	require.NoError(t, err, "Failed to write test file")
+
+	err = o.ensureFunctionMethods()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "tag \"bar\": missing function method for operation ID 'ExtraFoo'")
 }
 
-func TestEnsureFunctionMethods(t *testing.T) {
+func TestEnsureFunctionMethods_MissingMethod(t *testing.T) {
 	t.Parallel()
 
 	tmpDir := t.TempDir()
@@ -150,4 +194,39 @@ func (h *Handlers) Bar() {}
 	require.Error(t, err, "expected error due to missing Baz")
 
 	assert.Contains(t, err.Error(), "missing function method for operation ID 'Baz'")
+}
+
+func TestRemoveHandlersMethod(t *testing.T) {
+	t.Parallel()
+
+	sourceCode := `
+package main
+
+type Handlers struct{}
+
+func (h *Handlers) GetSomething() {
+	return "GetSomething"
+}
+
+func (h *Handlers) UpdateSomething() {
+	return "UpdateSomething"
+}
+
+func main() {}
+`
+	file, err := parseAST(strings.NewReader(sourceCode))
+	require.NoError(t, err)
+
+	methodNameToRemove := "GetSomething"
+
+	removeHandlersMethod(file, methodNameToRemove)
+
+	for _, decl := range file.Decls {
+		if fd, ok := decl.(*ast.FuncDecl); ok {
+			if fd.Name.Name == methodNameToRemove {
+				t.Errorf("Handlers method '%s' still found in the file after removal.", methodNameToRemove)
+				break
+			}
+		}
+	}
 }

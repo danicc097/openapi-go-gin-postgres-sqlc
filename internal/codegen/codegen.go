@@ -12,6 +12,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -334,30 +335,23 @@ func getHandlersMethods(file *ast.File) []string {
 	return functions
 }
 
-// parseAndCheckFunctions parses a tag's handlers file and checks if
-// each operation ID has a corresponding function method.
-func parseAndCheckFunctions(fileContent io.Reader, opIDs []string) error {
-	file, err := parseAST(fileContent)
-	if err != nil {
-		return err
-	}
-
-	functions := getHandlersMethods(file)
-
-	// TODO: should not exit early, instead accumulate errors and detect wrongly placed
-	// methods to reorder them automagically
-	for _, opID := range opIDs {
-		if !contains(functions, opID) {
-			return fmt.Errorf("missing function method for operation ID '%s'", opID)
+// removeHandlersMethod removes a Handlers method with the given name from the ast.File inplace.
+func removeHandlersMethod(file *ast.File, methodName string) {
+	for i, decl := range file.Decls {
+		if fd, ok := decl.(*ast.FuncDecl); ok {
+			if fd.Name.Name == methodName {
+				file.Decls = append(file.Decls[:i], file.Decls[i+1:]...)
+				break
+			}
 		}
 	}
-
-	return nil
 }
 
 // ensureFunctionMethods parses the AST of each api_<lowercase of tag>.go file and
 // ensure it contains function methods for each operation ID.
 func (o *CodeGen) ensureFunctionMethods() error {
+	handlerMethodsPerTag := make(map[string][]string)
+
 	for tag, opIDs := range o.operations {
 		apiFilePath := path.Join(o.handlersPath, fmt.Sprintf("api_%s.go", strings.ToLower(tag)))
 		apiFileContent, err := os.ReadFile(apiFilePath)
@@ -365,10 +359,72 @@ func (o *CodeGen) ensureFunctionMethods() error {
 			return fmt.Errorf("failed to read file %s: %w", apiFilePath, err)
 		}
 
-		err = parseAndCheckFunctions(bytes.NewReader(apiFileContent), opIDs)
+		file, err := parseAST(bytes.NewReader(apiFileContent))
 		if err != nil {
-			return fmt.Errorf("tag %q: %w", tag, err)
+			return fmt.Errorf("failed to parse file %s: %w", apiFilePath, err)
 		}
+
+		functions := getHandlersMethods(file)
+		for _, opID := range opIDs {
+			if !contains(functions, opID) {
+				return fmt.Errorf("tag %q: missing function method for operation ID '%s'", tag, opID)
+			}
+		}
+
+		handlerMethodsPerTag[tag] = functions
+	}
+
+	tagFiles, err := filepath.Glob(filepath.Join(o.handlersPath, "api_*.go"))
+	if err != nil {
+		return fmt.Errorf("failed to find api_<tag>.go files: %w", err)
+	}
+
+	var errs []string
+
+	for _, tagFile := range tagFiles {
+		tag := strings.TrimPrefix(filepath.Base(tagFile), "api_")
+		tag = strings.TrimSuffix(tag, ".go")
+
+		apiFileContent, err := os.ReadFile(tagFile)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %w", tagFile, err)
+		}
+
+		file, err := parseAST(bytes.NewReader(apiFileContent))
+		if err != nil {
+			return fmt.Errorf("failed to parse file %s: %w", tagFile, err)
+		}
+
+		// operation ids are preprocessed to pascal case
+		functions := getHandlersMethods(file)
+
+		var restOfOpIDs []string
+		for opTag, opIDs := range o.operations {
+			if opTag == tag {
+				continue
+			}
+			restOfOpIDs = append(restOfOpIDs, opIDs...)
+		}
+
+		for _, opID := range functions {
+			if contains(restOfOpIDs, opID) {
+				errs = append(errs, fmt.Sprintf("misplaced method for operation ID '%s' found in tag %q", opID, tag))
+				// TODO: should filter handlerMethodsPerTag values, find the tag and append dst node (with comments) there if file exists
+			}
+		}
+
+		for _, opID := range o.operations[tag] {
+			fmt.Printf("%+v\n", restOfOpIDs)
+			fmt.Printf("%+v\n", opID)
+			if !contains(functions, opID) {
+				errs = append(errs, fmt.Sprintf("missing function method for operation ID '%s'", opID))
+			}
+		}
+	}
+
+	// Combine the errors, if any
+	if len(errs) > 0 {
+		return fmt.Errorf(strings.Join(errs, "\n"))
 	}
 
 	return nil

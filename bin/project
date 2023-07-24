@@ -1600,7 +1600,7 @@ backup-gen.cleanup() {
 backup-gen.restore() {
   echo "Restoring previously generated code..."
   wait
-  mv "$GEN_BACKUP/$SPEC" "$SPEC" || true
+  mv "$GEN_BACKUP/$SPEC" "$SPEC" 2>/dev/null || true
   rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
   rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
   restore_gen_files "$GEN_BACKUP" internal
@@ -1765,7 +1765,7 @@ trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from t
 
 exit-cleanup() {
   if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
-    backup-gen.restore #
+    backup-gen.restore
   fi
   cd "$starting_cwd" || true
 }
