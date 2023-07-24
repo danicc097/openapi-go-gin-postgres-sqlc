@@ -348,12 +348,15 @@ func getHandlersMethods(file *ast.File) []string {
 	return functions
 }
 
-// removeHandlersMethod removes a Handlers method with the given name from the ast.File inplace.
-func removeHandlersMethod(file *ast.File, methodName string) {
-	for i, decl := range file.Decls {
+// removeAndAppendHandlersMethod removes a Handlers method with the given name from its source file
+// and appends it to a target file.
+func removeAndAppendHandlersMethod(src, target *ast.File, methodNameToRemove string) {
+	for i, decl := range src.Decls {
 		if fd, ok := decl.(*ast.FuncDecl); ok {
-			if fd.Name.Name == methodName {
-				file.Decls = append(file.Decls[:i], file.Decls[i+1:]...)
+			if fd.Name.Name == methodNameToRemove {
+				target.Decls = append(target.Decls, src.Decls[i])
+				src.Decls = append(src.Decls[:i], src.Decls[i+1:]...)
+
 				break
 			}
 		}

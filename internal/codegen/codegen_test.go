@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
+	"go/printer"
+	"go/token"
 	"os"
 	"path"
 	"path/filepath"
@@ -204,7 +206,7 @@ func (h *Handlers) Bar() {}
 	assert.Contains(t, err.Error(), "missing function method for operation ID \"Baz\"")
 }
 
-func TestRemoveHandlersMethod(t *testing.T) {
+func TestRemoveAndAppendHandlersMethod(t *testing.T) {
 	t.Parallel()
 
 	sourceCode := `
@@ -227,14 +229,42 @@ func main() {}
 
 	methodNameToRemove := "GetSomething"
 
-	removeHandlersMethod(file, methodNameToRemove)
+	secondFile, err := parseAST(strings.NewReader(`
+package main
+
+func main() {}
+`))
+	require.NoError(t, err)
+
+	removeAndAppendHandlersMethod(file, secondFile, methodNameToRemove)
 
 	for _, decl := range file.Decls {
 		if fd, ok := decl.(*ast.FuncDecl); ok {
 			if fd.Name.Name == methodNameToRemove {
-				t.Errorf("Handlers method '%s' still found in the file after removal.", methodNameToRemove)
+				t.Errorf("Handlers method '%s' still found in the first file after removal.", methodNameToRemove)
 				break
 			}
 		}
+	}
+
+	var found bool
+	for _, decl := range secondFile.Decls {
+		if fd, ok := decl.(*ast.FuncDecl); ok {
+			if fd.Name.Name == methodNameToRemove {
+				found = true
+				break
+			}
+		}
+	}
+	var buf bytes.Buffer
+	if err := printer.Fprint(&buf, &token.FileSet{}, secondFile); err != nil {
+		fmt.Println("Error printing AST:", err)
+		return
+	}
+
+	fmt.Printf("buf.String(): %v\n", buf.String())
+
+	if !found {
+		t.Errorf("Handlers method '%s' not found in the second file after appending.", methodNameToRemove)
 	}
 }
