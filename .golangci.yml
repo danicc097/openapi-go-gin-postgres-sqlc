@@ -3,6 +3,7 @@
 linters:
   enable-all: true
   disable:
+    - testpackage
     - depguard
     - tagalign
     # - json(camel)

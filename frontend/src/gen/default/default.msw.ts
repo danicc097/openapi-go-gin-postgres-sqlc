@@ -8,22 +8,11 @@
 import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
 
-export const getEventsMock = () => faker.random.word()
-
 export const getPingMock = () => faker.random.word()
 
 export const getOpenapiYamlGetMock = () => faker.random.word()
 
 export const getDefaultMSW = () => [
-  rest.get('*/auth/myprovider/callback', (_req, res, ctx) => {
-    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'))
-  }),
-  rest.get('*/auth/myprovider/login', (_req, res, ctx) => {
-    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'))
-  }),
-  rest.get('*/events', (_req, res, ctx) => {
-    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getEventsMock()))
-  }),
   rest.get('*/ping', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.text(getPingMock()))
   }),

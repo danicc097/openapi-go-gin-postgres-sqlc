@@ -169,6 +169,8 @@ x.gen.pregen() {
 
     echo "Running generation"
 
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go
+
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
@@ -722,7 +724,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in codegen jet; do
+    for cmd in jet; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -1598,7 +1600,7 @@ backup-gen.cleanup() {
 backup-gen.restore() {
   echo "Restoring previously generated code..."
   wait
-  mv "$GEN_BACKUP/$SPEC" "$SPEC" || true
+  mv "$GEN_BACKUP/$SPEC" "$SPEC" 2>/dev/null || true
   rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
   rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
   restore_gen_files "$GEN_BACKUP" internal
@@ -1763,7 +1765,7 @@ trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from t
 
 exit-cleanup() {
   if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
-    backup-gen.restore #
+    backup-gen.restore
   fi
   cd "$starting_cwd" || true
 }

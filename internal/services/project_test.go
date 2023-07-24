@@ -2,14 +2,12 @@ package services_test
 
 import (
 	"context"
-	"sort"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/google/go-cmp/cmp"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
@@ -111,36 +109,8 @@ func Test_MergeConfigFields(t *testing.T) {
 				return
 			}
 
-			// opts := cmp.Options{
-			// 	cmp.FilterPath(func(p cmp.Path) bool {
-			// 		return p.Last().Type().Kind() == reflect.Slice &&
-			// 			p.Last().Type().Elem().Kind() == reflect.Struct
-			// 	},
-			// 		cmp.Comparer(customSliceComparer),
-			// 	),
-			// }
-
-			sort.SliceStable(tc.want.Fields, func(i, j int) bool {
-				return tc.want.Fields[i].Path < tc.want.Fields[j].Path
-			})
-			sort.SliceStable(got.Fields, func(i, j int) bool {
-				return got.Fields[i].Path < got.Fields[j].Path
-			})
-
-			if diff := cmp.Diff(tc.want.Fields, got.Fields); diff != "" {
-				t.Errorf("Fields mismatch (-want +got):\n%s", diff)
-			}
-
-			sort.SliceStable(tc.want.Header, func(i, j int) bool {
-				return tc.want.Header[i] < tc.want.Header[j]
-			})
-			sort.SliceStable(got.Header, func(i, j int) bool {
-				return got.Header[i] < got.Header[j]
-			})
-
-			if diff := cmp.Diff(tc.want.Header, got.Header); diff != "" {
-				t.Errorf("Header mismatch (-want +got):\n%s", diff)
-			}
+			assert.ElementsMatch(t, tc.want.Fields, got.Fields)
+			assert.ElementsMatch(t, tc.want.Header, got.Header)
 		})
 	}
 }

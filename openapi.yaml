@@ -81,12 +81,16 @@ paths:
       responses:
         "200":
           description: callback for MyProvider auth server
+      tags:
+        - oidc
   /auth/myprovider/login:
     get:
       operationId: MyProviderLogin
       responses:
         "302":
           description: redirect to MyProvider auth server login
+      tags:
+        - oidc
   /events:
     get:
       operationId: Events
@@ -103,6 +107,8 @@ paths:
             text/event-stream:
               schema:
                 type: string
+      tags:
+        - events
   /ping:
     get:
       description: ""

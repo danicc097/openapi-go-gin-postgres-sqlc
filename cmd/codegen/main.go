@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	pregen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 )
 
@@ -40,11 +40,11 @@ func main() {
 	cmd.Parse(os.Args[2:])
 	fmt.Println(cmd.Name())
 
-	pg := pregen.New(&stderr, spec, opIDAuthPath)
+	cg := codegen.New(&stderr, spec, opIDAuthPath, "internal/rest")
 
 	switch os.Args[1] {
 	case "validate-spec":
-		if err := pg.ValidateProjectSpec(); err != nil {
+		if err := cg.ValidateProjectSpec(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			fmt.Fprintln(os.Stderr, stderr.String())
 			os.Exit(1)
@@ -59,7 +59,13 @@ func main() {
 			log.Fatal("op-id-auth flag is required")
 		}
 
-		if err := pg.Generate(); err != nil {
+		if err := cg.Generate(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, stderr.String())
+			os.Exit(1)
+		}
+
+		if err := cg.EnsureCorrectMethodsPerTag(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			fmt.Fprintln(os.Stderr, stderr.String())
 			os.Exit(1)
