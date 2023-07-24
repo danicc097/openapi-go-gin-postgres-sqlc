@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"os"
 	"path"
@@ -141,8 +142,10 @@ func (h *Handlers) Qux() {}
 	require.NoError(t, err)
 
 	// Now an extra operation from another tag is misplaced
-	o.operations["bar"] = append(o.operations["bar"], "ExtraFoo")
-	fileContentFooExtra := fileContentFoo + "\nfunc (h *Handlers) ExtraFoo() {}"
+	tag := "bar"
+	newMethod := "ExtraFoo"
+	o.operations[tag] = append(o.operations[tag], newMethod)
+	fileContentFooExtra := fileContentFoo + fmt.Sprintf("\nfunc (h *Handlers) %s() {}", newMethod)
 
 	file, err = os.Create(apiFilePathFoo)
 	require.NoError(t, err, "Failed to create test file")
@@ -153,7 +156,7 @@ func (h *Handlers) Qux() {}
 
 	err = o.ensureFunctionMethods()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "tag \"bar\": missing function method for operation ID 'ExtraFoo'")
+	assert.Contains(t, err.Error(), fmt.Sprintf("misplaced method for operation ID %q", newMethod))
 }
 
 func TestEnsureFunctionMethods_MissingMethod(t *testing.T) {
@@ -193,7 +196,7 @@ func (h *Handlers) Bar() {}
 	err = cg.ensureFunctionMethods()
 	require.Error(t, err, "expected error due to missing Baz")
 
-	assert.Contains(t, err.Error(), "missing function method for operation ID 'Baz'")
+	assert.Contains(t, err.Error(), "missing function method for operation ID \"Baz\"")
 }
 
 func TestRemoveHandlersMethod(t *testing.T) {

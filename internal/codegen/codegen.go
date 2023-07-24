@@ -352,7 +352,7 @@ func removeHandlersMethod(file *ast.File, methodName string) {
 func (o *CodeGen) ensureFunctionMethods() error {
 	handlerMethodsPerTag := make(map[string][]string)
 
-	for tag, opIDs := range o.operations {
+	for tag := range o.operations {
 		apiFilePath := path.Join(o.handlersPath, fmt.Sprintf("api_%s.go", strings.ToLower(tag)))
 		apiFileContent, err := os.ReadFile(apiFilePath)
 		if err != nil {
@@ -364,14 +364,7 @@ func (o *CodeGen) ensureFunctionMethods() error {
 			return fmt.Errorf("failed to parse file %s: %w", apiFilePath, err)
 		}
 
-		functions := getHandlersMethods(file)
-		for _, opID := range opIDs {
-			if !contains(functions, opID) {
-				return fmt.Errorf("tag %q: missing function method for operation ID '%s'", tag, opID)
-			}
-		}
-
-		handlerMethodsPerTag[tag] = functions
+		handlerMethodsPerTag[tag] = getHandlersMethods(file)
 	}
 
 	tagFiles, err := filepath.Glob(filepath.Join(o.handlersPath, "api_*.go"))
@@ -408,21 +401,18 @@ func (o *CodeGen) ensureFunctionMethods() error {
 
 		for _, opID := range functions {
 			if contains(restOfOpIDs, opID) {
-				errs = append(errs, fmt.Sprintf("misplaced method for operation ID '%s' found in tag %q", opID, tag))
+				errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q", opID))
 				// TODO: should filter handlerMethodsPerTag values, find the tag and append dst node (with comments) there if file exists
 			}
 		}
 
 		for _, opID := range o.operations[tag] {
-			fmt.Printf("%+v\n", restOfOpIDs)
-			fmt.Printf("%+v\n", opID)
 			if !contains(functions, opID) {
-				errs = append(errs, fmt.Sprintf("missing function method for operation ID '%s'", opID))
+				errs = append(errs, fmt.Sprintf("missing function method for operation ID %q", opID))
 			}
 		}
 	}
 
-	// Combine the errors, if any
 	if len(errs) > 0 {
 		return fmt.Errorf(strings.Join(errs, "\n"))
 	}
