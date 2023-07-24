@@ -20,14 +20,12 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	// internalformat "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
-
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
 
 var (
-	handlerRegex     = regexp.MustCompile("api_(.*).go")
-	OperationIDRegex = regexp.MustCompile("^[a-zA-Z0-9]*$")
+	handlersFileTagRE = regexp.MustCompile("api_(.*).go")
+	OperationIDRE     = regexp.MustCompile("^[a-zA-Z0-9]*$")
 )
 
 func contains[T comparable](elems []T, v T) bool {
@@ -222,9 +220,9 @@ func (o *CodeGen) analyzeSpec() error {
 				return fmt.Errorf("path %q: method %q: operationId is required for codegen", path, method)
 			}
 
-			if !OperationIDRegex.MatchString(v.OperationID) {
+			if !OperationIDRE.MatchString(v.OperationID) {
 				return fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q",
-					path, method, v.OperationID, OperationIDRegex.String())
+					path, method, v.OperationID, OperationIDRE.String())
 			}
 
 			if len(v.Tags) > 1 {
@@ -375,8 +373,11 @@ func (o *CodeGen) ensureFunctionMethods() error {
 	var errs []string
 
 	for _, tagFile := range tagFiles {
-		tag := strings.TrimPrefix(filepath.Base(tagFile), "api_")
-		tag = strings.TrimSuffix(tag, ".go")
+		matches := handlersFileTagRE.FindStringSubmatch(filepath.Base(tagFile))
+		if len(matches) < 2 {
+			return fmt.Errorf("failed to extract tag from file name: %s", tagFile)
+		}
+		tag := matches[1]
 
 		apiFileContent, err := os.ReadFile(tagFile)
 		if err != nil {
