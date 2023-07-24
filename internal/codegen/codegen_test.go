@@ -166,20 +166,15 @@ func (h *Handlers) Qux() {}
 		err = o.ensureFunctionMethods()
 		require.NoError(t, err)
 
-		// TODO: check both files have swapped handlers
-		// not testing  anything right now
-		// var found bool
-		// for _, decl := range fileContentFooExtra.Decls {
-		// 	if fd, ok := decl.(*dst.FuncDecl); ok {
-		// 		if fd.Name.Name == newMethod {
-		// 			found = true
-		// 			break
-		// 		}
-		// 	}
-		// }
-		// if !found {
-		// 	t.Errorf("Handlers method '%s' not found in the second file after appending.", methodNameToRemove)
-		// }
+		apiFileContentFoo, err := os.ReadFile(apiFilePathFoo)
+		require.NoError(t, err, "Failed to read test file")
+
+		apiFileContentBar, err := os.ReadFile(apiFilePathBar)
+		require.NoError(t, err, "Failed to read test file")
+
+		// Verify that the swapped method exists in the correct file
+		assert.Contains(t, string(apiFileContentFoo), fmt.Sprintf("func (h *Handlers) %s() {}", newMethod))
+		assert.NotContains(t, string(apiFileContentBar), fmt.Sprintf("func (h *Handlers) %s() {}", newMethod))
 	})
 
 	t.Run("missing api file", func(t *testing.T) {
