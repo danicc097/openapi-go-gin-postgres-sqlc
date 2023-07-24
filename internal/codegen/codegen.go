@@ -91,6 +91,10 @@ func (o *CodeGen) validateSpec() error {
 }
 
 func (o *CodeGen) EnsureCorrectMethodsPerTag() error {
+	if err := o.analyzeSpec(); err != nil {
+		return fmt.Errorf("analyze spec: %w", err)
+	}
+
 	if err := o.ensureFunctionMethods(); err != nil {
 		return fmt.Errorf("tag methods: %w", err)
 	}
@@ -379,6 +383,9 @@ func (o *CodeGen) ensureFunctionMethods() error {
 	var errs []string
 
 	for _, tagFile := range tagFiles {
+		if strings.HasSuffix(tagFile, "_test.go") {
+			continue
+		}
 		matches := handlersFileTagRE.FindStringSubmatch(filepath.Base(tagFile))
 		if len(matches) < 2 {
 			return fmt.Errorf("failed to extract tag from file name: %s", tagFile)
