@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/danicc097/oidc-server/v3 v3.1.0
 	github.com/danicc097/xo/v5 v5.0.0
+	github.com/dave/dst v0.27.2
 	github.com/deepmap/oapi-codegen v1.13.0
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/gin-contrib/cors v1.4.0
@@ -55,7 +56,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
-	github.com/dave/dst v0.27.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
