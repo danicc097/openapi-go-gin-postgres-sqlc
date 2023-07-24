@@ -101,8 +101,6 @@ func (h *SomeOtherStruct) NotHandlersMethod() {}
 func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {
 	t.Parallel()
 
-	tmpDir := t.TempDir()
-
 	fileContentFoo := `
 package rest
 
@@ -121,62 +119,116 @@ func (h *Handlers) Baz() {}
 func (h *Handlers) Qux() {}
 `
 
-	apiFilePathFoo := filepath.Join(tmpDir, "api_foo.go")
-	apiFilePathBar := filepath.Join(tmpDir, "api_bar.go")
+	t.Run("swap handlers", func(t *testing.T) {
+		t.Parallel()
 
-	file, err := os.Create(apiFilePathFoo)
-	require.NoError(t, err, "Failed to create test file")
-	defer file.Close()
+		tmpDir := t.TempDir()
+		apiFilePathFoo := filepath.Join(tmpDir, "api_foo.go")
+		apiFilePathBar := filepath.Join(tmpDir, "api_bar.go")
 
-	_, err = file.WriteString(fileContentFoo)
-	require.NoError(t, err, "Failed to write test file")
+		file, err := os.Create(apiFilePathFoo)
+		require.NoError(t, err, "Failed to create test file")
+		defer file.Close()
 
-	file, err = os.Create(apiFilePathBar)
-	require.NoError(t, err, "Failed to create test file")
-	defer file.Close()
+		_, err = file.WriteString(fileContentFoo)
+		require.NoError(t, err, "Failed to write test file")
 
-	_, err = file.WriteString(fileContentBar)
-	require.NoError(t, err, "Failed to write test file")
+		file, err = os.Create(apiFilePathBar)
+		require.NoError(t, err, "Failed to create test file")
+		defer file.Close()
 
-	o := &CodeGen{
-		stderr:       &bytes.Buffer{},
-		specPath:     "",
-		operations:   map[string][]string{"foo": {"Foo", "Bar"}, "bar": {"Baz", "Qux"}},
-		handlersPath: tmpDir,
-	}
+		_, err = file.WriteString(fileContentBar)
+		require.NoError(t, err, "Failed to write test file")
 
-	err = o.ensureFunctionMethods()
-	require.NoError(t, err)
+		o := &CodeGen{
+			stderr:       &bytes.Buffer{},
+			specPath:     "",
+			operations:   map[string][]string{"foo": {"Foo", "Bar"}, "bar": {"Baz", "Qux"}},
+			handlersPath: tmpDir,
+		}
 
-	// Now an extra operation from another tag is misplaced
-	tag := "bar"
-	newMethod := "ExtraFoo"
-	o.operations[tag] = append(o.operations[tag], newMethod)
-	fileContentFooExtra := fileContentFoo + fmt.Sprintf("\nfunc (h *Handlers) %s() {}", newMethod)
+		err = o.ensureFunctionMethods()
+		require.NoError(t, err)
 
-	file, err = os.Create(apiFilePathFoo)
-	require.NoError(t, err, "Failed to create test file")
-	defer file.Close()
+		// Now an extra operation from another tag is misplaced
+		tag := "bar"
+		newMethod := "ExtraFoo"
+		o.operations[tag] = append(o.operations[tag], newMethod)
+		fileContentFooExtra := fileContentFoo + fmt.Sprintf("\nfunc (h *Handlers) %s() {}", newMethod)
 
-	_, err = file.WriteString(fileContentFooExtra)
-	require.NoError(t, err, "Failed to write test file")
+		file, err = os.Create(apiFilePathFoo)
+		require.NoError(t, err, "Failed to create test file")
+		defer file.Close()
 
-	err = o.ensureFunctionMethods()
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", newMethod, tag))
+		_, err = file.WriteString(fileContentFooExtra)
+		require.NoError(t, err, "Failed to write test file")
 
-	// var found bool
-	// for _, decl := range fileContentFooExtra.Decls {
-	// 	if fd, ok := decl.(*dst.FuncDecl); ok {
-	// 		if fd.Name.Name == newMethod {
-	// 			found = true
-	// 			break
-	// 		}
-	// 	}
-	// }
-	// if !found {
-	// 	t.Errorf("Handlers method '%s' not found in the second file after appending.", methodNameToRemove)
-	// }
+		err = o.ensureFunctionMethods()
+		require.NoError(t, err)
+
+		// TODO: check both files have swapped handlers
+		// var found bool
+		// for _, decl := range fileContentFooExtra.Decls {
+		// 	if fd, ok := decl.(*dst.FuncDecl); ok {
+		// 		if fd.Name.Name == newMethod {
+		// 			found = true
+		// 			break
+		// 		}
+		// 	}
+		// }
+		// if !found {
+		// 	t.Errorf("Handlers method '%s' not found in the second file after appending.", methodNameToRemove)
+		// }
+	})
+
+	t.Run("missing api file", func(t *testing.T) {
+		t.Parallel()
+
+		tmpDir := t.TempDir()
+		apiFilePathFoo := filepath.Join(tmpDir, "api_foo.go")
+		apiFilePathBar := filepath.Join(tmpDir, "api_bar.go")
+
+		file, err := os.Create(apiFilePathFoo)
+		require.NoError(t, err, "Failed to create test file")
+		defer file.Close()
+
+		_, err = file.WriteString(fileContentFoo)
+		require.NoError(t, err, "Failed to write test file")
+
+		file, err = os.Create(apiFilePathBar)
+		require.NoError(t, err, "Failed to create test file")
+		defer file.Close()
+
+		_, err = file.WriteString(fileContentBar)
+		require.NoError(t, err, "Failed to write test file")
+
+		o := &CodeGen{
+			stderr:       &bytes.Buffer{},
+			specPath:     "",
+			operations:   map[string][]string{"foo": {"Foo", "Bar"}, "bar": {"Baz", "Qux"}},
+			handlersPath: tmpDir,
+		}
+
+		err = o.ensureFunctionMethods()
+		require.NoError(t, err)
+
+		// Now an extra operation from another tag is misplaced
+		tag := "newtag"
+		newMethod := "ExtraFoo"
+		o.operations[tag] = append(o.operations[tag], newMethod)
+		fileContentFooExtra := fileContentFoo + fmt.Sprintf("\nfunc (h *Handlers) %s() {}", newMethod)
+
+		file, err = os.Create(apiFilePathFoo)
+		require.NoError(t, err, "Failed to create test file")
+		defer file.Close()
+
+		_, err = file.WriteString(fileContentFooExtra)
+		require.NoError(t, err, "Failed to write test file")
+
+		err = o.ensureFunctionMethods()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", newMethod, tag))
+	})
 }
 
 func TestEnsureFunctionMethods_MissingMethod(t *testing.T) {

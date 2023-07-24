@@ -314,6 +314,10 @@ func parseAST(reader io.Reader) (*dst.File, error) {
 		return nil, fmt.Errorf("io.ReadAll: %w", err)
 	}
 
+	if string(fileContents) == "" {
+		return nil, fmt.Errorf("empty file")
+	}
+
 	fset := token.NewFileSet()
 	file, err := decorator.ParseFile(fset, "", fileContents, parser.AllErrors)
 	if err != nil {
