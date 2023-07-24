@@ -5,7 +5,6 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"go/ast"
 	"go/format"
 	"go/parser"
 	"go/token"
@@ -18,6 +17,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/dave/dst"
+	"github.com/dave/dst/decorator"
 	"github.com/getkin/kin-openapi/openapi3"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
@@ -307,34 +308,34 @@ func (o *CodeGen) generateOpIDs() error {
 	return nil
 }
 
-func parseAST(reader io.Reader) (*ast.File, error) {
+func parseAST(reader io.Reader) (*dst.File, error) {
 	fileContents, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("io.ReadAll: %w", err)
 	}
 
 	fset := token.NewFileSet()
-	file, err := parser.ParseFile(fset, "", fileContents, parser.AllErrors)
+	file, err := decorator.ParseFile(fset, "", fileContents, parser.AllErrors)
 	if err != nil {
-		return nil, fmt.Errorf("parser.ParseFile: %w", err)
+		return nil, fmt.Errorf("decorator.ParseFile: %w", err)
 	}
 
 	return file, nil
 }
 
-func getHandlersMethods(file *ast.File) []string {
+func getHandlersMethods(file *dst.File) []string {
 	var functions []string
 
-	ast.Inspect(file, func(n ast.Node) bool {
+	dst.Inspect(file, func(n dst.Node) bool {
 		switch x := n.(type) {
-		case *ast.FuncDecl:
+		case *dst.FuncDecl:
 			if x.Recv == nil {
 				return false
 			}
 			if len(x.Recv.List) == 1 {
-				recvType, ok := x.Recv.List[0].Type.(*ast.StarExpr)
+				recvType, ok := x.Recv.List[0].Type.(*dst.StarExpr)
 				if ok {
-					ident, ok := recvType.X.(*ast.Ident)
+					ident, ok := recvType.X.(*dst.Ident)
 					if ok && ident.Name == "Handlers" {
 						functions = append(functions, x.Name.Name)
 					}
@@ -350,10 +351,10 @@ func getHandlersMethods(file *ast.File) []string {
 
 // removeAndAppendHandlersMethod removes a Handlers method with the given name from its source file
 // and appends it to a target file.
-func removeAndAppendHandlersMethod(src, target *ast.File, methodNameToRemove string) {
+func removeAndAppendHandlersMethod(src, target *dst.File, opID string) {
 	for i, decl := range src.Decls {
-		if fd, ok := decl.(*ast.FuncDecl); ok {
-			if fd.Name.Name == methodNameToRemove {
+		if fd, ok := decl.(*dst.FuncDecl); ok {
+			if fd.Name.Name == opID {
 				target.Decls = append(target.Decls, src.Decls[i])
 				src.Decls = append(src.Decls[:i], src.Decls[i+1:]...)
 
@@ -366,23 +367,6 @@ func removeAndAppendHandlersMethod(src, target *ast.File, methodNameToRemove str
 // ensureFunctionMethods parses the AST of each api_<lowercase of tag>.go file and
 // ensure it contains function methods for each operation ID.
 func (o *CodeGen) ensureFunctionMethods() error {
-	handlerMethodsPerTag := make(map[string][]string)
-
-	for tag := range o.operations {
-		apiFilePath := path.Join(o.handlersPath, fmt.Sprintf("api_%s.go", strings.ToLower(tag)))
-		apiFileContent, err := os.ReadFile(apiFilePath)
-		if err != nil {
-			return fmt.Errorf("failed to read file %s: %w", apiFilePath, err)
-		}
-
-		file, err := parseAST(bytes.NewReader(apiFileContent))
-		if err != nil {
-			return fmt.Errorf("failed to parse file %s: %w", apiFilePath, err)
-		}
-
-		handlerMethodsPerTag[tag] = getHandlersMethods(file)
-	}
-
 	tagFiles, err := filepath.Glob(filepath.Join(o.handlersPath, "api_*.go"))
 	if err != nil {
 		return fmt.Errorf("failed to find api_<tag>.go files: %w", err)
@@ -421,8 +405,20 @@ func (o *CodeGen) ensureFunctionMethods() error {
 		for _, opID := range functions {
 			if contains(restOfOpIDs, opID) {
 				correspondingTag := o.findTagByOpID(opID)
-				errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be api_%s.go", opID, correspondingTag))
-				// TODO: should filter handlerMethodsPerTag values, find the tag and append dst node (with comments) there if file exists
+
+				content, err := os.ReadFile(filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", correspondingTag)))
+				if err != nil {
+					errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", opID, correspondingTag))
+				}
+
+				correctFile, err := parseAST(bytes.NewReader(content))
+				if err != nil {
+					return fmt.Errorf("failed to parse file %s: %w", tagFile, err)
+				}
+
+				removeAndAppendHandlersMethod(file, correctFile, opID)
+
+				return nil
 			}
 		}
 

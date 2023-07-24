@@ -3,7 +3,6 @@ package codegen
 import (
 	"bytes"
 	"fmt"
-	"go/ast"
 	"go/printer"
 	"go/token"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dave/dst"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -163,7 +163,20 @@ func (h *Handlers) Qux() {}
 
 	err = o.ensureFunctionMethods()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), fmt.Sprintf("misplaced method for operation ID %q - should be api_%s.go", newMethod, tag))
+	assert.Contains(t, err.Error(), fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", newMethod, tag))
+
+	// var found bool
+	// for _, decl := range fileContentFooExtra.Decls {
+	// 	if fd, ok := decl.(*dst.FuncDecl); ok {
+	// 		if fd.Name.Name == newMethod {
+	// 			found = true
+	// 			break
+	// 		}
+	// 	}
+	// }
+	// if !found {
+	// 	t.Errorf("Handlers method '%s' not found in the second file after appending.", methodNameToRemove)
+	// }
 }
 
 func TestEnsureFunctionMethods_MissingMethod(t *testing.T) {
@@ -201,7 +214,7 @@ func (h *Handlers) Bar() {}
 	cg.operations["foo"] = []string{"Foo", "Bar", "Baz"}
 
 	err = cg.ensureFunctionMethods()
-	require.Error(t, err, "expected error due to missing Baz")
+	require.Error(t, err, "expected error due to missing Baz, not misplaced in another handler")
 
 	assert.Contains(t, err.Error(), "missing function method for operation ID \"Baz\"")
 }
@@ -239,7 +252,7 @@ func main() {}
 	removeAndAppendHandlersMethod(file, secondFile, methodNameToRemove)
 
 	for _, decl := range file.Decls {
-		if fd, ok := decl.(*ast.FuncDecl); ok {
+		if fd, ok := decl.(*dst.FuncDecl); ok {
 			if fd.Name.Name == methodNameToRemove {
 				t.Errorf("Handlers method '%s' still found in the first file after removal.", methodNameToRemove)
 				break
@@ -249,7 +262,7 @@ func main() {}
 
 	var found bool
 	for _, decl := range secondFile.Decls {
-		if fd, ok := decl.(*ast.FuncDecl); ok {
+		if fd, ok := decl.(*dst.FuncDecl); ok {
 			if fd.Name.Name == methodNameToRemove {
 				found = true
 				break
