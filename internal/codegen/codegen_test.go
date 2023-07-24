@@ -167,6 +167,7 @@ func (h *Handlers) Qux() {}
 		require.NoError(t, err)
 
 		// TODO: check both files have swapped handlers
+		// not testing  anything right now
 		// var found bool
 		// for _, decl := range fileContentFooExtra.Decls {
 		// 	if fd, ok := decl.(*dst.FuncDecl); ok {
@@ -195,11 +196,11 @@ func (h *Handlers) Qux() {}
 		_, err = file.WriteString(fileContentFoo)
 		require.NoError(t, err, "Failed to write test file")
 
-		file, err = os.Create(apiFilePathBar)
+		fileBar, err := os.Create(apiFilePathBar)
 		require.NoError(t, err, "Failed to create test file")
-		defer file.Close()
+		defer fileBar.Close()
 
-		_, err = file.WriteString(fileContentBar)
+		_, err = fileBar.WriteString(fileContentBar)
 		require.NoError(t, err, "Failed to write test file")
 
 		o := &CodeGen{

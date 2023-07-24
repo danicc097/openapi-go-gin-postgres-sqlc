@@ -399,13 +399,15 @@ func (o *CodeGen) ensureFunctionMethods() error {
 		functions := getHandlersMethods(file)
 
 		var restOfOpIDs []string
+	tag:
 		for opTag, opIDs := range o.operations {
 			if opTag == tag {
-				continue
+				continue tag
 			}
 			restOfOpIDs = append(restOfOpIDs, opIDs...)
 		}
 
+	fn:
 		for _, opID := range functions {
 			if contains(restOfOpIDs, opID) {
 				correspondingTag := o.findTagByOpID(opID)
@@ -413,6 +415,8 @@ func (o *CodeGen) ensureFunctionMethods() error {
 				content, err := os.ReadFile(filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", correspondingTag)))
 				if err != nil {
 					errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", opID, correspondingTag))
+
+					break fn
 				}
 
 				correctFile, err := parseAST(bytes.NewReader(content))
