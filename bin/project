@@ -426,7 +426,7 @@ x.gen.xo() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/ &
+    md5_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/
 
     echo "Running generation"
 
@@ -514,7 +514,7 @@ x.gen.gowrap() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/gowrap.md5" ${CACHE_DEP_FILES[@]} go.mod $repos $GOWRAP_TEMPLATES_DIR &
+    md5_all "$CACHE/gowrap.md5" ${CACHE_DEP_FILES[@]} go.mod $repos $GOWRAP_TEMPLATES_DIR
 
     echo "Running generation"
 
@@ -589,7 +589,7 @@ x.gen.counterfeiter() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/counterfeiter.md5" ${CACHE_DEP_FILES[@]} go.mod $envvar $repos $tfidfpb &
+    md5_all "$CACHE/counterfeiter.md5" ${CACHE_DEP_FILES[@]} go.mod $envvar $repos $tfidfpb
 
     echo "Recreating mocks"
     {
@@ -642,7 +642,7 @@ x.gen.frontend() {
         echo "Skipping generation (cached). Force regen with --x-force-regen"
         exit 0
       fi
-      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/scripts/* frontend/package.json &
+      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/scripts/* frontend/package.json
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
