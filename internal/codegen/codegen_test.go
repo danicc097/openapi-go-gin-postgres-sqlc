@@ -23,9 +23,9 @@ func TestAnalyzeSpec(t *testing.T) {
 	const baseDir = "testdata/analyze_specs"
 
 	cases := []struct {
-		Name        string
-		File        string
-		ErrContains string
+		name        string
+		file        string
+		errContains string
 	}{
 		{
 			"valid",
@@ -56,16 +56,16 @@ func TestAnalyzeSpec(t *testing.T) {
 
 	for _, tc := range cases {
 		tc := tc
-		t.Run(tc.Name, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
 			var stderr bytes.Buffer
 
-			og := New(&stderr, path.Join(baseDir, tc.File), "", "")
+			og := New(&stderr, path.Join(baseDir, tc.file), "", "")
 
 			err := og.analyzeSpec()
-			if tc.ErrContains != "" {
-				assert.ErrorContains(t, err, tc.ErrContains)
+			if tc.errContains != "" {
+				assert.ErrorContains(t, err, tc.errContains)
 			} else if err != nil {
 				t.Fatalf("err: %s\nstderr: %s\n", err, &stderr)
 			}
@@ -154,30 +154,22 @@ func (h *Handlers) Baz() {}
 		{
 			name:       "no changes",
 			operations: map[tag][]string{foo: {"Foo", "Bar"}, bar: {"Baz"}},
-			files: handlerFiles{
-				foo: {
-					content: `package rest
+			files: func() handlerFiles {
+				fooContent := `package rest
 
-func (h *Handlers) Foo() {}
-func (h *Handlers) Bar() {}
-`,
-					newContent: `package rest
+				func (h *Handlers) Foo() {}
+				func (h *Handlers) Bar() {}
+				`
+				barContent := `package rest
 
-func (h *Handlers) Foo() {}
-func (h *Handlers) Bar() {}
-`,
-				},
-				bar: {
-					content: `package rest
+				func (h *Handlers) Baz() {}
+				`
 
-func (h *Handlers) Baz() {}
-`,
-					newContent: `package rest
-
-func (h *Handlers) Baz() {}
-`,
-				},
-			},
+				return handlerFiles{
+					foo: {content: fooContent, newContent: fooContent},
+					bar: {content: barContent, newContent: barContent},
+				}
+			}(),
 		},
 		{
 			name:        "misplaced with no correct file created yet",
@@ -188,6 +180,21 @@ func (h *Handlers) Baz() {}
 
 				func (h *Handlers) Foo() {}
 				func (h *Handlers) Bar() {}
+				`
+
+				return handlerFiles{
+					foo: {content: content, newContent: content},
+				}
+			}(),
+		},
+		{
+			name:        "missing method in existing file",
+			errContains: `missing function method for operation ID "Bar"`,
+			operations:  map[tag][]string{foo: {"Foo", "Bar"}},
+			files: func() handlerFiles {
+				content := `package rest
+
+				func (h *Handlers) Foo() {}
 				`
 
 				return handlerFiles{
@@ -240,46 +247,6 @@ func (h *Handlers) Baz() {}
 			}
 		})
 	}
-}
-
-func TestEnsureFunctionMethods_MissingMethod(t *testing.T) {
-	t.Parallel()
-
-	tmpDir := t.TempDir()
-
-	fileContent := `
-package rest
-
-type Handlers struct{}
-
-func (h *Handlers) Foo() {}
-func (h *Handlers) Bar() {}
-`
-
-	apiFilePath := tmpDir + "/api_foo.go"
-	file, err := os.Create(apiFilePath)
-	require.NoError(t, err, "Failed to create test file")
-	defer file.Close()
-
-	_, err = file.WriteString(fileContent)
-	require.NoError(t, err, "Failed to write test file")
-
-	cg := &CodeGen{
-		stderr:       &bytes.Buffer{},
-		specPath:     "",
-		operations:   map[string][]string{"foo": {"Foo", "Bar"}},
-		handlersPath: tmpDir,
-	}
-
-	err = cg.ensureFunctionMethods()
-	require.NoError(t, err)
-
-	cg.operations["foo"] = []string{"Foo", "Bar", "Baz"}
-
-	err = cg.ensureFunctionMethods()
-	require.Error(t, err, "expected error due to missing Baz, not misplaced in another handler")
-
-	assert.Contains(t, err.Error(), "missing function method for operation ID \"Baz\"")
 }
 
 func TestRemoveAndAppendHandlersMethod(t *testing.T) {
