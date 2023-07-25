@@ -555,6 +555,7 @@ x.gen.client-server() {
     echo "Running generation"
     paths=".openapi.paths.yaml"
 
+    # x-go* extensions cannot be used for Models(.*) themselves. `delete_duplicate_schemas` is necessary for those
     yq e '.components.schemas.UuidUUID = {
         "type": "string",
         "x-go-type": "uuid.UUID",

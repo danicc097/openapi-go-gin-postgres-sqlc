@@ -19,7 +19,7 @@ func main() {
 		log.Fatalf("Couldn't load env vars: %s", err)
 	}
 
-	if err := internal.SetupSwaggerUI(internal.BuildAPIURL(specPath), specPath); err != nil {
+	if err := internal.SetupSwaggerUI(internal.BuildAPIURL("openapi.yaml"), specPath); err != nil {
 		log.Fatalf("Couldn't setup Swagger UI: %s", err)
 	}
 }
