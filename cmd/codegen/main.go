@@ -38,7 +38,6 @@ func main() {
 	}
 
 	cmd.Parse(os.Args[2:])
-	fmt.Println(cmd.Name())
 
 	cg := codegen.New(&stderr, spec, opIDAuthPath, "internal/rest")
 

@@ -375,31 +375,31 @@ func removeAndAppendHandlersMethod(src, target *dst.File, opID string) {
 // ensureFunctionMethods parses the AST of each api_<lowercase of tag>.go file and
 // ensure it contains function methods for each operation ID.
 func (o *CodeGen) ensureFunctionMethods() error {
-	tagFiles, err := filepath.Glob(filepath.Join(o.handlersPath, "api_*.go"))
+	tagFilePaths, err := filepath.Glob(filepath.Join(o.handlersPath, "api_*.go"))
 	if err != nil {
 		return fmt.Errorf("failed to find api_<tag>.go files: %w", err)
 	}
 
 	var errs []string
 
-	for _, tagFile := range tagFiles {
-		if strings.HasSuffix(tagFile, "_test.go") {
+	for _, tagFilePath := range tagFilePaths {
+		if strings.HasSuffix(tagFilePath, "_test.go") {
 			continue
 		}
-		matches := handlersFileTagRE.FindStringSubmatch(filepath.Base(tagFile))
+		matches := handlersFileTagRE.FindStringSubmatch(filepath.Base(tagFilePath))
 		if len(matches) < 2 {
-			return fmt.Errorf("failed to extract tag from file name: %s", tagFile)
+			return fmt.Errorf("failed to extract tag from file name: %s", tagFilePath)
 		}
 		tag := matches[1]
 
-		apiFileContent, err := os.ReadFile(tagFile)
+		apiFileContent, err := os.ReadFile(tagFilePath)
 		if err != nil {
-			return fmt.Errorf("failed to read file %s: %w", tagFile, err)
+			return fmt.Errorf("failed to read file %s: %w", tagFilePath, err)
 		}
 
 		file, err := parseAST(bytes.NewReader(apiFileContent))
 		if err != nil {
-			return fmt.Errorf("failed to parse file %s: %w", tagFile, err)
+			return fmt.Errorf("failed to parse file %s: %w", tagFilePath, err)
 		}
 
 		// operation ids are preprocessed to pascal case
@@ -419,7 +419,8 @@ func (o *CodeGen) ensureFunctionMethods() error {
 			if contains(restOfOpIDs, opID) {
 				correspondingTag := o.findTagByOpID(opID)
 
-				content, err := os.ReadFile(filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", correspondingTag)))
+				correctFilePath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", correspondingTag))
+				content, err := os.ReadFile(correctFilePath)
 				if err != nil {
 					errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", opID, correspondingTag))
 
@@ -428,10 +429,21 @@ func (o *CodeGen) ensureFunctionMethods() error {
 
 				correctFile, err := parseAST(bytes.NewReader(content))
 				if err != nil {
-					return fmt.Errorf("failed to parse file %s: %w", tagFile, err)
+					return fmt.Errorf("failed to parse file %s: %w", tagFilePath, err)
 				}
 
+				fmt.Printf("Moving handler %q to correct file (%s -> %s)", opID, path.Base(tagFilePath), path.Base(correctFilePath))
 				removeAndAppendHandlersMethod(file, correctFile, opID)
+
+				err = writeASTToFile(correctFilePath, correctFile)
+				if err != nil {
+					return fmt.Errorf("failed to write AST to %s: %w", correctFilePath, err)
+				}
+
+				err = writeASTToFile(tagFilePath, file)
+				if err != nil {
+					return fmt.Errorf("failed to write AST to %s: %w", tagFilePath, err)
+				}
 
 				return nil
 			}
@@ -458,5 +470,20 @@ func (o *CodeGen) findTagByOpID(opID string) string {
 			return tag
 		}
 	}
+
 	return ""
+}
+
+func writeASTToFile(filePath string, file *dst.File) error {
+	f, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", filePath, err)
+	}
+	defer f.Close()
+
+	if err := decorator.Fprint(f, file); err != nil {
+		return fmt.Errorf("failed to write AST to file %s: %w", filePath, err)
+	}
+
+	return nil
 }
