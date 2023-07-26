@@ -118,5 +118,5 @@
   },
   "files.associations": {
     "*.sql": "postgres"
-  }
+  },
 }

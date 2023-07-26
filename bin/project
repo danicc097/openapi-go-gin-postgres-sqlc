@@ -725,7 +725,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet; do
+    for cmd in jet oapi-codegen codegen; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -855,7 +855,7 @@ x.test.frontend.watch() {
 x.test.xo() {
   { { {
     POSTGRES_DB="$POSTGRES_TEST_DB"
-    GEN_POSTGRES_DB="$POSTGRES_DB"
+    GEN_POSTGRES_DB="$POSTGRES_TEST_DB"
 
     drop_and_recreate_db $POSTGRES_DB # FIXME wrong xo gen when tables with equal names in public schema exist as well
 
