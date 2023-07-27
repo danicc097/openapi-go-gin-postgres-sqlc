@@ -73,12 +73,12 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
-			assert.Contains(t, err.Error(), errContains)
+			assert.ErrorContains(t, err, errContains)
 		})
 	}
 
 	t.Run("bad_time_entry_creation", func(t *testing.T) {
 		_, err := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, nil, nil)
-		assert.Contains(t, err.Error(), errViolatesCheckConstraint)
+		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

@@ -221,7 +221,7 @@ func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 }
 
@@ -253,7 +253,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("can_get_user_by_api_key", func(t *testing.T) {
@@ -284,7 +284,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("can_delete_an_api_key", func(t *testing.T) {
@@ -352,6 +352,6 @@ func TestUser_Create(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 }

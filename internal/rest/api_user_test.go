@@ -124,12 +124,6 @@ func TestUpdateUserRoutes(t *testing.T) {
 		})
 		require.NoError(t, err, "ff.CreateUser: %s")
 
-		managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-			Role:       models.RoleManager,
-			WithAPIKey: true,
-		})
-		require.NoError(t, err, "ff.CreateUser: %s")
-
 		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleUser,
 			WithAPIKey: true,
@@ -156,6 +150,12 @@ func TestUpdateUserRoutes(t *testing.T) {
 
 		t.Run("insufficient_caller_scopes", func(t *testing.T) {
 			t.Parallel()
+
+			managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+				Role:       models.RoleManager,
+				WithAPIKey: true,
+			})
+			require.NoError(t, err, "ff.CreateUser: %s")
 
 			updateAuthParams := models.UpdateUserAuthRequest{
 				Role: pointers.New(models.RoleManager),

@@ -79,7 +79,7 @@ func TestNewAppConfig(t *testing.T) {
 
 					return
 				}
-				assert.Contains(t, err.Error(), tc.errContains)
+				assert.ErrorContains(t, err, tc.errContains)
 
 				return
 			}
@@ -117,7 +117,7 @@ func TestBadAppConfig(t *testing.T) {
 
 				return
 			}
-			assert.Contains(t, err.Error(), errContains)
+			assert.ErrorContains(t, err, errContains)
 
 			return
 		}
