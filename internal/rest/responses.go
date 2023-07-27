@@ -196,3 +196,13 @@ func renderResponse(c *gin.Context, res any, status int) {
 		fmt.Printf("error in renderResponse Write: %s", err)
 	}
 }
+
+func parseBody(c *gin.Context, body any) bool {
+	if err := c.BindJSON(body); err != nil {
+		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
+
+		return true
+	}
+
+	return false
+}

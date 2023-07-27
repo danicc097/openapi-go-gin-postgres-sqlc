@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -65,10 +64,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	tx := getTxFromCtx(c)
 
 	body := &models.UpdateUserRequest{}
-
-	if err := c.BindJSON(body); err != nil {
-		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
-
+	if shouldReturn := parseBody(c, body); shouldReturn {
 		return
 	}
 
@@ -110,10 +106,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	tx := getTxFromCtx(c)
 
 	body := &models.UpdateUserAuthRequest{}
-
-	if err := c.BindJSON(body); err != nil {
-		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
-
+	if shouldReturn := parseBody(c, body); shouldReturn {
 		return
 	}
 
