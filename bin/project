@@ -522,7 +522,7 @@ x.gen.gowrap() {
       "retry:with_retry"
       "timeout:with_timeout"
       "otel:with_otel"
-      "prometheus:with_prometheus"
+      "prometheus:with_prometheus" # TODO: https://last9.io/blog/native-support-for-opentelemetry-metrics-in-prometheus/ https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/translator/prometheus
     )
     local repos="$REPOS_DIR/repos.go"
     local repo_interfaces=()
