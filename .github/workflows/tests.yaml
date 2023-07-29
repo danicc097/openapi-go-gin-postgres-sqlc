@@ -63,6 +63,19 @@ jobs:
 
           project test.frontend --x-env=ci
 
+      - name: Test E2E
+        run: |
+          source .envrc
+
+          project e2e.run --x-env=ci
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 5
       # TODO: reuse actions/setup:
       # https://stackoverflow.com/questions/65242830/in-a-github-actions-workflow-is-there-a-way-to-have-multiple-jobs-reuse-the-sam
       # https://github.com/kmadof/github-actions-manual/blob/main/.github/actions/say-hello/action.yml
+

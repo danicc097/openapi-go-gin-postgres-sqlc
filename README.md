@@ -89,14 +89,11 @@ project bootstrap # dependency and tools interactive installation
 
 ### Configuration
 
-- Fill in `.env.templates`:
+- Fill in `.env.template`s:
 
   ```bash
   find . -name ".env*.template"
   ```
-
-- Fill in `frontend/config.template.json`.
-
 
 ### Code generation
 

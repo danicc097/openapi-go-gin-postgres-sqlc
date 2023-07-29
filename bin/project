@@ -635,7 +635,7 @@ x.gen.frontend() {
     (
       export PATH=frontend/node_modules/.bin:$PATH
 
-      frontend_config_setup
+      config_template_setup frontend
 
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
       orval_config="frontend/orval.config.ts"
@@ -678,7 +678,12 @@ export type schemas = components['schemas']
 x.gen.e2e() {
   backup-gen
   { { {
+    source .env.e2e
+
     export PATH=e2e/node_modules/.bin:$PATH
+
+    config_template_setup e2e
+
     orval_config="e2e/orval.config.ts"
     orval --config $orval_config
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -851,7 +856,8 @@ x.test.backend() {
 # Args: [...]
 x.test.frontend() {
   # TODO accept vitest args
-  frontend_config_setup
+  config_template_setup frontend
+
   cd frontend
   pnpm run test:no-watch
   pnpm run test-types:no-watch
@@ -860,7 +866,8 @@ x.test.frontend() {
 # Test frontend on file changes.
 # Args: [...]
 x.test.frontend.watch() {
-  frontend_config_setup
+  config_template_setup frontend
+
   cd frontend
   pnpm run test
 }
@@ -947,7 +954,7 @@ x.run.backend-hr() {
 
 # Run frontend with hot-reloading.
 x.run.frontend() {
-  frontend_config_setup
+  config_template_setup frontend
   cd frontend
   pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
@@ -992,10 +999,6 @@ x.backend.sync-deps() {
 
 # Run project in production mode, i.e. dockerized and bundled.
 x.run-dockerized() {
-  # .env.e2e should NOT be a symlink of .env.ci
-  # we will run e2e services with project run-dockerized --x-env=e2e --x-no-gen
-  # which a 1:1 clone of prod setup
-  # it will use production dockerized versions which require container name resolution, diff ports etc
   # project run-dockerized --x-env=prod --x-no-gen
   run_shared_services up -d --build --wait
   x.db.recreate
@@ -1242,9 +1245,12 @@ x.db.restore() {
 # Run E2E tests.
 x.e2e.run() {
   { { {
+    source .env.e2e
+
+    x.gen.e2e
+
     name="$PROJECT_PREFIX-e2e"
     cd e2e
-    pnpm i # cannot install playwright lib
     DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker build -t "$name" .
     cd - >/dev/null
 
@@ -1575,14 +1581,15 @@ drop-and-migrate-gen-db() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# updates dynamic config with env vars
-frontend_config_setup() {
-  export ENV_REPLACE_GLOB=frontend/config.json
+# updates dynamic config with env vars for
+config_template_setup() {
+  local dir="$1"
+  export ENV_REPLACE_GLOB=$dir/config.json
   # ensure config has all k:v as "<KEY>": "$<KEY>"
   # this has to always be run at startup
   jq \
     'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-    frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
+    $dir/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
   envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
   frontend/nginx/replace-envvars.sh "$envvars"
 }
@@ -1745,7 +1752,7 @@ while [[ "$#" -gt 0 ]]; do
     # Environment to run commands in. Defaults to "dev".
     # Args: env
     env="${1#--x-env=}"
-    valid_envs="dev e2e prod ci"
+    valid_envs="dev prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi

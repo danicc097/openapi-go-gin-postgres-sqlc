@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
-import CONFIG from "../frontend/config.json"
+import CONFIG from "config.json"
 import { frontendPath } from 'utils/path'
 /**
  * Read environment variables from file.

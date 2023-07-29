@@ -1,4 +1,4 @@
-import CONFIG from '../../frontend/config.json'
+import CONFIG from '../config.json'
 
 export function apiPath(path: string | null) {
   const port = CONFIG.API_PORT?.length > 0 ? `:${CONFIG.API_PORT}` : ''
