@@ -71,7 +71,7 @@ kill_descendants() {
 # Check build dependencies are met and prompt to install if missing.
 x.check-build-deps() {
   { { {
-    mkdir -p ./bin/tools/
+    mkdir -p $TOOLS_DIR
 
     while IFS= read -r line; do
       [[ $line =~ ^declare\ -f\ check\.bin\. ]] && BIN_CHECKS+=("${line##declare -f check.bin.}")
@@ -119,7 +119,7 @@ x.bootstrap() {
 # Install go libraries as runnable programs.
 x.install-tools() {
   { { {
-    echo "Installing go tooling..."
+    echo "Installing tools..."
 
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
     # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0 &
@@ -672,6 +672,17 @@ export type schemas = components['schemas']
   backup-gen.cleanup
 }
 
+# Run e2e code generation.
+x.gen.e2e() {
+  backup-gen
+  { { {
+    export PATH=e2e/node_modules/.bin:$PATH
+    orval_config="e2e/orval.config.ts"
+    orval --config $orval_config
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  backup-gen.cleanup
+}
+
 # Run all codegen and postgen commands for the project.
 x.gen() {
   [[ -n $NO_GEN ]] && return
@@ -715,6 +726,7 @@ x.gen() {
     x.lint.go
 
     x.gen.frontend
+    x.gen.e2e # may depend on frontend output (config)
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -1792,6 +1804,7 @@ DUMP_PREFIX="dump_${env}_"
 readonly SPEC="openapi.yaml"
 
 readonly BUILD_DIR="bin/build"
+readonly TOOLS_DIR="bin/tools"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
 readonly CERTIFICATES_DIR="certificates"
