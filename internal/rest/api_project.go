@@ -63,10 +63,7 @@ func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 	caller := getUserFromCtx(c)
 
 	body := &WorkItemTagCreateRequest{}
-
-	if err := c.BindJSON(body); err != nil {
-		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
-
+	if shouldReturn := parseBody(c, body); shouldReturn {
 		return
 	}
 

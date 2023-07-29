@@ -63,7 +63,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
-			assert.Contains(t, err.Error(), errContains)
+			assert.ErrorContains(t, err, errContains)
 		})
 	}
 
@@ -106,7 +106,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
-			assert.Contains(t, err.Error(), errContains)
+			assert.ErrorContains(t, err, errContains)
 		})
 	}
 }

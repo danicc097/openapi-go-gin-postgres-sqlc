@@ -71,7 +71,7 @@ kill_descendants() {
 # Check build dependencies are met and prompt to install if missing.
 x.check-build-deps() {
   { { {
-    mkdir -p ./bin/tools/
+    mkdir -p $TOOLS_DIR
 
     while IFS= read -r line; do
       [[ $line =~ ^declare\ -f\ check\.bin\. ]] && BIN_CHECKS+=("${line##declare -f check.bin.}")
@@ -119,7 +119,7 @@ x.bootstrap() {
 # Install go libraries as runnable programs.
 x.install-tools() {
   { { {
-    echo "Installing go tooling..."
+    echo "Installing tools..."
 
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
     # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0 &
@@ -426,7 +426,7 @@ x.gen.xo() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/ &
+    md5_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/
 
     echo "Running generation"
 
@@ -514,7 +514,7 @@ x.gen.gowrap() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/gowrap.md5" ${CACHE_DEP_FILES[@]} go.mod $repos $GOWRAP_TEMPLATES_DIR &
+    md5_all "$CACHE/gowrap.md5" ${CACHE_DEP_FILES[@]} go.mod $repos $GOWRAP_TEMPLATES_DIR
 
     echo "Running generation"
 
@@ -522,7 +522,7 @@ x.gen.gowrap() {
       "retry:with_retry"
       "timeout:with_timeout"
       "otel:with_otel"
-      "prometheus:with_prometheus"
+      "prometheus:with_prometheus" # TODO: https://last9.io/blog/native-support-for-opentelemetry-metrics-in-prometheus/ https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/translator/prometheus
     )
     local repos="$REPOS_DIR/repos.go"
     local repo_interfaces=()
@@ -555,6 +555,7 @@ x.gen.client-server() {
     echo "Running generation"
     paths=".openapi.paths.yaml"
 
+    # x-go* extensions cannot be used for Models(.*) themselves. `delete_duplicate_schemas` is necessary for those
     yq e '.components.schemas.UuidUUID = {
         "type": "string",
         "x-go-type": "uuid.UUID",
@@ -588,7 +589,7 @@ x.gen.counterfeiter() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
-    md5_all "$CACHE/counterfeiter.md5" ${CACHE_DEP_FILES[@]} go.mod $envvar $repos $tfidfpb &
+    md5_all "$CACHE/counterfeiter.md5" ${CACHE_DEP_FILES[@]} go.mod $envvar $repos $tfidfpb
 
     echo "Recreating mocks"
     {
@@ -632,7 +633,9 @@ x.gen.frontend() {
   backup-gen
   { { {
     (
-      frontend_config_setup
+      export PATH=frontend/node_modules/.bin:$PATH
+
+      config_template_setup frontend
 
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
       orval_config="frontend/orval.config.ts"
@@ -641,7 +644,7 @@ x.gen.frontend() {
         echo "Skipping generation (cached). Force regen with --x-force-regen"
         exit 0
       fi
-      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/scripts/* frontend/package.json &
+      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/scripts/* frontend/package.json
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
@@ -667,6 +670,22 @@ export type schemas = components['schemas']
 
       wait_without_error
     )
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  backup-gen.cleanup
+}
+
+# Run e2e code generation.
+x.gen.e2e() {
+  backup-gen
+  { { {
+    source .env.e2e
+
+    export PATH=e2e/node_modules/.bin:$PATH
+
+    config_template_setup e2e
+
+    orval_config="e2e/orval.config.ts"
+    orval --config $orval_config
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -714,6 +733,7 @@ x.gen() {
     x.lint.go
 
     x.gen.frontend
+    x.gen.e2e # may depend on frontend output (config)
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -724,7 +744,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet; do
+    for cmd in jet oapi-codegen codegen; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -836,7 +856,8 @@ x.test.backend() {
 # Args: [...]
 x.test.frontend() {
   # TODO accept vitest args
-  frontend_config_setup
+  config_template_setup frontend
+
   cd frontend
   pnpm run test:no-watch
   pnpm run test-types:no-watch
@@ -845,7 +866,8 @@ x.test.frontend() {
 # Test frontend on file changes.
 # Args: [...]
 x.test.frontend.watch() {
-  frontend_config_setup
+  config_template_setup frontend
+
   cd frontend
   pnpm run test
 }
@@ -854,7 +876,7 @@ x.test.frontend.watch() {
 x.test.xo() {
   { { {
     POSTGRES_DB="$POSTGRES_TEST_DB"
-    GEN_POSTGRES_DB="$POSTGRES_DB"
+    GEN_POSTGRES_DB="$POSTGRES_TEST_DB"
 
     drop_and_recreate_db $POSTGRES_DB # FIXME wrong xo gen when tables with equal names in public schema exist as well
 
@@ -932,7 +954,7 @@ x.run.backend-hr() {
 
 # Run frontend with hot-reloading.
 x.run.frontend() {
-  frontend_config_setup
+  config_template_setup frontend
   cd frontend
   pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
@@ -977,10 +999,6 @@ x.backend.sync-deps() {
 
 # Run project in production mode, i.e. dockerized and bundled.
 x.run-dockerized() {
-  # .env.e2e should NOT be a symlink of .env.ci
-  # we will run e2e services with project run-dockerized --x-env=e2e --x-no-gen
-  # which a 1:1 clone of prod setup
-  # it will use production dockerized versions which require container name resolution, diff ports etc
   # project run-dockerized --x-env=prod --x-no-gen
   run_shared_services up -d --build --wait
   x.db.recreate
@@ -1227,9 +1245,12 @@ x.db.restore() {
 # Run E2E tests.
 x.e2e.run() {
   { { {
+    source .env.e2e
+
+    x.gen.e2e
+
     name="$PROJECT_PREFIX-e2e"
     cd e2e
-    pnpm i # cannot install playwright lib
     DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker build -t "$name" .
     cd - >/dev/null
 
@@ -1560,14 +1581,15 @@ drop-and-migrate-gen-db() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# updates dynamic config with env vars
-frontend_config_setup() {
-  export ENV_REPLACE_GLOB=frontend/config.json
+# updates dynamic config with env vars for
+config_template_setup() {
+  local dir="$1"
+  export ENV_REPLACE_GLOB=$dir/config.json
   # ensure config has all k:v as "<KEY>": "$<KEY>"
   # this has to always be run at startup
   jq \
     'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-    frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
+    $dir/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
   envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
   frontend/nginx/replace-envvars.sh "$envvars"
 }
@@ -1730,7 +1752,7 @@ while [[ "$#" -gt 0 ]]; do
     # Environment to run commands in. Defaults to "dev".
     # Args: env
     env="${1#--x-env=}"
-    valid_envs="dev e2e prod ci"
+    valid_envs="dev prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi
@@ -1791,6 +1813,7 @@ DUMP_PREFIX="dump_${env}_"
 readonly SPEC="openapi.yaml"
 
 readonly BUILD_DIR="bin/build"
+readonly TOOLS_DIR="bin/tools"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
 readonly CERTIFICATES_DIR="certificates"

@@ -1,8 +1,6 @@
 import { defineConfig } from 'orval'
 import { faker } from '@faker-js/faker'
 import _, { uniqueId } from 'lodash'
-import scopes from './scopes.json'
-import type { ArrayElement } from 'src/types/utils'
 
 // for custom client see https://github.com/anymaniax/orval/blob/master/samples/react-query/custom-client/src/api/mutator/custom-client.ts#L1
 export default defineConfig({

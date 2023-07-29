@@ -37,7 +37,34 @@
     ],
     "files.associations": {
       "*.sql": "postgres"
-    },
+    },,
+    "vscode-command-help.commands": [
+      "oapi-codegen",
+      "codegen",
+      "air",
+      "bin",
+      "counterfeiter",
+      "godotenv",
+      "gofumpt",
+      "goimports",
+      "golangci-lint",
+      "go-test-renamer",
+      "gowrap",
+      "lib",
+      "migrate",
+      "mkcert",
+      "oasdiff",
+      "protoc",
+      "protoc-gen-go",
+      "protoc-gen-go-grpc",
+      "sqlc",
+      "stringer",
+      "teststat",
+      "xo",
+      "yq",
+      "pnpm"
+    ],
+    "vscode-command-help.pre": "source .envrc"
     "launch": {
       "version": "0.2.0",
       "configurations": [

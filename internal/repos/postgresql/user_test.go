@@ -62,10 +62,10 @@ func TestUser_Update(t *testing.T) {
 
 			got.UpdatedAt = user.UpdatedAt // ignore
 
-			// should have been fixed with notification tests in transaction
+			// NOTE: this should not fail when running notification tests (from this package) in transaction
 			// // since we run tests in parallel, notification fan out effects changes on all users
-			// got.HasGlobalNotifications = user.HasGlobalNotifications     // ignore
-			// got.HasPersonalNotifications = user.HasPersonalNotifications // ignore
+			got.HasGlobalNotifications = user.HasGlobalNotifications     // ignore
+			got.HasPersonalNotifications = user.HasPersonalNotifications // ignore
 
 			assert.Equal(t, tc.want, got)
 		})
@@ -221,7 +221,7 @@ func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 }
 
@@ -253,7 +253,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("can_get_user_by_api_key", func(t *testing.T) {
@@ -284,7 +284,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("can_delete_an_api_key", func(t *testing.T) {
@@ -352,6 +352,6 @@ func TestUser_Create(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 }

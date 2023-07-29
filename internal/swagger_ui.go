@@ -8,7 +8,7 @@ import (
 	"text/template"
 )
 
-// SetupSwaggerUI sets url as the base path.
+// SetupSwaggerUI sets url in the Swagger docs to the endpoint where specPath is served.
 func SetupSwaggerUI(url string, specPath string) error {
 	buf := &bytes.Buffer{}
 	swaggerUIDir := "internal/static/swagger-ui"

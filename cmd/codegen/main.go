@@ -34,11 +34,13 @@ func main() {
 
 	cmd, ok := subcommands[os.Args[1]]
 	if !ok {
-		log.Fatalf("unknown subcommand %q, see --help.", os.Args[1])
+		validateSpecCmd.Usage()
+		preCmd.Usage()
+
+		return
 	}
 
 	cmd.Parse(os.Args[2:])
-	fmt.Println(cmd.Name())
 
 	cg := codegen.New(&stderr, spec, opIDAuthPath, "internal/rest")
 

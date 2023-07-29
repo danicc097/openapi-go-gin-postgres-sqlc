@@ -96,7 +96,7 @@ func TestNotification_Create(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("error_with_no_rank_with_global_notification", func(t *testing.T) {
@@ -110,6 +110,6 @@ func TestNotification_Create(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
-		assert.Contains(t, err.Error(), errContains)
+		assert.ErrorContains(t, err, errContains)
 	})
 }

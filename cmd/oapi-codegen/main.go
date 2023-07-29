@@ -116,7 +116,6 @@ func addTemplateOverrides(config codegen.Configuration, templates embed.FS) (cod
 			if err != nil {
 				return err
 			}
-			// using .gtpl for light syntax highlighting
 			name := strings.TrimSuffix(p, path.Ext(p)) + ".tmpl"
 			name = strings.Join(strings.Split(name, "/")[1:], "/")
 			overrides[name] = string(f)

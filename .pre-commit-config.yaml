@@ -13,6 +13,16 @@ repos:
         verbose: true
         files: ''
 
+      - id: sync-deps
+        name: sync dependencies
+        entry: bin/project backend.sync-deps
+        language: script
+        types: [text]
+        pass_filenames: false
+        always_run: true
+        verbose: true
+        files: ''
+
       # - id: test-rename
       #   name: test rename
       #   entry: go-test-renamer
