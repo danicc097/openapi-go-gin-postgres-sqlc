@@ -633,6 +633,8 @@ x.gen.frontend() {
   backup-gen
   { { {
     (
+      export PATH=frontend/node_modules/.bin:$PATH
+
       frontend_config_setup
 
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
