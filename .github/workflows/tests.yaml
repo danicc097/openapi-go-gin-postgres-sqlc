@@ -33,6 +33,10 @@ jobs:
           pnpm i --frozen-lockfile
           cd -
 
+          cd e2e
+          pnpm i --frozen-lockfile
+          cd -
+
           project test.backend.setup --x-env=ci
 
           project lint --x-env=ci
