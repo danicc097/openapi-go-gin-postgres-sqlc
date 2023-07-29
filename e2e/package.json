@@ -7,11 +7,12 @@
   "keywords": [],
   "author": "",
   "devDependencies": {
-    "typescript": "^4.8.2",
+    "@types/node": "^20.4.5",
     "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^3.4.1",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.2"
   },
   "dependencies": {
     "@playwright/test": "^1.35.0",
