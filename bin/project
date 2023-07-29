@@ -106,17 +106,27 @@ x.check-build-deps() {
 x.bootstrap() {
   { { {
     git submodule update --init --recursive # sync later on with git `git submodule update --force --recursive --remote`
+
     x.check-build-deps
     x.backend.sync-deps
     x.install-tools
     x.setup.swagger-ui
     x.gen.build-tools
+
+    cd frontend
+    pnpm i --frozen-lockfile
+    cd -
+
+    cd e2e
+    pnpm i --frozen-lockfile
+    cd -
+
     traefik_dir="$HOME/traefik-bootstrap"
     with_tty confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Install go libraries as runnable programs.
+# Install miscellaneous tool binaries locally.
 x.install-tools() {
   { { {
     echo "Installing tools..."
@@ -142,6 +152,9 @@ x.install-tools() {
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &
 
     GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter &
+
+    # install node libs with --prefix $TOOLS_DIR, if any
+    # ...
 
     wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

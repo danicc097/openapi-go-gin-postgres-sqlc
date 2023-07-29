@@ -29,14 +29,6 @@ jobs:
           # go mod download # it will access network/cache, which is not necessary with -mod=vendor
           go mod verify
 
-          cd frontend
-          pnpm i --frozen-lockfile
-          cd -
-
-          cd e2e
-          pnpm i --frozen-lockfile
-          cd -
-
           project test.backend.setup --x-env=ci
 
           project lint --x-env=ci
@@ -54,7 +46,6 @@ jobs:
               project test.backend -race -count=40 --x-env=ci
           done
 
-          echo "Testing files with !race directive"
           project test.backend -count=40 --x-env=ci
 
       - name: Test frontend
