@@ -370,7 +370,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DemoWorkItemCreateRequest'
+              oneOf:
+                - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
+                - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+              discriminator:
+                propertyName: projectName
         required: true
       responses:
         "201":
@@ -1315,6 +1319,32 @@ components:
         - color
       type: object
       x-postgen-struct: RestWorkItemTagCreateRequest
+    DemoTwoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoTwoProject:
+          $ref: '#/components/schemas/DbDemoTwoWorkItemCreateParams'
+        members:
+          items:
+            $ref: '#/components/schemas/ServicesMember'
+          nullable: true
+          type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
+        tagIDs:
+          items:
+            type: integer
+          nullable: true
+          type: array
+      required:
+        - projectName
+        - demoTwoProject
+        - base
+        - tagIDs
+        - members
+      type: object
+      x-postgen-struct: RestDemoTwoWorkItemCreateRequest
     DemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         base:
@@ -1326,12 +1356,15 @@ components:
             $ref: '#/components/schemas/ServicesMember'
           nullable: true
           type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
         tagIDs:
           items:
             type: integer
           nullable: true
           type: array
       required:
+        - projectName
         - demoProject
         - base
         - tagIDs
@@ -1520,6 +1553,17 @@ components:
         - role
       type: object
     DbDemoTwoWorkItem: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        customDateForProject2:
+          format: date-time
+          nullable: true
+          type: string
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+      type: object
+    DbDemoTwoWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         customDateForProject2:
           format: date-time

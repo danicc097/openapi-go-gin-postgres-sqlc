@@ -6,9 +6,11 @@
  * OpenAPI spec version: 2.0.0
  */
 
+export * from './createWorkitemBody'
 export * from './dbActivity'
 export * from './dbActivityCreateParams'
 export * from './dbDemoTwoWorkItem'
+export * from './dbDemoTwoWorkItemCreateParams'
 export * from './dbDemoWorkItem'
 export * from './dbDemoWorkItemCreateParams'
 export * from './dbKanbanStep'
@@ -32,6 +34,7 @@ export * from './demoKanbanSteps'
 export * from './demoProject2KanbanSteps'
 export * from './demoProjectKanbanSteps'
 export * from './demoTwoKanbanSteps'
+export * from './demoTwoWorkItemCreateRequest'
 export * from './demoTwoWorkItemTypes'
 export * from './demoTwoWorkItemsResponse'
 export * from './demoTwoWorkItemsResponseMetadata'

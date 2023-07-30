@@ -6,13 +6,13 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbWorkItemCreateParams } from './dbWorkItemCreateParams'
-import type { DbDemoWorkItemCreateParams } from './dbDemoWorkItemCreateParams'
+import type { DbDemoTwoWorkItemCreateParams } from './dbDemoTwoWorkItemCreateParams'
 import type { ServicesMember } from './servicesMember'
 import type { Project } from './project'
 
-export interface DemoWorkItemCreateRequest {
+export interface DemoTwoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
-  demoProject: DbDemoWorkItemCreateParams
+  demoTwoProject: DbDemoTwoWorkItemCreateParams
   members: ServicesMember[] | null
   projectName: Project
   tagIDs: number[] | null

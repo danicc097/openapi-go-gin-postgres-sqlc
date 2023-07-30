@@ -345,10 +345,11 @@ export interface WorkItemTagCreateRequest {
   name: string
   projectID?: number
 }
-export interface DemoWorkItemCreateRequest {
+export interface DemoTwoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
-  demoProject: DbDemoWorkItemCreateParams
+  demoTwoProject: DbDemoTwoWorkItemCreateParams
   members: ServicesMember[] | null
+  projectName: Project
   tagIDs: number[] | null
 }
 export interface DbWorkItemCreateParams {
@@ -361,16 +362,27 @@ export interface DbWorkItemCreateParams {
   title: string
   workItemTypeID: number
 }
+export interface DbDemoTwoWorkItemCreateParams {
+  customDateForProject2?: string | null
+  workItemID: number
+}
+export interface ServicesMember {
+  role: WorkItemRole
+  userID: UuidUUID
+}
+export interface DemoWorkItemCreateRequest {
+  base: DbWorkItemCreateParams
+  demoProject: DbDemoWorkItemCreateParams
+  members: ServicesMember[] | null
+  projectName: Project
+  tagIDs: number[] | null
+}
 export interface DbDemoWorkItemCreateParams {
   lastMessageAt: string
   line: string
   ref: string
   reopened: boolean
   workItemID: number
-}
-export interface ServicesMember {
-  role: WorkItemRole
-  userID: UuidUUID
 }
 export interface WorkItemCommentCreateRequest {
   message: string

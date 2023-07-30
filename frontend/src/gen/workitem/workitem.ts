@@ -16,7 +16,7 @@ import type {
   UseInfiniteQueryResult,
   QueryKey,
 } from '@tanstack/react-query'
-import type { DbWorkItem, DemoWorkItemCreateRequest, DbWorkItemComment, WorkItemCommentCreateRequest } from '.././model'
+import type { DbWorkItem, CreateWorkitemBody, DbWorkItemComment, WorkItemCommentCreateRequest } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 type AwaitedInput<T> = PromiseLike<T> | T
@@ -30,16 +30,11 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  * @summary create workitem
  */
 export const createWorkitem = (
-  demoWorkItemCreateRequest: DemoWorkItemCreateRequest,
+  createWorkitemBody: CreateWorkitemBody,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<DbWorkItem>(
-    {
-      url: `/workitem/`,
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      data: demoWorkItemCreateRequest,
-    },
+    { url: `/workitem/`, method: 'post', headers: { 'Content-Type': 'application/json' }, data: createWorkitemBody },
     options,
   )
 }
@@ -48,22 +43,16 @@ export const getCreateWorkitemMutationOptions = <TError = unknown, TContext = un
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitem>>,
     TError,
-    { data: DemoWorkItemCreateRequest },
+    { data: CreateWorkitemBody },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createWorkitem>>,
-  TError,
-  { data: DemoWorkItemCreateRequest },
-  TContext
-> => {
+}): UseMutationOptions<Awaited<ReturnType<typeof createWorkitem>>, TError, { data: CreateWorkitemBody }, TContext> => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createWorkitem>>,
-    { data: DemoWorkItemCreateRequest }
-  > = (props) => {
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkitem>>, { data: CreateWorkitemBody }> = (
+    props,
+  ) => {
     const { data } = props ?? {}
 
     return createWorkitem(data, requestOptions)
@@ -73,7 +62,7 @@ export const getCreateWorkitemMutationOptions = <TError = unknown, TContext = un
 }
 
 export type CreateWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
-export type CreateWorkitemMutationBody = DemoWorkItemCreateRequest
+export type CreateWorkitemMutationBody = CreateWorkitemBody
 export type CreateWorkitemMutationError = unknown
 
 /**
@@ -83,7 +72,7 @@ export const useCreateWorkitem = <TError = unknown, TContext = unknown>(options?
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitem>>,
     TError,
-    { data: DemoWorkItemCreateRequest },
+    { data: CreateWorkitemBody },
     TContext
   >
   request?: SecondParameter<typeof customInstance>

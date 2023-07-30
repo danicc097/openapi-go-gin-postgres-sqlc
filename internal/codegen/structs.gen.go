@@ -131,6 +131,7 @@ var PublicStructs = map[string]any{
 
 	//
 
+	"RestDemoTwoWorkItemCreateRequest": rest.DemoTwoWorkItemCreateRequest{},
 	"RestDemoTwoWorkItemsResponse":     rest.DemoTwoWorkItemsResponse{},
 	"RestDemoWorkItemCreateRequest":    rest.DemoWorkItemCreateRequest{},
 	"RestDemoWorkItemsResponse":        rest.DemoWorkItemsResponse{},

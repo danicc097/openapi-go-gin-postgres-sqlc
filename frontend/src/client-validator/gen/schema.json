@@ -1280,6 +1280,47 @@
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "DemoTwoWorkItemCreateRequest": {
+      "properties": {
+        "base": {
+          "$ref": "#/definitions/DbWorkItemCreateParams"
+        },
+        "demoTwoProject": {
+          "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/ServicesMember"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        },
+        "tagIDs": {
+          "items": {
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "projectName",
+        "demoTwoProject",
+        "base",
+        "tagIDs",
+        "members"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoTwoWorkItemCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "DemoWorkItemCreateRequest": {
       "properties": {
         "base": {
@@ -1297,6 +1338,9 @@
             "null"
           ]
         },
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        },
         "tagIDs": {
           "items": {
             "type": "integer"
@@ -1308,6 +1352,7 @@
         }
       },
       "required": [
+        "projectName",
         "demoProject",
         "base",
         "tagIDs",
@@ -1620,6 +1665,24 @@
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoTwoWorkItemCreateParams": {
+      "properties": {
+        "customDateForProject2": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1719,6 +1782,9 @@
     "WorkItemTagCreateRequest": {
       "$ref": "#/definitions/WorkItemTagCreateRequest"
     },
+    "DemoTwoWorkItemCreateRequest": {
+      "$ref": "#/definitions/DemoTwoWorkItemCreateRequest"
+    },
     "DemoWorkItemCreateRequest": {
       "$ref": "#/definitions/DemoWorkItemCreateRequest"
     },
@@ -1775,6 +1841,9 @@
     },
     "DbDemoTwoWorkItem": {
       "$ref": "#/definitions/DbDemoTwoWorkItem"
+    },
+    "DbDemoTwoWorkItemCreateParams": {
+      "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
     }
   }
 }

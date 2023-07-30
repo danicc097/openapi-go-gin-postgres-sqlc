@@ -57,6 +57,16 @@ type DemoWorkItemCreateParams struct {
 	Base        db.WorkItemCreateParams     `json:"base" required:"true"`
 }
 
+type DemoTwoWorkItemUpdateParams struct {
+	DemoTwoProject *db.DemoTwoWorkItemUpdateParams `json:"demoTwoProject"`
+	Base           *db.WorkItemUpdateParams        `json:"base"`
+}
+
+type DemoTwoWorkItemCreateParams struct {
+	DemoTwoProject db.DemoTwoWorkItemCreateParams `json:"demoTwoProject" required:"true"`
+	Base           db.WorkItemCreateParams        `json:"base" required:"true"`
+}
+
 // WorkItem defines the datastore/repository handling retrieving WorkItem records.
 type WorkItem interface {
 	// ByID returns a generic WorkItem by default.
@@ -70,6 +80,17 @@ type DemoWorkItem interface {
 	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error)
 	Update(ctx context.Context, d db.DBTX, id int64, params DemoWorkItemUpdateParams) (*db.WorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
+	Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
+}
+
+// DemoTwoWorkItem defines the datastore/repository handling persisting DemoTwoWorkItem records.
+type DemoTwoWorkItem interface {
+	// ByID returns a generic WorkItem with project-specific fields joined by default.
+	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	// params for dedicated workItem only require workItemID (FK-as-PK)
+	Create(ctx context.Context, d db.DBTX, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params DemoTwoWorkItemUpdateParams) (*db.WorkItem, error)
 	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
 	Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
 }

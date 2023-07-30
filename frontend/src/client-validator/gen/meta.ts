@@ -36,6 +36,7 @@ import {
   UuidUUID,
   DbWorkItem,
   WorkItemTagCreateRequest,
+  DemoTwoWorkItemCreateRequest,
   DemoWorkItemCreateRequest,
   WorkItemCommentCreateRequest,
   Project,
@@ -55,6 +56,7 @@ import {
   DbWorkItemCreateParams,
   ServicesMember,
   DbDemoTwoWorkItem,
+  DbDemoTwoWorkItemCreateParams,
 } from './models'
 
 export const schemaDefinitions = {
@@ -99,6 +101,10 @@ export const schemaDefinitions = {
     'WorkItemTagCreateRequest',
     '#/definitions/WorkItemTagCreateRequest',
   ),
+  DemoTwoWorkItemCreateRequest: info<DemoTwoWorkItemCreateRequest>(
+    'DemoTwoWorkItemCreateRequest',
+    '#/definitions/DemoTwoWorkItemCreateRequest',
+  ),
   DemoWorkItemCreateRequest: info<DemoWorkItemCreateRequest>(
     'DemoWorkItemCreateRequest',
     '#/definitions/DemoWorkItemCreateRequest',
@@ -142,6 +148,10 @@ export const schemaDefinitions = {
   ),
   ServicesMember: info<ServicesMember>('ServicesMember', '#/definitions/ServicesMember'),
   DbDemoTwoWorkItem: info<DbDemoTwoWorkItem>('DbDemoTwoWorkItem', '#/definitions/DbDemoTwoWorkItem'),
+  DbDemoTwoWorkItemCreateParams: info<DbDemoTwoWorkItemCreateParams>(
+    'DbDemoTwoWorkItemCreateParams',
+    '#/definitions/DbDemoTwoWorkItemCreateParams',
+  ),
 }
 
 export interface SchemaInfo<T> {

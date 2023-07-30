@@ -4,6 +4,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	uuid "github.com/google/uuid"
@@ -285,6 +286,12 @@ type DbDemoTwoWorkItem struct {
 	WorkItemID            int        `json:"workItemID"`
 }
 
+// DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
+type DbDemoTwoWorkItemCreateParams struct {
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
+	WorkItemID            int        `json:"workItemID"`
+}
+
 // DbDemoWorkItem defines the model for DbDemoWorkItem.
 type DbDemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt"`
@@ -457,6 +464,15 @@ type DemoProjectKanbanSteps string
 // DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
 type DemoTwoKanbanSteps string
 
+// DemoTwoWorkItemCreateRequest defines the model for DemoTwoWorkItemCreateRequest.
+type DemoTwoWorkItemCreateRequest struct {
+	Base           DbWorkItemCreateParams        `json:"base"`
+	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
+	Members        *[]ServicesMember             `json:"members"`
+	ProjectName    Project                       `json:"projectName"`
+	TagIDs         *[]int                        `json:"tagIDs"`
+}
+
 // DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
 type DemoTwoWorkItemTypes string
 
@@ -487,6 +503,7 @@ type DemoWorkItemCreateRequest struct {
 	Base        DbWorkItemCreateParams     `json:"base"`
 	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
 	Members     *[]ServicesMember          `json:"members"`
+	ProjectName Project                    `json:"projectName"`
 	TagIDs      *[]int                     `json:"tagIDs"`
 }
 
@@ -699,6 +716,11 @@ type GetProjectWorkitemsParams struct {
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
+// CreateWorkitemJSONBody defines parameters for CreateWorkitem.
+type CreateWorkitemJSONBody struct {
+	union json.RawMessage
+}
+
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
@@ -715,7 +737,7 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-type CreateWorkitemJSONRequestBody = DemoWorkItemCreateRequest
+type CreateWorkitemJSONRequestBody CreateWorkitemJSONBody
 
 // CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
 type CreateWorkitemCommentJSONRequestBody = WorkItemCommentCreateRequest

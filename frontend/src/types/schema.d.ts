@@ -423,10 +423,18 @@ export interface components {
       name: string;
       projectID?: number;
     };
+    DemoTwoWorkItemCreateRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
+      members: (components["schemas"]["ServicesMember"])[] | null;
+      projectName: components["schemas"]["Project"];
+      tagIDs: (number)[] | null;
+    };
     DemoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
       members: (components["schemas"]["ServicesMember"])[] | null;
+      projectName: components["schemas"]["Project"];
       tagIDs: (number)[] | null;
     };
     WorkItemCommentCreateRequest: {
@@ -500,6 +508,11 @@ export interface components {
       userID: components["schemas"]["UuidUUID"];
     };
     DbDemoTwoWorkItem: {
+      /** Format: date-time */
+      customDateForProject2?: string | null;
+      workItemID: number;
+    };
+    DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
       customDateForProject2?: string | null;
       workItemID: number;
@@ -808,7 +821,7 @@ export interface operations {
   CreateWorkitem: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["DemoWorkItemCreateRequest"];
+        "application/json": components["schemas"]["DemoWorkItemCreateRequest"] | components["schemas"]["DemoTwoWorkItemCreateRequest"];
       };
     };
     responses: {

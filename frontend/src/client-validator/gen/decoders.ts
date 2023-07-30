@@ -40,6 +40,7 @@ import {
   UuidUUID,
   DbWorkItem,
   WorkItemTagCreateRequest,
+  DemoTwoWorkItemCreateRequest,
   DemoWorkItemCreateRequest,
   WorkItemCommentCreateRequest,
   Project,
@@ -59,6 +60,7 @@ import {
   DbWorkItemCreateParams,
   ServicesMember,
   DbDemoTwoWorkItem,
+  DbDemoTwoWorkItemCreateParams,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -451,6 +453,18 @@ export const WorkItemTagCreateRequestDecoder: Decoder<WorkItemTagCreateRequest> 
     return validateJson(json, schema, WorkItemTagCreateRequestDecoder.definitionName)
   },
 }
+export const DemoTwoWorkItemCreateRequestDecoder: Decoder<DemoTwoWorkItemCreateRequest> = {
+  definitionName: 'DemoTwoWorkItemCreateRequest',
+  schemaRef: '#/definitions/DemoTwoWorkItemCreateRequest',
+
+  decode(json: unknown): DemoTwoWorkItemCreateRequest {
+    const schema = ajv.getSchema(DemoTwoWorkItemCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoTwoWorkItemCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoTwoWorkItemCreateRequestDecoder.definitionName)
+  },
+}
 export const DemoWorkItemCreateRequestDecoder: Decoder<DemoWorkItemCreateRequest> = {
   definitionName: 'DemoWorkItemCreateRequest',
   schemaRef: '#/definitions/DemoWorkItemCreateRequest',
@@ -677,5 +691,17 @@ export const DbDemoTwoWorkItemDecoder: Decoder<DbDemoTwoWorkItem> = {
       throw new Error(`Schema ${DbDemoTwoWorkItemDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbDemoTwoWorkItemDecoder.definitionName)
+  },
+}
+export const DbDemoTwoWorkItemCreateParamsDecoder: Decoder<DbDemoTwoWorkItemCreateParams> = {
+  definitionName: 'DbDemoTwoWorkItemCreateParams',
+  schemaRef: '#/definitions/DbDemoTwoWorkItemCreateParams',
+
+  decode(json: unknown): DbDemoTwoWorkItemCreateParams {
+    const schema = ajv.getSchema(DbDemoTwoWorkItemCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbDemoTwoWorkItemCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbDemoTwoWorkItemCreateParamsDecoder.definitionName)
   },
 }
