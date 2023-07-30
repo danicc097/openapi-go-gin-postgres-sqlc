@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -76,7 +77,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		renderErrorResponse(c, "Error saving changes", err)
+		renderErrorResponse(c, "Database error", err)
 
 		return
 	}
@@ -117,7 +118,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		renderErrorResponse(c, "Error saving changes", err)
+		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not commit transaction"))
 
 		return
 	}
