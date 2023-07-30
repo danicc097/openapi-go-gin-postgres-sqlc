@@ -71,6 +71,7 @@ window.onload = function () {
 		return fmt.Errorf("could not read spec %s: %w", specPath, err)
 	}
 	// swagger ui cannot handle v1.2 tags
+	// it also needs to be exploded with yq beforehand... so lets just do
 	spec = bytes.ReplaceAll(spec, []byte("!!merge <<"), []byte("<<"))
 
 	if err = os.WriteFile(bundleSpec, spec, 0o600); err != nil {

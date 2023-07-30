@@ -296,9 +296,10 @@ x.gen.pregen() {
 }
 
 # shouldn't be needed anymore at all.
-# remove_yaml_merge_alias() {
-#   sed -i 's/!!merge //' $SPEC
-# }
+# TODO: swagger-ui cannot handle v1.2 tags or anchors, aliases... use explode and use that spec in embed
+remove_yaml_merge_alias() {
+  sed -i 's/!!merge //' $SPEC
+}
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
 # generate 2-way maps id<- ->name to save up useless db calls and make logic switching
@@ -934,7 +935,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$CACHE" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$CACHE,$TOOLS_DIR" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |

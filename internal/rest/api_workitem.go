@@ -3,6 +3,7 @@ package rest
 import (
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +16,19 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)
+
+	body := &models.WorkItemCreateRequest{}
+	if shouldReturn := parseBody(c, body); shouldReturn {
+		return
+	}
+
+	switch disc, _ := body.Discriminator(); models.Project(disc) {
+	case models.ProjectDemo:
+		body.AsDemoWorkItemCreateRequest()
+		c.String(http.StatusOK, "project demo")
+	case models.ProjectDemoTwo:
+		c.String(http.StatusOK, "project demo two")
+	}
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
