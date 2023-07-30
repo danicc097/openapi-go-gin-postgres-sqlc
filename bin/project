@@ -1430,8 +1430,8 @@ setup_swagger_ui() {
 
   local bundle_spec="$SWAGGER_UI_DIR/openapi.yaml"
   cp $SPEC $bundle_spec
-  sed -i 's/!!merge //' $bundle_spec
   yq 'explode(.)' -i $bundle_spec
+  sed -i 's/!!merge //' $bundle_spec
 }
 
 replace_enum_in_spec() {
