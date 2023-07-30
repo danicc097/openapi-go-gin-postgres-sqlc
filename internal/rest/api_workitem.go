@@ -4,16 +4,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // create workitem
 func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpan(ctx, "CreateWorkitem", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "CreateWorkitem").End()
 
 	// caller := getUserFromCtx(c)
+	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -22,9 +23,11 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 func (h *Handlers) DeleteWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpan(ctx, "DeleteWorkitem", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "DeleteWorkitem").End()
 
 	// caller := getUserFromCtx(c)
+	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -33,9 +36,11 @@ func (h *Handlers) DeleteWorkitem(c *gin.Context, id int) {
 func (h *Handlers) GetWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpan(ctx, "GetWorkitem", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "GetWorkitem").End()
 
 	// caller := getUserFromCtx(c)
+	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -44,9 +49,11 @@ func (h *Handlers) GetWorkitem(c *gin.Context, id int) {
 func (h *Handlers) UpdateWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpan(ctx, "UpdateWorkitem", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "UpdateWorkitem").End()
 
 	// caller := getUserFromCtx(c)
+	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -55,9 +62,11 @@ func (h *Handlers) UpdateWorkitem(c *gin.Context, id int) {
 func (h *Handlers) CreateWorkitemComment(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpan(ctx, "CreateWorkitemComment", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "CreateWorkitemComment").End()
 
 	// caller := getUserFromCtx(c)
+	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }

@@ -8,16 +8,16 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // DeleteUser deletes the user by id.
 func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpan(ctx, "DeleteUser", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "DeleteUser").End()
 
 	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	_, err := h.usvc.Delete(c, tx, id)
 	if err != nil {
@@ -31,9 +31,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 
 // GetCurrentUser returns the logged in user.
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	defer newOTELSpan(ctx, "GetCurrentUser", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "GetCurrentUser").End()
 
 	caller := getUserFromCtx(c)
 
@@ -57,11 +55,12 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
-	s := newOTELSpan(ctx, "UpdateUser", trace.WithAttributes(userIDAttribute(c)))
+	s := newOTELSpanWithUser(c, "UpdateUser")
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
 	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	body := &models.UpdateUserRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
@@ -99,11 +98,12 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
-	s := newOTELSpan(ctx, "UpdateUserAuthorization", trace.WithAttributes(userIDAttribute(c)))
+	s := newOTELSpanWithUser(c, "UpdateUserAuthorization")
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
 	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	body := &models.UpdateUserAuthRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
