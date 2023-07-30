@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -52,22 +53,29 @@ window.onload = function () {
 		return err
 	}
 
-	swaggerInit, err := os.Create(path.Join(swaggerUIDir, "swagger-initializer.js"))
+	swaggerInitPath := path.Join(swaggerUIDir, "swagger-initializer.js")
+	swaggerInit, err := os.Create(swaggerInitPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create %s: %w", swaggerInitPath, err)
 	}
 
 	if _, err := swaggerInit.Write(buf.Bytes()); err != nil {
-		return err
+		return fmt.Errorf("could not write to %s: %w", swaggerInitPath, err)
 	}
 
-	// TODO: bring back, since swagger ui cannot handle v1.2 tags
-	// not needed, handler will use spec path from entrypoint args instead of reading the embed
-	// bundleSpec := path.Join(swaggerUIDir, "openapi.yaml")
-	// os.Remove(bundleSpec)
-	// if err := os.Link(specPath, bundleSpec); err != nil {
-	// 	return err
-	// }
+	bundleSpec := path.Join(swaggerUIDir, "openapi.yaml")
+	os.Remove(bundleSpec)
+
+	spec, err := os.ReadFile(specPath)
+	if err != nil {
+		return fmt.Errorf("could not read spec %s: %w", specPath, err)
+	}
+	// swagger ui cannot handle v1.2 tags
+	spec = bytes.ReplaceAll(spec, []byte("!!merge <<"), []byte("<<"))
+
+	if err = os.WriteFile(bundleSpec, spec, 0o600); err != nil {
+		return fmt.Errorf("could not write spec to %s: %w", bundleSpec, err)
+	}
 
 	return nil
 }

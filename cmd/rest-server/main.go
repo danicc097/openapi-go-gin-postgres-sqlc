@@ -69,8 +69,11 @@ func main() {
 		log.Fatalf("Couldn't run: %s", err)
 	}
 
-	docs := internal.BuildAPIURL("docs")
-	fmt.Printf("\n%sVisit the docs at %s%s\n\n", colors.G, docs, colors.Off)
+	fmt.Println("\n" + colors.G + colors.Bold +
+		"Visit the docs: \n\t" +
+		colors.G + internal.BuildAPIURL("docs") + "\n\t" +
+		colors.G + internal.BuildAPIURL("docs-redoc") + " " +
+		colors.Off + "\n")
 
 	if err := <-errC; err != nil {
 		log.Fatalf("Error while running: %s", err)
