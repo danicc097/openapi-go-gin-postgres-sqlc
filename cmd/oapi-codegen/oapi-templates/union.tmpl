@@ -53,7 +53,7 @@
               return err
             }
 
-            merged, err := runtime.JsonMerge(b, t.union)
+            merged, err := runtime.JsonMerge(t.union, b)
             t.union = merged
             return err
         }
@@ -86,6 +86,8 @@
         {{end}}
     {{end}}
 
+    {{if not .Schema.HasAdditionalProperties}}
+
     func (t {{.TypeName}}) MarshalJSON() ([]byte, error) {
         b, err := t.union.MarshalJSON()
         {{if ne 0 (len .Schema.Properties) -}}
@@ -100,10 +102,12 @@
               }
             }
             {{range .Schema.Properties}}
+            {{if not .Required}}if t.{{.GoFieldName}} != nil { {{end}}
                 object["{{.JsonFieldName}}"], err = json.Marshal(t.{{.GoFieldName}})
                 if err != nil {
                     return nil, fmt.Errorf("error marshaling '{{.JsonFieldName}}': %w", err)
                 }
+            {{if not .Required}} }{{end}}
             {{end -}}
             b, err = json.Marshal(object)
         {{end -}}
@@ -132,4 +136,5 @@
         {{end -}}
         return err
     }
+    {{end}}
 {{end}}

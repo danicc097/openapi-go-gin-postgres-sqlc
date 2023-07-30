@@ -1,6 +1,5 @@
-type StrictHandlerFunc func(ctx *gin.Context, args interface{}) (interface{}, error)
-
-type StrictMiddlewareFunc func(f StrictHandlerFunc, operationID string) StrictHandlerFunc
+type StrictHandlerFunc = runtime.StrictGinHandlerFunc
+type StrictMiddlewareFunc = runtime.StrictGinMiddlewareFunc
 
 func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
     return &strictHandler{ssi: ssi, middlewares: middlewares}
@@ -18,8 +17,7 @@ type strictHandler struct {
         var request {{$opid | ucFirst}}RequestObject
 
         {{range .PathParams -}}
-            {{$varName := .GoVariableName -}}
-            request.{{$varName | ucFirst}} = {{$varName}}
+            request.{{.GoName}} = {{.GoVariableName}}
         {{end -}}
 
         {{if .RequiresParamObject -}}
@@ -35,7 +33,8 @@ type strictHandler struct {
             {{if $multipleBodies}}if strings.HasPrefix(ctx.GetHeader("Content-Type"), "{{.ContentType}}") { {{end}}
                 {{if eq .NameTag "JSON" -}}
                     var body {{$opid}}{{.NameTag}}RequestBody
-                    if err := ctx.Bind(&body); err != nil {
+                    if err := ctx.ShouldBind(&body); err != nil {
+                        ctx.Status(http.StatusBadRequest)
                         ctx.Error(err)
                         return
                     }
@@ -83,6 +82,7 @@ type strictHandler struct {
 
         if err != nil {
             ctx.Error(err)
+            ctx.Status(http.StatusInternalServerError)
         } else if validResponse, ok := response.({{$opid | ucFirst}}ResponseObject); ok {
             if err := validResponse.Visit{{$opid}}Response(ctx.Writer); err != nil {
                 ctx.Error(err)

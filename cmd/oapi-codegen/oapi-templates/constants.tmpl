@@ -1,11 +1,12 @@
 {{- if gt (len .SecuritySchemeProviderNames) 0 }}
 const (
 {{range $ProviderName := .SecuritySchemeProviderNames}}
-    {{- $ProviderName | ucFirst}}Scopes = "{{$ProviderName}}.Scopes"
+    {{- $ProviderName | sanitizeGoIdentity | ucFirst}}Scopes = "{{$ProviderName}}.Scopes"
 {{end}}
 )
 {{end}}
 {{range $Enum := .EnumDefinitions}}
+{{/* IMPORTANT: changed */}}
 {{- if $Enum.Schema.Description }}
   {{ toGoComment $Enum.Schema.Description $Enum.TypeName  }}
 {{- else }}
@@ -17,6 +18,7 @@ const (
 {{end}}
 )
 
+{{/* IMPORTANT: new */}}
 // All{{$Enum.TypeName}}Values returns all possible values for {{$Enum.TypeName}}.
 func All{{$Enum.TypeName}}Values() []{{$Enum.TypeName}} {
 	return []{{$Enum.TypeName}}{
