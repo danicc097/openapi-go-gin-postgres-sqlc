@@ -167,8 +167,8 @@ x.setup.swagger-ui() {
     curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
     tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
     rm swagger-ui.tar.gz
-    mkdir -p internal/static/swagger-ui
-    mv swagger-ui/* internal/static/swagger-ui/
+    mkdir -p $SWAGGER_UI_DIR
+    mv swagger-ui/* $SWAGGER_UI_DIR
     rm -r swagger-ui
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -293,12 +293,6 @@ x.gen.pregen() {
     delete_duplicate_schemas
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
-}
-
-# shouldn't be needed anymore at all.
-# TODO: swagger-ui cannot handle v1.2 tags or anchors, aliases... use explode and use that spec in embed
-remove_yaml_merge_alias() {
-  sed -i 's/!!merge //' $SPEC
 }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
@@ -927,7 +921,7 @@ x.run.backend-hr() {
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
   run_shared_services up -d --build --remove-orphans --wait
-  go run cmd/swagger-ui-setup/main.go -env=".env.$env"
+  setup_swagger_ui
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
@@ -995,7 +989,7 @@ x.run-dockerized() {
 
   x.gen
 
-  go run cmd/swagger-ui-setup/main.go -env=".env.$env"
+  setup_swagger_ui
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
@@ -1431,6 +1425,17 @@ sync_db_enums_with_spec() {
 
 }
 
+setup_swagger_ui() {
+  go run cmd/swagger-ui-setup/main.go -env=".env.$env" #TODO: $SWAGGER_UI_DIR as param
+
+  # TODO: swagger-ui cannot handle v1.2 tags or anchors, aliases... use explode and use that spec in embed
+  # move spec to $SWAGGER_UI_DIR and then replace merge and explode with yq
+  # remove_yaml_merge_alias() {
+  #   sed -i 's/!!merge //' $SPEC
+  # }
+
+}
+
 replace_enum_in_spec() {
   local enum="$1"
   local -n __arr="$2"
@@ -1859,6 +1864,7 @@ readonly CACHE=".generate.cache"
 readonly GEN_BACKUP="$CACHE/gen"
 readonly PG_REPO_GEN_BACKUP="$GEN_BACKUP/pgrepo/gen"
 readonly FRONTEND_GEN_BACKUP="$GEN_BACKUP/frontend/gen"
+readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
 
 readonly MAX_FNAME_LOG_LEN=13
 

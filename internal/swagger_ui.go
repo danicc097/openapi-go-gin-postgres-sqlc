@@ -63,20 +63,5 @@ window.onload = function () {
 		return fmt.Errorf("could not write to %s: %w", swaggerInitPath, err)
 	}
 
-	bundleSpec := path.Join(swaggerUIDir, "openapi.yaml")
-	os.Remove(bundleSpec)
-
-	spec, err := os.ReadFile(specPath)
-	if err != nil {
-		return fmt.Errorf("could not read spec %s: %w", specPath, err)
-	}
-	// swagger ui cannot handle v1.2 tags
-	// it also needs to be exploded with yq beforehand... so lets just do
-	spec = bytes.ReplaceAll(spec, []byte("!!merge <<"), []byte("<<"))
-
-	if err = os.WriteFile(bundleSpec, spec, 0o600); err != nil {
-		return fmt.Errorf("could not write spec to %s: %w", bundleSpec, err)
-	}
-
 	return nil
 }
