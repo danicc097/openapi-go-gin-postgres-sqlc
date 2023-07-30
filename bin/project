@@ -1522,14 +1522,8 @@ find_deleted_pkg_schemas() {
 update_spec_with_structs() {
   vext="x-postgen-struct"
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
-  schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC)
   mapfile -t struct_names <<<$struct_names
-  mapfile -t schema_names <<<$schema_names
 
-  declare -A schemas
-  for i in ${!struct_names[@]}; do
-    schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
-  done
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
@@ -1537,38 +1531,11 @@ update_spec_with_structs() {
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
-  # go build -buildmode=plugin -o internal/codegen/structs.gen.so $GOMOD_PKG/internal/codegen/structs
 
-  # need new PublicStructs compiled
+  # always compile and run since we need new PublicStructs that were just changed
   go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
-
-  # prevent possible overriding if name clashes with generated schemas from structs
-  skip_schemas=("Project")
-  mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
-  for project in ${db_projects[@]}; do
-    skip_schemas+=("$(to_pascal $project)KanbanSteps")
-  done
-
-  # replace every schema back into the spec
-  for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
-    # prevent certain schemas from getting replaced by (in)direct usage in structs with clashing names
-    if [[ " ${skip_schemas[*]} " =~ " $schema " ]]; then
-      echo "Skipping $schema" && continue
-    fi
-    new_schema_key="${schemas[$schema]:-$schema}"
-    yq eval-all "(
-        select(fi == 1).components.schemas.$schema
-        ) as \$new_schema
-        | select(fi == 0)
-        | .components.schemas.$new_schema_key = \$new_schema
-        | (.components.schemas.$new_schema_key | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
-      " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
-
-    mv /tmp/final-spec "$SPEC"
-  done
-
 }
 
 delete_duplicate_schemas() {
