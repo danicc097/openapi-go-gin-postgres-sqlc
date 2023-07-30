@@ -10,9 +10,8 @@ import (
 )
 
 // SetupSwaggerUI sets url in the Swagger docs to the endpoint where specPath is served.
-func SetupSwaggerUI(url string, specPath string) error {
+func SetupSwaggerUI(url string, specPath, swaggerUIDir string) error {
 	buf := &bytes.Buffer{}
-	swaggerUIDir := "internal/static/swagger-ui"
 
 	t, err := template.New("").Parse(`
 window.onload = function () {

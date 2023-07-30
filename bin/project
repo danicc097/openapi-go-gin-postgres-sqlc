@@ -1426,14 +1426,12 @@ sync_db_enums_with_spec() {
 }
 
 setup_swagger_ui() {
-  go run cmd/swagger-ui-setup/main.go -env=".env.$env" #TODO: $SWAGGER_UI_DIR as param
+  go run cmd/swagger-ui-setup/main.go -env=".env.$env" -swagger-ui-dir=$SWAGGER_UI_DIR
 
-  # TODO: swagger-ui cannot handle v1.2 tags or anchors, aliases... use explode and use that spec in embed
-  # move spec to $SWAGGER_UI_DIR and then replace merge and explode with yq
-  # remove_yaml_merge_alias() {
-  #   sed -i 's/!!merge //' $SPEC
-  # }
-
+  local bundle_spec="$SWAGGER_UI_DIR/openapi.yaml"
+  cp $SPEC $bundle_spec
+  sed -i 's/!!merge //' $bundle_spec
+  yq 'explode(.)' -i $bundle_spec
 }
 
 replace_enum_in_spec() {
