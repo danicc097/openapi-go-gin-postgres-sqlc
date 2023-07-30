@@ -65,6 +65,7 @@ export type Topics = 'GlobalAlerts'
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
+export type WorkItemCreateRequest = DemoWorkItemCreateRequest | DemoTwoWorkItemCreateRequest
 export type DbWorkItemRole = string
 /**
  * represents a database 'notification_type'
@@ -325,6 +326,45 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
+export interface DemoWorkItemCreateRequest {
+  base: DbWorkItemCreateParams
+  demoProject: DbDemoWorkItemCreateParams
+  members: ServicesMember[] | null
+  projectName: Project
+  tagIDs: number[] | null
+}
+export interface DbWorkItemCreateParams {
+  closedAt?: string | null
+  description: string
+  kanbanStepID: number
+  metadata: {} | null
+  targetDate: string
+  teamID: number
+  title: string
+  workItemTypeID: number
+}
+export interface DbDemoWorkItemCreateParams {
+  lastMessageAt: string
+  line: string
+  ref: string
+  reopened: boolean
+  workItemID: number
+}
+export interface ServicesMember {
+  role: WorkItemRole
+  userID: UuidUUID
+}
+export interface DemoTwoWorkItemCreateRequest {
+  base: DbWorkItemCreateParams
+  demoTwoProject: DbDemoTwoWorkItemCreateParams
+  members: ServicesMember[] | null
+  projectName: Project
+  tagIDs: number[] | null
+}
+export interface DbDemoTwoWorkItemCreateParams {
+  customDateForProject2?: string | null
+  workItemID: number
+}
 export interface DbWorkItem {
   closedAt?: string | null
   createdAt: string
@@ -344,45 +384,6 @@ export interface WorkItemTagCreateRequest {
   description: string
   name: string
   projectID?: number
-}
-export interface DemoTwoWorkItemCreateRequest {
-  base: DbWorkItemCreateParams
-  demoTwoProject: DbDemoTwoWorkItemCreateParams
-  members: ServicesMember[] | null
-  projectName: Project
-  tagIDs: number[] | null
-}
-export interface DbWorkItemCreateParams {
-  closedAt?: string | null
-  description: string
-  kanbanStepID: number
-  metadata: {} | null
-  targetDate: string
-  teamID: number
-  title: string
-  workItemTypeID: number
-}
-export interface DbDemoTwoWorkItemCreateParams {
-  customDateForProject2?: string | null
-  workItemID: number
-}
-export interface ServicesMember {
-  role: WorkItemRole
-  userID: UuidUUID
-}
-export interface DemoWorkItemCreateRequest {
-  base: DbWorkItemCreateParams
-  demoProject: DbDemoWorkItemCreateParams
-  members: ServicesMember[] | null
-  projectName: Project
-  tagIDs: number[] | null
-}
-export interface DbDemoWorkItemCreateParams {
-  lastMessageAt: string
-  line: string
-  ref: string
-  reopened: boolean
-  workItemID: number
 }
 export interface WorkItemCommentCreateRequest {
   message: string

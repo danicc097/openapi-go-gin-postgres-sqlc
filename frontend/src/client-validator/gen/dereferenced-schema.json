@@ -2489,6 +2489,301 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "WorkItemCreateRequest": {
+      "oneOf": [
+        {
+          "properties": {
+            "base": {
+              "properties": {
+                "closedAt": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kanbanStepID": {
+                  "type": "integer"
+                },
+                "metadata": {
+                  "additionalProperties": {},
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "targetDate": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "teamID": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "workItemTypeID": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "title",
+                "description",
+                "workItemTypeID",
+                "metadata",
+                "teamID",
+                "kanbanStepID",
+                "targetDate"
+              ],
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "demoProject": {
+              "properties": {
+                "lastMessageAt": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "line": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "ref": {
+                  "pattern": "^[0-9]{8}$",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reopened": {
+                  "type": "boolean"
+                },
+                "workItemID": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "workItemID",
+                "ref",
+                "line",
+                "lastMessageAt",
+                "reopened"
+              ],
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "members": {
+              "items": {
+                "properties": {
+                  "role": {
+                    "title": "WorkItem role",
+                    "type": "string",
+                    "x-generated": "-",
+                    "enum": [
+                      "preparer",
+                      "reviewer"
+                    ],
+                    "description": "represents a database 'work_item_role'",
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "userID": {
+                    "type": "string",
+                    "x-go-type": "uuid.UUID",
+                    "x-go-type-import": {
+                      "name": "uuid",
+                      "path": "github.com/google/uuid"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  }
+                },
+                "required": [
+                  "userID",
+                  "role"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "projectName": {
+              "enum": [
+                "demo",
+                "demo_two"
+              ],
+              "type": "string",
+              "x-generated": "-",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "tagIDs": {
+              "items": {
+                "type": "integer"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "projectName",
+            "demoProject",
+            "base",
+            "tagIDs",
+            "members"
+          ],
+          "type": "object",
+          "x-postgen-struct": "RestDemoWorkItemCreateRequest",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        {
+          "properties": {
+            "base": {
+              "properties": {
+                "closedAt": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kanbanStepID": {
+                  "type": "integer"
+                },
+                "metadata": {
+                  "additionalProperties": {},
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "targetDate": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "teamID": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "workItemTypeID": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "title",
+                "description",
+                "workItemTypeID",
+                "metadata",
+                "teamID",
+                "kanbanStepID",
+                "targetDate"
+              ],
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "demoTwoProject": {
+              "properties": {
+                "customDateForProject2": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "workItemID": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "workItemID"
+              ],
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "members": {
+              "items": {
+                "properties": {
+                  "role": {
+                    "title": "WorkItem role",
+                    "type": "string",
+                    "x-generated": "-",
+                    "enum": [
+                      "preparer",
+                      "reviewer"
+                    ],
+                    "description": "represents a database 'work_item_role'",
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "userID": {
+                    "type": "string",
+                    "x-go-type": "uuid.UUID",
+                    "x-go-type-import": {
+                      "name": "uuid",
+                      "path": "github.com/google/uuid"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  }
+                },
+                "required": [
+                  "userID",
+                  "role"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "projectName": {
+              "enum": [
+                "demo",
+                "demo_two"
+              ],
+              "type": "string",
+              "x-generated": "-",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "tagIDs": {
+              "items": {
+                "type": "integer"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "projectName",
+            "demoTwoProject",
+            "base",
+            "tagIDs",
+            "members"
+          ],
+          "type": "object",
+          "x-postgen-struct": "RestDemoTwoWorkItemCreateRequest",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "DbWorkItem": {
       "properties": {
         "closedAt": {
@@ -5712,6 +6007,301 @@
         "name": "uuid",
         "path": "github.com/google/uuid"
       },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemCreateRequest": {
+      "oneOf": [
+        {
+          "properties": {
+            "base": {
+              "properties": {
+                "closedAt": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kanbanStepID": {
+                  "type": "integer"
+                },
+                "metadata": {
+                  "additionalProperties": {},
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "targetDate": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "teamID": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "workItemTypeID": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "title",
+                "description",
+                "workItemTypeID",
+                "metadata",
+                "teamID",
+                "kanbanStepID",
+                "targetDate"
+              ],
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "demoProject": {
+              "properties": {
+                "lastMessageAt": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "line": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "ref": {
+                  "pattern": "^[0-9]{8}$",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reopened": {
+                  "type": "boolean"
+                },
+                "workItemID": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "workItemID",
+                "ref",
+                "line",
+                "lastMessageAt",
+                "reopened"
+              ],
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "members": {
+              "items": {
+                "properties": {
+                  "role": {
+                    "title": "WorkItem role",
+                    "type": "string",
+                    "x-generated": "-",
+                    "enum": [
+                      "preparer",
+                      "reviewer"
+                    ],
+                    "description": "represents a database 'work_item_role'",
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "userID": {
+                    "type": "string",
+                    "x-go-type": "uuid.UUID",
+                    "x-go-type-import": {
+                      "name": "uuid",
+                      "path": "github.com/google/uuid"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  }
+                },
+                "required": [
+                  "userID",
+                  "role"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "projectName": {
+              "enum": [
+                "demo",
+                "demo_two"
+              ],
+              "type": "string",
+              "x-generated": "-",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "tagIDs": {
+              "items": {
+                "type": "integer"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "projectName",
+            "demoProject",
+            "base",
+            "tagIDs",
+            "members"
+          ],
+          "type": "object",
+          "x-postgen-struct": "RestDemoWorkItemCreateRequest",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        {
+          "properties": {
+            "base": {
+              "properties": {
+                "closedAt": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kanbanStepID": {
+                  "type": "integer"
+                },
+                "metadata": {
+                  "additionalProperties": {},
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "targetDate": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "teamID": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "workItemTypeID": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "title",
+                "description",
+                "workItemTypeID",
+                "metadata",
+                "teamID",
+                "kanbanStepID",
+                "targetDate"
+              ],
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "demoTwoProject": {
+              "properties": {
+                "customDateForProject2": {
+                  "format": "date-time",
+                  "type": [
+                    "object"
+                  ]
+                },
+                "workItemID": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "workItemID"
+              ],
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "members": {
+              "items": {
+                "properties": {
+                  "role": {
+                    "title": "WorkItem role",
+                    "type": "string",
+                    "x-generated": "-",
+                    "enum": [
+                      "preparer",
+                      "reviewer"
+                    ],
+                    "description": "represents a database 'work_item_role'",
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "userID": {
+                    "type": "string",
+                    "x-go-type": "uuid.UUID",
+                    "x-go-type-import": {
+                      "name": "uuid",
+                      "path": "github.com/google/uuid"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  }
+                },
+                "required": [
+                  "userID",
+                  "role"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "projectName": {
+              "enum": [
+                "demo",
+                "demo_two"
+              ],
+              "type": "string",
+              "x-generated": "-",
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "tagIDs": {
+              "items": {
+                "type": "integer"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "projectName",
+            "demoTwoProject",
+            "base",
+            "tagIDs",
+            "members"
+          ],
+          "type": "object",
+          "x-postgen-struct": "RestDemoTwoWorkItemCreateRequest",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {

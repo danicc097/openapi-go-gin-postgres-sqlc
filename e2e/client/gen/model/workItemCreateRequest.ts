@@ -8,4 +8,4 @@
 import type { DemoWorkItemCreateRequest } from './demoWorkItemCreateRequest'
 import type { DemoTwoWorkItemCreateRequest } from './demoTwoWorkItemCreateRequest'
 
-export type CreateWorkitemBody = DemoWorkItemCreateRequest | DemoTwoWorkItemCreateRequest
+export type WorkItemCreateRequest = DemoWorkItemCreateRequest | DemoTwoWorkItemCreateRequest

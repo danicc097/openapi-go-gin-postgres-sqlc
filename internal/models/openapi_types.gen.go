@@ -5,8 +5,10 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	uuid "github.com/google/uuid"
 )
 
@@ -685,6 +687,11 @@ type WorkItemCommentCreateRequest struct {
 	WorkItemID int      `json:"workItemID"`
 }
 
+// WorkItemCreateRequest defines the model for WorkItemCreateRequest.
+type WorkItemCreateRequest struct {
+	union json.RawMessage
+}
+
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
@@ -716,11 +723,6 @@ type GetProjectWorkitemsParams struct {
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
-// CreateWorkitemJSONBody defines parameters for CreateWorkitem.
-type CreateWorkitemJSONBody struct {
-	union json.RawMessage
-}
-
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
@@ -737,7 +739,96 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-type CreateWorkitemJSONRequestBody CreateWorkitemJSONBody
+type CreateWorkitemJSONRequestBody = WorkItemCreateRequest
 
 // CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
 type CreateWorkitemCommentJSONRequestBody = WorkItemCommentCreateRequest
+
+// AsDemoWorkItemCreateRequest returns the union data inside the WorkItemCreateRequest as a DemoWorkItemCreateRequest
+func (t WorkItemCreateRequest) AsDemoWorkItemCreateRequest() (DemoWorkItemCreateRequest, error) {
+	var body DemoWorkItemCreateRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDemoWorkItemCreateRequest overwrites any union data inside the WorkItemCreateRequest as the provided DemoWorkItemCreateRequest
+func (t *WorkItemCreateRequest) FromDemoWorkItemCreateRequest(v DemoWorkItemCreateRequest) error {
+	v.ProjectName = "demo"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDemoWorkItemCreateRequest performs a merge with any union data inside the WorkItemCreateRequest, using the provided DemoWorkItemCreateRequest
+func (t *WorkItemCreateRequest) MergeDemoWorkItemCreateRequest(v DemoWorkItemCreateRequest) error {
+	v.ProjectName = "demo"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JsonMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsDemoTwoWorkItemCreateRequest returns the union data inside the WorkItemCreateRequest as a DemoTwoWorkItemCreateRequest
+func (t WorkItemCreateRequest) AsDemoTwoWorkItemCreateRequest() (DemoTwoWorkItemCreateRequest, error) {
+	var body DemoTwoWorkItemCreateRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDemoTwoWorkItemCreateRequest overwrites any union data inside the WorkItemCreateRequest as the provided DemoTwoWorkItemCreateRequest
+func (t *WorkItemCreateRequest) FromDemoTwoWorkItemCreateRequest(v DemoTwoWorkItemCreateRequest) error {
+	v.ProjectName = "demo_two"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDemoTwoWorkItemCreateRequest performs a merge with any union data inside the WorkItemCreateRequest, using the provided DemoTwoWorkItemCreateRequest
+func (t *WorkItemCreateRequest) MergeDemoTwoWorkItemCreateRequest(v DemoTwoWorkItemCreateRequest) error {
+	v.ProjectName = "demo_two"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JsonMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t WorkItemCreateRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"projectName"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t WorkItemCreateRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "demo":
+		return t.AsDemoWorkItemCreateRequest()
+	case "demo_two":
+		return t.AsDemoTwoWorkItemCreateRequest()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t WorkItemCreateRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *WorkItemCreateRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}

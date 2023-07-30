@@ -34,6 +34,7 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
+  WorkItemCreateRequest,
   DbWorkItem,
   WorkItemTagCreateRequest,
   DemoTwoWorkItemCreateRequest,
@@ -96,6 +97,7 @@ export const schemaDefinitions = {
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
+  WorkItemCreateRequest: info<WorkItemCreateRequest>('WorkItemCreateRequest', '#/definitions/WorkItemCreateRequest'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
   WorkItemTagCreateRequest: info<WorkItemTagCreateRequest>(
     'WorkItemTagCreateRequest',

@@ -396,6 +396,7 @@ export interface components {
       ctx?: Record<string, never>;
     };
     UuidUUID: string;
+    WorkItemCreateRequest: components["schemas"]["DemoWorkItemCreateRequest"] | components["schemas"]["DemoTwoWorkItemCreateRequest"];
     DbWorkItem: {
       /** Format: date-time */
       closedAt?: string | null;
@@ -821,7 +822,7 @@ export interface operations {
   CreateWorkitem: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["DemoWorkItemCreateRequest"] | components["schemas"]["DemoTwoWorkItemCreateRequest"];
+        "application/json": components["schemas"]["WorkItemCreateRequest"];
       };
     };
     responses: {

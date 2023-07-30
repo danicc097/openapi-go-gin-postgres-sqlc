@@ -38,6 +38,7 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
+  WorkItemCreateRequest,
   DbWorkItem,
   WorkItemTagCreateRequest,
   DemoTwoWorkItemCreateRequest,
@@ -427,6 +428,18 @@ export const UuidUUIDDecoder: Decoder<UuidUUID> = {
       throw new Error(`Schema ${UuidUUIDDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, UuidUUIDDecoder.definitionName)
+  },
+}
+export const WorkItemCreateRequestDecoder: Decoder<WorkItemCreateRequest> = {
+  definitionName: 'WorkItemCreateRequest',
+  schemaRef: '#/definitions/WorkItemCreateRequest',
+
+  decode(json: unknown): WorkItemCreateRequest {
+    const schema = ajv.getSchema(WorkItemCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemCreateRequestDecoder.definitionName)
   },
 }
 export const DbWorkItemDecoder: Decoder<DbWorkItem> = {

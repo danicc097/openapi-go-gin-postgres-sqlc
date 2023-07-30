@@ -370,11 +370,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-                - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
-                - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
-              discriminator:
-                propertyName: projectName
+              $ref: '#/components/schemas/WorkItemCreateRequest'
         required: true
       responses:
         "201":
@@ -1254,6 +1250,16 @@ components:
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
+    WorkItemCreateRequest:
+      oneOf:
+        - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
+        - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+      discriminator:
+        propertyName: projectName
+        # TODO: yq validator to ensure keys are valid projectName
+        mapping:
+          demo: '#/components/schemas/DemoWorkItemCreateRequest'
+          demo_two: '#/components/schemas/DemoTwoWorkItemCreateRequest'
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:

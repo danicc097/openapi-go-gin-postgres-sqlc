@@ -8,12 +8,12 @@
 import type { DbWorkItemCreateParams } from './dbWorkItemCreateParams'
 import type { DbDemoTwoWorkItemCreateParams } from './dbDemoTwoWorkItemCreateParams'
 import type { ServicesMember } from './servicesMember'
-import type { Project } from './project'
+import type { DemoTwoWorkItemCreateRequestProjectName } from './demoTwoWorkItemCreateRequestProjectName'
 
 export interface DemoTwoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoTwoProject: DbDemoTwoWorkItemCreateParams
   members: ServicesMember[] | null
-  projectName: Project
+  projectName: DemoTwoWorkItemCreateRequestProjectName
   tagIDs: number[] | null
 }

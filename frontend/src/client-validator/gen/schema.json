@@ -1176,6 +1176,17 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "WorkItemCreateRequest": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/DemoWorkItemCreateRequest"
+        },
+        {
+          "$ref": "#/definitions/DemoTwoWorkItemCreateRequest"
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "DbWorkItem": {
       "properties": {
         "closedAt": {
@@ -1775,6 +1786,9 @@
     },
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
+    },
+    "WorkItemCreateRequest": {
+      "$ref": "#/definitions/WorkItemCreateRequest"
     },
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
