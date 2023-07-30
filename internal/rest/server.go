@@ -155,7 +155,9 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	vg := router.Group(cfg.APIVersion)
-	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
+	// register before spec validation as routes are not in spec
+	vg.StaticFS("/docs", http.FS(fsys))
+	vg.GET("/docs-redoc", redocHandler)
 
 	// oidc
 	keyPath := "" // not used
@@ -451,4 +453,29 @@ func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
 	b, _ := json.Marshal(ve)
 
 	return ValidationErrorSeparator + string(b)
+}
+
+func redocHandler(c *gin.Context) {
+	htmlString := fmt.Sprintf(`<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Redoc</title>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+
+			<style>
+				body {
+					margin: 0;
+					padding: 0;
+				}
+			</style>
+		</head>
+		<body>
+			<redoc spec-url='%s'></redoc>
+			<script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"> </script>
+		</body>
+	</html>`, internal.BuildAPIURL("openapi.yaml"))
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(htmlString))
 }

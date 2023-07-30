@@ -61,6 +61,7 @@ window.onload = function () {
 		return err
 	}
 
+	// TODO: bring back, since swagger ui cannot handle v1.2 tags
 	// not needed, handler will use spec path from entrypoint args instead of reading the embed
 	// bundleSpec := path.Join(swaggerUIDir, "openapi.yaml")
 	// os.Remove(bundleSpec)
