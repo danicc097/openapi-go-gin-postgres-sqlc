@@ -106,9 +106,9 @@ linters-settings:
       - github.com/danicc097/openapi-go-gin-postgres-sqlc/*
 issues:
   exclude-rules:
-    # - path: "**/testutil/*"
-    #   linters:
-    #     - gosec
+    - path: "**/testutil/*" # doesn't work with internal/... for some reason
+      linters:
+        - gosec
     - path: "."
       linters:
         - gci
