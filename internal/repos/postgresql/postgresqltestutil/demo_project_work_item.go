@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomDemoWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, kanbanStepID, workItemTypeID, teamID int) (*db.WorkItem, error) {
+func NewRandomDemoWorkItem(t *testing.T, pool *pgxpool.Pool, kanbanStepID, workItemTypeID, teamID int) (*db.WorkItem, error) {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoWorkItem()
@@ -22,6 +22,7 @@ func NewRandomDemoWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, kanbanSt
 	dpwi, err := dpwiRepo.Create(context.Background(), pool, repos.DemoWorkItemCreateParams{DemoProject: *dpwicp, Base: *wicp})
 	if err != nil {
 		t.Logf("%s", err)
+
 		return nil, err
 	}
 
@@ -32,6 +33,8 @@ func RandomDemoWorkItemCreateParams(t *testing.T) *db.DemoWorkItemCreateParams {
 	t.Helper()
 
 	return &db.DemoWorkItemCreateParams{
+		// PK is FK. it will be set in repo method after base workitem creation which is unknown beforehand.
+		WorkItemID:    -1,
 		Ref:           "ref-" + testutil.RandomString(5),
 		Line:          "line-" + testutil.RandomString(5),
 		Reopened:      testutil.RandomBool(),

@@ -22,12 +22,6 @@ func NewDemoTwoWorkItem() *DemoTwoWorkItem {
 
 var _ repos.DemoTwoWorkItem = (*DemoTwoWorkItem)(nil)
 
-/**
- *
- * TODO: should use generics/type assertions for workitem repos. service logic will vary wildly but repos are exactly the same
- *
- */
-
 func (u *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
 	extraOpts := []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{DemoTwoWorkItem: true})}
 	return db.WorkItemByWorkItemID(ctx, d, id, (append(extraOpts, opts...))...)

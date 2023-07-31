@@ -24,7 +24,7 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 
 	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
 	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
-	demoWorkItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, projectID, kanbanStepID, workItemTypeID, team.TeamID)
+	demoWorkItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
 
 	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
