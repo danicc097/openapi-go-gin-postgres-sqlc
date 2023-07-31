@@ -3,6 +3,7 @@ package tracing
 import (
 	"log"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	jaegerp "go.opentelemetry.io/contrib/propagators/jaeger"
 
 	"go.opentelemetry.io/otel"
@@ -24,22 +25,29 @@ func InitTracer() *sdktrace.TracerProvider {
 		jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(jaegerEndpoint)),
 	)
 	if err != nil {
-		log.Fatalln("Couldn't initialize exporter", err)
+		log.Fatalln("Couldn't initialize jaeger exporter", err)
 	}
 
-	// Create stdout exporter to be able to retrieve the collected spans.
-	_, err = stdouttrace.New(stdouttrace.WithPrettyPrint())
+	stdoutExporter, err := stdouttrace.New()
 	if err != nil {
-		log.Fatalln("Couldn't initialize exporter", err)
+		log.Fatalln("Couldn't initialize stdout exporter", err)
 	}
 
-	tp := sdktrace.NewTracerProvider(
+	tracerOptions := []sdktrace.TracerProviderOption{
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithBatcher(jaegerExporter),
 		sdktrace.WithResource(resource.NewSchemaless(attribute.KeyValue{
 			Key:   semconv.ServiceNameKey,
 			Value: attribute.StringValue("openapi-go-server"),
 		})),
+	}
+
+	if internal.Config.AppEnv == "prod" {
+		tracerOptions = append(tracerOptions, sdktrace.WithBatcher(stdoutExporter))
+	}
+
+	tp := sdktrace.NewTracerProvider(
+		tracerOptions...,
 	)
 	otel.SetTracerProvider(tp)
 
