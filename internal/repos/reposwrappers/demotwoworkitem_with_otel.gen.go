@@ -36,7 +36,7 @@ func NewDemoTwoWorkItemWithTracing(base repos.DemoTwoWorkItem, instance string, 
 }
 
 // ByID implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoTwoWorkItem.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -85,7 +85,7 @@ func (_d DemoTwoWorkItemWithTracing) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoTwoWorkItem.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -109,7 +109,7 @@ func (_d DemoTwoWorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id i
 }
 
 // Restore implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTracing) Restore(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTracing) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoTwoWorkItem.Restore")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -133,7 +133,7 @@ func (_d DemoTwoWorkItemWithTracing) Restore(ctx context.Context, d db.DBTX, id 
 }
 
 // Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTracing) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTracing) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoTwoWorkItem.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

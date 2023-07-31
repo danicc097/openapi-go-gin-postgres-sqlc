@@ -39,7 +39,7 @@ func NewDemoWorkItemWithTimeout(base repos.DemoWorkItem, config DemoWorkItemWith
 }
 
 // ByID implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -59,7 +59,7 @@ func (_d DemoWorkItemWithTimeout) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Delete implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -69,7 +69,7 @@ func (_d DemoWorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int6
 }
 
 // Restore implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.RestoreTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RestoreTimeout)
@@ -79,7 +79,7 @@ func (_d DemoWorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int
 }
 
 // Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

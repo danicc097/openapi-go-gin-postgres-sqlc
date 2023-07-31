@@ -275,8 +275,8 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_review_id > $1
@@ -356,8 +356,8 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_id > $1
@@ -437,8 +437,8 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_review_id < $1
@@ -518,8 +518,8 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_id < $1
@@ -601,8 +601,8 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_review_id = $1
@@ -685,8 +685,8 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.reviewer = $1 AND book_reviews.book_id = $2
@@ -769,8 +769,8 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.reviewer = $1
@@ -855,8 +855,8 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_id = $1

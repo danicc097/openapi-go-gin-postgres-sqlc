@@ -26,7 +26,7 @@ func TestDemoTwoWorkItem_Update(t *testing.T) {
 	demoWorkItem, _ := postgresqltestutil.NewRandomDemoTwoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
 
 	type args struct {
-		id     int64
+		id     int
 		params repos.DemoTwoWorkItemUpdateParams
 	}
 	type params struct {

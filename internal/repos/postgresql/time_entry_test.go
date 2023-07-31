@@ -34,17 +34,17 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 	workItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
 	timeEntry, _ := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
 
-	type argsInt64 struct {
-		filter int64
-		fn     func(context.Context, db.DBTX, int64) (*db.TimeEntry, error)
+	type argsInt struct {
+		filter int
+		fn     func(context.Context, db.DBTX, int) (*db.TimeEntry, error)
 	}
 	testsInt64 := []struct {
 		name string
-		args argsInt64
+		args argsInt
 	}{
 		{
 			name: "timeEntry_id",
-			args: argsInt64{
+			args: argsInt{
 				filter: timeEntry.TimeEntryID,
 				fn:     (timeEntryRepo.ByID),
 			},
@@ -67,7 +67,7 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			filter := int64(254364) // does not exist
+			filter := 254364 // does not exist
 
 			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {

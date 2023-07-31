@@ -177,7 +177,7 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 
 	ctx := context.Background()
 
-	workitemID := int64(1)
+	workitemID := 1
 
 	dwi, err := db.DemoWorkItemByWorkItemID(ctx, testPool, workitemID, db.WithDemoWorkItemJoin(db.DemoWorkItemJoins{WorkItem: true}))
 	require.NoError(t, err)

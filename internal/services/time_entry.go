@@ -29,7 +29,7 @@ func NewTimeEntry(logger *zap.SugaredLogger, teRepo repos.TimeEntry, wiRepo repo
 }
 
 // ByID gets a time entry by ID.
-func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error) {
+func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
 	defer newOTELSpan(ctx, "TimeEntry.ByID").End()
 
 	teObj, err := a.teRepo.ByID(ctx, d, id)
@@ -88,7 +88,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 }
 
 // Update updates an existing time entry.
-func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
+func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
 	defer newOTELSpan(ctx, "TimeEntry.Update").End()
 
 	teObj, err := a.teRepo.Update(ctx, d, id, params)
@@ -100,7 +100,7 @@ func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params *db.
 }
 
 // Delete deletes a time entry by ID.
-func (a *TimeEntry) Delete(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error) {
+func (a *TimeEntry) Delete(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
 	defer newOTELSpan(ctx, "TimeEntry.Delete").End()
 
 	teObj, err := a.teRepo.Delete(ctx, d, id)

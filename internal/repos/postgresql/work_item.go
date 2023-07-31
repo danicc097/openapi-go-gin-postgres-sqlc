@@ -21,6 +21,6 @@ func NewWorkItem() *WorkItem {
 
 var _ repos.WorkItem = (*WorkItem)(nil)
 
-func (u *WorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
+func (u *WorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
 	return db.WorkItemByWorkItemID(ctx, d, id, opts...)
 }

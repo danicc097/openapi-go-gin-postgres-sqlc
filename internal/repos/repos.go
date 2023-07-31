@@ -70,29 +70,29 @@ type DemoTwoWorkItemCreateParams struct {
 // WorkItem defines the datastore/repository handling retrieving WorkItem records.
 type WorkItem interface {
 	// ByID returns a generic WorkItem by default.
-	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 }
 
 // DemoWorkItem defines the datastore/repository handling persisting DemoWorkItem records.
 type DemoWorkItem interface {
 	// ByID returns a generic WorkItem with project-specific fields joined by default.
-	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error)
-	Update(ctx context.Context, d db.DBTX, id int64, params DemoWorkItemUpdateParams) (*db.WorkItem, error)
-	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
-	Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
+	Update(ctx context.Context, d db.DBTX, id int, params DemoWorkItemUpdateParams) (*db.WorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error)
+	Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error)
 }
 
 // DemoTwoWorkItem defines the datastore/repository handling persisting DemoTwoWorkItem records.
 type DemoTwoWorkItem interface {
 	// ByID returns a generic WorkItem with project-specific fields joined by default.
-	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error)
-	Update(ctx context.Context, d db.DBTX, id int64, params DemoTwoWorkItemUpdateParams) (*db.WorkItem, error)
-	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
-	Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
+	Update(ctx context.Context, d db.DBTX, id int, params DemoTwoWorkItemUpdateParams) (*db.WorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error)
+	Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error)
 }
 
 // Notification defines the datastore/repository handling persisting Notification records.
@@ -150,10 +150,10 @@ type WorkItemType interface {
 
 // WorkItemComment defines the datastore/repository handling persisting WorkItemComment records.
 type WorkItemComment interface {
-	ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItemComment, error)
+	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemComment, error)
 	Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
-	Update(ctx context.Context, d db.DBTX, id int64, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
-	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItemComment, error)
+	Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemComment, error)
 }
 
 // WorkItemTag defines the datastore/repository handling persisting WorkItemTag records.
@@ -178,8 +178,8 @@ type Activity interface {
 
 // TimeEntry defines the datastore/repository handling persisting TimeEntry records.
 type TimeEntry interface {
-	ByID(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error)
+	ByID(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error)
 	Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error)
-	Update(ctx context.Context, d db.DBTX, id int64, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error)
-	Delete(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error)
+	Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error)
 }

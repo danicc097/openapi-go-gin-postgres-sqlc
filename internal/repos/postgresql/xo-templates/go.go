@@ -1016,6 +1016,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 			ignoredCols = append(ignoredCols, f)
 		}
 	}
+
 	// custom manual override
 	manual := false
 	for _, pk := range pkCols {
@@ -1589,6 +1590,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"type":                   f.typefn,
 		"field":                  f.field,
 		"set_field":              f.set_field,
+		"sort_fields":            f.sort_fields,
 		"fieldmapping":           f.fieldmapping,
 		"join_fields":            f.join_fields,
 		"short":                  f.short,
@@ -3648,6 +3650,14 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
+}
+
+func (f *Funcs) sort_fields(fields []Field) []Field {
+	sort.Slice(fields, func(i, j int) bool {
+		return fields[i].SQLName < fields[j].SQLName
+	})
+
+	return fields
 }
 
 // set_field generates an assignment to a struct field.

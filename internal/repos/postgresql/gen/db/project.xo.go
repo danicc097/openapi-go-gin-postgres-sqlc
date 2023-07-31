@@ -43,19 +43,19 @@ type Project struct {
 
 // ProjectCreateParams represents insert params for 'public.projects'.
 type ProjectCreateParams struct {
-	Name               models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
-	Description        string               `json:"description" required:"true"`                                          // description
-	WorkItemsTableName string               `json:"-"`                                                                    // work_items_table_name
 	BoardConfig        models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+	Description        string               `json:"description" required:"true"`                                          // description
+	Name               models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
+	WorkItemsTableName string               `json:"-"`                                                                    // work_items_table_name
 }
 
 // CreateProject creates a new Project in the database with the given params.
 func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
 	p := &Project{
-		Name:               params.Name,
-		Description:        params.Description,
-		WorkItemsTableName: params.WorkItemsTableName,
 		BoardConfig:        params.BoardConfig,
+		Description:        params.Description,
+		Name:               params.Name,
+		WorkItemsTableName: params.WorkItemsTableName,
 	}
 
 	return p.Insert(ctx, db)
@@ -63,25 +63,25 @@ func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Pr
 
 // ProjectUpdateParams represents update params for 'public.projects'.
 type ProjectUpdateParams struct {
-	Name               *models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
-	Description        *string               `json:"description" required:"true"`                                          // description
-	WorkItemsTableName *string               `json:"-"`                                                                    // work_items_table_name
 	BoardConfig        *models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+	Description        *string               `json:"description" required:"true"`                                          // description
+	Name               *models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
+	WorkItemsTableName *string               `json:"-"`                                                                    // work_items_table_name
 }
 
 // SetUpdateParams updates public.projects struct fields with the specified params.
 func (p *Project) SetUpdateParams(params *ProjectUpdateParams) {
-	if params.Name != nil {
-		p.Name = *params.Name
+	if params.BoardConfig != nil {
+		p.BoardConfig = *params.BoardConfig
 	}
 	if params.Description != nil {
 		p.Description = *params.Description
 	}
+	if params.Name != nil {
+		p.Name = *params.Name
+	}
 	if params.WorkItemsTableName != nil {
 		p.WorkItemsTableName = *params.WorkItemsTableName
-	}
-	if params.BoardConfig != nil {
-		p.BoardConfig = *params.BoardConfig
 	}
 }
 
@@ -249,14 +249,14 @@ const projectTableWorkItemTypesGroupBySQL = `joined_work_item_types.work_item_ty
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (
-	name, description, work_items_table_name, board_config
+	board_config, description, name, work_items_table_name
 	) VALUES (
 	$1, $2, $3, $4
 	) RETURNING * `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
+	logf(sqlstr, p.BoardConfig, p.Description, p.Name, p.WorkItemsTableName)
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
+	rows, err := db.Query(ctx, sqlstr, p.BoardConfig, p.Description, p.Name, p.WorkItemsTableName)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
@@ -274,13 +274,13 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET 
-	name = $1, description = $2, work_items_table_name = $3, board_config = $4 
+	board_config = $1, description = $2, name = $3, work_items_table_name = $4 
 	WHERE project_id = $5 
 	RETURNING * `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
+	logf(sqlstr, p.BoardConfig, p.CreatedAt, p.Description, p.Name, p.UpdatedAt, p.WorkItemsTableName, p.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, p.BoardConfig, p.Description, p.Name, p.WorkItemsTableName, p.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
@@ -298,10 +298,10 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
 	var err error
 
-	p.Name = params.Name
-	p.Description = params.Description
-	p.WorkItemsTableName = params.WorkItemsTableName
 	p.BoardConfig = params.BoardConfig
+	p.Description = params.Description
+	p.Name = params.Name
+	p.WorkItemsTableName = params.WorkItemsTableName
 
 	p, err = p.Insert(ctx, db)
 	if err != nil {
@@ -407,13 +407,13 @@ func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, o
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	projects.project_id,
-	projects.name,
-	projects.description,
-	projects.work_items_table_name,
 	projects.board_config,
 	projects.created_at,
-	projects.updated_at %s 
+	projects.description,
+	projects.name,
+	projects.project_id,
+	projects.updated_at,
+	projects.work_items_table_name %s 
 	 FROM public.projects %s 
 	 WHERE projects.project_id > $1
 	 %s   %s 
@@ -510,13 +510,13 @@ func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	projects.project_id,
-	projects.name,
-	projects.description,
-	projects.work_items_table_name,
 	projects.board_config,
 	projects.created_at,
-	projects.updated_at %s 
+	projects.description,
+	projects.name,
+	projects.project_id,
+	projects.updated_at,
+	projects.work_items_table_name %s 
 	 FROM public.projects %s 
 	 WHERE projects.project_id < $1
 	 %s   %s 
@@ -615,13 +615,13 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	projects.project_id,
-	projects.name,
-	projects.description,
-	projects.work_items_table_name,
 	projects.board_config,
 	projects.created_at,
-	projects.updated_at %s 
+	projects.description,
+	projects.name,
+	projects.project_id,
+	projects.updated_at,
+	projects.work_items_table_name %s 
 	 FROM public.projects %s 
 	 WHERE projects.name = $1
 	 %s   %s 
@@ -721,13 +721,13 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	projects.project_id,
-	projects.name,
-	projects.description,
-	projects.work_items_table_name,
 	projects.board_config,
 	projects.created_at,
-	projects.updated_at %s 
+	projects.description,
+	projects.name,
+	projects.project_id,
+	projects.updated_at,
+	projects.work_items_table_name %s 
 	 FROM public.projects %s 
 	 WHERE projects.project_id = $1
 	 %s   %s 
@@ -827,13 +827,13 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	projects.project_id,
-	projects.name,
-	projects.description,
-	projects.work_items_table_name,
 	projects.board_config,
 	projects.created_at,
-	projects.updated_at %s 
+	projects.description,
+	projects.name,
+	projects.project_id,
+	projects.updated_at,
+	projects.work_items_table_name %s 
 	 FROM public.projects %s 
 	 WHERE projects.work_items_table_name = $1
 	 %s   %s 

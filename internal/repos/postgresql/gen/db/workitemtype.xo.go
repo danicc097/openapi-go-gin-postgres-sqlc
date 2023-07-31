@@ -35,19 +35,19 @@ type WorkItemType struct {
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'.
 type WorkItemTypeCreateParams struct {
-	ProjectID   int    `json:"projectID"`                                                          // project_id
-	Name        string `json:"name" required:"true"`                                               // name
-	Description string `json:"description" required:"true"`                                        // description
 	Color       string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description string `json:"description" required:"true"`                                        // description
+	Name        string `json:"name" required:"true"`                                               // name
+	ProjectID   int    `json:"projectID"`                                                          // project_id
 }
 
 // CreateWorkItemType creates a new WorkItemType in the database with the given params.
 func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
 	wit := &WorkItemType{
-		ProjectID:   params.ProjectID,
-		Name:        params.Name,
-		Description: params.Description,
 		Color:       params.Color,
+		Description: params.Description,
+		Name:        params.Name,
+		ProjectID:   params.ProjectID,
 	}
 
 	return wit.Insert(ctx, db)
@@ -55,25 +55,25 @@ func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreatePa
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'.
 type WorkItemTypeUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`                                                          // project_id
-	Name        *string `json:"name" required:"true"`                                               // name
-	Description *string `json:"description" required:"true"`                                        // description
 	Color       *string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description *string `json:"description" required:"true"`                                        // description
+	Name        *string `json:"name" required:"true"`                                               // name
+	ProjectID   *int    `json:"projectID"`                                                          // project_id
 }
 
 // SetUpdateParams updates public.work_item_types struct fields with the specified params.
 func (wit *WorkItemType) SetUpdateParams(params *WorkItemTypeUpdateParams) {
-	if params.ProjectID != nil {
-		wit.ProjectID = *params.ProjectID
-	}
-	if params.Name != nil {
-		wit.Name = *params.Name
+	if params.Color != nil {
+		wit.Color = *params.Color
 	}
 	if params.Description != nil {
 		wit.Description = *params.Description
 	}
-	if params.Color != nil {
-		wit.Color = *params.Color
+	if params.Name != nil {
+		wit.Name = *params.Name
+	}
+	if params.ProjectID != nil {
+		wit.ProjectID = *params.ProjectID
 	}
 }
 
@@ -140,14 +140,14 @@ const workItemTypeTableProjectGroupBySQL = `_work_item_types_project_id.project_
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_types (
-	project_id, name, description, color
+	color, description, name, project_id
 	) VALUES (
 	$1, $2, $3, $4
 	) RETURNING * `
 	// run
-	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	logf(sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	rows, err := db.Query(ctx, sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Insert/db.Query: %w", &XoError{Entity: "Work item type", Err: err}))
 	}
@@ -165,13 +165,13 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_types SET 
-	project_id = $1, name = $2, description = $3, color = $4 
+	color = $1, description = $2, name = $3, project_id = $4 
 	WHERE work_item_type_id = $5 
 	RETURNING * `
 	// run
-	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	logf(sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTypeID)
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	rows, err := db.Query(ctx, sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Update/db.Query: %w", &XoError{Entity: "Work item type", Err: err}))
 	}
@@ -189,10 +189,10 @@ func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, erro
 func (wit *WorkItemType) Upsert(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
 	var err error
 
-	wit.ProjectID = params.ProjectID
-	wit.Name = params.Name
-	wit.Description = params.Description
 	wit.Color = params.Color
+	wit.Description = params.Description
+	wit.Name = params.Name
+	wit.ProjectID = params.ProjectID
 
 	wit, err = wit.Insert(ctx, db)
 	if err != nil {
@@ -274,11 +274,11 @@ func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workIt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_types.work_item_type_id,
-	work_item_types.project_id,
-	work_item_types.name,
+	work_item_types.color,
 	work_item_types.description,
-	work_item_types.color %s 
+	work_item_types.name,
+	work_item_types.project_id,
+	work_item_types.work_item_type_id %s 
 	 FROM public.work_item_types %s 
 	 WHERE work_item_types.work_item_type_id > $1
 	 %s   %s 
@@ -351,11 +351,11 @@ func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID i
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_types.work_item_type_id,
-	work_item_types.project_id,
-	work_item_types.name,
+	work_item_types.color,
 	work_item_types.description,
-	work_item_types.color %s 
+	work_item_types.name,
+	work_item_types.project_id,
+	work_item_types.work_item_type_id %s 
 	 FROM public.work_item_types %s 
 	 WHERE work_item_types.project_id > $1
 	 %s   %s 
@@ -428,11 +428,11 @@ func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workI
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_types.work_item_type_id,
-	work_item_types.project_id,
-	work_item_types.name,
+	work_item_types.color,
 	work_item_types.description,
-	work_item_types.color %s 
+	work_item_types.name,
+	work_item_types.project_id,
+	work_item_types.work_item_type_id %s 
 	 FROM public.work_item_types %s 
 	 WHERE work_item_types.work_item_type_id < $1
 	 %s   %s 
@@ -505,11 +505,11 @@ func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_types.work_item_type_id,
-	work_item_types.project_id,
-	work_item_types.name,
+	work_item_types.color,
 	work_item_types.description,
-	work_item_types.color %s 
+	work_item_types.name,
+	work_item_types.project_id,
+	work_item_types.work_item_type_id %s 
 	 FROM public.work_item_types %s 
 	 WHERE work_item_types.project_id < $1
 	 %s   %s 
@@ -584,11 +584,11 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_types.work_item_type_id,
-	work_item_types.project_id,
-	work_item_types.name,
+	work_item_types.color,
 	work_item_types.description,
-	work_item_types.color %s 
+	work_item_types.name,
+	work_item_types.project_id,
+	work_item_types.work_item_type_id %s 
 	 FROM public.work_item_types %s 
 	 WHERE work_item_types.name = $1 AND work_item_types.project_id = $2
 	 %s   %s 
@@ -664,11 +664,11 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_types.work_item_type_id,
-	work_item_types.project_id,
-	work_item_types.name,
+	work_item_types.color,
 	work_item_types.description,
-	work_item_types.color %s 
+	work_item_types.name,
+	work_item_types.project_id,
+	work_item_types.work_item_type_id %s 
 	 FROM public.work_item_types %s 
 	 WHERE work_item_types.name = $1
 	 %s   %s 
@@ -746,11 +746,11 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ..
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_types.work_item_type_id,
-	work_item_types.project_id,
-	work_item_types.name,
+	work_item_types.color,
 	work_item_types.description,
-	work_item_types.color %s 
+	work_item_types.name,
+	work_item_types.project_id,
+	work_item_types.work_item_type_id %s 
 	 FROM public.work_item_types %s 
 	 WHERE work_item_types.project_id = $1
 	 %s   %s 
@@ -828,11 +828,11 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_types.work_item_type_id,
-	work_item_types.project_id,
-	work_item_types.name,
+	work_item_types.color,
 	work_item_types.description,
-	work_item_types.color %s 
+	work_item_types.name,
+	work_item_types.project_id,
+	work_item_types.work_item_type_id %s 
 	 FROM public.work_item_types %s 
 	 WHERE work_item_types.work_item_type_id = $1
 	 %s   %s 

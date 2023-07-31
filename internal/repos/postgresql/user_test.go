@@ -34,7 +34,7 @@ func TestUser_Update(t *testing.T) {
 			args: args{
 				id: user.UserID,
 				params: db.UserUpdateParams{
-					RoleRank: pointers.New[int16](10),
+					RoleRank: pointers.New(10),
 					Scopes:   &models.Scopes{"test", "test", "test"},
 				},
 			},
@@ -209,7 +209,7 @@ func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
 			filter := "does not exist"
 			_, err = fn(context.Background(), testPool, filter)
 		case func(context.Context, db.DBTX, int) (*db.User, error):
-			filter := int(732745)
+			filter := 732745
 			_, err = fn(context.Background(), testPool, filter)
 		case func(context.Context, db.DBTX, int64) (*db.User, error):
 			filter := int64(732745)
@@ -340,7 +340,7 @@ func TestUser_Create(t *testing.T) {
 		t.Parallel()
 
 		ucp := postgresqltestutil.RandomUserCreateParams(t)
-		ucp.RoleRank = int16(-1)
+		ucp.RoleRank = -1
 
 		args := args{
 			params: *ucp,

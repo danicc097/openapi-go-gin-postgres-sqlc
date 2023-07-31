@@ -24,7 +24,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type UserNotification struct {
-	UserNotificationID int64     `json:"userNotificationID" db:"user_notification_id" required:"true"` // user_notification_id
+	UserNotificationID int       `json:"userNotificationID" db:"user_notification_id" required:"true"` // user_notification_id
 	NotificationID     int       `json:"notificationID" db:"notification_id" required:"true"`          // notification_id
 	Read               bool      `json:"read" db:"read" required:"true"`                               // read
 	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
@@ -230,7 +230,7 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 }
 
 // UserNotificationPaginatedByUserNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
-func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -286,10 +286,10 @@ func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.user_notification_id,
 	user_notifications.notification_id,
 	user_notifications.read,
-	user_notifications.user_id %s 
+	user_notifications.user_id,
+	user_notifications.user_notification_id %s 
 	 FROM public.user_notifications %s 
 	 WHERE user_notifications.user_notification_id > $1
 	 %s   %s 
@@ -368,10 +368,10 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.user_notification_id,
 	user_notifications.notification_id,
 	user_notifications.read,
-	user_notifications.user_id %s 
+	user_notifications.user_id,
+	user_notifications.user_notification_id %s 
 	 FROM public.user_notifications %s 
 	 WHERE user_notifications.notification_id > $1
 	 %s   %s 
@@ -394,7 +394,7 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 }
 
 // UserNotificationPaginatedByUserNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
-func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -450,10 +450,10 @@ func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db D
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.user_notification_id,
 	user_notifications.notification_id,
 	user_notifications.read,
-	user_notifications.user_id %s 
+	user_notifications.user_id,
+	user_notifications.user_notification_id %s 
 	 FROM public.user_notifications %s 
 	 WHERE user_notifications.user_notification_id < $1
 	 %s   %s 
@@ -532,10 +532,10 @@ func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, n
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.user_notification_id,
 	user_notifications.notification_id,
 	user_notifications.read,
-	user_notifications.user_id %s 
+	user_notifications.user_id,
+	user_notifications.user_notification_id %s 
 	 FROM public.user_notifications %s 
 	 WHERE user_notifications.notification_id < $1
 	 %s   %s 
@@ -616,10 +616,10 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.user_notification_id,
 	user_notifications.notification_id,
 	user_notifications.read,
-	user_notifications.user_id %s 
+	user_notifications.user_id,
+	user_notifications.user_notification_id %s 
 	 FROM public.user_notifications %s 
 	 WHERE user_notifications.notification_id = $1 AND user_notifications.user_id = $2
 	 %s   %s 
@@ -701,10 +701,10 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.user_notification_id,
 	user_notifications.notification_id,
 	user_notifications.read,
-	user_notifications.user_id %s 
+	user_notifications.user_id,
+	user_notifications.user_notification_id %s 
 	 FROM public.user_notifications %s 
 	 WHERE user_notifications.notification_id = $1
 	 %s   %s 
@@ -732,7 +732,7 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 // UserNotificationByUserNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_pkey'.
-func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
+func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -788,10 +788,10 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.user_notification_id,
 	user_notifications.notification_id,
 	user_notifications.read,
-	user_notifications.user_id %s 
+	user_notifications.user_id,
+	user_notifications.user_notification_id %s 
 	 FROM public.user_notifications %s 
 	 WHERE user_notifications.user_notification_id = $1
 	 %s   %s 
@@ -873,10 +873,10 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.user_notification_id,
 	user_notifications.notification_id,
 	user_notifications.read,
-	user_notifications.user_id %s 
+	user_notifications.user_id,
+	user_notifications.user_notification_id %s 
 	 FROM public.user_notifications %s 
 	 WHERE user_notifications.user_id = $1
 	 %s   %s 

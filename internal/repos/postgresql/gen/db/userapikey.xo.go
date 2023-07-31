@@ -287,9 +287,9 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id > $1
@@ -363,9 +363,9 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id < $1
@@ -441,9 +441,9 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.api_key = $1
@@ -520,9 +520,9 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id = $1
@@ -599,9 +599,9 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_id = $1

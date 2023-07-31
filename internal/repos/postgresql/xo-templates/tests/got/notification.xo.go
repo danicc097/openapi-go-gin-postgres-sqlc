@@ -36,16 +36,16 @@ type Notification struct {
 // NotificationCreateParams represents insert params for 'xo_tests.notifications'.
 type NotificationCreateParams struct {
 	Body     string     `json:"-" pattern:"^[A-Za-z0-9]*$"` // body
-	Sender   uuid.UUID  `json:"sender" required:"true"`     // sender
 	Receiver *uuid.UUID `json:"receiver"`                   // receiver
+	Sender   uuid.UUID  `json:"sender" required:"true"`     // sender
 }
 
 // CreateNotification creates a new Notification in the database with the given params.
 func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
 	n := &Notification{
 		Body:     params.Body,
-		Sender:   params.Sender,
 		Receiver: params.Receiver,
+		Sender:   params.Sender,
 	}
 
 	return n.Insert(ctx, db)
@@ -54,8 +54,8 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 // NotificationUpdateParams represents update params for 'xo_tests.notifications'.
 type NotificationUpdateParams struct {
 	Body     *string     `json:"-" pattern:"^[A-Za-z0-9]*$"` // body
-	Sender   *uuid.UUID  `json:"sender" required:"true"`     // sender
 	Receiver **uuid.UUID `json:"receiver"`                   // receiver
+	Sender   *uuid.UUID  `json:"sender" required:"true"`     // sender
 }
 
 // SetUpdateParams updates xo_tests.notifications struct fields with the specified params.
@@ -63,11 +63,11 @@ func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
 	if params.Body != nil {
 		n.Body = *params.Body
 	}
-	if params.Sender != nil {
-		n.Sender = *params.Sender
-	}
 	if params.Receiver != nil {
 		n.Receiver = *params.Receiver
+	}
+	if params.Sender != nil {
+		n.Sender = *params.Sender
 	}
 }
 
@@ -144,14 +144,14 @@ const notificationTableUserSenderGroupBySQL = `_notifications_sender.user_id,
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.notifications (
-	body, sender, receiver
+	body, receiver, sender
 	) VALUES (
 	$1, $2, $3
 	) RETURNING * `
 	// run
-	logf(sqlstr, n.Body, n.Sender, n.Receiver)
+	logf(sqlstr, n.Body, n.Receiver, n.Sender)
 
-	rows, err := db.Query(ctx, sqlstr, n.Body, n.Sender, n.Receiver)
+	rows, err := db.Query(ctx, sqlstr, n.Body, n.Receiver, n.Sender)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -169,13 +169,13 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.notifications SET 
-	body = $1, sender = $2, receiver = $3 
+	body = $1, receiver = $2, sender = $3 
 	WHERE notification_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, n.Body, n.Sender, n.Receiver, n.NotificationID)
+	logf(sqlstr, n.Body, n.Receiver, n.Sender, n.NotificationID)
 
-	rows, err := db.Query(ctx, sqlstr, n.Body, n.Sender, n.Receiver, n.NotificationID)
+	rows, err := db.Query(ctx, sqlstr, n.Body, n.Receiver, n.Sender, n.NotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Update/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -194,8 +194,8 @@ func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCr
 	var err error
 
 	n.Body = params.Body
-	n.Sender = params.Sender
 	n.Receiver = params.Receiver
+	n.Sender = params.Sender
 
 	n, err = n.Insert(ctx, db)
 	if err != nil {
@@ -283,10 +283,10 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.notification_id,
 	notifications.body,
-	notifications.sender,
-	notifications.receiver %s 
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender %s 
 	 FROM xo_tests.notifications %s 
 	 WHERE notifications.notification_id > $1
 	 %s   %s 
@@ -365,10 +365,10 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.notification_id,
 	notifications.body,
-	notifications.sender,
-	notifications.receiver %s 
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender %s 
 	 FROM xo_tests.notifications %s 
 	 WHERE notifications.notification_id < $1
 	 %s   %s 
@@ -449,10 +449,10 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.notification_id,
 	notifications.body,
-	notifications.sender,
-	notifications.receiver %s 
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender %s 
 	 FROM xo_tests.notifications %s 
 	 WHERE notifications.notification_id = $1
 	 %s   %s 
@@ -534,10 +534,10 @@ func NotificationsBySender(ctx context.Context, db DB, sender uuid.UUID, opts ..
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.notification_id,
 	notifications.body,
-	notifications.sender,
-	notifications.receiver %s 
+	notifications.notification_id,
+	notifications.receiver,
+	notifications.sender %s 
 	 FROM xo_tests.notifications %s 
 	 WHERE notifications.sender = $1
 	 %s   %s 

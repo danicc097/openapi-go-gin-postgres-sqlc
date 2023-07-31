@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,9 +27,18 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 
 	switch disc, _ := body.Discriminator(); models.Project(disc) {
 	case models.ProjectDemo:
-		body.AsDemoWorkItemCreateRequest()
+		params, _ := body.AsDemoWorkItemCreateRequest()
+
+		h.demoworkitemsvc.Create(ctx, tx, services.DemoWorkItemCreateParams{
+			DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
+				DemoProject: db.DemoWorkItemCreateParams(params.DemoProject),
+				// FIXME: oapi outputs metadata as optional
+				// Base:        db.WorkItemCreateParams(params.Base),
+			},
+		})
 		c.String(http.StatusOK, "project demo")
 	case models.ProjectDemoTwo:
+		// params, _ := body.AsDemoTwoWorkItemCreateRequest()
 		c.String(http.StatusOK, "project demo two")
 	}
 

@@ -169,7 +169,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		}
 	}
 
-	var rank *int16
+	var rank *int
 	if params.Role != nil {
 		role := u.authzsvc.RoleByName(*params.Role)
 		if role.Rank > caller.RoleRank {

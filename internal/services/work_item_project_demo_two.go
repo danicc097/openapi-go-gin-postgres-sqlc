@@ -35,7 +35,7 @@ func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkI
 }
 
 // ByID gets a work item by ID.
-func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoTwoWorkItem.ByID").End()
 
 	wi, err := w.demotwowiRepo.ByID(ctx, d, id)
@@ -95,7 +95,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 }
 
 // Update updates an existing work item.
-func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoTwoWorkItem.Update").End()
 
 	wi, err := w.demotwowiRepo.Update(ctx, d, id, params)
@@ -107,7 +107,7 @@ func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, param
 }
 
 // Delete deletes a work item by ID.
-func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoTwoWorkItem.Delete").End()
 
 	wi, err := w.demotwowiRepo.Delete(ctx, d, id)
@@ -124,7 +124,7 @@ func (w *DemoTwoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.W
 	return err
 }
 
-func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int64) error {
+func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
@@ -139,7 +139,7 @@ func (w *DemoTwoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *d
 	return err
 }
 
-func (w *DemoTwoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int64) error {
+func (w *DemoTwoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
 	wim := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
 		WorkItemID:   workItemID,
@@ -162,6 +162,6 @@ func (w *DemoTwoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db
 	return []db.WorkItem{}, errors.New("not implemented")
 }
 
-func (w *DemoTwoWorkItem) Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	return w.demotwowiRepo.Restore(ctx, d, id)
 }

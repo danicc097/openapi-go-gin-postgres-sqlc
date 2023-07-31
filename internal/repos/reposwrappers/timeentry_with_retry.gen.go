@@ -29,7 +29,7 @@ func NewTimeEntryWithRetry(base repos.TimeEntry, retryCount int, retryInterval t
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id int64) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
 	tp1, err = _d.TimeEntry.ByID(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -67,7 +67,7 @@ func (_d TimeEntryWithRetry) Create(ctx context.Context, d db.DBTX, params *db.T
 }
 
 // Delete implements repos.TimeEntry
-func (_d TimeEntryWithRetry) Delete(ctx context.Context, d db.DBTX, id int64) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
 	tp1, err = _d.TimeEntry.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -86,7 +86,7 @@ func (_d TimeEntryWithRetry) Delete(ctx context.Context, d db.DBTX, id int64) (t
 }
 
 // Update implements repos.TimeEntry
-func (_d TimeEntryWithRetry) Update(ctx context.Context, d db.DBTX, id int64, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithRetry) Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
 	tp1, err = _d.TimeEntry.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

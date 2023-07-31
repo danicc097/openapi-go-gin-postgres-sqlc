@@ -39,7 +39,7 @@ func NewDemoTwoWorkItemWithTimeout(base repos.DemoTwoWorkItem, config DemoTwoWor
 }
 
 // ByID implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -59,7 +59,7 @@ func (_d DemoTwoWorkItemWithTimeout) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -69,7 +69,7 @@ func (_d DemoTwoWorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id i
 }
 
 // Restore implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.RestoreTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RestoreTimeout)
@@ -79,7 +79,7 @@ func (_d DemoTwoWorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id 
 }
 
 // Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

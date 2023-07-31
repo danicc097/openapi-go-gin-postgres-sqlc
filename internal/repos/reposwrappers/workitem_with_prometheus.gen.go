@@ -39,7 +39,7 @@ func NewWorkItemWithPrometheus(base repos.WorkItem, instanceName string) WorkIte
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

@@ -25,7 +25,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItem struct {
-	WorkItemID     int64          `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
+	WorkItemID     int            `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
 	Title          string         `json:"title" db:"title" required:"true"`                      // title
 	Description    string         `json:"description" db:"description" required:"true"`          // description
 	WorkItemTypeID int            `json:"workItemTypeID" db:"work_item_type_id" required:"true"` // work_item_type_id
@@ -52,27 +52,27 @@ type WorkItem struct {
 
 // WorkItemCreateParams represents insert params for 'public.work_items'.
 type WorkItemCreateParams struct {
-	Title          string         `json:"title" required:"true"`          // title
-	Description    string         `json:"description" required:"true"`    // description
-	WorkItemTypeID int            `json:"workItemTypeID" required:"true"` // work_item_type_id
-	Metadata       map[string]any `json:"metadata" required:"true"`       // metadata
-	TeamID         int            `json:"teamID" required:"true"`         // team_id
-	KanbanStepID   int            `json:"kanbanStepID" required:"true"`   // kanban_step_id
 	ClosedAt       *time.Time     `json:"closedAt"`                       // closed_at
+	Description    string         `json:"description" required:"true"`    // description
+	KanbanStepID   int            `json:"kanbanStepID" required:"true"`   // kanban_step_id
+	Metadata       map[string]any `json:"metadata" required:"true"`       // metadata
 	TargetDate     time.Time      `json:"targetDate" required:"true"`     // target_date
+	TeamID         int            `json:"teamID" required:"true"`         // team_id
+	Title          string         `json:"title" required:"true"`          // title
+	WorkItemTypeID int            `json:"workItemTypeID" required:"true"` // work_item_type_id
 }
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
 	wi := &WorkItem{
-		Title:          params.Title,
-		Description:    params.Description,
-		WorkItemTypeID: params.WorkItemTypeID,
-		Metadata:       params.Metadata,
-		TeamID:         params.TeamID,
-		KanbanStepID:   params.KanbanStepID,
 		ClosedAt:       params.ClosedAt,
+		Description:    params.Description,
+		KanbanStepID:   params.KanbanStepID,
+		Metadata:       params.Metadata,
 		TargetDate:     params.TargetDate,
+		TeamID:         params.TeamID,
+		Title:          params.Title,
+		WorkItemTypeID: params.WorkItemTypeID,
 	}
 
 	return wi.Insert(ctx, db)
@@ -80,41 +80,41 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 
 // WorkItemUpdateParams represents update params for 'public.work_items'.
 type WorkItemUpdateParams struct {
-	Title          *string         `json:"title" required:"true"`          // title
-	Description    *string         `json:"description" required:"true"`    // description
-	WorkItemTypeID *int            `json:"workItemTypeID" required:"true"` // work_item_type_id
-	Metadata       *map[string]any `json:"metadata" required:"true"`       // metadata
-	TeamID         *int            `json:"teamID" required:"true"`         // team_id
-	KanbanStepID   *int            `json:"kanbanStepID" required:"true"`   // kanban_step_id
 	ClosedAt       **time.Time     `json:"closedAt"`                       // closed_at
+	Description    *string         `json:"description" required:"true"`    // description
+	KanbanStepID   *int            `json:"kanbanStepID" required:"true"`   // kanban_step_id
+	Metadata       *map[string]any `json:"metadata" required:"true"`       // metadata
 	TargetDate     *time.Time      `json:"targetDate" required:"true"`     // target_date
+	TeamID         *int            `json:"teamID" required:"true"`         // team_id
+	Title          *string         `json:"title" required:"true"`          // title
+	WorkItemTypeID *int            `json:"workItemTypeID" required:"true"` // work_item_type_id
 }
 
 // SetUpdateParams updates public.work_items struct fields with the specified params.
 func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
-	if params.Title != nil {
-		wi.Title = *params.Title
+	if params.ClosedAt != nil {
+		wi.ClosedAt = *params.ClosedAt
 	}
 	if params.Description != nil {
 		wi.Description = *params.Description
 	}
-	if params.WorkItemTypeID != nil {
-		wi.WorkItemTypeID = *params.WorkItemTypeID
+	if params.KanbanStepID != nil {
+		wi.KanbanStepID = *params.KanbanStepID
 	}
 	if params.Metadata != nil {
 		wi.Metadata = *params.Metadata
 	}
+	if params.TargetDate != nil {
+		wi.TargetDate = *params.TargetDate
+	}
 	if params.TeamID != nil {
 		wi.TeamID = *params.TeamID
 	}
-	if params.KanbanStepID != nil {
-		wi.KanbanStepID = *params.KanbanStepID
+	if params.Title != nil {
+		wi.Title = *params.Title
 	}
-	if params.ClosedAt != nil {
-		wi.ClosedAt = *params.ClosedAt
-	}
-	if params.TargetDate != nil {
-		wi.TargetDate = *params.TargetDate
+	if params.WorkItemTypeID != nil {
+		wi.WorkItemTypeID = *params.WorkItemTypeID
 	}
 }
 
@@ -150,22 +150,22 @@ const (
 	WorkItemClosedAtDescNullsLast    WorkItemOrderBy = " closed_at DESC NULLS LAST "
 	WorkItemClosedAtAscNullsFirst    WorkItemOrderBy = " closed_at ASC NULLS FIRST "
 	WorkItemClosedAtAscNullsLast     WorkItemOrderBy = " closed_at ASC NULLS LAST "
-	WorkItemTargetDateDescNullsFirst WorkItemOrderBy = " target_date DESC NULLS FIRST "
-	WorkItemTargetDateDescNullsLast  WorkItemOrderBy = " target_date DESC NULLS LAST "
-	WorkItemTargetDateAscNullsFirst  WorkItemOrderBy = " target_date ASC NULLS FIRST "
-	WorkItemTargetDateAscNullsLast   WorkItemOrderBy = " target_date ASC NULLS LAST "
 	WorkItemCreatedAtDescNullsFirst  WorkItemOrderBy = " created_at DESC NULLS FIRST "
 	WorkItemCreatedAtDescNullsLast   WorkItemOrderBy = " created_at DESC NULLS LAST "
 	WorkItemCreatedAtAscNullsFirst   WorkItemOrderBy = " created_at ASC NULLS FIRST "
 	WorkItemCreatedAtAscNullsLast    WorkItemOrderBy = " created_at ASC NULLS LAST "
-	WorkItemUpdatedAtDescNullsFirst  WorkItemOrderBy = " updated_at DESC NULLS FIRST "
-	WorkItemUpdatedAtDescNullsLast   WorkItemOrderBy = " updated_at DESC NULLS LAST "
-	WorkItemUpdatedAtAscNullsFirst   WorkItemOrderBy = " updated_at ASC NULLS FIRST "
-	WorkItemUpdatedAtAscNullsLast    WorkItemOrderBy = " updated_at ASC NULLS LAST "
 	WorkItemDeletedAtDescNullsFirst  WorkItemOrderBy = " deleted_at DESC NULLS FIRST "
 	WorkItemDeletedAtDescNullsLast   WorkItemOrderBy = " deleted_at DESC NULLS LAST "
 	WorkItemDeletedAtAscNullsFirst   WorkItemOrderBy = " deleted_at ASC NULLS FIRST "
 	WorkItemDeletedAtAscNullsLast    WorkItemOrderBy = " deleted_at ASC NULLS LAST "
+	WorkItemTargetDateDescNullsFirst WorkItemOrderBy = " target_date DESC NULLS FIRST "
+	WorkItemTargetDateDescNullsLast  WorkItemOrderBy = " target_date DESC NULLS LAST "
+	WorkItemTargetDateAscNullsFirst  WorkItemOrderBy = " target_date ASC NULLS FIRST "
+	WorkItemTargetDateAscNullsLast   WorkItemOrderBy = " target_date ASC NULLS LAST "
+	WorkItemUpdatedAtDescNullsFirst  WorkItemOrderBy = " updated_at DESC NULLS FIRST "
+	WorkItemUpdatedAtDescNullsLast   WorkItemOrderBy = " updated_at DESC NULLS LAST "
+	WorkItemUpdatedAtAscNullsFirst   WorkItemOrderBy = " updated_at ASC NULLS FIRST "
+	WorkItemUpdatedAtAscNullsLast    WorkItemOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // WithWorkItemOrderBy orders results by the given columns.
@@ -363,14 +363,14 @@ const workItemTableWorkItemTypeGroupBySQL = `_work_items_work_item_type_id.work_
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_items (
-	title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed_at, target_date, deleted_at
+	closed_at, deleted_at, description, kanban_step_id, metadata, target_date, team_id, title, work_item_type_id
 	) VALUES (
 	$1, $2, $3, $4, $5, $6, $7, $8, $9
 	) RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.ClosedAt, wi.TargetDate, wi.DeletedAt)
+	logf(sqlstr, wi.ClosedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.WorkItemTypeID)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.ClosedAt, wi.TargetDate, wi.DeletedAt)
+	rows, err := db.Query(ctx, sqlstr, wi.ClosedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.WorkItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -388,13 +388,13 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET 
-	title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed_at = $7, target_date = $8, deleted_at = $9 
+	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, metadata = $5, target_date = $6, team_id = $7, title = $8, work_item_type_id = $9 
 	WHERE work_item_id = $10 
 	RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.ClosedAt, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
+	logf(sqlstr, wi.ClosedAt, wi.CreatedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.UpdatedAt, wi.WorkItemTypeID, wi.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.ClosedAt, wi.TargetDate, wi.DeletedAt, wi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, wi.ClosedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.WorkItemTypeID, wi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -412,14 +412,14 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
 	var err error
 
-	wi.Title = params.Title
-	wi.Description = params.Description
-	wi.WorkItemTypeID = params.WorkItemTypeID
-	wi.Metadata = params.Metadata
-	wi.TeamID = params.TeamID
-	wi.KanbanStepID = params.KanbanStepID
 	wi.ClosedAt = params.ClosedAt
+	wi.Description = params.Description
+	wi.KanbanStepID = params.KanbanStepID
+	wi.Metadata = params.Metadata
 	wi.TargetDate = params.TargetDate
+	wi.TeamID = params.TeamID
+	wi.Title = params.Title
+	wi.WorkItemTypeID = params.WorkItemTypeID
 
 	wi, err = wi.Insert(ctx, db)
 	if err != nil {
@@ -477,7 +477,7 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 }
 
 // WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
-func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -575,18 +575,18 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
-	work_items.title,
-	work_items.description,
-	work_items.work_item_type_id,
-	work_items.metadata,
-	work_items.team_id,
-	work_items.kanban_step_id,
 	work_items.closed_at,
-	work_items.target_date,
 	work_items.created_at,
+	work_items.deleted_at,
+	work_items.description,
+	work_items.kanban_step_id,
+	work_items.metadata,
+	work_items.target_date,
+	work_items.team_id,
+	work_items.title,
 	work_items.updated_at,
-	work_items.deleted_at %s 
+	work_items.work_item_id,
+	work_items.work_item_type_id %s 
 	 FROM public.work_items %s 
 	 WHERE work_items.work_item_id > $1
 	 %s   AND work_items.deleted_at is %s  %s 
@@ -609,7 +609,7 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 }
 
 // WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
-func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -707,18 +707,18 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
-	work_items.title,
-	work_items.description,
-	work_items.work_item_type_id,
-	work_items.metadata,
-	work_items.team_id,
-	work_items.kanban_step_id,
 	work_items.closed_at,
-	work_items.target_date,
 	work_items.created_at,
+	work_items.deleted_at,
+	work_items.description,
+	work_items.kanban_step_id,
+	work_items.metadata,
+	work_items.target_date,
+	work_items.team_id,
+	work_items.title,
 	work_items.updated_at,
-	work_items.deleted_at %s 
+	work_items.work_item_id,
+	work_items.work_item_type_id %s 
 	 FROM public.work_items %s 
 	 WHERE work_items.work_item_id < $1
 	 %s   AND work_items.deleted_at is %s  %s 
@@ -841,18 +841,18 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
-	work_items.title,
-	work_items.description,
-	work_items.work_item_type_id,
-	work_items.metadata,
-	work_items.team_id,
-	work_items.kanban_step_id,
 	work_items.closed_at,
-	work_items.target_date,
 	work_items.created_at,
+	work_items.deleted_at,
+	work_items.description,
+	work_items.kanban_step_id,
+	work_items.metadata,
+	work_items.target_date,
+	work_items.team_id,
+	work_items.title,
 	work_items.updated_at,
-	work_items.deleted_at %s 
+	work_items.work_item_id,
+	work_items.work_item_type_id %s 
 	 FROM public.work_items %s 
 	 WHERE true
 	 %s   AND work_items.deleted_at is %s  %s 
@@ -978,18 +978,18 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
-	work_items.title,
-	work_items.description,
-	work_items.work_item_type_id,
-	work_items.metadata,
-	work_items.team_id,
-	work_items.kanban_step_id,
 	work_items.closed_at,
-	work_items.target_date,
 	work_items.created_at,
+	work_items.deleted_at,
+	work_items.description,
+	work_items.kanban_step_id,
+	work_items.metadata,
+	work_items.target_date,
+	work_items.team_id,
+	work_items.title,
 	work_items.updated_at,
-	work_items.deleted_at %s 
+	work_items.work_item_id,
+	work_items.work_item_type_id %s 
 	 FROM public.work_items %s 
 	 WHERE work_items.deleted_at = $1 AND (deleted_at IS NOT NULL)
 	 %s   AND work_items.deleted_at is %s  %s 
@@ -1017,7 +1017,7 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 // WorkItemByWorkItemID retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_pkey'.
-func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
+func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -1115,18 +1115,18 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
-	work_items.title,
-	work_items.description,
-	work_items.work_item_type_id,
-	work_items.metadata,
-	work_items.team_id,
-	work_items.kanban_step_id,
 	work_items.closed_at,
-	work_items.target_date,
 	work_items.created_at,
+	work_items.deleted_at,
+	work_items.description,
+	work_items.kanban_step_id,
+	work_items.metadata,
+	work_items.target_date,
+	work_items.team_id,
+	work_items.title,
 	work_items.updated_at,
-	work_items.deleted_at %s 
+	work_items.work_item_id,
+	work_items.work_item_type_id %s 
 	 FROM public.work_items %s 
 	 WHERE work_items.work_item_id = $1
 	 %s   AND work_items.deleted_at is %s  %s 
@@ -1250,18 +1250,18 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemS
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
-	work_items.title,
-	work_items.description,
-	work_items.work_item_type_id,
-	work_items.metadata,
-	work_items.team_id,
-	work_items.kanban_step_id,
 	work_items.closed_at,
-	work_items.target_date,
 	work_items.created_at,
+	work_items.deleted_at,
+	work_items.description,
+	work_items.kanban_step_id,
+	work_items.metadata,
+	work_items.target_date,
+	work_items.team_id,
+	work_items.title,
 	work_items.updated_at,
-	work_items.deleted_at %s 
+	work_items.work_item_id,
+	work_items.work_item_type_id %s 
 	 FROM public.work_items %s 
 	 WHERE work_items.team_id = $1
 	 %s   AND work_items.deleted_at is %s  %s 
@@ -1387,18 +1387,18 @@ func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItem
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
-	work_items.title,
-	work_items.description,
-	work_items.work_item_type_id,
-	work_items.metadata,
-	work_items.team_id,
-	work_items.kanban_step_id,
 	work_items.closed_at,
-	work_items.target_date,
 	work_items.created_at,
+	work_items.deleted_at,
+	work_items.description,
+	work_items.kanban_step_id,
+	work_items.metadata,
+	work_items.target_date,
+	work_items.team_id,
+	work_items.title,
 	work_items.updated_at,
-	work_items.deleted_at %s 
+	work_items.work_item_id,
+	work_items.work_item_type_id %s 
 	 FROM public.work_items %s 
 	 WHERE work_items.title = $1
 	 %s   AND work_items.deleted_at is %s  %s 

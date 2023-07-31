@@ -243,7 +243,7 @@ type {{ $t.GoName }} struct {
 {{/* NOTE: ensure sqlc does not generate clashing names */}}
 // {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}CreateParams struct {
-{{ range $t.Fields -}}
+{{ range sort_fields $t.Fields -}}
 	{{ field . "CreateParams" $t -}}
 {{ end -}}
 }
@@ -262,7 +262,7 @@ func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}Cr
 
 // {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}UpdateParams struct {
-{{ range $t.Fields -}}
+{{ range sort_fields $t.Fields -}}
 	{{ field . "UpdateParams" $t -}}
 {{ end -}}
 }

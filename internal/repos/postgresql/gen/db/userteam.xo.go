@@ -31,15 +31,15 @@ type UserTeam struct {
 
 // UserTeamCreateParams represents insert params for 'public.user_team'.
 type UserTeamCreateParams struct {
-	TeamID int       `json:"teamID" required:"true"` // team_id
 	Member uuid.UUID `json:"member" required:"true"` // member
+	TeamID int       `json:"teamID" required:"true"` // team_id
 }
 
 // CreateUserTeam creates a new UserTeam in the database with the given params.
 func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*UserTeam, error) {
 	ut := &UserTeam{
-		TeamID: params.TeamID,
 		Member: params.Member,
+		TeamID: params.TeamID,
 	}
 
 	return ut.Insert(ctx, db)
@@ -47,17 +47,17 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 
 // UserTeamUpdateParams represents update params for 'public.user_team'.
 type UserTeamUpdateParams struct {
-	TeamID *int       `json:"teamID" required:"true"` // team_id
 	Member *uuid.UUID `json:"member" required:"true"` // member
+	TeamID *int       `json:"teamID" required:"true"` // team_id
 }
 
 // SetUpdateParams updates public.user_team struct fields with the specified params.
 func (ut *UserTeam) SetUpdateParams(params *UserTeamUpdateParams) {
-	if params.TeamID != nil {
-		ut.TeamID = *params.TeamID
-	}
 	if params.Member != nil {
 		ut.Member = *params.Member
+	}
+	if params.TeamID != nil {
+		ut.TeamID = *params.TeamID
 	}
 }
 
@@ -160,14 +160,14 @@ const userTeamTableMembersGroupBySQL = `user_team.member, user_team.team_id, use
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	// insert (manual)
 	sqlstr := `INSERT INTO public.user_team (
-	team_id, member
+	member, team_id
 	) VALUES (
 	$1, $2
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, ut.TeamID, ut.Member)
-	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.Member)
+	logf(sqlstr, ut.Member, ut.TeamID)
+	rows, err := db.Query(ctx, sqlstr, ut.Member, ut.TeamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/Insert/db.Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
@@ -253,8 +253,8 @@ func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...Use
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_team.team_id,
-	user_team.member %s 
+	user_team.member,
+	user_team.team_id %s 
 	 FROM public.user_team %s 
 	 WHERE user_team.member = $1
 	 %s   %s 
@@ -338,8 +338,8 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_team.team_id,
-	user_team.member %s 
+	user_team.member,
+	user_team.team_id %s 
 	 FROM public.user_team %s 
 	 WHERE user_team.member = $1 AND user_team.team_id = $2
 	 %s   %s 
@@ -421,8 +421,8 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_team.team_id,
-	user_team.member %s 
+	user_team.member,
+	user_team.team_id %s 
 	 FROM public.user_team %s 
 	 WHERE user_team.team_id = $1
 	 %s   %s 
@@ -506,8 +506,8 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_team.team_id,
-	user_team.member %s 
+	user_team.member,
+	user_team.team_id %s 
 	 FROM public.user_team %s 
 	 WHERE user_team.team_id = $1 AND user_team.member = $2
 	 %s   %s 

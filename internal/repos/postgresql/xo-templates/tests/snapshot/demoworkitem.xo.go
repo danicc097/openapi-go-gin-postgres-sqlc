@@ -23,23 +23,23 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoWorkItem struct {
-	WorkItemID int64 `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
-	Checked    bool  `json:"checked" db:"checked" required:"true"`         // checked
+	WorkItemID int  `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
+	Checked    bool `json:"checked" db:"checked" required:"true"`         // checked
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 }
 
 // DemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.
 type DemoWorkItemCreateParams struct {
-	WorkItemID int64 `json:"workItemID" required:"true"` // work_item_id
-	Checked    bool  `json:"checked" required:"true"`    // checked
+	Checked    bool `json:"checked" required:"true"`    // checked
+	WorkItemID int  `json:"workItemID" required:"true"` // work_item_id
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
 func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
 	dwi := &DemoWorkItem{
-		WorkItemID: params.WorkItemID,
 		Checked:    params.Checked,
+		WorkItemID: params.WorkItemID,
 	}
 
 	return dwi.Insert(ctx, db)
@@ -118,14 +118,14 @@ const demoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_
 func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, error) {
 	// insert (manual)
 	sqlstr := `INSERT INTO xo_tests.demo_work_items (
-	work_item_id, checked
+	checked, work_item_id
 	) VALUES (
 	$1, $2
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, dwi.WorkItemID, dwi.Checked)
-	rows, err := db.Query(ctx, sqlstr, dwi.WorkItemID, dwi.Checked)
+	logf(sqlstr, dwi.Checked, dwi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, dwi.Checked, dwi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/Insert/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
@@ -166,8 +166,8 @@ func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, erro
 func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
 	var err error
 
-	dwi.WorkItemID = params.WorkItemID
 	dwi.Checked = params.Checked
+	dwi.WorkItemID = params.WorkItemID
 
 	dwi, err = dwi.Insert(ctx, db)
 	if err != nil {
@@ -199,7 +199,7 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // DemoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoWorkItem in Asc order.
-func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -249,8 +249,8 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_work_items.work_item_id,
-	demo_work_items.checked %s 
+	demo_work_items.checked,
+	demo_work_items.work_item_id %s 
 	 FROM xo_tests.demo_work_items %s 
 	 WHERE demo_work_items.work_item_id > $1
 	 %s   %s 
@@ -273,7 +273,7 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 }
 
 // DemoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoWorkItem in Desc order.
-func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -323,8 +323,8 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_work_items.work_item_id,
-	demo_work_items.checked %s 
+	demo_work_items.checked,
+	demo_work_items.work_item_id %s 
 	 FROM xo_tests.demo_work_items %s 
 	 WHERE demo_work_items.work_item_id < $1
 	 %s   %s 
@@ -349,7 +349,7 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 // DemoWorkItemByWorkItemID retrieves a row from 'xo_tests.demo_work_items' as a DemoWorkItem.
 //
 // Generated from index 'demo_work_items_pkey'.
-func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
+func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -399,8 +399,8 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_work_items.work_item_id,
-	demo_work_items.checked %s 
+	demo_work_items.checked,
+	demo_work_items.work_item_id %s 
 	 FROM xo_tests.demo_work_items %s 
 	 WHERE demo_work_items.work_item_id = $1
 	 %s   %s 

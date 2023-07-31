@@ -24,7 +24,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemAssignedUser struct {
-	WorkItemID   int64            `json:"workItemID" db:"work_item_id" required:"true"`    // work_item_id
+	WorkItemID   int              `json:"workItemID" db:"work_item_id" required:"true"`    // work_item_id
 	AssignedUser uuid.UUID        `json:"assignedUser" db:"assigned_user" required:"true"` // assigned_user
 	Role         NullWorkItemRole `json:"role" db:"role" required:"true"`                  // role
 
@@ -34,17 +34,17 @@ type WorkItemAssignedUser struct {
 
 // WorkItemAssignedUserCreateParams represents insert params for 'xo_tests.work_item_assigned_user'.
 type WorkItemAssignedUserCreateParams struct {
-	WorkItemID   int64            `json:"workItemID" required:"true"`   // work_item_id
 	AssignedUser uuid.UUID        `json:"assignedUser" required:"true"` // assigned_user
 	Role         NullWorkItemRole `json:"role" required:"true"`         // role
+	WorkItemID   int              `json:"workItemID" required:"true"`   // work_item_id
 }
 
 // CreateWorkItemAssignedUser creates a new WorkItemAssignedUser in the database with the given params.
 func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssignedUserCreateParams) (*WorkItemAssignedUser, error) {
 	wiau := &WorkItemAssignedUser{
-		WorkItemID:   params.WorkItemID,
 		AssignedUser: params.AssignedUser,
 		Role:         params.Role,
+		WorkItemID:   params.WorkItemID,
 	}
 
 	return wiau.Insert(ctx, db)
@@ -52,21 +52,21 @@ func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssi
 
 // WorkItemAssignedUserUpdateParams represents update params for 'xo_tests.work_item_assigned_user'.
 type WorkItemAssignedUserUpdateParams struct {
-	WorkItemID   *int64            `json:"workItemID" required:"true"`   // work_item_id
 	AssignedUser *uuid.UUID        `json:"assignedUser" required:"true"` // assigned_user
 	Role         *NullWorkItemRole `json:"role" required:"true"`         // role
+	WorkItemID   *int              `json:"workItemID" required:"true"`   // work_item_id
 }
 
 // SetUpdateParams updates xo_tests.work_item_assigned_user struct fields with the specified params.
 func (wiau *WorkItemAssignedUser) SetUpdateParams(params *WorkItemAssignedUserUpdateParams) {
-	if params.WorkItemID != nil {
-		wiau.WorkItemID = *params.WorkItemID
-	}
 	if params.AssignedUser != nil {
 		wiau.AssignedUser = *params.AssignedUser
 	}
 	if params.Role != nil {
 		wiau.Role = *params.Role
+	}
+	if params.WorkItemID != nil {
+		wiau.WorkItemID = *params.WorkItemID
 	}
 }
 
@@ -185,14 +185,14 @@ const workItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_use
 func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
 	// insert (manual)
 	sqlstr := `INSERT INTO xo_tests.work_item_assigned_user (
-	work_item_id, assigned_user, role
+	assigned_user, role, work_item_id
 	) VALUES (
 	$1, $2, $3
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, wiau.WorkItemID, wiau.AssignedUser, wiau.Role)
-	rows, err := db.Query(ctx, sqlstr, wiau.WorkItemID, wiau.AssignedUser, wiau.Role)
+	logf(sqlstr, wiau.AssignedUser, wiau.Role, wiau.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, wiau.AssignedUser, wiau.Role, wiau.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/Insert/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -233,9 +233,9 @@ func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemA
 func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *WorkItemAssignedUserCreateParams) (*WorkItemAssignedUser, error) {
 	var err error
 
-	wiau.WorkItemID = params.WorkItemID
 	wiau.AssignedUser = params.AssignedUser
 	wiau.Role = params.Role
+	wiau.WorkItemID = params.WorkItemID
 
 	wiau, err = wiau.Insert(ctx, db)
 	if err != nil {
@@ -269,7 +269,7 @@ func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 // WorkItemAssignedUsersByAssignedUserWorkItemID retrieves a row from 'xo_tests.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
-func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser uuid.UUID, workItemID int64, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser uuid.UUID, workItemID int, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -325,9 +325,9 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_assigned_user.work_item_id,
 	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role %s 
+	work_item_assigned_user.role,
+	work_item_assigned_user.work_item_id %s 
 	 FROM xo_tests.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
 	 %s   %s 
@@ -355,7 +355,7 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 // WorkItemAssignedUserByWorkItemIDAssignedUser retrieves a row from 'xo_tests.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID int64, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
+func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID int, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -411,9 +411,9 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_assigned_user.work_item_id,
 	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role %s 
+	work_item_assigned_user.role,
+	work_item_assigned_user.work_item_id %s 
 	 FROM xo_tests.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
 	 %s   %s 
@@ -439,7 +439,7 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 // WorkItemAssignedUsersByWorkItemID retrieves a row from 'xo_tests.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -495,9 +495,9 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_assigned_user.work_item_id,
 	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role %s 
+	work_item_assigned_user.role,
+	work_item_assigned_user.work_item_id %s 
 	 FROM xo_tests.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1
 	 %s   %s 
@@ -581,9 +581,9 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_assigned_user.work_item_id,
 	work_item_assigned_user.assigned_user,
-	work_item_assigned_user.role %s 
+	work_item_assigned_user.role,
+	work_item_assigned_user.work_item_id %s 
 	 FROM xo_tests.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1
 	 %s   %s 

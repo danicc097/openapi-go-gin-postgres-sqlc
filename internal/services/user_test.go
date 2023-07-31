@@ -147,7 +147,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	}
 	type want struct {
 		Scopes models.Scopes
-		Rank   int16
+		Rank   int
 	}
 
 	tests := []struct {

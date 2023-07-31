@@ -35,17 +35,17 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 		t.Fatalf("workItemCommentRepo.Create unexpected error = %v", err)
 	}
 
-	type argsInt64 struct {
-		filter int64
-		fn     func(context.Context, db.DBTX, int64) (*db.WorkItemComment, error)
+	type argsInt struct {
+		filter int
+		fn     func(context.Context, db.DBTX, int) (*db.WorkItemComment, error)
 	}
 	testsInt := []struct {
 		name string
-		args argsInt64
+		args argsInt
 	}{
 		{
 			name: "workItemComment_id",
-			args: argsInt64{
+			args: argsInt{
 				filter: workItemComment.WorkItemCommentID,
 				fn:     (workItemCommentRepo.ByID),
 			},
@@ -68,7 +68,7 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			filter := int64(254364) // does not exist
+			filter := 254364 // does not exist
 
 			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {

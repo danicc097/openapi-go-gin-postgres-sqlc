@@ -14,7 +14,7 @@ import (
 
 type TimeEntries struct {
 	TimeEntryID     int64     `sql:"primary_key" db:"time_entry_id"`
-	WorkItemID      *int64    `db:"work_item_id"`
+	WorkItemID      *int    `db:"work_item_id"`
 	ActivityID      int32     `db:"activity_id"`
 	TeamID          *int32    `db:"team_id"`
 	UserID          uuid.UUID `db:"user_id"`

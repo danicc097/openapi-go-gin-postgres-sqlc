@@ -37,22 +37,22 @@ type KanbanStep struct {
 
 // KanbanStepCreateParams represents insert params for 'public.kanban_steps'.
 type KanbanStepCreateParams struct {
+	Color         string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description   string `json:"description" required:"true"`                                        // description
+	Name          string `json:"name" required:"true"`                                               // name
 	ProjectID     int    `json:"projectID"`                                                          // project_id
 	StepOrder     int    `json:"stepOrder" required:"true"`                                          // step_order
-	Name          string `json:"name" required:"true"`                                               // name
-	Description   string `json:"description" required:"true"`                                        // description
-	Color         string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	TimeTrackable bool   `json:"timeTrackable" required:"true"`                                      // time_trackable
 }
 
 // CreateKanbanStep creates a new KanbanStep in the database with the given params.
 func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {
 	ks := &KanbanStep{
+		Color:         params.Color,
+		Description:   params.Description,
+		Name:          params.Name,
 		ProjectID:     params.ProjectID,
 		StepOrder:     params.StepOrder,
-		Name:          params.Name,
-		Description:   params.Description,
-		Color:         params.Color,
 		TimeTrackable: params.TimeTrackable,
 	}
 
@@ -61,30 +61,30 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'.
 type KanbanStepUpdateParams struct {
+	Color         *string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description   *string `json:"description" required:"true"`                                        // description
+	Name          *string `json:"name" required:"true"`                                               // name
 	ProjectID     *int    `json:"projectID"`                                                          // project_id
 	StepOrder     *int    `json:"stepOrder" required:"true"`                                          // step_order
-	Name          *string `json:"name" required:"true"`                                               // name
-	Description   *string `json:"description" required:"true"`                                        // description
-	Color         *string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	TimeTrackable *bool   `json:"timeTrackable" required:"true"`                                      // time_trackable
 }
 
 // SetUpdateParams updates public.kanban_steps struct fields with the specified params.
 func (ks *KanbanStep) SetUpdateParams(params *KanbanStepUpdateParams) {
+	if params.Color != nil {
+		ks.Color = *params.Color
+	}
+	if params.Description != nil {
+		ks.Description = *params.Description
+	}
+	if params.Name != nil {
+		ks.Name = *params.Name
+	}
 	if params.ProjectID != nil {
 		ks.ProjectID = *params.ProjectID
 	}
 	if params.StepOrder != nil {
 		ks.StepOrder = *params.StepOrder
-	}
-	if params.Name != nil {
-		ks.Name = *params.Name
-	}
-	if params.Description != nil {
-		ks.Description = *params.Description
-	}
-	if params.Color != nil {
-		ks.Color = *params.Color
 	}
 	if params.TimeTrackable != nil {
 		ks.TimeTrackable = *params.TimeTrackable
@@ -154,14 +154,14 @@ const kanbanStepTableProjectGroupBySQL = `_kanban_steps_project_id.project_id,
 func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.kanban_steps (
-	project_id, step_order, name, description, color, time_trackable
+	color, description, name, project_id, step_order, time_trackable
 	) VALUES (
 	$1, $2, $3, $4, $5, $6
 	) RETURNING * `
 	// run
-	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
+	logf(sqlstr, ks.Color, ks.Description, ks.Name, ks.ProjectID, ks.StepOrder, ks.TimeTrackable)
 
-	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
+	rows, err := db.Query(ctx, sqlstr, ks.Color, ks.Description, ks.Name, ks.ProjectID, ks.StepOrder, ks.TimeTrackable)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Insert/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -179,13 +179,13 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET 
-	project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6 
+	color = $1, description = $2, name = $3, project_id = $4, step_order = $5, time_trackable = $6 
 	WHERE kanban_step_id = $7 
 	RETURNING * `
 	// run
-	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	logf(sqlstr, ks.Color, ks.Description, ks.Name, ks.ProjectID, ks.StepOrder, ks.TimeTrackable, ks.KanbanStepID)
 
-	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, ks.Color, ks.Description, ks.Name, ks.ProjectID, ks.StepOrder, ks.TimeTrackable, ks.KanbanStepID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Update/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -203,11 +203,11 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 func (ks *KanbanStep) Upsert(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {
 	var err error
 
+	ks.Color = params.Color
+	ks.Description = params.Description
+	ks.Name = params.Name
 	ks.ProjectID = params.ProjectID
 	ks.StepOrder = params.StepOrder
-	ks.Name = params.Name
-	ks.Description = params.Description
-	ks.Color = params.Color
 	ks.TimeTrackable = params.TimeTrackable
 
 	ks, err = ks.Insert(ctx, db)
@@ -290,12 +290,12 @@ func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStep
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.kanban_step_id > $1
@@ -369,12 +369,12 @@ func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id > $1
@@ -448,12 +448,12 @@ func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.step_order > $1
@@ -527,12 +527,12 @@ func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanSte
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.kanban_step_id < $1
@@ -606,12 +606,12 @@ func KanbanStepPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID in
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id < $1
@@ -685,12 +685,12 @@ func KanbanStepPaginatedByStepOrderDesc(ctx context.Context, db DB, stepOrder in
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.step_order < $1
@@ -766,12 +766,12 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.kanban_step_id = $1
@@ -848,12 +848,12 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID in
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND kanban_steps.step_order = $3
@@ -930,12 +930,12 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...K
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id = $1
@@ -1014,12 +1014,12 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.name = $1
@@ -1098,12 +1098,12 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.step_order = $1
@@ -1182,12 +1182,12 @@ func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, s
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	kanban_steps.color,
+	kanban_steps.description,
 	kanban_steps.kanban_step_id,
+	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.name,
-	kanban_steps.description,
-	kanban_steps.color,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id = $1 AND kanban_steps.step_order = $2

@@ -29,7 +29,7 @@ func NewDemoTwoWorkItemWithRetry(base repos.DemoTwoWorkItem, retryCount int, ret
 }
 
 // ByID implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoTwoWorkItem.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -67,7 +67,7 @@ func (_d DemoTwoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params
 }
 
 // Delete implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoTwoWorkItem.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -86,7 +86,7 @@ func (_d DemoTwoWorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int
 }
 
 // Restore implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoTwoWorkItem.Restore(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -105,7 +105,7 @@ func (_d DemoTwoWorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id in
 }
 
 // Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoTwoWorkItem.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

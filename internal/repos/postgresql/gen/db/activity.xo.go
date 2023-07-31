@@ -36,19 +36,19 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
-	ProjectID    int    `json:"projectID"`                    // project_id
-	Name         string `json:"name" required:"true"`         // name
 	Description  string `json:"description" required:"true"`  // description
 	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
+	Name         string `json:"name" required:"true"`         // name
+	ProjectID    int    `json:"projectID"`                    // project_id
 }
 
 // CreateActivity creates a new Activity in the database with the given params.
 func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
 	a := &Activity{
-		ProjectID:    params.ProjectID,
-		Name:         params.Name,
 		Description:  params.Description,
 		IsProductive: params.IsProductive,
+		Name:         params.Name,
+		ProjectID:    params.ProjectID,
 	}
 
 	return a.Insert(ctx, db)
@@ -56,25 +56,25 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {
-	ProjectID    *int    `json:"projectID"`                    // project_id
-	Name         *string `json:"name" required:"true"`         // name
 	Description  *string `json:"description" required:"true"`  // description
 	IsProductive *bool   `json:"isProductive" required:"true"` // is_productive
+	Name         *string `json:"name" required:"true"`         // name
+	ProjectID    *int    `json:"projectID"`                    // project_id
 }
 
 // SetUpdateParams updates public.activities struct fields with the specified params.
 func (a *Activity) SetUpdateParams(params *ActivityUpdateParams) {
-	if params.ProjectID != nil {
-		a.ProjectID = *params.ProjectID
-	}
-	if params.Name != nil {
-		a.Name = *params.Name
-	}
 	if params.Description != nil {
 		a.Description = *params.Description
 	}
 	if params.IsProductive != nil {
 		a.IsProductive = *params.IsProductive
+	}
+	if params.Name != nil {
+		a.Name = *params.Name
+	}
+	if params.ProjectID != nil {
+		a.ProjectID = *params.ProjectID
 	}
 }
 
@@ -159,14 +159,14 @@ const activityTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, ac
 func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.activities (
-	project_id, name, description, is_productive
+	description, is_productive, name, project_id
 	) VALUES (
 	$1, $2, $3, $4
 	) RETURNING * `
 	// run
-	logf(sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive)
+	logf(sqlstr, a.Description, a.IsProductive, a.Name, a.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive)
+	rows, err := db.Query(ctx, sqlstr, a.Description, a.IsProductive, a.Name, a.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Insert/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -184,13 +184,13 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.activities SET 
-	project_id = $1, name = $2, description = $3, is_productive = $4 
+	description = $1, is_productive = $2, name = $3, project_id = $4 
 	WHERE activity_id = $5 
 	RETURNING * `
 	// run
-	logf(sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	logf(sqlstr, a.Description, a.IsProductive, a.Name, a.ProjectID, a.ActivityID)
 
-	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	rows, err := db.Query(ctx, sqlstr, a.Description, a.IsProductive, a.Name, a.ProjectID, a.ActivityID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Update/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -208,10 +208,10 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
 	var err error
 
-	a.ProjectID = params.ProjectID
-	a.Name = params.Name
 	a.Description = params.Description
 	a.IsProductive = params.IsProductive
+	a.Name = params.Name
+	a.ProjectID = params.ProjectID
 
 	a, err = a.Insert(ctx, db)
 	if err != nil {
@@ -300,10 +300,10 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
-	activities.project_id,
-	activities.name,
 	activities.description,
-	activities.is_productive %s 
+	activities.is_productive,
+	activities.name,
+	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.activity_id > $1
 	 %s   %s 
@@ -383,10 +383,10 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
-	activities.project_id,
-	activities.name,
 	activities.description,
-	activities.is_productive %s 
+	activities.is_productive,
+	activities.name,
+	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.project_id > $1
 	 %s   %s 
@@ -466,10 +466,10 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
-	activities.project_id,
-	activities.name,
 	activities.description,
-	activities.is_productive %s 
+	activities.is_productive,
+	activities.name,
+	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.activity_id < $1
 	 %s   %s 
@@ -549,10 +549,10 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
-	activities.project_id,
-	activities.name,
 	activities.description,
-	activities.is_productive %s 
+	activities.is_productive,
+	activities.name,
+	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.project_id < $1
 	 %s   %s 
@@ -634,10 +634,10 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
-	activities.project_id,
-	activities.name,
 	activities.description,
-	activities.is_productive %s 
+	activities.is_productive,
+	activities.name,
+	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.name = $1 AND activities.project_id = $2
 	 %s   %s 
@@ -720,10 +720,10 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
-	activities.project_id,
-	activities.name,
 	activities.description,
-	activities.is_productive %s 
+	activities.is_productive,
+	activities.name,
+	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.name = $1
 	 %s   %s 
@@ -808,10 +808,10 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
-	activities.project_id,
-	activities.name,
 	activities.description,
-	activities.is_productive %s 
+	activities.is_productive,
+	activities.name,
+	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.project_id = $1
 	 %s   %s 
@@ -896,10 +896,10 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
-	activities.project_id,
-	activities.name,
 	activities.description,
-	activities.is_productive %s 
+	activities.is_productive,
+	activities.name,
+	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.activity_id = $1
 	 %s   %s 

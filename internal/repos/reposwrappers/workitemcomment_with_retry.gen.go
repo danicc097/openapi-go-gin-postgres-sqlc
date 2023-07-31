@@ -29,7 +29,7 @@ func NewWorkItemCommentWithRetry(base repos.WorkItemComment, retryCount int, ret
 }
 
 // ByID implements repos.WorkItemComment
-func (_d WorkItemCommentWithRetry) ByID(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemComment, err error) {
 	wp1, err = _d.WorkItemComment.ByID(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -67,7 +67,7 @@ func (_d WorkItemCommentWithRetry) Create(ctx context.Context, d db.DBTX, params
 }
 
 // Delete implements repos.WorkItemComment
-func (_d WorkItemCommentWithRetry) Delete(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemComment, err error) {
 	wp1, err = _d.WorkItemComment.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -86,7 +86,7 @@ func (_d WorkItemCommentWithRetry) Delete(ctx context.Context, d db.DBTX, id int
 }
 
 // Update implements repos.WorkItemComment
-func (_d WorkItemCommentWithRetry) Update(ctx context.Context, d db.DBTX, id int64, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithRetry) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
 	wp1, err = _d.WorkItemComment.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

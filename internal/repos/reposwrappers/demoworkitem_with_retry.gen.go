@@ -29,7 +29,7 @@ func NewDemoWorkItemWithRetry(base repos.DemoWorkItem, retryCount int, retryInte
 }
 
 // ByID implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoWorkItem.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -67,7 +67,7 @@ func (_d DemoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params re
 }
 
 // Delete implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoWorkItem.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -86,7 +86,7 @@ func (_d DemoWorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int64)
 }
 
 // Restore implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoWorkItem.Restore(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -105,7 +105,7 @@ func (_d DemoWorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id int64
 }
 
 // Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoWorkItem.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return
