@@ -14,9 +14,9 @@ import (
 )
 
 type DemoTwoWorkItem struct {
-	logger     *zap.SugaredLogger
-	demowiRepo repos.DemoTwoWorkItem
-	wiRepo     repos.WorkItem
+	logger        *zap.SugaredLogger
+	demotwowiRepo repos.DemoTwoWorkItem
+	wiRepo        repos.WorkItem
 }
 
 type DemoTwoWorkItemCreateParams struct {
@@ -28,9 +28,9 @@ type DemoTwoWorkItemCreateParams struct {
 // NewDemoTwoWorkItem returns a new DemoTwoWorkItem service.
 func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkItem, wiRepo repos.WorkItem) *DemoTwoWorkItem {
 	return &DemoTwoWorkItem{
-		logger:     logger,
-		demowiRepo: demowiRepo,
-		wiRepo:     wiRepo,
+		logger:        logger,
+		demotwowiRepo: demowiRepo,
+		wiRepo:        wiRepo,
 	}
 }
 
@@ -38,7 +38,7 @@ func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkI
 func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoTwoWorkItem.ByID").End()
 
-	wi, err := w.demowiRepo.ByID(ctx, d, id)
+	wi, err := w.demotwowiRepo.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
 	}
@@ -50,7 +50,7 @@ func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64) (*db.Wo
 func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoTwoWorkItem.Create").End()
 
-	demoWi, err := w.demowiRepo.Create(ctx, d, params.DemoTwoWorkItemCreateParams)
+	demoWi, err := w.demotwowiRepo.Create(ctx, d, params.DemoTwoWorkItemCreateParams)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
@@ -86,7 +86,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 	// (else tests - with response validation - will fail)
 	// response validation could be disabled in prod for better availability in place of strictness
 	opts := db.WithWorkItemJoin(db.WorkItemJoins{DemoTwoWorkItem: true, AssignedUsers: true, WorkItemTags: true})
-	wi, err := w.demowiRepo.ByID(ctx, d, demoWi.WorkItemID, opts)
+	wi, err := w.demotwowiRepo.ByID(ctx, d, demoWi.WorkItemID, opts)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
 	}
@@ -98,7 +98,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoTwoWorkItem.Update").End()
 
-	wi, err := w.demowiRepo.Update(ctx, d, id, params)
+	wi, err := w.demotwowiRepo.Update(ctx, d, id, params)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Update: %w", err)
 	}
@@ -110,7 +110,7 @@ func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, param
 func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoTwoWorkItem.Delete").End()
 
-	wi, err := w.demowiRepo.Delete(ctx, d, id)
+	wi, err := w.demotwowiRepo.Delete(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Delete: %w", err)
 	}
@@ -163,5 +163,5 @@ func (w *DemoTwoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db
 }
 
 func (w *DemoTwoWorkItem) Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
-	return w.demowiRepo.Restore(ctx, d, id)
+	return w.demotwowiRepo.Restore(ctx, d, id)
 }
