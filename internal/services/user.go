@@ -23,15 +23,16 @@ type User struct {
 }
 
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
-// TODO repo should be aware of models Role and Scope and the conversion / default values is done in repo?
+// Repo should not be aware of models Role and Scope, its conversion or its default values. That's all
+// for upper layers convenience. e.g roles: entity uses rank internally. Repo should not care about mappings to user-friendly names.
 type UserRegisterParams struct {
-	Username   string        `json:"username" required:"true"`
-	Email      string        `json:"email" required:"true"`
-	FirstName  *string       `json:"firstName"`
-	LastName   *string       `json:"lastName"`
-	ExternalID string        `json:"externalID" required:"true"`
-	Scopes     models.Scopes `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
-	Role       models.Role   `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Username   string
+	Email      string
+	FirstName  *string
+	LastName   *string
+	ExternalID string
+	Scopes     []models.Scope
+	Role       models.Role
 }
 
 // NewUser returns a new User service.
@@ -106,16 +107,15 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
-	// TODO this could be done automatically with an adaptation of updateEntityWithParams
-	repoUpdateParams := db.UserUpdateParams{}
+	up := db.UserUpdateParams{}
 	if params.FirstName != nil {
-		repoUpdateParams.FirstName = pointers.New(params.FirstName)
+		up.FirstName = pointers.New(params.FirstName)
 	}
 	if params.LastName != nil {
-		repoUpdateParams.LastName = pointers.New(params.LastName)
+		up.LastName = pointers.New(params.LastName)
 	}
 
-	user, err = u.urepo.Update(ctx, d, uid, &repoUpdateParams)
+	user, err = u.urepo.Update(ctx, d, uid, &up)
 	if err != nil {
 		return nil, fmt.Errorf("urepo.Update: %w", err)
 	}
