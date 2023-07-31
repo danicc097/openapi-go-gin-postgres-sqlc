@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
+	"golang.org/x/exp/slices"
 )
 
 func handleError(err error) {
@@ -89,6 +90,25 @@ func main() {
 				params.PropertySchema.ExtraProperties["x-omitempty"] = true
 			}
 
+			if params.PropertySchema != nil && params.PropertySchema.Type != nil {
+				if (params.PropertySchema.Type.SimpleTypes != nil && *params.PropertySchema.Type.SimpleTypes == jsonschema.Object) ||
+					(len(params.PropertySchema.Type.SliceOfSimpleTypeValues) > 0 && slices.Contains(params.PropertySchema.Type.SliceOfSimpleTypeValues, jsonschema.Object)) {
+					if m, ok := params.PropertySchema.Properties["metadata"]; ok {
+						fmt.Fprintf(os.Stderr, "%+v\n", m)
+						tt := params.PropertySchema.Type.SliceOfSimpleTypeValues
+						for _, st := range params.PropertySchema.Type.SliceOfSimpleTypeValues {
+							if st == jsonschema.Null {
+								continue
+							}
+							tt = append(tt, st)
+						}
+						tt = append(tt, *params.PropertySchema.Type.SimpleTypes.Type().SimpleTypes)
+						params.PropertySchema.Type.SimpleTypes = nil
+						params.PropertySchema.Type.SliceOfSimpleTypeValues = tt
+					}
+				}
+			}
+
 			return nil
 		}),
 		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
@@ -98,16 +118,15 @@ func main() {
 			}
 
 			// nullable prop not exposed
-			// if params.Schema.Type != nil && params.Schema.Type.SimpleTypes != nil {
-			// 	if *params.Schema.Type.SimpleTypes == jsonschema.Array {
-			// 		if params.Schema.ExtraProperties == nil {
-			// 			params.Schema.ExtraProperties = make(map[string]interface{})
-			// 		}
-			// 		// if params.Schema.ExtraProperties["nullable"] == true {
-			// 		// params.Schema.ExtraProperties["x-omitempty"] = "true"
-			// 		// }
-			// 	}
-			// }
+			if params.Schema.Type != nil {
+				if (params.Schema.Type.SimpleTypes != nil && *params.Schema.Type.SimpleTypes == jsonschema.Object) ||
+					(len(params.Schema.Type.SliceOfSimpleTypeValues) > 0 && slices.Contains(params.Schema.Type.SliceOfSimpleTypeValues, jsonschema.Object)) {
+					if m, ok := params.Schema.Properties["metadata"]; ok {
+						m.TypeObject.ExtraProperties = map[string]interface{}{"nullable": false}
+						params.Schema.ExtraProperties = map[string]interface{}{"nullable": false}
+					}
+				}
+			}
 
 			return false, nil
 		}),

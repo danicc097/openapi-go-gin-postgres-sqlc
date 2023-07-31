@@ -62,6 +62,15 @@ import {
   ServicesMember,
   DbDemoTwoWorkItem,
   DbDemoTwoWorkItemCreateParams,
+  RestDemoTwoWorkItemCreateRequest,
+  RestDemoTwoWorkItemsResponse,
+  RestDemoWorkItemCreateRequest,
+  RestDemoWorkItemsResponse,
+  RestProjectBoardCreateRequest,
+  RestProjectBoardResponse,
+  RestUser,
+  RestWorkItemCommentCreateRequest,
+  RestWorkItemTagCreateRequest,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -716,5 +725,113 @@ export const DbDemoTwoWorkItemCreateParamsDecoder: Decoder<DbDemoTwoWorkItemCrea
       throw new Error(`Schema ${DbDemoTwoWorkItemCreateParamsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbDemoTwoWorkItemCreateParamsDecoder.definitionName)
+  },
+}
+export const RestDemoTwoWorkItemCreateRequestDecoder: Decoder<RestDemoTwoWorkItemCreateRequest> = {
+  definitionName: 'RestDemoTwoWorkItemCreateRequest',
+  schemaRef: '#/definitions/RestDemoTwoWorkItemCreateRequest',
+
+  decode(json: unknown): RestDemoTwoWorkItemCreateRequest {
+    const schema = ajv.getSchema(RestDemoTwoWorkItemCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestDemoTwoWorkItemCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestDemoTwoWorkItemCreateRequestDecoder.definitionName)
+  },
+}
+export const RestDemoTwoWorkItemsResponseDecoder: Decoder<RestDemoTwoWorkItemsResponse> = {
+  definitionName: 'RestDemoTwoWorkItemsResponse',
+  schemaRef: '#/definitions/RestDemoTwoWorkItemsResponse',
+
+  decode(json: unknown): RestDemoTwoWorkItemsResponse {
+    const schema = ajv.getSchema(RestDemoTwoWorkItemsResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestDemoTwoWorkItemsResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestDemoTwoWorkItemsResponseDecoder.definitionName)
+  },
+}
+export const RestDemoWorkItemCreateRequestDecoder: Decoder<RestDemoWorkItemCreateRequest> = {
+  definitionName: 'RestDemoWorkItemCreateRequest',
+  schemaRef: '#/definitions/RestDemoWorkItemCreateRequest',
+
+  decode(json: unknown): RestDemoWorkItemCreateRequest {
+    const schema = ajv.getSchema(RestDemoWorkItemCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestDemoWorkItemCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestDemoWorkItemCreateRequestDecoder.definitionName)
+  },
+}
+export const RestDemoWorkItemsResponseDecoder: Decoder<RestDemoWorkItemsResponse> = {
+  definitionName: 'RestDemoWorkItemsResponse',
+  schemaRef: '#/definitions/RestDemoWorkItemsResponse',
+
+  decode(json: unknown): RestDemoWorkItemsResponse {
+    const schema = ajv.getSchema(RestDemoWorkItemsResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestDemoWorkItemsResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestDemoWorkItemsResponseDecoder.definitionName)
+  },
+}
+export const RestProjectBoardCreateRequestDecoder: Decoder<RestProjectBoardCreateRequest> = {
+  definitionName: 'RestProjectBoardCreateRequest',
+  schemaRef: '#/definitions/RestProjectBoardCreateRequest',
+
+  decode(json: unknown): RestProjectBoardCreateRequest {
+    const schema = ajv.getSchema(RestProjectBoardCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestProjectBoardCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestProjectBoardCreateRequestDecoder.definitionName)
+  },
+}
+export const RestProjectBoardResponseDecoder: Decoder<RestProjectBoardResponse> = {
+  definitionName: 'RestProjectBoardResponse',
+  schemaRef: '#/definitions/RestProjectBoardResponse',
+
+  decode(json: unknown): RestProjectBoardResponse {
+    const schema = ajv.getSchema(RestProjectBoardResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestProjectBoardResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestProjectBoardResponseDecoder.definitionName)
+  },
+}
+export const RestUserDecoder: Decoder<RestUser> = {
+  definitionName: 'RestUser',
+  schemaRef: '#/definitions/RestUser',
+
+  decode(json: unknown): RestUser {
+    const schema = ajv.getSchema(RestUserDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestUserDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestUserDecoder.definitionName)
+  },
+}
+export const RestWorkItemCommentCreateRequestDecoder: Decoder<RestWorkItemCommentCreateRequest> = {
+  definitionName: 'RestWorkItemCommentCreateRequest',
+  schemaRef: '#/definitions/RestWorkItemCommentCreateRequest',
+
+  decode(json: unknown): RestWorkItemCommentCreateRequest {
+    const schema = ajv.getSchema(RestWorkItemCommentCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestWorkItemCommentCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestWorkItemCommentCreateRequestDecoder.definitionName)
+  },
+}
+export const RestWorkItemTagCreateRequestDecoder: Decoder<RestWorkItemTagCreateRequest> = {
+  definitionName: 'RestWorkItemTagCreateRequest',
+  schemaRef: '#/definitions/RestWorkItemTagCreateRequest',
+
+  decode(json: unknown): RestWorkItemTagCreateRequest {
+    const schema = ajv.getSchema(RestWorkItemTagCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestWorkItemTagCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestWorkItemTagCreateRequestDecoder.definitionName)
   },
 }

@@ -290,6 +290,7 @@ x.gen.pregen() {
 
     update_spec_with_structs
 
+    delete_duplicate_schemas
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -1536,19 +1537,43 @@ update_spec_with_structs() {
   go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
+
+  # prevent possible overriding if name clashes with generated schemas from structs
+  # skip_schemas=("Project")
+  # mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+  # for project in ${db_projects[@]}; do
+  #   skip_schemas+=("$(to_pascal $project)KanbanSteps")
+  # done
+
+  # replace every schema back into the spec
+  for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
+    # prevent certain schemas from getting replaced by (in)direct usage in structs with clashing names
+    # if [[ " ${skip_schemas[*]} " =~ " $schema " ]]; then
+    #   echo "Skipping $schema" && continue
+    # fi
+    new_schema_key="${schemas[$schema]:-$schema}"
+    yq eval-all "(
+        select(fi == 1).components.schemas.$schema
+        ) as \$new_schema
+        | select(fi == 0)
+        | .components.schemas.$new_schema_key = \$new_schema
+        | (.components.schemas.$new_schema_key | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
+      " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
+
+    mv /tmp/final-spec "$SPEC"
+  done
 }
 
-# not needed at all if we add a ref tag to all structs that get generated. Else it creates one of these
-# delete_duplicate_schemas() {
-#   local keys=("ModelsRole" "ModelsScope" "ModelsProjectConfigField" "ModelsProjectConfig" "ModelsProject" "ModelsWorkItemRole")
-#   local paths_arr=()
-#   for key in "${keys[@]}"; do
-#     echo "Deleting ${key} (duplicate)"
-#     paths_arr+=(".components.schemas.$key")
-#   done
-#   local paths=$(join_by "," "${paths_arr[@]}")
-#   yq e "del($paths)" -i "$SPEC"
-# }
+delete_duplicate_schemas() {
+  local keys=("ModelsRole" "ModelsScope" "ModelsProjectConfigField" "ModelsProjectConfig" "ModelsProject" "ModelsWorkItemRole")
+  local paths_arr=()
+  for key in "${keys[@]}"; do
+    echo "Deleting ${key} (duplicate)"
+    paths_arr+=(".components.schemas.$key")
+  done
+  local paths=$(join_by "," "${paths_arr[@]}")
+  yq e "del($paths)" -i "$SPEC"
+}
 
 xo_schema() {
   # xo cannot use db files as input, needs an up-to-date schema

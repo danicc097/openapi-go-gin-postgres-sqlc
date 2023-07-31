@@ -518,6 +518,125 @@ export interface components {
       customDateForProject2?: string | null;
       workItemID: number;
     };
+    RestDemoTwoWorkItemCreateRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
+      members: (components["schemas"]["ServicesMember"])[] | null;
+      projectName: components["schemas"]["Project"];
+      tagIDs: (number)[] | null;
+    };
+    RestDemoTwoWorkItemsResponse: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      demoTwoWorkItem: components["schemas"]["DbDemoTwoWorkItem"];
+      description: string;
+      kanbanStepID: number;
+      members?: (components["schemas"]["DbUser"])[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemComments?: (components["schemas"]["DbWorkItemComment"])[] | null;
+      workItemID: number;
+      workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTypeID: number;
+    };
+    RestDemoWorkItemCreateRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
+      members: (components["schemas"]["ServicesMember"])[] | null;
+      projectName: components["schemas"]["Project"];
+      tagIDs: (number)[] | null;
+    };
+    RestDemoWorkItemsResponse: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      demoWorkItem: components["schemas"]["DbDemoWorkItem"];
+      description: string;
+      kanbanStepID: number;
+      members?: (components["schemas"]["DbUser"])[] | null;
+      metadata: {
+        [key: string]: unknown;
+      } | null;
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemComments?: (components["schemas"]["DbWorkItemComment"])[] | null;
+      workItemID: number;
+      workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTypeID: number;
+    };
+    RestProjectBoardCreateRequest: {
+      activities?: (components["schemas"]["DbActivityCreateParams"])[] | null;
+      projectID?: number;
+      teams?: (components["schemas"]["DbTeamCreateParams"])[] | null;
+      workItemTags?: (components["schemas"]["DbWorkItemTagCreateParams"])[] | null;
+    };
+    RestProjectBoardResponse: {
+      activities: (components["schemas"]["DbActivity"])[] | null;
+      boardConfig: components["schemas"]["ProjectConfig"];
+      /** Format: date-time */
+      createdAt: string;
+      description: string;
+      kanbanSteps: (components["schemas"]["DbKanbanStep"])[] | null;
+      name: components["schemas"]["Project"];
+      projectID: number;
+      teams: (components["schemas"]["DbTeam"])[] | null;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemTags: (components["schemas"]["DbWorkItemTag"])[] | null;
+      workItemTypes: (components["schemas"]["DbWorkItemType"])[] | null;
+    };
+    RestUser: {
+      apiKey?: components["schemas"]["DbUserAPIKey"];
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      email: string;
+      firstName?: string | null;
+      fullName?: string | null;
+      hasGlobalNotifications: boolean;
+      hasPersonalNotifications: boolean;
+      lastName?: string | null;
+      projects?: (components["schemas"]["DbProject"])[] | null;
+      role: components["schemas"]["Role"];
+      scopes: components["schemas"]["Scopes"];
+      teams?: (components["schemas"]["DbTeam"])[] | null;
+      userID: components["schemas"]["UuidUUID"];
+      username: string;
+    };
+    RestWorkItemCommentCreateRequest: {
+      message: string;
+      userID: components["schemas"]["UuidUUID"];
+      workItemID: number;
+    };
+    RestWorkItemTagCreateRequest: {
+      color: string;
+      description: string;
+      name: string;
+      projectID?: number;
+    };
   };
   responses: never;
   parameters: {

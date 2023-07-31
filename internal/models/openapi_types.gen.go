@@ -607,6 +607,125 @@ type ProjectConfigField struct {
 	ShowCollapsed bool   `json:"showCollapsed"`
 }
 
+// RestDemoTwoWorkItemCreateRequest defines the model for RestDemoTwoWorkItemCreateRequest.
+type RestDemoTwoWorkItemCreateRequest struct {
+	Base           DbWorkItemCreateParams        `json:"base"`
+	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
+	Members        *[]ServicesMember             `json:"members"`
+	ProjectName    Project                       `json:"projectName"`
+	TagIDs         *[]int                        `json:"tagIDs"`
+}
+
+// RestDemoTwoWorkItemsResponse defines the model for RestDemoTwoWorkItemsResponse.
+type RestDemoTwoWorkItemsResponse struct {
+	ClosedAt         *time.Time              `json:"closedAt"`
+	CreatedAt        time.Time               `json:"createdAt"`
+	DeletedAt        *time.Time              `json:"deletedAt"`
+	DemoTwoWorkItem  DbDemoTwoWorkItem       `json:"demoTwoWorkItem"`
+	Description      string                  `json:"description"`
+	KanbanStepID     int                     `json:"kanbanStepID"`
+	Members          *[]DbUser               `json:"members"`
+	Metadata         *map[string]interface{} `json:"metadata"`
+	TargetDate       time.Time               `json:"targetDate"`
+	TeamID           int                     `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
+	Title            string                  `json:"title"`
+	UpdatedAt        time.Time               `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
+	WorkItemID       int                     `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                     `json:"workItemTypeID"`
+}
+
+// RestDemoWorkItemCreateRequest defines the model for RestDemoWorkItemCreateRequest.
+type RestDemoWorkItemCreateRequest struct {
+	Base        DbWorkItemCreateParams     `json:"base"`
+	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
+	Members     *[]ServicesMember          `json:"members"`
+	ProjectName Project                    `json:"projectName"`
+	TagIDs      *[]int                     `json:"tagIDs"`
+}
+
+// RestDemoWorkItemsResponse defines the model for RestDemoWorkItemsResponse.
+type RestDemoWorkItemsResponse struct {
+	ClosedAt         *time.Time              `json:"closedAt"`
+	CreatedAt        time.Time               `json:"createdAt"`
+	DeletedAt        *time.Time              `json:"deletedAt"`
+	DemoWorkItem     DbDemoWorkItem          `json:"demoWorkItem"`
+	Description      string                  `json:"description"`
+	KanbanStepID     int                     `json:"kanbanStepID"`
+	Members          *[]DbUser               `json:"members"`
+	Metadata         *map[string]interface{} `json:"metadata"`
+	TargetDate       time.Time               `json:"targetDate"`
+	TeamID           int                     `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
+	Title            string                  `json:"title"`
+	UpdatedAt        time.Time               `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
+	WorkItemID       int                     `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                     `json:"workItemTypeID"`
+}
+
+// RestProjectBoardCreateRequest defines the model for RestProjectBoardCreateRequest.
+type RestProjectBoardCreateRequest struct {
+	Activities   *[]DbActivityCreateParams    `json:"activities"`
+	ProjectID    *int                         `json:"projectID,omitempty"`
+	Teams        *[]DbTeamCreateParams        `json:"teams"`
+	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
+}
+
+// RestProjectBoardResponse defines the model for RestProjectBoardResponse.
+type RestProjectBoardResponse struct {
+	Activities    *[]DbActivity     `json:"activities"`
+	BoardConfig   ProjectConfig     `json:"boardConfig"`
+	CreatedAt     time.Time         `json:"createdAt"`
+	Description   string            `json:"description"`
+	KanbanSteps   *[]DbKanbanStep   `json:"kanbanSteps"`
+	Name          Project           `json:"name"`
+	ProjectID     int               `json:"projectID"`
+	Teams         *[]DbTeam         `json:"teams"`
+	UpdatedAt     time.Time         `json:"updatedAt"`
+	WorkItemTags  *[]DbWorkItemTag  `json:"workItemTags"`
+	WorkItemTypes *[]DbWorkItemType `json:"workItemTypes"`
+}
+
+// RestUser defines the model for RestUser.
+type RestUser struct {
+	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
+	CreatedAt                time.Time     `json:"createdAt"`
+	DeletedAt                *time.Time    `json:"deletedAt"`
+	Email                    string        `json:"email"`
+	FirstName                *string       `json:"firstName"`
+	FullName                 *string       `json:"fullName"`
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
+	LastName                 *string       `json:"lastName"`
+	Projects                 *[]DbProject  `json:"projects"`
+	Role                     Role          `json:"role"`
+	Scopes                   Scopes        `json:"scopes"`
+	Teams                    *[]DbTeam     `json:"teams"`
+	UserID                   UuidUUID      `json:"userID"`
+	Username                 string        `json:"username"`
+}
+
+// RestWorkItemCommentCreateRequest defines the model for RestWorkItemCommentCreateRequest.
+type RestWorkItemCommentCreateRequest struct {
+	Message    string   `json:"message"`
+	UserID     UuidUUID `json:"userID"`
+	WorkItemID int      `json:"workItemID"`
+}
+
+// RestWorkItemTagCreateRequest defines the model for RestWorkItemTagCreateRequest.
+type RestWorkItemTagCreateRequest struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   *int   `json:"projectID,omitempty"`
+}
+
 // Role defines the model for Role.
 type Role string
 

@@ -58,6 +58,15 @@ import {
   ServicesMember,
   DbDemoTwoWorkItem,
   DbDemoTwoWorkItemCreateParams,
+  RestDemoTwoWorkItemCreateRequest,
+  RestDemoTwoWorkItemsResponse,
+  RestDemoWorkItemCreateRequest,
+  RestDemoWorkItemsResponse,
+  RestProjectBoardCreateRequest,
+  RestProjectBoardResponse,
+  RestUser,
+  RestWorkItemCommentCreateRequest,
+  RestWorkItemTagCreateRequest,
 } from './models'
 
 export const schemaDefinitions = {
@@ -153,6 +162,39 @@ export const schemaDefinitions = {
   DbDemoTwoWorkItemCreateParams: info<DbDemoTwoWorkItemCreateParams>(
     'DbDemoTwoWorkItemCreateParams',
     '#/definitions/DbDemoTwoWorkItemCreateParams',
+  ),
+  RestDemoTwoWorkItemCreateRequest: info<RestDemoTwoWorkItemCreateRequest>(
+    'RestDemoTwoWorkItemCreateRequest',
+    '#/definitions/RestDemoTwoWorkItemCreateRequest',
+  ),
+  RestDemoTwoWorkItemsResponse: info<RestDemoTwoWorkItemsResponse>(
+    'RestDemoTwoWorkItemsResponse',
+    '#/definitions/RestDemoTwoWorkItemsResponse',
+  ),
+  RestDemoWorkItemCreateRequest: info<RestDemoWorkItemCreateRequest>(
+    'RestDemoWorkItemCreateRequest',
+    '#/definitions/RestDemoWorkItemCreateRequest',
+  ),
+  RestDemoWorkItemsResponse: info<RestDemoWorkItemsResponse>(
+    'RestDemoWorkItemsResponse',
+    '#/definitions/RestDemoWorkItemsResponse',
+  ),
+  RestProjectBoardCreateRequest: info<RestProjectBoardCreateRequest>(
+    'RestProjectBoardCreateRequest',
+    '#/definitions/RestProjectBoardCreateRequest',
+  ),
+  RestProjectBoardResponse: info<RestProjectBoardResponse>(
+    'RestProjectBoardResponse',
+    '#/definitions/RestProjectBoardResponse',
+  ),
+  RestUser: info<RestUser>('RestUser', '#/definitions/RestUser'),
+  RestWorkItemCommentCreateRequest: info<RestWorkItemCommentCreateRequest>(
+    'RestWorkItemCommentCreateRequest',
+    '#/definitions/RestWorkItemCommentCreateRequest',
+  ),
+  RestWorkItemTagCreateRequest: info<RestWorkItemTagCreateRequest>(
+    'RestWorkItemTagCreateRequest',
+    '#/definitions/RestWorkItemTagCreateRequest',
   ),
 }
 

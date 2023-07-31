@@ -26,8 +26,8 @@ type Member struct {
 
 type DemoWorkItemCreateParams struct {
 	repos.DemoWorkItemCreateParams
-	TagIDs  []int    `json:"tagIDs" required:"true"`
-	Members []Member `json:"members" required:"true"`
+	TagIDs  []int    `json:"tagIDs" required:"true" nullable:"false"`
+	Members []Member `json:"members" required:"true" nullable:"false"`
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.

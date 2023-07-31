@@ -390,3 +390,104 @@ export interface WorkItemCommentCreateRequest {
   userID: UuidUUID
   workItemID: number
 }
+export interface RestDemoTwoWorkItemCreateRequest {
+  base: DbWorkItemCreateParams
+  demoTwoProject: DbDemoTwoWorkItemCreateParams
+  members: ServicesMember[] | null
+  projectName: Project
+  tagIDs: number[] | null
+}
+export interface RestDemoTwoWorkItemsResponse {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  demoTwoWorkItem: DbDemoTwoWorkItem
+  description: string
+  kanbanStepID: number
+  members?: DbUser[] | null
+  metadata: {} | null
+  targetDate: string
+  teamID: number
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
+}
+export interface RestDemoWorkItemCreateRequest {
+  base: DbWorkItemCreateParams
+  demoProject: DbDemoWorkItemCreateParams
+  members: ServicesMember[] | null
+  projectName: Project
+  tagIDs: number[] | null
+}
+export interface RestDemoWorkItemsResponse {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  demoWorkItem: DbDemoWorkItem
+  description: string
+  kanbanStepID: number
+  members?: DbUser[] | null
+  metadata: {} | null
+  targetDate: string
+  teamID: number
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
+}
+export interface RestProjectBoardCreateRequest {
+  activities?: DbActivityCreateParams[] | null
+  projectID?: number
+  teams?: DbTeamCreateParams[] | null
+  workItemTags?: DbWorkItemTagCreateParams[] | null
+}
+export interface RestProjectBoardResponse {
+  activities: DbActivity[] | null
+  boardConfig: ProjectConfig
+  createdAt: string
+  description: string
+  kanbanSteps: DbKanbanStep[] | null
+  name: Project
+  projectID: number
+  teams: DbTeam[] | null
+  updatedAt: string
+  workItemTags: DbWorkItemTag[] | null
+  workItemTypes: DbWorkItemType[] | null
+}
+export interface RestUser {
+  apiKey?: DbUserAPIKey
+  createdAt: string
+  deletedAt?: string | null
+  email: string
+  firstName?: string | null
+  fullName?: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName?: string | null
+  projects?: DbProject[] | null
+  role: Role
+  scopes: Scopes
+  teams?: DbTeam[] | null
+  userID: UuidUUID
+  username: string
+}
+export interface RestWorkItemCommentCreateRequest {
+  message: string
+  userID: UuidUUID
+  workItemID: number
+}
+export interface RestWorkItemTagCreateRequest {
+  color: string
+  description: string
+  name: string
+  projectID?: number
+}
