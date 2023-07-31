@@ -51,7 +51,7 @@ func RandomLocalDate() time.Time {
 		time.Month(RandomInt64(1, 12)),
 		RandomInt(1, 28),
 		0, 0, 0, 0,
-		time.Local, // pgx decodes as local
+		time.Local, // pgx decodes as local. Also must .Truncate(time.Microsecond) to compare pgx time.Time
 	)
 }
 

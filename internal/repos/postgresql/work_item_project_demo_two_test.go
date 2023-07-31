@@ -3,6 +3,7 @@ package postgresql_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -14,19 +15,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDemoWorkItem_Update(t *testing.T) {
+func TestDemoTwoWorkItem_Update(t *testing.T) {
 	t.Parallel()
 
 	projectID := internal.ProjectIDByName[models.ProjectDemo]
 	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
 
 	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
-	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
-	demoWorkItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
+	workItemTypeID := internal.DemoTwoWorkItemTypesIDByName[models.DemoTwoWorkItemTypesType1]
+	demoWorkItem, _ := postgresqltestutil.NewRandomDemoTwoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
 
 	type args struct {
 		id     int64
-		params repos.DemoWorkItemUpdateParams
+		params repos.DemoTwoWorkItemUpdateParams
 	}
 	type params struct {
 		name    string
@@ -34,20 +35,22 @@ func TestDemoWorkItem_Update(t *testing.T) {
 		want    *db.WorkItem
 		wantErr bool
 	}
+	d := pointers.New(pointers.New(time.Now().Truncate(time.Microsecond)))
+
 	tests := []params{
 		{
 			name: "updated",
 			args: args{
 				id: demoWorkItem.WorkItemID,
-				params: repos.DemoWorkItemUpdateParams{
-					Base:        &db.WorkItemUpdateParams{Description: pointers.New("new description")},
-					DemoProject: &db.DemoWorkItemUpdateParams{Line: pointers.New("new line")},
+				params: repos.DemoTwoWorkItemUpdateParams{
+					Base:           &db.WorkItemUpdateParams{Description: pointers.New("new description")},
+					DemoTwoProject: &db.DemoTwoWorkItemUpdateParams{CustomDateForProject2: d},
 				},
 			},
 			want: func() *db.WorkItem {
 				u := *demoWorkItem
 				u.Description = "new description"
-				u.DemoWorkItemJoin.Line = "new line"
+				u.DemoTwoWorkItemJoin.CustomDateForProject2 = *d
 
 				return &u
 			}(),
@@ -58,13 +61,16 @@ func TestDemoWorkItem_Update(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			u := postgresql.NewDemoWorkItem()
+			u := postgresql.NewDemoTwoWorkItem()
 			got, err := u.Update(context.Background(), testPool, tc.args.id, tc.args.params)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("DemoTwoWorkItem.Update() error = %v, wantErr %v", err, tc.wantErr)
 
 				return
 			}
+			t.Logf("date: %v", *d)
+			t.Logf("CustomDateForProject2: %v", got.DemoTwoWorkItemJoin.CustomDateForProject2)
+			t.Logf("CustomDateForProject2 want: %v", tc.want.DemoTwoWorkItemJoin.CustomDateForProject2)
 
 			got.UpdatedAt = demoWorkItem.UpdatedAt // ignore
 			assert.Equal(t, tc.want, got)

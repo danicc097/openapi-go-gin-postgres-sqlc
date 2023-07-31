@@ -9,7 +9,7 @@
   "go.lintOnSave": "package",
   "go.testFlags": [
     "-count=1",
-    // "-v"
+    "-v"
   ],
   // --
   "shellcheck.executablePath": "shellcheck",

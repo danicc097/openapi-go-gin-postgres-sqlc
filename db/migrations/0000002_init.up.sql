@@ -11,6 +11,8 @@ create extension if not exists btree_gin schema extensions;
 
 create extension if not exists rum schema extensions;
 
+-- alter database postgres_test set timezone to 'America/New_York';
+
 create or replace function jsonb_set_deep (target jsonb , path text[] , val jsonb)
   returns jsonb
   as $$
