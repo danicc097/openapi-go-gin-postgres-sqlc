@@ -31,7 +31,7 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
 	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
 
-	workItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, project.ProjectID, kanbanStepID, workItemTypeID, team.TeamID)
+	workItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
 	timeEntry, _ := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
 
 	type argsInt64 struct {
