@@ -33,7 +33,7 @@ func RandomBool() bool {
 	return []bool{true, false}[rand.Intn(2)]
 }
 
-// RandomDate generates a random date.
+// RandomDate generates a random UTC date.
 func RandomDate() time.Time {
 	return time.Date(
 		RandomInt(1971, 2022),
@@ -41,6 +41,17 @@ func RandomDate() time.Time {
 		RandomInt(1, 28),
 		0, 0, 0, 0,
 		time.UTC,
+	)
+}
+
+// RandomDate generates a random local date.
+func RandomLocalDate() time.Time {
+	return time.Date(
+		RandomInt(1971, 2022),
+		time.Month(RandomInt64(1, 12)),
+		RandomInt(1, 28),
+		0, 0, 0, 0,
+		time.Local, // pgx decodes as local
 	)
 }
 
