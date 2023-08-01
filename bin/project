@@ -765,7 +765,7 @@ x.lint.go() {
 
     goimports -w $files || echo "Linting failed"
     gofumpt -w $files || echo "Linting failed"
-    # golangci-lint run --config=.golangci.yml  --fix
+    golangci-lint run --config=.golangci.yml --fix &>/dev/null || true
 
     echo "Success"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
