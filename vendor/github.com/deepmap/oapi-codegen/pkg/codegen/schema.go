@@ -167,7 +167,7 @@ type TypeDefinition struct {
 }
 
 // ResponseTypeDefinition is an extension of TypeDefinition, specifically for
-// response unmarshalling in ClientWithResponses.
+// response unmarshaling in ClientWithResponses.
 type ResponseTypeDefinition struct {
 	TypeDefinition
 	// The content type name where this is used, eg, application/json
@@ -241,6 +241,7 @@ func GenerateGoSchema(sref *openapi3.SchemaRef, path []string) (Schema, error) {
 			GoType:         refType,
 			Description:    schema.Description,
 			DefineViaAlias: true,
+			OAPISchema:     schema,
 		}, nil
 	}
 
@@ -273,6 +274,16 @@ func GenerateGoSchema(sref *openapi3.SchemaRef, path []string) (Schema, error) {
 		outSchema.DefineViaAlias = true
 
 		return outSchema, nil
+	}
+
+	// Check x-go-type-skip-optional-pointer, which will override if the type
+	// should be a pointer or not when the field is optional.
+	if extension, ok := schema.Extensions[extPropGoTypeSkipOptionalPointer]; ok {
+		skipOptionalPointer, err := extParsePropGoTypeSkipOptionalPointer(extension)
+		if err != nil {
+			return outSchema, fmt.Errorf("invalid value for %q: %w", extPropGoTypeSkipOptionalPointer, err)
+		}
+		outSchema.SkipOptionalPointer = skipOptionalPointer
 	}
 
 	// Schema type and format, eg. string / binary
@@ -660,6 +671,14 @@ func GenFieldsFromProperties(props []Property) []string {
 			field += fmt.Sprintf("%s\n", DeprecationComment(deprecationReason))
 		}
 
+		// Check x-go-type-skip-optional-pointer, which will override if the type
+		// should be a pointer or not when the field is optional.
+		if extension, ok := p.Extensions[extPropGoTypeSkipOptionalPointer]; ok {
+			if skipOptionalPointer, err := extParsePropGoTypeSkipOptionalPointer(extension); err == nil {
+				p.Schema.SkipOptionalPointer = skipOptionalPointer
+			}
+		}
+
 		field += fmt.Sprintf("    %s %s", goFieldName, p.GoTypeDef())
 
 		omitEmpty := !p.Nullable &&
@@ -719,6 +738,9 @@ func additionalPropertiesType(schema Schema) string {
 	addPropsType := schema.AdditionalPropertiesType.GoType
 	if schema.AdditionalPropertiesType.RefType != "" {
 		addPropsType = schema.AdditionalPropertiesType.RefType
+	}
+	if schema.AdditionalPropertiesType.OAPISchema != nil && schema.AdditionalPropertiesType.OAPISchema.Nullable {
+		addPropsType = "*" + addPropsType
 	}
 	return addPropsType
 }

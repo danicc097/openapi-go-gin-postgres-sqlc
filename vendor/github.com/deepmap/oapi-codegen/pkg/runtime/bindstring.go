@@ -100,7 +100,7 @@ func BindStringToObject(src string, dst interface{}) error {
 	case reflect.Array:
 		if tu, ok := dst.(encoding.TextUnmarshaler); ok {
 			if err := tu.UnmarshalText([]byte(src)); err != nil {
-				return fmt.Errorf("error unmarshalling '%s' text as %T: %s", src, dst, err)
+				return fmt.Errorf("error unmarshaling '%s' text as %T: %s", src, dst, err)
 			}
 
 			return nil
@@ -168,7 +168,7 @@ func BindStringToObject(src string, dst interface{}) error {
 		err = fmt.Errorf("can not bind to destination of type: %s", t.Kind())
 	}
 	if err != nil {
-		return fmt.Errorf("error binding string parameter: %s", err)
+		return fmt.Errorf("error binding string parameter: %w", err)
 	}
 	return nil
 }

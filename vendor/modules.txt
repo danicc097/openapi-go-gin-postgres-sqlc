@@ -69,7 +69,7 @@ github.com/dave/dst/dstutil
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/deepmap/oapi-codegen v1.13.0
+# github.com/deepmap/oapi-codegen v1.13.2
 ## explicit; go 1.18
 github.com/deepmap/oapi-codegen/pkg/codegen
 github.com/deepmap/oapi-codegen/pkg/runtime
@@ -295,7 +295,7 @@ github.com/kenshaw/snaker
 # github.com/klauspost/cpuid/v2 v2.2.5
 ## explicit; go 1.15
 github.com/klauspost/cpuid/v2
-# github.com/labstack/echo/v4 v4.10.2
+# github.com/labstack/echo/v4 v4.11.1
 ## explicit; go 1.17
 github.com/labstack/echo/v4
 # github.com/labstack/gommon v0.4.0
