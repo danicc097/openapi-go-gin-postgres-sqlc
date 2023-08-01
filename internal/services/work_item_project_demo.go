@@ -20,8 +20,8 @@ type DemoWorkItem struct {
 }
 
 type Member struct {
-	UserID uuid.UUID           `json:"userID" required:"true"`
 	Role   models.WorkItemRole `json:"role"   ref:"#/components/schemas/WorkItemRole" required:"true"`
+	UserID uuid.UUID           `json:"userID" required:"true"`
 }
 
 type DemoWorkItemCreateParams struct {
