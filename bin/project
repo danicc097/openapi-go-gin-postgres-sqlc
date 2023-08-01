@@ -1525,7 +1525,17 @@ find_deleted_pkg_schemas() {
 update_spec_with_structs() {
   vext="x-postgen-struct"
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
+  schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC)
   mapfile -t struct_names <<<$struct_names
+  mapfile -t schema_names <<<$schema_names
+
+  # openapi-go will generate a RestXYZ if we have a XYZ: <...> x-postgen-struct: RestXYZ
+  # we need to detect these early, because it will sync a RestXYZ instead of XYZ
+  declare -A schemas
+  for i in ${!struct_names[@]}; do
+    echo "i $i"
+    schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
+  done
 
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
@@ -1555,17 +1565,13 @@ update_spec_with_structs() {
     #   echo "Skipping $schema" && continue
     # fi
 
-    # TODO: openapi-go will generate a RestXYZ if we have a XYZ: <...> x-postgen-struct: RestXYZ
-    # we need to detect these early, because it will not sync the target schema at all, it will create/sync one
-    # with the name RestXYZ
-
-    new_schema_key="${schemas[$schema]:-$schema}"
+    schema_name="${schemas[$schema]:-$schema}"
     yq eval-all "(
         select(fi == 1).components.schemas.$schema
-        ) as \$new_schema
+        ) as \$schema
         | select(fi == 0)
-        | .components.schemas.$new_schema_key = \$new_schema
-        | (.components.schemas.$new_schema_key | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
+        | .components.schemas.$schema_name = \$schema
+        | (.components.schemas.$schema_name | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
       " "$SPEC" $gen_schema_spec >/tmp/final-spec
   done
 
