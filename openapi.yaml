@@ -1264,6 +1264,9 @@ components:
     #     mapping:
     #       demo: '#/components/schemas/DemoWorkItemCreateRequest'
     #       demo_two: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+
+    # IMPORTANT: discriminator must be defined this way so validation works
+    # and to ensure proper oapi-codegen generation. Disregard any other method.
     WorkItemCreateRequest:
       oneOf:
         - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
