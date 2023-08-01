@@ -34,7 +34,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 		return
 	}
 
-	var res any // per project. will
+	var res any // depends on project
 
 	switch disc, _ := body.Discriminator(); models.Project(disc) {
 	case models.ProjectDemo:
