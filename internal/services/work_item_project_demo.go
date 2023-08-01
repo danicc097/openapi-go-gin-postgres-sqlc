@@ -67,9 +67,17 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		})
 		var ierr *internal.Error
 		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("db.CreateWorkItemWorkItemTag: %w", err)
+			if !errors.As(err, &ierr) {
+				w.logger.Infof("ierr: %v\n", ierr)
 			}
+			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
+				continue
+			}
+
+			// TODO: internal.Error should contain location, if any.
+			// e.g. here tagIDs.i
+
+			return nil, fmt.Errorf("could not assign tag %d: %w", id, err)
 		}
 	}
 
@@ -81,9 +89,11 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		})
 		var ierr *internal.Error
 		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("a.AssignMember: %w", err)
+			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
+				continue
 			}
+
+			return nil, fmt.Errorf("could not assign member %s: %w", m.UserID, err)
 		}
 	}
 
