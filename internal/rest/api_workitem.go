@@ -1,7 +1,10 @@
 package rest
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -18,10 +21,19 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)
 
-	body := &models.WorkItemCreateRequest{}
-	if shouldReturn := parseBody(c, body); shouldReturn {
+	jsonBody, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		renderErrorResponse(c, "Failed to read request body", err)
+
 		return
 	}
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
+
+	body := &models.WorkItemCreateRequest{}
+	if err := json.Unmarshal(jsonBody, body); err != nil {
+		return
+	}
+
 	var res any // per project. will
 
 	switch disc, _ := body.Discriminator(); models.Project(disc) {
