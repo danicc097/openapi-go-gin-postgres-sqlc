@@ -1249,13 +1249,27 @@ components:
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
+    # WorkItemCreateRequest:
+    #   oneOf:
+    #     - $ref: '#/components/schemas/WorkItemCreateRequestDiscriminator'
+    #     - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
+    #     - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+    # WorkItemCreateRequestDiscriminator:
+    #   type: object
+    #   properties:
+    #     projectName:
+    #       $ref: '#/components/schemas/Project'
+    #   discriminator:
+    #     propertyName: projectName
+    #     mapping:
+    #       demo: '#/components/schemas/DemoWorkItemCreateRequest'
+    #       demo_two: '#/components/schemas/DemoTwoWorkItemCreateRequest'
     WorkItemCreateRequest:
       oneOf:
         - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
         - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
       discriminator:
         propertyName: projectName
-        # TODO: yq validator to ensure keys are valid projectName
         mapping:
           demo: '#/components/schemas/DemoWorkItemCreateRequest'
           demo_two: '#/components/schemas/DemoTwoWorkItemCreateRequest'

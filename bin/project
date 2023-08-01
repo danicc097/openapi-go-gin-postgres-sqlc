@@ -671,6 +671,8 @@ x.gen.e2e() {
 
     config_template_setup e2e
 
+    rm -rf e2e/client/gen
+
     orval_config="e2e/orval.config.ts"
     orval --config $orval_config
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

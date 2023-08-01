@@ -31,6 +31,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 
 	switch disc, _ := body.Discriminator(); models.Project(disc) {
 	case models.ProjectDemo:
+		fmt.Printf("disc.ProjectName: %v\n", disc)
 		params, _ := body.AsDemoWorkItemCreateRequest()
 
 		workItem, err = h.svc.demoworkitem.Create(ctx, tx, services.DemoWorkItemCreateParams{
@@ -49,6 +50,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 			return
 		}
 	case models.ProjectDemoTwo:
+		fmt.Printf("disc.ProjectName: %v\n", disc)
 		params, _ := body.AsDemoTwoWorkItemCreateRequest()
 
 		workItem, err = h.svc.demotwoworkitem.Create(ctx, tx, services.DemoTwoWorkItemCreateParams{
