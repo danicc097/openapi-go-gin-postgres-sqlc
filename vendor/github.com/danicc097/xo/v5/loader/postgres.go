@@ -124,20 +124,22 @@ func PostgresGoType(d xo.Type, schema, itype string) (string, string, error) {
 		if typNullable {
 			goType, zero = "*string", "nil"
 		}
+	// most codegen tooling will output int. Allow struct casting
 	case "smallint":
-		goType, zero = "int16", "0"
+		goType, zero = "int", "0"
 		if typNullable {
-			goType, zero = "*int16", "nil"
+			goType, zero = "*int", "nil"
 		}
 	case "integer":
 		goType, zero = itype, "0"
 		if typNullable {
 			goType, zero = "*int", "nil"
 		}
+	// most codegen tooling will output int. Allow struct casting
 	case "bigint":
-		goType, zero = "int64", "0"
+		goType, zero = "int", "0"
 		if typNullable {
-			goType, zero = "*int64", "nil"
+			goType, zero = "*int", "nil"
 		}
 	case "real":
 		goType, zero = "float32", "0.0"
@@ -149,7 +151,6 @@ func PostgresGoType(d xo.Type, schema, itype string) (string, string, error) {
 		if typNullable {
 			goType, zero = "*float64", "nil"
 		}
-		// TODO pgtypes for EACH different ttyype in this case
 	case "date", "timestamp with time zone", "time with time zone", "time without time zone", "timestamp without time zone":
 		goType, zero = "time.Time", "nil"
 		if typNullable {
