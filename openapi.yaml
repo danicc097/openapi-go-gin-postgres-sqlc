@@ -810,7 +810,6 @@ components:
           type: array
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -883,7 +882,6 @@ components:
           type: array
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -1319,9 +1317,9 @@ components:
         projectID:
           type: integer
       required:
-        - name
-        - description
         - color
+        - description
+        - name
       type: object
       x-postgen-struct: RestWorkItemTagCreateRequest
     DemoTwoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
@@ -1333,14 +1331,12 @@ components:
         members:
           items:
             $ref: '#/components/schemas/ServicesMember'
-          nullable: true
           type: array
         projectName:
           $ref: '#/components/schemas/Project'
         tagIDs:
           items:
             type: integer
-          nullable: true
           type: array
       required:
         - projectName
@@ -1359,14 +1355,12 @@ components:
         members:
           items:
             $ref: '#/components/schemas/ServicesMember'
-          nullable: true
           type: array
         projectName:
           $ref: '#/components/schemas/Project'
         tagIDs:
           items:
             type: integer
-          nullable: true
           type: array
       required:
         - projectName
@@ -1385,9 +1379,9 @@ components:
         workItemID:
           type: integer
       required:
-        - workItemID
-        - userID
         - message
+        - userID
+        - workItemID
       type: object
       x-postgen-struct: RestWorkItemCommentCreateRequest
     Project: # Generated from projects table. DO NOT EDIT.

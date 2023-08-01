@@ -470,9 +470,9 @@ type DemoTwoKanbanSteps string
 type DemoTwoWorkItemCreateRequest struct {
 	Base           DbWorkItemCreateParams        `json:"base"`
 	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
-	Members        *[]ServicesMember             `json:"members"`
+	Members        []ServicesMember              `json:"members"`
 	ProjectName    Project                       `json:"projectName"`
-	TagIDs         *[]int                        `json:"tagIDs"`
+	TagIDs         []int                         `json:"tagIDs"`
 }
 
 // DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
@@ -480,33 +480,33 @@ type DemoTwoWorkItemTypes string
 
 // DemoTwoWorkItemsResponse defines the model for DemoTwoWorkItemsResponse.
 type DemoTwoWorkItemsResponse struct {
-	ClosedAt         *time.Time              `json:"closedAt"`
-	CreatedAt        time.Time               `json:"createdAt"`
-	DeletedAt        *time.Time              `json:"deletedAt"`
-	DemoTwoWorkItem  DbDemoTwoWorkItem       `json:"demoTwoWorkItem"`
-	Description      string                  `json:"description"`
-	KanbanStepID     int                     `json:"kanbanStepID"`
-	Members          *[]DbUser               `json:"members"`
-	Metadata         *map[string]interface{} `json:"metadata"`
-	TargetDate       time.Time               `json:"targetDate"`
-	TeamID           int                     `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
-	Title            string                  `json:"title"`
-	UpdatedAt        time.Time               `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
-	WorkItemID       int                     `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                     `json:"workItemTypeID"`
+	ClosedAt         *time.Time             `json:"closedAt"`
+	CreatedAt        time.Time              `json:"createdAt"`
+	DeletedAt        *time.Time             `json:"deletedAt"`
+	DemoTwoWorkItem  DbDemoTwoWorkItem      `json:"demoTwoWorkItem"`
+	Description      string                 `json:"description"`
+	KanbanStepID     int                    `json:"kanbanStepID"`
+	Members          *[]DbUser              `json:"members"`
+	Metadata         map[string]interface{} `json:"metadata"`
+	TargetDate       time.Time              `json:"targetDate"`
+	TeamID           int                    `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
+	Title            string                 `json:"title"`
+	UpdatedAt        time.Time              `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment   `json:"workItemComments"`
+	WorkItemID       int                    `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag       `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType        `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                    `json:"workItemTypeID"`
 }
 
 // DemoWorkItemCreateRequest defines the model for DemoWorkItemCreateRequest.
 type DemoWorkItemCreateRequest struct {
 	Base        DbWorkItemCreateParams     `json:"base"`
 	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
-	Members     *[]ServicesMember          `json:"members"`
+	Members     []ServicesMember           `json:"members"`
 	ProjectName Project                    `json:"projectName"`
-	TagIDs      *[]int                     `json:"tagIDs"`
+	TagIDs      []int                      `json:"tagIDs"`
 }
 
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
@@ -514,24 +514,24 @@ type DemoWorkItemTypes string
 
 // DemoWorkItemsResponse defines the model for DemoWorkItemsResponse.
 type DemoWorkItemsResponse struct {
-	ClosedAt         *time.Time              `json:"closedAt"`
-	CreatedAt        time.Time               `json:"createdAt"`
-	DeletedAt        *time.Time              `json:"deletedAt"`
-	DemoWorkItem     DbDemoWorkItem          `json:"demoWorkItem"`
-	Description      string                  `json:"description"`
-	KanbanStepID     int                     `json:"kanbanStepID"`
-	Members          *[]DbUser               `json:"members"`
-	Metadata         *map[string]interface{} `json:"metadata"`
-	TargetDate       time.Time               `json:"targetDate"`
-	TeamID           int                     `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
-	Title            string                  `json:"title"`
-	UpdatedAt        time.Time               `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
-	WorkItemID       int                     `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                     `json:"workItemTypeID"`
+	ClosedAt         *time.Time             `json:"closedAt"`
+	CreatedAt        time.Time              `json:"createdAt"`
+	DeletedAt        *time.Time             `json:"deletedAt"`
+	DemoWorkItem     DbDemoWorkItem         `json:"demoWorkItem"`
+	Description      string                 `json:"description"`
+	KanbanStepID     int                    `json:"kanbanStepID"`
+	Members          *[]DbUser              `json:"members"`
+	Metadata         map[string]interface{} `json:"metadata"`
+	TargetDate       time.Time              `json:"targetDate"`
+	TeamID           int                    `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
+	Title            string                 `json:"title"`
+	UpdatedAt        time.Time              `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment   `json:"workItemComments"`
+	WorkItemID       int                    `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag       `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType        `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                    `json:"workItemTypeID"`
 }
 
 // ErrorCode Represents standardized HTTP error types.

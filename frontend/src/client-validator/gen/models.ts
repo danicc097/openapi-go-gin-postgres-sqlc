@@ -188,7 +188,7 @@ export interface DemoWorkItemsResponse {
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
-  metadata: {} | null
+  metadata: {}
   targetDate: string
   teamID: number
   timeEntries?: DbTimeEntry[] | null
@@ -208,7 +208,7 @@ export interface DemoTwoWorkItemsResponse {
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
-  metadata: {} | null
+  metadata: {}
   targetDate: string
   teamID: number
   timeEntries?: DbTimeEntry[] | null
@@ -329,9 +329,9 @@ export interface UpdateUserAuthRequest {
 export interface DemoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
-  members: ServicesMember[] | null
+  members: ServicesMember[]
   projectName: Project
-  tagIDs: number[] | null
+  tagIDs: number[]
 }
 export interface DbWorkItemCreateParams {
   closedAt?: string | null
@@ -357,9 +357,9 @@ export interface ServicesMember {
 export interface DemoTwoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoTwoProject: DbDemoTwoWorkItemCreateParams
-  members: ServicesMember[] | null
+  members: ServicesMember[]
   projectName: Project
-  tagIDs: number[] | null
+  tagIDs: number[]
 }
 export interface DbDemoTwoWorkItemCreateParams {
   customDateForProject2?: string | null

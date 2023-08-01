@@ -13,7 +13,7 @@ import type { DemoTwoWorkItemCreateRequestProjectName } from './demoTwoWorkItemC
 export interface DemoTwoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoTwoProject: DbDemoTwoWorkItemCreateParams
-  members: ServicesMember[] | null
+  members: ServicesMember[]
   projectName: DemoTwoWorkItemCreateRequestProjectName
-  tagIDs: number[] | null
+  tagIDs: number[]
 }

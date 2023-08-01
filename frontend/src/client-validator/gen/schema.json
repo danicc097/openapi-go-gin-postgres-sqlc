@@ -535,10 +535,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -654,10 +651,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -1280,9 +1274,9 @@
         }
       },
       "required": [
-        "name",
+        "color",
         "description",
-        "color"
+        "name"
       ],
       "type": "object",
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
@@ -1300,10 +1294,7 @@
           "items": {
             "$ref": "#/definitions/ServicesMember"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "$ref": "#/definitions/Project"
@@ -1312,10 +1303,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -1341,10 +1329,7 @@
           "items": {
             "$ref": "#/definitions/ServicesMember"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "$ref": "#/definitions/Project"
@@ -1353,10 +1338,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -1384,9 +1366,9 @@
         }
       },
       "required": [
-        "workItemID",
+        "message",
         "userID",
-        "message"
+        "workItemID"
       ],
       "type": "object",
       "x-postgen-struct": "RestWorkItemCommentCreateRequest",

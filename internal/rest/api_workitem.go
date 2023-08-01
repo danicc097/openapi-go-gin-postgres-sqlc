@@ -34,7 +34,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 				DemoProject: db.DemoWorkItemCreateParams(params.DemoProject),
 				Base:        db.WorkItemCreateParams(params.Base),
 			},
-			TagIDs: *params.TagIDs,
+			TagIDs: params.TagIDs,
 			// FIXME:
 			// Members: params.Members,
 		})

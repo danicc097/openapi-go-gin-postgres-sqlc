@@ -779,10 +779,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -1157,10 +1154,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -2606,10 +2600,7 @@
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": "array"
             },
             "projectName": {
               "enum": [
@@ -2624,10 +2615,7 @@
               "items": {
                 "type": "integer"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": "array"
             }
           },
           "required": [
@@ -2740,10 +2728,7 @@
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": "array"
             },
             "projectName": {
               "enum": [
@@ -2758,10 +2743,7 @@
               "items": {
                 "type": "integer"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": "array"
             }
           },
           "required": [
@@ -2871,9 +2853,9 @@
         }
       },
       "required": [
-        "name",
+        "color",
         "description",
-        "color"
+        "name"
       ],
       "type": "object",
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
@@ -2978,10 +2960,7 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "enum": [
@@ -2996,10 +2975,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -3128,10 +3104,7 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "enum": [
@@ -3146,10 +3119,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -3183,9 +3153,9 @@
         }
       },
       "required": [
-        "workItemID",
+        "message",
         "userID",
-        "message"
+        "workItemID"
       ],
       "type": "object",
       "x-postgen-struct": "RestWorkItemCommentCreateRequest",
@@ -4281,10 +4251,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -4659,10 +4626,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -6108,10 +6072,7 @@
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": "array"
             },
             "projectName": {
               "enum": [
@@ -6126,10 +6087,7 @@
               "items": {
                 "type": "integer"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": "array"
             }
           },
           "required": [
@@ -6242,10 +6200,7 @@
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": "array"
             },
             "projectName": {
               "enum": [
@@ -6260,10 +6215,7 @@
               "items": {
                 "type": "integer"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": "array"
             }
           },
           "required": [
@@ -6373,9 +6325,9 @@
         }
       },
       "required": [
-        "name",
+        "color",
         "description",
-        "color"
+        "name"
       ],
       "type": "object",
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
@@ -6480,10 +6432,7 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "enum": [
@@ -6498,10 +6447,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -6630,10 +6576,7 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "enum": [
@@ -6648,10 +6591,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -6685,9 +6625,9 @@
         }
       },
       "required": [
-        "workItemID",
+        "message",
         "userID",
-        "message"
+        "workItemID"
       ],
       "type": "object",
       "x-postgen-struct": "RestWorkItemCommentCreateRequest",

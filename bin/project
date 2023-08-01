@@ -1533,7 +1533,6 @@ update_spec_with_structs() {
   # we need to detect these early, because it will sync a RestXYZ instead of XYZ
   declare -A schemas
   for i in ${!struct_names[@]}; do
-    echo "i $i"
     schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
   done
 
@@ -1566,6 +1565,7 @@ update_spec_with_structs() {
     # fi
 
     schema_name="${schemas[$schema]:-$schema}"
+
     yq eval-all "(
         select(fi == 1).components.schemas.$schema
         ) as \$schema
@@ -1573,9 +1573,14 @@ update_spec_with_structs() {
         | .components.schemas.$schema_name = \$schema
         | (.components.schemas.$schema_name | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
       " "$SPEC" $gen_schema_spec >/tmp/final-spec
-  done
 
-  mv /tmp/final-spec "$SPEC"
+    if [[ "$schema_name" != "$schema" ]]; then
+      echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
+      yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
+    fi
+
+    mv /tmp/final-spec "$SPEC" # need to update at each iteration since next depends on it
+  done
 }
 
 delete_duplicate_schemas() {

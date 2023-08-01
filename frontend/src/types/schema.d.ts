@@ -219,7 +219,7 @@ export interface components {
       members?: (components["schemas"]["DbUser"])[] | null;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -246,7 +246,7 @@ export interface components {
       members?: (components["schemas"]["DbUser"])[] | null;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -427,16 +427,16 @@ export interface components {
     DemoTwoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
-      members: (components["schemas"]["ServicesMember"])[] | null;
+      members: (components["schemas"]["ServicesMember"])[];
       projectName: components["schemas"]["Project"];
-      tagIDs: (number)[] | null;
+      tagIDs: (number)[];
     };
     DemoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
-      members: (components["schemas"]["ServicesMember"])[] | null;
+      members: (components["schemas"]["ServicesMember"])[];
       projectName: components["schemas"]["Project"];
-      tagIDs: (number)[] | null;
+      tagIDs: (number)[];
     };
     WorkItemCommentCreateRequest: {
       message: string;

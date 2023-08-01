@@ -13,7 +13,7 @@ import type { DemoWorkItemCreateRequestProjectName } from './demoWorkItemCreateR
 export interface DemoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
-  members: ServicesMember[] | null
+  members: ServicesMember[]
   projectName: DemoWorkItemCreateRequestProjectName
-  tagIDs: number[] | null
+  tagIDs: number[]
 }
