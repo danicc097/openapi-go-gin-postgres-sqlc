@@ -213,6 +213,14 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		postgresql.OtelName,
 		nil,
 	)
+	demotwoworkitemrepo := reposwrappers.NewDemoTwoWorkItemWithTracing(
+		reposwrappers.NewDemoTwoWorkItemWithTimeout(
+			postgresql.NewDemoTwoWorkItem(),
+			reposwrappers.DemoTwoWorkItemWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
 	workitemtagrepo := reposwrappers.NewWorkItemTagWithTracing(
 		reposwrappers.NewWorkItemTagWithTimeout(
 			postgresql.NewWorkItemTag(),
@@ -244,6 +252,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}
 	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
 	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, demoworkitemrepo, workitemrepo)
+	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, demotwoworkitemrepo, workitemrepo)
 	workitemtagsvc := services.NewWorkItemTag(conf.Logger, workitemtagrepo)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
@@ -255,6 +264,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		conf.SpecPath,
 		usvc,
 		demoworkitemsvc,
+		demotwoworkitemsvc,
 		workitemtagsvc,
 		authzsvc,
 		authnsvc,

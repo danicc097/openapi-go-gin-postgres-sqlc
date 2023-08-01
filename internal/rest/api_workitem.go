@@ -33,7 +33,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	case models.ProjectDemo:
 		params, _ := body.AsDemoWorkItemCreateRequest()
 
-		workItem, err = h.demoworkitemsvc.Create(ctx, tx, services.DemoWorkItemCreateParams{
+		workItem, err = h.svc.demoworkitem.Create(ctx, tx, services.DemoWorkItemCreateParams{
 			DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
 				DemoProject: db.DemoWorkItemCreateParams(params.DemoProject),
 				Base:        db.WorkItemCreateParams(params.Base),
@@ -51,7 +51,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	case models.ProjectDemoTwo:
 		params, _ := body.AsDemoTwoWorkItemCreateRequest()
 
-		workItem, err = h.demotwoworkitemsvc.Create(ctx, tx, services.DemoTwoWorkItemCreateParams{
+		workItem, err = h.svc.demotwoworkitem.Create(ctx, tx, services.DemoTwoWorkItemCreateParams{
 			DemoTwoWorkItemCreateParams: repos.DemoTwoWorkItemCreateParams{
 				DemoTwoProject: db.DemoTwoWorkItemCreateParams(params.DemoTwoProject),
 				Base:           db.WorkItemCreateParams(params.Base),

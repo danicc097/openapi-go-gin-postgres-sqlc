@@ -20,7 +20,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)
 
-	_, err := h.usvc.Delete(c, tx, id)
+	_, err := h.svc.user.Delete(c, tx, id)
 	if err != nil {
 		renderErrorResponse(c, "Could not delete user", err)
 
@@ -36,7 +36,7 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 
 	caller := getUserFromCtx(c)
 
-	role, ok := h.authzsvc.RoleByRank(caller.RoleRank)
+	role, ok := h.svc.authz.RoleByRank(caller.RoleRank)
 	if !ok {
 		msg := fmt.Sprintf("role with rank %d not found", caller.RoleRank)
 		renderErrorResponse(c, msg, errors.New(msg))
@@ -68,7 +68,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 		return
 	}
 
-	user, err := h.usvc.Update(c, tx, id.String(), caller, body)
+	user, err := h.svc.user.Update(c, tx, id.String(), caller, body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
@@ -82,7 +82,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 		return
 	}
 
-	role, ok := h.authzsvc.RoleByRank(user.RoleRank)
+	role, ok := h.svc.authz.RoleByRank(user.RoleRank)
 	if !ok {
 		renderErrorResponse(c, fmt.Sprintf("Role with rank %d not found", user.RoleRank), nil)
 
@@ -111,7 +111,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 		return
 	}
 
-	if _, err := h.usvc.UpdateUserAuthorization(c, tx, id.String(), caller, body); err != nil {
+	if _, err := h.svc.user.UpdateUserAuthorization(c, tx, id.String(), caller, body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return

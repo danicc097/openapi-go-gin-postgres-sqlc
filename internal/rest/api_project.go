@@ -42,7 +42,7 @@ func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 	defer newOTELSpan(ctx, "GetProject", trace.WithAttributes(userIDAttribute(c))).End()
 
 	// TODO project service (includes project, team, board...)
-	// role, ok := h.authzsvc.RoleByRank(user.RoleRank)
+	// role, ok := h.svc.authz.RoleByRank(user.RoleRank)
 	// if !ok {
 	// 	msg := fmt.Sprintf("role with rank %d not found", user.RoleRank)
 	// 	renderErrorResponse(c, msg, errors.New(msg))
@@ -67,7 +67,7 @@ func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 		return
 	}
 
-	wit, err := h.workitemtagsvc.Create(c, h.pool, caller, &db.WorkItemTagCreateParams{
+	wit, err := h.svc.workitemtag.Create(c, h.pool, caller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[project],
 		Name:        body.Name,
 		Description: body.Description,
