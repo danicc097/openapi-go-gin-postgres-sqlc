@@ -1812,8 +1812,12 @@ done
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
 
-set -a
 # export to all subsequent commands or scripts
+set -a
+# TODO: wrapper around source that for each var in file
+# checks if its defined, e.g. P4="" test -v P4
+# and if so saves to a global current_env assoc array
+# that is shared for all calls of this wrapper func
 source ".env.$env"
 set +a
 
