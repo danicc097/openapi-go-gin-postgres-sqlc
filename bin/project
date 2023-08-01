@@ -1535,10 +1535,11 @@ update_spec_with_structs() {
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
 
+  local gen_schema_spec="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
   go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
-    >/tmp/openapi.yaml
+    >$gen_schema_spec
 
   # prevent possible overriding if name clashes with generated schemas from structs
   # skip_schemas=("Project")
@@ -1548,11 +1549,16 @@ update_spec_with_structs() {
   # done
 
   # replace every schema back into the spec
-  for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
+  for schema in $(yq '.components.schemas[] | key' $gen_schema_spec); do
     # prevent certain schemas from getting replaced by (in)direct usage in structs with clashing names
     # if [[ " ${skip_schemas[*]} " =~ " $schema " ]]; then
     #   echo "Skipping $schema" && continue
     # fi
+
+    # TODO: openapi-go will generate a RestXYZ if we have a XYZ: <...> x-postgen-struct: RestXYZ
+    # we need to detect these early, because it will not sync the target schema at all, it will create/sync one
+    # with the name RestXYZ
+
     new_schema_key="${schemas[$schema]:-$schema}"
     yq eval-all "(
         select(fi == 1).components.schemas.$schema
@@ -1560,10 +1566,10 @@ update_spec_with_structs() {
         | select(fi == 0)
         | .components.schemas.$new_schema_key = \$new_schema
         | (.components.schemas.$new_schema_key | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
-      " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
-
-    mv /tmp/final-spec "$SPEC"
+      " "$SPEC" $gen_schema_spec >/tmp/final-spec
   done
+
+  mv /tmp/final-spec "$SPEC"
 }
 
 delete_duplicate_schemas() {

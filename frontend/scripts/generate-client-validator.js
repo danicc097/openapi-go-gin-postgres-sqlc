@@ -45,7 +45,7 @@ $RefParser
 function saveSchemaToFile(schema, filePath) {
   const schemaString = JSON.stringify(schema, null, 2)
 
-  fs.writeFile(filePath, schemaString, (err) => {
+  fs.writeFileSync(filePath, schemaString, (err) => {
     if (err) {
       throw new Error(`Error saving schema: ${err}`)
     }
