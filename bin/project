@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=1091,2155,2068,2086,2031,2048,2178
+# shellcheck disable=1091,2155,2068,2086,2031,2048,2178,2120
 #
 #
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
@@ -862,7 +862,8 @@ x.test.frontend.watch() {
   pnpm run test
 }
 
-# Run custom xo generation script tests
+# Run custom xo generation script tests. Accepts `go test` parameters.
+# Args: [...]
 x.test.xo() {
   { { {
     POSTGRES_DB="$POSTGRES_TEST_DB"
@@ -888,7 +889,7 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    APP_ENV="$env" go test -count=1 "$XO_TESTS_PKG" ||
+    APP_ENV="$env" go test -count=1 "$XO_TESTS_PKG" "$@" ||
       err "xo tests failed"
 
     if ! $test_dir/diff_check; then
