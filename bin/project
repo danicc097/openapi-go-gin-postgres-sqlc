@@ -543,6 +543,7 @@ x.gen.client-server() {
     # but Models(.*) should not be generated at all. a ref tag is needed in structs
     yq e '.components.schemas.UuidUUID = {
         "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
         "x-go-type": "uuid.UUID",
         "x-go-type-import":{
           "name": "uuid",

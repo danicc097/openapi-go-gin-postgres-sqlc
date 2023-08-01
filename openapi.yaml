@@ -1244,6 +1244,7 @@ components:
           type: object
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       x-go-type: uuid.UUID
       x-go-type-import:
         name: uuid
@@ -1547,8 +1548,8 @@ components:
         userID:
           $ref: '#/components/schemas/UuidUUID'
       required:
-        - userID
         - role
+        - userID
       type: object
     DbDemoTwoWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:

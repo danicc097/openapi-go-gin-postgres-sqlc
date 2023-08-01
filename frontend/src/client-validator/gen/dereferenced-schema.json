@@ -326,6 +326,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -408,6 +409,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -465,6 +467,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -510,6 +513,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -747,6 +751,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -823,6 +828,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -884,6 +890,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -1122,6 +1129,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -1198,6 +1206,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -1259,6 +1268,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -1814,6 +1824,7 @@
             },
             "userID": {
               "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "x-go-type": "uuid.UUID",
               "x-go-type-import": {
                 "name": "uuid",
@@ -2056,6 +2067,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -2476,6 +2488,7 @@
     },
     "UuidUUID": {
       "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "x-go-type": "uuid.UUID",
       "x-go-type-import": {
         "name": "uuid",
@@ -2585,6 +2598,7 @@
                   },
                   "userID": {
                     "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "x-go-type": "uuid.UUID",
                     "x-go-type-import": {
                       "name": "uuid",
@@ -2594,8 +2608,8 @@
                   }
                 },
                 "required": [
-                  "userID",
-                  "role"
+                  "role",
+                  "userID"
                 ],
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
@@ -2713,6 +2727,7 @@
                   },
                   "userID": {
                     "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "x-go-type": "uuid.UUID",
                     "x-go-type-import": {
                       "name": "uuid",
@@ -2722,8 +2737,8 @@
                   }
                 },
                 "required": [
-                  "userID",
-                  "role"
+                  "role",
+                  "userID"
                 ],
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
@@ -2945,6 +2960,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -2954,8 +2970,8 @@
               }
             },
             "required": [
-              "userID",
-              "role"
+              "role",
+              "userID"
             ],
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
@@ -3089,6 +3105,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -3098,8 +3115,8 @@
               }
             },
             "required": [
-              "userID",
-              "role"
+              "role",
+              "userID"
             ],
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
@@ -3141,6 +3158,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3421,6 +3439,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3430,8 +3449,8 @@
         }
       },
       "required": [
-        "userID",
-        "role"
+        "role",
+        "userID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -3798,6 +3817,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3880,6 +3900,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3937,6 +3958,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3982,6 +4004,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -4219,6 +4242,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4295,6 +4319,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4356,6 +4381,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4594,6 +4620,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4670,6 +4697,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4731,6 +4759,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -5286,6 +5315,7 @@
             },
             "userID": {
               "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "x-go-type": "uuid.UUID",
               "x-go-type-import": {
                 "name": "uuid",
@@ -5528,6 +5558,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -5948,6 +5979,7 @@
     },
     "UuidUUID": {
       "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "x-go-type": "uuid.UUID",
       "x-go-type-import": {
         "name": "uuid",
@@ -6057,6 +6089,7 @@
                   },
                   "userID": {
                     "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "x-go-type": "uuid.UUID",
                     "x-go-type-import": {
                       "name": "uuid",
@@ -6066,8 +6099,8 @@
                   }
                 },
                 "required": [
-                  "userID",
-                  "role"
+                  "role",
+                  "userID"
                 ],
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6185,6 +6218,7 @@
                   },
                   "userID": {
                     "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "x-go-type": "uuid.UUID",
                     "x-go-type-import": {
                       "name": "uuid",
@@ -6194,8 +6228,8 @@
                   }
                 },
                 "required": [
-                  "userID",
-                  "role"
+                  "role",
+                  "userID"
                 ],
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6417,6 +6451,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -6426,8 +6461,8 @@
               }
             },
             "required": [
-              "userID",
-              "role"
+              "role",
+              "userID"
             ],
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6561,6 +6596,7 @@
               },
               "userID": {
                 "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -6570,8 +6606,8 @@
               }
             },
             "required": [
-              "userID",
-              "role"
+              "role",
+              "userID"
             ],
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6613,6 +6649,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -6893,6 +6930,7 @@
         },
         "userID": {
           "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -6902,8 +6940,8 @@
         }
       },
       "required": [
-        "userID",
-        "role"
+        "role",
+        "userID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
