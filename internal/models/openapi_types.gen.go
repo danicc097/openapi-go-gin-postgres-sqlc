@@ -611,9 +611,9 @@ type ProjectConfigField struct {
 type RestDemoTwoWorkItemCreateRequest struct {
 	Base           DbWorkItemCreateParams        `json:"base"`
 	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
-	Members        *[]ServicesMember             `json:"members"`
+	Members        []ServicesMember              `json:"members"`
 	ProjectName    Project                       `json:"projectName"`
-	TagIDs         *[]int                        `json:"tagIDs"`
+	TagIDs         []int                         `json:"tagIDs"`
 }
 
 // RestDemoTwoWorkItemsResponse defines the model for RestDemoTwoWorkItemsResponse.

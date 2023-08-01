@@ -3601,10 +3601,7 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "enum": [
@@ -3619,10 +3616,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -8900,10 +8894,7 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "enum": [
@@ -8918,10 +8909,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [

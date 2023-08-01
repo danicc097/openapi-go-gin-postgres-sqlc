@@ -1701,10 +1701,7 @@
           "items": {
             "$ref": "#/definitions/ServicesMember"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "$ref": "#/definitions/Project"
@@ -1713,10 +1710,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [

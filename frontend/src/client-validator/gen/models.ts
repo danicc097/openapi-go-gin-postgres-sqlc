@@ -393,9 +393,9 @@ export interface WorkItemCommentCreateRequest {
 export interface RestDemoTwoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoTwoProject: DbDemoTwoWorkItemCreateParams
-  members: ServicesMember[] | null
+  members: ServicesMember[]
   projectName: Project
-  tagIDs: number[] | null
+  tagIDs: number[]
 }
 export interface RestDemoTwoWorkItemsResponse {
   closedAt?: string | null

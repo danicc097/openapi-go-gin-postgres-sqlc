@@ -80,6 +80,20 @@ func main() {
 
 			return nil
 		}),
+		// jsonschema.InterceptNullability(func(params jsonschema.InterceptNullabilityParams) {
+		// 	if params.Type.Kind() != reflect.Struct {
+		// 		return
+		// 	}
+		// 	for i := 0; i < params.Type.NumField(); i++ {
+		// 		if params.Schema != nil && params.Schema.Type != nil {
+		// 			if params.Type.Field(i).Tag.Get("nullable") == "false" {
+		// 				if types := params.Schema.Type.SliceOfSimpleTypeValues; len(types) > 0 {
+		// 					fmt.Fprintf(os.Stderr, "nullable schema: %s\n", params.Schema.ReflectType.Name())
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// }),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
 			if params.Field.Tag.Get("x-omitempty") == "true" {
 				if params.PropertySchema == nil {
@@ -94,6 +108,7 @@ func main() {
 			if params.PropertySchema != nil && params.PropertySchema.Type != nil {
 				if params.Field.Tag.Get("nullable") == "false" {
 					if types := params.PropertySchema.Type.SliceOfSimpleTypeValues; len(types) > 0 {
+						// fmt.Fprintf(os.Stderr, "nullable schema: %s\n", params.Name)
 						params.PropertySchema.Type.SliceOfSimpleTypeValues = internalslices.Filter(types, func(item jsonschema.SimpleType, _ int) bool {
 							return item != jsonschema.Null
 						})

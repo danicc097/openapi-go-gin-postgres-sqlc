@@ -521,9 +521,9 @@ export interface components {
     RestDemoTwoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
-      members: (components["schemas"]["ServicesMember"])[] | null;
+      members: (components["schemas"]["ServicesMember"])[];
       projectName: components["schemas"]["Project"];
-      tagIDs: (number)[] | null;
+      tagIDs: (number)[];
     };
     RestDemoTwoWorkItemsResponse: {
       /** Format: date-time */
