@@ -33,12 +33,12 @@ var uppercaseAcronym = map[string]string{
 	"ID": "id",
 }
 
-// ConfigureAcronym allows you to add additional words which will be considered acronyms
+// ConfigureAcronym allows you to add additional words which will be considered acronyms.
 func ConfigureAcronym(key, val string) {
 	uppercaseAcronym[key] = val
 }
 
-// Converts a string to CamelCase
+// Converts a string to CamelCase.
 func toCamelInitCase(s string, initCase bool) string {
 	s = strings.TrimSpace(s)
 	if s == "" {

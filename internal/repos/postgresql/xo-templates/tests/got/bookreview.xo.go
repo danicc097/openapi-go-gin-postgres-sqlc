@@ -20,13 +20,13 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookReview struct {
-	BookReviewID int       `json:"bookReviewID" db:"book_review_id" required:"true"` // book_review_id
-	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
-	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true"`           // reviewer
+	BookReviewID int       `json:"bookReviewID" db:"book_review_id" required:"true" nullable:"false"` // book_review_id
+	BookID       int       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
+	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
 
 	BookJoin     *Book `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
 	ReviewerJoin *User `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
@@ -34,8 +34,8 @@ type BookReview struct {
 
 // BookReviewCreateParams represents insert params for 'xo_tests.book_reviews'.
 type BookReviewCreateParams struct {
-	BookID   int       `json:"bookID" required:"true"`   // book_id
-	Reviewer uuid.UUID `json:"reviewer" required:"true"` // reviewer
+	BookID   int       `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Reviewer uuid.UUID `json:"reviewer" required:"true" nullable:"false"` // reviewer
 }
 
 // CreateBookReview creates a new BookReview in the database with the given params.
@@ -50,8 +50,8 @@ func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams
 
 // BookReviewUpdateParams represents update params for 'xo_tests.book_reviews'.
 type BookReviewUpdateParams struct {
-	BookID   *int       `json:"bookID" required:"true"`   // book_id
-	Reviewer *uuid.UUID `json:"reviewer" required:"true"` // reviewer
+	BookID   *int       `json:"bookID" nullable:"false"`   // book_id
+	Reviewer *uuid.UUID `json:"reviewer" nullable:"false"` // reviewer
 }
 
 // SetUpdateParams updates xo_tests.book_reviews struct fields with the specified params.
@@ -275,8 +275,8 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_review_id > $1
@@ -356,8 +356,8 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_id > $1
@@ -437,8 +437,8 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_review_id < $1
@@ -518,8 +518,8 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_id < $1
@@ -601,8 +601,8 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_review_id = $1
@@ -685,8 +685,8 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.reviewer = $1 AND book_reviews.book_id = $2
@@ -769,8 +769,8 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.reviewer = $1
@@ -855,8 +855,8 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_reviews.book_review_id,
 	book_reviews.book_id,
+	book_reviews.book_review_id,
 	book_reviews.reviewer %s 
 	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_id = $1

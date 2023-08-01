@@ -39,7 +39,7 @@ func NewTimeEntryWithPrometheus(base repos.TimeEntry, instanceName string) TimeE
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int64) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d TimeEntryWithPrometheus) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Delete implements repos.TimeEntry
-func (_d TimeEntryWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int64) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d TimeEntryWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int6
 }
 
 // Update implements repos.TimeEntry
-func (_d TimeEntryWithPrometheus) Update(ctx context.Context, d db.DBTX, id int64, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

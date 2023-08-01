@@ -21,16 +21,16 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemComment struct {
-	WorkItemCommentID int64     `json:"workItemCommentID" db:"work_item_comment_id" required:"true"` // work_item_comment_id
-	WorkItemID        int64     `json:"workItemID" db:"work_item_id" required:"true"`                // work_item_id
-	UserID            uuid.UUID `json:"userID" db:"user_id" required:"true"`                         // user_id
-	Message           string    `json:"message" db:"message" required:"true"`                        // message
-	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
-	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
+	WorkItemCommentID int       `json:"workItemCommentID" db:"work_item_comment_id" required:"true" nullable:"false"` // work_item_comment_id
+	WorkItemID        int       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                // work_item_id
+	UserID            uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`                         // user_id
+	Message           string    `json:"message" db:"message" required:"true" nullable:"false"`                        // message
+	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                   // created_at
+	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                   // updated_at
 
 	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
@@ -39,17 +39,17 @@ type WorkItemComment struct {
 
 // WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'.
 type WorkItemCommentCreateParams struct {
-	WorkItemID int64     `json:"workItemID" required:"true"` // work_item_id
-	UserID     uuid.UUID `json:"userID" required:"true"`     // user_id
-	Message    string    `json:"message" required:"true"`    // message
+	Message    string    `json:"message" required:"true" nullable:"false"`    // message
+	UserID     uuid.UUID `json:"userID" required:"true" nullable:"false"`     // user_id
+	WorkItemID int       `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
 // CreateWorkItemComment creates a new WorkItemComment in the database with the given params.
 func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCreateParams) (*WorkItemComment, error) {
 	wic := &WorkItemComment{
-		WorkItemID: params.WorkItemID,
-		UserID:     params.UserID,
 		Message:    params.Message,
+		UserID:     params.UserID,
+		WorkItemID: params.WorkItemID,
 	}
 
 	return wic.Insert(ctx, db)
@@ -57,21 +57,21 @@ func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCr
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'.
 type WorkItemCommentUpdateParams struct {
-	WorkItemID *int64     `json:"workItemID" required:"true"` // work_item_id
-	UserID     *uuid.UUID `json:"userID" required:"true"`     // user_id
-	Message    *string    `json:"message" required:"true"`    // message
+	Message    *string    `json:"message" nullable:"false"`    // message
+	UserID     *uuid.UUID `json:"userID" nullable:"false"`     // user_id
+	WorkItemID *int       `json:"workItemID" nullable:"false"` // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_comments struct fields with the specified params.
 func (wic *WorkItemComment) SetUpdateParams(params *WorkItemCommentUpdateParams) {
-	if params.WorkItemID != nil {
-		wic.WorkItemID = *params.WorkItemID
+	if params.Message != nil {
+		wic.Message = *params.Message
 	}
 	if params.UserID != nil {
 		wic.UserID = *params.UserID
 	}
-	if params.Message != nil {
-		wic.Message = *params.Message
+	if params.WorkItemID != nil {
+		wic.WorkItemID = *params.WorkItemID
 	}
 }
 
@@ -173,14 +173,14 @@ const workItemCommentTableWorkItemGroupBySQL = `_work_item_comments_work_item_id
 func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_comments (
-	work_item_id, user_id, message
+	message, user_id, work_item_id
 	) VALUES (
 	$1, $2, $3
 	) RETURNING * `
 	// run
-	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
+	logf(sqlstr, wic.Message, wic.UserID, wic.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
+	rows, err := db.Query(ctx, sqlstr, wic.Message, wic.UserID, wic.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
@@ -198,13 +198,13 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_comments SET 
-	work_item_id = $1, user_id = $2, message = $3 
+	message = $1, user_id = $2, work_item_id = $3 
 	WHERE work_item_comment_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
+	logf(sqlstr, wic.CreatedAt, wic.Message, wic.UpdatedAt, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
 
-	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, wic.Message, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Update/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
@@ -222,9 +222,9 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 func (wic *WorkItemComment) Upsert(ctx context.Context, db DB, params *WorkItemCommentCreateParams) (*WorkItemComment, error) {
 	var err error
 
-	wic.WorkItemID = params.WorkItemID
-	wic.UserID = params.UserID
 	wic.Message = params.Message
+	wic.UserID = params.UserID
+	wic.WorkItemID = params.WorkItemID
 
 	wic, err = wic.Insert(ctx, db)
 	if err != nil {
@@ -256,7 +256,7 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 }
 
 // WorkItemCommentPaginatedByWorkItemCommentIDAsc returns a cursor-paginated list of WorkItemComment in Asc order.
-func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, workItemCommentID int, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -312,12 +312,12 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
-	work_item_comments.user_id,
-	work_item_comments.message,
 	work_item_comments.created_at,
-	work_item_comments.updated_at %s 
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id %s 
 	 FROM public.work_item_comments %s 
 	 WHERE work_item_comments.work_item_comment_id > $1
 	 %s   %s 
@@ -340,7 +340,7 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 }
 
 // WorkItemCommentPaginatedByWorkItemCommentIDDesc returns a cursor-paginated list of WorkItemComment in Desc order.
-func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB, workItemCommentID int, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -396,12 +396,12 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
-	work_item_comments.user_id,
-	work_item_comments.message,
 	work_item_comments.created_at,
-	work_item_comments.updated_at %s 
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id %s 
 	 FROM public.work_item_comments %s 
 	 WHERE work_item_comments.work_item_comment_id < $1
 	 %s   %s 
@@ -426,7 +426,7 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 // WorkItemCommentByWorkItemCommentID retrieves a row from 'public.work_item_comments' as a WorkItemComment.
 //
 // Generated from index 'work_item_comments_pkey'.
-func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
+func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -482,12 +482,12 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
-	work_item_comments.user_id,
-	work_item_comments.message,
 	work_item_comments.created_at,
-	work_item_comments.updated_at %s 
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id %s 
 	 FROM public.work_item_comments %s 
 	 WHERE work_item_comments.work_item_comment_id = $1
 	 %s   %s 
@@ -513,7 +513,7 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 // WorkItemCommentsByWorkItemID retrieves a row from 'public.work_item_comments' as a WorkItemComment.
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
-func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -569,12 +569,12 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id,
-	work_item_comments.user_id,
-	work_item_comments.message,
 	work_item_comments.created_at,
-	work_item_comments.updated_at %s 
+	work_item_comments.message,
+	work_item_comments.updated_at,
+	work_item_comments.user_id,
+	work_item_comments.work_item_comment_id,
+	work_item_comments.work_item_id %s 
 	 FROM public.work_item_comments %s 
 	 WHERE work_item_comments.work_item_id = $1
 	 %s   %s 

@@ -76,7 +76,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("error creating output file: %v", err)
 	}
-	_, err = outFile.Write([]byte(output))
+	_, err = outFile.WriteString(output)
 	if err != nil {
 		log.Fatalf("error writing output file: %v", err)
 	}

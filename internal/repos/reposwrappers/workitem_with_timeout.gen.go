@@ -31,7 +31,7 @@ func NewWorkItemWithTimeout(base repos.WorkItem, config WorkItemWithTimeoutConfi
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)

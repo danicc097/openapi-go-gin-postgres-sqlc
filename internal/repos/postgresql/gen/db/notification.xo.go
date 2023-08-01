@@ -21,20 +21,20 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Notification struct {
-	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`                                                 // notification_id
-	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank"`                                                                     // receiver_rank
-	Title            string           `json:"title" db:"title" required:"true"`                                                                    // title
-	Body             string           `json:"body" db:"body" required:"true"`                                                                      // body
-	Label            string           `json:"label" db:"label" required:"true"`                                                                    // label
-	Link             *string          `json:"link" db:"link"`                                                                                      // link
-	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true"`                                                           // created_at
-	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true"`                                                                  // sender
-	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                                                                              // receiver
-	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
+	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`                                                 // notification_id
+	ReceiverRank     *int             `json:"receiverRank" db:"receiver_rank"`                                                                                      // receiver_rank
+	Title            string           `json:"title" db:"title" required:"true" nullable:"false"`                                                                    // title
+	Body             string           `json:"body" db:"body" required:"true" nullable:"false"`                                                                      // body
+	Label            string           `json:"label" db:"label" required:"true" nullable:"false"`                                                                    // label
+	Link             *string          `json:"link" db:"link"`                                                                                                       // link
+	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                                           // created_at
+	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true" nullable:"false"`                                                                  // sender
+	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                                                                                               // receiver
+	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
 	ReceiverJoin                      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
 	SenderJoin                        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O users (generated from M2O)
@@ -44,27 +44,27 @@ type Notification struct {
 
 // NotificationCreateParams represents insert params for 'public.notifications'.
 type NotificationCreateParams struct {
-	ReceiverRank     *int16           `json:"receiverRank"`                                                                 // receiver_rank
-	Title            string           `json:"title" required:"true"`                                                        // title
-	Body             string           `json:"body" required:"true"`                                                         // body
-	Label            string           `json:"label" required:"true"`                                                        // label
-	Link             *string          `json:"link"`                                                                         // link
-	Sender           uuid.UUID        `json:"sender" required:"true"`                                                       // sender
-	Receiver         *uuid.UUID       `json:"receiver"`                                                                     // receiver
-	NotificationType NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
+	Body             string           `json:"body" required:"true" nullable:"false"`                                                         // body
+	Label            string           `json:"label" required:"true" nullable:"false"`                                                        // label
+	Link             *string          `json:"link"`                                                                                          // link
+	NotificationType NotificationType `json:"notificationType" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
+	Receiver         *uuid.UUID       `json:"receiver"`                                                                                      // receiver
+	ReceiverRank     *int             `json:"receiverRank"`                                                                                  // receiver_rank
+	Sender           uuid.UUID        `json:"sender" required:"true" nullable:"false"`                                                       // sender
+	Title            string           `json:"title" required:"true" nullable:"false"`                                                        // title
 }
 
 // CreateNotification creates a new Notification in the database with the given params.
 func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
 	n := &Notification{
-		ReceiverRank:     params.ReceiverRank,
-		Title:            params.Title,
 		Body:             params.Body,
 		Label:            params.Label,
 		Link:             params.Link,
-		Sender:           params.Sender,
-		Receiver:         params.Receiver,
 		NotificationType: params.NotificationType,
+		Receiver:         params.Receiver,
+		ReceiverRank:     params.ReceiverRank,
+		Sender:           params.Sender,
+		Title:            params.Title,
 	}
 
 	return n.Insert(ctx, db)
@@ -72,24 +72,18 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 
 // NotificationUpdateParams represents update params for 'public.notifications'.
 type NotificationUpdateParams struct {
-	ReceiverRank     **int16           `json:"receiverRank"`                                                                 // receiver_rank
-	Title            *string           `json:"title" required:"true"`                                                        // title
-	Body             *string           `json:"body" required:"true"`                                                         // body
-	Label            *string           `json:"label" required:"true"`                                                        // label
-	Link             **string          `json:"link"`                                                                         // link
-	Sender           *uuid.UUID        `json:"sender" required:"true"`                                                       // sender
-	Receiver         **uuid.UUID       `json:"receiver"`                                                                     // receiver
-	NotificationType *NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
+	Body             *string           `json:"body" nullable:"false"`                                                         // body
+	Label            *string           `json:"label" nullable:"false"`                                                        // label
+	Link             **string          `json:"link"`                                                                          // link
+	NotificationType *NotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
+	Receiver         **uuid.UUID       `json:"receiver"`                                                                      // receiver
+	ReceiverRank     **int             `json:"receiverRank"`                                                                  // receiver_rank
+	Sender           *uuid.UUID        `json:"sender" nullable:"false"`                                                       // sender
+	Title            *string           `json:"title" nullable:"false"`                                                        // title
 }
 
 // SetUpdateParams updates public.notifications struct fields with the specified params.
 func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
-	if params.ReceiverRank != nil {
-		n.ReceiverRank = *params.ReceiverRank
-	}
-	if params.Title != nil {
-		n.Title = *params.Title
-	}
 	if params.Body != nil {
 		n.Body = *params.Body
 	}
@@ -99,14 +93,20 @@ func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
 	if params.Link != nil {
 		n.Link = *params.Link
 	}
-	if params.Sender != nil {
-		n.Sender = *params.Sender
+	if params.NotificationType != nil {
+		n.NotificationType = *params.NotificationType
 	}
 	if params.Receiver != nil {
 		n.Receiver = *params.Receiver
 	}
-	if params.NotificationType != nil {
-		n.NotificationType = *params.NotificationType
+	if params.ReceiverRank != nil {
+		n.ReceiverRank = *params.ReceiverRank
+	}
+	if params.Sender != nil {
+		n.Sender = *params.Sender
+	}
+	if params.Title != nil {
+		n.Title = *params.Title
 	}
 }
 
@@ -222,14 +222,14 @@ const notificationTableUserNotificationsGroupBySQL = `joined_user_notifications.
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.notifications (
-	receiver_rank, title, body, label, link, sender, receiver, notification_type
+	body, label, link, notification_type, receiver, receiver_rank, sender, title
 	) VALUES (
 	$1, $2, $3, $4, $5, $6, $7, $8
 	) RETURNING * `
 	// run
-	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
+	logf(sqlstr, n.Body, n.Label, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title)
 
-	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
+	rows, err := db.Query(ctx, sqlstr, n.Body, n.Label, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -247,13 +247,13 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.notifications SET 
-	receiver_rank = $1, title = $2, body = $3, label = $4, link = $5, sender = $6, receiver = $7, notification_type = $8 
+	body = $1, label = $2, link = $3, notification_type = $4, receiver = $5, receiver_rank = $6, sender = $7, title = $8 
 	WHERE notification_id = $9 
 	RETURNING * `
 	// run
-	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
+	logf(sqlstr, n.Body, n.CreatedAt, n.Label, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
 
-	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
+	rows, err := db.Query(ctx, sqlstr, n.Body, n.Label, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Update/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -271,14 +271,14 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
 	var err error
 
-	n.ReceiverRank = params.ReceiverRank
-	n.Title = params.Title
 	n.Body = params.Body
 	n.Label = params.Label
 	n.Link = params.Link
-	n.Sender = params.Sender
-	n.Receiver = params.Receiver
 	n.NotificationType = params.NotificationType
+	n.Receiver = params.Receiver
+	n.ReceiverRank = params.ReceiverRank
+	n.Sender = params.Sender
+	n.Title = params.Title
 
 	n, err = n.Insert(ctx, db)
 	if err != nil {
@@ -372,16 +372,16 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.notification_id,
-	notifications.receiver_rank,
-	notifications.title,
 	notifications.body,
+	notifications.created_at,
 	notifications.label,
 	notifications.link,
-	notifications.created_at,
-	notifications.sender,
+	notifications.notification_id,
+	notifications.notification_type,
 	notifications.receiver,
-	notifications.notification_type %s 
+	notifications.receiver_rank,
+	notifications.sender,
+	notifications.title %s 
 	 FROM public.notifications %s 
 	 WHERE notifications.notification_id > $1
 	 %s   %s 
@@ -466,16 +466,16 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.notification_id,
-	notifications.receiver_rank,
-	notifications.title,
 	notifications.body,
+	notifications.created_at,
 	notifications.label,
 	notifications.link,
-	notifications.created_at,
-	notifications.sender,
+	notifications.notification_id,
+	notifications.notification_type,
 	notifications.receiver,
-	notifications.notification_type %s 
+	notifications.receiver_rank,
+	notifications.sender,
+	notifications.title %s 
 	 FROM public.notifications %s 
 	 WHERE notifications.notification_id < $1
 	 %s   %s 
@@ -562,16 +562,16 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.notification_id,
-	notifications.receiver_rank,
-	notifications.title,
 	notifications.body,
+	notifications.created_at,
 	notifications.label,
 	notifications.link,
-	notifications.created_at,
-	notifications.sender,
+	notifications.notification_id,
+	notifications.notification_type,
 	notifications.receiver,
-	notifications.notification_type %s 
+	notifications.receiver_rank,
+	notifications.sender,
+	notifications.title %s 
 	 FROM public.notifications %s 
 	 WHERE notifications.notification_id = $1
 	 %s   %s 
@@ -597,7 +597,7 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 // NotificationsByReceiverRankNotificationTypeCreatedAt retrieves a row from 'public.notifications' as a Notification.
 //
 // Generated from index 'notifications_receiver_rank_notification_type_created_at_idx'.
-func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, db DB, receiverRank *int16, notificationType NotificationType, createdAt time.Time, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, db DB, receiverRank *int, notificationType NotificationType, createdAt time.Time, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -659,16 +659,16 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.notification_id,
-	notifications.receiver_rank,
-	notifications.title,
 	notifications.body,
+	notifications.created_at,
 	notifications.label,
 	notifications.link,
-	notifications.created_at,
-	notifications.sender,
+	notifications.notification_id,
+	notifications.notification_type,
 	notifications.receiver,
-	notifications.notification_type %s 
+	notifications.receiver_rank,
+	notifications.sender,
+	notifications.title %s 
 	 FROM public.notifications %s 
 	 WHERE notifications.receiver_rank = $1 AND notifications.notification_type = $2 AND notifications.created_at = $3
 	 %s   %s 

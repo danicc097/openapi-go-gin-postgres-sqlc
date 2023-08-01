@@ -19,30 +19,30 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Movie struct {
-	MovieID  int    `json:"movieID" db:"movie_id" required:"true"`  // movie_id
-	Title    string `json:"title" db:"title" required:"true"`       // title
-	Year     int    `json:"year" db:"year" required:"true"`         // year
-	Synopsis string `json:"synopsis" db:"synopsis" required:"true"` // synopsis
+	MovieID  int    `json:"movieID" db:"movie_id" required:"true" nullable:"false"`  // movie_id
+	Title    string `json:"title" db:"title" required:"true" nullable:"false"`       // title
+	Year     int    `json:"year" db:"year" required:"true" nullable:"false"`         // year
+	Synopsis string `json:"synopsis" db:"synopsis" required:"true" nullable:"false"` // synopsis
 
 }
 
 // MovieCreateParams represents insert params for 'public.movies'.
 type MovieCreateParams struct {
-	Title    string `json:"title" required:"true"`    // title
-	Year     int    `json:"year" required:"true"`     // year
-	Synopsis string `json:"synopsis" required:"true"` // synopsis
+	Synopsis string `json:"synopsis" required:"true" nullable:"false"` // synopsis
+	Title    string `json:"title" required:"true" nullable:"false"`    // title
+	Year     int    `json:"year" required:"true" nullable:"false"`     // year
 }
 
 // CreateMovie creates a new Movie in the database with the given params.
 func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
 	m := &Movie{
+		Synopsis: params.Synopsis,
 		Title:    params.Title,
 		Year:     params.Year,
-		Synopsis: params.Synopsis,
 	}
 
 	return m.Insert(ctx, db)
@@ -50,21 +50,21 @@ func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie,
 
 // MovieUpdateParams represents update params for 'public.movies'.
 type MovieUpdateParams struct {
-	Title    *string `json:"title" required:"true"`    // title
-	Year     *int    `json:"year" required:"true"`     // year
-	Synopsis *string `json:"synopsis" required:"true"` // synopsis
+	Synopsis *string `json:"synopsis" nullable:"false"` // synopsis
+	Title    *string `json:"title" nullable:"false"`    // title
+	Year     *int    `json:"year" nullable:"false"`     // year
 }
 
 // SetUpdateParams updates public.movies struct fields with the specified params.
 func (m *Movie) SetUpdateParams(params *MovieUpdateParams) {
+	if params.Synopsis != nil {
+		m.Synopsis = *params.Synopsis
+	}
 	if params.Title != nil {
 		m.Title = *params.Title
 	}
 	if params.Year != nil {
 		m.Year = *params.Year
-	}
-	if params.Synopsis != nil {
-		m.Synopsis = *params.Synopsis
 	}
 }
 
@@ -118,14 +118,14 @@ func WithMovieFilters(filters map[string][]any) MovieSelectConfigOption {
 func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.movies (
-	title, year, synopsis
+	synopsis, title, year
 	) VALUES (
 	$1, $2, $3
 	) RETURNING * `
 	// run
-	logf(sqlstr, m.Title, m.Year, m.Synopsis)
+	logf(sqlstr, m.Synopsis, m.Title, m.Year)
 
-	rows, err := db.Query(ctx, sqlstr, m.Title, m.Year, m.Synopsis)
+	rows, err := db.Query(ctx, sqlstr, m.Synopsis, m.Title, m.Year)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Insert/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
 	}
@@ -143,13 +143,13 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.movies SET 
-	title = $1, year = $2, synopsis = $3 
+	synopsis = $1, title = $2, year = $3 
 	WHERE movie_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
+	logf(sqlstr, m.Synopsis, m.Title, m.Year, m.MovieID)
 
-	rows, err := db.Query(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
+	rows, err := db.Query(ctx, sqlstr, m.Synopsis, m.Title, m.Year, m.MovieID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Update/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
 	}
@@ -167,9 +167,9 @@ func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 func (m *Movie) Upsert(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
 	var err error
 
+	m.Synopsis = params.Synopsis
 	m.Title = params.Title
 	m.Year = params.Year
-	m.Synopsis = params.Synopsis
 
 	m, err = m.Insert(ctx, db)
 	if err != nil {
@@ -246,9 +246,9 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ..
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	movies.movie_id,
+	movies.synopsis,
 	movies.title,
-	movies.year,
-	movies.synopsis %s 
+	movies.year %s 
 	 FROM public.movies %s 
 	 WHERE movies.movie_id > $1
 	 %s   %s 
@@ -316,9 +316,9 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts .
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	movies.movie_id,
+	movies.synopsis,
 	movies.title,
-	movies.year,
-	movies.synopsis %s 
+	movies.year %s 
 	 FROM public.movies %s 
 	 WHERE movies.movie_id < $1
 	 %s   %s 
@@ -388,9 +388,9 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	movies.movie_id,
+	movies.synopsis,
 	movies.title,
-	movies.year,
-	movies.synopsis %s 
+	movies.year %s 
 	 FROM public.movies %s 
 	 WHERE movies.movie_id = $1
 	 %s   %s 

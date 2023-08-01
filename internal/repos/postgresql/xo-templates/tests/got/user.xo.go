@@ -21,15 +21,15 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type User struct {
-	UserID    uuid.UUID  `json:"userID" db:"user_id" required:"true"`       // user_id
-	Name      string     `json:"name" db:"name" required:"true"`            // name
-	APIKeyID  *int       `json:"apiKeyID" db:"api_key_id"`                  // api_key_id
-	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true"` // created_at
-	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`                 // deleted_at
+	UserID    uuid.UUID  `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	Name      string     `json:"name" db:"name" required:"true" nullable:"false"`            // name
+	APIKeyID  *int       `json:"apiKeyID" db:"api_key_id"`                                   // api_key_id
+	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
+	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
 
 	AuthorBooksJoin           *[]Book__BA_User       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
 	AuthorBooksJoinBASK       *[]Book__BASK_User     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
@@ -43,15 +43,15 @@ type User struct {
 
 // UserCreateParams represents insert params for 'xo_tests.users'.
 type UserCreateParams struct {
-	Name     string `json:"name" required:"true"` // name
-	APIKeyID *int   `json:"apiKeyID"`             // api_key_id
+	APIKeyID *int   `json:"apiKeyID"`                              // api_key_id
+	Name     string `json:"name" required:"true" nullable:"false"` // name
 }
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
 	u := &User{
-		Name:     params.Name,
 		APIKeyID: params.APIKeyID,
+		Name:     params.Name,
 	}
 
 	return u.Insert(ctx, db)
@@ -59,17 +59,17 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'xo_tests.users'.
 type UserUpdateParams struct {
-	Name     *string `json:"name" required:"true"` // name
-	APIKeyID **int   `json:"apiKeyID"`             // api_key_id
+	APIKeyID **int   `json:"apiKeyID"`              // api_key_id
+	Name     *string `json:"name" nullable:"false"` // name
 }
 
 // SetUpdateParams updates xo_tests.users struct fields with the specified params.
 func (u *User) SetUpdateParams(params *UserUpdateParams) {
-	if params.Name != nil {
-		u.Name = *params.Name
-	}
 	if params.APIKeyID != nil {
 		u.APIKeyID = *params.APIKeyID
+	}
+	if params.Name != nil {
+		u.Name = *params.Name
 	}
 }
 
@@ -344,14 +344,14 @@ const userTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.users (
-	name, api_key_id, deleted_at
+	api_key_id, deleted_at, name
 	) VALUES (
 	$1, $2, $3
 	) RETURNING * `
 	// run
-	logf(sqlstr, u.Name, u.APIKeyID, u.DeletedAt)
+	logf(sqlstr, u.APIKeyID, u.DeletedAt, u.Name)
 
-	rows, err := db.Query(ctx, sqlstr, u.Name, u.APIKeyID, u.DeletedAt)
+	rows, err := db.Query(ctx, sqlstr, u.APIKeyID, u.DeletedAt, u.Name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -369,13 +369,13 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.users SET 
-	name = $1, api_key_id = $2, deleted_at = $3 
+	api_key_id = $1, deleted_at = $2, name = $3 
 	WHERE user_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, u.Name, u.APIKeyID, u.CreatedAt, u.DeletedAt, u.UserID)
+	logf(sqlstr, u.APIKeyID, u.CreatedAt, u.DeletedAt, u.Name, u.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, u.Name, u.APIKeyID, u.DeletedAt, u.UserID)
+	rows, err := db.Query(ctx, sqlstr, u.APIKeyID, u.DeletedAt, u.Name, u.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -393,8 +393,8 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
 	var err error
 
-	u.Name = params.Name
 	u.APIKeyID = params.APIKeyID
+	u.Name = params.Name
 
 	u, err = u.Insert(ctx, db)
 	if err != nil {
@@ -544,11 +544,11 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.name,
 	users.api_key_id,
 	users.created_at,
-	users.deleted_at %s 
+	users.deleted_at,
+	users.name,
+	users.user_id %s 
 	 FROM xo_tests.users %s 
 	 WHERE users.created_at > $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -663,11 +663,11 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.name,
 	users.api_key_id,
 	users.created_at,
-	users.deleted_at %s 
+	users.deleted_at,
+	users.name,
+	users.user_id %s 
 	 FROM xo_tests.users %s 
 	 WHERE users.created_at < $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -784,11 +784,11 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.name,
 	users.api_key_id,
 	users.created_at,
-	users.deleted_at %s 
+	users.deleted_at,
+	users.name,
+	users.user_id %s 
 	 FROM xo_tests.users %s 
 	 WHERE users.created_at = $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -906,11 +906,11 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.name,
 	users.api_key_id,
 	users.created_at,
-	users.deleted_at %s 
+	users.deleted_at,
+	users.name,
+	users.user_id %s 
 	 FROM xo_tests.users %s 
 	 WHERE users.name = $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -1028,11 +1028,11 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.name,
 	users.api_key_id,
 	users.created_at,
-	users.deleted_at %s 
+	users.deleted_at,
+	users.name,
+	users.user_id %s 
 	 FROM xo_tests.users %s 
 	 WHERE users.user_id = $1
 	 %s   AND users.deleted_at is %s  %s 

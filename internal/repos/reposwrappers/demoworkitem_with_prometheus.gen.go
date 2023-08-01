@@ -39,7 +39,7 @@ func NewDemoWorkItemWithPrometheus(base repos.DemoWorkItem, instanceName string)
 }
 
 // ByID implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d DemoWorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id i
 }
 
 // Restore implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id int64) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -95,7 +95,7 @@ func (_d DemoWorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id 
 }
 
 // Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

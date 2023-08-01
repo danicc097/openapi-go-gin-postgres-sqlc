@@ -15,7 +15,7 @@ import (
 // for specific actions regardless of scopes assigned to a user.
 type Role struct {
 	Description string      `json:"description"`
-	Rank        int16       `json:"rank"` // to avoid casting. postgres smallint with check > 0
+	Rank        int         `json:"rank"`
 	Name        models.Role `json:"name"`
 }
 
@@ -91,7 +91,7 @@ func (a *Authorization) RoleByName(role models.Role) Role {
 	return a.roles[role]
 }
 
-func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
+func (a *Authorization) RoleByRank(rank int) (Role, bool) {
 	for _, r := range a.roles {
 		if r.Rank == rank {
 			return r, true

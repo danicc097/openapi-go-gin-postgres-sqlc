@@ -38,8 +38,10 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
+  WorkItemCreateRequest,
   DbWorkItem,
   WorkItemTagCreateRequest,
+  DemoTwoWorkItemCreateRequest,
   DemoWorkItemCreateRequest,
   WorkItemCommentCreateRequest,
   Project,
@@ -59,6 +61,7 @@ import {
   DbWorkItemCreateParams,
   ServicesMember,
   DbDemoTwoWorkItem,
+  DbDemoTwoWorkItemCreateParams,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -427,6 +430,18 @@ export const UuidUUIDDecoder: Decoder<UuidUUID> = {
     return validateJson(json, schema, UuidUUIDDecoder.definitionName)
   },
 }
+export const WorkItemCreateRequestDecoder: Decoder<WorkItemCreateRequest> = {
+  definitionName: 'WorkItemCreateRequest',
+  schemaRef: '#/definitions/WorkItemCreateRequest',
+
+  decode(json: unknown): WorkItemCreateRequest {
+    const schema = ajv.getSchema(WorkItemCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemCreateRequestDecoder.definitionName)
+  },
+}
 export const DbWorkItemDecoder: Decoder<DbWorkItem> = {
   definitionName: 'DbWorkItem',
   schemaRef: '#/definitions/DbWorkItem',
@@ -449,6 +464,18 @@ export const WorkItemTagCreateRequestDecoder: Decoder<WorkItemTagCreateRequest> 
       throw new Error(`Schema ${WorkItemTagCreateRequestDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, WorkItemTagCreateRequestDecoder.definitionName)
+  },
+}
+export const DemoTwoWorkItemCreateRequestDecoder: Decoder<DemoTwoWorkItemCreateRequest> = {
+  definitionName: 'DemoTwoWorkItemCreateRequest',
+  schemaRef: '#/definitions/DemoTwoWorkItemCreateRequest',
+
+  decode(json: unknown): DemoTwoWorkItemCreateRequest {
+    const schema = ajv.getSchema(DemoTwoWorkItemCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoTwoWorkItemCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoTwoWorkItemCreateRequestDecoder.definitionName)
   },
 }
 export const DemoWorkItemCreateRequestDecoder: Decoder<DemoWorkItemCreateRequest> = {
@@ -677,5 +704,17 @@ export const DbDemoTwoWorkItemDecoder: Decoder<DbDemoTwoWorkItem> = {
       throw new Error(`Schema ${DbDemoTwoWorkItemDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbDemoTwoWorkItemDecoder.definitionName)
+  },
+}
+export const DbDemoTwoWorkItemCreateParamsDecoder: Decoder<DbDemoTwoWorkItemCreateParams> = {
+  definitionName: 'DbDemoTwoWorkItemCreateParams',
+  schemaRef: '#/definitions/DbDemoTwoWorkItemCreateParams',
+
+  decode(json: unknown): DbDemoTwoWorkItemCreateParams {
+    const schema = ajv.getSchema(DbDemoTwoWorkItemCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbDemoTwoWorkItemCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbDemoTwoWorkItemCreateParamsDecoder.definitionName)
   },
 }

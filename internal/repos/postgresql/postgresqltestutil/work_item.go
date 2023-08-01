@@ -7,8 +7,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 )
 
-// NOTE: Base work items never created via WorkItem repo, always through specific project struct
-
+// NOTE: Base work items never created via WorkItem repo, always through specific project struct.
 func RandomWorkItemCreateParams(t *testing.T, kanbanStepID, workItemTypeID, teamID int) *db.WorkItemCreateParams {
 	t.Helper()
 

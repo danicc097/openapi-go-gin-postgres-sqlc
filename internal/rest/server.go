@@ -62,7 +62,7 @@ type Config struct {
 	MyProviderCallbackPath string
 }
 
-// TODO BuildServerConfig with implicit validation instead
+// TODO BuildServerConfig with implicit validation instead.
 func (c *Config) validate() error {
 	if c.Address == "" && os.Getenv("IS_TESTING") == "" {
 		return fmt.Errorf("no server address provided")
@@ -155,7 +155,9 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	vg := router.Group(cfg.APIVersion)
-	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
+	// register before spec validation as routes are not in spec
+	vg.StaticFS("/docs", http.FS(fsys))
+	vg.GET("/docs-redoc", redocHandler)
 
 	// oidc
 	keyPath := "" // not used
@@ -211,6 +213,14 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		postgresql.OtelName,
 		nil,
 	)
+	demotwoworkitemrepo := reposwrappers.NewDemoTwoWorkItemWithTracing(
+		reposwrappers.NewDemoTwoWorkItemWithTimeout(
+			postgresql.NewDemoTwoWorkItem(),
+			reposwrappers.DemoTwoWorkItemWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
 	workitemtagrepo := reposwrappers.NewWorkItemTagWithTracing(
 		reposwrappers.NewWorkItemTagWithTimeout(
 			postgresql.NewWorkItemTag(),
@@ -242,6 +252,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}
 	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
 	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, demoworkitemrepo, workitemrepo)
+	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, demotwoworkitemrepo, workitemrepo)
 	workitemtagsvc := services.NewWorkItemTag(conf.Logger, workitemtagrepo)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
@@ -253,6 +264,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		conf.SpecPath,
 		usvc,
 		demoworkitemsvc,
+		demotwoworkitemsvc,
 		workitemtagsvc,
 		authzsvc,
 		authnsvc,
@@ -276,7 +288,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 }
 
 // Run configures a server and underlying services with the given configuration.
-// NewServer takes its own config as is now
+// NewServer takes its own config as is now.
 func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
 	var err error
 
@@ -440,8 +452,8 @@ func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
 		Loc: err.JSONPointer(),
 		Msg: err.Reason,
 		Detail: struct {
-			Schema map[string]interface{} "json:\"schema\""
-			Value  string                 "json:\"value\""
+			Schema map[string]interface{} `json:"schema"`
+			Value  string                 `json:"value"`
 		}{
 			Schema: schema,
 			Value:  string(value),
@@ -451,4 +463,29 @@ func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
 	b, _ := json.Marshal(ve)
 
 	return ValidationErrorSeparator + string(b)
+}
+
+func redocHandler(c *gin.Context) {
+	htmlString := fmt.Sprintf(`<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Redoc</title>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+
+			<style>
+				body {
+					margin: 0;
+					padding: 0;
+				}
+			</style>
+		</head>
+		<body>
+			<redoc spec-url='%s'></redoc>
+			<script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"> </script>
+		</body>
+	</html>`, internal.BuildAPIURL("openapi.yaml"))
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(htmlString))
 }

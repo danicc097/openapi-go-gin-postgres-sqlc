@@ -230,7 +230,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 //     - "properties":<p1>,<p2>,...
 //       - private to exclude a field from JSON.
 //       - not-required to make a schema field not required.
-//     - "type":<pkg.type> to override the type annotation.
+//     - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //     - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //     - "tags":<tags> to append literal struct tag strings.
 {{- end }}
@@ -243,7 +243,7 @@ type {{ $t.GoName }} struct {
 {{/* NOTE: ensure sqlc does not generate clashing names */}}
 // {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}CreateParams struct {
-{{ range $t.Fields -}}
+{{ range sort_fields $t.Fields -}}
 	{{ field . "CreateParams" $t -}}
 {{ end -}}
 }
@@ -262,7 +262,7 @@ func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}Cr
 
 // {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}UpdateParams struct {
-{{ range $t.Fields -}}
+{{ range sort_fields $t.Fields -}}
 	{{ field . "UpdateParams" $t -}}
 {{ end -}}
 }

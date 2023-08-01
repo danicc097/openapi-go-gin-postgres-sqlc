@@ -21,18 +21,18 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type TimeEntry struct {
-	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id" required:"true"` // time_entry_id
-	WorkItemID      *int64    `json:"workItemID" db:"work_item_id"`                   // work_item_id
-	ActivityID      int       `json:"activityID" db:"activity_id" required:"true"`    // activity_id
-	TeamID          *int      `json:"teamID" db:"team_id"`                            // team_id
-	UserID          uuid.UUID `json:"userID" db:"user_id" required:"true"`            // user_id
-	Comment         string    `json:"comment" db:"comment" required:"true"`           // comment
-	Start           time.Time `json:"start" db:"start" required:"true"`               // start
-	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes"`          // duration_minutes
+	TimeEntryID     int       `json:"timeEntryID" db:"time_entry_id" required:"true" nullable:"false"` // time_entry_id
+	WorkItemID      *int      `json:"workItemID" db:"work_item_id"`                                    // work_item_id
+	ActivityID      int       `json:"activityID" db:"activity_id" required:"true" nullable:"false"`    // activity_id
+	TeamID          *int      `json:"teamID" db:"team_id"`                                             // team_id
+	UserID          uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`            // user_id
+	Comment         string    `json:"comment" db:"comment" required:"true" nullable:"false"`           // comment
+	Start           time.Time `json:"start" db:"start" required:"true" nullable:"false"`               // start
+	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes"`                           // duration_minutes
 
 	ActivityJoin *Activity `json:"-" db:"activity_activity_id" openapi-go:"ignore"`   // O2O activities (generated from M2O)
 	TeamJoin     *Team     `json:"-" db:"team_team_id" openapi-go:"ignore"`           // O2O teams (generated from M2O)
@@ -43,25 +43,25 @@ type TimeEntry struct {
 
 // TimeEntryCreateParams represents insert params for 'public.time_entries'.
 type TimeEntryCreateParams struct {
-	WorkItemID      *int64    `json:"workItemID"`                 // work_item_id
-	ActivityID      int       `json:"activityID" required:"true"` // activity_id
-	TeamID          *int      `json:"teamID"`                     // team_id
-	UserID          uuid.UUID `json:"userID" required:"true"`     // user_id
-	Comment         string    `json:"comment" required:"true"`    // comment
-	Start           time.Time `json:"start" required:"true"`      // start
-	DurationMinutes *int      `json:"durationMinutes"`            // duration_minutes
+	ActivityID      int       `json:"activityID" required:"true" nullable:"false"` // activity_id
+	Comment         string    `json:"comment" required:"true" nullable:"false"`    // comment
+	DurationMinutes *int      `json:"durationMinutes"`                             // duration_minutes
+	Start           time.Time `json:"start" required:"true" nullable:"false"`      // start
+	TeamID          *int      `json:"teamID"`                                      // team_id
+	UserID          uuid.UUID `json:"userID" required:"true" nullable:"false"`     // user_id
+	WorkItemID      *int      `json:"workItemID"`                                  // work_item_id
 }
 
 // CreateTimeEntry creates a new TimeEntry in the database with the given params.
 func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
 	te := &TimeEntry{
-		WorkItemID:      params.WorkItemID,
 		ActivityID:      params.ActivityID,
+		Comment:         params.Comment,
+		DurationMinutes: params.DurationMinutes,
+		Start:           params.Start,
 		TeamID:          params.TeamID,
 		UserID:          params.UserID,
-		Comment:         params.Comment,
-		Start:           params.Start,
-		DurationMinutes: params.DurationMinutes,
+		WorkItemID:      params.WorkItemID,
 	}
 
 	return te.Insert(ctx, db)
@@ -69,22 +69,28 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'.
 type TimeEntryUpdateParams struct {
-	WorkItemID      **int64    `json:"workItemID"`                 // work_item_id
-	ActivityID      *int       `json:"activityID" required:"true"` // activity_id
-	TeamID          **int      `json:"teamID"`                     // team_id
-	UserID          *uuid.UUID `json:"userID" required:"true"`     // user_id
-	Comment         *string    `json:"comment" required:"true"`    // comment
-	Start           *time.Time `json:"start" required:"true"`      // start
-	DurationMinutes **int      `json:"durationMinutes"`            // duration_minutes
+	ActivityID      *int       `json:"activityID" nullable:"false"` // activity_id
+	Comment         *string    `json:"comment" nullable:"false"`    // comment
+	DurationMinutes **int      `json:"durationMinutes"`             // duration_minutes
+	Start           *time.Time `json:"start" nullable:"false"`      // start
+	TeamID          **int      `json:"teamID"`                      // team_id
+	UserID          *uuid.UUID `json:"userID" nullable:"false"`     // user_id
+	WorkItemID      **int      `json:"workItemID"`                  // work_item_id
 }
 
 // SetUpdateParams updates public.time_entries struct fields with the specified params.
 func (te *TimeEntry) SetUpdateParams(params *TimeEntryUpdateParams) {
-	if params.WorkItemID != nil {
-		te.WorkItemID = *params.WorkItemID
-	}
 	if params.ActivityID != nil {
 		te.ActivityID = *params.ActivityID
+	}
+	if params.Comment != nil {
+		te.Comment = *params.Comment
+	}
+	if params.DurationMinutes != nil {
+		te.DurationMinutes = *params.DurationMinutes
+	}
+	if params.Start != nil {
+		te.Start = *params.Start
 	}
 	if params.TeamID != nil {
 		te.TeamID = *params.TeamID
@@ -92,14 +98,8 @@ func (te *TimeEntry) SetUpdateParams(params *TimeEntryUpdateParams) {
 	if params.UserID != nil {
 		te.UserID = *params.UserID
 	}
-	if params.Comment != nil {
-		te.Comment = *params.Comment
-	}
-	if params.Start != nil {
-		te.Start = *params.Start
-	}
-	if params.DurationMinutes != nil {
-		te.DurationMinutes = *params.DurationMinutes
+	if params.WorkItemID != nil {
+		te.WorkItemID = *params.WorkItemID
 	}
 }
 
@@ -221,14 +221,14 @@ const timeEntryTableWorkItemGroupBySQL = `_time_entries_work_item_id.work_item_i
 func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.time_entries (
-	work_item_id, activity_id, team_id, user_id, comment, start, duration_minutes
+	activity_id, comment, duration_minutes, start, team_id, user_id, work_item_id
 	) VALUES (
 	$1, $2, $3, $4, $5, $6, $7
 	) RETURNING * `
 	// run
-	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
+	logf(sqlstr, te.ActivityID, te.Comment, te.DurationMinutes, te.Start, te.TeamID, te.UserID, te.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
+	rows, err := db.Query(ctx, sqlstr, te.ActivityID, te.Comment, te.DurationMinutes, te.Start, te.TeamID, te.UserID, te.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Insert/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
@@ -246,13 +246,13 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.time_entries SET 
-	work_item_id = $1, activity_id = $2, team_id = $3, user_id = $4, comment = $5, start = $6, duration_minutes = $7 
+	activity_id = $1, comment = $2, duration_minutes = $3, start = $4, team_id = $5, user_id = $6, work_item_id = $7 
 	WHERE time_entry_id = $8 
 	RETURNING * `
 	// run
-	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
+	logf(sqlstr, te.ActivityID, te.Comment, te.DurationMinutes, te.Start, te.TeamID, te.UserID, te.WorkItemID, te.TimeEntryID)
 
-	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
+	rows, err := db.Query(ctx, sqlstr, te.ActivityID, te.Comment, te.DurationMinutes, te.Start, te.TeamID, te.UserID, te.WorkItemID, te.TimeEntryID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Update/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
@@ -270,13 +270,13 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
 	var err error
 
-	te.WorkItemID = params.WorkItemID
 	te.ActivityID = params.ActivityID
+	te.Comment = params.Comment
+	te.DurationMinutes = params.DurationMinutes
+	te.Start = params.Start
 	te.TeamID = params.TeamID
 	te.UserID = params.UserID
-	te.Comment = params.Comment
-	te.Start = params.Start
-	te.DurationMinutes = params.DurationMinutes
+	te.WorkItemID = params.WorkItemID
 
 	te, err = te.Insert(ctx, db)
 	if err != nil {
@@ -308,7 +308,7 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 }
 
 // TimeEntryPaginatedByTimeEntryIDAsc returns a cursor-paginated list of TimeEntry in Asc order.
-func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -376,14 +376,14 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	time_entries.time_entry_id,
-	time_entries.work_item_id,
 	time_entries.activity_id,
-	time_entries.team_id,
-	time_entries.user_id,
 	time_entries.comment,
+	time_entries.duration_minutes,
 	time_entries.start,
-	time_entries.duration_minutes %s 
+	time_entries.team_id,
+	time_entries.time_entry_id,
+	time_entries.user_id,
+	time_entries.work_item_id %s 
 	 FROM public.time_entries %s 
 	 WHERE time_entries.time_entry_id > $1
 	 %s   %s 
@@ -406,7 +406,7 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 }
 
 // TimeEntryPaginatedByTimeEntryIDDesc returns a cursor-paginated list of TimeEntry in Desc order.
-func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -474,14 +474,14 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	time_entries.time_entry_id,
-	time_entries.work_item_id,
 	time_entries.activity_id,
-	time_entries.team_id,
-	time_entries.user_id,
 	time_entries.comment,
+	time_entries.duration_minutes,
 	time_entries.start,
-	time_entries.duration_minutes %s 
+	time_entries.team_id,
+	time_entries.time_entry_id,
+	time_entries.user_id,
+	time_entries.work_item_id %s 
 	 FROM public.time_entries %s 
 	 WHERE time_entries.time_entry_id < $1
 	 %s   %s 
@@ -506,7 +506,7 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 // TimeEntryByTimeEntryID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_pkey'.
-func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
+func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -574,14 +574,14 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	time_entries.time_entry_id,
-	time_entries.work_item_id,
 	time_entries.activity_id,
-	time_entries.team_id,
-	time_entries.user_id,
 	time_entries.comment,
+	time_entries.duration_minutes,
 	time_entries.start,
-	time_entries.duration_minutes %s 
+	time_entries.team_id,
+	time_entries.time_entry_id,
+	time_entries.user_id,
+	time_entries.work_item_id %s 
 	 FROM public.time_entries %s 
 	 WHERE time_entries.time_entry_id = $1
 	 %s   %s 
@@ -675,14 +675,14 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	time_entries.time_entry_id,
-	time_entries.work_item_id,
 	time_entries.activity_id,
-	time_entries.team_id,
-	time_entries.user_id,
 	time_entries.comment,
+	time_entries.duration_minutes,
 	time_entries.start,
-	time_entries.duration_minutes %s 
+	time_entries.team_id,
+	time_entries.time_entry_id,
+	time_entries.user_id,
+	time_entries.work_item_id %s 
 	 FROM public.time_entries %s 
 	 WHERE time_entries.user_id = $1 AND time_entries.team_id = $2
 	 %s   %s 
@@ -710,7 +710,7 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 // TimeEntriesByWorkItemIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_work_item_id_team_id_idx'.
-func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -778,14 +778,14 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	time_entries.time_entry_id,
-	time_entries.work_item_id,
 	time_entries.activity_id,
-	time_entries.team_id,
-	time_entries.user_id,
 	time_entries.comment,
+	time_entries.duration_minutes,
 	time_entries.start,
-	time_entries.duration_minutes %s 
+	time_entries.team_id,
+	time_entries.time_entry_id,
+	time_entries.user_id,
+	time_entries.work_item_id %s 
 	 FROM public.time_entries %s 
 	 WHERE time_entries.work_item_id = $1 AND time_entries.team_id = $2
 	 %s   %s 

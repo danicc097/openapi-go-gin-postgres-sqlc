@@ -4,8 +4,11 @@
 package models
 
 import (
+	"encoding/json"
+	"errors"
 	"time"
 
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	uuid "github.com/google/uuid"
 )
 
@@ -285,6 +288,12 @@ type DbDemoTwoWorkItem struct {
 	WorkItemID            int        `json:"workItemID"`
 }
 
+// DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
+type DbDemoTwoWorkItemCreateParams struct {
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
+	WorkItemID            int        `json:"workItemID"`
+}
+
 // DbDemoWorkItem defines the model for DbDemoWorkItem.
 type DbDemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt"`
@@ -377,18 +386,18 @@ type DbUserAPIKey struct {
 
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
-	ClosedAt       *time.Time              `json:"closedAt"`
-	CreatedAt      time.Time               `json:"createdAt"`
-	DeletedAt      *time.Time              `json:"deletedAt"`
-	Description    string                  `json:"description"`
-	KanbanStepID   int                     `json:"kanbanStepID"`
-	Metadata       *map[string]interface{} `json:"metadata"`
-	TargetDate     time.Time               `json:"targetDate"`
-	TeamID         int                     `json:"teamID"`
-	Title          string                  `json:"title"`
-	UpdatedAt      time.Time               `json:"updatedAt"`
-	WorkItemID     int                     `json:"workItemID"`
-	WorkItemTypeID int                     `json:"workItemTypeID"`
+	ClosedAt       *time.Time             `json:"closedAt"`
+	CreatedAt      time.Time              `json:"createdAt"`
+	DeletedAt      *time.Time             `json:"deletedAt"`
+	Description    string                 `json:"description"`
+	KanbanStepID   int                    `json:"kanbanStepID"`
+	Metadata       map[string]interface{} `json:"metadata"`
+	TargetDate     time.Time              `json:"targetDate"`
+	TeamID         int                    `json:"teamID"`
+	Title          string                 `json:"title"`
+	UpdatedAt      time.Time              `json:"updatedAt"`
+	WorkItemID     int                    `json:"workItemID"`
+	WorkItemTypeID int                    `json:"workItemTypeID"`
 }
 
 // DbWorkItemComment defines the model for DbWorkItemComment.
@@ -403,14 +412,14 @@ type DbWorkItemComment struct {
 
 // DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
 type DbWorkItemCreateParams struct {
-	ClosedAt       *time.Time              `json:"closedAt"`
-	Description    string                  `json:"description"`
-	KanbanStepID   int                     `json:"kanbanStepID"`
-	Metadata       *map[string]interface{} `json:"metadata"`
-	TargetDate     time.Time               `json:"targetDate"`
-	TeamID         int                     `json:"teamID"`
-	Title          string                  `json:"title"`
-	WorkItemTypeID int                     `json:"workItemTypeID"`
+	ClosedAt       *time.Time             `json:"closedAt"`
+	Description    string                 `json:"description"`
+	KanbanStepID   int                    `json:"kanbanStepID"`
+	Metadata       map[string]interface{} `json:"metadata"`
+	TargetDate     time.Time              `json:"targetDate"`
+	TeamID         int                    `json:"teamID"`
+	Title          string                 `json:"title"`
+	WorkItemTypeID int                    `json:"workItemTypeID"`
 }
 
 // DbWorkItemRole defines the model for DbWorkItemRole.
@@ -457,37 +466,47 @@ type DemoProjectKanbanSteps string
 // DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
 type DemoTwoKanbanSteps string
 
+// DemoTwoWorkItemCreateRequest defines the model for DemoTwoWorkItemCreateRequest.
+type DemoTwoWorkItemCreateRequest struct {
+	Base           DbWorkItemCreateParams        `json:"base"`
+	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
+	Members        []ServicesMember              `json:"members"`
+	ProjectName    Project                       `json:"projectName"`
+	TagIDs         []int                         `json:"tagIDs"`
+}
+
 // DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
 type DemoTwoWorkItemTypes string
 
 // DemoTwoWorkItemsResponse defines the model for DemoTwoWorkItemsResponse.
 type DemoTwoWorkItemsResponse struct {
-	ClosedAt         *time.Time              `json:"closedAt"`
-	CreatedAt        time.Time               `json:"createdAt"`
-	DeletedAt        *time.Time              `json:"deletedAt"`
-	DemoTwoWorkItem  DbDemoTwoWorkItem       `json:"demoTwoWorkItem"`
-	Description      string                  `json:"description"`
-	KanbanStepID     int                     `json:"kanbanStepID"`
-	Members          *[]DbUser               `json:"members"`
-	Metadata         *map[string]interface{} `json:"metadata"`
-	TargetDate       time.Time               `json:"targetDate"`
-	TeamID           int                     `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
-	Title            string                  `json:"title"`
-	UpdatedAt        time.Time               `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
-	WorkItemID       int                     `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                     `json:"workItemTypeID"`
+	ClosedAt         *time.Time             `json:"closedAt"`
+	CreatedAt        time.Time              `json:"createdAt"`
+	DeletedAt        *time.Time             `json:"deletedAt"`
+	DemoTwoWorkItem  DbDemoTwoWorkItem      `json:"demoTwoWorkItem"`
+	Description      string                 `json:"description"`
+	KanbanStepID     int                    `json:"kanbanStepID"`
+	Members          *[]DbUser              `json:"members"`
+	Metadata         map[string]interface{} `json:"metadata"`
+	TargetDate       time.Time              `json:"targetDate"`
+	TeamID           int                    `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
+	Title            string                 `json:"title"`
+	UpdatedAt        time.Time              `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment   `json:"workItemComments"`
+	WorkItemID       int                    `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag       `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType        `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                    `json:"workItemTypeID"`
 }
 
 // DemoWorkItemCreateRequest defines the model for DemoWorkItemCreateRequest.
 type DemoWorkItemCreateRequest struct {
 	Base        DbWorkItemCreateParams     `json:"base"`
 	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
-	Members     *[]ServicesMember          `json:"members"`
-	TagIDs      *[]int                     `json:"tagIDs"`
+	Members     []ServicesMember           `json:"members"`
+	ProjectName Project                    `json:"projectName"`
+	TagIDs      []int                      `json:"tagIDs"`
 }
 
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
@@ -495,24 +514,24 @@ type DemoWorkItemTypes string
 
 // DemoWorkItemsResponse defines the model for DemoWorkItemsResponse.
 type DemoWorkItemsResponse struct {
-	ClosedAt         *time.Time              `json:"closedAt"`
-	CreatedAt        time.Time               `json:"createdAt"`
-	DeletedAt        *time.Time              `json:"deletedAt"`
-	DemoWorkItem     DbDemoWorkItem          `json:"demoWorkItem"`
-	Description      string                  `json:"description"`
-	KanbanStepID     int                     `json:"kanbanStepID"`
-	Members          *[]DbUser               `json:"members"`
-	Metadata         *map[string]interface{} `json:"metadata"`
-	TargetDate       time.Time               `json:"targetDate"`
-	TeamID           int                     `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry          `json:"timeEntries"`
-	Title            string                  `json:"title"`
-	UpdatedAt        time.Time               `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment    `json:"workItemComments"`
-	WorkItemID       int                     `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag        `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType         `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                     `json:"workItemTypeID"`
+	ClosedAt         *time.Time             `json:"closedAt"`
+	CreatedAt        time.Time              `json:"createdAt"`
+	DeletedAt        *time.Time             `json:"deletedAt"`
+	DemoWorkItem     DbDemoWorkItem         `json:"demoWorkItem"`
+	Description      string                 `json:"description"`
+	KanbanStepID     int                    `json:"kanbanStepID"`
+	Members          *[]DbUser              `json:"members"`
+	Metadata         map[string]interface{} `json:"metadata"`
+	TargetDate       time.Time              `json:"targetDate"`
+	TeamID           int                    `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
+	Title            string                 `json:"title"`
+	UpdatedAt        time.Time              `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment   `json:"workItemComments"`
+	WorkItemID       int                    `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag       `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType        `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                    `json:"workItemTypeID"`
 }
 
 // ErrorCode Represents standardized HTTP error types.
@@ -668,6 +687,11 @@ type WorkItemCommentCreateRequest struct {
 	WorkItemID int      `json:"workItemID"`
 }
 
+// WorkItemCreateRequest defines the model for WorkItemCreateRequest.
+type WorkItemCreateRequest struct {
+	union json.RawMessage
+}
+
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
@@ -715,7 +739,96 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-type CreateWorkitemJSONRequestBody = DemoWorkItemCreateRequest
+type CreateWorkitemJSONRequestBody = WorkItemCreateRequest
 
 // CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
 type CreateWorkitemCommentJSONRequestBody = WorkItemCommentCreateRequest
+
+// AsDemoWorkItemCreateRequest returns the union data inside the WorkItemCreateRequest as a DemoWorkItemCreateRequest
+func (t WorkItemCreateRequest) AsDemoWorkItemCreateRequest() (DemoWorkItemCreateRequest, error) {
+	var body DemoWorkItemCreateRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDemoWorkItemCreateRequest overwrites any union data inside the WorkItemCreateRequest as the provided DemoWorkItemCreateRequest
+func (t *WorkItemCreateRequest) FromDemoWorkItemCreateRequest(v DemoWorkItemCreateRequest) error {
+	v.ProjectName = "demo"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDemoWorkItemCreateRequest performs a merge with any union data inside the WorkItemCreateRequest, using the provided DemoWorkItemCreateRequest
+func (t *WorkItemCreateRequest) MergeDemoWorkItemCreateRequest(v DemoWorkItemCreateRequest) error {
+	v.ProjectName = "demo"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JsonMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsDemoTwoWorkItemCreateRequest returns the union data inside the WorkItemCreateRequest as a DemoTwoWorkItemCreateRequest
+func (t WorkItemCreateRequest) AsDemoTwoWorkItemCreateRequest() (DemoTwoWorkItemCreateRequest, error) {
+	var body DemoTwoWorkItemCreateRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDemoTwoWorkItemCreateRequest overwrites any union data inside the WorkItemCreateRequest as the provided DemoTwoWorkItemCreateRequest
+func (t *WorkItemCreateRequest) FromDemoTwoWorkItemCreateRequest(v DemoTwoWorkItemCreateRequest) error {
+	v.ProjectName = "demo_two"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDemoTwoWorkItemCreateRequest performs a merge with any union data inside the WorkItemCreateRequest, using the provided DemoTwoWorkItemCreateRequest
+func (t *WorkItemCreateRequest) MergeDemoTwoWorkItemCreateRequest(v DemoTwoWorkItemCreateRequest) error {
+	v.ProjectName = "demo_two"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JsonMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t WorkItemCreateRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"projectName"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t WorkItemCreateRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "demo":
+		return t.AsDemoWorkItemCreateRequest()
+	case "demo_two":
+		return t.AsDemoTwoWorkItemCreateRequest()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t WorkItemCreateRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *WorkItemCreateRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}

@@ -147,7 +147,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	}
 	type want struct {
 		Scopes models.Scopes
-		Rank   int16
+		Rank   int
 	}
 
 	tests := []struct {
@@ -303,7 +303,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	}
 }
 
-// dont use repos here, we want the actual services logic
+// dont use repos here, we want the actual services logic.
 func createTestUsers(t *testing.T) testUsers {
 	t.Helper()
 

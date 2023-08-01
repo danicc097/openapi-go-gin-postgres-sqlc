@@ -23,25 +23,25 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type User struct {
-	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true"`                                      // user_id
-	Username                 string        `json:"username" db:"username" required:"true"`                                   // username
-	Email                    string        `json:"email" db:"email" required:"true"`                                         // email
-	FirstName                *string       `json:"firstName" db:"first_name"`                                                // first_name
-	LastName                 *string       `json:"lastName" db:"last_name"`                                                  // last_name
-	FullName                 *string       `json:"fullName" db:"full_name"`                                                  // full_name
-	ExternalID               string        `json:"-" db:"external_id"`                                                       // external_id
-	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                        // api_key_id
-	Scopes                   models.Scopes `json:"scopes" db:"scopes" required:"true" ref:"#/components/schemas/Scopes"`     // scopes
-	RoleRank                 int16         `json:"-" db:"role_rank"`                                                         // role_rank
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
-	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true"`                                // created_at
-	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
-	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                // deleted_at
+	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true" nullable:"false"`                                      // user_id
+	Username                 string        `json:"username" db:"username" required:"true" nullable:"false"`                                   // username
+	Email                    string        `json:"email" db:"email" required:"true" nullable:"false"`                                         // email
+	FirstName                *string       `json:"firstName" db:"first_name"`                                                                 // first_name
+	LastName                 *string       `json:"lastName" db:"last_name"`                                                                   // last_name
+	FullName                 *string       `json:"fullName" db:"full_name"`                                                                   // full_name
+	ExternalID               string        `json:"-" db:"external_id" nullable:"false"`                                                       // external_id
+	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                                         // api_key_id
+	Scopes                   models.Scopes `json:"scopes" db:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"`     // scopes
+	RoleRank                 int           `json:"-" db:"role_rank" nullable:"false"`                                                         // role_rank
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true" nullable:"false"` // has_personal_notifications
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true" nullable:"false"`     // has_global_notifications
+	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                // created_at
+	UpdatedAt                time.Time     `json:"-" db:"updated_at" nullable:"false"`                                                        // updated_at
+	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                 // deleted_at
 
 	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
@@ -56,31 +56,31 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'.
 type UserCreateParams struct {
-	Username                 string        `json:"username" required:"true"`                                 // username
-	Email                    string        `json:"email" required:"true"`                                    // email
-	FirstName                *string       `json:"firstName"`                                                // first_name
-	LastName                 *string       `json:"lastName"`                                                 // last_name
-	ExternalID               string        `json:"-"`                                                        // external_id
-	APIKeyID                 *int          `json:"-"`                                                        // api_key_id
-	Scopes                   models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
-	RoleRank                 int16         `json:"-"`                                                        // role_rank
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications" required:"true"`                 // has_personal_notifications
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" required:"true"`                   // has_global_notifications
+	APIKeyID                 *int          `json:"-"`                                                                         // api_key_id
+	Email                    string        `json:"email" required:"true" nullable:"false"`                                    // email
+	ExternalID               string        `json:"-" nullable:"false"`                                                        // external_id
+	FirstName                *string       `json:"firstName"`                                                                 // first_name
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" required:"true" nullable:"false"`                   // has_global_notifications
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications" required:"true" nullable:"false"`                 // has_personal_notifications
+	LastName                 *string       `json:"lastName"`                                                                  // last_name
+	RoleRank                 int           `json:"-" nullable:"false"`                                                        // role_rank
+	Scopes                   models.Scopes `json:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
+	Username                 string        `json:"username" required:"true" nullable:"false"`                                 // username
 }
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
 	u := &User{
-		Username:                 params.Username,
-		Email:                    params.Email,
-		FirstName:                params.FirstName,
-		LastName:                 params.LastName,
-		ExternalID:               params.ExternalID,
 		APIKeyID:                 params.APIKeyID,
-		Scopes:                   params.Scopes,
-		RoleRank:                 params.RoleRank,
-		HasPersonalNotifications: params.HasPersonalNotifications,
+		Email:                    params.Email,
+		ExternalID:               params.ExternalID,
+		FirstName:                params.FirstName,
 		HasGlobalNotifications:   params.HasGlobalNotifications,
+		HasPersonalNotifications: params.HasPersonalNotifications,
+		LastName:                 params.LastName,
+		RoleRank:                 params.RoleRank,
+		Scopes:                   params.Scopes,
+		Username:                 params.Username,
 	}
 
 	return u.Insert(ctx, db)
@@ -88,49 +88,49 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'public.users'.
 type UserUpdateParams struct {
-	Username                 *string        `json:"username" required:"true"`                                 // username
-	Email                    *string        `json:"email" required:"true"`                                    // email
-	FirstName                **string       `json:"firstName"`                                                // first_name
-	LastName                 **string       `json:"lastName"`                                                 // last_name
-	ExternalID               *string        `json:"-"`                                                        // external_id
-	APIKeyID                 **int          `json:"-"`                                                        // api_key_id
-	Scopes                   *models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
-	RoleRank                 *int16         `json:"-"`                                                        // role_rank
-	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" required:"true"`                 // has_personal_notifications
-	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications" required:"true"`                   // has_global_notifications
+	APIKeyID                 **int          `json:"-"`                                                         // api_key_id
+	Email                    *string        `json:"email" nullable:"false"`                                    // email
+	ExternalID               *string        `json:"-" nullable:"false"`                                        // external_id
+	FirstName                **string       `json:"firstName"`                                                 // first_name
+	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications" nullable:"false"`                   // has_global_notifications
+	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" nullable:"false"`                 // has_personal_notifications
+	LastName                 **string       `json:"lastName"`                                                  // last_name
+	RoleRank                 *int           `json:"-" nullable:"false"`                                        // role_rank
+	Scopes                   *models.Scopes `json:"scopes" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
+	Username                 *string        `json:"username" nullable:"false"`                                 // username
 }
 
 // SetUpdateParams updates public.users struct fields with the specified params.
 func (u *User) SetUpdateParams(params *UserUpdateParams) {
-	if params.Username != nil {
-		u.Username = *params.Username
+	if params.APIKeyID != nil {
+		u.APIKeyID = *params.APIKeyID
 	}
 	if params.Email != nil {
 		u.Email = *params.Email
 	}
-	if params.FirstName != nil {
-		u.FirstName = *params.FirstName
-	}
-	if params.LastName != nil {
-		u.LastName = *params.LastName
-	}
 	if params.ExternalID != nil {
 		u.ExternalID = *params.ExternalID
 	}
-	if params.APIKeyID != nil {
-		u.APIKeyID = *params.APIKeyID
+	if params.FirstName != nil {
+		u.FirstName = *params.FirstName
 	}
-	if params.Scopes != nil {
-		u.Scopes = *params.Scopes
-	}
-	if params.RoleRank != nil {
-		u.RoleRank = *params.RoleRank
+	if params.HasGlobalNotifications != nil {
+		u.HasGlobalNotifications = *params.HasGlobalNotifications
 	}
 	if params.HasPersonalNotifications != nil {
 		u.HasPersonalNotifications = *params.HasPersonalNotifications
 	}
-	if params.HasGlobalNotifications != nil {
-		u.HasGlobalNotifications = *params.HasGlobalNotifications
+	if params.LastName != nil {
+		u.LastName = *params.LastName
+	}
+	if params.RoleRank != nil {
+		u.RoleRank = *params.RoleRank
+	}
+	if params.Scopes != nil {
+		u.Scopes = *params.Scopes
+	}
+	if params.Username != nil {
+		u.Username = *params.Username
 	}
 }
 
@@ -166,14 +166,14 @@ const (
 	UserCreatedAtDescNullsLast  UserOrderBy = " created_at DESC NULLS LAST "
 	UserCreatedAtAscNullsFirst  UserOrderBy = " created_at ASC NULLS FIRST "
 	UserCreatedAtAscNullsLast   UserOrderBy = " created_at ASC NULLS LAST "
-	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
-	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
-	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
-	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
 	UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
 	UserDeletedAtDescNullsLast  UserOrderBy = " deleted_at DESC NULLS LAST "
 	UserDeletedAtAscNullsFirst  UserOrderBy = " deleted_at ASC NULLS FIRST "
 	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
+	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
+	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
+	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
+	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // WithUserOrderBy orders results by the given columns.
@@ -379,14 +379,14 @@ const userTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (
-	username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at
+	api_key_id, deleted_at, email, external_id, first_name, has_global_notifications, has_personal_notifications, last_name, role_rank, scopes, username
 	) VALUES (
 	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 	) RETURNING * `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
+	logf(sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username)
 
-	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
+	rows, err := db.Query(ctx, sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -404,13 +404,13 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET 
-	username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 
+	api_key_id = $1, deleted_at = $2, email = $3, external_id = $4, first_name = $5, has_global_notifications = $6, has_personal_notifications = $7, last_name = $8, role_rank = $9, scopes = $10, username = $11 
 	WHERE user_id = $12 
 	RETURNING * `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	logf(sqlstr, u.APIKeyID, u.CreatedAt, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.UpdatedAt, u.Username, u.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID)
+	rows, err := db.Query(ctx, sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -428,16 +428,16 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
 	var err error
 
-	u.Username = params.Username
-	u.Email = params.Email
-	u.FirstName = params.FirstName
-	u.LastName = params.LastName
-	u.ExternalID = params.ExternalID
 	u.APIKeyID = params.APIKeyID
-	u.Scopes = params.Scopes
-	u.RoleRank = params.RoleRank
-	u.HasPersonalNotifications = params.HasPersonalNotifications
+	u.Email = params.Email
+	u.ExternalID = params.ExternalID
+	u.FirstName = params.FirstName
 	u.HasGlobalNotifications = params.HasGlobalNotifications
+	u.HasPersonalNotifications = params.HasPersonalNotifications
+	u.LastName = params.LastName
+	u.RoleRank = params.RoleRank
+	u.Scopes = params.Scopes
+	u.Username = params.Username
 
 	u, err = u.Insert(ctx, db)
 	if err != nil {
@@ -587,21 +587,21 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.created_at > $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -716,21 +716,21 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.created_at < $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -847,21 +847,21 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.created_at = $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -979,21 +979,21 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.deleted_at = $1 AND (deleted_at IS NOT NULL)
 	 %s   AND users.deleted_at is %s  %s 
@@ -1113,21 +1113,21 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.email = $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -1245,21 +1245,21 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.external_id = $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -1377,21 +1377,21 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.user_id = $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -1509,21 +1509,21 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.updated_at = $1
 	 %s   AND users.deleted_at is %s  %s 
@@ -1643,21 +1643,21 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	users.user_id,
-	users.username,
-	users.email,
-	users.first_name,
-	users.last_name,
-	users.full_name,
-	users.external_id,
 	users.api_key_id,
-	users.scopes,
-	users.role_rank,
-	users.has_personal_notifications,
-	users.has_global_notifications,
 	users.created_at,
+	users.deleted_at,
+	users.email,
+	users.external_id,
+	users.first_name,
+	users.full_name,
+	users.has_global_notifications,
+	users.has_personal_notifications,
+	users.last_name,
+	users.role_rank,
+	users.scopes,
 	users.updated_at,
-	users.deleted_at %s 
+	users.user_id,
+	users.username %s 
 	 FROM public.users %s 
 	 WHERE users.username = $1
 	 %s   AND users.deleted_at is %s  %s 

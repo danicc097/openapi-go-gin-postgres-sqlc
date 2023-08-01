@@ -43,7 +43,7 @@ type openapiMiddleware struct {
 // TODO kin-openapi already has middleware, possibly added after this was created
 // - see openapi3filter.NewValidator and tests/examples
 // we just need to add our own onError func and wrap it all in gin.WrapH
-// there's also onLog to use zap
+// there's also onLog to use zap.
 func newOpenapiMiddleware(
 	logger *zap.SugaredLogger, spec *openapi3.T,
 ) *openapiMiddleware {
@@ -216,7 +216,7 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 }
 
 // attempt to get the MultiErrorHandler from the options. If it is not set,
-// return a default handler
+// return a default handler.
 func getMultiErrorHandlerFromOptions(options *OAValidatorOptions) MultiErrorHandler {
 	if options == nil {
 		return defaultMultiErrorHandler

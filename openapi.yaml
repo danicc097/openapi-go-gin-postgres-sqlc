@@ -370,7 +370,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DemoWorkItemCreateRequest'
+              $ref: '#/components/schemas/WorkItemCreateRequest'
         required: true
       responses:
         "201":
@@ -810,7 +810,6 @@ components:
           type: array
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -883,7 +882,6 @@ components:
           type: array
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -1246,10 +1244,41 @@ components:
           type: object
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       x-go-type: uuid.UUID
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
+    # IMPORTANT: anyOf since WorkItemCreateRequestDiscriminator will always be matched.
+    # we should be able to then remove projectName from DemoWorkItemCreateRequest and
+    # DemoTwoWorkItemCreateRequest
+    # WorkItemCreateRequest:
+    #   anyOf:
+    #     - $ref: '#/components/schemas/WorkItemCreateRequestDiscriminator'
+    #     - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
+    #     - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+    # WorkItemCreateRequestDiscriminator:
+    #   type: object
+    #   properties:
+    #     projectName:
+    #       $ref: '#/components/schemas/Project'
+    #   discriminator:
+    #     propertyName: projectName
+    #     mapping:
+    #       demo: '#/components/schemas/DemoWorkItemCreateRequest'
+    #       demo_two: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+
+    # IMPORTANT: discriminator must be defined this way so validation works
+    # and to ensure proper oapi-codegen generation. Disregard any other method.
+    WorkItemCreateRequest:
+      oneOf:
+        - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
+        - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+      discriminator:
+        propertyName: projectName
+        mapping:
+          demo: '#/components/schemas/DemoWorkItemCreateRequest'
+          demo_two: '#/components/schemas/DemoTwoWorkItemCreateRequest'
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:
@@ -1269,7 +1298,6 @@ components:
           type: integer
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -1310,11 +1338,35 @@ components:
         projectID:
           type: integer
       required:
-        - name
-        - description
         - color
+        - description
+        - name
       type: object
       x-postgen-struct: RestWorkItemTagCreateRequest
+    DemoTwoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoTwoProject:
+          $ref: '#/components/schemas/DbDemoTwoWorkItemCreateParams'
+        members:
+          items:
+            $ref: '#/components/schemas/ServicesMember'
+          type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
+        tagIDs:
+          items:
+            type: integer
+          type: array
+      required:
+        - projectName
+        - demoTwoProject
+        - base
+        - tagIDs
+        - members
+      type: object
+      x-postgen-struct: RestDemoTwoWorkItemCreateRequest
     DemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         base:
@@ -1324,14 +1376,15 @@ components:
         members:
           items:
             $ref: '#/components/schemas/ServicesMember'
-          nullable: true
           type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
         tagIDs:
           items:
             type: integer
-          nullable: true
           type: array
       required:
+        - projectName
         - demoProject
         - base
         - tagIDs
@@ -1347,9 +1400,9 @@ components:
         workItemID:
           type: integer
       required:
-        - workItemID
-        - userID
         - message
+        - userID
+        - workItemID
       type: object
       x-postgen-struct: RestWorkItemCommentCreateRequest
     Project: # Generated from projects table. DO NOT EDIT.
@@ -1369,9 +1422,9 @@ components:
         projectID:
           type: integer
       required:
-        - name
         - description
         - isProductive
+        - name
       type: object
     DbTeamCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1382,9 +1435,9 @@ components:
         projectID:
           type: integer
       required:
-        - projectID
-        - name
         - description
+        - name
+        - projectID
       type: object
     DbWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1398,9 +1451,9 @@ components:
         projectID:
           type: integer
       required:
-        - name
-        - description
         - color
+        - description
+        - name
       type: object
     DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
       type: string
@@ -1471,11 +1524,11 @@ components:
         workItemID:
           type: integer
       required:
-        - workItemID
-        - ref
-        - line
         - lastMessageAt
+        - line
+        - ref
         - reopened
+        - workItemID
       type: object
     DbWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1489,7 +1542,6 @@ components:
           type: integer
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -1501,13 +1553,13 @@ components:
         workItemTypeID:
           type: integer
       required:
-        - title
         - description
-        - workItemTypeID
-        - metadata
-        - teamID
         - kanbanStepID
+        - metadata
         - targetDate
+        - teamID
+        - title
+        - workItemTypeID
       type: object
     ServicesMember: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1516,10 +1568,21 @@ components:
         userID:
           $ref: '#/components/schemas/UuidUUID'
       required:
-        - userID
         - role
+        - userID
       type: object
     DbDemoTwoWorkItem: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        customDateForProject2:
+          format: date-time
+          nullable: true
+          type: string
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+      type: object
+    DbDemoTwoWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         customDateForProject2:
           format: date-time

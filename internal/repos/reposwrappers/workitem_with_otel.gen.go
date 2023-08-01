@@ -36,7 +36,7 @@ func NewWorkItemWithTracing(base repos.WorkItem, instance string, spanDecorator 
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {

@@ -56,7 +56,7 @@ func TestNotification_Create(t *testing.T) {
 		receiverRank1.RoleRank = 1
 		receiverRank1.Update(context.Background(), testPool)
 
-		receiverRank := pointers.New[int16](3)
+		receiverRank := pointers.New(3)
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, receiverRank, sender.UserID, nil, db.NotificationTypeGlobal)
 

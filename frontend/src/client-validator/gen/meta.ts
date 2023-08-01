@@ -34,8 +34,10 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
+  WorkItemCreateRequest,
   DbWorkItem,
   WorkItemTagCreateRequest,
+  DemoTwoWorkItemCreateRequest,
   DemoWorkItemCreateRequest,
   WorkItemCommentCreateRequest,
   Project,
@@ -55,6 +57,7 @@ import {
   DbWorkItemCreateParams,
   ServicesMember,
   DbDemoTwoWorkItem,
+  DbDemoTwoWorkItemCreateParams,
 } from './models'
 
 export const schemaDefinitions = {
@@ -94,10 +97,15 @@ export const schemaDefinitions = {
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
+  WorkItemCreateRequest: info<WorkItemCreateRequest>('WorkItemCreateRequest', '#/definitions/WorkItemCreateRequest'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
   WorkItemTagCreateRequest: info<WorkItemTagCreateRequest>(
     'WorkItemTagCreateRequest',
     '#/definitions/WorkItemTagCreateRequest',
+  ),
+  DemoTwoWorkItemCreateRequest: info<DemoTwoWorkItemCreateRequest>(
+    'DemoTwoWorkItemCreateRequest',
+    '#/definitions/DemoTwoWorkItemCreateRequest',
   ),
   DemoWorkItemCreateRequest: info<DemoWorkItemCreateRequest>(
     'DemoWorkItemCreateRequest',
@@ -142,6 +150,10 @@ export const schemaDefinitions = {
   ),
   ServicesMember: info<ServicesMember>('ServicesMember', '#/definitions/ServicesMember'),
   DbDemoTwoWorkItem: info<DbDemoTwoWorkItem>('DbDemoTwoWorkItem', '#/definitions/DbDemoTwoWorkItem'),
+  DbDemoTwoWorkItemCreateParams: info<DbDemoTwoWorkItemCreateParams>(
+    'DbDemoTwoWorkItemCreateParams',
+    '#/definitions/DbDemoTwoWorkItemCreateParams',
+  ),
 }
 
 export interface SchemaInfo<T> {

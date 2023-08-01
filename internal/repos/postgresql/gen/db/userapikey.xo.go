@@ -21,14 +21,14 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"-" db:"user_api_key_id"`                    // user_api_key_id
-	APIKey       string    `json:"apiKey" db:"api_key" required:"true"`       // api_key
-	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
-	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
+	UserAPIKeyID int       `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
+	APIKey       string    `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
+	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
+	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
 
 	UserJoin *User `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
 
@@ -36,9 +36,9 @@ type UserAPIKey struct {
 
 // UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'.
 type UserAPIKeyCreateParams struct {
-	APIKey    string    `json:"apiKey" required:"true"`    // api_key
-	ExpiresOn time.Time `json:"expiresOn" required:"true"` // expires_on
-	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
+	APIKey    string    `json:"apiKey" required:"true" nullable:"false"`    // api_key
+	ExpiresOn time.Time `json:"expiresOn" required:"true" nullable:"false"` // expires_on
+	UserID    uuid.UUID `json:"userID" required:"true" nullable:"false"`    // user_id
 }
 
 // CreateUserAPIKey creates a new UserAPIKey in the database with the given params.
@@ -54,9 +54,9 @@ func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams
 
 // UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'.
 type UserAPIKeyUpdateParams struct {
-	APIKey    *string    `json:"apiKey" required:"true"`    // api_key
-	ExpiresOn *time.Time `json:"expiresOn" required:"true"` // expires_on
-	UserID    *uuid.UUID `json:"userID" required:"true"`    // user_id
+	APIKey    *string    `json:"apiKey" nullable:"false"`    // api_key
+	ExpiresOn *time.Time `json:"expiresOn" nullable:"false"` // expires_on
+	UserID    *uuid.UUID `json:"userID" nullable:"false"`    // user_id
 }
 
 // SetUpdateParams updates public.user_api_keys struct fields with the specified params.
@@ -287,9 +287,9 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id > $1
@@ -363,9 +363,9 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id < $1
@@ -441,9 +441,9 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.api_key = $1
@@ -520,9 +520,9 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id = $1
@@ -599,9 +599,9 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
+	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_id = $1

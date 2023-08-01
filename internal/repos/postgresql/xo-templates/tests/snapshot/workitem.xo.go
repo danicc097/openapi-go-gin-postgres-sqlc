@@ -19,13 +19,13 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItem struct {
-	WorkItemID  int64   `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
-	Title       *string `json:"title" db:"title"`                             // title
-	Description *string `json:"description" db:"description"`                 // description
+	WorkItemID  int     `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	Title       *string `json:"title" db:"title"`                                              // title
+	Description *string `json:"description" db:"description"`                                  // description
 
 	DemoWorkItemJoin          *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
 	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -33,15 +33,15 @@ type WorkItem struct {
 
 // WorkItemCreateParams represents insert params for 'xo_tests.work_items'.
 type WorkItemCreateParams struct {
-	Title       *string `json:"title"`       // title
 	Description *string `json:"description"` // description
+	Title       *string `json:"title"`       // title
 }
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
 	wi := &WorkItem{
-		Title:       params.Title,
 		Description: params.Description,
+		Title:       params.Title,
 	}
 
 	return wi.Insert(ctx, db)
@@ -49,17 +49,17 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 
 // WorkItemUpdateParams represents update params for 'xo_tests.work_items'.
 type WorkItemUpdateParams struct {
-	Title       **string `json:"title"`       // title
 	Description **string `json:"description"` // description
+	Title       **string `json:"title"`       // title
 }
 
 // SetUpdateParams updates xo_tests.work_items struct fields with the specified params.
 func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
-	if params.Title != nil {
-		wi.Title = *params.Title
-	}
 	if params.Description != nil {
 		wi.Description = *params.Description
+	}
+	if params.Title != nil {
+		wi.Title = *params.Title
 	}
 }
 
@@ -156,14 +156,14 @@ const workItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_item
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.work_items (
-	title, description
+	description, title
 	) VALUES (
 	$1, $2
 	) RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description)
+	logf(sqlstr, wi.Description, wi.Title)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description)
+	rows, err := db.Query(ctx, sqlstr, wi.Description, wi.Title)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -181,13 +181,13 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.work_items SET 
-	title = $1, description = $2 
+	description = $1, title = $2 
 	WHERE work_item_id = $3 
 	RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemID)
+	logf(sqlstr, wi.Description, wi.Title, wi.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, wi.Description, wi.Title, wi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -205,8 +205,8 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
 	var err error
 
-	wi.Title = params.Title
 	wi.Description = params.Description
+	wi.Title = params.Title
 
 	wi, err = wi.Insert(ctx, db)
 	if err != nil {
@@ -238,7 +238,7 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
-func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -294,9 +294,9 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
+	work_items.description,
 	work_items.title,
-	work_items.description %s 
+	work_items.work_item_id %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id > $1
 	 %s   %s 
@@ -319,7 +319,7 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 }
 
 // WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
-func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -375,9 +375,9 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
+	work_items.description,
 	work_items.title,
-	work_items.description %s 
+	work_items.work_item_id %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id < $1
 	 %s   %s 
@@ -458,9 +458,9 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
+	work_items.description,
 	work_items.title,
-	work_items.description %s 
+	work_items.work_item_id %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE true
 	 %s   %s 
@@ -488,7 +488,7 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 // WorkItemByWorkItemID retrieves a row from 'xo_tests.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_pkey'.
-func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
+func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
 	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -544,9 +544,9 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
+	work_items.description,
 	work_items.title,
-	work_items.description %s 
+	work_items.work_item_id %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id = $1
 	 %s   %s 
@@ -628,9 +628,9 @@ func WorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...WorkIte
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.work_item_id,
+	work_items.description,
 	work_items.title,
-	work_items.description %s 
+	work_items.work_item_id %s 
 	 FROM xo_tests.work_items %s 
 	 WHERE work_items.title = $1
 	 %s   %s 

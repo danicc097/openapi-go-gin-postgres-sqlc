@@ -19,15 +19,15 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemTag struct {
-	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true"`                           // work_item_tag_id
-	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`                                     // project_id
-	Name          string `json:"name" db:"name" required:"true"`                                                // name
-	Description   string `json:"description" db:"description" required:"true"`                                  // description
-	Color         string `json:"color" db:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"`                           // work_item_tag_id
+	ProjectID     int    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	Name          string `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
+	Description   string `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
+	Color         string `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 
 	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
 	WorkItemTagWorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
@@ -36,19 +36,19 @@ type WorkItemTag struct {
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'.
 type WorkItemTagCreateParams struct {
-	ProjectID   int    `json:"projectID"`                                                          // project_id
-	Name        string `json:"name" required:"true"`                                               // name
-	Description string `json:"description" required:"true"`                                        // description
-	Color       string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Color       string `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description string `json:"description" required:"true" nullable:"false"`                                        // description
+	Name        string `json:"name" required:"true" nullable:"false"`                                               // name
+	ProjectID   int    `json:"projectID" nullable:"false"`                                                          // project_id
 }
 
 // CreateWorkItemTag creates a new WorkItemTag in the database with the given params.
 func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreateParams) (*WorkItemTag, error) {
 	wit := &WorkItemTag{
-		ProjectID:   params.ProjectID,
-		Name:        params.Name,
-		Description: params.Description,
 		Color:       params.Color,
+		Description: params.Description,
+		Name:        params.Name,
+		ProjectID:   params.ProjectID,
 	}
 
 	return wit.Insert(ctx, db)
@@ -56,25 +56,25 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'.
 type WorkItemTagUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`                                                          // project_id
-	Name        *string `json:"name" required:"true"`                                               // name
-	Description *string `json:"description" required:"true"`                                        // description
-	Color       *string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Color       *string `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description *string `json:"description" nullable:"false"`                                        // description
+	Name        *string `json:"name" nullable:"false"`                                               // name
+	ProjectID   *int    `json:"projectID" nullable:"false"`                                          // project_id
 }
 
 // SetUpdateParams updates public.work_item_tags struct fields with the specified params.
 func (wit *WorkItemTag) SetUpdateParams(params *WorkItemTagUpdateParams) {
-	if params.ProjectID != nil {
-		wit.ProjectID = *params.ProjectID
-	}
-	if params.Name != nil {
-		wit.Name = *params.Name
+	if params.Color != nil {
+		wit.Color = *params.Color
 	}
 	if params.Description != nil {
 		wit.Description = *params.Description
 	}
-	if params.Color != nil {
-		wit.Color = *params.Color
+	if params.Name != nil {
+		wit.Name = *params.Name
+	}
+	if params.ProjectID != nil {
+		wit.ProjectID = *params.ProjectID
 	}
 }
 
@@ -165,14 +165,14 @@ const workItemTagTableWorkItemsWorkItemTagGroupBySQL = `work_item_tags.work_item
 func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_tags (
-	project_id, name, description, color
+	color, description, name, project_id
 	) VALUES (
 	$1, $2, $3, $4
 	) RETURNING * `
 	// run
-	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	logf(sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	rows, err := db.Query(ctx, sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -190,13 +190,13 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_tags SET 
-	project_id = $1, name = $2, description = $3, color = $4 
+	color = $1, description = $2, name = $3, project_id = $4 
 	WHERE work_item_tag_id = $5 
 	RETURNING * `
 	// run
-	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
+	logf(sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTagID)
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
+	rows, err := db.Query(ctx, sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Update/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -214,10 +214,10 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error)
 func (wit *WorkItemTag) Upsert(ctx context.Context, db DB, params *WorkItemTagCreateParams) (*WorkItemTag, error) {
 	var err error
 
-	wit.ProjectID = params.ProjectID
-	wit.Name = params.Name
-	wit.Description = params.Description
 	wit.Color = params.Color
+	wit.Description = params.Description
+	wit.Name = params.Name
+	wit.ProjectID = params.ProjectID
 
 	wit, err = wit.Insert(ctx, db)
 	if err != nil {
@@ -305,11 +305,11 @@ func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItem
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.work_item_tag_id,
-	work_item_tags.project_id,
-	work_item_tags.name,
+	work_item_tags.color,
 	work_item_tags.description,
-	work_item_tags.color %s 
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id > $1
 	 %s   %s 
@@ -388,11 +388,11 @@ func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID in
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.work_item_tag_id,
-	work_item_tags.project_id,
-	work_item_tags.name,
+	work_item_tags.color,
 	work_item_tags.description,
-	work_item_tags.color %s 
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id > $1
 	 %s   %s 
@@ -471,11 +471,11 @@ func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workIte
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.work_item_tag_id,
-	work_item_tags.project_id,
-	work_item_tags.name,
+	work_item_tags.color,
 	work_item_tags.description,
-	work_item_tags.color %s 
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id < $1
 	 %s   %s 
@@ -554,11 +554,11 @@ func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID i
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.work_item_tag_id,
-	work_item_tags.project_id,
-	work_item_tags.name,
+	work_item_tags.color,
 	work_item_tags.description,
-	work_item_tags.color %s 
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id < $1
 	 %s   %s 
@@ -639,11 +639,11 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.work_item_tag_id,
-	work_item_tags.project_id,
-	work_item_tags.name,
+	work_item_tags.color,
 	work_item_tags.description,
-	work_item_tags.color %s 
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.name = $1 AND work_item_tags.project_id = $2
 	 %s   %s 
@@ -725,11 +725,11 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.work_item_tag_id,
-	work_item_tags.project_id,
-	work_item_tags.name,
+	work_item_tags.color,
 	work_item_tags.description,
-	work_item_tags.color %s 
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.name = $1
 	 %s   %s 
@@ -813,11 +813,11 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.work_item_tag_id,
-	work_item_tags.project_id,
-	work_item_tags.name,
+	work_item_tags.color,
 	work_item_tags.description,
-	work_item_tags.color %s 
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id = $1
 	 %s   %s 
@@ -901,11 +901,11 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.work_item_tag_id,
-	work_item_tags.project_id,
-	work_item_tags.name,
+	work_item_tags.color,
 	work_item_tags.description,
-	work_item_tags.color %s 
+	work_item_tags.name,
+	work_item_tags.project_id,
+	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id = $1
 	 %s   %s 

@@ -20,14 +20,14 @@ type DemoWorkItem struct {
 }
 
 type Member struct {
+	Role   models.WorkItemRole `json:"role"   ref:"#/components/schemas/WorkItemRole" required:"true"`
 	UserID uuid.UUID           `json:"userID" required:"true"`
-	Role   models.WorkItemRole `json:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
 type DemoWorkItemCreateParams struct {
 	repos.DemoWorkItemCreateParams
-	TagIDs  []int    `json:"tagIDs" required:"true"`
-	Members []Member `json:"members" required:"true"`
+	TagIDs  []int    `json:"tagIDs"  nullable:"false" required:"true"`
+	Members []Member `json:"members" nullable:"false" required:"true"`
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.
@@ -40,7 +40,7 @@ func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem, w
 }
 
 // ByID gets a work item by ID.
-func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.ByID").End()
 
 	wi, err := w.demowiRepo.ByID(ctx, d, id)
@@ -67,9 +67,17 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		})
 		var ierr *internal.Error
 		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("db.CreateWorkItemWorkItemTag: %w", err)
+			if !errors.As(err, &ierr) {
+				w.logger.Infof("ierr: %v\n", ierr)
 			}
+			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
+				continue
+			}
+
+			// TODO: internal.Error should contain location, if any.
+			// e.g. here tagIDs.i
+
+			return nil, fmt.Errorf("could not assign tag %d: %w", id, err)
 		}
 	}
 
@@ -81,9 +89,11 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		})
 		var ierr *internal.Error
 		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("a.AssignMember: %w", err)
+			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
+				continue
 			}
+
+			return nil, fmt.Errorf("could not assign member %s: %w", m.UserID, err)
 		}
 	}
 
@@ -100,7 +110,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 }
 
 // Update updates an existing work item.
-func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.Update").End()
 
 	wi, err := w.demowiRepo.Update(ctx, d, id, params)
@@ -112,7 +122,7 @@ func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 }
 
 // Delete deletes a work item by ID.
-func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.Delete").End()
 
 	wi, err := w.demowiRepo.Delete(ctx, d, id)
@@ -129,7 +139,7 @@ func (w *DemoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.Work
 	return err
 }
 
-func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int64) error {
+func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
@@ -144,7 +154,7 @@ func (w *DemoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.W
 	return err
 }
 
-func (w *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int64) error {
+func (w *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
 	wim := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
 		WorkItemID:   workItemID,
@@ -167,6 +177,6 @@ func (w *DemoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.Wo
 	return []db.WorkItem{}, errors.New("not implemented")
 }
 
-func (w *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	return w.demowiRepo.Restore(ctx, d, id)
 }

@@ -10,39 +10,39 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// InitializeProject
+// InitializeProject.
 func (h *Handlers) InitializeProject(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// GetProjectBoard
+// GetProjectBoard.
 func (h *Handlers) GetProjectBoard(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// GetProjectWorkitems
+// GetProjectWorkitems.
 func (h *Handlers) GetProjectWorkitems(c *gin.Context, project models.Project, params models.GetProjectWorkitemsParams) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// GetProjectConfig
+// GetProjectConfig.
 func (h *Handlers) GetProjectConfig(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// UpdateProjectConfig
+// UpdateProjectConfig.
 func (h *Handlers) UpdateProjectConfig(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// GetProject
+// GetProject.
 func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 	ctx := c.Request.Context()
 
 	defer newOTELSpan(ctx, "GetProject", trace.WithAttributes(userIDAttribute(c))).End()
 
 	// TODO project service (includes project, team, board...)
-	// role, ok := h.authzsvc.RoleByRank(user.RoleRank)
+	// role, ok := h.svc.authz.RoleByRank(user.RoleRank)
 	// if !ok {
 	// 	msg := fmt.Sprintf("role with rank %d not found", user.RoleRank)
 	// 	renderErrorResponse(c, msg, errors.New(msg))
@@ -67,7 +67,7 @@ func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 		return
 	}
 
-	wit, err := h.workitemtagsvc.Create(c, h.pool, caller, &db.WorkItemTagCreateParams{
+	wit, err := h.svc.workitemtag.Create(c, h.pool, caller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[project],
 		Name:        body.Name,
 		Description: body.Description,

@@ -79,6 +79,7 @@ func Test_MergeConfigFields(t *testing.T) {
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "targetDate", Name: "targetDate"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "workItemID", Name: "workItemID"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "createdAt", Name: "createdAt"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "metadata", Name: "metadata"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "title", Name: "title"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem", Name: "Demo project"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.workItemID", Name: "workItemID"},

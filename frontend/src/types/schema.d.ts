@@ -219,7 +219,7 @@ export interface components {
       members?: (components["schemas"]["DbUser"])[] | null;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -246,7 +246,7 @@ export interface components {
       members?: (components["schemas"]["DbUser"])[] | null;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -396,6 +396,7 @@ export interface components {
       ctx?: Record<string, never>;
     };
     UuidUUID: string;
+    WorkItemCreateRequest: components["schemas"]["DemoWorkItemCreateRequest"] | components["schemas"]["DemoTwoWorkItemCreateRequest"];
     DbWorkItem: {
       /** Format: date-time */
       closedAt?: string | null;
@@ -407,7 +408,7 @@ export interface components {
       kanbanStepID: number;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -423,11 +424,19 @@ export interface components {
       name: string;
       projectID?: number;
     };
+    DemoTwoWorkItemCreateRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
+      members: (components["schemas"]["ServicesMember"])[];
+      projectName: components["schemas"]["Project"];
+      tagIDs: (number)[];
+    };
     DemoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
-      members: (components["schemas"]["ServicesMember"])[] | null;
-      tagIDs: (number)[] | null;
+      members: (components["schemas"]["ServicesMember"])[];
+      projectName: components["schemas"]["Project"];
+      tagIDs: (number)[];
     };
     WorkItemCommentCreateRequest: {
       message: string;
@@ -488,7 +497,7 @@ export interface components {
       kanbanStepID: number;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -500,6 +509,11 @@ export interface components {
       userID: components["schemas"]["UuidUUID"];
     };
     DbDemoTwoWorkItem: {
+      /** Format: date-time */
+      customDateForProject2?: string | null;
+      workItemID: number;
+    };
+    DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
       customDateForProject2?: string | null;
       workItemID: number;
@@ -808,7 +822,7 @@ export interface operations {
   CreateWorkitem: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["DemoWorkItemCreateRequest"];
+        "application/json": components["schemas"]["WorkItemCreateRequest"];
       };
     };
     responses: {

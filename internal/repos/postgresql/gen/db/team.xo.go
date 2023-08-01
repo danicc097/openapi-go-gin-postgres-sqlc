@@ -20,16 +20,16 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Team struct {
-	TeamID      int       `json:"teamID" db:"team_id" required:"true"`          // team_id
-	ProjectID   int       `json:"projectID" db:"project_id" required:"true"`    // project_id
-	Name        string    `json:"name" db:"name" required:"true"`               // name
-	Description string    `json:"description" db:"description" required:"true"` // description
-	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
-	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
+	TeamID      int       `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
+	ProjectID   int       `json:"projectID" db:"project_id" required:"true" nullable:"false"`    // project_id
+	Name        string    `json:"name" db:"name" required:"true" nullable:"false"`               // name
+	Description string    `json:"description" db:"description" required:"true" nullable:"false"` // description
+	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`    // created_at
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`    // updated_at
 
 	ProjectJoin         *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 	TeamTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
@@ -39,17 +39,17 @@ type Team struct {
 
 // TeamCreateParams represents insert params for 'public.teams'.
 type TeamCreateParams struct {
-	ProjectID   int    `json:"projectID" required:"true"`   // project_id
-	Name        string `json:"name" required:"true"`        // name
-	Description string `json:"description" required:"true"` // description
+	Description string `json:"description" required:"true" nullable:"false"` // description
+	Name        string `json:"name" required:"true" nullable:"false"`        // name
+	ProjectID   int    `json:"projectID" required:"true" nullable:"false"`   // project_id
 }
 
 // CreateTeam creates a new Team in the database with the given params.
 func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
 	t := &Team{
-		ProjectID:   params.ProjectID,
-		Name:        params.Name,
 		Description: params.Description,
+		Name:        params.Name,
+		ProjectID:   params.ProjectID,
 	}
 
 	return t.Insert(ctx, db)
@@ -57,21 +57,21 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 
 // TeamUpdateParams represents update params for 'public.teams'.
 type TeamUpdateParams struct {
-	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
-	Name        *string `json:"name" required:"true"`        // name
-	Description *string `json:"description" required:"true"` // description
+	Description *string `json:"description" nullable:"false"` // description
+	Name        *string `json:"name" nullable:"false"`        // name
+	ProjectID   *int    `json:"projectID" nullable:"false"`   // project_id
 }
 
 // SetUpdateParams updates public.teams struct fields with the specified params.
 func (t *Team) SetUpdateParams(params *TeamUpdateParams) {
-	if params.ProjectID != nil {
-		t.ProjectID = *params.ProjectID
+	if params.Description != nil {
+		t.Description = *params.Description
 	}
 	if params.Name != nil {
 		t.Name = *params.Name
 	}
-	if params.Description != nil {
-		t.Description = *params.Description
+	if params.ProjectID != nil {
+		t.ProjectID = *params.ProjectID
 	}
 }
 
@@ -203,14 +203,14 @@ const teamTableMembersGroupBySQL = `teams.team_id, teams.team_id`
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.teams (
-	project_id, name, description
+	description, name, project_id
 	) VALUES (
 	$1, $2, $3
 	) RETURNING * `
 	// run
-	logf(sqlstr, t.ProjectID, t.Name, t.Description)
+	logf(sqlstr, t.Description, t.Name, t.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description)
+	rows, err := db.Query(ctx, sqlstr, t.Description, t.Name, t.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Insert/db.Query: %w", &XoError{Entity: "Team", Err: err}))
 	}
@@ -228,13 +228,13 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET 
-	project_id = $1, name = $2, description = $3 
+	description = $1, name = $2, project_id = $3 
 	WHERE team_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
+	logf(sqlstr, t.CreatedAt, t.Description, t.Name, t.ProjectID, t.UpdatedAt, t.TeamID)
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID)
+	rows, err := db.Query(ctx, sqlstr, t.Description, t.Name, t.ProjectID, t.TeamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Update/db.Query: %w", &XoError{Entity: "Team", Err: err}))
 	}
@@ -252,9 +252,9 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 func (t *Team) Upsert(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
 	var err error
 
-	t.ProjectID = params.ProjectID
-	t.Name = params.Name
 	t.Description = params.Description
+	t.Name = params.Name
+	t.ProjectID = params.ProjectID
 
 	t, err = t.Insert(ctx, db)
 	if err != nil {
@@ -348,11 +348,11 @@ func TeamPaginatedByTeamIDAsc(ctx context.Context, db DB, teamID int, opts ...Te
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	teams.team_id,
-	teams.project_id,
-	teams.name,
-	teams.description,
 	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
 	teams.updated_at %s 
 	 FROM public.teams %s 
 	 WHERE teams.team_id > $1
@@ -438,11 +438,11 @@ func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	teams.team_id,
-	teams.project_id,
-	teams.name,
-	teams.description,
 	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
 	teams.updated_at %s 
 	 FROM public.teams %s 
 	 WHERE teams.project_id > $1
@@ -528,11 +528,11 @@ func TeamPaginatedByTeamIDDesc(ctx context.Context, db DB, teamID int, opts ...T
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	teams.team_id,
-	teams.project_id,
-	teams.name,
-	teams.description,
 	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
 	teams.updated_at %s 
 	 FROM public.teams %s 
 	 WHERE teams.team_id < $1
@@ -618,11 +618,11 @@ func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	teams.team_id,
-	teams.project_id,
-	teams.name,
-	teams.description,
 	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
 	teams.updated_at %s 
 	 FROM public.teams %s 
 	 WHERE teams.project_id < $1
@@ -710,11 +710,11 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	teams.team_id,
-	teams.project_id,
-	teams.name,
-	teams.description,
 	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
 	teams.updated_at %s 
 	 FROM public.teams %s 
 	 WHERE teams.name = $1 AND teams.project_id = $2
@@ -803,11 +803,11 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	teams.team_id,
-	teams.project_id,
-	teams.name,
-	teams.description,
 	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
 	teams.updated_at %s 
 	 FROM public.teams %s 
 	 WHERE teams.name = $1
@@ -898,11 +898,11 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSel
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	teams.team_id,
-	teams.project_id,
-	teams.name,
-	teams.description,
 	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
 	teams.updated_at %s 
 	 FROM public.teams %s 
 	 WHERE teams.project_id = $1
@@ -993,11 +993,11 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	teams.team_id,
-	teams.project_id,
-	teams.name,
-	teams.description,
 	teams.created_at,
+	teams.description,
+	teams.name,
+	teams.project_id,
+	teams.team_id,
 	teams.updated_at %s 
 	 FROM public.teams %s 
 	 WHERE teams.team_id = $1

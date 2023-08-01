@@ -21,29 +21,29 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type PagElement struct {
-	PaginatedElementID uuid.UUID `json:"paginatedElementID" db:"paginated_element_id" required:"true"` // paginated_element_id
-	Name               string    `json:"name" db:"name" required:"true"`                               // name
-	CreatedAt          time.Time `json:"createdAt" db:"created_at" required:"true"`                    // created_at
-	Dummy              *int      `json:"dummy" db:"dummy"`                                             // dummy
+	PaginatedElementID uuid.UUID `json:"paginatedElementID" db:"paginated_element_id" required:"true" nullable:"false"` // paginated_element_id
+	Name               string    `json:"name" db:"name" required:"true" nullable:"false"`                               // name
+	CreatedAt          time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
+	Dummy              *int      `json:"dummy" db:"dummy"`                                                              // dummy
 
 	DummyJoin *DummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
 }
 
 // PagElementCreateParams represents insert params for 'xo_tests.pag_element'.
 type PagElementCreateParams struct {
-	Name  string `json:"name" required:"true"` // name
-	Dummy *int   `json:"dummy"`                // dummy
+	Dummy *int   `json:"dummy"`                                 // dummy
+	Name  string `json:"name" required:"true" nullable:"false"` // name
 }
 
 // CreatePagElement creates a new PagElement in the database with the given params.
 func CreatePagElement(ctx context.Context, db DB, params *PagElementCreateParams) (*PagElement, error) {
 	pe := &PagElement{
-		Name:  params.Name,
 		Dummy: params.Dummy,
+		Name:  params.Name,
 	}
 
 	return pe.Insert(ctx, db)
@@ -51,17 +51,17 @@ func CreatePagElement(ctx context.Context, db DB, params *PagElementCreateParams
 
 // PagElementUpdateParams represents update params for 'xo_tests.pag_element'.
 type PagElementUpdateParams struct {
-	Name  *string `json:"name" required:"true"` // name
-	Dummy **int   `json:"dummy"`                // dummy
+	Dummy **int   `json:"dummy"`                 // dummy
+	Name  *string `json:"name" nullable:"false"` // name
 }
 
 // SetUpdateParams updates xo_tests.pag_element struct fields with the specified params.
 func (pe *PagElement) SetUpdateParams(params *PagElementUpdateParams) {
-	if params.Name != nil {
-		pe.Name = *params.Name
-	}
 	if params.Dummy != nil {
 		pe.Dummy = *params.Dummy
+	}
+	if params.Name != nil {
+		pe.Name = *params.Name
 	}
 }
 
@@ -147,14 +147,14 @@ const pagElementTableDummyJoinGroupBySQL = `_pag_element_dummy.dummy_join_id,
 func (pe *PagElement) Insert(ctx context.Context, db DB) (*PagElement, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.pag_element (
-	name, dummy
+	dummy, name
 	) VALUES (
 	$1, $2
 	) RETURNING * `
 	// run
-	logf(sqlstr, pe.Name, pe.Dummy)
+	logf(sqlstr, pe.Dummy, pe.Name)
 
-	rows, err := db.Query(ctx, sqlstr, pe.Name, pe.Dummy)
+	rows, err := db.Query(ctx, sqlstr, pe.Dummy, pe.Name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Insert/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
@@ -172,13 +172,13 @@ func (pe *PagElement) Insert(ctx context.Context, db DB) (*PagElement, error) {
 func (pe *PagElement) Update(ctx context.Context, db DB) (*PagElement, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.pag_element SET 
-	name = $1, dummy = $2 
+	dummy = $1, name = $2 
 	WHERE paginated_element_id = $3 
 	RETURNING * `
 	// run
-	logf(sqlstr, pe.Name, pe.CreatedAt, pe.Dummy, pe.PaginatedElementID)
+	logf(sqlstr, pe.CreatedAt, pe.Dummy, pe.Name, pe.PaginatedElementID)
 
-	rows, err := db.Query(ctx, sqlstr, pe.Name, pe.Dummy, pe.PaginatedElementID)
+	rows, err := db.Query(ctx, sqlstr, pe.Dummy, pe.Name, pe.PaginatedElementID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("PagElement/Update/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
@@ -196,8 +196,8 @@ func (pe *PagElement) Update(ctx context.Context, db DB) (*PagElement, error) {
 func (pe *PagElement) Upsert(ctx context.Context, db DB, params *PagElementCreateParams) (*PagElement, error) {
 	var err error
 
-	pe.Name = params.Name
 	pe.Dummy = params.Dummy
+	pe.Name = params.Name
 
 	pe, err = pe.Insert(ctx, db)
 	if err != nil {
@@ -279,10 +279,10 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	pag_element.paginated_element_id,
-	pag_element.name,
 	pag_element.created_at,
-	pag_element.dummy %s 
+	pag_element.dummy,
+	pag_element.name,
+	pag_element.paginated_element_id %s 
 	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.created_at > $1
 	 %s   %s 
@@ -355,10 +355,10 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	pag_element.paginated_element_id,
-	pag_element.name,
 	pag_element.created_at,
-	pag_element.dummy %s 
+	pag_element.dummy,
+	pag_element.name,
+	pag_element.paginated_element_id %s 
 	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.created_at < $1
 	 %s   %s 
@@ -433,10 +433,10 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	pag_element.paginated_element_id,
-	pag_element.name,
 	pag_element.created_at,
-	pag_element.dummy %s 
+	pag_element.dummy,
+	pag_element.name,
+	pag_element.paginated_element_id %s 
 	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.created_at = $1
 	 %s   %s 
@@ -512,10 +512,10 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	pag_element.paginated_element_id,
-	pag_element.name,
 	pag_element.created_at,
-	pag_element.dummy %s 
+	pag_element.dummy,
+	pag_element.name,
+	pag_element.paginated_element_id %s 
 	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.paginated_element_id = $1
 	 %s   %s 

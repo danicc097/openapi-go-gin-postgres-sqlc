@@ -77,7 +77,7 @@ func (t *F) TestExample() {
 }
 */
 
-// TestBasic adopts the code from readme.md into a simple test case
+// TestBasic adopts the code from readme.md into a simple test case.
 func (t *F) TestBasic() {
 	expensiveCalls := 0
 
@@ -108,7 +108,7 @@ func (t *F) TestBasic() {
 	t.So(cached, ShouldBeFalse)
 }
 
-// TestFailure checks that failed function values are not cached
+// TestFailure checks that failed function values are not cached.
 func (t *F) TestFailure() {
 	calls := 0
 

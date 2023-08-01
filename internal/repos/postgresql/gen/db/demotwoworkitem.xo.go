@@ -20,12 +20,12 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoTwoWorkItem struct {
-	WorkItemID            int64      `json:"workItemID" db:"work_item_id" required:"true"`         // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"` // custom_date_for_project_2
+	WorkItemID            int        `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"`          // custom_date_for_project_2
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
@@ -33,15 +33,15 @@ type DemoTwoWorkItem struct {
 
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemCreateParams struct {
-	WorkItemID            int64      `json:"workItemID" required:"true"` // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"`      // custom_date_for_project_2
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`                       // custom_date_for_project_2
+	WorkItemID            int        `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.
 func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
 	dtwi := &DemoTwoWorkItem{
-		WorkItemID:            params.WorkItemID,
 		CustomDateForProject2: params.CustomDateForProject2,
+		WorkItemID:            params.WorkItemID,
 	}
 
 	return dtwi.Insert(ctx, db)
@@ -141,14 +141,14 @@ const demoTwoWorkItemTableWorkItemGroupBySQL = `_demo_two_work_items_work_item_i
 func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
 	// insert (manual)
 	sqlstr := `INSERT INTO public.demo_two_work_items (
-	work_item_id, custom_date_for_project_2
+	custom_date_for_project_2, work_item_id
 	) VALUES (
 	$1, $2
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
-	rows, err := db.Query(ctx, sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
+	logf(sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Insert/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
@@ -189,8 +189,8 @@ func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkIte
 func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
 	var err error
 
-	dtwi.WorkItemID = params.WorkItemID
 	dtwi.CustomDateForProject2 = params.CustomDateForProject2
+	dtwi.WorkItemID = params.WorkItemID
 
 	dtwi, err = dtwi.Insert(ctx, db)
 	if err != nil {
@@ -222,7 +222,7 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // DemoTwoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoTwoWorkItem in Asc order.
-func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -272,8 +272,8 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_two_work_items.work_item_id,
-	demo_two_work_items.custom_date_for_project_2 %s 
+	demo_two_work_items.custom_date_for_project_2,
+	demo_two_work_items.work_item_id %s 
 	 FROM public.demo_two_work_items %s 
 	 WHERE demo_two_work_items.work_item_id > $1
 	 %s   %s 
@@ -296,7 +296,7 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 }
 
 // DemoTwoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoTwoWorkItem in Desc order.
-func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -346,8 +346,8 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_two_work_items.work_item_id,
-	demo_two_work_items.custom_date_for_project_2 %s 
+	demo_two_work_items.custom_date_for_project_2,
+	demo_two_work_items.work_item_id %s 
 	 FROM public.demo_two_work_items %s 
 	 WHERE demo_two_work_items.work_item_id < $1
 	 %s   %s 
@@ -372,7 +372,7 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 // DemoTwoWorkItemByWorkItemID retrieves a row from 'public.demo_two_work_items' as a DemoTwoWorkItem.
 //
 // Generated from index 'demo_two_work_items_pkey'.
-func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
+func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -422,8 +422,8 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_two_work_items.work_item_id,
-	demo_two_work_items.custom_date_for_project_2 %s 
+	demo_two_work_items.custom_date_for_project_2,
+	demo_two_work_items.work_item_id %s 
 	 FROM public.demo_two_work_items %s 
 	 WHERE demo_two_work_items.work_item_id = $1
 	 %s   %s 

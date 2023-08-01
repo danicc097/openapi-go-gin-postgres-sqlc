@@ -20,7 +20,7 @@ import (
 	"go.uber.org/zap"
 
 	// dot import so go code would resemble as much as native SQL
-	// dot import is not mandatory
+	// dot import is not mandatory.
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/model"
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/table"
 	. "github.com/go-jet/jet/v2/postgres"
@@ -29,11 +29,11 @@ import (
 )
 
 type Team struct {
-	TeamID int    `json:"teamID" db:"team_id"`
-	Name   string `json:"team" db:"team"`
+	TeamID int    `db:"team_id" json:"teamID"`
+	Name   string `db:"team"    json:"team"`
 }
 
-// clear && go run cmd/cli/main.go -env .env.dev
+// clear && go run cmd/cli/main.go -env .env.dev.
 func main() {
 	var env string
 	var init bool
@@ -170,29 +170,29 @@ func main() {
 }
 
 type Item struct {
-	UserItemID int    `json:"userItemID" db:"user_item_id"`
-	UserID     int    `json:"userID" db:"user_id"`
-	Item       string `json:"item" db:"item"`
+	UserItemID int    `db:"user_item_id" json:"userItemID"`
+	UserID     int    `db:"user_id"      json:"userID"`
+	Item       string `db:"item"         json:"item"`
 }
 
 type Team1 struct {
-	TeamID      int       `json:"teamID" db:"team_id"`
-	ProjectID   int       `json:"projectID" db:"project_id"`
-	Name        string    `json:"name" db:"name"`
-	Description string    `json:"description" db:"description"`
-	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
-	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`
+	TeamID      int       `db:"team_id"     json:"teamID"`
+	ProjectID   int       `db:"project_id"  json:"projectID"`
+	Name        string    `db:"name"        json:"name"`
+	Description string    `db:"description" json:"description"`
+	CreatedAt   time.Time `db:"created_at"  json:"createdAt"`
+	UpdatedAt   time.Time `db:"updated_at"  json:"updatedAt"`
 
-	Users *[]User1 `json:"users" db:"users"`
+	Users *[]User1 `db:"users" json:"users"`
 	// xo fields
 	_exists, _deleted bool
 }
 
 type User1 struct {
-	UserID   uuid.UUID `json:"userID" db:"user_id"`
-	Username string    `json:"username" db:"username"`
+	UserID   uuid.UUID `db:"user_id"  json:"userID"`
+	Username string    `db:"username" json:"username"`
 
-	Teams *[]Team1 `json:"teams" db:"teams"`
+	Teams *[]Team1 `db:"teams" json:"teams"`
 	// xo fields
 	_exists, _deleted bool
 }
@@ -273,7 +273,7 @@ func pgxArrayAggIssueWorkingQuery(pool *pgxpool.Pool) {
 		log.Fatalf("error pgx.CollectRows: %s\n", err)
 	}
 	b, _ := json.Marshal(users[0])
-	fmt.Printf("users[0]: %+v\n", string(b)) //{"userID":"19270107-1b9c-4f52-a578-7390d5b31513","username":"","teams":[{"teamID":1,"projectID":1,"name":"team 1","description":"This is team 1 from project 1","createdAt":"2023-04-16T08:51:29.108119Z","updatedAt":"2023-04-16T08:51:29.108119Z","users":null},{"teamID":2,"projectID":2,"name":"team 2","description":"This is team 2 from project 1","createdAt":"2023-04-16T08:51:29.108119Z","updatedAt":"2023-04-16T08:51:29.108119Z","users":null}]}
+	fmt.Printf("users[0]: %+v\n", string(b)) // {"userID":"19270107-1b9c-4f52-a578-7390d5b31513","username":"","teams":[{"teamID":1,"projectID":1,"name":"team 1","description":"This is team 1 from project 1","createdAt":"2023-04-16T08:51:29.108119Z","updatedAt":"2023-04-16T08:51:29.108119Z","users":null},{"teamID":2,"projectID":2,"name":"team 2","description":"This is team 2 from project 1","createdAt":"2023-04-16T08:51:29.108119Z","updatedAt":"2023-04-16T08:51:29.108119Z","users":null}]}
 }
 
 func errAndExit(out []byte, err error) {

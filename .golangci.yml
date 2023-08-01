@@ -5,7 +5,6 @@ linters:
   disable:
     - testpackage
     - depguard
-    - tagalign
     # - json(camel)
     - funlen
     - lll
@@ -106,9 +105,9 @@ linters-settings:
       - github.com/danicc097/openapi-go-gin-postgres-sqlc/*
 issues:
   exclude-rules:
-    # - path: "**/testutil/*"
-    #   linters:
-    #     - gosec
+    - path: "internal/testutil/*" # doesn't work with internal/... for some reason
+      linters:
+        - gosec
     - path: "."
       linters:
         - gci

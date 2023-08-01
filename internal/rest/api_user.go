@@ -5,21 +5,22 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // DeleteUser deletes the user by id.
 func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpan(ctx, "DeleteUser", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "DeleteUser").End()
 
 	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
-	_, err := h.usvc.Delete(c, tx, id)
+	_, err := h.svc.user.Delete(c, tx, id)
 	if err != nil {
 		renderErrorResponse(c, "Could not delete user", err)
 
@@ -31,13 +32,11 @@ func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 
 // GetCurrentUser returns the logged in user.
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	defer newOTELSpan(ctx, "GetCurrentUser", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c, "GetCurrentUser").End()
 
 	caller := getUserFromCtx(c)
 
-	role, ok := h.authzsvc.RoleByRank(caller.RoleRank)
+	role, ok := h.svc.authz.RoleByRank(caller.RoleRank)
 	if !ok {
 		msg := fmt.Sprintf("role with rank %d not found", caller.RoleRank)
 		renderErrorResponse(c, msg, errors.New(msg))
@@ -57,18 +56,19 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
-	s := newOTELSpan(ctx, "UpdateUser", trace.WithAttributes(userIDAttribute(c)))
+	s := newOTELSpanWithUser(c, "UpdateUser")
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
 	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	body := &models.UpdateUserRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
 		return
 	}
 
-	user, err := h.usvc.Update(c, tx, id.String(), caller, body)
+	user, err := h.svc.user.Update(c, tx, id.String(), caller, body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
@@ -77,12 +77,12 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		renderErrorResponse(c, "Error saving changes", err)
+		renderErrorResponse(c, "Database error", err)
 
 		return
 	}
 
-	role, ok := h.authzsvc.RoleByRank(user.RoleRank)
+	role, ok := h.svc.authz.RoleByRank(user.RoleRank)
 	if !ok {
 		renderErrorResponse(c, fmt.Sprintf("Role with rank %d not found", user.RoleRank), nil)
 
@@ -99,25 +99,26 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
-	s := newOTELSpan(ctx, "UpdateUserAuthorization", trace.WithAttributes(userIDAttribute(c)))
+	s := newOTELSpanWithUser(c, "UpdateUserAuthorization")
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
 	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
 
 	body := &models.UpdateUserAuthRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
 		return
 	}
 
-	if _, err := h.usvc.UpdateUserAuthorization(c, tx, id.String(), caller, body); err != nil {
+	if _, err := h.svc.user.UpdateUserAuthorization(c, tx, id.String(), caller, body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		renderErrorResponse(c, "Error saving changes", err)
+		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not commit transaction"))
 
 		return
 	}

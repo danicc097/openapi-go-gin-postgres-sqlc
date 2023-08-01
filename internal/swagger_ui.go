@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -9,9 +10,8 @@ import (
 )
 
 // SetupSwaggerUI sets url in the Swagger docs to the endpoint where specPath is served.
-func SetupSwaggerUI(url string, specPath string) error {
+func SetupSwaggerUI(url string, specPath, swaggerUIDir string) error {
 	buf := &bytes.Buffer{}
-	swaggerUIDir := "internal/static/swagger-ui"
 
 	t, err := template.New("").Parse(`
 window.onload = function () {
@@ -52,21 +52,15 @@ window.onload = function () {
 		return err
 	}
 
-	swaggerInit, err := os.Create(path.Join(swaggerUIDir, "swagger-initializer.js"))
+	swaggerInitPath := path.Join(swaggerUIDir, "swagger-initializer.js")
+	swaggerInit, err := os.Create(swaggerInitPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create %s: %w", swaggerInitPath, err)
 	}
 
 	if _, err := swaggerInit.Write(buf.Bytes()); err != nil {
-		return err
+		return fmt.Errorf("could not write to %s: %w", swaggerInitPath, err)
 	}
-
-	// not needed, handler will use spec path from entrypoint args instead of reading the embed
-	// bundleSpec := path.Join(swaggerUIDir, "openapi.yaml")
-	// os.Remove(bundleSpec)
-	// if err := os.Link(specPath, bundleSpec); err != nil {
-	// 	return err
-	// }
 
 	return nil
 }

@@ -19,12 +19,12 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Book struct {
-	BookID int    `json:"bookID" db:"book_id" required:"true"` // book_id
-	Name   string `json:"name" db:"name" required:"true"`      // name
+	BookID int    `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
+	Name   string `json:"name" db:"name" required:"true" nullable:"false"`      // name
 
 	BookAuthorsJoin     *[]User__BA_Book   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
 	BookAuthorsJoinBASK *[]User__BASK_Book `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
@@ -34,7 +34,7 @@ type Book struct {
 
 // BookCreateParams represents insert params for 'xo_tests.books'.
 type BookCreateParams struct {
-	Name string `json:"name" required:"true"` // name
+	Name string `json:"name" required:"true" nullable:"false"` // name
 }
 
 // CreateBook creates a new Book in the database with the given params.
@@ -48,7 +48,7 @@ func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, er
 
 // BookUpdateParams represents update params for 'xo_tests.books'.
 type BookUpdateParams struct {
-	Name *string `json:"name" required:"true"` // name
+	Name *string `json:"name" nullable:"false"` // name
 }
 
 // SetUpdateParams updates xo_tests.books struct fields with the specified params.

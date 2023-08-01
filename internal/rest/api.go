@@ -16,29 +16,36 @@ const (
 	apiKeyHeaderKey = "x-api-key"
 )
 
+type handlerServices struct {
+	user            *services.User
+	demoworkitem    *services.DemoWorkItem
+	demotwoworkitem *services.DemoTwoWorkItem
+	workitemtag     *services.WorkItemTag
+	authz           *services.Authorization
+	authn           *services.Authentication
+}
+
 // Handlers implements ServerInterface.
 type Handlers struct {
-	usvc            *services.User
-	demoworkitemsvc *services.DemoWorkItem
-	workitemtagsvc  *services.WorkItemTag
-	logger          *zap.SugaredLogger
-	pool            *pgxpool.Pool
-	movieSvcClient  v1.MovieGenreClient
-	specPath        string
-	authmw          *authMiddleware
-	authzsvc        *services.Authorization
-	authnsvc        *services.Authentication
-	event           *Event
-	provider        rp.RelyingParty
+	svc handlerServices
+
+	logger         *zap.SugaredLogger
+	pool           *pgxpool.Pool
+	moviesvcclient v1.MovieGenreClient
+	specPath       string
+	authmw         *authMiddleware
+	event          *Event
+	provider       rp.RelyingParty
 }
 
 // NewHandlers returns an server implementation of an openapi specification.
 func NewHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
-	movieSvcClient v1.MovieGenreClient,
+	moviesvcclient v1.MovieGenreClient,
 	specPath string,
 	usvc *services.User,
 	demoworkitemsvc *services.DemoWorkItem,
+	demotwoworkitemsvc *services.DemoTwoWorkItem,
 	workitemtagsvc *services.WorkItemTag,
 	authzsvc *services.Authorization,
 	authnsvc *services.Authentication,
@@ -75,18 +82,21 @@ func NewHandlers(
 	}()
 
 	return &Handlers{
-		logger:          logger,
-		pool:            pool,
-		movieSvcClient:  movieSvcClient,
-		usvc:            usvc,
-		authzsvc:        authzsvc,
-		authnsvc:        authnsvc,
-		demoworkitemsvc: demoworkitemsvc,
-		workitemtagsvc:  workitemtagsvc,
-		authmw:          authmw,
-		event:           event,
-		provider:        provider,
-		specPath:        specPath,
+		logger:         logger,
+		pool:           pool,
+		moviesvcclient: moviesvcclient,
+		svc: handlerServices{
+			user:            usvc,
+			authz:           authzsvc,
+			authn:           authnsvc,
+			demoworkitem:    demoworkitemsvc,
+			demotwoworkitem: demotwoworkitemsvc,
+			workitemtag:     workitemtagsvc,
+		},
+		authmw:   authmw,
+		event:    event,
+		provider: provider,
+		specPath: specPath,
 	}
 }
 

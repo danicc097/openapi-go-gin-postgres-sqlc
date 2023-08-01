@@ -16,12 +16,12 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemWorkItemTag struct {
-	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
-	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
+	WorkItemTagID int `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"` // work_item_tag_id
+	WorkItemID    int `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`        // work_item_id
 
 	WorkItemWorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
 	WorkItemTagWorkItemsJoin *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M work_item_work_item_tag
@@ -30,15 +30,15 @@ type WorkItemWorkItemTag struct {
 
 // WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagCreateParams struct {
-	WorkItemTagID int   `json:"workItemTagID" required:"true"` // work_item_tag_id
-	WorkItemID    int64 `json:"workItemID" required:"true"`    // work_item_id
+	WorkItemID    int `json:"workItemID" required:"true" nullable:"false"`    // work_item_id
+	WorkItemTagID int `json:"workItemTagID" required:"true" nullable:"false"` // work_item_tag_id
 }
 
 // CreateWorkItemWorkItemTag creates a new WorkItemWorkItemTag in the database with the given params.
 func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
 	wiwit := &WorkItemWorkItemTag{
-		WorkItemTagID: params.WorkItemTagID,
 		WorkItemID:    params.WorkItemID,
+		WorkItemTagID: params.WorkItemTagID,
 	}
 
 	return wiwit.Insert(ctx, db)
@@ -46,17 +46,17 @@ func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkI
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagUpdateParams struct {
-	WorkItemTagID *int   `json:"workItemTagID" required:"true"` // work_item_tag_id
-	WorkItemID    *int64 `json:"workItemID" required:"true"`    // work_item_id
+	WorkItemID    *int `json:"workItemID" nullable:"false"`    // work_item_id
+	WorkItemTagID *int `json:"workItemTagID" nullable:"false"` // work_item_tag_id
 }
 
 // SetUpdateParams updates public.work_item_work_item_tag struct fields with the specified params.
 func (wiwit *WorkItemWorkItemTag) SetUpdateParams(params *WorkItemWorkItemTagUpdateParams) {
-	if params.WorkItemTagID != nil {
-		wiwit.WorkItemTagID = *params.WorkItemTagID
-	}
 	if params.WorkItemID != nil {
 		wiwit.WorkItemID = *params.WorkItemID
+	}
+	if params.WorkItemTagID != nil {
+		wiwit.WorkItemTagID = *params.WorkItemTagID
 	}
 }
 
@@ -159,14 +159,14 @@ const workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL = `work_item_work_i
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	// insert (manual)
 	sqlstr := `INSERT INTO public.work_item_work_item_tag (
-	work_item_tag_id, work_item_id
+	work_item_id, work_item_tag_id
 	) VALUES (
 	$1, $2
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
-	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
+	logf(sqlstr, wiwit.WorkItemID, wiwit.WorkItemTagID)
+	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemID, wiwit.WorkItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Insert/db.Query: %w", &XoError{Entity: "Work item work item tag", Err: err}))
 	}
@@ -194,7 +194,7 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 }
 
 // WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc returns a cursor-paginated list of WorkItemWorkItemTag in Asc order.
-func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Context, db DB, workItemTagID int, workItemID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -250,8 +250,8 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Contex
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_work_item_tag.work_item_tag_id,
-	work_item_work_item_tag.work_item_id %s 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id %s 
 	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_tag_id > $1 AND work_item_work_item_tag.work_item_id > $2
 	 %s   %s 
@@ -275,7 +275,7 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDAsc(ctx context.Contex
 }
 
 // WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc returns a cursor-paginated list of WorkItemWorkItemTag in Desc order.
-func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Context, db DB, workItemTagID int, workItemID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -331,8 +331,8 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Conte
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_work_item_tag.work_item_tag_id,
-	work_item_work_item_tag.work_item_id %s 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id %s 
 	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_tag_id < $1 AND work_item_work_item_tag.work_item_id < $2
 	 %s   %s 
@@ -358,7 +358,7 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemIDDesc(ctx context.Conte
 // WorkItemWorkItemTagByWorkItemIDWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
-func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int64, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) (*WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) (*WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -414,8 +414,8 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_work_item_tag.work_item_tag_id,
-	work_item_work_item_tag.work_item_id %s 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id %s 
 	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2
 	 %s   %s 
@@ -441,7 +441,7 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 // WorkItemWorkItemTagsByWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
-func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -497,8 +497,8 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_work_item_tag.work_item_tag_id,
-	work_item_work_item_tag.work_item_id %s 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id %s 
 	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_id = $1
 	 %s   %s 
@@ -582,8 +582,8 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_work_item_tag.work_item_tag_id,
-	work_item_work_item_tag.work_item_id %s 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id %s 
 	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_tag_id = $1
 	 %s   %s 
@@ -611,7 +611,7 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 // WorkItemWorkItemTagsByWorkItemTagIDWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
-func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -667,8 +667,8 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_work_item_tag.work_item_tag_id,
-	work_item_work_item_tag.work_item_id %s 
+	work_item_work_item_tag.work_item_id,
+	work_item_work_item_tag.work_item_tag_id %s 
 	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2
 	 %s   %s 

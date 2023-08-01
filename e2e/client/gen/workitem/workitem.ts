@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItem, DemoWorkItemCreateRequest, DbWorkItemComment, WorkItemCommentCreateRequest } from '.././model'
+import type { DbWorkItem, WorkItemCreateRequest, DbWorkItemComment, WorkItemCommentCreateRequest } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -15,16 +15,11 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  * @summary create workitem
  */
 export const createWorkitem = (
-  demoWorkItemCreateRequest: DemoWorkItemCreateRequest,
+  workItemCreateRequest: WorkItemCreateRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<DbWorkItem>(
-    {
-      url: `/workitem/`,
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      data: demoWorkItemCreateRequest,
-    },
+    { url: `/workitem/`, method: 'post', headers: { 'Content-Type': 'application/json' }, data: workItemCreateRequest },
     options,
   )
 }

@@ -166,7 +166,7 @@ channel use cases,etc:
 
 // Events represents server events.
 // TODO requires query param projectId=...
-// to subscribe to the current project's topics only
+// to subscribe to the current project's topics only.
 func (h *Handlers) Events(c *gin.Context, params models.EventsParams) {
 	c.Set(skipRequestValidationCtxKey, true)
 	clientChan, ok := c.Value("clientChan").(ClientChan)

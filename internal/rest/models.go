@@ -67,7 +67,13 @@ type TeamUpdateRequest struct {
 }
 
 type DemoWorkItemCreateRequest struct {
+	ProjectName models.Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoWorkItemCreateParams
+}
+
+type DemoTwoWorkItemCreateRequest struct {
+	ProjectName models.Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
+	services.DemoTwoWorkItemCreateParams
 }
 
 type WorkItemTagCreateRequest struct {

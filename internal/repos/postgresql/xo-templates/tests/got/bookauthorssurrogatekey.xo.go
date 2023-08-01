@@ -20,14 +20,14 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookAuthorsSurrogateKey struct {
-	BookAuthorsSurrogateKeyID int       `json:"bookAuthorsSurrogateKeyID" db:"book_authors_surrogate_key_id" required:"true"` // book_authors_surrogate_key_id
-	BookID                    int       `json:"bookID" db:"book_id" required:"true"`                                          // book_id
-	AuthorID                  uuid.UUID `json:"authorID" db:"author_id" required:"true"`                                      // author_id
-	Pseudonym                 *string   `json:"pseudonym" db:"pseudonym"`                                                     // pseudonym
+	BookAuthorsSurrogateKeyID int       `json:"bookAuthorsSurrogateKeyID" db:"book_authors_surrogate_key_id" required:"true" nullable:"false"` // book_authors_surrogate_key_id
+	BookID                    int       `json:"bookID" db:"book_id" required:"true" nullable:"false"`                                          // book_id
+	AuthorID                  uuid.UUID `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
+	Pseudonym                 *string   `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
 
 	AuthorBooksJoin *[]Book__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
 	BookAuthorsJoin *[]User__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
@@ -35,16 +35,16 @@ type BookAuthorsSurrogateKey struct {
 
 // BookAuthorsSurrogateKeyCreateParams represents insert params for 'xo_tests.book_authors_surrogate_key'.
 type BookAuthorsSurrogateKeyCreateParams struct {
-	BookID    int       `json:"bookID" required:"true"`   // book_id
-	AuthorID  uuid.UUID `json:"authorID" required:"true"` // author_id
-	Pseudonym *string   `json:"pseudonym"`                // pseudonym
+	AuthorID  uuid.UUID `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    int       `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Pseudonym *string   `json:"pseudonym"`                                 // pseudonym
 }
 
 // CreateBookAuthorsSurrogateKey creates a new BookAuthorsSurrogateKey in the database with the given params.
 func CreateBookAuthorsSurrogateKey(ctx context.Context, db DB, params *BookAuthorsSurrogateKeyCreateParams) (*BookAuthorsSurrogateKey, error) {
 	bask := &BookAuthorsSurrogateKey{
-		BookID:    params.BookID,
 		AuthorID:  params.AuthorID,
+		BookID:    params.BookID,
 		Pseudonym: params.Pseudonym,
 	}
 
@@ -53,18 +53,18 @@ func CreateBookAuthorsSurrogateKey(ctx context.Context, db DB, params *BookAutho
 
 // BookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'.
 type BookAuthorsSurrogateKeyUpdateParams struct {
-	BookID    *int       `json:"bookID" required:"true"`   // book_id
-	AuthorID  *uuid.UUID `json:"authorID" required:"true"` // author_id
-	Pseudonym **string   `json:"pseudonym"`                // pseudonym
+	AuthorID  *uuid.UUID `json:"authorID" nullable:"false"` // author_id
+	BookID    *int       `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string   `json:"pseudonym"`                 // pseudonym
 }
 
 // SetUpdateParams updates xo_tests.book_authors_surrogate_key struct fields with the specified params.
 func (bask *BookAuthorsSurrogateKey) SetUpdateParams(params *BookAuthorsSurrogateKeyUpdateParams) {
-	if params.BookID != nil {
-		bask.BookID = *params.BookID
-	}
 	if params.AuthorID != nil {
 		bask.AuthorID = *params.AuthorID
+	}
+	if params.BookID != nil {
+		bask.BookID = *params.BookID
 	}
 	if params.Pseudonym != nil {
 		bask.Pseudonym = *params.Pseudonym
@@ -186,14 +186,14 @@ const bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL = `book_authors_surrogat
 func (bask *BookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*BookAuthorsSurrogateKey, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.book_authors_surrogate_key (
-	book_id, author_id, pseudonym
+	author_id, book_id, pseudonym
 	) VALUES (
 	$1, $2, $3
 	) RETURNING * `
 	// run
-	logf(sqlstr, bask.BookID, bask.AuthorID, bask.Pseudonym)
+	logf(sqlstr, bask.AuthorID, bask.BookID, bask.Pseudonym)
 
-	rows, err := db.Query(ctx, sqlstr, bask.BookID, bask.AuthorID, bask.Pseudonym)
+	rows, err := db.Query(ctx, sqlstr, bask.AuthorID, bask.BookID, bask.Pseudonym)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Insert/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -211,13 +211,13 @@ func (bask *BookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*BookAu
 func (bask *BookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*BookAuthorsSurrogateKey, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.book_authors_surrogate_key SET 
-	book_id = $1, author_id = $2, pseudonym = $3 
+	author_id = $1, book_id = $2, pseudonym = $3 
 	WHERE book_authors_surrogate_key_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, bask.BookID, bask.AuthorID, bask.Pseudonym, bask.BookAuthorsSurrogateKeyID)
+	logf(sqlstr, bask.AuthorID, bask.BookID, bask.Pseudonym, bask.BookAuthorsSurrogateKeyID)
 
-	rows, err := db.Query(ctx, sqlstr, bask.BookID, bask.AuthorID, bask.Pseudonym, bask.BookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, bask.AuthorID, bask.BookID, bask.Pseudonym, bask.BookAuthorsSurrogateKeyID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Update/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -235,8 +235,8 @@ func (bask *BookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*BookAu
 func (bask *BookAuthorsSurrogateKey) Upsert(ctx context.Context, db DB, params *BookAuthorsSurrogateKeyCreateParams) (*BookAuthorsSurrogateKey, error) {
 	var err error
 
-	bask.BookID = params.BookID
 	bask.AuthorID = params.AuthorID
+	bask.BookID = params.BookID
 	bask.Pseudonym = params.Pseudonym
 
 	bask, err = bask.Insert(ctx, db)
@@ -325,9 +325,9 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.pseudonym %s 
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $1
@@ -407,9 +407,9 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.pseudonym %s 
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $1
@@ -491,9 +491,9 @@ func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.pseudonym %s 
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2
@@ -576,9 +576,9 @@ func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, op
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.pseudonym %s 
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_id = $1
@@ -663,9 +663,9 @@ func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uui
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.pseudonym %s 
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.author_id = $1
@@ -750,9 +750,9 @@ func BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.pseudonym %s 
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1

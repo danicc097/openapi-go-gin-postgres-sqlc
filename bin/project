@@ -106,17 +106,27 @@ x.check-build-deps() {
 x.bootstrap() {
   { { {
     git submodule update --init --recursive # sync later on with git `git submodule update --force --recursive --remote`
+
     x.check-build-deps
     x.backend.sync-deps
     x.install-tools
     x.setup.swagger-ui
     x.gen.build-tools
+
+    cd frontend
+    pnpm i --frozen-lockfile
+    cd -
+
+    cd e2e
+    pnpm i --frozen-lockfile
+    cd -
+
     traefik_dir="$HOME/traefik-bootstrap"
     with_tty confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Install go libraries as runnable programs.
+# Install miscellaneous tool binaries locally.
 x.install-tools() {
   { { {
     echo "Installing tools..."
@@ -127,13 +137,13 @@ x.install-tools() {
     # for easier test search.
     # NOTE: unrelated run test broken discovery: https://github.com/golang/vscode-go/issues/2719
     go install github.com/danicc097/go-test-renamer@v0.2.0 &
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2 &
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.3 &
     go install github.com/joho/godotenv/cmd/godotenv@latest &
     go install github.com/tufin/oasdiff@latest &
     go install golang.org/x/tools/cmd/goimports@latest &
     go install mvdan.cc/gofumpt@latest &
     go install github.com/danicc097/air@latest &
-    go install github.com/danicc097/xo/v5@v5.0.0 &
+    go install github.com/danicc097/xo/v5@v5.1.0 &
     go install github.com/mikefarah/yq/v4@v4.34.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
     go install golang.org/x/tools/cmd/stringer@latest &
@@ -142,6 +152,9 @@ x.install-tools() {
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &
 
     GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter &
+
+    # install node libs with --prefix $TOOLS_DIR, if any
+    # ...
 
     wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -154,8 +167,8 @@ x.setup.swagger-ui() {
     curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
     tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
     rm swagger-ui.tar.gz
-    mkdir -p internal/static/swagger-ui
-    mv swagger-ui/* internal/static/swagger-ui/
+    mkdir -p $SWAGGER_UI_DIR
+    mv swagger-ui/* $SWAGGER_UI_DIR
     rm -r swagger-ui
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -281,11 +294,6 @@ x.gen.pregen() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
-
-# shouldn't be needed anymore at all.
-# remove_yaml_merge_alias() {
-#   sed -i 's/!!merge //' $SPEC
-# }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
 # generate 2-way maps id<- ->name to save up useless db calls and make logic switching
@@ -459,30 +467,6 @@ x.gen.xo() {
   backup-gen.cleanup
 }
 
-# Shows current database column comments used in xo codegen
-# to ease further updates to comments in migrations.
-x.gen.show-column-comments() {
-  local query="SELECT DISTINCT
-  c.relname as table,
-  a.attname::varchar AS column,
-  COALESCE(col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position), '') as column_comment
-FROM pg_attribute a
-  JOIN ONLY pg_class c ON c.oid = a.attrelid
-  JOIN ONLY pg_namespace n ON n.oid = c.relnamespace
-  INNER JOIN information_schema.columns as isc on c.relname = isc.table_name and isc.column_name = a.attname
-  LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid
-    AND a.attnum = ANY(ct.conkey)
-    AND ct.contype = 'p'
-  LEFT JOIN pg_attrdef ad ON ad.adrelid = c.oid
-    AND ad.adnum = a.attnum
-WHERE a.attisdropped = false
-  AND n.nspname = 'public'
-  AND (true OR a.attnum > 0)
-  AND col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position) is not null;"
-
-  dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "$query" 2>/dev/null
-}
-
 # Generate a type-safe SQL builder.
 x.gen.jet() {
   backup-gen
@@ -555,9 +539,11 @@ x.gen.client-server() {
     echo "Running generation"
     paths=".openapi.paths.yaml"
 
-    # x-go* extensions cannot be used for Models(.*) themselves. `delete_duplicate_schemas` is necessary for those
+    # x-go* extensions cannot be used for Models(.*) themselves,
+    # but Models(.*) should not be generated at all. a ref tag is needed in structs
     yq e '.components.schemas.UuidUUID = {
         "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
         "x-go-type": "uuid.UUID",
         "x-go-type-import":{
           "name": "uuid",
@@ -655,7 +641,8 @@ x.gen.frontend() {
         rm -f frontend/src/client-validator/gen/validate.ts
         find frontend/src/client-validator/gen/ -type f -exec \
           sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \;
-      } &
+      }
+
       {
         v="$(openapi-typescript --version)"
         openapi-typescript $SPEC --output "$SCHEMA_OUT" --path-params-as-types --prettier-config .prettierrc
@@ -683,6 +670,8 @@ x.gen.e2e() {
     export PATH=e2e/node_modules/.bin:$PATH
 
     config_template_setup e2e
+
+    rm -rf e2e/client/gen
 
     orval_config="e2e/orval.config.ts"
     orval --config $orval_config
@@ -780,6 +769,7 @@ x.lint.go() {
 
     goimports -w $files || echo "Linting failed"
     gofumpt -w $files || echo "Linting failed"
+    golangci-lint run --config=.golangci.yml --fix &>/dev/null || true
 
     echo "Success"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -937,7 +927,7 @@ x.run.backend-hr() {
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
   run_shared_services up -d --build --remove-orphans --wait
-  go run cmd/swagger-ui-setup/main.go -env=".env.$env"
+  setup_swagger_ui
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
@@ -945,7 +935,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$CACHE" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$CACHE,$TOOLS_DIR" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -1005,7 +995,7 @@ x.run-dockerized() {
 
   x.gen
 
-  go run cmd/swagger-ui-setup/main.go -env=".env.$env"
+  setup_swagger_ui
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
@@ -1042,6 +1032,30 @@ x.release() {
 # Shows existing user api keys.
 x.dev-utils.api-keys() {
   dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "select email, api_key from user_api_keys left join users using (user_id);"
+}
+
+# Shows current database column comments used in xo codegen
+# to ease further updates to comments in migrations.
+x.dev-utils.show-column-comments() {
+  local query="SELECT DISTINCT
+  c.relname as table,
+  a.attname::varchar AS column,
+  COALESCE(col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position), '') as column_comment
+FROM pg_attribute a
+  JOIN ONLY pg_class c ON c.oid = a.attrelid
+  JOIN ONLY pg_namespace n ON n.oid = c.relnamespace
+  INNER JOIN information_schema.columns as isc on c.relname = isc.table_name and isc.column_name = a.attname
+  LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid
+    AND a.attnum = ANY(ct.conkey)
+    AND ct.contype = 'p'
+  LEFT JOIN pg_attrdef ad ON ad.adrelid = c.oid
+    AND ad.adnum = a.attnum
+WHERE a.attisdropped = false
+  AND n.nspname = 'public'
+  AND (true OR a.attnum > 0)
+  AND col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position) is not null;"
+
+  dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "$query" 2>/dev/null
 }
 
 # Setups a traefik container with predefined configuration in `install-dir`.
@@ -1114,7 +1128,7 @@ x.migrate.create() {
 
 # psql session for the current environment.
 x.db.psql() {
-  docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $POSTGRES_DB
+  x.db.psql-db $POSTGRES_DB
 }
 
 # psql session for `database`.
@@ -1126,12 +1140,19 @@ x.db.psql-db() {
 # Show active and max number of connections for the current environment.
 x.db.conns() {
   { { {
-    current_conns=$(dockerdb_psql -d $POSTGRES_DB -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$POSTGRES_DB';")
-    max_conns=$(dockerdb_psql -d $POSTGRES_DB -c "SHOW max_connections;")
-    echo "$current_conns/$max_conns active connections in '$POSTGRES_DB'"
+    x.db.conns-db $POSTGRES_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# Show active and max number of connections for `database`.
+# Args: database
+x.db.conns-db() {
+  { { {
+    current_conns=$(dockerdb_psql -d $1 -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$1';")
+    max_conns=$(dockerdb_psql -d $1 -c "SHOW max_connections;")
+    echo "$current_conns/$max_conns active connections in '$1'"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
 # Create a new database in the current environment if it doesn't exist
 # and stops its running processes if any.
 x.db.recreate() {
@@ -1410,6 +1431,15 @@ sync_db_enums_with_spec() {
 
 }
 
+setup_swagger_ui() {
+  go run cmd/swagger-ui-setup/main.go -env=".env.$env" -swagger-ui-dir=$SWAGGER_UI_DIR
+
+  local bundle_spec="$SWAGGER_UI_DIR/openapi.yaml"
+  cp $SPEC $bundle_spec
+  yq 'explode(.)' -i $bundle_spec
+  sed -i 's/!!merge //' $bundle_spec
+}
+
 replace_enum_in_spec() {
   local enum="$1"
   local -n __arr="$2"
@@ -1502,10 +1532,13 @@ update_spec_with_structs() {
   mapfile -t struct_names <<<$struct_names
   mapfile -t schema_names <<<$schema_names
 
+  # openapi-go will generate a RestXYZ if we have a XYZ: <...> x-postgen-struct: RestXYZ
+  # we need to detect these early, because it will sync a RestXYZ instead of XYZ
   declare -A schemas
   for i in ${!struct_names[@]}; do
     schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
   done
+
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
@@ -1513,44 +1546,47 @@ update_spec_with_structs() {
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
-  # go build -buildmode=plugin -o internal/codegen/structs.gen.so $GOMOD_PKG/internal/codegen/structs
 
-  # need new PublicStructs compiled
+  local gen_schema_spec="/tmp/openapi.yaml"
+  # always compile and run since we need new PublicStructs that were just changed
   go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
-    >/tmp/openapi.yaml
+    >$gen_schema_spec
 
   # prevent possible overriding if name clashes with generated schemas from structs
-  skip_schemas=("Project")
-  mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
-  for project in ${db_projects[@]}; do
-    skip_schemas+=("$(to_pascal $project)KanbanSteps")
-  done
+  # skip_schemas=("Project")
+  # mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+  # for project in ${db_projects[@]}; do
+  #   skip_schemas+=("$(to_pascal $project)KanbanSteps")
+  # done
 
   # replace every schema back into the spec
-  for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
+  for schema in $(yq '.components.schemas[] | key' $gen_schema_spec); do
     # prevent certain schemas from getting replaced by (in)direct usage in structs with clashing names
-    if [[ " ${skip_schemas[*]} " =~ " $schema " ]]; then
-      echo "Skipping $schema" && continue
-    fi
-    new_schema_key="${schemas[$schema]:-$schema}"
+    # if [[ " ${skip_schemas[*]} " =~ " $schema " ]]; then
+    #   echo "Skipping $schema" && continue
+    # fi
+
+    schema_name="${schemas[$schema]:-$schema}"
+
     yq eval-all "(
         select(fi == 1).components.schemas.$schema
-        ) as \$new_schema
+        ) as \$schema
         | select(fi == 0)
-        | .components.schemas.$new_schema_key = \$new_schema
-        | (.components.schemas.$new_schema_key | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
-      " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
+        | .components.schemas.$schema_name = \$schema
+        | (.components.schemas.$schema_name | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
+      " "$SPEC" $gen_schema_spec >/tmp/final-spec
 
-    mv /tmp/final-spec "$SPEC"
+    if [[ "$schema_name" != "$schema" ]]; then
+      echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
+      yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
+    fi
+
+    mv /tmp/final-spec "$SPEC" # need to update at each iteration since next depends on it
   done
-
 }
 
 delete_duplicate_schemas() {
-  # generated by gen-schema,
-  # since it cannot be aware of them beforehand and `ref` tag is not used by openapi-go
-  # (maybe it could...)
   local keys=("ModelsRole" "ModelsScope" "ModelsProjectConfigField" "ModelsProjectConfig" "ModelsProject" "ModelsWorkItemRole")
   local paths_arr=()
   for key in "${keys[@]}"; do
@@ -1838,6 +1874,7 @@ readonly CACHE=".generate.cache"
 readonly GEN_BACKUP="$CACHE/gen"
 readonly PG_REPO_GEN_BACKUP="$GEN_BACKUP/pgrepo/gen"
 readonly FRONTEND_GEN_BACKUP="$GEN_BACKUP/frontend/gen"
+readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
 
 readonly MAX_FNAME_LOG_LEN=13
 

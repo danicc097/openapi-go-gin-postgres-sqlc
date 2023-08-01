@@ -20,13 +20,13 @@ import (
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
 //   - not-required to make a schema field not required.
-//   - "type":<pkg.type> to override the type annotation.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookAuthor struct {
-	BookID    int       `json:"bookID" db:"book_id" required:"true"`     // book_id
-	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true"` // author_id
-	Pseudonym *string   `json:"pseudonym" db:"pseudonym"`                // pseudonym
+	BookID    int       `json:"bookID" db:"book_id" required:"true" nullable:"false"`     // book_id
+	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
+	Pseudonym *string   `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
 
 	AuthorBooksJoin *[]Book__BA_BookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
 	BookAuthorsJoin *[]User__BA_BookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
@@ -34,16 +34,16 @@ type BookAuthor struct {
 
 // BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
 type BookAuthorCreateParams struct {
-	BookID    int       `json:"bookID" required:"true"`   // book_id
-	AuthorID  uuid.UUID `json:"authorID" required:"true"` // author_id
-	Pseudonym *string   `json:"pseudonym"`                // pseudonym
+	AuthorID  uuid.UUID `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    int       `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Pseudonym *string   `json:"pseudonym"`                                 // pseudonym
 }
 
 // CreateBookAuthor creates a new BookAuthor in the database with the given params.
 func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
 	ba := &BookAuthor{
-		BookID:    params.BookID,
 		AuthorID:  params.AuthorID,
+		BookID:    params.BookID,
 		Pseudonym: params.Pseudonym,
 	}
 
@@ -52,18 +52,18 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 
 // BookAuthorUpdateParams represents update params for 'xo_tests.book_authors'.
 type BookAuthorUpdateParams struct {
-	BookID    *int       `json:"bookID" required:"true"`   // book_id
-	AuthorID  *uuid.UUID `json:"authorID" required:"true"` // author_id
-	Pseudonym **string   `json:"pseudonym"`                // pseudonym
+	AuthorID  *uuid.UUID `json:"authorID" nullable:"false"` // author_id
+	BookID    *int       `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string   `json:"pseudonym"`                 // pseudonym
 }
 
 // SetUpdateParams updates xo_tests.book_authors struct fields with the specified params.
 func (ba *BookAuthor) SetUpdateParams(params *BookAuthorUpdateParams) {
-	if params.BookID != nil {
-		ba.BookID = *params.BookID
-	}
 	if params.AuthorID != nil {
 		ba.AuthorID = *params.AuthorID
+	}
+	if params.BookID != nil {
+		ba.BookID = *params.BookID
 	}
 	if params.Pseudonym != nil {
 		ba.Pseudonym = *params.Pseudonym
@@ -185,14 +185,14 @@ const bookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors
 func (ba *BookAuthor) Insert(ctx context.Context, db DB) (*BookAuthor, error) {
 	// insert (manual)
 	sqlstr := `INSERT INTO xo_tests.book_authors (
-	book_id, author_id, pseudonym
+	author_id, book_id, pseudonym
 	) VALUES (
 	$1, $2, $3
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, ba.BookID, ba.AuthorID, ba.Pseudonym)
-	rows, err := db.Query(ctx, sqlstr, ba.BookID, ba.AuthorID, ba.Pseudonym)
+	logf(sqlstr, ba.AuthorID, ba.BookID, ba.Pseudonym)
+	rows, err := db.Query(ctx, sqlstr, ba.AuthorID, ba.BookID, ba.Pseudonym)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookAuthor/Insert/db.Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
@@ -233,8 +233,8 @@ func (ba *BookAuthor) Update(ctx context.Context, db DB) (*BookAuthor, error) {
 func (ba *BookAuthor) Upsert(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
 	var err error
 
-	ba.BookID = params.BookID
 	ba.AuthorID = params.AuthorID
+	ba.BookID = params.BookID
 	ba.Pseudonym = params.Pseudonym
 
 	ba, err = ba.Insert(ctx, db)
@@ -325,8 +325,8 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_authors.book_id,
 	book_authors.author_id,
+	book_authors.book_id,
 	book_authors.pseudonym %s 
 	 FROM xo_tests.book_authors %s 
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
@@ -409,8 +409,8 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_authors.book_id,
 	book_authors.author_id,
+	book_authors.book_id,
 	book_authors.pseudonym %s 
 	 FROM xo_tests.book_authors %s 
 	 WHERE book_authors.book_id = $1
@@ -495,8 +495,8 @@ func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts 
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	book_authors.book_id,
 	book_authors.author_id,
+	book_authors.book_id,
 	book_authors.pseudonym %s 
 	 FROM xo_tests.book_authors %s 
 	 WHERE book_authors.author_id = $1

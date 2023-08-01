@@ -535,10 +535,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -654,10 +651,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -1169,11 +1163,23 @@
     },
     "UuidUUID": {
       "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "x-go-type": "uuid.UUID",
       "x-go-type-import": {
         "name": "uuid",
         "path": "github.com/google/uuid"
       },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemCreateRequest": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/DemoWorkItemCreateRequest"
+        },
+        {
+          "$ref": "#/definitions/DemoTwoWorkItemCreateRequest"
+        }
+      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {
@@ -1205,10 +1211,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -1272,12 +1275,47 @@
         }
       },
       "required": [
-        "name",
+        "color",
         "description",
-        "color"
+        "name"
       ],
       "type": "object",
       "x-postgen-struct": "RestWorkItemTagCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoWorkItemCreateRequest": {
+      "properties": {
+        "base": {
+          "$ref": "#/definitions/DbWorkItemCreateParams"
+        },
+        "demoTwoProject": {
+          "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/ServicesMember"
+          },
+          "type": "array"
+        },
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        },
+        "tagIDs": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "projectName",
+        "demoTwoProject",
+        "base",
+        "tagIDs",
+        "members"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoTwoWorkItemCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoWorkItemCreateRequest": {
@@ -1292,22 +1330,20 @@
           "items": {
             "$ref": "#/definitions/ServicesMember"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
+        },
+        "projectName": {
+          "$ref": "#/definitions/Project"
         },
         "tagIDs": {
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
+        "projectName",
         "demoProject",
         "base",
         "tagIDs",
@@ -1331,9 +1367,9 @@
         }
       },
       "required": [
-        "workItemID",
+        "message",
         "userID",
-        "message"
+        "workItemID"
       ],
       "type": "object",
       "x-postgen-struct": "RestWorkItemCommentCreateRequest",
@@ -1366,9 +1402,9 @@
         }
       },
       "required": [
-        "name",
         "description",
-        "isProductive"
+        "isProductive",
+        "name"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1388,9 +1424,9 @@
         }
       },
       "required": [
-        "projectID",
+        "description",
         "name",
-        "description"
+        "projectID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1415,9 +1451,9 @@
         }
       },
       "required": [
-        "name",
+        "color",
         "description",
-        "color"
+        "name"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1527,11 +1563,11 @@
         }
       },
       "required": [
-        "workItemID",
-        "ref",
-        "line",
         "lastMessageAt",
-        "reopened"
+        "line",
+        "ref",
+        "reopened",
+        "workItemID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1553,10 +1589,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -1576,13 +1609,13 @@
         }
       },
       "required": [
-        "title",
         "description",
-        "workItemTypeID",
-        "metadata",
-        "teamID",
         "kanbanStepID",
-        "targetDate"
+        "metadata",
+        "targetDate",
+        "teamID",
+        "title",
+        "workItemTypeID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1597,13 +1630,31 @@
         }
       },
       "required": [
-        "userID",
-        "role"
+        "role",
+        "userID"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbDemoTwoWorkItem": {
+      "properties": {
+        "customDateForProject2": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoTwoWorkItemCreateParams": {
       "properties": {
         "customDateForProject2": {
           "format": "date-time",
@@ -1713,11 +1764,17 @@
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
     },
+    "WorkItemCreateRequest": {
+      "$ref": "#/definitions/WorkItemCreateRequest"
+    },
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
     },
     "WorkItemTagCreateRequest": {
       "$ref": "#/definitions/WorkItemTagCreateRequest"
+    },
+    "DemoTwoWorkItemCreateRequest": {
+      "$ref": "#/definitions/DemoTwoWorkItemCreateRequest"
     },
     "DemoWorkItemCreateRequest": {
       "$ref": "#/definitions/DemoWorkItemCreateRequest"
@@ -1775,6 +1832,9 @@
     },
     "DbDemoTwoWorkItem": {
       "$ref": "#/definitions/DbDemoTwoWorkItem"
+    },
+    "DbDemoTwoWorkItemCreateParams": {
+      "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
     }
   }
 }

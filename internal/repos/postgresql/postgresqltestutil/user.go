@@ -40,6 +40,6 @@ func RandomUserCreateParams(t *testing.T) *db.UserCreateParams {
 		LastName:   pointers.New(testutil.RandomLastName()),
 		ExternalID: testutil.RandomString(10),
 		Scopes:     models.Scopes{"scope1", "scope2"},
-		RoleRank:   int16(testutil.RandomInt64(2, 4)),
+		RoleRank:   testutil.RandomInt(2, 4),
 	}
 }

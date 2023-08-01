@@ -37,7 +37,7 @@ func NewTimeEntryWithTimeout(base repos.TimeEntry, config TimeEntryWithTimeoutCo
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithTimeout) ByID(ctx context.Context, d db.DBTX, id int64) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -57,7 +57,7 @@ func (_d TimeEntryWithTimeout) Create(ctx context.Context, d db.DBTX, params *db
 }
 
 // Delete implements repos.TimeEntry
-func (_d TimeEntryWithTimeout) Delete(ctx context.Context, d db.DBTX, id int64) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -67,7 +67,7 @@ func (_d TimeEntryWithTimeout) Delete(ctx context.Context, d db.DBTX, id int64) 
 }
 
 // Update implements repos.TimeEntry
-func (_d TimeEntryWithTimeout) Update(ctx context.Context, d db.DBTX, id int64, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)
