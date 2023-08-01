@@ -5,10 +5,6 @@ import (
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,47 +22,44 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	if shouldReturn := parseBody(c, body); shouldReturn {
 		return
 	}
-	var err error
-	var workItem *db.WorkItem
+	var res any // per project. will
 
 	switch disc, _ := body.Discriminator(); models.Project(disc) {
 	case models.ProjectDemo:
-		fmt.Printf("disc.ProjectName: %v\n", disc)
-		params, _ := body.AsDemoWorkItemCreateRequest()
+		body := &DemoWorkItemCreateRequest{}
+		if shouldReturn := parseBody(c, body); shouldReturn {
+			return
+		}
 
-		workItem, err = h.svc.demoworkitem.Create(ctx, tx, services.DemoWorkItemCreateParams{
-			DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
-				DemoProject: db.DemoWorkItemCreateParams(params.DemoProject),
-				Base:        db.WorkItemCreateParams(params.Base),
-			},
-			TagIDs: params.TagIDs,
-			Members: slices.Map(params.Members, func(item models.ServicesMember, _ int) services.Member {
-				return services.Member(item)
-			}),
-		})
+		workItem, err := h.svc.demoworkitem.Create(ctx, tx, body.DemoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
 			return
 		}
-	case models.ProjectDemoTwo:
-		fmt.Printf("disc.ProjectName: %v\n", disc)
-		params, _ := body.AsDemoTwoWorkItemCreateRequest()
 
-		workItem, err = h.svc.demotwoworkitem.Create(ctx, tx, services.DemoTwoWorkItemCreateParams{
-			DemoTwoWorkItemCreateParams: repos.DemoTwoWorkItemCreateParams{
-				DemoTwoProject: db.DemoTwoWorkItemCreateParams(params.DemoTwoProject),
-				Base:           db.WorkItemCreateParams(params.Base),
-			},
-			TagIDs: params.TagIDs,
-			Members: slices.Map(params.Members, func(item models.ServicesMember, _ int) services.Member {
-				return services.Member(item)
-			}),
-		})
+		res = DemoWorkItemsResponse{
+			WorkItem:             *workItem,
+			SharedWorkItemFields: SharedWorkItemFields{},
+			DemoWorkItem:         *workItem.DemoWorkItemJoin,
+		}
+	case models.ProjectDemoTwo:
+		body := &DemoTwoWorkItemCreateRequest{}
+		if shouldReturn := parseBody(c, body); shouldReturn {
+			return
+		}
+
+		workItem, err := h.svc.demotwoworkitem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
 			return
+		}
+
+		res = DemoTwoWorkItemsResponse{
+			WorkItem:             *workItem,
+			SharedWorkItemFields: SharedWorkItemFields{},
+			DemoTwoWorkItem:      *workItem.DemoTwoWorkItemJoin,
 		}
 	default:
 		renderErrorResponse(c, fmt.Sprintf("Unknown project %q", disc), nil)
@@ -74,7 +67,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, workItem)
+	c.JSON(http.StatusCreated, res)
 }
 
 // delete workitem.

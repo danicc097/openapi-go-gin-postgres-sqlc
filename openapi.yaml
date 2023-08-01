@@ -1249,8 +1249,11 @@ components:
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
+    # IMPORTANT: anyOf since WorkItemCreateRequestDiscriminator will always be matched.
+    # we should be able to then remove projectName from DemoWorkItemCreateRequest and
+    # DemoTwoWorkItemCreateRequest
     # WorkItemCreateRequest:
-    #   oneOf:
+    #   anyOf:
     #     - $ref: '#/components/schemas/WorkItemCreateRequestDiscriminator'
     #     - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
     #     - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
