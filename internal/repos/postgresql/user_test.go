@@ -123,7 +123,7 @@ type testCase struct {
 	args args
 }
 
-// no type parameter to allow direct assertion
+// no type parameter to allow direct assertion.
 type args struct {
 	filter any
 	fn     any

@@ -54,7 +54,7 @@ type DemoWorkItemUpdateParams struct {
 
 type DemoWorkItemCreateParams struct {
 	DemoProject db.DemoWorkItemCreateParams `json:"demoProject" required:"true"`
-	Base        db.WorkItemCreateParams     `json:"base" required:"true"`
+	Base        db.WorkItemCreateParams     `json:"base"        required:"true"`
 }
 
 type DemoTwoWorkItemUpdateParams struct {
@@ -64,7 +64,7 @@ type DemoTwoWorkItemUpdateParams struct {
 
 type DemoTwoWorkItemCreateParams struct {
 	DemoTwoProject db.DemoTwoWorkItemCreateParams `json:"demoTwoProject" required:"true"`
-	Base           db.WorkItemCreateParams        `json:"base" required:"true"`
+	Base           db.WorkItemCreateParams        `json:"base"           required:"true"`
 }
 
 // WorkItem defines the datastore/repository handling retrieving WorkItem records.

@@ -21,13 +21,13 @@ type DemoWorkItem struct {
 
 type Member struct {
 	UserID uuid.UUID           `json:"userID" required:"true"`
-	Role   models.WorkItemRole `json:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
+	Role   models.WorkItemRole `json:"role"   ref:"#/components/schemas/WorkItemRole" required:"true"`
 }
 
 type DemoWorkItemCreateParams struct {
 	repos.DemoWorkItemCreateParams
-	TagIDs  []int    `json:"tagIDs" required:"true" nullable:"false"`
-	Members []Member `json:"members" required:"true" nullable:"false"`
+	TagIDs  []int    `json:"tagIDs"  nullable:"false" required:"true"`
+	Members []Member `json:"members" nullable:"false" required:"true"`
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.

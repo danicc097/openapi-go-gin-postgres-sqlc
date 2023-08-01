@@ -7,9 +7,9 @@ import "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgre
 type ProjectBoard struct {
 	db.Project // contains list of teams, work item types, kanban steps and activities if joined
 
-	Activities    []db.Activity     `json:"activities" required:"true"`
-	KanbanSteps   []db.KanbanStep   `json:"kanbanSteps" required:"true"`
-	Teams         []db.Team         `json:"teams" required:"true"`
-	WorkItemTags  []db.WorkItemTag  `json:"workItemTags" required:"true"`
+	Activities    []db.Activity     `json:"activities"    required:"true"`
+	KanbanSteps   []db.KanbanStep   `json:"kanbanSteps"   required:"true"`
+	Teams         []db.Team         `json:"teams"         required:"true"`
+	WorkItemTags  []db.WorkItemTag  `json:"workItemTags"  required:"true"`
 	WorkItemTypes []db.WorkItemType `json:"workItemTypes" required:"true"`
 }

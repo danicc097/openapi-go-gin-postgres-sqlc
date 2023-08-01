@@ -21,7 +21,7 @@ type DemoTwoWorkItem struct {
 
 type DemoTwoWorkItemCreateParams struct {
 	repos.DemoTwoWorkItemCreateParams
-	TagIDs  []int    `json:"tagIDs" required:"true"`
+	TagIDs  []int    `json:"tagIDs"  required:"true"`
 	Members []Member `json:"members" required:"true"`
 }
 

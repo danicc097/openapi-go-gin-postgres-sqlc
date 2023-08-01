@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// create workitem
+// create workitem.
 func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -45,7 +45,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-// delete workitem
+// delete workitem.
 func (h *Handlers) DeleteWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
@@ -58,7 +58,7 @@ func (h *Handlers) DeleteWorkitem(c *gin.Context, id int) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-// get workitem
+// get workitem.
 func (h *Handlers) GetWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
@@ -71,7 +71,7 @@ func (h *Handlers) GetWorkitem(c *gin.Context, id int) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-// update workitem
+// update workitem.
 func (h *Handlers) UpdateWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
@@ -84,7 +84,7 @@ func (h *Handlers) UpdateWorkitem(c *gin.Context, id int) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-// create workitem comment
+// create workitem comment.
 func (h *Handlers) CreateWorkitemComment(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 

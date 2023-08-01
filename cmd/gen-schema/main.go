@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"strings"
 
-	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
+	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3".
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"

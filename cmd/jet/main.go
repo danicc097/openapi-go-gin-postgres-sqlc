@@ -15,7 +15,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// clear && go run cmd/cli/main.go -env .env.dev
+// clear && go run cmd/cli/main.go -env .env.dev.
 func main() {
 	var out, env, schema, dbname string
 

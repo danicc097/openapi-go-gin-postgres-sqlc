@@ -10,32 +10,32 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// InitializeProject
+// InitializeProject.
 func (h *Handlers) InitializeProject(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// GetProjectBoard
+// GetProjectBoard.
 func (h *Handlers) GetProjectBoard(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// GetProjectWorkitems
+// GetProjectWorkitems.
 func (h *Handlers) GetProjectWorkitems(c *gin.Context, project models.Project, params models.GetProjectWorkitemsParams) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// GetProjectConfig
+// GetProjectConfig.
 func (h *Handlers) GetProjectConfig(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// UpdateProjectConfig
+// UpdateProjectConfig.
 func (h *Handlers) UpdateProjectConfig(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
-// GetProject
+// GetProject.
 func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 	ctx := c.Request.Context()
 

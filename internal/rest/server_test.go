@@ -59,8 +59,8 @@ func TestValidationErrorsResponse(t *testing.T) {
 			ValidationError: &models.HTTPValidationError{
 				Detail: &[]models.ValidationError{{
 					Detail: struct {
-						Schema map[string]any "json:\"schema\""
-						Value  string         "json:\"value\""
+						Schema map[string]any `json:"schema"`
+						Value  string         `json:"value"`
 					}{Schema: map[string]any{"type": string("integer")}, Value: `"a_wrong_id"`},
 					Loc: []string{"id"},
 					Msg: "value must be an integer",
@@ -125,24 +125,24 @@ func TestValidationErrorsResponse(t *testing.T) {
 				Detail: &[]models.ValidationError{
 					{
 						Detail: struct {
-							Schema map[string]any "json:\"schema\""
-							Value  string         "json:\"value\""
+							Schema map[string]any `json:"schema"`
+							Value  string         `json:"value"`
 						}{Schema: map[string]any{"type": string("integer")}, Value: `"a_wrong_id"`},
 						Loc: []string{"id"},
 						Msg: "value must be an integer",
 					},
 					{
 						Detail: struct {
-							Schema map[string]any "json:\"schema\""
-							Value  string         "json:\"value\""
+							Schema map[string]any `json:"schema"`
+							Value  string         `json:"value"`
 						}{Schema: map[string]any{"type": string("string")}, Value: "1234"},
 						Loc: []string{"name"},
 						Msg: "value must be a string",
 					},
 					{
 						Detail: struct {
-							Schema map[string]any "json:\"schema\""
-							Value  string         "json:\"value\""
+							Schema map[string]any `json:"schema"`
+							Value  string         `json:"value"`
 						}{
 							Schema: map[string]any{
 								"properties": map[string]any{

@@ -274,7 +274,7 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 	return user, nil
 }
 
-// TODO
+// TODO.
 func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID uuid.UUID) ([]db.UserNotification, error) {
 	// this will also set user.has_new_personal_notifications to false in the same tx
 	return []db.UserNotification{}, nil
@@ -294,7 +294,7 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 	// return user, nil
 }
 
-// TODO
+// TODO.
 func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID uuid.UUID) ([]db.GetUserNotificationsRow, error) {
 	// this will also set user.has_new_global_notifications to false in the same tx
 	return []db.GetUserNotificationsRow{}, nil

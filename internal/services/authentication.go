@@ -28,7 +28,7 @@ type Authentication struct {
 }
 
 // NewAuthentication returns a new authentication service.
-// TODO should we use tx instead of providing pool only
+// TODO should we use tx instead of providing pool only.
 func NewAuthentication(logger *zap.SugaredLogger, usvc *User, pool *pgxpool.Pool) *Authentication {
 	return &Authentication{
 		logger: logger,

@@ -38,7 +38,7 @@ type Event struct {
 	TotalClients map[chan string]bool
 }
 
-// New event messages are broadcast to all registered client connection channels
+// New event messages are broadcast to all registered client connection channels.
 type ClientChan chan string
 
 // go run cmd/sse-test/main.go
@@ -173,7 +173,7 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	return errC, nil
 }
 
-// Initialize event and Start procnteessing requests
+// Initialize event and Start procnteessing requests.
 func newSSEServer() (event *Event) {
 	event = &Event{
 		Message:       make(chan string),

@@ -76,7 +76,7 @@ func GetKeys(tag string, s any, parent string) []string {
 	return keys
 }
 
-// InitializeFields sets struct fields up to maxDepth
+// InitializeFields sets struct fields up to maxDepth.
 func InitializeFields(v reflect.Value, maxDepth int) reflect.Value {
 	if maxDepth == 0 {
 		return v

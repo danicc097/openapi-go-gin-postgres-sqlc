@@ -62,7 +62,7 @@ type Config struct {
 	MyProviderCallbackPath string
 }
 
-// TODO BuildServerConfig with implicit validation instead
+// TODO BuildServerConfig with implicit validation instead.
 func (c *Config) validate() error {
 	if c.Address == "" && os.Getenv("IS_TESTING") == "" {
 		return fmt.Errorf("no server address provided")
@@ -278,7 +278,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 }
 
 // Run configures a server and underlying services with the given configuration.
-// NewServer takes its own config as is now
+// NewServer takes its own config as is now.
 func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
 	var err error
 
@@ -442,8 +442,8 @@ func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
 		Loc: err.JSONPointer(),
 		Msg: err.Reason,
 		Detail: struct {
-			Schema map[string]interface{} "json:\"schema\""
-			Value  string                 "json:\"value\""
+			Schema map[string]interface{} `json:"schema"`
+			Value  string                 `json:"value"`
 		}{
 			Schema: schema,
 			Value:  string(value),

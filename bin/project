@@ -137,7 +137,7 @@ x.install-tools() {
     # for easier test search.
     # NOTE: unrelated run test broken discovery: https://github.com/golang/vscode-go/issues/2719
     go install github.com/danicc097/go-test-renamer@v0.2.0 &
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2 &
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.3 &
     go install github.com/joho/godotenv/cmd/godotenv@latest &
     go install github.com/tufin/oasdiff@latest &
     go install golang.org/x/tools/cmd/goimports@latest &
@@ -765,6 +765,7 @@ x.lint.go() {
 
     goimports -w $files || echo "Linting failed"
     gofumpt -w $files || echo "Linting failed"
+    # golangci-lint run --config=.golangci.yml  --fix
 
     echo "Success"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
