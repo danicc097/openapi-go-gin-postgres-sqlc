@@ -23,15 +23,15 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type SchemaMigration struct {
-	Version int  `json:"version" db:"version" required:"true"` // version
-	Dirty   bool `json:"dirty" db:"dirty" required:"true"`     // dirty
+	Version int  `json:"version" db:"version" required:"true" nullable:"false"` // version
+	Dirty   bool `json:"dirty" db:"dirty" required:"true" nullable:"false"`     // dirty
 
 }
 
 // SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'.
 type SchemaMigrationCreateParams struct {
-	Dirty   bool `json:"dirty" required:"true"`   // dirty
-	Version int  `json:"version" required:"true"` // version
+	Dirty   bool `json:"dirty" required:"true" nullable:"false"`   // dirty
+	Version int  `json:"version" required:"true" nullable:"false"` // version
 }
 
 // CreateSchemaMigration creates a new SchemaMigration in the database with the given params.
@@ -46,8 +46,8 @@ func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCr
 
 // SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'.
 type SchemaMigrationUpdateParams struct {
-	Dirty   *bool `json:"dirty" required:"true"`   // dirty
-	Version *int  `json:"version" required:"true"` // version
+	Dirty   *bool `json:"dirty" nullable:"false"`   // dirty
+	Version *int  `json:"version" nullable:"false"` // version
 }
 
 // SetUpdateParams updates public.schema_migrations struct fields with the specified params.

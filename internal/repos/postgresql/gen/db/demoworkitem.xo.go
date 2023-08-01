@@ -24,11 +24,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoWorkItem struct {
-	WorkItemID    int       `json:"workItemID" db:"work_item_id" required:"true"`       // work_item_id
-	Ref           string    `json:"ref" db:"ref" required:"true" pattern:"^[0-9]{8}$"`  // ref
-	Line          string    `json:"line" db:"line" required:"true"`                     // line
-	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
-	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
+	WorkItemID    int       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`       // work_item_id
+	Ref           string    `json:"ref" db:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"`  // ref
+	Line          string    `json:"line" db:"line" required:"true" nullable:"false"`                     // line
+	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true" nullable:"false"` // last_message_at
+	Reopened      bool      `json:"reopened" db:"reopened" required:"true" nullable:"false"`             // reopened
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
@@ -36,11 +36,11 @@ type DemoWorkItem struct {
 
 // DemoWorkItemCreateParams represents insert params for 'public.demo_work_items'.
 type DemoWorkItemCreateParams struct {
-	LastMessageAt time.Time `json:"lastMessageAt" required:"true"`            // last_message_at
-	Line          string    `json:"line" required:"true"`                     // line
-	Ref           string    `json:"ref" required:"true" pattern:"^[0-9]{8}$"` // ref
-	Reopened      bool      `json:"reopened" required:"true"`                 // reopened
-	WorkItemID    int       `json:"workItemID" required:"true"`               // work_item_id
+	LastMessageAt time.Time `json:"lastMessageAt" required:"true" nullable:"false"`            // last_message_at
+	Line          string    `json:"line" required:"true" nullable:"false"`                     // line
+	Ref           string    `json:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"` // ref
+	Reopened      bool      `json:"reopened" required:"true" nullable:"false"`                 // reopened
+	WorkItemID    int       `json:"workItemID" required:"true" nullable:"false"`               // work_item_id
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
@@ -58,10 +58,10 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 
 // DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'.
 type DemoWorkItemUpdateParams struct {
-	LastMessageAt *time.Time `json:"lastMessageAt" required:"true"`            // last_message_at
-	Line          *string    `json:"line" required:"true"`                     // line
-	Ref           *string    `json:"ref" required:"true" pattern:"^[0-9]{8}$"` // ref
-	Reopened      *bool      `json:"reopened" required:"true"`                 // reopened
+	LastMessageAt *time.Time `json:"lastMessageAt" nullable:"false"`            // last_message_at
+	Line          *string    `json:"line" nullable:"false"`                     // line
+	Ref           *string    `json:"ref" nullable:"false" pattern:"^[0-9]{8}$"` // ref
+	Reopened      *bool      `json:"reopened" nullable:"false"`                 // reopened
 }
 
 // SetUpdateParams updates public.demo_work_items struct fields with the specified params.

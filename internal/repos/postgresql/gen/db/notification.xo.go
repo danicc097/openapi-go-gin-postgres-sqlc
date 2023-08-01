@@ -25,16 +25,16 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Notification struct {
-	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`                                                 // notification_id
-	ReceiverRank     *int             `json:"receiverRank" db:"receiver_rank"`                                                                     // receiver_rank
-	Title            string           `json:"title" db:"title" required:"true"`                                                                    // title
-	Body             string           `json:"body" db:"body" required:"true"`                                                                      // body
-	Label            string           `json:"label" db:"label" required:"true"`                                                                    // label
-	Link             *string          `json:"link" db:"link"`                                                                                      // link
-	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true"`                                                           // created_at
-	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true"`                                                                  // sender
-	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                                                                              // receiver
-	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
+	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`                                                 // notification_id
+	ReceiverRank     *int             `json:"receiverRank" db:"receiver_rank"`                                                                                      // receiver_rank
+	Title            string           `json:"title" db:"title" required:"true" nullable:"false"`                                                                    // title
+	Body             string           `json:"body" db:"body" required:"true" nullable:"false"`                                                                      // body
+	Label            string           `json:"label" db:"label" required:"true" nullable:"false"`                                                                    // label
+	Link             *string          `json:"link" db:"link"`                                                                                                       // link
+	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                                           // created_at
+	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true" nullable:"false"`                                                                  // sender
+	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                                                                                               // receiver
+	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
 	ReceiverJoin                      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
 	SenderJoin                        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O users (generated from M2O)
@@ -44,14 +44,14 @@ type Notification struct {
 
 // NotificationCreateParams represents insert params for 'public.notifications'.
 type NotificationCreateParams struct {
-	Body             string           `json:"body" required:"true"`                                                         // body
-	Label            string           `json:"label" required:"true"`                                                        // label
-	Link             *string          `json:"link"`                                                                         // link
-	NotificationType NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
-	Receiver         *uuid.UUID       `json:"receiver"`                                                                     // receiver
-	ReceiverRank     *int             `json:"receiverRank"`                                                                 // receiver_rank
-	Sender           uuid.UUID        `json:"sender" required:"true"`                                                       // sender
-	Title            string           `json:"title" required:"true"`                                                        // title
+	Body             string           `json:"body" required:"true" nullable:"false"`                                                         // body
+	Label            string           `json:"label" required:"true" nullable:"false"`                                                        // label
+	Link             *string          `json:"link"`                                                                                          // link
+	NotificationType NotificationType `json:"notificationType" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
+	Receiver         *uuid.UUID       `json:"receiver"`                                                                                      // receiver
+	ReceiverRank     *int             `json:"receiverRank"`                                                                                  // receiver_rank
+	Sender           uuid.UUID        `json:"sender" required:"true" nullable:"false"`                                                       // sender
+	Title            string           `json:"title" required:"true" nullable:"false"`                                                        // title
 }
 
 // CreateNotification creates a new Notification in the database with the given params.
@@ -72,14 +72,14 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 
 // NotificationUpdateParams represents update params for 'public.notifications'.
 type NotificationUpdateParams struct {
-	Body             *string           `json:"body" required:"true"`                                                         // body
-	Label            *string           `json:"label" required:"true"`                                                        // label
-	Link             **string          `json:"link"`                                                                         // link
-	NotificationType *NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
-	Receiver         **uuid.UUID       `json:"receiver"`                                                                     // receiver
-	ReceiverRank     **int             `json:"receiverRank"`                                                                 // receiver_rank
-	Sender           *uuid.UUID        `json:"sender" required:"true"`                                                       // sender
-	Title            *string           `json:"title" required:"true"`                                                        // title
+	Body             *string           `json:"body" nullable:"false"`                                                         // body
+	Label            *string           `json:"label" nullable:"false"`                                                        // label
+	Link             **string          `json:"link"`                                                                          // link
+	NotificationType *NotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
+	Receiver         **uuid.UUID       `json:"receiver"`                                                                      // receiver
+	ReceiverRank     **int             `json:"receiverRank"`                                                                  // receiver_rank
+	Sender           *uuid.UUID        `json:"sender" nullable:"false"`                                                       // sender
+	Title            *string           `json:"title" nullable:"false"`                                                        // title
 }
 
 // SetUpdateParams updates public.notifications struct fields with the specified params.

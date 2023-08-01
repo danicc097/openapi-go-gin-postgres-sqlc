@@ -337,7 +337,7 @@ export interface DbWorkItemCreateParams {
   closedAt?: string | null
   description: string
   kanbanStepID: number
-  metadata: {} | null
+  metadata: {}
   targetDate: string
   teamID: number
   title: string
@@ -371,7 +371,7 @@ export interface DbWorkItem {
   deletedAt?: string | null
   description: string
   kanbanStepID: number
-  metadata: {} | null
+  metadata: {}
   targetDate: string
   teamID: number
   title: string
@@ -405,7 +405,7 @@ export interface RestDemoTwoWorkItemsResponse {
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
-  metadata: {} | null
+  metadata: {}
   targetDate: string
   teamID: number
   timeEntries?: DbTimeEntry[] | null
@@ -420,9 +420,9 @@ export interface RestDemoTwoWorkItemsResponse {
 export interface RestDemoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
-  members: ServicesMember[] | null
+  members: ServicesMember[]
   projectName: Project
-  tagIDs: number[] | null
+  tagIDs: number[]
 }
 export interface RestDemoWorkItemsResponse {
   closedAt?: string | null
@@ -432,7 +432,7 @@ export interface RestDemoWorkItemsResponse {
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
-  metadata: {} | null
+  metadata: {}
   targetDate: string
   teamID: number
   timeEntries?: DbTimeEntry[] | null

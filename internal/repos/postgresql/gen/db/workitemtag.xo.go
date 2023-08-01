@@ -23,11 +23,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemTag struct {
-	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true"`                           // work_item_tag_id
-	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`                                     // project_id
-	Name          string `json:"name" db:"name" required:"true"`                                                // name
-	Description   string `json:"description" db:"description" required:"true"`                                  // description
-	Color         string `json:"color" db:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"`                           // work_item_tag_id
+	ProjectID     int    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	Name          string `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
+	Description   string `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
+	Color         string `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 
 	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
 	WorkItemTagWorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
@@ -36,10 +36,10 @@ type WorkItemTag struct {
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'.
 type WorkItemTagCreateParams struct {
-	Color       string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description string `json:"description" required:"true"`                                        // description
-	Name        string `json:"name" required:"true"`                                               // name
-	ProjectID   int    `json:"projectID"`                                                          // project_id
+	Color       string `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description string `json:"description" required:"true" nullable:"false"`                                        // description
+	Name        string `json:"name" required:"true" nullable:"false"`                                               // name
+	ProjectID   int    `json:"projectID" nullable:"false"`                                                          // project_id
 }
 
 // CreateWorkItemTag creates a new WorkItemTag in the database with the given params.
@@ -56,10 +56,10 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'.
 type WorkItemTagUpdateParams struct {
-	Color       *string `json:"color" required:"true" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description *string `json:"description" required:"true"`                                        // description
-	Name        *string `json:"name" required:"true"`                                               // name
-	ProjectID   *int    `json:"projectID"`                                                          // project_id
+	Color       *string `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description *string `json:"description" nullable:"false"`                                        // description
+	Name        *string `json:"name" nullable:"false"`                                               // name
+	ProjectID   *int    `json:"projectID" nullable:"false"`                                          // project_id
 }
 
 // SetUpdateParams updates public.work_item_tags struct fields with the specified params.

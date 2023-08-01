@@ -318,6 +318,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 {{- end }}
 {{- if .required }} required:"true"
 {{- end }}
+{{- if not .nullable }} nullable:"false"
+{{- end }}
 {{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
 {{- end }}
 {{- .field.ExtraTags }}`,
@@ -3616,6 +3618,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 		}
 		skipExtraTags = true
 	case "UpdateParams":
+		notRequired = true // PATCH, all optional
 		if skipField {
 			return "", nil
 		}
@@ -3627,11 +3630,17 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	case "Table":
 	}
 
+	nullable := true
+	if !isPointer || strings.HasPrefix(field.Type, "map") || strings.HasPrefix(field.Type, "[]") {
+		nullable = false
+	}
+
 	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{
 		"field":         field,
 		"ignoreJSON":    isPrivate,
 		"required":      !isPointer && !isPrivate && (!notRequired || !skipExtraTags),
 		"skipExtraTags": skipExtraTags,
+		"nullable":      nullable,
 	}); err != nil {
 		return "", err
 	}

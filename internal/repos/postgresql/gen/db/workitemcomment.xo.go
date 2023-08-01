@@ -25,12 +25,12 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemComment struct {
-	WorkItemCommentID int       `json:"workItemCommentID" db:"work_item_comment_id" required:"true"` // work_item_comment_id
-	WorkItemID        int       `json:"workItemID" db:"work_item_id" required:"true"`                // work_item_id
-	UserID            uuid.UUID `json:"userID" db:"user_id" required:"true"`                         // user_id
-	Message           string    `json:"message" db:"message" required:"true"`                        // message
-	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
-	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
+	WorkItemCommentID int       `json:"workItemCommentID" db:"work_item_comment_id" required:"true" nullable:"false"` // work_item_comment_id
+	WorkItemID        int       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                // work_item_id
+	UserID            uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`                         // user_id
+	Message           string    `json:"message" db:"message" required:"true" nullable:"false"`                        // message
+	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                   // created_at
+	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                   // updated_at
 
 	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
@@ -39,9 +39,9 @@ type WorkItemComment struct {
 
 // WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'.
 type WorkItemCommentCreateParams struct {
-	Message    string    `json:"message" required:"true"`    // message
-	UserID     uuid.UUID `json:"userID" required:"true"`     // user_id
-	WorkItemID int       `json:"workItemID" required:"true"` // work_item_id
+	Message    string    `json:"message" required:"true" nullable:"false"`    // message
+	UserID     uuid.UUID `json:"userID" required:"true" nullable:"false"`     // user_id
+	WorkItemID int       `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
 // CreateWorkItemComment creates a new WorkItemComment in the database with the given params.
@@ -57,9 +57,9 @@ func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCr
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'.
 type WorkItemCommentUpdateParams struct {
-	Message    *string    `json:"message" required:"true"`    // message
-	UserID     *uuid.UUID `json:"userID" required:"true"`     // user_id
-	WorkItemID *int       `json:"workItemID" required:"true"` // work_item_id
+	Message    *string    `json:"message" nullable:"false"`    // message
+	UserID     *uuid.UUID `json:"userID" nullable:"false"`     // user_id
+	WorkItemID *int       `json:"workItemID" nullable:"false"` // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_comments struct fields with the specified params.

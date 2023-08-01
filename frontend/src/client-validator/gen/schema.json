@@ -1216,10 +1216,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -1609,10 +1606,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -1777,10 +1771,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -1867,10 +1858,7 @@
           "items": {
             "$ref": "#/definitions/ServicesMember"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "$ref": "#/definitions/Project"
@@ -1879,10 +1867,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -1937,10 +1922,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",

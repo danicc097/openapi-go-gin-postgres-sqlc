@@ -24,8 +24,8 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoTwoWorkItem struct {
-	WorkItemID            int        `json:"workItemID" db:"work_item_id" required:"true"`         // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"` // custom_date_for_project_2
+	WorkItemID            int        `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"`          // custom_date_for_project_2
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
@@ -33,8 +33,8 @@ type DemoTwoWorkItem struct {
 
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemCreateParams struct {
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"`      // custom_date_for_project_2
-	WorkItemID            int        `json:"workItemID" required:"true"` // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`                       // custom_date_for_project_2
+	WorkItemID            int        `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.

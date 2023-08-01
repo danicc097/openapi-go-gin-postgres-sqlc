@@ -2510,10 +2510,7 @@
                 },
                 "metadata": {
                   "additionalProperties": {},
-                  "type": [
-                    "object",
-                    "null"
-                  ]
+                  "type": "object"
                 },
                 "targetDate": {
                   "format": "date-time",
@@ -2663,10 +2660,7 @@
                 },
                 "metadata": {
                   "additionalProperties": {},
-                  "type": [
-                    "object",
-                    "null"
-                  ]
+                  "type": "object"
                 },
                 "targetDate": {
                   "format": "date-time",
@@ -2813,10 +2807,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -2907,10 +2898,7 @@
             },
             "metadata": {
               "additionalProperties": {},
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": "object"
             },
             "targetDate": {
               "format": "date-time",
@@ -3044,10 +3032,7 @@
             },
             "metadata": {
               "additionalProperties": {},
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": "object"
             },
             "targetDate": {
               "format": "date-time",
@@ -3420,10 +3405,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -3539,10 +3521,7 @@
             },
             "metadata": {
               "additionalProperties": {},
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": "object"
             },
             "targetDate": {
               "format": "date-time",
@@ -3800,10 +3779,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -4054,10 +4030,7 @@
             },
             "metadata": {
               "additionalProperties": {},
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": "object"
             },
             "targetDate": {
               "format": "date-time",
@@ -4153,10 +4126,7 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "enum": [
@@ -4171,10 +4141,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -4348,10 +4315,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -7845,10 +7809,7 @@
                 },
                 "metadata": {
                   "additionalProperties": {},
-                  "type": [
-                    "object",
-                    "null"
-                  ]
+                  "type": "object"
                 },
                 "targetDate": {
                   "format": "date-time",
@@ -7998,10 +7959,7 @@
                 },
                 "metadata": {
                   "additionalProperties": {},
-                  "type": [
-                    "object",
-                    "null"
-                  ]
+                  "type": "object"
                 },
                 "targetDate": {
                   "format": "date-time",
@@ -8148,10 +8106,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -8242,10 +8197,7 @@
             },
             "metadata": {
               "additionalProperties": {},
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": "object"
             },
             "targetDate": {
               "format": "date-time",
@@ -8379,10 +8331,7 @@
             },
             "metadata": {
               "additionalProperties": {},
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": "object"
             },
             "targetDate": {
               "format": "date-time",
@@ -8755,10 +8704,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -8874,10 +8820,7 @@
             },
             "metadata": {
               "additionalProperties": {},
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": "object"
             },
             "targetDate": {
               "format": "date-time",
@@ -9135,10 +9078,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",
@@ -9389,10 +9329,7 @@
             },
             "metadata": {
               "additionalProperties": {},
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": "object"
             },
             "targetDate": {
               "format": "date-time",
@@ -9488,10 +9425,7 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "projectName": {
           "enum": [
@@ -9506,10 +9440,7 @@
           "items": {
             "type": "integer"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -9683,10 +9614,7 @@
         },
         "metadata": {
           "additionalProperties": {},
-          "type": [
-            "object",
-            "null"
-          ]
+          "type": "object"
         },
         "targetDate": {
           "format": "date-time",

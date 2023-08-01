@@ -1279,7 +1279,6 @@ components:
           type: integer
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -1528,7 +1527,6 @@ components:
           type: integer
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -1632,7 +1630,6 @@ components:
           type: array
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time
@@ -1688,14 +1685,12 @@ components:
         members:
           items:
             $ref: '#/components/schemas/ServicesMember'
-          nullable: true
           type: array
         projectName:
           $ref: '#/components/schemas/Project'
         tagIDs:
           items:
             type: integer
-          nullable: true
           type: array
       required:
         - projectName
@@ -1731,7 +1726,6 @@ components:
           type: array
         metadata:
           additionalProperties: {}
-          nullable: true
           type: object
         targetDate:
           format: date-time

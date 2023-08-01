@@ -27,21 +27,21 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type User struct {
-	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true"`                                      // user_id
-	Username                 string        `json:"username" db:"username" required:"true"`                                   // username
-	Email                    string        `json:"email" db:"email" required:"true"`                                         // email
-	FirstName                *string       `json:"firstName" db:"first_name"`                                                // first_name
-	LastName                 *string       `json:"lastName" db:"last_name"`                                                  // last_name
-	FullName                 *string       `json:"fullName" db:"full_name"`                                                  // full_name
-	ExternalID               string        `json:"-" db:"external_id"`                                                       // external_id
-	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                        // api_key_id
-	Scopes                   models.Scopes `json:"scopes" db:"scopes" required:"true" ref:"#/components/schemas/Scopes"`     // scopes
-	RoleRank                 int           `json:"-" db:"role_rank"`                                                         // role_rank
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
-	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true"`                                // created_at
-	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
-	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                // deleted_at
+	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true" nullable:"false"`                                      // user_id
+	Username                 string        `json:"username" db:"username" required:"true" nullable:"false"`                                   // username
+	Email                    string        `json:"email" db:"email" required:"true" nullable:"false"`                                         // email
+	FirstName                *string       `json:"firstName" db:"first_name"`                                                                 // first_name
+	LastName                 *string       `json:"lastName" db:"last_name"`                                                                   // last_name
+	FullName                 *string       `json:"fullName" db:"full_name"`                                                                   // full_name
+	ExternalID               string        `json:"-" db:"external_id" nullable:"false"`                                                       // external_id
+	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                                         // api_key_id
+	Scopes                   models.Scopes `json:"scopes" db:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"`     // scopes
+	RoleRank                 int           `json:"-" db:"role_rank" nullable:"false"`                                                         // role_rank
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true" nullable:"false"` // has_personal_notifications
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true" nullable:"false"`     // has_global_notifications
+	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                // created_at
+	UpdatedAt                time.Time     `json:"-" db:"updated_at" nullable:"false"`                                                        // updated_at
+	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                 // deleted_at
 
 	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
@@ -56,16 +56,16 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'.
 type UserCreateParams struct {
-	APIKeyID                 *int          `json:"-"`                                                        // api_key_id
-	Email                    string        `json:"email" required:"true"`                                    // email
-	ExternalID               string        `json:"-"`                                                        // external_id
-	FirstName                *string       `json:"firstName"`                                                // first_name
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" required:"true"`                   // has_global_notifications
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications" required:"true"`                 // has_personal_notifications
-	LastName                 *string       `json:"lastName"`                                                 // last_name
-	RoleRank                 int           `json:"-"`                                                        // role_rank
-	Scopes                   models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
-	Username                 string        `json:"username" required:"true"`                                 // username
+	APIKeyID                 *int          `json:"-"`                                                                         // api_key_id
+	Email                    string        `json:"email" required:"true" nullable:"false"`                                    // email
+	ExternalID               string        `json:"-" nullable:"false"`                                                        // external_id
+	FirstName                *string       `json:"firstName"`                                                                 // first_name
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" required:"true" nullable:"false"`                   // has_global_notifications
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications" required:"true" nullable:"false"`                 // has_personal_notifications
+	LastName                 *string       `json:"lastName"`                                                                  // last_name
+	RoleRank                 int           `json:"-" nullable:"false"`                                                        // role_rank
+	Scopes                   models.Scopes `json:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
+	Username                 string        `json:"username" required:"true" nullable:"false"`                                 // username
 }
 
 // CreateUser creates a new User in the database with the given params.
@@ -88,16 +88,16 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'public.users'.
 type UserUpdateParams struct {
-	APIKeyID                 **int          `json:"-"`                                                        // api_key_id
-	Email                    *string        `json:"email" required:"true"`                                    // email
-	ExternalID               *string        `json:"-"`                                                        // external_id
-	FirstName                **string       `json:"firstName"`                                                // first_name
-	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications" required:"true"`                   // has_global_notifications
-	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" required:"true"`                 // has_personal_notifications
-	LastName                 **string       `json:"lastName"`                                                 // last_name
-	RoleRank                 *int           `json:"-"`                                                        // role_rank
-	Scopes                   *models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
-	Username                 *string        `json:"username" required:"true"`                                 // username
+	APIKeyID                 **int          `json:"-"`                                                         // api_key_id
+	Email                    *string        `json:"email" nullable:"false"`                                    // email
+	ExternalID               *string        `json:"-" nullable:"false"`                                        // external_id
+	FirstName                **string       `json:"firstName"`                                                 // first_name
+	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications" nullable:"false"`                   // has_global_notifications
+	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" nullable:"false"`                 // has_personal_notifications
+	LastName                 **string       `json:"lastName"`                                                  // last_name
+	RoleRank                 *int           `json:"-" nullable:"false"`                                        // role_rank
+	Scopes                   *models.Scopes `json:"scopes" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
+	Username                 *string        `json:"username" nullable:"false"`                                 // username
 }
 
 // SetUpdateParams updates public.users struct fields with the specified params.

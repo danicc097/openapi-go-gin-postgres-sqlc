@@ -25,13 +25,13 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Project struct {
-	ProjectID          int                  `json:"projectID" db:"project_id" required:"true"`                                              // project_id
-	Name               models.Project       `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"`                      // name
-	Description        string               `json:"description" db:"description" required:"true"`                                           // description
-	WorkItemsTableName string               `json:"-" db:"work_items_table_name"`                                                           // work_items_table_name
-	BoardConfig        models.ProjectConfig `json:"boardConfig" db:"board_config" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
-	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true"`                                              // created_at
-	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true"`                                              // updated_at
+	ProjectID          int                  `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                              // project_id
+	Name               models.Project       `json:"name" db:"name" required:"true" nullable:"false" ref:"#/components/schemas/Project"`                      // name
+	Description        string               `json:"description" db:"description" required:"true" nullable:"false"`                                           // description
+	WorkItemsTableName string               `json:"-" db:"work_items_table_name" nullable:"false"`                                                           // work_items_table_name
+	BoardConfig        models.ProjectConfig `json:"boardConfig" db:"board_config" required:"true" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
+	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                              // created_at
+	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                              // updated_at
 
 	ProjectActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O projects
 	ProjectKanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O projects
@@ -43,10 +43,10 @@ type Project struct {
 
 // ProjectCreateParams represents insert params for 'public.projects'.
 type ProjectCreateParams struct {
-	BoardConfig        models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
-	Description        string               `json:"description" required:"true"`                                          // description
-	Name               models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
-	WorkItemsTableName string               `json:"-"`                                                                    // work_items_table_name
+	BoardConfig        models.ProjectConfig `json:"boardConfig" required:"true" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
+	Description        string               `json:"description" required:"true" nullable:"false"`                                          // description
+	Name               models.Project       `json:"name" required:"true" nullable:"false" ref:"#/components/schemas/Project"`              // name
+	WorkItemsTableName string               `json:"-" nullable:"false"`                                                                    // work_items_table_name
 }
 
 // CreateProject creates a new Project in the database with the given params.
@@ -63,10 +63,10 @@ func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Pr
 
 // ProjectUpdateParams represents update params for 'public.projects'.
 type ProjectUpdateParams struct {
-	BoardConfig        *models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
-	Description        *string               `json:"description" required:"true"`                                          // description
-	Name               *models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
-	WorkItemsTableName *string               `json:"-"`                                                                    // work_items_table_name
+	BoardConfig        *models.ProjectConfig `json:"boardConfig" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
+	Description        *string               `json:"description" nullable:"false"`                                          // description
+	Name               *models.Project       `json:"name" nullable:"false" ref:"#/components/schemas/Project"`              // name
+	WorkItemsTableName *string               `json:"-" nullable:"false"`                                                    // work_items_table_name
 }
 
 // SetUpdateParams updates public.projects struct fields with the specified params.

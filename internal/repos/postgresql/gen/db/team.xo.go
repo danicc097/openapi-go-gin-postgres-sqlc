@@ -24,12 +24,12 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Team struct {
-	TeamID      int       `json:"teamID" db:"team_id" required:"true"`          // team_id
-	ProjectID   int       `json:"projectID" db:"project_id" required:"true"`    // project_id
-	Name        string    `json:"name" db:"name" required:"true"`               // name
-	Description string    `json:"description" db:"description" required:"true"` // description
-	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
-	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
+	TeamID      int       `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
+	ProjectID   int       `json:"projectID" db:"project_id" required:"true" nullable:"false"`    // project_id
+	Name        string    `json:"name" db:"name" required:"true" nullable:"false"`               // name
+	Description string    `json:"description" db:"description" required:"true" nullable:"false"` // description
+	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`    // created_at
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`    // updated_at
 
 	ProjectJoin         *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 	TeamTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
@@ -39,9 +39,9 @@ type Team struct {
 
 // TeamCreateParams represents insert params for 'public.teams'.
 type TeamCreateParams struct {
-	Description string `json:"description" required:"true"` // description
-	Name        string `json:"name" required:"true"`        // name
-	ProjectID   int    `json:"projectID" required:"true"`   // project_id
+	Description string `json:"description" required:"true" nullable:"false"` // description
+	Name        string `json:"name" required:"true" nullable:"false"`        // name
+	ProjectID   int    `json:"projectID" required:"true" nullable:"false"`   // project_id
 }
 
 // CreateTeam creates a new Team in the database with the given params.
@@ -57,9 +57,9 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 
 // TeamUpdateParams represents update params for 'public.teams'.
 type TeamUpdateParams struct {
-	Description *string `json:"description" required:"true"` // description
-	Name        *string `json:"name" required:"true"`        // name
-	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
+	Description *string `json:"description" nullable:"false"` // description
+	Name        *string `json:"name" nullable:"false"`        // name
+	ProjectID   *int    `json:"projectID" nullable:"false"`   // project_id
 }
 
 // SetUpdateParams updates public.teams struct fields with the specified params.

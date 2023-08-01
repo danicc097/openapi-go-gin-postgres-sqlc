@@ -13,7 +13,7 @@ import type { Project } from './project'
 export interface RestDemoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
-  members: ServicesMember[] | null
+  members: ServicesMember[]
   projectName: Project
-  tagIDs: number[] | null
+  tagIDs: number[]
 }

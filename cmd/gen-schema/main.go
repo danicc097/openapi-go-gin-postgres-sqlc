@@ -91,19 +91,15 @@ func main() {
 			}
 
 			if params.PropertySchema != nil && params.PropertySchema.Type != nil {
-				if (params.PropertySchema.Type.SimpleTypes != nil && *params.PropertySchema.Type.SimpleTypes == jsonschema.Object) ||
-					(len(params.PropertySchema.Type.SliceOfSimpleTypeValues) > 0 && slices.Contains(params.PropertySchema.Type.SliceOfSimpleTypeValues, jsonschema.Object)) {
-					if m, ok := params.PropertySchema.Properties["metadata"]; ok {
-						fmt.Fprintf(os.Stderr, "%+v\n", m)
-						tt := params.PropertySchema.Type.SliceOfSimpleTypeValues
+				if params.Field.Tag.Get("nullable") == "false" {
+					if len(params.PropertySchema.Type.SliceOfSimpleTypeValues) > 0 {
+						tt := []jsonschema.SimpleType{}
 						for _, st := range params.PropertySchema.Type.SliceOfSimpleTypeValues {
 							if st == jsonschema.Null {
 								continue
 							}
 							tt = append(tt, st)
 						}
-						tt = append(tt, *params.PropertySchema.Type.SimpleTypes.Type().SimpleTypes)
-						params.PropertySchema.Type.SimpleTypes = nil
 						params.PropertySchema.Type.SliceOfSimpleTypeValues = tt
 					}
 				}

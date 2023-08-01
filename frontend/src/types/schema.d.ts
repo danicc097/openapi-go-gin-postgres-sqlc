@@ -408,7 +408,7 @@ export interface components {
       kanbanStepID: number;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -497,7 +497,7 @@ export interface components {
       kanbanStepID: number;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -538,7 +538,7 @@ export interface components {
       members?: (components["schemas"]["DbUser"])[] | null;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -555,9 +555,9 @@ export interface components {
     RestDemoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
-      members: (components["schemas"]["ServicesMember"])[] | null;
+      members: (components["schemas"]["ServicesMember"])[];
       projectName: components["schemas"]["Project"];
-      tagIDs: (number)[] | null;
+      tagIDs: (number)[];
     };
     RestDemoWorkItemsResponse: {
       /** Format: date-time */
@@ -572,7 +572,7 @@ export interface components {
       members?: (components["schemas"]["DbUser"])[] | null;
       metadata: {
         [key: string]: unknown;
-      } | null;
+      };
       /** Format: date-time */
       targetDate: string;
       teamID: number;

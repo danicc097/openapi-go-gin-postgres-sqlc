@@ -21,8 +21,8 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type UserTeam struct {
-	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
-	Member uuid.UUID `json:"member" db:"member" required:"true"`  // member
+	TeamID int       `json:"teamID" db:"team_id" required:"true" nullable:"false"` // team_id
+	Member uuid.UUID `json:"member" db:"member" required:"true" nullable:"false"`  // member
 
 	MemberTeamsJoin *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
 	TeamMembersJoin *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
@@ -31,8 +31,8 @@ type UserTeam struct {
 
 // UserTeamCreateParams represents insert params for 'public.user_team'.
 type UserTeamCreateParams struct {
-	Member uuid.UUID `json:"member" required:"true"` // member
-	TeamID int       `json:"teamID" required:"true"` // team_id
+	Member uuid.UUID `json:"member" required:"true" nullable:"false"` // member
+	TeamID int       `json:"teamID" required:"true" nullable:"false"` // team_id
 }
 
 // CreateUserTeam creates a new UserTeam in the database with the given params.
@@ -47,8 +47,8 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 
 // UserTeamUpdateParams represents update params for 'public.user_team'.
 type UserTeamUpdateParams struct {
-	Member *uuid.UUID `json:"member" required:"true"` // member
-	TeamID *int       `json:"teamID" required:"true"` // team_id
+	Member *uuid.UUID `json:"member" nullable:"false"` // member
+	TeamID *int       `json:"teamID" nullable:"false"` // team_id
 }
 
 // SetUpdateParams updates public.user_team struct fields with the specified params.

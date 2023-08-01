@@ -23,18 +23,18 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Movie struct {
-	MovieID  int    `json:"movieID" db:"movie_id" required:"true"`  // movie_id
-	Title    string `json:"title" db:"title" required:"true"`       // title
-	Year     int    `json:"year" db:"year" required:"true"`         // year
-	Synopsis string `json:"synopsis" db:"synopsis" required:"true"` // synopsis
+	MovieID  int    `json:"movieID" db:"movie_id" required:"true" nullable:"false"`  // movie_id
+	Title    string `json:"title" db:"title" required:"true" nullable:"false"`       // title
+	Year     int    `json:"year" db:"year" required:"true" nullable:"false"`         // year
+	Synopsis string `json:"synopsis" db:"synopsis" required:"true" nullable:"false"` // synopsis
 
 }
 
 // MovieCreateParams represents insert params for 'public.movies'.
 type MovieCreateParams struct {
-	Synopsis string `json:"synopsis" required:"true"` // synopsis
-	Title    string `json:"title" required:"true"`    // title
-	Year     int    `json:"year" required:"true"`     // year
+	Synopsis string `json:"synopsis" required:"true" nullable:"false"` // synopsis
+	Title    string `json:"title" required:"true" nullable:"false"`    // title
+	Year     int    `json:"year" required:"true" nullable:"false"`     // year
 }
 
 // CreateMovie creates a new Movie in the database with the given params.
@@ -50,9 +50,9 @@ func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie,
 
 // MovieUpdateParams represents update params for 'public.movies'.
 type MovieUpdateParams struct {
-	Synopsis *string `json:"synopsis" required:"true"` // synopsis
-	Title    *string `json:"title" required:"true"`    // title
-	Year     *int    `json:"year" required:"true"`     // year
+	Synopsis *string `json:"synopsis" nullable:"false"` // synopsis
+	Title    *string `json:"title" nullable:"false"`    // title
+	Year     *int    `json:"year" nullable:"false"`     // year
 }
 
 // SetUpdateParams updates public.movies struct fields with the specified params.

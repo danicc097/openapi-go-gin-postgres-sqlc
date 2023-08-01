@@ -23,8 +23,8 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DummyJoin struct {
-	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true"` // dummy_join_id
-	Name        *string `json:"name" db:"name"`                                 // name
+	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true" nullable:"false"` // dummy_join_id
+	Name        *string `json:"name" db:"name"`                                                  // name
 }
 
 // DummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
