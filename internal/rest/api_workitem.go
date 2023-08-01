@@ -32,9 +32,11 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 		h.demoworkitemsvc.Create(ctx, tx, services.DemoWorkItemCreateParams{
 			DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
 				DemoProject: db.DemoWorkItemCreateParams(params.DemoProject),
-				// FIXME: oapi outputs metadata as optional
-				// Base:        db.WorkItemCreateParams(params.Base),
+				Base:        db.WorkItemCreateParams(params.Base),
 			},
+			TagIDs: *params.TagIDs,
+			// FIXME:
+			// Members: params.Members,
 		})
 		c.String(http.StatusOK, "project demo")
 	case models.ProjectDemoTwo:

@@ -640,7 +640,8 @@ x.gen.frontend() {
         rm -f frontend/src/client-validator/gen/validate.ts
         find frontend/src/client-validator/gen/ -type f -exec \
           sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \;
-      } &
+      }
+
       {
         v="$(openapi-typescript --version)"
         openapi-typescript $SPEC --output "$SCHEMA_OUT" --path-params-as-types --prettier-config .prettierrc

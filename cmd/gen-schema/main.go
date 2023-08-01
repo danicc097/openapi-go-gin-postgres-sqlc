@@ -16,6 +16,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
+	internalslices "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/google/uuid"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
@@ -92,15 +93,10 @@ func main() {
 
 			if params.PropertySchema != nil && params.PropertySchema.Type != nil {
 				if params.Field.Tag.Get("nullable") == "false" {
-					if len(params.PropertySchema.Type.SliceOfSimpleTypeValues) > 0 {
-						tt := []jsonschema.SimpleType{}
-						for _, st := range params.PropertySchema.Type.SliceOfSimpleTypeValues {
-							if st == jsonschema.Null {
-								continue
-							}
-							tt = append(tt, st)
-						}
-						params.PropertySchema.Type.SliceOfSimpleTypeValues = tt
+					if types := params.PropertySchema.Type.SliceOfSimpleTypeValues; len(types) > 0 {
+						params.PropertySchema.Type.SliceOfSimpleTypeValues = internalslices.Filter(types, func(item jsonschema.SimpleType, _ int) bool {
+							return item != jsonschema.Null
+						})
 					}
 				}
 			}
