@@ -67,7 +67,7 @@ github.com/dave/dst/dstutil
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/deepmap/oapi-codegen v1.13.0
+# github.com/deepmap/oapi-codegen v1.13.2
 ## explicit; go 1.18
 github.com/deepmap/oapi-codegen/pkg/codegen
 github.com/deepmap/oapi-codegen/pkg/runtime
@@ -110,7 +110,7 @@ github.com/gin-gonic/gin/binding
 github.com/gin-gonic/gin/internal/bytesconv
 github.com/gin-gonic/gin/internal/json
 github.com/gin-gonic/gin/render
-# github.com/go-jet/jet/v2 v2.10.0
+# github.com/go-jet/jet/v2 v2.10.1
 ## explicit; go 1.11
 github.com/go-jet/jet/v2/generator/metadata
 github.com/go-jet/jet/v2/generator/postgres
@@ -118,9 +118,13 @@ github.com/go-jet/jet/v2/generator/template
 github.com/go-jet/jet/v2/internal/3rdparty/pq
 github.com/go-jet/jet/v2/internal/3rdparty/snaker
 github.com/go-jet/jet/v2/internal/jet
-github.com/go-jet/jet/v2/internal/utils
+github.com/go-jet/jet/v2/internal/utils/datetime
+github.com/go-jet/jet/v2/internal/utils/dbidentifier
+github.com/go-jet/jet/v2/internal/utils/filesys
+github.com/go-jet/jet/v2/internal/utils/is
 github.com/go-jet/jet/v2/internal/utils/min
-github.com/go-jet/jet/v2/internal/utils/throw
+github.com/go-jet/jet/v2/internal/utils/must
+github.com/go-jet/jet/v2/internal/utils/strslice
 github.com/go-jet/jet/v2/postgres
 github.com/go-jet/jet/v2/qrm
 github.com/go-jet/jet/v2/qrm/internal
@@ -255,7 +259,7 @@ github.com/jackc/pgservicefile
 # github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
 ## explicit; go 1.17
 github.com/jackc/pgx-zap
-# github.com/jackc/pgx/v5 v5.4.1
+# github.com/jackc/pgx/v5 v5.4.2
 ## explicit; go 1.19
 github.com/jackc/pgx/v5
 github.com/jackc/pgx/v5/internal/anynil
@@ -293,7 +297,7 @@ github.com/kenshaw/snaker
 # github.com/klauspost/cpuid/v2 v2.2.5
 ## explicit; go 1.15
 github.com/klauspost/cpuid/v2
-# github.com/labstack/echo/v4 v4.10.2
+# github.com/labstack/echo/v4 v4.11.1
 ## explicit; go 1.17
 github.com/labstack/echo/v4
 # github.com/labstack/gommon v0.4.0
@@ -625,7 +629,7 @@ google.golang.org/appengine/urlfetch
 # google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.55.0
+# google.golang.org/grpc v1.57.0
 ## explicit; go 1.17
 google.golang.org/grpc
 google.golang.org/grpc/attributes
