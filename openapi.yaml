@@ -1521,14 +1521,11 @@ components:
           type: string
         reopened:
           type: boolean
-        workItemID:
-          type: integer
       required:
         - lastMessageAt
         - line
         - ref
         - reopened
-        - workItemID
       type: object
     DbWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1588,10 +1585,6 @@ components:
           format: date-time
           nullable: true
           type: string
-        workItemID:
-          type: integer
-      required:
-        - workItemID
       type: object
   examples:
     User:

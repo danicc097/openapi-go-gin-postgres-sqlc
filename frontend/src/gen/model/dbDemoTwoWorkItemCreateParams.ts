@@ -8,5 +8,4 @@
 
 export interface DbDemoTwoWorkItemCreateParams {
   customDateForProject2?: Date | null
-  workItemID: number
 }

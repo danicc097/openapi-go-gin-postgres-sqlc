@@ -11,5 +11,4 @@ export interface DbDemoWorkItemCreateParams {
   line: string
   ref: string
   reopened: boolean
-  workItemID: number
 }

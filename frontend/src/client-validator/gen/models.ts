@@ -348,7 +348,6 @@ export interface DbDemoWorkItemCreateParams {
   line: string
   ref: string
   reopened: boolean
-  workItemID: number
 }
 export interface ServicesMember {
   role: WorkItemRole
@@ -363,7 +362,6 @@ export interface DemoTwoWorkItemCreateRequest {
 }
 export interface DbDemoTwoWorkItemCreateParams {
   customDateForProject2?: string | null
-  workItemID: number
 }
 export interface DbWorkItem {
   closedAt?: string | null

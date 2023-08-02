@@ -3609,10 +3609,14 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	isPointer := strings.HasPrefix(field.Type, "*")
 	isSingleFK, isSinglePK := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
+	ignoreJson := isPrivate
 
 	var skipExtraTags bool
 	switch typ {
 	case "CreateParams":
+		if isSingleFK && isSinglePK {
+			ignoreJson = true // need for repo but unknown for request
+		}
 		if skipField {
 			return "", nil
 		}
@@ -3637,7 +3641,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 
 	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{
 		"field":         field,
-		"ignoreJSON":    isPrivate,
+		"ignoreJSON":    ignoreJson,
 		"required":      !isPointer && !isPrivate && (!notRequired || !skipExtraTags),
 		"skipExtraTags": skipExtraTags,
 		"nullable":      nullable,
