@@ -26,12 +26,13 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
-	ByEmailStub        func(context.Context, db.DBTX, string) (*db.User, error)
+	ByEmailStub        func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error)
 	byEmailMutex       sync.RWMutex
 	byEmailArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 string
+		arg4 []db.UserSelectConfigOption
 	}
 	byEmailReturns struct {
 		result1 *db.User
@@ -41,12 +42,13 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
-	ByExternalIDStub        func(context.Context, db.DBTX, string) (*db.User, error)
+	ByExternalIDStub        func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error)
 	byExternalIDMutex       sync.RWMutex
 	byExternalIDArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 string
+		arg4 []db.UserSelectConfigOption
 	}
 	byExternalIDReturns struct {
 		result1 *db.User
@@ -56,12 +58,13 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
-	ByIDStub        func(context.Context, db.DBTX, uuid.UUID) (*db.User, error)
+	ByIDStub        func(context.Context, db.DBTX, uuid.UUID, ...db.UserSelectConfigOption) (*db.User, error)
 	byIDMutex       sync.RWMutex
 	byIDArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 uuid.UUID
+		arg4 []db.UserSelectConfigOption
 	}
 	byIDReturns struct {
 		result1 *db.User
@@ -71,12 +74,13 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
-	ByUsernameStub        func(context.Context, db.DBTX, string) (*db.User, error)
+	ByUsernameStub        func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error)
 	byUsernameMutex       sync.RWMutex
 	byUsernameArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 string
+		arg4 []db.UserSelectConfigOption
 	}
 	byUsernameReturns struct {
 		result1 *db.User
@@ -217,20 +221,21 @@ func (fake *FakeUser) ByAPIKeyReturnsOnCall(i int, result1 *db.User, result2 err
 	}{result1, result2}
 }
 
-func (fake *FakeUser) ByEmail(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
+func (fake *FakeUser) ByEmail(arg1 context.Context, arg2 db.DBTX, arg3 string, arg4 ...db.UserSelectConfigOption) (*db.User, error) {
 	fake.byEmailMutex.Lock()
 	ret, specificReturn := fake.byEmailReturnsOnCall[len(fake.byEmailArgsForCall)]
 	fake.byEmailArgsForCall = append(fake.byEmailArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 string
-	}{arg1, arg2, arg3})
+		arg4 []db.UserSelectConfigOption
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByEmailStub
 	fakeReturns := fake.byEmailReturns
-	fake.recordInvocation("ByEmail", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("ByEmail", []interface{}{arg1, arg2, arg3, arg4})
 	fake.byEmailMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -244,17 +249,17 @@ func (fake *FakeUser) ByEmailCallCount() int {
 	return len(fake.byEmailArgsForCall)
 }
 
-func (fake *FakeUser) ByEmailCalls(stub func(context.Context, db.DBTX, string) (*db.User, error)) {
+func (fake *FakeUser) ByEmailCalls(stub func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error)) {
 	fake.byEmailMutex.Lock()
 	defer fake.byEmailMutex.Unlock()
 	fake.ByEmailStub = stub
 }
 
-func (fake *FakeUser) ByEmailArgsForCall(i int) (context.Context, db.DBTX, string) {
+func (fake *FakeUser) ByEmailArgsForCall(i int) (context.Context, db.DBTX, string, []db.UserSelectConfigOption) {
 	fake.byEmailMutex.RLock()
 	defer fake.byEmailMutex.RUnlock()
 	argsForCall := fake.byEmailArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeUser) ByEmailReturns(result1 *db.User, result2 error) {
@@ -283,20 +288,21 @@ func (fake *FakeUser) ByEmailReturnsOnCall(i int, result1 *db.User, result2 erro
 	}{result1, result2}
 }
 
-func (fake *FakeUser) ByExternalID(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
+func (fake *FakeUser) ByExternalID(arg1 context.Context, arg2 db.DBTX, arg3 string, arg4 ...db.UserSelectConfigOption) (*db.User, error) {
 	fake.byExternalIDMutex.Lock()
 	ret, specificReturn := fake.byExternalIDReturnsOnCall[len(fake.byExternalIDArgsForCall)]
 	fake.byExternalIDArgsForCall = append(fake.byExternalIDArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 string
-	}{arg1, arg2, arg3})
+		arg4 []db.UserSelectConfigOption
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByExternalIDStub
 	fakeReturns := fake.byExternalIDReturns
-	fake.recordInvocation("ByExternalID", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("ByExternalID", []interface{}{arg1, arg2, arg3, arg4})
 	fake.byExternalIDMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -310,17 +316,17 @@ func (fake *FakeUser) ByExternalIDCallCount() int {
 	return len(fake.byExternalIDArgsForCall)
 }
 
-func (fake *FakeUser) ByExternalIDCalls(stub func(context.Context, db.DBTX, string) (*db.User, error)) {
+func (fake *FakeUser) ByExternalIDCalls(stub func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error)) {
 	fake.byExternalIDMutex.Lock()
 	defer fake.byExternalIDMutex.Unlock()
 	fake.ByExternalIDStub = stub
 }
 
-func (fake *FakeUser) ByExternalIDArgsForCall(i int) (context.Context, db.DBTX, string) {
+func (fake *FakeUser) ByExternalIDArgsForCall(i int) (context.Context, db.DBTX, string, []db.UserSelectConfigOption) {
 	fake.byExternalIDMutex.RLock()
 	defer fake.byExternalIDMutex.RUnlock()
 	argsForCall := fake.byExternalIDArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeUser) ByExternalIDReturns(result1 *db.User, result2 error) {
@@ -349,20 +355,21 @@ func (fake *FakeUser) ByExternalIDReturnsOnCall(i int, result1 *db.User, result2
 	}{result1, result2}
 }
 
-func (fake *FakeUser) ByID(arg1 context.Context, arg2 db.DBTX, arg3 uuid.UUID) (*db.User, error) {
+func (fake *FakeUser) ByID(arg1 context.Context, arg2 db.DBTX, arg3 uuid.UUID, arg4 ...db.UserSelectConfigOption) (*db.User, error) {
 	fake.byIDMutex.Lock()
 	ret, specificReturn := fake.byIDReturnsOnCall[len(fake.byIDArgsForCall)]
 	fake.byIDArgsForCall = append(fake.byIDArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 uuid.UUID
-	}{arg1, arg2, arg3})
+		arg4 []db.UserSelectConfigOption
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByIDStub
 	fakeReturns := fake.byIDReturns
-	fake.recordInvocation("ByID", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("ByID", []interface{}{arg1, arg2, arg3, arg4})
 	fake.byIDMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -376,17 +383,17 @@ func (fake *FakeUser) ByIDCallCount() int {
 	return len(fake.byIDArgsForCall)
 }
 
-func (fake *FakeUser) ByIDCalls(stub func(context.Context, db.DBTX, uuid.UUID) (*db.User, error)) {
+func (fake *FakeUser) ByIDCalls(stub func(context.Context, db.DBTX, uuid.UUID, ...db.UserSelectConfigOption) (*db.User, error)) {
 	fake.byIDMutex.Lock()
 	defer fake.byIDMutex.Unlock()
 	fake.ByIDStub = stub
 }
 
-func (fake *FakeUser) ByIDArgsForCall(i int) (context.Context, db.DBTX, uuid.UUID) {
+func (fake *FakeUser) ByIDArgsForCall(i int) (context.Context, db.DBTX, uuid.UUID, []db.UserSelectConfigOption) {
 	fake.byIDMutex.RLock()
 	defer fake.byIDMutex.RUnlock()
 	argsForCall := fake.byIDArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeUser) ByIDReturns(result1 *db.User, result2 error) {
@@ -415,20 +422,21 @@ func (fake *FakeUser) ByIDReturnsOnCall(i int, result1 *db.User, result2 error) 
 	}{result1, result2}
 }
 
-func (fake *FakeUser) ByUsername(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
+func (fake *FakeUser) ByUsername(arg1 context.Context, arg2 db.DBTX, arg3 string, arg4 ...db.UserSelectConfigOption) (*db.User, error) {
 	fake.byUsernameMutex.Lock()
 	ret, specificReturn := fake.byUsernameReturnsOnCall[len(fake.byUsernameArgsForCall)]
 	fake.byUsernameArgsForCall = append(fake.byUsernameArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 string
-	}{arg1, arg2, arg3})
+		arg4 []db.UserSelectConfigOption
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByUsernameStub
 	fakeReturns := fake.byUsernameReturns
-	fake.recordInvocation("ByUsername", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("ByUsername", []interface{}{arg1, arg2, arg3, arg4})
 	fake.byUsernameMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -442,17 +450,17 @@ func (fake *FakeUser) ByUsernameCallCount() int {
 	return len(fake.byUsernameArgsForCall)
 }
 
-func (fake *FakeUser) ByUsernameCalls(stub func(context.Context, db.DBTX, string) (*db.User, error)) {
+func (fake *FakeUser) ByUsernameCalls(stub func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error)) {
 	fake.byUsernameMutex.Lock()
 	defer fake.byUsernameMutex.Unlock()
 	fake.ByUsernameStub = stub
 }
 
-func (fake *FakeUser) ByUsernameArgsForCall(i int) (context.Context, db.DBTX, string) {
+func (fake *FakeUser) ByUsernameArgsForCall(i int) (context.Context, db.DBTX, string, []db.UserSelectConfigOption) {
 	fake.byUsernameMutex.RLock()
 	defer fake.byUsernameMutex.RUnlock()
 	argsForCall := fake.byUsernameArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeUser) ByUsernameReturns(result1 *db.User, result2 error) {

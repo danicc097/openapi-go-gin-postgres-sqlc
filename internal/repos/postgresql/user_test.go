@@ -182,13 +182,13 @@ func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
 		var err error
 
 		switch fn := tc.args.fn.(type) {
-		case func(context.Context, db.DBTX, string) (*db.User, error):
+		case func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error):
 			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(string))
-		case func(context.Context, db.DBTX, int) (*db.User, error):
+		case func(context.Context, db.DBTX, int, ...db.UserSelectConfigOption) (*db.User, error):
 			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(int))
-		case func(context.Context, db.DBTX, int64) (*db.User, error):
+		case func(context.Context, db.DBTX, int64, ...db.UserSelectConfigOption) (*db.User, error):
 			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(int64))
-		case func(context.Context, db.DBTX, uuid.UUID) (*db.User, error):
+		case func(context.Context, db.DBTX, uuid.UUID, ...db.UserSelectConfigOption) (*db.User, error):
 			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(uuid.UUID))
 		}
 		if err != nil {
@@ -205,16 +205,16 @@ func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
 		var err error
 
 		switch fn := tc.args.fn.(type) {
-		case func(context.Context, db.DBTX, string) (*db.User, error):
+		case func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error):
 			filter := "does not exist"
 			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, int) (*db.User, error):
+		case func(context.Context, db.DBTX, int, ...db.UserSelectConfigOption) (*db.User, error):
 			filter := 732745
 			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, int64) (*db.User, error):
+		case func(context.Context, db.DBTX, int64, ...db.UserSelectConfigOption) (*db.User, error):
 			filter := int64(732745)
 			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, uuid.UUID) (*db.User, error):
+		case func(context.Context, db.DBTX, uuid.UUID, ...db.UserSelectConfigOption) (*db.User, error):
 			filter := uuid.New()
 			_, err = fn(context.Background(), testPool, filter)
 		}

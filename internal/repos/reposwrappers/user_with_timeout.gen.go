@@ -58,43 +58,43 @@ func (_d UserWithTimeout) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string
 }
 
 // ByEmail implements repos.User
-func (_d UserWithTimeout) ByEmail(ctx context.Context, d db.DBTX, email string) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByEmailTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByEmailTimeout)
 		defer cancelFunc()
 	}
-	return _d.User.ByEmail(ctx, d, email)
+	return _d.User.ByEmail(ctx, d, email, opts...)
 }
 
 // ByExternalID implements repos.User
-func (_d UserWithTimeout) ByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByExternalIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByExternalIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.User.ByExternalID(ctx, d, extID)
+	return _d.User.ByExternalID(ctx, d, extID, opts...)
 }
 
 // ByID implements repos.User
-func (_d UserWithTimeout) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.User.ByID(ctx, d, id)
+	return _d.User.ByID(ctx, d, id, opts...)
 }
 
 // ByUsername implements repos.User
-func (_d UserWithTimeout) ByUsername(ctx context.Context, d db.DBTX, username string) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByUsernameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByUsernameTimeout)
 		defer cancelFunc()
 	}
-	return _d.User.ByUsername(ctx, d, username)
+	return _d.User.ByUsername(ctx, d, username, opts...)
 }
 
 // Create implements repos.User

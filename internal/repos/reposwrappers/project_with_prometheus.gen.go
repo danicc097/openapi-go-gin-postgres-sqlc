@@ -40,7 +40,7 @@ func NewProjectWithPrometheus(base repos.Project, instanceName string) ProjectWi
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (pp1 *db.Project, err error) {
+func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -50,11 +50,11 @@ func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (pp
 
 		projectDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByID(ctx, d, id)
+	return _d.base.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name models.Project) (pp1 *db.Project, err error) {
+func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -64,5 +64,5 @@ func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name mode
 
 		projectDurationSummaryVec.WithLabelValues(_d.instanceName, "ByName", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByName(ctx, d, name)
+	return _d.base.ByName(ctx, d, name, opts...)
 }

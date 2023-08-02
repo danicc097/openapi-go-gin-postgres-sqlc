@@ -15,6 +15,8 @@ type DemoTwoWorkItem struct {
 	logger        *zap.SugaredLogger
 	demotwowiRepo repos.DemoTwoWorkItem
 	wiRepo        repos.WorkItem
+	userRepo      repos.User
+	wiSvc         *WorkItem
 }
 
 type DemoTwoWorkItemCreateParams struct {
@@ -24,11 +26,13 @@ type DemoTwoWorkItemCreateParams struct {
 }
 
 // NewDemoTwoWorkItem returns a new DemoTwoWorkItem service.
-func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkItem, wiRepo repos.WorkItem) *DemoTwoWorkItem {
+func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkItem, wiRepo repos.WorkItem, userRepo repos.User, wiSvc *WorkItem) *DemoTwoWorkItem {
 	return &DemoTwoWorkItem{
 		logger:        logger,
 		demotwowiRepo: demowiRepo,
 		wiRepo:        wiRepo,
+		userRepo:      userRepo,
+		wiSvc:         wiSvc,
 	}
 }
 
@@ -67,19 +71,10 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 	// 	}
 	// }
 
-	// for _, m := range params.Members {
-	// 	err := w.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
-	// 		AssignedUser: m.UserID,
-	// 		WorkItemID:   demoWi.WorkItemID,
-	// 		Role:         m.Role,
-	// 	})
-	// 	var ierr *internal.Error
-	// 	if err != nil {
-	// 		if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-	// 			return nil, fmt.Errorf("a.AssignMember: %w", err)
-	// 		}
-	// 	}
-	// }
+	err = w.wiSvc.AssignWorkItemMembers(ctx, d, demoWi, params.Members)
+	if err != nil {
+		return nil, fmt.Errorf("could not assign members: %w", err)
+	}
 
 	// TODO rest response with non pointer required joins as usual, so that it is always up to date
 	// (else tests - with response validation - will fail)

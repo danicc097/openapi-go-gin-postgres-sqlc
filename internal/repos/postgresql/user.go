@@ -69,8 +69,8 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 	return user, nil
 }
 
-func (u *User) ByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error) {
-	user, err := db.UserByExternalID(ctx, d, extID)
+func (u *User) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (*db.User, error) {
+	user, err := db.UserByExternalID(ctx, d, extID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
 	}
@@ -78,8 +78,8 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.U
 	return user, nil
 }
 
-func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
-	user, err := db.UserByEmail(ctx, d, email)
+func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (*db.User, error) {
+	user, err := db.UserByEmail(ctx, d, email, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
 	}
@@ -87,8 +87,8 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, 
 	return user, nil
 }
 
-func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
-	user, err := db.UserByUsername(ctx, d, username)
+func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (*db.User, error) {
+	user, err := db.UserByUsername(ctx, d, username, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
 	}
@@ -96,8 +96,8 @@ func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.
 	return user, nil
 }
 
-func (u *User) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
-	user, err := db.UserByUserID(ctx, d, id)
+func (u *User) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (*db.User, error) {
+	user, err := db.UserByUserID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
 	}

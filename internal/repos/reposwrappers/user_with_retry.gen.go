@@ -49,8 +49,8 @@ func (_d UserWithRetry) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) 
 }
 
 // ByEmail implements repos.User
-func (_d UserWithRetry) ByEmail(ctx context.Context, d db.DBTX, email string) (up1 *db.User, err error) {
-	up1, err = _d.User.ByEmail(ctx, d, email)
+func (_d UserWithRetry) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+	up1, err = _d.User.ByEmail(ctx, d, email, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -62,14 +62,14 @@ func (_d UserWithRetry) ByEmail(ctx context.Context, d db.DBTX, email string) (u
 			return
 		case <-_ticker.C:
 		}
-		up1, err = _d.User.ByEmail(ctx, d, email)
+		up1, err = _d.User.ByEmail(ctx, d, email, opts...)
 	}
 	return
 }
 
 // ByExternalID implements repos.User
-func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
-	up1, err = _d.User.ByExternalID(ctx, d, extID)
+func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+	up1, err = _d.User.ByExternalID(ctx, d, extID, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -81,14 +81,14 @@ func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID strin
 			return
 		case <-_ticker.C:
 		}
-		up1, err = _d.User.ByExternalID(ctx, d, extID)
+		up1, err = _d.User.ByExternalID(ctx, d, extID, opts...)
 	}
 	return
 }
 
 // ByID implements repos.User
-func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
-	up1, err = _d.User.ByID(ctx, d, id)
+func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+	up1, err = _d.User.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -100,14 +100,14 @@ func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 
 			return
 		case <-_ticker.C:
 		}
-		up1, err = _d.User.ByID(ctx, d, id)
+		up1, err = _d.User.ByID(ctx, d, id, opts...)
 	}
 	return
 }
 
 // ByUsername implements repos.User
-func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username string) (up1 *db.User, err error) {
-	up1, err = _d.User.ByUsername(ctx, d, username)
+func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+	up1, err = _d.User.ByUsername(ctx, d, username, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -119,7 +119,7 @@ func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username stri
 			return
 		case <-_ticker.C:
 		}
-		up1, err = _d.User.ByUsername(ctx, d, username)
+		up1, err = _d.User.ByUsername(ctx, d, username, opts...)
 	}
 	return
 }

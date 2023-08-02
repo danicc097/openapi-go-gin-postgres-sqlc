@@ -25,7 +25,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 
 	type argsString struct {
 		filter models.Project
-		fn     func(context.Context, db.DBTX, models.Project) (*db.Project, error)
+		fn     func(context.Context, db.DBTX, models.Project, ...db.ProjectSelectConfigOption) (*db.Project, error)
 	}
 
 	testString := []struct {
@@ -69,7 +69,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.Project, error)
+		fn     func(context.Context, db.DBTX, int, ...db.ProjectSelectConfigOption) (*db.Project, error)
 	}
 	testsInt := []struct {
 		name string

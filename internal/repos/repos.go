@@ -67,6 +67,11 @@ type DemoTwoWorkItemCreateParams struct {
 	Base           db.WorkItemCreateParams        `json:"base"           required:"true"`
 }
 
+/**
+ *
+ * TODO: all By's should accept db opts
+ */
+
 // WorkItem defines the datastore/repository handling retrieving WorkItem records.
 type WorkItem interface {
 	// ByID returns a generic WorkItem by default.
@@ -104,10 +109,10 @@ type Notification interface {
 
 // User defines the datastore/repository handling persisting User records.
 type User interface {
-	ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
-	ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error)
-	ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error)
-	ByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error)
+	ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (*db.User, error)
+	ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (*db.User, error)
+	ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (*db.User, error)
+	ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (*db.User, error)
 	ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
 	Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (*db.User, error)
 	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (*db.User, error)
@@ -120,8 +125,8 @@ type User interface {
 // Projects are manually created on demand.
 // NOTE: Read-only. Managed via migrations.
 type Project interface {
-	ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error)
-	ByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error)
+	ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
 }
 
 // Team defines the datastore/repository handling persisting Team records.
