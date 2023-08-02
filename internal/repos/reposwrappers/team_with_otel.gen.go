@@ -36,14 +36,15 @@ func NewTeamWithTracing(base repos.Team, instance string, spanDecorator ...func(
 }
 
 // ByID implements repos.Team
-func (_d TeamWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+func (_d TeamWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
+				"ctx":  ctx,
+				"d":    d,
+				"id":   id,
+				"opts": opts}, map[string]interface{}{
 				"tp1": tp1,
 				"err": err})
 		} else if err != nil {
@@ -56,11 +57,11 @@ func (_d TeamWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.
 
 		_span.End()
 	}()
-	return _d.Team.ByID(ctx, d, id)
+	return _d.Team.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.Team
-func (_d TeamWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
+func (_d TeamWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -68,7 +69,8 @@ func (_d TeamWithTracing) ByName(ctx context.Context, d db.DBTX, name string, pr
 				"ctx":       ctx,
 				"d":         d,
 				"name":      name,
-				"projectID": projectID}, map[string]interface{}{
+				"projectID": projectID,
+				"opts":      opts}, map[string]interface{}{
 				"tp1": tp1,
 				"err": err})
 		} else if err != nil {
@@ -81,7 +83,7 @@ func (_d TeamWithTracing) ByName(ctx context.Context, d db.DBTX, name string, pr
 
 		_span.End()
 	}()
-	return _d.Team.ByName(ctx, d, name, projectID)
+	return _d.Team.ByName(ctx, d, name, projectID, opts...)
 }
 
 // Create implements repos.Team

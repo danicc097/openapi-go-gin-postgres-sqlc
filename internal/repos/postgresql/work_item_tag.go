@@ -47,8 +47,8 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params *d
 	return workItemTag, err
 }
 
-func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error) {
-	workItemTag, err := db.WorkItemTagByNameProjectID(ctx, d, name, projectID)
+func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error) {
+	workItemTag, err := db.WorkItemTagByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get work item tag: %w", parseErrorDetail(err))
 	}
@@ -56,8 +56,8 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 	return workItemTag, nil
 }
 
-func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
-	workItemTag, err := db.WorkItemTagByWorkItemTagID(ctx, d, id)
+func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error) {
+	workItemTag, err := db.WorkItemTagByWorkItemTagID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get work item tag: %w", parseErrorDetail(err))
 	}

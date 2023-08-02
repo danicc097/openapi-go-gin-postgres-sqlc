@@ -39,7 +39,7 @@ func NewWorkItemTypeWithPrometheus(base repos.WorkItemType, instanceName string)
 }
 
 // ByID implements repos.WorkItemType
-func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -49,11 +49,11 @@ func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int
 
 		workitemtypeDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByID(ctx, d, id)
+	return _d.base.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.WorkItemType
-func (_d WorkItemTypeWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -63,5 +63,5 @@ func (_d WorkItemTypeWithPrometheus) ByName(ctx context.Context, d db.DBTX, name
 
 		workitemtypeDurationSummaryVec.WithLabelValues(_d.instanceName, "ByName", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByName(ctx, d, name, projectID)
+	return _d.base.ByName(ctx, d, name, projectID, opts...)
 }

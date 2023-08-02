@@ -36,14 +36,15 @@ func NewActivityWithTracing(base repos.Activity, instance string, spanDecorator 
 }
 
 // ByID implements repos.Activity
-func (_d ActivityWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
+				"ctx":  ctx,
+				"d":    d,
+				"id":   id,
+				"opts": opts}, map[string]interface{}{
 				"ap1": ap1,
 				"err": err})
 		} else if err != nil {
@@ -56,11 +57,11 @@ func (_d ActivityWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (ap1 
 
 		_span.End()
 	}()
-	return _d.Activity.ByID(ctx, d, id)
+	return _d.Activity.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.Activity
-func (_d ActivityWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -68,7 +69,8 @@ func (_d ActivityWithTracing) ByName(ctx context.Context, d db.DBTX, name string
 				"ctx":       ctx,
 				"d":         d,
 				"name":      name,
-				"projectID": projectID}, map[string]interface{}{
+				"projectID": projectID,
+				"opts":      opts}, map[string]interface{}{
 				"ap1": ap1,
 				"err": err})
 		} else if err != nil {
@@ -81,18 +83,19 @@ func (_d ActivityWithTracing) ByName(ctx context.Context, d db.DBTX, name string
 
 		_span.End()
 	}()
-	return _d.Activity.ByName(ctx, d, name, projectID)
+	return _d.Activity.ByName(ctx, d, name, projectID, opts...)
 }
 
 // ByProjectID implements repos.Activity
-func (_d ActivityWithTracing) ByProjectID(ctx context.Context, d db.DBTX, projectID int) (aa1 []db.Activity, err error) {
+func (_d ActivityWithTracing) ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByProjectID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":       ctx,
 				"d":         d,
-				"projectID": projectID}, map[string]interface{}{
+				"projectID": projectID,
+				"opts":      opts}, map[string]interface{}{
 				"aa1": aa1,
 				"err": err})
 		} else if err != nil {
@@ -105,7 +108,7 @@ func (_d ActivityWithTracing) ByProjectID(ctx context.Context, d db.DBTX, projec
 
 		_span.End()
 	}()
-	return _d.Activity.ByProjectID(ctx, d, projectID)
+	return _d.Activity.ByProjectID(ctx, d, projectID, opts...)
 }
 
 // Create implements repos.Activity

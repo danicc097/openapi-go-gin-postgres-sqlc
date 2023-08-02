@@ -18,7 +18,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.KanbanStep, error)
+		fn     func(context.Context, db.DBTX, int, ...db.KanbanStepSelectConfigOption) (*db.KanbanStep, error)
 	}
 	testsInt := []struct {
 		name string
@@ -61,7 +61,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 
 	type argsIntNotUnique struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) ([]db.KanbanStep, error)
+		fn     func(context.Context, db.DBTX, int, ...db.KanbanStepSelectConfigOption) ([]db.KanbanStep, error)
 	}
 	testsIntNotUnique := []struct {
 		name string

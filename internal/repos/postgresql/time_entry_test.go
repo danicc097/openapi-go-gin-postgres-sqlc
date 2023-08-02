@@ -36,7 +36,7 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.TimeEntry, error)
+		fn     func(context.Context, db.DBTX, int, ...db.TimeEntrySelectConfigOption) (*db.TimeEntry, error)
 	}
 	testsInt64 := []struct {
 		name string

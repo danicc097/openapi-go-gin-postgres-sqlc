@@ -33,7 +33,7 @@ func TestWorkItemTag_ByIndexedQueries(t *testing.T) {
 	type argsString struct {
 		filter    string
 		projectID int
-		fn        func(context.Context, db.DBTX, string, int) (*db.WorkItemTag, error)
+		fn        func(context.Context, db.DBTX, string, int, ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error)
 	}
 
 	testString := []struct {
@@ -78,7 +78,7 @@ func TestWorkItemTag_ByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.WorkItemTag, error)
+		fn     func(context.Context, db.DBTX, int, ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error)
 	}
 	testsInt := []struct {
 		name string

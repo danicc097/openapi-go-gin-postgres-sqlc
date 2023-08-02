@@ -37,13 +37,13 @@ func NewWorkItemCommentWithTimeout(base repos.WorkItemComment, config WorkItemCo
 }
 
 // ByID implements repos.WorkItemComment
-func (_d WorkItemCommentWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.WorkItemComment.ByID(ctx, d, id)
+	return _d.WorkItemComment.ByID(ctx, d, id, opts...)
 }
 
 // Create implements repos.WorkItemComment

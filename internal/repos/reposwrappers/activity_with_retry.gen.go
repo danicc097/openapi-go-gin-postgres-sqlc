@@ -29,8 +29,8 @@ func NewActivityWithRetry(base repos.Activity, retryCount int, retryInterval tim
 }
 
 // ByID implements repos.Activity
-func (_d ActivityWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (ap1 *db.Activity, err error) {
-	ap1, err = _d.Activity.ByID(ctx, d, id)
+func (_d ActivityWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+	ap1, err = _d.Activity.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -42,14 +42,14 @@ func (_d ActivityWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (ap1 *d
 			return
 		case <-_ticker.C:
 		}
-		ap1, err = _d.Activity.ByID(ctx, d, id)
+		ap1, err = _d.Activity.ByID(ctx, d, id, opts...)
 	}
 	return
 }
 
 // ByName implements repos.Activity
-func (_d ActivityWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (ap1 *db.Activity, err error) {
-	ap1, err = _d.Activity.ByName(ctx, d, name, projectID)
+func (_d ActivityWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+	ap1, err = _d.Activity.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -61,14 +61,14 @@ func (_d ActivityWithRetry) ByName(ctx context.Context, d db.DBTX, name string, 
 			return
 		case <-_ticker.C:
 		}
-		ap1, err = _d.Activity.ByName(ctx, d, name, projectID)
+		ap1, err = _d.Activity.ByName(ctx, d, name, projectID, opts...)
 	}
 	return
 }
 
 // ByProjectID implements repos.Activity
-func (_d ActivityWithRetry) ByProjectID(ctx context.Context, d db.DBTX, projectID int) (aa1 []db.Activity, err error) {
-	aa1, err = _d.Activity.ByProjectID(ctx, d, projectID)
+func (_d ActivityWithRetry) ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
+	aa1, err = _d.Activity.ByProjectID(ctx, d, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -80,7 +80,7 @@ func (_d ActivityWithRetry) ByProjectID(ctx context.Context, d db.DBTX, projectI
 			return
 		case <-_ticker.C:
 		}
-		aa1, err = _d.Activity.ByProjectID(ctx, d, projectID)
+		aa1, err = _d.Activity.ByProjectID(ctx, d, projectID, opts...)
 	}
 	return
 }

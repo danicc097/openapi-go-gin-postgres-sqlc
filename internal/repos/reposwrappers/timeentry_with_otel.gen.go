@@ -36,14 +36,15 @@ func NewTimeEntryWithTracing(base repos.TimeEntry, instance string, spanDecorato
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
+				"ctx":  ctx,
+				"d":    d,
+				"id":   id,
+				"opts": opts}, map[string]interface{}{
 				"tp1": tp1,
 				"err": err})
 		} else if err != nil {
@@ -56,7 +57,7 @@ func (_d TimeEntryWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (tp1
 
 		_span.End()
 	}()
-	return _d.TimeEntry.ByID(ctx, d, id)
+	return _d.TimeEntry.ByID(ctx, d, id, opts...)
 }
 
 // Create implements repos.TimeEntry

@@ -29,8 +29,8 @@ func NewTimeEntryWithRetry(base repos.TimeEntry, retryCount int, retryInterval t
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
-	tp1, err = _d.TimeEntry.ByID(ctx, d, id)
+func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
+	tp1, err = _d.TimeEntry.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -42,7 +42,7 @@ func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *
 			return
 		case <-_ticker.C:
 		}
-		tp1, err = _d.TimeEntry.ByID(ctx, d, id)
+		tp1, err = _d.TimeEntry.ByID(ctx, d, id, opts...)
 	}
 	return
 }

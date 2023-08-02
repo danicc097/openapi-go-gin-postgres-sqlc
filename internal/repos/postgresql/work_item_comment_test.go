@@ -37,7 +37,7 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.WorkItemComment, error)
+		fn     func(context.Context, db.DBTX, int, ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error)
 	}
 	testsInt := []struct {
 		name string

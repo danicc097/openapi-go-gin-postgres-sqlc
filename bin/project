@@ -182,7 +182,7 @@ x.gen.pregen() {
 
     echo "Running generation"
 
-    go build -o $BUILD_DIR/codegen cmd/codegen/main.go
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$IGNORE_BUILD_ERRORS" ]]
 
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
@@ -554,7 +554,7 @@ x.gen.client-server() {
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
-    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go # templates are embedded, required rebuild
+    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
 
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
@@ -733,7 +733,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet oapi-codegen codegen; do
+    for cmd in jet oapi-codegen codegen gen-schema; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -1552,7 +1552,7 @@ update_spec_with_structs() {
   # always compile and run since we need new PublicStructs that were just changed
   go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
-    >$gen_schema_spec
+    >$gen_schema_spec || [[ -n "$IGNORE_BUILD_ERRORS" ]]
 
   # prevent possible overriding if name clashes with generated schemas from structs
   # skip_schemas=("Project")
@@ -1768,6 +1768,12 @@ while [[ "$#" -gt 0 ]]; do
     COMMANDS=("$CMD")
     usage
     exit
+    ;;
+  --x-ignore-build-errors)
+    # Proceeds with code generation regardless of tool rebuild errors.
+    # Use in case of compilation errors that depend on generated code.
+    # A clean gen run is required afterwards.
+    export IGNORE_BUILD_ERRORS=1
     ;;
   --x-force-regen)
     # Removes generation cache, forcing a new run.

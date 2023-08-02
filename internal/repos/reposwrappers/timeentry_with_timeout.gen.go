@@ -37,13 +37,13 @@ func NewTimeEntryWithTimeout(base repos.TimeEntry, config TimeEntryWithTimeoutCo
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.TimeEntry.ByID(ctx, d, id)
+	return _d.TimeEntry.ByID(ctx, d, id, opts...)
 }
 
 // Create implements repos.TimeEntry

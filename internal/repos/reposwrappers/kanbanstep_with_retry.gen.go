@@ -29,8 +29,8 @@ func NewKanbanStepWithRetry(base repos.KanbanStep, retryCount int, retryInterval
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (kp1 *db.KanbanStep, err error) {
-	kp1, err = _d.KanbanStep.ByID(ctx, d, id)
+func (_d KanbanStepWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
+	kp1, err = _d.KanbanStep.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -42,14 +42,14 @@ func (_d KanbanStepWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (kp1 
 			return
 		case <-_ticker.C:
 		}
-		kp1, err = _d.KanbanStep.ByID(ctx, d, id)
+		kp1, err = _d.KanbanStep.ByID(ctx, d, id, opts...)
 	}
 	return
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID int) (ka1 []db.KanbanStep, err error) {
-	ka1, err = _d.KanbanStep.ByProject(ctx, d, projectID)
+func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID int, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
+	ka1, err = _d.KanbanStep.ByProject(ctx, d, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -61,7 +61,7 @@ func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d db.DBTX, projectI
 			return
 		case <-_ticker.C:
 		}
-		ka1, err = _d.KanbanStep.ByProject(ctx, d, projectID)
+		ka1, err = _d.KanbanStep.ByProject(ctx, d, projectID, opts...)
 	}
 	return
 }

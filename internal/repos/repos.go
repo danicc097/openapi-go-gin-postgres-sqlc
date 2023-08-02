@@ -131,8 +131,8 @@ type Project interface {
 
 // Team defines the datastore/repository handling persisting Team records.
 type Team interface {
-	ByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
-	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (*db.Team, error)
+	ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (*db.Team, error)
 	Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error)
 	Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpdateParams) (*db.Team, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
@@ -141,21 +141,21 @@ type Team interface {
 // KanbanStep defines the datastore/repository handling persisting KanbanStep records.
 // NOTE: Read-only. Managed via migrations.
 type KanbanStep interface {
-	ByID(ctx context.Context, d db.DBTX, id int) (*db.KanbanStep, error)
-	ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.KanbanStep, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.KanbanStepSelectConfigOption) (*db.KanbanStep, error)
+	ByProject(ctx context.Context, d db.DBTX, projectID int, opts ...db.KanbanStepSelectConfigOption) ([]db.KanbanStep, error)
 }
 
 // WorkItemType defines the datastore/repository handling persisting WorkItemType records.
 // NOTE: Read-only. Managed via migrations.
 type WorkItemType interface {
-	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error)
 	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemType, error)
-	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error)
+	ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error)
 }
 
 // WorkItemComment defines the datastore/repository handling persisting WorkItemComment records.
 type WorkItemComment interface {
-	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemComment, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error)
 	Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
 	Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemComment, error)
@@ -163,9 +163,9 @@ type WorkItemComment interface {
 
 // WorkItemTag defines the datastore/repository handling persisting WorkItemTag records.
 type WorkItemTag interface {
-	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error)
 	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemTag, error)
-	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error)
+	ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error)
 	Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error)
 	Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
@@ -173,9 +173,9 @@ type WorkItemTag interface {
 
 // Activity defines the datastore/repository handling persisting Activity records.
 type Activity interface {
-	ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
-	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
-	ByProjectID(ctx context.Context, d db.DBTX, projectID int) ([]db.Activity, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (*db.Activity, error)
+	ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (*db.Activity, error)
+	ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) ([]db.Activity, error)
 	Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error)
 	Update(ctx context.Context, d db.DBTX, id int, params *db.ActivityUpdateParams) (*db.Activity, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
@@ -183,7 +183,7 @@ type Activity interface {
 
 // TimeEntry defines the datastore/repository handling persisting TimeEntry records.
 type TimeEntry interface {
-	ByID(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error)
+	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TimeEntrySelectConfigOption) (*db.TimeEntry, error)
 	Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error)
 	Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error)

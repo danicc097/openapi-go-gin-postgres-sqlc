@@ -36,14 +36,15 @@ func NewWorkItemTagWithTracing(base repos.WorkItemTag, instance string, spanDeco
 }
 
 // ByID implements repos.WorkItemTag
-func (_d WorkItemTagWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
+				"ctx":  ctx,
+				"d":    d,
+				"id":   id,
+				"opts": opts}, map[string]interface{}{
 				"wp1": wp1,
 				"err": err})
 		} else if err != nil {
@@ -56,11 +57,11 @@ func (_d WorkItemTagWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (w
 
 		_span.End()
 	}()
-	return _d.WorkItemTag.ByID(ctx, d, id)
+	return _d.WorkItemTag.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.WorkItemTag
-func (_d WorkItemTagWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -68,7 +69,8 @@ func (_d WorkItemTagWithTracing) ByName(ctx context.Context, d db.DBTX, name str
 				"ctx":       ctx,
 				"d":         d,
 				"name":      name,
-				"projectID": projectID}, map[string]interface{}{
+				"projectID": projectID,
+				"opts":      opts}, map[string]interface{}{
 				"wp1": wp1,
 				"err": err})
 		} else if err != nil {
@@ -81,7 +83,7 @@ func (_d WorkItemTagWithTracing) ByName(ctx context.Context, d db.DBTX, name str
 
 		_span.End()
 	}()
-	return _d.WorkItemTag.ByName(ctx, d, name, projectID)
+	return _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
 }
 
 // Create implements repos.WorkItemTag

@@ -41,33 +41,33 @@ func NewActivityWithTimeout(base repos.Activity, config ActivityWithTimeoutConfi
 }
 
 // ByID implements repos.Activity
-func (_d ActivityWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.Activity.ByID(ctx, d, id)
+	return _d.Activity.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.Activity
-func (_d ActivityWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
 		defer cancelFunc()
 	}
-	return _d.Activity.ByName(ctx, d, name, projectID)
+	return _d.Activity.ByName(ctx, d, name, projectID, opts...)
 }
 
 // ByProjectID implements repos.Activity
-func (_d ActivityWithTimeout) ByProjectID(ctx context.Context, d db.DBTX, projectID int) (aa1 []db.Activity, err error) {
+func (_d ActivityWithTimeout) ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByProjectIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByProjectIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.Activity.ByProjectID(ctx, d, projectID)
+	return _d.Activity.ByProjectID(ctx, d, projectID, opts...)
 }
 
 // Create implements repos.Activity

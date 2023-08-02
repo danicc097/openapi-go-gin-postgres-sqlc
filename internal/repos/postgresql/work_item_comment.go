@@ -47,8 +47,8 @@ func (wit *WorkItemComment) Update(ctx context.Context, d db.DBTX, id int, param
 	return workItemComment, err
 }
 
-func (wit *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemComment, error) {
-	workItemComment, err := db.WorkItemCommentByWorkItemCommentID(ctx, d, id)
+func (wit *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error) {
+	workItemComment, err := db.WorkItemCommentByWorkItemCommentID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemComment: %w", parseErrorDetail(err))
 	}

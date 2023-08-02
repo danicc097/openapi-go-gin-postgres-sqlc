@@ -33,7 +33,7 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 	type argsString struct {
 		filter    string
 		projectID int
-		fn        func(context.Context, db.DBTX, string, int) (*db.Team, error)
+		fn        func(context.Context, db.DBTX, string, int, ...db.TeamSelectConfigOption) (*db.Team, error)
 	}
 
 	testString := []struct {
@@ -78,7 +78,7 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.Team, error)
+		fn     func(context.Context, db.DBTX, int, ...db.TeamSelectConfigOption) (*db.Team, error)
 	}
 	testsInt := []struct {
 		name string

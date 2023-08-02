@@ -39,7 +39,7 @@ func NewKanbanStepWithPrometheus(base repos.KanbanStep, instanceName string) Kan
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (kp1 *db.KanbanStep, err error) {
+func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -49,11 +49,11 @@ func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) 
 
 		kanbanstepDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByID(ctx, d, id)
+	return _d.base.ByID(ctx, d, id, opts...)
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID int) (ka1 []db.KanbanStep, err error) {
+func (_d KanbanStepWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID int, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -63,5 +63,5 @@ func (_d KanbanStepWithPrometheus) ByProject(ctx context.Context, d db.DBTX, pro
 
 		kanbanstepDurationSummaryVec.WithLabelValues(_d.instanceName, "ByProject", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByProject(ctx, d, projectID)
+	return _d.base.ByProject(ctx, d, projectID, opts...)
 }
