@@ -121,7 +121,7 @@ func TestUser_SoftDelete(t *testing.T) {
 	}
 }
 
-type testCase struct {
+type filterTestCase struct {
 	name string
 	args args
 }
@@ -138,7 +138,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
-	testCases := []testCase{
+	testCases := []filterTestCase{
 		{
 			name: "external_id",
 			args: args{
@@ -170,17 +170,19 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-		runGenericFilterTests(t, tc, user)
+		runGenericUniqueFilterTests(t, tc, user, "UserID")
 	}
 }
 
-func runGenericFilterTests[T any](t *testing.T, tc testCase, user T) {
+// runGenericUniqueFilterTests tests db filter functions for an entity by ensuring the struct field with name
+// identifierField is the same.
+// nolint: thelper
+func runGenericUniqueFilterTests[T any](t *testing.T, tc filterTestCase, entity T, identifierField string) {
 	t.Run(tc.name, func(t *testing.T) {
 		t.Run("rows_if_exists", func(t *testing.T) {
 			t.Parallel()
 
-			var foundUser T
+			var foundEntity T
 			var err error
 
 			fn := tc.args.fn
@@ -196,12 +198,12 @@ func runGenericFilterTests[T any](t *testing.T, tc testCase, user T) {
 			if result[1].Interface() != nil {
 				err = result[1].Interface().(error)
 			} else {
-				foundUser = result[0].Interface().(T)
+				foundEntity = result[0].Interface().(T)
 			}
 			require.NoError(t, err)
 
-			gotIDField := reflect.ValueOf(foundUser).Elem().FieldByName("UserID")
-			wantIDField := reflect.ValueOf(user).Elem().FieldByName("UserID")
+			gotIDField := reflect.ValueOf(foundEntity).Elem().FieldByName(identifierField)
+			wantIDField := reflect.ValueOf(entity).Elem().FieldByName(identifierField)
 			assert.Equal(t, gotIDField.Interface(), wantIDField.Interface())
 		})
 
