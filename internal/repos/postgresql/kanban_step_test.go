@@ -2,6 +2,7 @@ package postgresql_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -84,6 +85,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
+			fmt.Printf("foundKanbanSteps: %v\n", foundKanbanSteps)
 			found := false
 			for _, ks := range foundKanbanSteps {
 				if ks.KanbanStepID == internal.DemoTwoKanbanStepsIDByName[models.DemoTwoKanbanStepsReceived] {
@@ -91,6 +93,11 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 					break
 				}
 			}
+
+			// TODO: also ensure len(DemoTwoKanbanStepsIDByName) == len(foundKanbanSteps)
+			// when refactoring to use reflection ia filter_queries_test, will need
+			// comparerFunc argument and then assert.True on that instead.
+			// it will have 2 reflect.Values (got and want) as params
 			assert.True(t, found)
 		})
 
