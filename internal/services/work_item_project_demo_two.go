@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
@@ -55,32 +53,33 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	for _, id := range params.TagIDs {
-		err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
-			WorkItemTagID: id,
-			WorkItemID:    demoWi.WorkItemID,
-		})
-		var ierr *internal.Error
-		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("db.CreateWorkItemWorkItemTag: %w", err)
-			}
-		}
-	}
+	// TODO: abstract away since these are generic for all projects
+	// for _, id := range params.TagIDs {
+	// 	err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
+	// 		WorkItemTagID: id,
+	// 		WorkItemID:    demoWi.WorkItemID,
+	// 	})
+	// 	var ierr *internal.Error
+	// 	if err != nil {
+	// 		if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
+	// 			return nil, fmt.Errorf("db.CreateWorkItemWorkItemTag: %w", err)
+	// 		}
+	// 	}
+	// }
 
-	for _, m := range params.Members {
-		err := w.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
-			AssignedUser: m.UserID,
-			WorkItemID:   demoWi.WorkItemID,
-			Role:         m.Role,
-		})
-		var ierr *internal.Error
-		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("a.AssignMember: %w", err)
-			}
-		}
-	}
+	// for _, m := range params.Members {
+	// 	err := w.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
+	// 		AssignedUser: m.UserID,
+	// 		WorkItemID:   demoWi.WorkItemID,
+	// 		Role:         m.Role,
+	// 	})
+	// 	var ierr *internal.Error
+	// 	if err != nil {
+	// 		if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
+	// 			return nil, fmt.Errorf("a.AssignMember: %w", err)
+	// 		}
+	// 	}
+	// }
 
 	// TODO rest response with non pointer required joins as usual, so that it is always up to date
 	// (else tests - with response validation - will fail)

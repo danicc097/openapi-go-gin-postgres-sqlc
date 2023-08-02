@@ -67,10 +67,9 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		})
 		var ierr *internal.Error
 		if err != nil {
-			if !errors.As(err, &ierr) {
-				w.logger.Infof("ierr: %v\n", ierr)
-			}
 			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
+				w.logger.Infof("skipping already assigned tag: %s\n", id)
+
 				continue
 			}
 
