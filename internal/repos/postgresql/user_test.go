@@ -198,7 +198,6 @@ func runGenericFilterTests[T any](t *testing.T, tc testCase, user T) {
 			} else {
 				foundUser = result[0].Interface().(T)
 			}
-
 			require.NoError(t, err)
 
 			gotIDField := reflect.ValueOf(foundUser).Elem().FieldByName("UserID")
@@ -238,7 +237,7 @@ func buildArgs(filter reflect.Value) ([]reflect.Value, error) {
 	case reflect.String, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		args = append(args, reflect.Zero(filter.Type()))
 	case reflect.Array:
-		if filter.Type().Elem() == reflect.TypeOf(uuid.UUID{}) {
+		if filter.Type() == reflect.TypeOf(uuid.UUID{}) {
 			args = append(args, reflect.ValueOf(uuid.Nil))
 		}
 	case reflect.Slice: // assume testing with multiple parameters
