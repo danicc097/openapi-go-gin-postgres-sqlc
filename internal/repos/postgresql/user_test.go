@@ -2,6 +2,7 @@ package postgresql_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -123,10 +124,9 @@ type testCase struct {
 	args args
 }
 
-// no type parameter to allow direct assertion.
 type args struct {
 	filter any
-	fn     any
+	fn     reflect.Value
 }
 
 func TestUser_ByIndexedQueries(t *testing.T) {
@@ -141,28 +141,28 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 			name: "external_id",
 			args: args{
 				filter: user.ExternalID,
-				fn:     (userRepo.ByExternalID),
+				fn:     reflect.ValueOf(userRepo.ByExternalID),
 			},
 		},
 		{
 			name: "email",
 			args: args{
 				filter: user.Email,
-				fn:     (userRepo.ByEmail),
+				fn:     reflect.ValueOf(userRepo.ByEmail),
 			},
 		},
 		{
 			name: "username",
 			args: args{
 				filter: user.Username,
-				fn:     (userRepo.ByUsername),
+				fn:     reflect.ValueOf(userRepo.ByUsername),
 			},
 		},
 		{
 			name: "user_id",
 			args: args{
 				filter: user.UserID,
-				fn:     (userRepo.ByID),
+				fn:     reflect.ValueOf(userRepo.ByID),
 			},
 		},
 	}
@@ -173,7 +173,6 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	}
 }
 
-// runGenericFilterTests runs queries to find a unique item in db and expects no matches with an inexistent filter.
 func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
 	t.Run(tc.name, func(t *testing.T) {
 		t.Parallel()
@@ -181,20 +180,29 @@ func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
 		var foundUser *db.User
 		var err error
 
-		switch fn := tc.args.fn.(type) {
-		case func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error):
-			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(string))
-		case func(context.Context, db.DBTX, int, ...db.UserSelectConfigOption) (*db.User, error):
-			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(int))
-		case func(context.Context, db.DBTX, int64, ...db.UserSelectConfigOption) (*db.User, error):
-			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(int64))
-		case func(context.Context, db.DBTX, uuid.UUID, ...db.UserSelectConfigOption) (*db.User, error):
-			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(uuid.UUID))
+		fn := tc.args.fn
+		filter := reflect.ValueOf(tc.args.filter)
+
+		args := []reflect.Value{
+			reflect.ValueOf(context.Background()),
+			reflect.ValueOf(testPool),
+			filter,
 		}
+
+		result := fn.Call(args)
+
+		if result[1].Interface() != nil {
+			err = result[1].Interface().(error)
+		} else {
+			foundUser = result[0].Interface().(*db.User)
+		}
+
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
-		assert.Equal(t, foundUser.UserID, user.UserID)
+
+		userIDField := reflect.ValueOf(foundUser).Elem().FieldByName("UserID")
+		assert.Equal(t, userIDField.Interface(), reflect.ValueOf(user.UserID).Interface())
 	})
 
 	t.Run(tc.name+"__no_rows_if_does_not_exist", func(t *testing.T) {
@@ -203,21 +211,36 @@ func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
 		errContains := errNoRows
 
 		var err error
+		fn := tc.args.fn
+		filter := reflect.ValueOf(tc.args.filter)
 
-		switch fn := tc.args.fn.(type) {
-		case func(context.Context, db.DBTX, string, ...db.UserSelectConfigOption) (*db.User, error):
-			filter := "does not exist"
-			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, int, ...db.UserSelectConfigOption) (*db.User, error):
-			filter := 732745
-			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, int64, ...db.UserSelectConfigOption) (*db.User, error):
-			filter := int64(732745)
-			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, uuid.UUID, ...db.UserSelectConfigOption) (*db.User, error):
-			filter := uuid.New()
-			_, err = fn(context.Background(), testPool, filter)
+		var args []reflect.Value
+
+		switch filter.Type().Kind() {
+		case reflect.String, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			args = []reflect.Value{
+				reflect.ValueOf(context.Background()),
+				reflect.ValueOf(testPool),
+				reflect.Zero(filter.Type()),
+			}
+		case reflect.Array:
+			if filter.Type() == reflect.TypeOf(uuid.UUID{}) {
+				args = []reflect.Value{
+					reflect.ValueOf(context.Background()),
+					reflect.ValueOf(testPool),
+					reflect.ValueOf(uuid.Nil),
+				}
+			}
+		default:
+			t.Fatalf("unsupported filter type: %v", filter.Type())
 		}
+
+		result := fn.Call(args)
+
+		if result[1].Interface() != nil {
+			err = result[1].Interface().(error)
+		}
+
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
