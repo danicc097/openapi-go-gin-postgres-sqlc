@@ -34,6 +34,52 @@ func HasTaggedFields(i interface{}, tagName string) bool {
 	return found
 }
 
+// WalkFieldFn defines callback.
+type WalkFieldFn func(v reflect.Value, sf reflect.StructField, path []reflect.StructField)
+
+// WalkFieldsRecursively walks scalar and non-scalar fields of a struct recursively and calls user function on them.
+func WalkFieldsRecursively(v reflect.Value, f WalkFieldFn) {
+	walkFieldsRecursively(v, f, nil)
+}
+
+func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.StructField) {
+	if v.Kind() == 0 {
+		return
+	}
+
+	t := v.Type()
+
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+		v = v.Elem()
+	}
+
+	if t.Kind() != reflect.Struct {
+		return
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		var (
+			field    = t.Field(i)
+			fieldVal reflect.Value
+		)
+
+		if v.IsValid() {
+			fieldVal = v.Field(i)
+		} else {
+			fieldVal = reflect.Zero(field.Type)
+		}
+
+		if fieldVal.CanAddr() {
+			fieldVal = fieldVal.Addr()
+		}
+
+		f(fieldVal, field, path)
+
+		walkFieldsRecursively(fieldVal, f, append(path, field))
+	}
+}
+
 // WalkTaggedFieldFn defines callback.
 type WalkTaggedFieldFn func(v reflect.Value, sf reflect.StructField, tag string)
 
@@ -223,7 +269,7 @@ func JoinErrors(errs ...error) error {
 	}
 
 	if join != "" {
-		return errors.New(join[2:]) // nolint:goerr113
+		return errors.New(join[2:]) //nolint:goerr113
 	}
 
 	return nil
@@ -273,8 +319,9 @@ func PopulateFieldsFromTags(structPtr interface{}, fieldTag reflect.StructTag) e
 // FindTaggedName returns tagged name of an entity field.
 //
 // Entity field is defined by pointer to owner structure and pointer to field in that structure.
-//   entity := MyEntity{}
-//   name, found := sm.FindTaggedName(&entity, &entity.UpdatedAt, "db")
+//
+//	entity := MyEntity{}
+//	name, found := sm.FindTaggedName(&entity, &entity.UpdatedAt, "db")
 func FindTaggedName(structPtr, fieldPtr interface{}, tagName string) (string, error) {
 	if structPtr == nil || fieldPtr == nil {
 		return "", ErrMissingStructOrField
