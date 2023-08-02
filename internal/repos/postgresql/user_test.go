@@ -2,6 +2,7 @@ package postgresql_test
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUser_Update(t *testing.T) {
@@ -173,79 +175,86 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	}
 }
 
-func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
+func runGenericFilterTests[T any](t *testing.T, tc testCase, user T) {
 	t.Run(tc.name, func(t *testing.T) {
-		t.Parallel()
+		t.Run("rows_if_exists", func(t *testing.T) {
+			t.Parallel()
 
-		var foundUser *db.User
-		var err error
+			var foundUser T
+			var err error
 
-		fn := tc.args.fn
-		filter := reflect.ValueOf(tc.args.filter)
+			fn := tc.args.fn
 
-		args := []reflect.Value{
-			reflect.ValueOf(context.Background()),
-			reflect.ValueOf(testPool),
-			filter,
-		}
-
-		result := fn.Call(args)
-
-		if result[1].Interface() != nil {
-			err = result[1].Interface().(error)
-		} else {
-			foundUser = result[0].Interface().(*db.User)
-		}
-
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
-
-		userIDField := reflect.ValueOf(foundUser).Elem().FieldByName("UserID")
-		assert.Equal(t, userIDField.Interface(), reflect.ValueOf(user.UserID).Interface())
-	})
-
-	t.Run(tc.name+"__no_rows_if_does_not_exist", func(t *testing.T) {
-		t.Parallel()
-
-		errContains := errNoRows
-
-		var err error
-		fn := tc.args.fn
-		filter := reflect.ValueOf(tc.args.filter)
-
-		var args []reflect.Value
-
-		switch filter.Type().Kind() {
-		case reflect.String, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			args = []reflect.Value{
+			args := []reflect.Value{
 				reflect.ValueOf(context.Background()),
 				reflect.ValueOf(testPool),
-				reflect.Zero(filter.Type()),
+				reflect.ValueOf(tc.args.filter),
 			}
-		case reflect.Array:
-			if filter.Type() == reflect.TypeOf(uuid.UUID{}) {
-				args = []reflect.Value{
-					reflect.ValueOf(context.Background()),
-					reflect.ValueOf(testPool),
-					reflect.ValueOf(uuid.Nil),
-				}
+
+			result := fn.Call(args)
+
+			if result[1].Interface() != nil {
+				err = result[1].Interface().(error)
+			} else {
+				foundUser = result[0].Interface().(T)
 			}
-		default:
-			t.Fatalf("unsupported filter type: %v", filter.Type())
-		}
 
-		result := fn.Call(args)
+			require.NoError(t, err)
 
-		if result[1].Interface() != nil {
-			err = result[1].Interface().(error)
-		}
+			gotIDField := reflect.ValueOf(foundUser).Elem().FieldByName("UserID")
+			wantIDField := reflect.ValueOf(user).Elem().FieldByName("UserID")
+			assert.Equal(t, gotIDField.Interface(), wantIDField.Interface())
+		})
 
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
-		assert.ErrorContains(t, err, errContains)
+		t.Run("no_rows_if_not_exists", func(t *testing.T) {
+			t.Parallel()
+
+			var err error
+			fn := tc.args.fn
+
+			args := []reflect.Value{
+				reflect.ValueOf(context.Background()),
+				reflect.ValueOf(testPool),
+			}
+
+			filterargs, err := buildArgs(reflect.ValueOf(tc.args.filter))
+			require.NoError(t, err)
+
+			result := fn.Call(append(args, filterargs...))
+
+			if result[1].Interface() != nil {
+				err = result[1].Interface().(error)
+			}
+
+			require.ErrorContains(t, err, errNoRows)
+		})
 	})
+}
+
+func buildArgs(filter reflect.Value) ([]reflect.Value, error) {
+	args := []reflect.Value{}
+
+	switch filter.Type().Kind() {
+	case reflect.String, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		args = append(args, reflect.Zero(filter.Type()))
+	case reflect.Array:
+		if filter.Type().Elem() == reflect.TypeOf(uuid.UUID{}) {
+			args = append(args, reflect.ValueOf(uuid.Nil))
+		}
+	case reflect.Slice: // assume testing with multiple parameters
+		for i := 0; i < filter.Len(); i++ {
+			elem := filter.Index(i)
+			elemArgs, err := buildArgs(elem)
+			if err != nil {
+				return nil, err
+			}
+			args = append(args, elemArgs...)
+		}
+	default:
+		return nil, fmt.Errorf("unsupported filter type: %v", filter.Type())
+	}
+
+	return args, nil
 }
 
 func TestUser_UserAPIKeys(t *testing.T) {
@@ -259,9 +268,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 		assert.NotEmpty(t, uak.APIKey)
 		assert.Equal(t, uak.UserID, user.UserID)
 		assert.Equal(t, uak.UserAPIKeyID, *user.APIKeyID)
@@ -285,14 +292,10 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 
 		user, err := userRepo.ByAPIKey(context.Background(), testPool, uak.APIKey)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 
 		assert.Equal(t, user.UserID, newUser.UserID)
 		assert.Equal(t, *user.APIKeyID, uak.UserAPIKeyID)
@@ -345,9 +348,7 @@ func TestUser_Create(t *testing.T) {
 		}
 
 		got, err := userRepo.Create(context.Background(), testPool, &args.params)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 
 		assert.Equal(t, want.FullName, got.FullName)
 		assert.Equal(t, want.ExternalID, got.ExternalID)
