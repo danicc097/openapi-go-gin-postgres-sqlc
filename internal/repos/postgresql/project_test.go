@@ -31,7 +31,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 			},
 		},
 		{
-			name:       "id",
+			name:       "name",
 			filter:     models.ProjectDemo,
 			repoMethod: reflect.ValueOf(projectRepo.ByName),
 			callback: func(t *testing.T, res *db.Project) {
