@@ -12,6 +12,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
 )
 
 func NewRandomUser(t *testing.T, pool *pgxpool.Pool) (*db.User, error) {
@@ -22,10 +23,7 @@ func NewRandomUser(t *testing.T, pool *pgxpool.Pool) (*db.User, error) {
 	ucp := RandomUserCreateParams(t)
 
 	user, err := userRepo.Create(context.Background(), pool, ucp)
-	if err != nil {
-		t.Logf("%s", err)
-		return nil, err
-	}
+	require.NoError(t, err, "failed to create random entity")
 
 	return user, nil
 }

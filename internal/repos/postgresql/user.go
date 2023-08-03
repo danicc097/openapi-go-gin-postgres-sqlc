@@ -90,7 +90,7 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.
 func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID int) ([]db.User, error) {
 	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{Members: true}))
 	if err != nil {
-		return nil, fmt.Errorf("could not get users by team: %w", parseErrorDetail(err))
+		return []db.User{}, fmt.Errorf("could not get users by team: %w", parseErrorDetail(err))
 	}
 
 	return *team.TeamMembersJoin, nil
@@ -99,14 +99,14 @@ func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID int) ([]db.User, er
 func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.User, error) {
 	teams, err := db.TeamsByProjectID(ctx, d, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get teams in project: %w", parseErrorDetail(err))
+		return []db.User{}, fmt.Errorf("could not get teams in project: %w", parseErrorDetail(err))
 	}
 
 	var users []db.User
 	for _, t := range teams {
 		uu, err := u.ByTeam(ctx, d, t.TeamID)
 		if err != nil {
-			return nil, fmt.Errorf("u.ByTeam: %w", parseErrorDetail(err))
+			return []db.User{}, fmt.Errorf("u.ByTeam: %w", parseErrorDetail(err))
 		}
 		users = append(users, uu...)
 	}

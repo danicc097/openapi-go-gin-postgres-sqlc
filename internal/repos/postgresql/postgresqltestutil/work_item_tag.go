@@ -8,6 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
 )
 
 func NewRandomWorkItemTag(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.WorkItemTag, error) {
@@ -18,10 +19,7 @@ func NewRandomWorkItemTag(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.
 	ucp := RandomWorkItemTagCreateParams(t, projectID)
 
 	wit, err := witRepo.Create(context.Background(), pool, ucp)
-	if err != nil {
-		t.Logf("%s", err)
-		return nil, err
-	}
+	require.NoError(t, err, "failed to create random entity")
 
 	return wit, nil
 }

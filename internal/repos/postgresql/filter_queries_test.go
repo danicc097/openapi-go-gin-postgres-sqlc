@@ -10,19 +10,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type filterTestCase struct {
+type filterTestCase[T any] struct {
 	name       string
 	filter     any
 	repoMethod reflect.Value
-	// callback   genericFilterCallbackFunc[T] // but we need different T for each test case...
+	callback   genericFilterCallbackFunc[T] // T needs to be a specific type in a single TDT so this is useless
 }
 
-type genericFilterCallbackFunc[T any] func(t *testing.T, foundEntity T)
+// callback function that should test repo method output matches expectation.
+type genericFilterCallbackFunc[T any] func(t *testing.T, result T)
 
-// runGenericFilterTests tests db filter functions for an entity by running a callback function
-// on the found entity that verifies filter output.
-func runGenericFilterTests[T any](t *testing.T, tc filterTestCase, callback genericFilterCallbackFunc[T]) {
+// runGenericFilterTests tests repo filter methods for an entity.
+func runGenericFilterTests[T any](t *testing.T, tc filterTestCase[T]) {
 	t.Run(tc.name, func(t *testing.T) {
+		t.Parallel()
+
 		t.Run("rows_if_exists", func(t *testing.T) {
 			t.Parallel()
 
@@ -32,10 +34,12 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase, callback gene
 			args := []reflect.Value{
 				reflect.ValueOf(context.Background()),
 				reflect.ValueOf(testPool),
-				reflect.ValueOf(tc.filter),
 			}
 
-			result := tc.repoMethod.Call(args)
+			filterargs, err := buildFilterArgs(reflect.ValueOf(tc.filter), false)
+			require.NoError(t, err)
+
+			result := tc.repoMethod.Call(append(args, filterargs...))
 
 			if result[1].Interface() != nil {
 				err = result[1].Interface().(error)
@@ -47,7 +51,7 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase, callback gene
 			}
 			require.NoError(t, err)
 
-			callback(t, foundEntity)
+			tc.callback(t, foundEntity)
 		})
 
 		t.Run("no_rows_if_not_exists", func(t *testing.T) {
@@ -60,7 +64,7 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase, callback gene
 				reflect.ValueOf(testPool),
 			}
 
-			filterargs, err := buildFilterArgs(reflect.ValueOf(tc.filter))
+			filterargs, err := buildFilterArgs(reflect.ValueOf(tc.filter), true)
 			require.NoError(t, err)
 
 			result := tc.repoMethod.Call(append(args, filterargs...))
@@ -69,25 +73,40 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase, callback gene
 				err = result[1].Interface().(error)
 			}
 
-			require.ErrorContains(t, err, errNoRows)
+			if result[0].Kind() == reflect.Slice {
+				require.Zero(t, result[0].Len())
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, errNoRows)
+			}
 		})
 	})
 }
 
-func buildFilterArgs(filter reflect.Value) ([]reflect.Value, error) {
+func buildFilterArgs(filter reflect.Value, zero bool) ([]reflect.Value, error) {
 	args := []reflect.Value{}
 
 	switch filter.Type().Kind() {
 	case reflect.String, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if !zero {
+			args = append(args, filter)
+
+			break
+		}
 		args = append(args, reflect.Zero(filter.Type()))
 	case reflect.Array:
+		if !zero {
+			args = append(args, filter)
+
+			break
+		}
 		if filter.Type() == reflect.TypeOf(uuid.UUID{}) {
 			args = append(args, reflect.ValueOf(uuid.Nil))
 		}
 	case reflect.Slice: // assume testing with multiple parameters
 		for i := 0; i < filter.Len(); i++ {
 			elem := filter.Index(i)
-			elemArgs, err := buildFilterArgs(elem)
+			elemArgs, err := buildFilterArgs(elem, zero)
 			if err != nil {
 				return nil, err
 			}

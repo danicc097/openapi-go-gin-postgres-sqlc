@@ -126,6 +126,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	ctx := context.Background()
 
 	userRepo := postgresql.NewUser()
+	teamRepo := postgresql.NewTeam()
 	projectRepo := postgresql.NewProject()
 
 	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
@@ -137,47 +138,77 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
 	require.NoError(t, err)
 
-	uniqueTestCases := []filterTestCase{
+	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, db.WithTeamJoin(db.TeamJoins{Members: true, Project: true}))
+	require.NoError(t, err)
+
+	uniqueCallback := func(t *testing.T, foundUser *db.User) {
+		assert.Equal(t, foundUser.UserID, user.UserID)
+	}
+
+	uniqueTestCases := []filterTestCase[*db.User]{
 		{
 			name:       "external_id",
 			filter:     user.ExternalID,
 			repoMethod: reflect.ValueOf(userRepo.ByExternalID),
+			callback:   uniqueCallback,
 		},
 		{
 			name:       "email",
 			filter:     user.Email,
 			repoMethod: reflect.ValueOf(userRepo.ByEmail),
+			callback:   uniqueCallback,
 		},
 		{
 			name:       "username",
 			filter:     user.Username,
 			repoMethod: reflect.ValueOf(userRepo.ByUsername),
+			callback:   uniqueCallback,
 		},
 		{
 			name:       "user_id",
 			filter:     user.UserID,
 			repoMethod: reflect.ValueOf(userRepo.ByID),
+			callback:   uniqueCallback,
 		},
 	}
-
 	for _, tc := range uniqueTestCases {
-		runGenericFilterTests(t, tc, func(t *testing.T, foundEntity *db.User) {
-			assert.Equal(t, foundEntity.UserID, user.UserID)
-		})
+		tc := tc
+		runGenericFilterTests(t, tc)
 	}
 
-	nonUniqueTestCases := []filterTestCase{
+	nonUniqueTestCases := []filterTestCase[[]db.User]{
 		{
 			name:       "team_id",
 			filter:     team.TeamID,
 			repoMethod: reflect.ValueOf(userRepo.ByTeam),
+			callback: func(t *testing.T, foundUsers []db.User) {
+				assert.Len(t, foundUsers, 1)
+				assert.Equal(t, foundUsers[0].UserID, user.UserID)
+				assert.Equal(t, (*team.TeamMembersJoin)[0].UserID, user.UserID)
+				assert.Equal(t, team.ProjectJoin.ProjectID, project.ProjectID)
+			},
+		},
+		{
+			name:       "project_id",
+			filter:     project.ProjectID,
+			repoMethod: reflect.ValueOf(userRepo.ByProject),
+			callback: func(t *testing.T, foundUsers []db.User) {
+				assert.GreaterOrEqual(t, len(foundUsers), 1)
+				found := false
+				// projects and some related entities are hardcoded. Repos could have RandomProjectCreate regardless
+				// but better test the same way as services...
+				for _, u := range foundUsers {
+					if u.UserID == user.UserID {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			},
 		},
 	}
-
 	for _, tc := range nonUniqueTestCases {
-		runGenericFilterTests(t, tc, func(t *testing.T, foundEntity []db.User) {
-			assert.Len(t, foundEntity, 1)
-		})
+		tc := tc
+		runGenericFilterTests(t, tc)
 	}
 }
 

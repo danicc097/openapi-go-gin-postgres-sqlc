@@ -2,7 +2,6 @@ package postgresql_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -85,7 +84,6 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			fmt.Printf("foundKanbanSteps: %v\n", foundKanbanSteps)
 			found := false
 			for _, ks := range foundKanbanSteps {
 				if ks.KanbanStepID == internal.DemoTwoKanbanStepsIDByName[models.DemoTwoKanbanStepsReceived] {

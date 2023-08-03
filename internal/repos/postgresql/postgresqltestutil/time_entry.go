@@ -10,6 +10,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
 )
 
 func NewRandomTimeEntry(t *testing.T, pool *pgxpool.Pool, activityID int, userID uuid.UUID, workItemID *int, teamID *int) (*db.TimeEntry, error) {
@@ -20,10 +21,7 @@ func NewRandomTimeEntry(t *testing.T, pool *pgxpool.Pool, activityID int, userID
 	ucp := RandomTimeEntryCreateParams(t, activityID, userID, workItemID, teamID)
 
 	te, err := teRepo.Create(context.Background(), pool, ucp)
-	if err != nil {
-		t.Logf("%s", err)
-		return nil, err
-	}
+	require.NoError(t, err, "failed to create random entity")
 
 	return te, nil
 }
