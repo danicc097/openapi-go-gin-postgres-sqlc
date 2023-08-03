@@ -174,15 +174,11 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	}
 
 	for _, tc := range uniqueTestCases {
-		runGenericUniqueFilterTests(t, tc, func(t *testing.T, foundEntity *db.User) {
+		runGenericFilterTests(t, tc, func(t *testing.T, foundEntity *db.User) {
 			assert.Equal(t, foundEntity.UserID, user.UserID)
 		})
 	}
 
-	/**
-	 * TODO: ByTeam and ByProject tests which return []Entity
-	 * will need custom comparerFunc ()
-	 */
 	nonUniqueTestCases := []filterTestCase{
 		{
 			name: "team_id",
@@ -195,7 +191,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	}
 
 	for _, tc := range nonUniqueTestCases {
-		runGenericUniqueFilterTests(t, tc, func(t *testing.T, foundEntity []db.User) {
+		runGenericFilterTests(t, tc, func(t *testing.T, foundEntity []db.User) {
 			assert.Len(t, foundEntity, 1)
 		})
 	}

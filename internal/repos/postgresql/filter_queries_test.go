@@ -20,9 +20,11 @@ type filterTestCaseArgs struct {
 	fn     reflect.Value
 }
 
-// runGenericUniqueFilterTests tests db filter functions for an entity by running a callback function
+type genericFilterCallbackFunc[T any] func(t *testing.T, foundEntity T)
+
+// runGenericFilterTests tests db filter functions for an entity by running a callback function
 // on the found entity that verifies filter output.
-func runGenericUniqueFilterTests[T any](t *testing.T, tc filterTestCase, callback func(t *testing.T, foundEntity T)) {
+func runGenericFilterTests[T any](t *testing.T, tc filterTestCase, callback genericFilterCallbackFunc[T]) {
 	t.Run(tc.name, func(t *testing.T) {
 		t.Run("rows_if_exists", func(t *testing.T) {
 			t.Parallel()
@@ -43,7 +45,10 @@ func runGenericUniqueFilterTests[T any](t *testing.T, tc filterTestCase, callbac
 			if result[1].Interface() != nil {
 				err = result[1].Interface().(error)
 			} else {
-				foundEntity = result[0].Interface().(T)
+				r := result[0].Interface()
+				var ok bool
+				foundEntity, ok = r.(T)
+				require.True(t, ok, "mismatched entity type returned: got %T want %T", r, foundEntity)
 			}
 			require.NoError(t, err)
 
