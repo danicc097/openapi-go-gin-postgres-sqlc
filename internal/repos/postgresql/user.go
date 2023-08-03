@@ -97,7 +97,7 @@ func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID int) ([]db.User, er
 }
 
 func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.User, error) {
-	teams, err := db.TeamsByProjectID(ctx, d, projectID, db.WithTeamJoin(db.TeamJoins{Members: true}))
+	teams, err := db.TeamsByProjectID(ctx, d, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get teams in project: %w", parseErrorDetail(err))
 	}

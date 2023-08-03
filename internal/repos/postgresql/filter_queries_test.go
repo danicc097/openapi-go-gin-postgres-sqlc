@@ -22,12 +22,12 @@ type filterTestCaseArgs struct {
 
 // runGenericUniqueFilterTests tests db filter functions for an entity by running a callback function
 // on the found entity that verifies filter output.
-func runGenericUniqueFilterTests(t *testing.T, tc filterTestCase, callback func(t *testing.T, foundEntity any)) {
+func runGenericUniqueFilterTests[T any](t *testing.T, tc filterTestCase, callback func(t *testing.T, foundEntity T)) {
 	t.Run(tc.name, func(t *testing.T) {
 		t.Run("rows_if_exists", func(t *testing.T) {
 			t.Parallel()
 
-			var foundEntity any
+			var foundEntity T
 			var err error
 
 			fn := tc.args.fn
@@ -43,7 +43,7 @@ func runGenericUniqueFilterTests(t *testing.T, tc filterTestCase, callback func(
 			if result[1].Interface() != nil {
 				err = result[1].Interface().(error)
 			} else {
-				foundEntity = result[0].Interface()
+				foundEntity = result[0].Interface().(T)
 			}
 			require.NoError(t, err)
 

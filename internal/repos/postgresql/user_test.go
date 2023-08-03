@@ -127,7 +127,22 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
-	testCases := []filterTestCase{
+	projectRepo := postgresql.NewProject()
+	teamRepo := postgresql.NewTeam()
+
+	ctx := context.Background()
+
+	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
+	require.NoError(t, err)
+	tcp := postgresqltestutil.RandomTeamCreateParams(t, project.ProjectID)
+
+	team, err := teamRepo.Create(ctx, testPool, tcp)
+	require.NoError(t, err)
+
+	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
+	require.NoError(t, err)
+
+	uniqueTestCases := []filterTestCase{
 		{
 			name: "external_id",
 			args: filterTestCaseArgs{
@@ -156,17 +171,32 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 				fn:     reflect.ValueOf(userRepo.ByID),
 			},
 		},
-		/**
-		 * TODO: ByTeam and ByProject tests which return []Entity
-		 * will need custom comparerFunc ()
-		 */
 	}
 
-	for _, tc := range testCases {
-		runGenericUniqueFilterTests(t, tc, func(t *testing.T, foundEntity any) {
-			gotIDField := reflect.ValueOf(foundEntity).Elem().FieldByName("UserID").Interface()
-			wantIDField := reflect.ValueOf(user).Elem().FieldByName("UserID").Interface()
-			assert.Equal(t, gotIDField, wantIDField)
+	for _, tc := range uniqueTestCases {
+		runGenericUniqueFilterTests(t, tc, func(t *testing.T, foundEntity *db.User) {
+			assert.Equal(t, foundEntity.UserID, user.UserID)
+		})
+	}
+
+	/**
+	 * TODO: ByTeam and ByProject tests which return []Entity
+	 * will need custom comparerFunc ()
+	 */
+	nonUniqueTestCases := []filterTestCase{
+		{
+			name: "team_id",
+			args: filterTestCaseArgs{
+				filter: team.TeamID,
+				fn:     reflect.ValueOf(userRepo.ByTeam),
+				// TODO comparer fn here is best...
+			},
+		},
+	}
+
+	for _, tc := range nonUniqueTestCases {
+		runGenericUniqueFilterTests(t, tc, func(t *testing.T, foundEntity []db.User) {
+			assert.Len(t, foundEntity, 1)
 		})
 	}
 }
