@@ -83,7 +83,6 @@ func TestNotification_Create(t *testing.T) {
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, nil, db.NotificationTypePersonal)
 
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
-		require.NoError(t, err)
 		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 
@@ -93,7 +92,6 @@ func TestNotification_Create(t *testing.T) {
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, nil, db.NotificationTypeGlobal)
 
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
-		require.NoError(t, err)
 		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

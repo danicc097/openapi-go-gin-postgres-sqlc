@@ -331,7 +331,7 @@ func TestUser_Create(t *testing.T) {
 		}
 
 		_, err := userRepo.Create(context.Background(), testPool, &args.params)
-		require.NoError(t, err)
+		require.Error(t, err)
 
 		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})

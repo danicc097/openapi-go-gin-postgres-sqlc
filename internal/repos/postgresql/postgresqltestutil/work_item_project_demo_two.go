@@ -10,6 +10,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
 )
 
 func NewRandomDemoTwoWorkItem(t *testing.T, pool *pgxpool.Pool, kanbanStepID, workItemTypeID, teamID int) (*db.WorkItem, error) {
@@ -25,11 +26,7 @@ func NewRandomDemoTwoWorkItem(t *testing.T, pool *pgxpool.Pool, kanbanStepID, wo
 		},
 		Base: *RandomWorkItemCreateParams(t, kanbanStepID, workItemTypeID, teamID),
 	})
-	if err != nil {
-		t.Logf("%s", err)
-
-		return nil, err
-	}
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
 
 	return dpwi, nil
 }
