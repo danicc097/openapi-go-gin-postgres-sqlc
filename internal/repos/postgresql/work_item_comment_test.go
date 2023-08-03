@@ -2,6 +2,7 @@ package postgresql_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -35,46 +36,18 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 		t.Fatalf("workItemCommentRepo.Create unexpected error = %v", err)
 	}
 
-	type argsInt struct {
-		filter int
-		fn     func(context.Context, db.DBTX, int, ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error)
-	}
-	testsInt := []struct {
-		name string
-		args argsInt
-	}{
+	uniqueTestCases := []filterTestCase[*db.WorkItemComment]{
 		{
-			name: "workItemComment_id",
-			args: argsInt{
-				filter: workItemComment.WorkItemCommentID,
-				fn:     (workItemCommentRepo.ByID),
+			name:       "id",
+			filter:     workItemComment.WorkItemCommentID,
+			repoMethod: reflect.ValueOf(workItemCommentRepo.ByID),
+			callback: func(t *testing.T, res *db.WorkItemComment) {
+				assert.Equal(t, res.WorkItemCommentID, workItemComment.WorkItemCommentID)
 			},
 		},
 	}
-	for _, tc := range testsInt {
+	for _, tc := range uniqueTestCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundWorkItemComment, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundWorkItemComment.WorkItemCommentID, workItemComment.WorkItemCommentID)
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := 254364 // does not exist
-
-			_, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.ErrorContains(t, err, errContains)
-		})
+		runGenericFilterTests(t, tc)
 	}
 }
