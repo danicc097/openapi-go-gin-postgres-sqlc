@@ -1,7 +1,7 @@
 package postgresql_test
 
 import (
-	"context"
+	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -16,92 +16,29 @@ func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 
 	workItemTypeRepo := postgresql.NewWorkItemType()
 
-	type argsString struct {
-		filter    string
-		projectID int
-		fn        func(context.Context, db.DBTX, string, int, ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error)
-	}
-
-	testString := []struct {
-		name string
-		args argsString
-	}{
+	uniqueTestCases := []filterTestCase[*db.WorkItemType]{
 		{
 			name: "name",
-			args: argsString{
-				filter:    string(models.DemoWorkItemTypesType1), // work item types table shared by all
-				projectID: internal.ProjectIDByName[models.ProjectDemo],
-				fn:        (workItemTypeRepo.ByName),
+			filter: []any{
+				string(models.DemoWorkItemTypesType1),
+				internal.ProjectIDByName[models.ProjectDemo],
+			},
+			repoMethod: reflect.ValueOf(workItemTypeRepo.ByName),
+			callback: func(t *testing.T, res *db.WorkItemType) {
+				assert.Equal(t, res.Name, string(models.DemoWorkItemTypesType1))
 			},
 		},
-	}
-	for _, tc := range testString {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundWorkItemType, err := tc.args.fn(context.Background(), testPool, tc.args.filter, tc.args.projectID)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundWorkItemType.Name, string(models.DemoWorkItemTypesType1))
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := "inexistent workItemType"
-
-			_, err := tc.args.fn(context.Background(), testPool, filter, tc.args.projectID)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.ErrorContains(t, err, errContains)
-		})
-	}
-
-	type argsInt struct {
-		filter int
-		fn     func(context.Context, db.DBTX, int, ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error)
-	}
-	testsInt := []struct {
-		name string
-		args argsInt
-	}{
 		{
-			name: "workItemType_id",
-			args: argsInt{
-				filter: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
-				fn:     (workItemTypeRepo.ByID),
+			name:       "id",
+			filter:     internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
+			repoMethod: reflect.ValueOf(workItemTypeRepo.ByID),
+			callback: func(t *testing.T, res *db.WorkItemType) {
+				assert.Equal(t, res.WorkItemTypeID, internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1])
 			},
 		},
 	}
-	for _, tc := range testsInt {
+	for _, tc := range uniqueTestCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundWorkItemType, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundWorkItemType.WorkItemTypeID, internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1])
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := 254364 // does not exist
-
-			_, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.ErrorContains(t, err, errContains)
-		})
+		runGenericFilterTests(t, tc)
 	}
 }

@@ -15,7 +15,8 @@ import (
 )
 
 type filterTestCase[T any] struct {
-	name       string
+	name string
+	// filter represents the slice of arguments to pass to repoMethod, excluding context and db connection.
 	filter     any
 	repoMethod reflect.Value
 	callback   genericFilterCallbackFunc[T] // T needs to be a specific type in a single TDT so this is useless
@@ -111,6 +112,15 @@ func buildFilterArgs(filter reflect.Value, zero bool) ([]reflect.Value, error) {
 		for i := 0; i < filter.Len(); i++ {
 			elem := filter.Index(i)
 			elemArgs, err := buildFilterArgs(elem, zero)
+			if err != nil {
+				return nil, err
+			}
+			args = append(args, elemArgs...)
+		}
+	case reflect.Interface: // handle `any`
+		if !filter.IsNil() {
+			value := reflect.ValueOf(filter.Interface())
+			elemArgs, err := buildFilterArgs(value, zero)
 			if err != nil {
 				return nil, err
 			}

@@ -141,8 +141,8 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, db.WithTeamJoin(db.TeamJoins{Members: true, Project: true}))
 	require.NoError(t, err)
 
-	uniqueCallback := func(t *testing.T, foundUser *db.User) {
-		assert.Equal(t, foundUser.UserID, user.UserID)
+	uniqueCallback := func(t *testing.T, res *db.User) {
+		assert.Equal(t, res.UserID, user.UserID)
 	}
 
 	uniqueTestCases := []filterTestCase[*db.User]{
@@ -181,9 +181,9 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 			name:       "team_id",
 			filter:     team.TeamID,
 			repoMethod: reflect.ValueOf(userRepo.ByTeam),
-			callback: func(t *testing.T, foundUsers []db.User) {
-				assert.Len(t, foundUsers, 1)
-				assert.Equal(t, foundUsers[0].UserID, user.UserID)
+			callback: func(t *testing.T, res []db.User) {
+				assert.Len(t, res, 1)
+				assert.Equal(t, res[0].UserID, user.UserID)
 				assert.Equal(t, (*team.TeamMembersJoin)[0].UserID, user.UserID)
 				assert.Equal(t, team.ProjectJoin.ProjectID, project.ProjectID)
 			},
@@ -192,12 +192,12 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 			name:       "project_id",
 			filter:     project.ProjectID,
 			repoMethod: reflect.ValueOf(userRepo.ByProject),
-			callback: func(t *testing.T, foundUsers []db.User) {
-				assert.GreaterOrEqual(t, len(foundUsers), 1)
+			callback: func(t *testing.T, res []db.User) {
+				assert.GreaterOrEqual(t, len(res), 1)
 				found := false
 				// projects and some related entities are hardcoded. Repos could have RandomProjectCreate regardless
 				// but better test the same way as services...
-				for _, u := range foundUsers {
+				for _, u := range res {
 					if u.UserID == user.UserID {
 						found = true
 					}
