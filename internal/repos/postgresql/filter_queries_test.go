@@ -2,11 +2,15 @@ package postgresql_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -73,11 +77,11 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase[T]) {
 				err = result[1].Interface().(error)
 			}
 
-			if result[0].Kind() == reflect.Slice {
-				require.Zero(t, result[0].Len())
-				require.NoError(t, err)
+			var ierr *internal.Error
+			if errors.As(err, &ierr) {
+				assert.True(t, ierr.Code() == models.ErrorCodeNotFound)
 			} else {
-				require.ErrorContains(t, err, errNoRows)
+				assert.ErrorContains(t, err, errNoRows)
 			}
 		})
 	})

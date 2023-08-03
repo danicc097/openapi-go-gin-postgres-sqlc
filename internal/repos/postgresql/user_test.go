@@ -178,7 +178,6 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	nonUniqueTestCases := []filterTestCase[[]db.User]{
 		{
-			// FIXME: no rows found for some reason...
 			name:       "team_id",
 			filter:     team.TeamID,
 			repoMethod: reflect.ValueOf(userRepo.ByTeam),
