@@ -11,13 +11,10 @@ import (
 )
 
 type filterTestCase struct {
-	name string
-	args filterTestCaseArgs
-}
-
-type filterTestCaseArgs struct {
-	filter any
-	fn     reflect.Value
+	name       string
+	filter     any
+	repoMethod reflect.Value
+	// callback   genericFilterCallbackFunc[T] // but we need different T for each test case...
 }
 
 type genericFilterCallbackFunc[T any] func(t *testing.T, foundEntity T)
@@ -32,15 +29,13 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase, callback gene
 			var foundEntity T
 			var err error
 
-			fn := tc.args.fn
-
 			args := []reflect.Value{
 				reflect.ValueOf(context.Background()),
 				reflect.ValueOf(testPool),
-				reflect.ValueOf(tc.args.filter),
+				reflect.ValueOf(tc.filter),
 			}
 
-			result := fn.Call(args)
+			result := tc.repoMethod.Call(args)
 
 			if result[1].Interface() != nil {
 				err = result[1].Interface().(error)
@@ -59,17 +54,16 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase, callback gene
 			t.Parallel()
 
 			var err error
-			fn := tc.args.fn
 
 			args := []reflect.Value{
 				reflect.ValueOf(context.Background()),
 				reflect.ValueOf(testPool),
 			}
 
-			filterargs, err := buildFilterArgs(reflect.ValueOf(tc.args.filter))
+			filterargs, err := buildFilterArgs(reflect.ValueOf(tc.filter))
 			require.NoError(t, err)
 
-			result := fn.Call(append(args, filterargs...))
+			result := tc.repoMethod.Call(append(args, filterargs...))
 
 			if result[1].Interface() != nil {
 				err = result[1].Interface().(error)

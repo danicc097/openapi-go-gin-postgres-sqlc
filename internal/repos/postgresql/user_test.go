@@ -123,53 +123,40 @@ func TestUser_SoftDelete(t *testing.T) {
 func TestUser_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	userRepo := postgresql.NewUser()
-
-	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
-
-	projectRepo := postgresql.NewProject()
-	teamRepo := postgresql.NewTeam()
-
 	ctx := context.Background()
+
+	userRepo := postgresql.NewUser()
+	projectRepo := postgresql.NewProject()
 
 	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
 	require.NoError(t, err)
-	tcp := postgresqltestutil.RandomTeamCreateParams(t, project.ProjectID)
 
-	team, err := teamRepo.Create(ctx, testPool, tcp)
-	require.NoError(t, err)
+	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
 	require.NoError(t, err)
 
 	uniqueTestCases := []filterTestCase{
 		{
-			name: "external_id",
-			args: filterTestCaseArgs{
-				filter: user.ExternalID,
-				fn:     reflect.ValueOf(userRepo.ByExternalID),
-			},
+			name:       "external_id",
+			filter:     user.ExternalID,
+			repoMethod: reflect.ValueOf(userRepo.ByExternalID),
 		},
 		{
-			name: "email",
-			args: filterTestCaseArgs{
-				filter: user.Email,
-				fn:     reflect.ValueOf(userRepo.ByEmail),
-			},
+			name:       "email",
+			filter:     user.Email,
+			repoMethod: reflect.ValueOf(userRepo.ByEmail),
 		},
 		{
-			name: "username",
-			args: filterTestCaseArgs{
-				filter: user.Username,
-				fn:     reflect.ValueOf(userRepo.ByUsername),
-			},
+			name:       "username",
+			filter:     user.Username,
+			repoMethod: reflect.ValueOf(userRepo.ByUsername),
 		},
 		{
-			name: "user_id",
-			args: filterTestCaseArgs{
-				filter: user.UserID,
-				fn:     reflect.ValueOf(userRepo.ByID),
-			},
+			name:       "user_id",
+			filter:     user.UserID,
+			repoMethod: reflect.ValueOf(userRepo.ByID),
 		},
 	}
 
@@ -181,12 +168,9 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	nonUniqueTestCases := []filterTestCase{
 		{
-			name: "team_id",
-			args: filterTestCaseArgs{
-				filter: team.TeamID,
-				fn:     reflect.ValueOf(userRepo.ByTeam),
-				// TODO comparer fn here is best...
-			},
+			name:       "team_id",
+			filter:     team.TeamID,
+			repoMethod: reflect.ValueOf(userRepo.ByTeam),
 		},
 	}
 
