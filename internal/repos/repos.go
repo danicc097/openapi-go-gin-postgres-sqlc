@@ -110,6 +110,8 @@ type Notification interface {
 // User defines the datastore/repository handling persisting User records.
 type User interface {
 	ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (*db.User, error)
+	ByTeam(ctx context.Context, d db.DBTX, teamID int) ([]db.User, error)
+	ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.User, error)
 	ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (*db.User, error)
 	ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (*db.User, error)
 	ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (*db.User, error)

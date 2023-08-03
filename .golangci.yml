@@ -3,6 +3,7 @@
 linters:
   enable-all: true
   disable:
+    - thelper
     - testpackage
     - depguard
     # - json(camel)

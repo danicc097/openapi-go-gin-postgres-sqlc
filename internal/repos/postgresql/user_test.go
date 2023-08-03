@@ -156,10 +156,18 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 				fn:     reflect.ValueOf(userRepo.ByID),
 			},
 		},
+		/**
+		 * TODO: ByTeam and ByProject tests which return []Entity
+		 * will need custom comparerFunc ()
+		 */
 	}
 
 	for _, tc := range testCases {
-		runGenericUniqueFilterTests(t, tc, user, "UserID")
+		runGenericUniqueFilterTests(t, tc, func(t *testing.T, foundEntity any) {
+			gotIDField := reflect.ValueOf(foundEntity).Elem().FieldByName("UserID").Interface()
+			wantIDField := reflect.ValueOf(user).Elem().FieldByName("UserID").Interface()
+			assert.Equal(t, gotIDField, wantIDField)
+		})
 	}
 }
 

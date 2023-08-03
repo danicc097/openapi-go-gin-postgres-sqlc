@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-playground/assert/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -21,15 +20,14 @@ type filterTestCaseArgs struct {
 	fn     reflect.Value
 }
 
-// runGenericUniqueFilterTests tests db filter functions for an entity by ensuring the struct field with name
-// identifierField is the same.
-// nolint: thelper
-func runGenericUniqueFilterTests[T any](t *testing.T, tc filterTestCase, entity T, identifierField string) {
+// runGenericUniqueFilterTests tests db filter functions for an entity by running a callback function
+// on the found entity that verifies filter output.
+func runGenericUniqueFilterTests(t *testing.T, tc filterTestCase, callback func(t *testing.T, foundEntity any)) {
 	t.Run(tc.name, func(t *testing.T) {
 		t.Run("rows_if_exists", func(t *testing.T) {
 			t.Parallel()
 
-			var foundEntity T
+			var foundEntity any
 			var err error
 
 			fn := tc.args.fn
@@ -45,13 +43,11 @@ func runGenericUniqueFilterTests[T any](t *testing.T, tc filterTestCase, entity 
 			if result[1].Interface() != nil {
 				err = result[1].Interface().(error)
 			} else {
-				foundEntity = result[0].Interface().(T)
+				foundEntity = result[0].Interface()
 			}
 			require.NoError(t, err)
 
-			gotIDField := reflect.ValueOf(foundEntity).Elem().FieldByName(identifierField).Interface()
-			wantIDField := reflect.ValueOf(entity).Elem().FieldByName(identifierField).Interface()
-			assert.Equal(t, gotIDField, wantIDField)
+			callback(t, foundEntity)
 		})
 
 		t.Run("no_rows_if_not_exists", func(t *testing.T) {

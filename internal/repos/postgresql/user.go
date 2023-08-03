@@ -72,7 +72,7 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 func (u *User) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (*db.User, error) {
 	user, err := db.UserByExternalID(ctx, d, extID, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get user by external id: %w", parseErrorDetail(err))
 	}
 
 	return user, nil
@@ -81,16 +81,43 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts .
 func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (*db.User, error) {
 	user, err := db.UserByEmail(ctx, d, email, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get user by email: %w", parseErrorDetail(err))
 	}
 
 	return user, nil
 }
 
+func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID int) ([]db.User, error) {
+	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{Members: true}))
+	if err != nil {
+		return nil, fmt.Errorf("could not get users by team: %w", parseErrorDetail(err))
+	}
+
+	return *team.TeamMembersJoin, nil
+}
+
+func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.User, error) {
+	teams, err := db.TeamsByProjectID(ctx, d, projectID, db.WithTeamJoin(db.TeamJoins{Members: true}))
+	if err != nil {
+		return nil, fmt.Errorf("could not get teams in project: %w", parseErrorDetail(err))
+	}
+
+	var users []db.User
+	for _, t := range teams {
+		uu, err := u.ByTeam(ctx, d, t.TeamID)
+		if err != nil {
+			return nil, fmt.Errorf("u.ByTeam: %w", parseErrorDetail(err))
+		}
+		users = append(users, uu...)
+	}
+
+	return users, nil
+}
+
 func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (*db.User, error) {
 	user, err := db.UserByUsername(ctx, d, username, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get user by username: %w", parseErrorDetail(err))
 	}
 
 	return user, nil
