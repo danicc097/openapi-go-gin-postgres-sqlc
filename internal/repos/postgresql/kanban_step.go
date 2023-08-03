@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -26,6 +28,10 @@ func (k *KanbanStep) ByProject(ctx context.Context, d db.DBTX, projectID int, op
 	kss, err := db.KanbanStepsByProjectID(ctx, d, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get kanban steps: %w", parseErrorDetail(err))
+	}
+
+	if len(kss) == 0 {
+		return []db.KanbanStep{}, internal.NewErrorf(models.ErrorCodeNotFound, "no kanban steps found in project")
 	}
 
 	return kss, nil

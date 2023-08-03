@@ -1,7 +1,7 @@
 package postgresql_test
 
 import (
-	"context"
+	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -16,99 +16,42 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 
 	kanbanStepRepo := postgresql.NewKanbanStep()
 
-	type argsInt struct {
-		filter int
-		fn     func(context.Context, db.DBTX, int, ...db.KanbanStepSelectConfigOption) (*db.KanbanStep, error)
-	}
-	testsInt := []struct {
-		name string
-		args argsInt
-	}{
+	uniqueTestCases := []filterTestCase[*db.KanbanStep]{
 		{
-			name: "kanbanStep_id",
-			args: argsInt{
-				filter: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
-				fn:     (kanbanStepRepo.ByID),
+			name:       "id",
+			filter:     internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
+			repoMethod: reflect.ValueOf(kanbanStepRepo.ByID),
+			callback: func(t *testing.T, res *db.KanbanStep) {
+				assert.Equal(t, res.KanbanStepID, internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived])
 			},
 		},
 	}
-	for _, tc := range testsInt {
+	for _, tc := range uniqueTestCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundKanbanStep, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundKanbanStep.KanbanStepID, internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived])
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := 254364 // does not exist
-
-			_, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.ErrorContains(t, err, errContains)
-		})
+		runGenericFilterTests(t, tc)
 	}
 
-	type argsIntNotUnique struct {
-		filter int
-		fn     func(context.Context, db.DBTX, int, ...db.KanbanStepSelectConfigOption) ([]db.KanbanStep, error)
-	}
-	testsIntNotUnique := []struct {
-		name string
-		args argsIntNotUnique
-	}{
+	nonUniqueTestCases := []filterTestCase[[]db.KanbanStep]{
 		{
-			name: "project_id",
-			args: argsIntNotUnique{
-				filter: internal.ProjectIDByName[models.ProjectDemoTwo],
-				fn:     (kanbanStepRepo.ByProject),
-			},
-		},
-	}
-	for _, tc := range testsIntNotUnique {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+			name:       "id",
+			filter:     internal.ProjectIDByName[models.ProjectDemoTwo],
+			repoMethod: reflect.ValueOf(kanbanStepRepo.ByProject),
+			callback: func(t *testing.T, res []db.KanbanStep) {
+				found := false
+				for _, ks := range res {
+					if ks.KanbanStepID == internal.DemoTwoKanbanStepsIDByName[models.DemoTwoKanbanStepsReceived] {
+						found = true
 
-			foundKanbanSteps, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			found := false
-			for _, ks := range foundKanbanSteps {
-				if ks.KanbanStepID == internal.DemoTwoKanbanStepsIDByName[models.DemoTwoKanbanStepsReceived] {
-					found = true
-					break
+						break
+					}
 				}
-			}
-
-			// TODO: also ensure len(DemoTwoKanbanStepsIDByName) == len(foundKanbanSteps)
-			// when refactoring to use reflection ia filter_queries_test, will need
-			// comparerFunc argument and then assert.True on that instead.
-			// it will have 2 reflect.Values (got and want) as params
-			assert.True(t, found)
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			filter := 254364 // does not exist
-
-			foundKanbanSteps, err := tc.args.fn(context.Background(), testPool, filter)
-			if err != nil {
-				t.Fatalf("unexpected error = '%v'", err)
-			}
-			assert.Len(t, foundKanbanSteps, 0)
-		})
+				assert.True(t, found)
+				assert.Equal(t, len(internal.DemoTwoKanbanStepsIDByName), len(res))
+			},
+		},
+	}
+	for _, tc := range nonUniqueTestCases {
+		tc := tc
+		runGenericFilterTests(t, tc)
 	}
 }
