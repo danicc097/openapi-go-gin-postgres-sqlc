@@ -330,12 +330,9 @@ func TestUser_Create(t *testing.T) {
 			params: *ucp,
 		}
 
-		errContains := errViolatesCheckConstraint
-
 		_, err := userRepo.Create(context.Background(), testPool, &args.params)
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
-		assert.ErrorContains(t, err, errContains)
+		require.NoError(t, err)
+
+		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

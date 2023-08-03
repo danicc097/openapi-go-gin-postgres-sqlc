@@ -154,6 +154,7 @@ func main() {
 	// won't be able to use same transaction and also need a sql.DB pool apart from pgxpool opened with postgresql.New
 	// https://github.com/go-jet/jet/issues/59
 	// this will break our repo and service (d db.DBTX) param
+	// NOTE: maybe pgx allows conversion of sql.DB pool
 	err = getUserNotificationsByUserID.QueryContext(context.Background(), sqlpool, dest)
 	if err != nil {
 		fmt.Println(err.Error())

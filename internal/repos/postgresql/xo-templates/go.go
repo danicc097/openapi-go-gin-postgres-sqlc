@@ -56,14 +56,10 @@ const (
 
 	propertiesJoinOperator = ","
 	// ignore fields when marshalling to JSON
-	propertiesPrivate = "private"
+	propertyPrivate          = "private"
+	propertyFieldNotRequired = "not-required"
 
 	// example: "properties":private,another-property && "type":models.Project && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
-)
-
-const (
-	privateFieldProperty     = "private"
-	notRequiredFieldProperty = "not-required"
 )
 
 // to not have to analyze everything for convertConstraints
@@ -2107,7 +2103,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 				for _, col := range m2mExtraCols {
 					tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"", camel(col.GoName), col.SQLName)
 					properties := extractPropertiesAnnotation(col.Annotations[propertiesAnnot])
-					isPrivate := contains(properties, privateFieldProperty)
+					isPrivate := contains(properties, propertyPrivate)
 					if !isPrivate {
 						tag = tag + ` required:"true"`
 					}
@@ -3604,8 +3600,8 @@ func (f *Funcs) typefn(typ string) string {
 // field generates a field definition for a struct.
 func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
-	isPrivate := contains(field.Properties, privateFieldProperty)
-	notRequired := contains(field.Properties, notRequiredFieldProperty)
+	isPrivate := contains(field.Properties, propertyPrivate)
+	notRequired := contains(field.Properties, propertyFieldNotRequired)
 	isPointer := strings.HasPrefix(field.Type, "*")
 	isSingleFK, isSinglePK := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
@@ -3724,7 +3720,7 @@ func analyzeField(table Table, field Field) (bool, bool) {
 // fieldmapping generates field mappings from a struct to another.
 func (f *Funcs) fieldmapping(field Field, recv string, public bool) (string, error) {
 	if public {
-		if contains(field.Properties, privateFieldProperty) {
+		if contains(field.Properties, propertyPrivate) {
 			return "", nil
 		}
 	}

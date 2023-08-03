@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -102,10 +100,6 @@ func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.Us
 	teams, err := db.TeamsByProjectID(ctx, d, projectID)
 	if err != nil {
 		return []db.User{}, fmt.Errorf("could not get teams in project: %w", parseErrorDetail(err))
-	}
-
-	if len(teams) == 0 {
-		return []db.User{}, internal.NewErrorf(models.ErrorCodeNotFound, "no teams found in project")
 	}
 
 	var users []db.User

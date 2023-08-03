@@ -2,13 +2,10 @@ package postgresql_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -75,14 +72,20 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase[T]) {
 			result := tc.repoMethod.Call(append(args, filterargs...))
 
 			if result[1].Interface() != nil {
-				err = result[1].Interface().(error)
+				var ok bool
+				err, ok = result[1].Interface().(error)
+				assert.True(t, ok)
 			}
 
-			var ierr *internal.Error
-			if errors.As(err, &ierr) {
-				assert.True(t, ierr.Code() == models.ErrorCodeNotFound)
+			if result[0].Kind() == reflect.Slice {
+				require.Zero(t, result[0].Len())
+				// in case of e.g. user.ByTeam it will fail if team not found, instead of returning empty slice
+				// require.NoError(t, err) // not necessarily
+				if err != nil {
+					require.ErrorContains(t, err, errNoRows)
+				}
 			} else {
-				assert.ErrorContains(t, err, errNoRows)
+				require.ErrorContains(t, err, errNoRows)
 			}
 		})
 	})

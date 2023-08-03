@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNotification_Create(t *testing.T) {
@@ -32,16 +33,11 @@ func TestNotification_Create(t *testing.T) {
 		defer tx.Rollback(ctx)
 
 		_, err := notificationRepo.Create(context.Background(), tx, ncp)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 
 		params := db.GetUserNotificationsParams{UserID: receiver.UserID, NotificationType: db.NotificationTypePersonal}
 		nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
-		t.Logf("nn: %v", nn)
+		require.NoError(t, err)
 
 		assert.Equal(t, ncp.Body, nn[0].Body)
 	})
@@ -65,9 +61,7 @@ func TestNotification_Create(t *testing.T) {
 		defer tx.Rollback(ctx)
 
 		_, err := notificationRepo.Create(context.Background(), tx, ncp)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 
 		notificationCount := map[uuid.UUID]int{
 			receiverRank1.UserID: 0,
@@ -77,9 +71,7 @@ func TestNotification_Create(t *testing.T) {
 		for userID, count := range notificationCount {
 			params := db.GetUserNotificationsParams{UserID: userID, NotificationType: db.NotificationTypeGlobal}
 			nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
+			require.NoError(t, err)
 
 			assert.Equal(t, count, len(nn))
 		}
@@ -90,13 +82,9 @@ func TestNotification_Create(t *testing.T) {
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, nil, db.NotificationTypePersonal)
 
-		errContains := errViolatesCheckConstraint
-
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
-		assert.ErrorContains(t, err, errContains)
+		require.NoError(t, err)
+		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 
 	t.Run("error_with_no_rank_with_global_notification", func(t *testing.T) {
@@ -104,12 +92,8 @@ func TestNotification_Create(t *testing.T) {
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, nil, db.NotificationTypeGlobal)
 
-		errContains := errViolatesCheckConstraint
-
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
-		assert.ErrorContains(t, err, errContains)
+		require.NoError(t, err)
+		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

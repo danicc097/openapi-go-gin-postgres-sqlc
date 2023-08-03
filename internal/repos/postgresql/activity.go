@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -62,10 +60,6 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID int, op
 	activities, err := db.ActivitiesByProjectID(ctx, d, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
-	}
-
-	if len(activities) == 0 {
-		return []db.Activity{}, internal.NewErrorf(models.ErrorCodeNotFound, "no activities found in project")
 	}
 
 	return activities, nil
