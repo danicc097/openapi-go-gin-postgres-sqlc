@@ -145,6 +145,20 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 	return uak.UserJoin, nil
 }
 
+func (u *User) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.UserAPIKey, error) {
+	uak, err := db.UserAPIKeyByAPIKey(ctx, d, apiKey)
+	if err != nil {
+		return nil, fmt.Errorf("could not get api key: %w", parseErrorDetail(err))
+	}
+
+	err = uak.Delete(ctx, d)
+	if err != nil {
+		return nil, fmt.Errorf("could not delete api key: %w", parseErrorDetail(err))
+	}
+
+	return uak, nil
+}
+
 func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {
 	uak := &db.UserAPIKey{
 		APIKey:    uuid.NewString(),

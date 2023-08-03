@@ -19,7 +19,7 @@ func NewRandomActivity(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Act
 	ucp := RandomActivityCreateParams(t, projectID)
 
 	activity, err := activityRepo.Create(context.Background(), pool, ucp)
-	require.NoError(t, err, "failed to create random entity")
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
 
 	return activity, nil
 }

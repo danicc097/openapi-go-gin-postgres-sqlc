@@ -28,6 +28,10 @@ type UserWithTimeoutConfig struct {
 
 	ByIDTimeout time.Duration
 
+	ByProjectTimeout time.Duration
+
+	ByTeamTimeout time.Duration
+
 	ByUsernameTimeout time.Duration
 
 	CreateTimeout time.Duration
@@ -35,6 +39,8 @@ type UserWithTimeoutConfig struct {
 	CreateAPIKeyTimeout time.Duration
 
 	DeleteTimeout time.Duration
+
+	DeleteAPIKeyTimeout time.Duration
 
 	UpdateTimeout time.Duration
 }
@@ -87,6 +93,26 @@ func (_d UserWithTimeout) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opt
 	return _d.User.ByID(ctx, d, id, opts...)
 }
 
+// ByProject implements repos.User
+func (_d UserWithTimeout) ByProject(ctx context.Context, d db.DBTX, projectID int) (ua1 []db.User, err error) {
+	var cancelFunc func()
+	if _d.config.ByProjectTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByProjectTimeout)
+		defer cancelFunc()
+	}
+	return _d.User.ByProject(ctx, d, projectID)
+}
+
+// ByTeam implements repos.User
+func (_d UserWithTimeout) ByTeam(ctx context.Context, d db.DBTX, teamID int) (ua1 []db.User, err error) {
+	var cancelFunc func()
+	if _d.config.ByTeamTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByTeamTimeout)
+		defer cancelFunc()
+	}
+	return _d.User.ByTeam(ctx, d, teamID)
+}
+
 // ByUsername implements repos.User
 func (_d UserWithTimeout) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
@@ -125,6 +151,16 @@ func (_d UserWithTimeout) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (
 		defer cancelFunc()
 	}
 	return _d.User.Delete(ctx, d, id)
+}
+
+// DeleteAPIKey implements repos.User
+func (_d UserWithTimeout) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.UserAPIKey, err error) {
+	var cancelFunc func()
+	if _d.config.DeleteAPIKeyTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteAPIKeyTimeout)
+		defer cancelFunc()
+	}
+	return _d.User.DeleteAPIKey(ctx, d, apiKey)
 }
 
 // Update implements repos.User

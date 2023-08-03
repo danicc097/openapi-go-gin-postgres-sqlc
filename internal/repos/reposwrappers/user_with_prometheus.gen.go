@@ -95,6 +95,34 @@ func (_d UserWithPrometheus) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, 
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
+// ByProject implements repos.User
+func (_d UserWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID int) (ua1 []db.User, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "ByProject", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByProject(ctx, d, projectID)
+}
+
+// ByTeam implements repos.User
+func (_d UserWithPrometheus) ByTeam(ctx context.Context, d db.DBTX, teamID int) (ua1 []db.User, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "ByTeam", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByTeam(ctx, d, teamID)
+}
+
 // ByUsername implements repos.User
 func (_d UserWithPrometheus) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	_since := time.Now()
@@ -149,6 +177,20 @@ func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id uuid.UUID
 		userDurationSummaryVec.WithLabelValues(_d.instanceName, "Delete", result).Observe(time.Since(_since).Seconds())
 	}()
 	return _d.base.Delete(ctx, d, id)
+}
+
+// DeleteAPIKey implements repos.User
+func (_d UserWithPrometheus) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.UserAPIKey, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "DeleteAPIKey", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.DeleteAPIKey(ctx, d, apiKey)
 }
 
 // Update implements repos.User

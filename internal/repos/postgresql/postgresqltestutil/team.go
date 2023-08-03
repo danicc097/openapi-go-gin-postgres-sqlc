@@ -19,7 +19,7 @@ func NewRandomTeam(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Team, e
 	ucp := RandomTeamCreateParams(t, projectID)
 
 	team, err := teamRepo.Create(context.Background(), pool, ucp)
-	require.NoError(t, err, "failed to create random entity")
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
 
 	return team, nil
 }

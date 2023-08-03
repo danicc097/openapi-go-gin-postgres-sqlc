@@ -121,6 +121,7 @@ type User interface {
 	Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
 	// CreateAPIKey requires an existing user.
 	CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error)
+	DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.UserAPIKey, error)
 }
 
 // Project defines the datastore/repository handling persisting Project records.

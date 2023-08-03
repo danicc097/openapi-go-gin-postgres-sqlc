@@ -23,7 +23,7 @@ func NewRandomUser(t *testing.T, pool *pgxpool.Pool) (*db.User, error) {
 	ucp := RandomUserCreateParams(t)
 
 	user, err := userRepo.Create(context.Background(), pool, ucp)
-	require.NoError(t, err, "failed to create random entity")
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
 
 	return user, nil
 }

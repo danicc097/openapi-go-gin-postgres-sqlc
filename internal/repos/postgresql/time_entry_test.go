@@ -77,10 +77,13 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 		})
 	}
 
-	// repo not concerned about this.
-	// also terrible idea since we would need to remove Fatal calls from testutil
-	// t.Run("bad_time_entry_creation", func(t *testing.T) {
-	// 	_, err := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, nil, nil)
-	// 	assert.ErrorContains(t, err, errViolatesCheckConstraint)
-	// })
+	t.Run("bad_time_entry_creation", func(t *testing.T) {
+		t.Parallel()
+
+		// test num_nonnulls which is repo's responsibility
+		ucp := postgresqltestutil.RandomTimeEntryCreateParams(t, activity.ActivityID, user.UserID, nil, nil)
+
+		_, err := timeEntryRepo.Create(context.Background(), testPool, ucp)
+		assert.ErrorContains(t, err, errViolatesCheckConstraint)
+	})
 }

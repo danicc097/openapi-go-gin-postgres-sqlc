@@ -105,6 +105,44 @@ func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts 
 	return
 }
 
+// ByProject implements repos.User
+func (_d UserWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID int) (ua1 []db.User, err error) {
+	ua1, err = _d.User.ByProject(ctx, d, projectID)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		ua1, err = _d.User.ByProject(ctx, d, projectID)
+	}
+	return
+}
+
+// ByTeam implements repos.User
+func (_d UserWithRetry) ByTeam(ctx context.Context, d db.DBTX, teamID int) (ua1 []db.User, err error) {
+	ua1, err = _d.User.ByTeam(ctx, d, teamID)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		ua1, err = _d.User.ByTeam(ctx, d, teamID)
+	}
+	return
+}
+
 // ByUsername implements repos.User
 func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	up1, err = _d.User.ByUsername(ctx, d, username, opts...)
@@ -177,6 +215,25 @@ func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (up
 		case <-_ticker.C:
 		}
 		up1, err = _d.User.Delete(ctx, d, id)
+	}
+	return
+}
+
+// DeleteAPIKey implements repos.User
+func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.UserAPIKey, err error) {
+	up1, err = _d.User.DeleteAPIKey(ctx, d, apiKey)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		up1, err = _d.User.DeleteAPIKey(ctx, d, apiKey)
 	}
 	return
 }

@@ -178,6 +178,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	nonUniqueTestCases := []filterTestCase[[]db.User]{
 		{
+			// FIXME: no rows found for some reason...
 			name:       "team_id",
 			filter:     team.TeamID,
 			repoMethod: reflect.ValueOf(userRepo.ByTeam),
@@ -235,9 +236,6 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		errContains := "could not save api key"
 
 		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: uuid.New()})
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
 		assert.ErrorContains(t, err, errContains)
 	})
 
@@ -262,15 +260,23 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		errContains := errNoRows
 
 		_, err := userRepo.ByAPIKey(context.Background(), testPool, "missing")
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
 		assert.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("can_delete_an_api_key", func(t *testing.T) {
-		// TODO
 		t.Parallel()
+
+		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
+
+		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
+		require.NoError(t, err)
+
+		deletedUak, err := userRepo.DeleteAPIKey(context.Background(), testPool, uak.APIKey)
+		require.NoError(t, err)
+		assert.Equal(t, deletedUak.APIKey, uak.APIKey)
+
+		_, err = userRepo.ByAPIKey(context.Background(), testPool, uak.APIKey)
+		assert.ErrorContains(t, err, errNoRows)
 	})
 }
 
@@ -294,7 +300,7 @@ func TestUser_Create(t *testing.T) {
 		ucp := postgresqltestutil.RandomUserCreateParams(t)
 
 		want := want{
-			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName),
+			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName), // repo responsibility
 			UserCreateParams: *ucp,
 		}
 

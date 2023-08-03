@@ -165,6 +165,21 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
+	DeleteAPIKeyStub        func(context.Context, db.DBTX, string) (*db.UserAPIKey, error)
+	deleteAPIKeyMutex       sync.RWMutex
+	deleteAPIKeyArgsForCall []struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 string
+	}
+	deleteAPIKeyReturns struct {
+		result1 *db.UserAPIKey
+		result2 error
+	}
+	deleteAPIKeyReturnsOnCall map[int]struct {
+		result1 *db.UserAPIKey
+		result2 error
+	}
 	UpdateStub        func(context.Context, db.DBTX, uuid.UUID, *db.UserUpdateParams) (*db.User, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
@@ -849,6 +864,72 @@ func (fake *FakeUser) DeleteReturnsOnCall(i int, result1 *db.User, result2 error
 	}{result1, result2}
 }
 
+func (fake *FakeUser) DeleteAPIKey(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.UserAPIKey, error) {
+	fake.deleteAPIKeyMutex.Lock()
+	ret, specificReturn := fake.deleteAPIKeyReturnsOnCall[len(fake.deleteAPIKeyArgsForCall)]
+	fake.deleteAPIKeyArgsForCall = append(fake.deleteAPIKeyArgsForCall, struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 string
+	}{arg1, arg2, arg3})
+	stub := fake.DeleteAPIKeyStub
+	fakeReturns := fake.deleteAPIKeyReturns
+	fake.recordInvocation("DeleteAPIKey", []interface{}{arg1, arg2, arg3})
+	fake.deleteAPIKeyMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUser) DeleteAPIKeyCallCount() int {
+	fake.deleteAPIKeyMutex.RLock()
+	defer fake.deleteAPIKeyMutex.RUnlock()
+	return len(fake.deleteAPIKeyArgsForCall)
+}
+
+func (fake *FakeUser) DeleteAPIKeyCalls(stub func(context.Context, db.DBTX, string) (*db.UserAPIKey, error)) {
+	fake.deleteAPIKeyMutex.Lock()
+	defer fake.deleteAPIKeyMutex.Unlock()
+	fake.DeleteAPIKeyStub = stub
+}
+
+func (fake *FakeUser) DeleteAPIKeyArgsForCall(i int) (context.Context, db.DBTX, string) {
+	fake.deleteAPIKeyMutex.RLock()
+	defer fake.deleteAPIKeyMutex.RUnlock()
+	argsForCall := fake.deleteAPIKeyArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUser) DeleteAPIKeyReturns(result1 *db.UserAPIKey, result2 error) {
+	fake.deleteAPIKeyMutex.Lock()
+	defer fake.deleteAPIKeyMutex.Unlock()
+	fake.DeleteAPIKeyStub = nil
+	fake.deleteAPIKeyReturns = struct {
+		result1 *db.UserAPIKey
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUser) DeleteAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, result2 error) {
+	fake.deleteAPIKeyMutex.Lock()
+	defer fake.deleteAPIKeyMutex.Unlock()
+	fake.DeleteAPIKeyStub = nil
+	if fake.deleteAPIKeyReturnsOnCall == nil {
+		fake.deleteAPIKeyReturnsOnCall = make(map[int]struct {
+			result1 *db.UserAPIKey
+			result2 error
+		})
+	}
+	fake.deleteAPIKeyReturnsOnCall[i] = struct {
+		result1 *db.UserAPIKey
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 uuid.UUID, arg4 *db.UserUpdateParams) (*db.User, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
@@ -939,6 +1020,8 @@ func (fake *FakeUser) Invocations() map[string][][]interface{} {
 	defer fake.createAPIKeyMutex.RUnlock()
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
+	fake.deleteAPIKeyMutex.RLock()
+	defer fake.deleteAPIKeyMutex.RUnlock()
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
