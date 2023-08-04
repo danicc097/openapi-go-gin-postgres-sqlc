@@ -312,6 +312,21 @@ paths:
                 $ref: '#/components/schemas/ProjectBoardResponse'
       tags:
         - project
+  # https://stackoverflow.com/a/32820784/11995537
+  # This appears to be the simplest solution
+  # POST /project/ # not in our case since theyre hardcoded to allow for complex logic per project
+  # POST /project/{projectName}/team
+  # GET /project/{projectName}/team
+  # GET/PATCH /team/{teamId}
+  # POST /team/{teamId}/workitem since [/project/{projectName}]/team/{teamId}/workitem has duplicated info in [].
+  # we just care that parent is a team
+  # NOTE: if we don't want to use ids for convenience, we just need to make it unique, e.g. github
+  # GET /repos/{owner}/{repo}/commits
+  # in our case this is similar to work item tags by name, which are shared by a whole project,
+  # so a project is the direct parent of the tag
+  # GET /project/{projectName}/work-item-tags/{workItemTagName}
+  # however with an id we would do
+  # GET /work-item-tags/{workItemTagId}
   /project/{projectName}/workitems:
     get:
       summary: returns workitems for a project
