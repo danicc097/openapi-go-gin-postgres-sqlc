@@ -70,7 +70,7 @@ func main() {
 	activitySvc := services.NewActivity(logger, activityRepo)
 	teamSvc := services.NewTeam(logger, teamRepo)
 	teSvc := services.NewTimeEntry(logger, teRepo, wiRepo)
-	wiSvc := services.NewWorkItem(logger, demoWiRepo, userRepo)
+	wiSvc := services.NewWorkItem(logger, wiRepo, userRepo)
 	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo, wiRepo, userRepo, wiSvc)
 	wiTagSvc := services.NewWorkItemTag(logger, wiTagRepo)
 

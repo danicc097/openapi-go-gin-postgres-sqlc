@@ -117,7 +117,7 @@ func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params rep
 func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.Delete").End()
 
-	wi, err := w.demowiRepo.Delete(ctx, d, id)
+	wi, err := w.wiRepo.Delete(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Delete: %w", err)
 	}
@@ -170,5 +170,5 @@ func (w *DemoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.Wo
 }
 
 func (w *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	return w.demowiRepo.Restore(ctx, d, id)
+	return w.wiRepo.Restore(ctx, d, id)
 }

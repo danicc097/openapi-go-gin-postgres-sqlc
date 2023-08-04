@@ -1775,6 +1775,7 @@ while [[ "$#" -gt 0 ]]; do
     # Use in case of compilation errors that depend on generated code.
     # A clean gen run is required afterwards.
     export IGNORE_BUILD_ERRORS=1
+    export NO_CACHE=1 # if we need to use this flag, chances are something failed but some other commands are cached with wrong output
     ;;
   --x-force-regen)
     # Removes generation cache, forcing a new run.

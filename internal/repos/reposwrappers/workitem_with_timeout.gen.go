@@ -20,6 +20,10 @@ type WorkItemWithTimeout struct {
 
 type WorkItemWithTimeoutConfig struct {
 	ByIDTimeout time.Duration
+
+	DeleteTimeout time.Duration
+
+	RestoreTimeout time.Duration
 }
 
 // NewWorkItemWithTimeout returns WorkItemWithTimeout
@@ -38,4 +42,24 @@ func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts 
 		defer cancelFunc()
 	}
 	return _d.WorkItem.ByID(ctx, d, id, opts...)
+}
+
+// Delete implements repos.WorkItem
+func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+	var cancelFunc func()
+	if _d.config.DeleteTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.Delete(ctx, d, id)
+}
+
+// Restore implements repos.WorkItem
+func (_d WorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+	var cancelFunc func()
+	if _d.config.RestoreTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RestoreTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.Restore(ctx, d, id)
 }

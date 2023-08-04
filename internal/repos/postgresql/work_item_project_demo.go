@@ -72,31 +72,3 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params rep
 
 	return workItem, err
 }
-
-func (u *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	workItem, err := u.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get workItem: %w", parseErrorDetail(err))
-	}
-
-	err = workItem.SoftDelete(ctx, d)
-	if err != nil {
-		return nil, fmt.Errorf("could not soft delete workItem: %w", parseErrorDetail(err))
-	}
-
-	return workItem, err
-}
-
-func (u *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	var err error
-	workItem := &db.WorkItem{
-		WorkItemID: id,
-	}
-
-	workItem, err = workItem.Restore(ctx, d)
-	if err != nil {
-		return nil, fmt.Errorf("could not restore workItem: %w", parseErrorDetail(err))
-	}
-
-	return workItem, err
-}

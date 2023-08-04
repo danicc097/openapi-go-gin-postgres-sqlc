@@ -66,44 +66,6 @@ func (_d DemoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params re
 	return
 }
 
-// Delete implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
-	wp1, err = _d.DemoWorkItem.Delete(ctx, d, id)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		wp1, err = _d.DemoWorkItem.Delete(ctx, d, id)
-	}
-	return
-}
-
-// Restore implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
-	wp1, err = _d.DemoWorkItem.Restore(ctx, d, id)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		wp1, err = _d.DemoWorkItem.Restore(ctx, d, id)
-	}
-	return
-}
-
 // Update implements repos.DemoWorkItem
 func (_d DemoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.DemoWorkItem.Update(ctx, d, id, params)

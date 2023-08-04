@@ -51,3 +51,31 @@ func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, op
 	}()
 	return _d.base.ByID(ctx, d, id, opts...)
 }
+
+// Delete implements repos.WorkItem
+func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "Delete", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.Delete(ctx, d, id)
+}
+
+// Restore implements repos.WorkItem
+func (_d WorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "Restore", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.Restore(ctx, d, id)
+}

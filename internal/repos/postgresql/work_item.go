@@ -36,7 +36,6 @@ func (u *WorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkI
 	return err
 }
 
-// TODO: delete from work_item_project_*.
 func (u *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
@@ -51,7 +50,6 @@ func (u *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem,
 	return workItem, err
 }
 
-// TODO: delete from work_item_project_*.
 func (u *WorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	var err error
 	workItem := &db.WorkItem{
