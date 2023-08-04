@@ -15,6 +15,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -28,9 +29,7 @@ func TestUser_UpdateUser(t *testing.T) {
 	logger := zaptest.NewLogger(t).Sugar()
 
 	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
-	if err != nil {
-		t.Fatalf("services.NewAuthorization: %v", err)
-	}
+	require.NoError(t, err)
 
 	type args struct {
 		params *models.UpdateUserRequest
@@ -109,9 +108,8 @@ func TestUser_UpdateUser(t *testing.T) {
 				t.Fatalf("unexpected error = %v", err)
 			}
 			if tc.error != "" {
-				if err == nil {
-					t.Fatalf("expected error = '%v' but got nothing", tc.error)
-				}
+				require.Error(t, err)
+
 				assert.Equal(t, tc.error, err.Error())
 
 				return
@@ -129,9 +127,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	logger := zaptest.NewLogger(t).Sugar()
 
 	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
-	if err != nil {
-		t.Fatalf("services.NewAuthorization: %v", err)
-	}
+	require.NoError(t, err)
 
 	// TODO create users on demand with parameterized tests. same as repo ucp but using FakeUserRepo instead
 	// e.g. cannot_set_scope_unassigned_to_self  and can_set_scopes_asigned_to_self
@@ -289,9 +285,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				t.Fatalf("unexpected error = %v", err)
 			}
 			if tc.error != "" {
-				if err == nil {
-					t.Fatalf("expected error = '%v' but got nothing", tc.error)
-				}
+				require.Error(t, err)
+
 				assert.Equal(t, tc.error, err.Error())
 
 				return
@@ -313,37 +308,32 @@ func createTestUsers(t *testing.T) testUsers {
 		Role:       models.RoleAdmin,
 		WithAPIKey: true,
 	})
-	if err != nil {
-		t.Fatalf("ff.CreateUser: %s", err)
-	}
+	require.NoError(t, err)
+
 	user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleUser,
 		WithAPIKey: true,
 	})
-	if err != nil {
-		t.Fatalf("ff.CreateUser: %s", err)
-	}
+	require.NoError(t, err)
+
 	advancedUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdvancedUser,
 		WithAPIKey: true,
 	})
-	if err != nil {
-		t.Fatalf("ff.CreateUser: %s", err)
-	}
+	require.NoError(t, err)
+
 	manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleManager,
 		WithAPIKey: true,
 	})
-	if err != nil {
-		t.Fatalf("ff.CreateUser: %s", err)
-	}
+	require.NoError(t, err)
+
 	admin, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,
 		WithAPIKey: true,
 	})
-	if err != nil {
-		t.Fatalf("ff.CreateUser: %s", err)
-	}
+	require.NoError(t, err)
+
 	return testUsers{
 		guest:        guest,
 		user:         user,
