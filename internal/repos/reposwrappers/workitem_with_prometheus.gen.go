@@ -10,6 +10,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -38,6 +39,20 @@ func NewWorkItemWithPrometheus(base repos.WorkItem, instanceName string) WorkIte
 	}
 }
 
+// AssignMember implements repos.WorkItem
+func (_d WorkItemWithPrometheus) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "AssignMember", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.AssignMember(ctx, d, params)
+}
+
 // ByID implements repos.WorkItem
 func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
@@ -64,6 +79,20 @@ func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) 
 		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "Delete", result).Observe(time.Since(_since).Seconds())
 	}()
 	return _d.base.Delete(ctx, d, id)
+}
+
+// RemoveMember implements repos.WorkItem
+func (_d WorkItemWithPrometheus) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "RemoveMember", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.RemoveMember(ctx, d, memberID, workItemID)
 }
 
 // Restore implements repos.WorkItem

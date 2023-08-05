@@ -1665,7 +1665,7 @@ backup-gen.restore() {
   rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
   restore_gen_files "$GEN_BACKUP" internal
 
-  rm -f "$GEN_BACKUP"/*.md5 # clear gen cache
+  rm -f "$CACHE"/*.md5 # clear gen cache
 }
 
 backup_gen_files() {
@@ -1775,7 +1775,7 @@ while [[ "$#" -gt 0 ]]; do
     # Use in case of compilation errors that depend on generated code.
     # A clean gen run is required afterwards.
     export IGNORE_BUILD_ERRORS=1
-    export NO_CACHE=1 # if we need to use this flag, chances are something failed but some other commands are cached with wrong output
+    # export NO_CACHE=1 # on failed gen $CACHE is cleared, shouldn't be necessary
     ;;
   --x-force-regen)
     # Removes generation cache, forcing a new run.

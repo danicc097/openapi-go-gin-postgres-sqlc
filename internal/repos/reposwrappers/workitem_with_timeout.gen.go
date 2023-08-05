@@ -10,6 +10,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 )
 
 // WorkItemWithTimeout implements repos.WorkItem interface instrumented with timeouts
@@ -19,9 +20,13 @@ type WorkItemWithTimeout struct {
 }
 
 type WorkItemWithTimeoutConfig struct {
+	AssignMemberTimeout time.Duration
+
 	ByIDTimeout time.Duration
 
 	DeleteTimeout time.Duration
+
+	RemoveMemberTimeout time.Duration
 
 	RestoreTimeout time.Duration
 }
@@ -32,6 +37,16 @@ func NewWorkItemWithTimeout(base repos.WorkItem, config WorkItemWithTimeoutConfi
 		WorkItem: base,
 		config:   config,
 	}
+}
+
+// AssignMember implements repos.WorkItem
+func (_d WorkItemWithTimeout) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+	var cancelFunc func()
+	if _d.config.AssignMemberTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.AssignMemberTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.AssignMember(ctx, d, params)
 }
 
 // ByID implements repos.WorkItem
@@ -52,6 +67,16 @@ func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp
 		defer cancelFunc()
 	}
 	return _d.WorkItem.Delete(ctx, d, id)
+}
+
+// RemoveMember implements repos.WorkItem
+func (_d WorkItemWithTimeout) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+	var cancelFunc func()
+	if _d.config.RemoveMemberTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveMemberTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.RemoveMember(ctx, d, memberID, workItemID)
 }
 
 // Restore implements repos.WorkItem
