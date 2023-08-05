@@ -6,6 +6,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 )
 
 // WorkItem represents the repository used for interacting with WorkItem records.
@@ -30,10 +31,21 @@ func (u *WorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkI
 	return db.WorkItemByWorkItemID(ctx, d, id, opts...)
 }
 
+// TODO: remove from demo and demo_two.
 func (u *WorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
 	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
 
 	return err
+}
+
+// TODO: remove from demo and demo_two.
+func (w *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
+	wim := &db.WorkItemAssignedUser{
+		AssignedUser: memberID,
+		WorkItemID:   workItemID,
+	}
+
+	return wim.Delete(ctx, d)
 }
 
 func (u *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {

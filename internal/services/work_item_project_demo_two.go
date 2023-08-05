@@ -112,12 +112,14 @@ func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.Wo
 	return wi, nil
 }
 
+// TODO: same as assign/remove members.
 func (w *DemoTwoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
 	_, err := db.CreateWorkItemWorkItemTag(ctx, d, params)
 
 	return err
 }
 
+// TODO: same as assign/remove members.
 func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
@@ -127,12 +129,14 @@ func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, w
 	return wiwit.Delete(ctx, d)
 }
 
+// TODO: remove in favor of assignmembers generic workitem function.
 func (w *DemoTwoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
 	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
 
 	return err
 }
 
+// TODO: remove in favor of removemembers generic workitem function.
 func (w *DemoTwoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
 	wim := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
