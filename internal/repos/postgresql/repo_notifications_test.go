@@ -19,7 +19,8 @@ func TestNotification_Create(t *testing.T) {
 
 	notificationRepo := postgresql.NewNotification()
 
-	sender, _ := postgresqltestutil.NewRandomUser(t, testPool)
+	sender, err := postgresqltestutil.NewRandomUser(t, testPool)
+	require.NoError(t, err)
 
 	t.Run("correct_personal_notification", func(t *testing.T) {
 		t.Parallel()
@@ -45,22 +46,30 @@ func TestNotification_Create(t *testing.T) {
 	t.Run("correct_global_notification_by_rank", func(t *testing.T) {
 		t.Parallel()
 
-		receiverRank3, _ := postgresqltestutil.NewRandomUser(t, testPool)
+		var err error
+
+		receiverRank3, err := postgresqltestutil.NewRandomUser(t, testPool)
+		require.NoError(t, err)
 		receiverRank3.RoleRank = 3
-		receiverRank3.Update(context.Background(), testPool)
-		receiverRank1, _ := postgresqltestutil.NewRandomUser(t, testPool)
+		_, err = receiverRank3.Update(context.Background(), testPool)
+		require.NoError(t, err)
+
+		receiverRank1, err := postgresqltestutil.NewRandomUser(t, testPool)
+		require.NoError(t, err)
 		receiverRank1.RoleRank = 1
-		receiverRank1.Update(context.Background(), testPool)
+		_, err = receiverRank1.Update(context.Background(), testPool)
+		require.NoError(t, err)
 
 		receiverRank := pointers.New(3)
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, receiverRank, sender.UserID, nil, db.NotificationTypeGlobal)
 
 		ctx := context.Background()
-		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
+		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
+		require.NoError(t, err)
 		defer tx.Rollback(ctx)
 
-		_, err := notificationRepo.Create(context.Background(), tx, ncp)
+		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
 
 		notificationCount := map[uuid.UUID]int{

@@ -11,18 +11,17 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomUser(t *testing.T, pool *pgxpool.Pool) (*db.User, error) {
+func NewRandomUser(t *testing.T, d db.DBTX) (*db.User, error) {
 	t.Helper()
 
 	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
 
 	ucp := RandomUserCreateParams(t)
 
-	user, err := userRepo.Create(context.Background(), pool, ucp)
+	user, err := userRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
 
 	return user, nil
