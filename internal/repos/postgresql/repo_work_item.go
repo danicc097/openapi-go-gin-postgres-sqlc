@@ -49,12 +49,11 @@ func (w *WorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UU
 }
 
 func (u *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	workItem, err := u.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get workItem: %w", parseErrorDetail(err))
+	workItem := &db.WorkItem{
+		WorkItemID: id,
 	}
 
-	err = workItem.SoftDelete(ctx, d)
+	err := workItem.SoftDelete(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not soft delete workItem: %w", parseErrorDetail(err))
 	}

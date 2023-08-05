@@ -66,12 +66,11 @@ func (t *Team) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelec
 }
 
 func (t *Team) Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
-	team, err := t.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get team by id %w", parseErrorDetail(err))
+	team := &db.Team{
+		TeamID: id,
 	}
 
-	err = team.Delete(ctx, d)
+	err := team.Delete(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not delete team: %w", parseErrorDetail(err))
 	}

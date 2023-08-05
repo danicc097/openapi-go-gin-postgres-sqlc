@@ -86,12 +86,11 @@ func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.Notific
 }
 
 func (u *Notification) Delete(ctx context.Context, d db.DBTX, id int) (*db.Notification, error) {
-	notification, err := db.NotificationByNotificationID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get notification by id %w", parseErrorDetail(err))
+	notification := &db.Notification{
+		NotificationID: id,
 	}
 
-	err = notification.Delete(ctx, d)
+	err := notification.Delete(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not delete notification: %w", parseErrorDetail(err))
 	}

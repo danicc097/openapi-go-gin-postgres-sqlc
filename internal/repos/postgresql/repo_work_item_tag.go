@@ -66,12 +66,11 @@ func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.
 }
 
 func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
-	workItemTag, err := wit.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
+	workItemTag := &db.WorkItemTag{
+		WorkItemTagID: id,
 	}
 
-	err = workItemTag.Delete(ctx, d)
+	err := workItemTag.Delete(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not delete work item tag: %w", parseErrorDetail(err))
 	}

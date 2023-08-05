@@ -57,12 +57,11 @@ func (wit *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id int, opts ..
 }
 
 func (wit *WorkItemComment) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemComment, error) {
-	workItemComment, err := wit.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get workItemComment by id %w", parseErrorDetail(err))
+	workItemComment := &db.WorkItemComment{
+		WorkItemCommentID: id,
 	}
 
-	err = workItemComment.Delete(ctx, d)
+	err := workItemComment.Delete(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not delete workItemComment: %w", parseErrorDetail(err))
 	}

@@ -75,12 +75,11 @@ func (a *Activity) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.Activ
 }
 
 func (a *Activity) Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
-	activity, err := a.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
+	activity := &db.Activity{
+		ActivityID: id,
 	}
 
-	err = activity.Delete(ctx, d)
+	err := activity.Delete(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not delete activity: %w", parseErrorDetail(err))
 	}
