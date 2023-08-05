@@ -215,23 +215,27 @@ begin
           set
             has_global_notifications = true
           where
-            role_rank >= new.receiver_rank;
-            --
-            for receiver_id in (
+            role_rank >= new.receiver_rank; for receiver_id in (
+              -- in parallel tests fan out will loop through all users with rank >= X, but one of those may be a user
+              -- that will be deleted, leading to could not create notification: Key (user_id)=(**) is not present in table "users".
               select
-                user_id
-              from
-                users
-              where
-                role_rank >= new.receiver_rank)
-              loop
+                user_id from users
+                where
+                  role_rank >= new.receiver_rank)
+            loop
+              begin
                 insert into user_notifications (notification_id , user_id)
                   values (new.notification_id , receiver_id);
-                  end loop;
-        end case;
+              exception
+                when others then
+                  -- ignore all errors since this may loop through a user that is getting deleted (tests), etc.
+                  raise notice 'Error inserting notification for user_id=(%): % ' , receiver_id , SQLERRM;
+                end;
+        end loop;
+  end case;
   -- it's after trigger so wouldn't mattern anyway
   return null;
-end
+  end
 $function$;
 
 -- deletes get cascaded
