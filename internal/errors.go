@@ -16,6 +16,7 @@ type Error struct {
 	orig error
 	msg  string
 	code models.ErrorCode
+	loc  []string
 }
 
 // WrapErrorf returns a wrapped error.
@@ -25,6 +26,27 @@ func WrapErrorf(orig error, code models.ErrorCode, format string, a ...any) erro
 		orig: orig,
 		msg:  fmt.Sprintf(format, a...),
 	}
+}
+
+// WrapErrorWithLocf appends a given `path` to loc.
+func WrapErrorWithLocf(orig error, code models.ErrorCode, loc []string, format string, a ...interface{}) error {
+	var ierr *Error
+	var previousLoc []string
+	if errors.As(orig, &ierr) {
+		previousLoc = ierr.loc // accumulate
+	}
+
+	return &Error{
+		orig: orig,
+		code: code,
+		msg:  fmt.Sprintf(format, a...),
+		loc:  append(loc, previousLoc...),
+	}
+}
+
+// NewErrorWithLocf instantiates a new error with error location.
+func NewErrorWithLocf(code models.ErrorCode, loc []string, format string, a ...any) error {
+	return WrapErrorWithLocf(nil, code, loc, format, a...)
 }
 
 // NewErrorf instantiates a new error.
@@ -49,6 +71,11 @@ func (e *Error) Unwrap() error {
 // Code returns the code representing this error.
 func (e *Error) Code() models.ErrorCode {
 	return e.code
+}
+
+// Loc returns the accumulated error location.
+func (e *Error) Loc() []string {
+	return e.loc
 }
 
 // Cause returns the root error cause in the chain.
