@@ -215,23 +215,27 @@ begin
           set
             has_global_notifications = true
           where
-            role_rank >= new.receiver_rank;
-            --
-            for receiver_id in (
+            role_rank >= new.receiver_rank; for receiver_id in (
+              -- in parallel tests fan out will loop through all users with rank >= X, but one of those may be a user
+              -- that will be deleted, leading to could not create notification: Key (user_id)=(**) is not present in table "users".
               select
-                user_id
-              from
-                users
-              where
-                role_rank >= new.receiver_rank)
-              loop
+                user_id from users
+                where
+                  role_rank >= new.receiver_rank)
+            loop
+              begin
                 insert into user_notifications (notification_id , user_id)
                   values (new.notification_id , receiver_id);
-                  end loop;
-        end case;
+              exception
+                when others then
+                  -- ignore all errors since this may loop through a user that is getting deleted (tests), etc.
+                  raise notice 'Error inserting notification for user_id=(%): % ' , receiver_id , SQLERRM;
+                end;
+        end loop;
+  end case;
   -- it's after trigger so wouldn't mattern anyway
   return null;
-end
+  end
 $function$;
 
 -- deletes get cascaded
@@ -308,11 +312,6 @@ comment on column work_item_types.project_id is '"cardinality":M2O';
 --   , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
 --   , foreign key (invoice_type_id) references invoice_types (invoice_type_id) on delete cascade
 -- );
-/*
-keep track of per-project overrides in shared json, indexed by project name (unique).
-Can be directly used in backend (codegen alternative struct) and frontend
-internally the storage is the same and doesn't affect in any way.
- */
 create table work_items (
   work_item_id bigserial primary key
   , title text not null
@@ -323,18 +322,6 @@ create table work_items (
   , kanban_step_id int not null
   , closed_at timestamp with time zone -- NULL: active
   , target_date timestamp with time zone not null
-  /*
-   -- IMPORTANT: implement this:
-   alternative to sharing all keys for different projects in the same table:
-   https://stackoverflow.com/questions/10068033/postgresql-foreign-key-referencing-primary-keys-of-two-different-tables
-   for every custom project we reference the common columns with its own PK being a FK
-   We would then query this custom table explicitly and join with the common columns via PI which is really fast
-   we would need to join every single record but models are much much cleaner.
-   every default workitem still keeps a team_id reference.
-   tables with extra fields are for a given project. so we could have another team_id column
-   in this new table with check (team_id in select team_id ... join teams where project_id ... )
-   the same concept is also seen in https://dba.stackexchange.com/questions/232262/solving-supertype-subtype-relationship-without-sacrificing-data-consistency-in-a
-   */
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
@@ -353,14 +340,6 @@ create index on work_items using gin (title gin_trgm_ops , description gin_trgm_
 
 create index on work_items using gin (title , description gin_trgm_ops);
 
-
-/*
-when a new project is required -> manual table creation with empty new fields, just
- work_item_id bigint primary key.
- When a new field is added, possibilities are:
- - not nullable -> must set default value for the existing rows
- - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
- */
 -- project for tour. when starting it user joins the only demo team. when exiting it user is removed.
 -- we can reset it every X hours
 create table demo_work_items (

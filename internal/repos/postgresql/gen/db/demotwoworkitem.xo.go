@@ -33,8 +33,8 @@ type DemoTwoWorkItem struct {
 
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemCreateParams struct {
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"`                       // custom_date_for_project_2
-	WorkItemID            int        `json:"workItemID" required:"true" nullable:"false"` // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`              // custom_date_for_project_2
+	WorkItemID            int        `json:"-" required:"true" nullable:"false"` // work_item_id
 }
 
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.

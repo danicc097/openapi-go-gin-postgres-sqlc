@@ -40,7 +40,7 @@ type DemoWorkItemCreateParams struct {
 	Line          string    `json:"line" required:"true" nullable:"false"`                     // line
 	Ref           string    `json:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"` // ref
 	Reopened      bool      `json:"reopened" required:"true" nullable:"false"`                 // reopened
-	WorkItemID    int       `json:"workItemID" required:"true" nullable:"false"`               // work_item_id
+	WorkItemID    int       `json:"-" required:"true" nullable:"false"`                        // work_item_id
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.

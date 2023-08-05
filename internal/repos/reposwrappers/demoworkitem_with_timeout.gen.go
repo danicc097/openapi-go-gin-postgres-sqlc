@@ -23,10 +23,6 @@ type DemoWorkItemWithTimeoutConfig struct {
 
 	CreateTimeout time.Duration
 
-	DeleteTimeout time.Duration
-
-	RestoreTimeout time.Duration
-
 	UpdateTimeout time.Duration
 }
 
@@ -56,26 +52,6 @@ func (_d DemoWorkItemWithTimeout) Create(ctx context.Context, d db.DBTX, params 
 		defer cancelFunc()
 	}
 	return _d.DemoWorkItem.Create(ctx, d, params)
-}
-
-// Delete implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
-	var cancelFunc func()
-	if _d.config.DeleteTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
-		defer cancelFunc()
-	}
-	return _d.DemoWorkItem.Delete(ctx, d, id)
-}
-
-// Restore implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
-	var cancelFunc func()
-	if _d.config.RestoreTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RestoreTimeout)
-		defer cancelFunc()
-	}
-	return _d.DemoWorkItem.Restore(ctx, d, id)
 }
 
 // Update implements repos.DemoWorkItem

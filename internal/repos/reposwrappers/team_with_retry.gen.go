@@ -29,8 +29,8 @@ func NewTeamWithRetry(base repos.Team, retryCount int, retryInterval time.Durati
 }
 
 // ByID implements repos.Team
-func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
-	tp1, err = _d.Team.ByID(ctx, d, id)
+func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+	tp1, err = _d.Team.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -42,14 +42,14 @@ func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Te
 			return
 		case <-_ticker.C:
 		}
-		tp1, err = _d.Team.ByID(ctx, d, id)
+		tp1, err = _d.Team.ByID(ctx, d, id, opts...)
 	}
 	return
 }
 
 // ByName implements repos.Team
-func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
-	tp1, err = _d.Team.ByName(ctx, d, name, projectID)
+func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+	tp1, err = _d.Team.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -61,7 +61,7 @@ func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, proj
 			return
 		case <-_ticker.C:
 		}
-		tp1, err = _d.Team.ByName(ctx, d, name, projectID)
+		tp1, err = _d.Team.ByName(ctx, d, name, projectID, opts...)
 	}
 	return
 }

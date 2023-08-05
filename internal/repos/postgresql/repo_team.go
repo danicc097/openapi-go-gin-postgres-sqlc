@@ -47,8 +47,8 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpd
 	return team, err
 }
 
-func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error) {
-	team, err := db.TeamByNameProjectID(ctx, d, name, projectID)
+func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (*db.Team, error) {
+	team, err := db.TeamByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", parseErrorDetail(err))
 	}
@@ -56,8 +56,8 @@ func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int
 	return team, nil
 }
 
-func (t *Team) ByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
-	team, err := db.TeamByTeamID(ctx, d, id)
+func (t *Team) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (*db.Team, error) {
+	team, err := db.TeamByTeamID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", parseErrorDetail(err))
 	}

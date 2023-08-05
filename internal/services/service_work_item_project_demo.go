@@ -17,6 +17,8 @@ type DemoWorkItem struct {
 	logger     *zap.SugaredLogger
 	demowiRepo repos.DemoWorkItem
 	wiRepo     repos.WorkItem
+	userRepo   repos.User
+	wiSvc      *WorkItem
 }
 
 type Member struct {
@@ -31,11 +33,13 @@ type DemoWorkItemCreateParams struct {
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.
-func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem, wiRepo repos.WorkItem) *DemoWorkItem {
+func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem, wiRepo repos.WorkItem, userRepo repos.User, wiSvc *WorkItem) *DemoWorkItem {
 	return &DemoWorkItem{
 		logger:     logger,
 		demowiRepo: demowiRepo,
 		wiRepo:     wiRepo,
+		userRepo:   userRepo,
+		wiSvc:      wiSvc,
 	}
 }
 
@@ -67,10 +71,9 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		})
 		var ierr *internal.Error
 		if err != nil {
-			if !errors.As(err, &ierr) {
-				w.logger.Infof("ierr: %v\n", ierr)
-			}
 			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
+				w.logger.Infof("skipping already assigned tag: %s\n", id)
+
 				continue
 			}
 
@@ -81,20 +84,9 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		}
 	}
 
-	for _, m := range params.Members {
-		err := w.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
-			AssignedUser: m.UserID,
-			WorkItemID:   demoWi.WorkItemID,
-			Role:         m.Role,
-		})
-		var ierr *internal.Error
-		if err != nil {
-			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
-				continue
-			}
-
-			return nil, fmt.Errorf("could not assign member %s: %w", m.UserID, err)
-		}
+	err = w.wiSvc.AssignWorkItemMembers(ctx, d, demoWi, params.Members)
+	if err != nil {
+		return nil, fmt.Errorf("could not assign members: %w", err)
 	}
 
 	// TODO rest response with non pointer required joins as usual, so that it is always up to date
@@ -125,7 +117,7 @@ func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params rep
 func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoWorkItem.Delete").End()
 
-	wi, err := w.demowiRepo.Delete(ctx, d, id)
+	wi, err := w.wiRepo.Delete(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Delete: %w", err)
 	}
@@ -133,12 +125,14 @@ func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkI
 	return wi, nil
 }
 
+// TODO: same as assign/remove members.
 func (w *DemoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
 	_, err := db.CreateWorkItemWorkItemTag(ctx, d, params)
 
 	return err
 }
 
+// TODO: same as assign/remove members.
 func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
@@ -148,12 +142,14 @@ func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, work
 	return wiwit.Delete(ctx, d)
 }
 
+// TODO: remove in favor of assignmembers generic workitem function.
 func (w *DemoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
 	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
 
 	return err
 }
 
+// TODO: remove in favor of removemembers generic workitem function.
 func (w *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
 	wim := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
@@ -178,5 +174,5 @@ func (w *DemoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.Wo
 }
 
 func (w *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	return w.demowiRepo.Restore(ctx, d, id)
+	return w.wiRepo.Restore(ctx, d, id)
 }

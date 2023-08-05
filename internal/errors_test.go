@@ -35,3 +35,24 @@ func TestErrorCause(t *testing.T) {
 	errors.As(err, &ierr)
 	assert.Equal(t, "not an internal.Error", ierr.Cause().Error())
 }
+
+func TestErrorWithLoc(t *testing.T) {
+	t.Parallel()
+
+	var ierr *internal.Error
+
+	err := internal.NewErrorWithLocf(models.ErrorCodeUnknown, []string{"nested", "0"}, "root")
+
+	err = internal.WrapErrorWithLocf(err, models.ErrorCodeInvalidArgument, []string{}, "wrapped 1")
+	errors.As(err, &ierr)
+	assert.Equal(t, []string{"nested", "0"}, ierr.Loc())
+
+	err = internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{"parent"}, "wrapped 2")
+	errors.As(err, &ierr)
+	assert.Equal(t, []string{"parent", "nested", "0"}, ierr.Loc())
+	assert.True(t, ierr.Code() == models.ErrorCodeNotFound)
+
+	err = internal.WrapErrorWithLocf(errors.New("some error"), models.ErrorCodeInvalidArgument, []string{"loc"}, "wrapped 1")
+	errors.As(err, &ierr)
+	assert.Equal(t, []string{"loc"}, ierr.Loc())
+}

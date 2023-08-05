@@ -7,21 +7,18 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
 )
 
-func NewRandomTeam(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Team, error) {
+func NewRandomTeam(t *testing.T, d db.DBTX, projectID int) (*db.Team, error) {
 	t.Helper()
 
 	teamRepo := postgresql.NewTeam()
 
 	ucp := RandomTeamCreateParams(t, projectID)
 
-	team, err := teamRepo.Create(context.Background(), pool, ucp)
-	if err != nil {
-		t.Logf("%s", err)
-		return nil, err
-	}
+	team, err := teamRepo.Create(context.Background(), d, ucp)
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
 
 	return team, nil
 }

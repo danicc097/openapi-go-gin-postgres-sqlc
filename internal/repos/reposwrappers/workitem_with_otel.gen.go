@@ -9,6 +9,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -35,6 +36,29 @@ func NewWorkItemWithTracing(base repos.WorkItem, instance string, spanDecorator 
 	return d
 }
 
+// AssignMember implements repos.WorkItem
+func (_d WorkItemWithTracing) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.AssignMember")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"params": params}, map[string]interface{}{
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.WorkItem.AssignMember(ctx, d, params)
+}
+
 // ByID implements repos.WorkItem
 func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.ByID")
@@ -58,4 +82,76 @@ func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts 
 		_span.End()
 	}()
 	return _d.WorkItem.ByID(ctx, d, id, opts...)
+}
+
+// Delete implements repos.WorkItem
+func (_d WorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.Delete")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx": ctx,
+				"d":   d,
+				"id":  id}, map[string]interface{}{
+				"wp1": wp1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.WorkItem.Delete(ctx, d, id)
+}
+
+// RemoveMember implements repos.WorkItem
+func (_d WorkItemWithTracing) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveMember")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":        ctx,
+				"d":          d,
+				"memberID":   memberID,
+				"workItemID": workItemID}, map[string]interface{}{
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.WorkItem.RemoveMember(ctx, d, memberID, workItemID)
+}
+
+// Restore implements repos.WorkItem
+func (_d WorkItemWithTracing) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.Restore")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx": ctx,
+				"d":   d,
+				"id":  id}, map[string]interface{}{
+				"wp1": wp1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.WorkItem.Restore(ctx, d, id)
 }

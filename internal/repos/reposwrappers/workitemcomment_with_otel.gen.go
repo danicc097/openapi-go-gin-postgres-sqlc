@@ -36,14 +36,15 @@ func NewWorkItemCommentWithTracing(base repos.WorkItemComment, instance string, 
 }
 
 // ByID implements repos.WorkItemComment
-func (_d WorkItemCommentWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemComment.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
+				"ctx":  ctx,
+				"d":    d,
+				"id":   id,
+				"opts": opts}, map[string]interface{}{
 				"wp1": wp1,
 				"err": err})
 		} else if err != nil {
@@ -56,7 +57,7 @@ func (_d WorkItemCommentWithTracing) ByID(ctx context.Context, d db.DBTX, id int
 
 		_span.End()
 	}()
-	return _d.WorkItemComment.ByID(ctx, d, id)
+	return _d.WorkItemComment.ByID(ctx, d, id, opts...)
 }
 
 // Create implements repos.WorkItemComment

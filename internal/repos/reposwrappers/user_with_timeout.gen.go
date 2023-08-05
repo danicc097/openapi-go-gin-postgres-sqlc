@@ -28,6 +28,10 @@ type UserWithTimeoutConfig struct {
 
 	ByIDTimeout time.Duration
 
+	ByProjectTimeout time.Duration
+
+	ByTeamTimeout time.Duration
+
 	ByUsernameTimeout time.Duration
 
 	CreateTimeout time.Duration
@@ -35,6 +39,8 @@ type UserWithTimeoutConfig struct {
 	CreateAPIKeyTimeout time.Duration
 
 	DeleteTimeout time.Duration
+
+	DeleteAPIKeyTimeout time.Duration
 
 	UpdateTimeout time.Duration
 }
@@ -58,43 +64,63 @@ func (_d UserWithTimeout) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string
 }
 
 // ByEmail implements repos.User
-func (_d UserWithTimeout) ByEmail(ctx context.Context, d db.DBTX, email string) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByEmailTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByEmailTimeout)
 		defer cancelFunc()
 	}
-	return _d.User.ByEmail(ctx, d, email)
+	return _d.User.ByEmail(ctx, d, email, opts...)
 }
 
 // ByExternalID implements repos.User
-func (_d UserWithTimeout) ByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByExternalIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByExternalIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.User.ByExternalID(ctx, d, extID)
+	return _d.User.ByExternalID(ctx, d, extID, opts...)
 }
 
 // ByID implements repos.User
-func (_d UserWithTimeout) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.User.ByID(ctx, d, id)
+	return _d.User.ByID(ctx, d, id, opts...)
+}
+
+// ByProject implements repos.User
+func (_d UserWithTimeout) ByProject(ctx context.Context, d db.DBTX, projectID int) (ua1 []db.User, err error) {
+	var cancelFunc func()
+	if _d.config.ByProjectTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByProjectTimeout)
+		defer cancelFunc()
+	}
+	return _d.User.ByProject(ctx, d, projectID)
+}
+
+// ByTeam implements repos.User
+func (_d UserWithTimeout) ByTeam(ctx context.Context, d db.DBTX, teamID int) (ua1 []db.User, err error) {
+	var cancelFunc func()
+	if _d.config.ByTeamTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByTeamTimeout)
+		defer cancelFunc()
+	}
+	return _d.User.ByTeam(ctx, d, teamID)
 }
 
 // ByUsername implements repos.User
-func (_d UserWithTimeout) ByUsername(ctx context.Context, d db.DBTX, username string) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByUsernameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByUsernameTimeout)
 		defer cancelFunc()
 	}
-	return _d.User.ByUsername(ctx, d, username)
+	return _d.User.ByUsername(ctx, d, username, opts...)
 }
 
 // Create implements repos.User
@@ -125,6 +151,16 @@ func (_d UserWithTimeout) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (
 		defer cancelFunc()
 	}
 	return _d.User.Delete(ctx, d, id)
+}
+
+// DeleteAPIKey implements repos.User
+func (_d UserWithTimeout) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.UserAPIKey, err error) {
+	var cancelFunc func()
+	if _d.config.DeleteAPIKeyTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteAPIKeyTimeout)
+		defer cancelFunc()
+	}
+	return _d.User.DeleteAPIKey(ctx, d, apiKey)
 }
 
 // Update implements repos.User

@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
@@ -17,6 +15,8 @@ type DemoTwoWorkItem struct {
 	logger        *zap.SugaredLogger
 	demotwowiRepo repos.DemoTwoWorkItem
 	wiRepo        repos.WorkItem
+	userRepo      repos.User
+	wiSvc         *WorkItem
 }
 
 type DemoTwoWorkItemCreateParams struct {
@@ -26,11 +26,13 @@ type DemoTwoWorkItemCreateParams struct {
 }
 
 // NewDemoTwoWorkItem returns a new DemoTwoWorkItem service.
-func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkItem, wiRepo repos.WorkItem) *DemoTwoWorkItem {
+func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkItem, wiRepo repos.WorkItem, userRepo repos.User, wiSvc *WorkItem) *DemoTwoWorkItem {
 	return &DemoTwoWorkItem{
 		logger:        logger,
 		demotwowiRepo: demowiRepo,
 		wiRepo:        wiRepo,
+		userRepo:      userRepo,
+		wiSvc:         wiSvc,
 	}
 }
 
@@ -55,31 +57,23 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	for _, id := range params.TagIDs {
-		err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
-			WorkItemTagID: id,
-			WorkItemID:    demoWi.WorkItemID,
-		})
-		var ierr *internal.Error
-		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("db.CreateWorkItemWorkItemTag: %w", err)
-			}
-		}
-	}
+	// TODO: abstract away since these are generic for all projects
+	// for _, id := range params.TagIDs {
+	// 	err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
+	// 		WorkItemTagID: id,
+	// 		WorkItemID:    demoWi.WorkItemID,
+	// 	})
+	// 	var ierr *internal.Error
+	// 	if err != nil {
+	// 		if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
+	// 			return nil, fmt.Errorf("db.CreateWorkItemWorkItemTag: %w", err)
+	// 		}
+	// 	}
+	// }
 
-	for _, m := range params.Members {
-		err := w.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
-			AssignedUser: m.UserID,
-			WorkItemID:   demoWi.WorkItemID,
-			Role:         m.Role,
-		})
-		var ierr *internal.Error
-		if err != nil {
-			if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-				return nil, fmt.Errorf("a.AssignMember: %w", err)
-			}
-		}
+	err = w.wiSvc.AssignWorkItemMembers(ctx, d, demoWi, params.Members)
+	if err != nil {
+		return nil, fmt.Errorf("could not assign members: %w", err)
 	}
 
 	// TODO rest response with non pointer required joins as usual, so that it is always up to date
@@ -110,7 +104,7 @@ func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params 
 func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	defer newOTELSpan(ctx, "DemoTwoWorkItem.Delete").End()
 
-	wi, err := w.demotwowiRepo.Delete(ctx, d, id)
+	wi, err := w.wiRepo.Delete(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Delete: %w", err)
 	}
@@ -118,12 +112,14 @@ func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.Wo
 	return wi, nil
 }
 
+// TODO: same as assign/remove members.
 func (w *DemoTwoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
 	_, err := db.CreateWorkItemWorkItemTag(ctx, d, params)
 
 	return err
 }
 
+// TODO: same as assign/remove members.
 func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
@@ -133,12 +129,14 @@ func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, w
 	return wiwit.Delete(ctx, d)
 }
 
+// TODO: remove in favor of assignmembers generic workitem function.
 func (w *DemoTwoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
 	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
 
 	return err
 }
 
+// TODO: remove in favor of removemembers generic workitem function.
 func (w *DemoTwoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
 	wim := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
@@ -163,5 +161,5 @@ func (w *DemoTwoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db
 }
 
 func (w *DemoTwoWorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	return w.demotwowiRepo.Restore(ctx, d, id)
+	return w.wiRepo.Restore(ctx, d, id)
 }

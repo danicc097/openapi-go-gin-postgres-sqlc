@@ -61,14 +61,15 @@ func (_d UserWithTracing) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string
 }
 
 // ByEmail implements repos.User
-func (_d UserWithTracing) ByEmail(ctx context.Context, d db.DBTX, email string) (up1 *db.User, err error) {
+func (_d UserWithTracing) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.ByEmail")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":   ctx,
 				"d":     d,
-				"email": email}, map[string]interface{}{
+				"email": email,
+				"opts":  opts}, map[string]interface{}{
 				"up1": up1,
 				"err": err})
 		} else if err != nil {
@@ -81,18 +82,19 @@ func (_d UserWithTracing) ByEmail(ctx context.Context, d db.DBTX, email string) 
 
 		_span.End()
 	}()
-	return _d.User.ByEmail(ctx, d, email)
+	return _d.User.ByEmail(ctx, d, email, opts...)
 }
 
 // ByExternalID implements repos.User
-func (_d UserWithTracing) ByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
+func (_d UserWithTracing) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.ByExternalID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":   ctx,
 				"d":     d,
-				"extID": extID}, map[string]interface{}{
+				"extID": extID,
+				"opts":  opts}, map[string]interface{}{
 				"up1": up1,
 				"err": err})
 		} else if err != nil {
@@ -105,18 +107,19 @@ func (_d UserWithTracing) ByExternalID(ctx context.Context, d db.DBTX, extID str
 
 		_span.End()
 	}()
-	return _d.User.ByExternalID(ctx, d, extID)
+	return _d.User.ByExternalID(ctx, d, extID, opts...)
 }
 
 // ByID implements repos.User
-func (_d UserWithTracing) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
+func (_d UserWithTracing) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
+				"ctx":  ctx,
+				"d":    d,
+				"id":   id,
+				"opts": opts}, map[string]interface{}{
 				"up1": up1,
 				"err": err})
 		} else if err != nil {
@@ -129,18 +132,67 @@ func (_d UserWithTracing) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up
 
 		_span.End()
 	}()
-	return _d.User.ByID(ctx, d, id)
+	return _d.User.ByID(ctx, d, id, opts...)
+}
+
+// ByProject implements repos.User
+func (_d UserWithTracing) ByProject(ctx context.Context, d db.DBTX, projectID int) (ua1 []db.User, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.ByProject")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":       ctx,
+				"d":         d,
+				"projectID": projectID}, map[string]interface{}{
+				"ua1": ua1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.User.ByProject(ctx, d, projectID)
+}
+
+// ByTeam implements repos.User
+func (_d UserWithTracing) ByTeam(ctx context.Context, d db.DBTX, teamID int) (ua1 []db.User, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.ByTeam")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"teamID": teamID}, map[string]interface{}{
+				"ua1": ua1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.User.ByTeam(ctx, d, teamID)
 }
 
 // ByUsername implements repos.User
-func (_d UserWithTracing) ByUsername(ctx context.Context, d db.DBTX, username string) (up1 *db.User, err error) {
+func (_d UserWithTracing) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.ByUsername")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":      ctx,
 				"d":        d,
-				"username": username}, map[string]interface{}{
+				"username": username,
+				"opts":     opts}, map[string]interface{}{
 				"up1": up1,
 				"err": err})
 		} else if err != nil {
@@ -153,7 +205,7 @@ func (_d UserWithTracing) ByUsername(ctx context.Context, d db.DBTX, username st
 
 		_span.End()
 	}()
-	return _d.User.ByUsername(ctx, d, username)
+	return _d.User.ByUsername(ctx, d, username, opts...)
 }
 
 // Create implements repos.User
@@ -226,6 +278,30 @@ func (_d UserWithTracing) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (
 		_span.End()
 	}()
 	return _d.User.Delete(ctx, d, id)
+}
+
+// DeleteAPIKey implements repos.User
+func (_d UserWithTracing) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.UserAPIKey, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.DeleteAPIKey")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"apiKey": apiKey}, map[string]interface{}{
+				"up1": up1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.User.DeleteAPIKey(ctx, d, apiKey)
 }
 
 // Update implements repos.User

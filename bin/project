@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=1091,2155,2068,2086,2031,2048,2178
+# shellcheck disable=1091,2155,2068,2086,2031,2048,2178,2120
 #
 #
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
@@ -182,7 +182,7 @@ x.gen.pregen() {
 
     echo "Running generation"
 
-    go build -o $BUILD_DIR/codegen cmd/codegen/main.go
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$IGNORE_BUILD_ERRORS" ]]
 
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
@@ -554,7 +554,7 @@ x.gen.client-server() {
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
-    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go # templates are embedded, required rebuild
+    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
 
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
@@ -733,7 +733,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet oapi-codegen codegen; do
+    for cmd in jet oapi-codegen codegen gen-schema; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -828,9 +828,9 @@ x.test.backend.setup() {
 # Args: [...]
 x.test.backend() {
   { { {
-    x.lint.go &
-    x.lint.sql &
-    wait
+    # x.lint.go &
+    # x.lint.sql &
+    # wait
 
     x.test.xo
 
@@ -862,7 +862,8 @@ x.test.frontend.watch() {
   pnpm run test
 }
 
-# Run custom xo generation script tests
+# Run custom xo generation script tests. Accepts `go test` parameters.
+# Args: [...]
 x.test.xo() {
   { { {
     POSTGRES_DB="$POSTGRES_TEST_DB"
@@ -888,7 +889,7 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    APP_ENV="$env" go test -count=1 "$XO_TESTS_PKG" ||
+    APP_ENV="$env" go test -count=1 "$XO_TESTS_PKG" "$@" ||
       err "xo tests failed"
 
     if ! $test_dir/diff_check; then
@@ -916,6 +917,7 @@ x.test.backend.watch() {
       while read -r event_time event_file 2>/dev/null || sleep $latency; do
         clear
 
+        # NOTE: no count=1 default to allow caching
         { APP_ENV="$env" go test -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
       done
   done
@@ -1551,7 +1553,7 @@ update_spec_with_structs() {
   # always compile and run since we need new PublicStructs that were just changed
   go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
-    >$gen_schema_spec
+    >$gen_schema_spec || [[ -n "$IGNORE_BUILD_ERRORS" ]]
 
   # prevent possible overriding if name clashes with generated schemas from structs
   # skip_schemas=("Project")
@@ -1663,7 +1665,7 @@ backup-gen.restore() {
   rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
   restore_gen_files "$GEN_BACKUP" internal
 
-  rm -f "$GEN_BACKUP"/*.md5 # clear gen cache
+  rm -f "$CACHE"/*.md5 # clear gen cache
 }
 
 backup_gen_files() {
@@ -1768,6 +1770,13 @@ while [[ "$#" -gt 0 ]]; do
     usage
     exit
     ;;
+  --x-ignore-build-errors)
+    # Proceeds with code generation regardless of tool rebuild errors.
+    # Use in case of compilation errors that depend on generated code.
+    # A clean gen run is required afterwards.
+    export IGNORE_BUILD_ERRORS=1
+    # export NO_CACHE=1 # on failed gen $CACHE is cleared, shouldn't be necessary
+    ;;
   --x-force-regen)
     # Removes generation cache, forcing a new run.
     export FORCE_REGEN=1
@@ -1811,8 +1820,12 @@ done
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
 
-set -a
 # export to all subsequent commands or scripts
+set -a
+# TODO: wrapper around source that for each var in file
+# checks if its defined, e.g. P4="" test -v P4
+# and if so saves to a global current_env assoc array
+# that is shared for all calls of this wrapper func
 source ".env.$env"
 set +a
 

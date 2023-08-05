@@ -36,14 +36,15 @@ func NewWorkItemTypeWithTracing(base repos.WorkItemType, instance string, spanDe
 }
 
 // ByID implements repos.WorkItemType
-func (_d WorkItemTypeWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
+				"ctx":  ctx,
+				"d":    d,
+				"id":   id,
+				"opts": opts}, map[string]interface{}{
 				"wp1": wp1,
 				"err": err})
 		} else if err != nil {
@@ -56,11 +57,11 @@ func (_d WorkItemTypeWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (
 
 		_span.End()
 	}()
-	return _d.WorkItemType.ByID(ctx, d, id)
+	return _d.WorkItemType.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.WorkItemType
-func (_d WorkItemTypeWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -68,7 +69,8 @@ func (_d WorkItemTypeWithTracing) ByName(ctx context.Context, d db.DBTX, name st
 				"ctx":       ctx,
 				"d":         d,
 				"name":      name,
-				"projectID": projectID}, map[string]interface{}{
+				"projectID": projectID,
+				"opts":      opts}, map[string]interface{}{
 				"wp1": wp1,
 				"err": err})
 		} else if err != nil {
@@ -81,5 +83,5 @@ func (_d WorkItemTypeWithTracing) ByName(ctx context.Context, d db.DBTX, name st
 
 		_span.End()
 	}()
-	return _d.WorkItemType.ByName(ctx, d, name, projectID)
+	return _d.WorkItemType.ByName(ctx, d, name, projectID, opts...)
 }

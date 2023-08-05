@@ -251,8 +251,9 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
 	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
-	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, demoworkitemrepo, workitemrepo)
-	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, demotwoworkitemrepo, workitemrepo)
+	workitemsvc := services.NewWorkItem(conf.Logger, workitemrepo, urepo)
+	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, demoworkitemrepo, workitemrepo, urepo, workitemsvc)
+	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, demotwoworkitemrepo, workitemrepo, urepo, workitemsvc)
 	workitemtagsvc := services.NewWorkItemTag(conf.Logger, workitemtagrepo)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)

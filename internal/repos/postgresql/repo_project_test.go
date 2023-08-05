@@ -3,6 +3,7 @@ package postgresql_test
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -20,94 +21,27 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 
 	projectRepo := postgresql.NewProject()
 
-	// exists already
-	projectID := internal.ProjectIDByName[models.ProjectDemo]
-
-	type argsString struct {
-		filter models.Project
-		fn     func(context.Context, db.DBTX, models.Project) (*db.Project, error)
-	}
-
-	testString := []struct {
-		name string
-		args argsString
-	}{
+	uniqueTestCases := []filterTestCase[*db.Project]{
 		{
-			name: "name",
-			args: argsString{
-				filter: models.ProjectDemo,
-				fn:     (projectRepo.ByName),
+			name:       "id",
+			filter:     internal.ProjectIDByName[models.ProjectDemo],
+			repoMethod: reflect.ValueOf(projectRepo.ByID),
+			callback: func(t *testing.T, res *db.Project) {
+				assert.Equal(t, res.ProjectID, internal.ProjectIDByName[models.ProjectDemo])
+			},
+		},
+		{
+			name:       "name",
+			filter:     models.ProjectDemo,
+			repoMethod: reflect.ValueOf(projectRepo.ByName),
+			callback: func(t *testing.T, res *db.Project) {
+				assert.Equal(t, res.ProjectID, internal.ProjectIDByName[models.ProjectDemo])
 			},
 		},
 	}
-	for _, tc := range testString {
+	for _, tc := range uniqueTestCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundProject, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundProject.ProjectID, projectID)
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := models.Project("inexistent project")
-
-			_, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.ErrorContains(t, err, errContains)
-		})
-	}
-
-	type argsInt struct {
-		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.Project, error)
-	}
-	testsInt := []struct {
-		name string
-		args argsInt
-	}{
-		{
-			name: "project_id",
-			args: argsInt{
-				filter: projectID,
-				fn:     (projectRepo.ByID),
-			},
-		},
-	}
-	for _, tc := range testsInt {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundProject, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundProject.ProjectID, projectID)
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := 254364 // does not exist
-
-			_, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.ErrorContains(t, err, errContains)
-		})
+		runGenericFilterTests(t, tc)
 	}
 }
 

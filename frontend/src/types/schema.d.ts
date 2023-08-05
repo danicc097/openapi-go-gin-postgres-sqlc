@@ -488,7 +488,6 @@ export interface components {
       line: string;
       ref: string;
       reopened: boolean;
-      workItemID: number;
     };
     DbWorkItemCreateParams: {
       /** Format: date-time */
@@ -516,7 +515,6 @@ export interface components {
     DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
       customDateForProject2?: string | null;
-      workItemID: number;
     };
   };
   responses: never;

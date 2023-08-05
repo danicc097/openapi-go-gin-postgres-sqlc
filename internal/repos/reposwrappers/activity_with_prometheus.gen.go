@@ -39,7 +39,7 @@ func NewActivityWithPrometheus(base repos.Activity, instanceName string) Activit
 }
 
 // ByID implements repos.Activity
-func (_d ActivityWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -49,11 +49,11 @@ func (_d ActivityWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (a
 
 		activityDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByID(ctx, d, id)
+	return _d.base.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.Activity
-func (_d ActivityWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -63,11 +63,11 @@ func (_d ActivityWithPrometheus) ByName(ctx context.Context, d db.DBTX, name str
 
 		activityDurationSummaryVec.WithLabelValues(_d.instanceName, "ByName", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByName(ctx, d, name, projectID)
+	return _d.base.ByName(ctx, d, name, projectID, opts...)
 }
 
 // ByProjectID implements repos.Activity
-func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d db.DBTX, projectID int) (aa1 []db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -77,7 +77,7 @@ func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d db.DBTX, pro
 
 		activityDurationSummaryVec.WithLabelValues(_d.instanceName, "ByProjectID", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByProjectID(ctx, d, projectID)
+	return _d.base.ByProjectID(ctx, d, projectID, opts...)
 }
 
 // Create implements repos.Activity

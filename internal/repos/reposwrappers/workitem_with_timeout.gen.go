@@ -10,6 +10,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 )
 
 // WorkItemWithTimeout implements repos.WorkItem interface instrumented with timeouts
@@ -19,7 +20,15 @@ type WorkItemWithTimeout struct {
 }
 
 type WorkItemWithTimeoutConfig struct {
+	AssignMemberTimeout time.Duration
+
 	ByIDTimeout time.Duration
+
+	DeleteTimeout time.Duration
+
+	RemoveMemberTimeout time.Duration
+
+	RestoreTimeout time.Duration
 }
 
 // NewWorkItemWithTimeout returns WorkItemWithTimeout
@@ -30,6 +39,16 @@ func NewWorkItemWithTimeout(base repos.WorkItem, config WorkItemWithTimeoutConfi
 	}
 }
 
+// AssignMember implements repos.WorkItem
+func (_d WorkItemWithTimeout) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+	var cancelFunc func()
+	if _d.config.AssignMemberTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.AssignMemberTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.AssignMember(ctx, d, params)
+}
+
 // ByID implements repos.WorkItem
 func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
@@ -38,4 +57,34 @@ func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts 
 		defer cancelFunc()
 	}
 	return _d.WorkItem.ByID(ctx, d, id, opts...)
+}
+
+// Delete implements repos.WorkItem
+func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+	var cancelFunc func()
+	if _d.config.DeleteTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.Delete(ctx, d, id)
+}
+
+// RemoveMember implements repos.WorkItem
+func (_d WorkItemWithTimeout) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+	var cancelFunc func()
+	if _d.config.RemoveMemberTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveMemberTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.RemoveMember(ctx, d, memberID, workItemID)
+}
+
+// Restore implements repos.WorkItem
+func (_d WorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+	var cancelFunc func()
+	if _d.config.RestoreTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RestoreTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.Restore(ctx, d, id)
 }

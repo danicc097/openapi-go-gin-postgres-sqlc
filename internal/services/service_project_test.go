@@ -40,10 +40,10 @@ func Test_MergeConfigFields(t *testing.T) {
 	}
 
 	fakeProjectRepo := &repostesting.FakeProject{}
-	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
+	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int, psco ...db.ProjectSelectConfigOption) (*db.Project, error) {
 		return proj, nil
 	}
-	fakeProjectRepo.ByNameStub = func(ctx context.Context, d db.DBTX, p models.Project) (*db.Project, error) {
+	fakeProjectRepo.ByNameStub = func(ctx context.Context, d db.DBTX, p models.Project, psco ...db.ProjectSelectConfigOption) (*db.Project, error) {
 		return proj, nil
 	}
 	fakeTeamRepo := &repostesting.FakeTeam{}

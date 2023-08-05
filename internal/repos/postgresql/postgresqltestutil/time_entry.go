@@ -9,21 +9,18 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
 )
 
-func NewRandomTimeEntry(t *testing.T, pool *pgxpool.Pool, activityID int, userID uuid.UUID, workItemID *int, teamID *int) (*db.TimeEntry, error) {
+func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID int, userID uuid.UUID, workItemID *int, teamID *int) (*db.TimeEntry, error) {
 	t.Helper()
 
 	teRepo := postgresql.NewTimeEntry()
 
 	ucp := RandomTimeEntryCreateParams(t, activityID, userID, workItemID, teamID)
 
-	te, err := teRepo.Create(context.Background(), pool, ucp)
-	if err != nil {
-		t.Logf("%s", err)
-		return nil, err
-	}
+	te, err := teRepo.Create(context.Background(), d, ucp)
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
 
 	return te, nil
 }

@@ -39,23 +39,23 @@ func NewWorkItemTagWithTimeout(base repos.WorkItemTag, config WorkItemTagWithTim
 }
 
 // ByID implements repos.WorkItemTag
-func (_d WorkItemTagWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.WorkItemTag.ByID(ctx, d, id)
+	return _d.WorkItemTag.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.WorkItemTag
-func (_d WorkItemTagWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
 		defer cancelFunc()
 	}
-	return _d.WorkItemTag.ByName(ctx, d, name, projectID)
+	return _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
 }
 
 // Create implements repos.WorkItemTag

@@ -84,54 +84,6 @@ func (_d DemoWorkItemWithTracing) Create(ctx context.Context, d db.DBTX, params 
 	return _d.DemoWorkItem.Create(ctx, d, params)
 }
 
-// Delete implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Delete")
-	defer func() {
-		if _d._spanDecorator != nil {
-			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
-				"wp1": wp1,
-				"err": err})
-		} else if err != nil {
-			_span.RecordError(err)
-			_span.SetAttributes(
-				attribute.String("event", "error"),
-				attribute.String("message", err.Error()),
-			)
-		}
-
-		_span.End()
-	}()
-	return _d.DemoWorkItem.Delete(ctx, d, id)
-}
-
-// Restore implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTracing) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Restore")
-	defer func() {
-		if _d._spanDecorator != nil {
-			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
-				"wp1": wp1,
-				"err": err})
-		} else if err != nil {
-			_span.RecordError(err)
-			_span.SetAttributes(
-				attribute.String("event", "error"),
-				attribute.String("message", err.Error()),
-			)
-		}
-
-		_span.End()
-	}()
-	return _d.DemoWorkItem.Restore(ctx, d, id)
-}
-
 // Update implements repos.DemoWorkItem
 func (_d DemoWorkItemWithTracing) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Update")

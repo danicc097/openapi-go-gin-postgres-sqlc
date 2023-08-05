@@ -31,8 +31,8 @@ type DemoWorkItem struct {
 
 // DemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.
 type DemoWorkItemCreateParams struct {
-	Checked    bool `json:"checked" required:"true" nullable:"false"`    // checked
-	WorkItemID int  `json:"workItemID" required:"true" nullable:"false"` // work_item_id
+	Checked    bool `json:"checked" required:"true" nullable:"false"` // checked
+	WorkItemID int  `json:"-" required:"true" nullable:"false"`       // work_item_id
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.

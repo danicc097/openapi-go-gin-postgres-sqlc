@@ -39,7 +39,7 @@ func NewTeamWithPrometheus(base repos.Team, instanceName string) TeamWithPrometh
 }
 
 // ByID implements repos.Team
-func (_d TeamWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -49,11 +49,11 @@ func (_d TeamWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *
 
 		teamDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByID(ctx, d, id)
+	return _d.base.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.Team
-func (_d TeamWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -63,7 +63,7 @@ func (_d TeamWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string,
 
 		teamDurationSummaryVec.WithLabelValues(_d.instanceName, "ByName", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByName(ctx, d, name, projectID)
+	return _d.base.ByName(ctx, d, name, projectID, opts...)
 }
 
 // Create implements repos.Team

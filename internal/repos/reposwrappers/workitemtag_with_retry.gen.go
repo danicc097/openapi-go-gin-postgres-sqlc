@@ -29,8 +29,8 @@ func NewWorkItemTagWithRetry(base repos.WorkItemTag, retryCount int, retryInterv
 }
 
 // ByID implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
-	wp1, err = _d.WorkItemTag.ByID(ctx, d, id)
+func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
+	wp1, err = _d.WorkItemTag.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -42,14 +42,14 @@ func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (wp1
 			return
 		case <-_ticker.C:
 		}
-		wp1, err = _d.WorkItemTag.ByID(ctx, d, id)
+		wp1, err = _d.WorkItemTag.ByID(ctx, d, id, opts...)
 	}
 	return
 }
 
 // ByName implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
-	wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID)
+func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
+	wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -61,7 +61,7 @@ func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name strin
 			return
 		case <-_ticker.C:
 		}
-		wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID)
+		wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
 	}
 	return
 }

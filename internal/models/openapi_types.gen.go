@@ -291,7 +291,6 @@ type DbDemoTwoWorkItem struct {
 // DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
 type DbDemoTwoWorkItemCreateParams struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
-	WorkItemID            int        `json:"workItemID"`
 }
 
 // DbDemoWorkItem defines the model for DbDemoWorkItem.
@@ -309,7 +308,6 @@ type DbDemoWorkItemCreateParams struct {
 	Line          string    `json:"line"`
 	Ref           string    `json:"ref"`
 	Reopened      bool      `json:"reopened"`
-	WorkItemID    int       `json:"workItemID"`
 }
 
 // DbKanbanStep defines the model for DbKanbanStep.

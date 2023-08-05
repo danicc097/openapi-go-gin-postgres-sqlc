@@ -2,6 +2,7 @@ package postgresql_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -34,51 +35,28 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 	workItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
 	timeEntry, _ := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
 
-	type argsInt struct {
-		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.TimeEntry, error)
-	}
-	testsInt64 := []struct {
-		name string
-		args argsInt
-	}{
+	uniqueTestCases := []filterTestCase[*db.TimeEntry]{
 		{
-			name: "timeEntry_id",
-			args: argsInt{
-				filter: timeEntry.TimeEntryID,
-				fn:     (timeEntryRepo.ByID),
+			name:       "id",
+			filter:     timeEntry.TimeEntryID,
+			repoMethod: reflect.ValueOf(timeEntryRepo.ByID),
+			callback: func(t *testing.T, res *db.TimeEntry) {
+				assert.Equal(t, res.TimeEntryID, timeEntry.TimeEntryID)
 			},
 		},
 	}
-	for _, tc := range testsInt64 {
+	for _, tc := range uniqueTestCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundTimeEntry, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundTimeEntry.TimeEntryID, timeEntry.TimeEntryID)
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := 254364 // does not exist
-
-			_, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.ErrorContains(t, err, errContains)
-		})
+		runGenericFilterTests(t, tc)
 	}
 
 	t.Run("bad_time_entry_creation", func(t *testing.T) {
-		_, err := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, nil, nil)
+		t.Parallel()
+
+		// test num_nonnulls which is repo's responsibility
+		ucp := postgresqltestutil.RandomTimeEntryCreateParams(t, activity.ActivityID, user.UserID, nil, nil)
+
+		_, err := timeEntryRepo.Create(context.Background(), testPool, ucp)
 		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

@@ -2567,17 +2567,13 @@
                 },
                 "reopened": {
                   "type": "boolean"
-                },
-                "workItemID": {
-                  "type": "integer"
                 }
               },
               "required": [
                 "lastMessageAt",
                 "line",
                 "ref",
-                "reopened",
-                "workItemID"
+                "reopened"
               ],
               "type": "object",
               "$schema": "http://json-schema.org/draft-04/schema#"
@@ -2700,14 +2696,8 @@
                   "type": [
                     "object"
                   ]
-                },
-                "workItemID": {
-                  "type": "integer"
                 }
               },
-              "required": [
-                "workItemID"
-              ],
               "type": "object",
               "$schema": "http://json-schema.org/draft-04/schema#"
             },
@@ -2933,14 +2923,8 @@
               "type": [
                 "object"
               ]
-            },
-            "workItemID": {
-              "type": "integer"
             }
           },
-          "required": [
-            "workItemID"
-          ],
           "type": "object",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
@@ -3074,17 +3058,13 @@
             },
             "reopened": {
               "type": "boolean"
-            },
-            "workItemID": {
-              "type": "integer"
             }
           },
           "required": [
             "lastMessageAt",
             "line",
             "ref",
-            "reopened",
-            "workItemID"
+            "reopened"
           ],
           "type": "object",
           "$schema": "http://json-schema.org/draft-04/schema#"
@@ -3361,17 +3341,13 @@
         },
         "reopened": {
           "type": "boolean"
-        },
-        "workItemID": {
-          "type": "integer"
         }
       },
       "required": [
         "lastMessageAt",
         "line",
         "ref",
-        "reopened",
-        "workItemID"
+        "reopened"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -3480,14 +3456,8 @@
           "type": [
             "object"
           ]
-        },
-        "workItemID": {
-          "type": "integer"
         }
       },
-      "required": [
-        "workItemID"
-      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
@@ -6058,17 +6028,13 @@
                 },
                 "reopened": {
                   "type": "boolean"
-                },
-                "workItemID": {
-                  "type": "integer"
                 }
               },
               "required": [
                 "lastMessageAt",
                 "line",
                 "ref",
-                "reopened",
-                "workItemID"
+                "reopened"
               ],
               "type": "object",
               "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6191,14 +6157,8 @@
                   "type": [
                     "object"
                   ]
-                },
-                "workItemID": {
-                  "type": "integer"
                 }
               },
-              "required": [
-                "workItemID"
-              ],
               "type": "object",
               "$schema": "http://json-schema.org/draft-04/schema#"
             },
@@ -6424,14 +6384,8 @@
               "type": [
                 "object"
               ]
-            },
-            "workItemID": {
-              "type": "integer"
             }
           },
-          "required": [
-            "workItemID"
-          ],
           "type": "object",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
@@ -6565,17 +6519,13 @@
             },
             "reopened": {
               "type": "boolean"
-            },
-            "workItemID": {
-              "type": "integer"
             }
           },
           "required": [
             "lastMessageAt",
             "line",
             "ref",
-            "reopened",
-            "workItemID"
+            "reopened"
           ],
           "type": "object",
           "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6852,17 +6802,13 @@
         },
         "reopened": {
           "type": "boolean"
-        },
-        "workItemID": {
-          "type": "integer"
         }
       },
       "required": [
         "lastMessageAt",
         "line",
         "ref",
-        "reopened",
-        "workItemID"
+        "reopened"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6971,14 +6917,8 @@
           "type": [
             "object"
           ]
-        },
-        "workItemID": {
-          "type": "integer"
         }
       },
-      "required": [
-        "workItemID"
-      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }

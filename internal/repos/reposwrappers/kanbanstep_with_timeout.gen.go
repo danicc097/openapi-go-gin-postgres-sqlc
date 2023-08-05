@@ -33,21 +33,21 @@ func NewKanbanStepWithTimeout(base repos.KanbanStep, config KanbanStepWithTimeou
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (kp1 *db.KanbanStep, err error) {
+func (_d KanbanStepWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.KanbanStep.ByID(ctx, d, id)
+	return _d.KanbanStep.ByID(ctx, d, id, opts...)
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithTimeout) ByProject(ctx context.Context, d db.DBTX, projectID int) (ka1 []db.KanbanStep, err error) {
+func (_d KanbanStepWithTimeout) ByProject(ctx context.Context, d db.DBTX, projectID int, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
 	var cancelFunc func()
 	if _d.config.ByProjectTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByProjectTimeout)
 		defer cancelFunc()
 	}
-	return _d.KanbanStep.ByProject(ctx, d, projectID)
+	return _d.KanbanStep.ByProject(ctx, d, projectID, opts...)
 }

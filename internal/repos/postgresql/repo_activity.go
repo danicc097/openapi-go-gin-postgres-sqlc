@@ -47,8 +47,8 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params *db.Act
 	return activity, err
 }
 
-func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
-	activity, err := db.ActivityByNameProjectID(ctx, d, name, projectID)
+func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (*db.Activity, error) {
+	activity, err := db.ActivityByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
 	}
@@ -56,8 +56,8 @@ func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID
 	return activity, nil
 }
 
-func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID int) ([]db.Activity, error) {
-	activities, err := db.ActivitiesByProjectID(ctx, d, projectID)
+func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) ([]db.Activity, error) {
+	activities, err := db.ActivitiesByProjectID(ctx, d, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
 	}
@@ -65,8 +65,8 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID int) ([
 	return activities, nil
 }
 
-func (a *Activity) ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
-	activity, err := db.ActivityByActivityID(ctx, d, id)
+func (a *Activity) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (*db.Activity, error) {
+	activity, err := db.ActivityByActivityID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
 	}

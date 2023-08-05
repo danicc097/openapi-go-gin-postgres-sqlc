@@ -39,23 +39,23 @@ func NewTeamWithTimeout(base repos.Team, config TeamWithTimeoutConfig) TeamWithT
 }
 
 // ByID implements repos.Team
-func (_d TeamWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.Team.ByID(ctx, d, id)
+	return _d.Team.ByID(ctx, d, id, opts...)
 }
 
 // ByName implements repos.Team
-func (_d TeamWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
 		defer cancelFunc()
 	}
-	return _d.Team.ByName(ctx, d, name, projectID)
+	return _d.Team.ByName(ctx, d, name, projectID, opts...)
 }
 
 // Create implements repos.Team

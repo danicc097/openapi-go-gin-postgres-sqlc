@@ -47,8 +47,8 @@ func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id int, params *db.
 	return timeEntry, err
 }
 
-func (wit *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
-	timeEntry, err := db.TimeEntryByTimeEntryID(ctx, d, id)
+func (wit *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TimeEntrySelectConfigOption) (*db.TimeEntry, error) {
+	timeEntry, err := db.TimeEntryByTimeEntryID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get timeEntry: %w", parseErrorDetail(err))
 	}

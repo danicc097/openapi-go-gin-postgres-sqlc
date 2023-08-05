@@ -30,8 +30,8 @@ func NewProjectWithRetry(base repos.Project, retryCount int, retryInterval time.
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (pp1 *db.Project, err error) {
-	pp1, err = _d.Project.ByID(ctx, d, id)
+func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+	pp1, err = _d.Project.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -43,14 +43,14 @@ func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (pp1 *db
 			return
 		case <-_ticker.C:
 		}
-		pp1, err = _d.Project.ByID(ctx, d, id)
+		pp1, err = _d.Project.ByID(ctx, d, id, opts...)
 	}
 	return
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Project) (pp1 *db.Project, err error) {
-	pp1, err = _d.Project.ByName(ctx, d, name)
+func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+	pp1, err = _d.Project.ByName(ctx, d, name, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -62,7 +62,7 @@ func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Pr
 			return
 		case <-_ticker.C:
 		}
-		pp1, err = _d.Project.ByName(ctx, d, name)
+		pp1, err = _d.Project.ByName(ctx, d, name, opts...)
 	}
 	return
 }

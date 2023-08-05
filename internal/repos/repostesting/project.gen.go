@@ -11,12 +11,13 @@ import (
 )
 
 type FakeProject struct {
-	ByIDStub        func(context.Context, db.DBTX, int) (*db.Project, error)
+	ByIDStub        func(context.Context, db.DBTX, int, ...db.ProjectSelectConfigOption) (*db.Project, error)
 	byIDMutex       sync.RWMutex
 	byIDArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 int
+		arg4 []db.ProjectSelectConfigOption
 	}
 	byIDReturns struct {
 		result1 *db.Project
@@ -26,12 +27,13 @@ type FakeProject struct {
 		result1 *db.Project
 		result2 error
 	}
-	ByNameStub        func(context.Context, db.DBTX, models.Project) (*db.Project, error)
+	ByNameStub        func(context.Context, db.DBTX, models.Project, ...db.ProjectSelectConfigOption) (*db.Project, error)
 	byNameMutex       sync.RWMutex
 	byNameArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 models.Project
+		arg4 []db.ProjectSelectConfigOption
 	}
 	byNameReturns struct {
 		result1 *db.Project
@@ -45,20 +47,21 @@ type FakeProject struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeProject) ByID(arg1 context.Context, arg2 db.DBTX, arg3 int) (*db.Project, error) {
+func (fake *FakeProject) ByID(arg1 context.Context, arg2 db.DBTX, arg3 int, arg4 ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	fake.byIDMutex.Lock()
 	ret, specificReturn := fake.byIDReturnsOnCall[len(fake.byIDArgsForCall)]
 	fake.byIDArgsForCall = append(fake.byIDArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 int
-	}{arg1, arg2, arg3})
+		arg4 []db.ProjectSelectConfigOption
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByIDStub
 	fakeReturns := fake.byIDReturns
-	fake.recordInvocation("ByID", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("ByID", []interface{}{arg1, arg2, arg3, arg4})
 	fake.byIDMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -72,17 +75,17 @@ func (fake *FakeProject) ByIDCallCount() int {
 	return len(fake.byIDArgsForCall)
 }
 
-func (fake *FakeProject) ByIDCalls(stub func(context.Context, db.DBTX, int) (*db.Project, error)) {
+func (fake *FakeProject) ByIDCalls(stub func(context.Context, db.DBTX, int, ...db.ProjectSelectConfigOption) (*db.Project, error)) {
 	fake.byIDMutex.Lock()
 	defer fake.byIDMutex.Unlock()
 	fake.ByIDStub = stub
 }
 
-func (fake *FakeProject) ByIDArgsForCall(i int) (context.Context, db.DBTX, int) {
+func (fake *FakeProject) ByIDArgsForCall(i int) (context.Context, db.DBTX, int, []db.ProjectSelectConfigOption) {
 	fake.byIDMutex.RLock()
 	defer fake.byIDMutex.RUnlock()
 	argsForCall := fake.byIDArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeProject) ByIDReturns(result1 *db.Project, result2 error) {
@@ -111,20 +114,21 @@ func (fake *FakeProject) ByIDReturnsOnCall(i int, result1 *db.Project, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeProject) ByName(arg1 context.Context, arg2 db.DBTX, arg3 models.Project) (*db.Project, error) {
+func (fake *FakeProject) ByName(arg1 context.Context, arg2 db.DBTX, arg3 models.Project, arg4 ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	fake.byNameMutex.Lock()
 	ret, specificReturn := fake.byNameReturnsOnCall[len(fake.byNameArgsForCall)]
 	fake.byNameArgsForCall = append(fake.byNameArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 models.Project
-	}{arg1, arg2, arg3})
+		arg4 []db.ProjectSelectConfigOption
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByNameStub
 	fakeReturns := fake.byNameReturns
-	fake.recordInvocation("ByName", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("ByName", []interface{}{arg1, arg2, arg3, arg4})
 	fake.byNameMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -138,17 +142,17 @@ func (fake *FakeProject) ByNameCallCount() int {
 	return len(fake.byNameArgsForCall)
 }
 
-func (fake *FakeProject) ByNameCalls(stub func(context.Context, db.DBTX, models.Project) (*db.Project, error)) {
+func (fake *FakeProject) ByNameCalls(stub func(context.Context, db.DBTX, models.Project, ...db.ProjectSelectConfigOption) (*db.Project, error)) {
 	fake.byNameMutex.Lock()
 	defer fake.byNameMutex.Unlock()
 	fake.ByNameStub = stub
 }
 
-func (fake *FakeProject) ByNameArgsForCall(i int) (context.Context, db.DBTX, models.Project) {
+func (fake *FakeProject) ByNameArgsForCall(i int) (context.Context, db.DBTX, models.Project, []db.ProjectSelectConfigOption) {
 	fake.byNameMutex.RLock()
 	defer fake.byNameMutex.RUnlock()
 	argsForCall := fake.byNameArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeProject) ByNameReturns(result1 *db.Project, result2 error) {

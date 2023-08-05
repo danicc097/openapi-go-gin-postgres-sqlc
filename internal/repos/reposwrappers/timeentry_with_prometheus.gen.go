@@ -39,7 +39,7 @@ func NewTimeEntryWithPrometheus(base repos.TimeEntry, instanceName string) TimeE
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -49,7 +49,7 @@ func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (
 
 		timeentryDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ByID(ctx, d, id)
+	return _d.base.ByID(ctx, d, id, opts...)
 }
 
 // Create implements repos.TimeEntry

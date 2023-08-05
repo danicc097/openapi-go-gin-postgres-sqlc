@@ -66,34 +66,6 @@ func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d db.DBTX, para
 	return _d.base.Create(ctx, d, params)
 }
 
-// Delete implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		demoworkitemDurationSummaryVec.WithLabelValues(_d.instanceName, "Delete", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.Delete(ctx, d, id)
-}
-
-// Restore implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		demoworkitemDurationSummaryVec.WithLabelValues(_d.instanceName, "Restore", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.Restore(ctx, d, id)
-}
-
 // Update implements repos.DemoWorkItem
 func (_d DemoWorkItemWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()

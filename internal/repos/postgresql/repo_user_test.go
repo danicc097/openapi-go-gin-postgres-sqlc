@@ -2,6 +2,7 @@ package postgresql_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -11,6 +12,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUser_Update(t *testing.T) {
@@ -118,111 +120,96 @@ func TestUser_SoftDelete(t *testing.T) {
 	}
 }
 
-type testCase struct {
-	name string
-	args args
-}
-
-// no type parameter to allow direct assertion.
-type args struct {
-	filter any
-	fn     any
-}
-
 func TestUser_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	userRepo := postgresql.NewUser()
+	ctx := context.Background()
 
+	userRepo := postgresql.NewUser()
+	teamRepo := postgresql.NewTeam()
+	projectRepo := postgresql.NewProject()
+
+	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
+	require.NoError(t, err)
+
+	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
 	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
-	testCases := []testCase{
-		{
-			name: "external_id",
-			args: args{
-				filter: user.ExternalID,
-				fn:     (userRepo.ByExternalID),
-			},
-		},
-		{
-			name: "email",
-			args: args{
-				filter: user.Email,
-				fn:     (userRepo.ByEmail),
-			},
-		},
-		{
-			name: "username",
-			args: args{
-				filter: user.Username,
-				fn:     (userRepo.ByUsername),
-			},
-		},
-		{
-			name: "user_id",
-			args: args{
-				filter: user.UserID,
-				fn:     (userRepo.ByID),
-			},
-		},
+	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
+	require.NoError(t, err)
+
+	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, db.WithTeamJoin(db.TeamJoins{Members: true, Project: true}))
+	require.NoError(t, err)
+
+	uniqueCallback := func(t *testing.T, res *db.User) {
+		assert.Equal(t, res.UserID, user.UserID)
 	}
 
-	for _, tc := range testCases {
+	uniqueTestCases := []filterTestCase[*db.User]{
+		{
+			name:       "external_id",
+			filter:     user.ExternalID,
+			repoMethod: reflect.ValueOf(userRepo.ByExternalID),
+			callback:   uniqueCallback,
+		},
+		{
+			name:       "email",
+			filter:     user.Email,
+			repoMethod: reflect.ValueOf(userRepo.ByEmail),
+			callback:   uniqueCallback,
+		},
+		{
+			name:       "username",
+			filter:     user.Username,
+			repoMethod: reflect.ValueOf(userRepo.ByUsername),
+			callback:   uniqueCallback,
+		},
+		{
+			name:       "user_id",
+			filter:     user.UserID,
+			repoMethod: reflect.ValueOf(userRepo.ByID),
+			callback:   uniqueCallback,
+		},
+	}
+	for _, tc := range uniqueTestCases {
 		tc := tc
-		runGenericFilterTests(t, tc, user)
+		runGenericFilterTests(t, tc)
 	}
-}
 
-// runGenericFilterTests runs queries to find a unique item in db and expects no matches with an inexistent filter.
-func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
-	t.Run(tc.name, func(t *testing.T) {
-		t.Parallel()
-
-		var foundUser *db.User
-		var err error
-
-		switch fn := tc.args.fn.(type) {
-		case func(context.Context, db.DBTX, string) (*db.User, error):
-			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(string))
-		case func(context.Context, db.DBTX, int) (*db.User, error):
-			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(int))
-		case func(context.Context, db.DBTX, int64) (*db.User, error):
-			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(int64))
-		case func(context.Context, db.DBTX, uuid.UUID) (*db.User, error):
-			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(uuid.UUID))
-		}
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
-		assert.Equal(t, foundUser.UserID, user.UserID)
-	})
-
-	t.Run(tc.name+"__no_rows_if_does_not_exist", func(t *testing.T) {
-		t.Parallel()
-
-		errContains := errNoRows
-
-		var err error
-
-		switch fn := tc.args.fn.(type) {
-		case func(context.Context, db.DBTX, string) (*db.User, error):
-			filter := "does not exist"
-			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, int) (*db.User, error):
-			filter := 732745
-			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, int64) (*db.User, error):
-			filter := int64(732745)
-			_, err = fn(context.Background(), testPool, filter)
-		case func(context.Context, db.DBTX, uuid.UUID) (*db.User, error):
-			filter := uuid.New()
-			_, err = fn(context.Background(), testPool, filter)
-		}
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
-		assert.ErrorContains(t, err, errContains)
-	})
+	nonUniqueTestCases := []filterTestCase[[]db.User]{
+		{
+			name:       "team_id",
+			filter:     team.TeamID,
+			repoMethod: reflect.ValueOf(userRepo.ByTeam),
+			callback: func(t *testing.T, res []db.User) {
+				assert.Len(t, res, 1)
+				assert.Equal(t, res[0].UserID, user.UserID)
+				assert.Equal(t, (*team.TeamMembersJoin)[0].UserID, user.UserID)
+				assert.Equal(t, team.ProjectJoin.ProjectID, project.ProjectID)
+			},
+		},
+		{
+			name:       "project_id",
+			filter:     project.ProjectID,
+			repoMethod: reflect.ValueOf(userRepo.ByProject),
+			callback: func(t *testing.T, res []db.User) {
+				assert.GreaterOrEqual(t, len(res), 1)
+				found := false
+				// projects and some related entities are hardcoded. Repos could have RandomProjectCreate regardless
+				// but better test the same way as services...
+				for _, u := range res {
+					if u.UserID == user.UserID {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			},
+		},
+	}
+	for _, tc := range nonUniqueTestCases {
+		tc := tc
+		runGenericFilterTests(t, tc)
+	}
 }
 
 func TestUser_UserAPIKeys(t *testing.T) {
@@ -236,9 +223,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 		assert.NotEmpty(t, uak.APIKey)
 		assert.Equal(t, uak.UserID, user.UserID)
 		assert.Equal(t, uak.UserAPIKeyID, *user.APIKeyID)
@@ -250,9 +235,6 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		errContains := "could not save api key"
 
 		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: uuid.New()})
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
 		assert.ErrorContains(t, err, errContains)
 	})
 
@@ -262,14 +244,10 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 
 		user, err := userRepo.ByAPIKey(context.Background(), testPool, uak.APIKey)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 
 		assert.Equal(t, user.UserID, newUser.UserID)
 		assert.Equal(t, *user.APIKeyID, uak.UserAPIKeyID)
@@ -281,15 +259,23 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		errContains := errNoRows
 
 		_, err := userRepo.ByAPIKey(context.Background(), testPool, "missing")
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
 		assert.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("can_delete_an_api_key", func(t *testing.T) {
-		// TODO
 		t.Parallel()
+
+		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
+
+		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
+		require.NoError(t, err)
+
+		deletedUak, err := userRepo.DeleteAPIKey(context.Background(), testPool, uak.APIKey)
+		require.NoError(t, err)
+		assert.Equal(t, deletedUak.APIKey, uak.APIKey)
+
+		_, err = userRepo.ByAPIKey(context.Background(), testPool, uak.APIKey)
+		assert.ErrorContains(t, err, errNoRows)
 	})
 }
 
@@ -313,7 +299,7 @@ func TestUser_Create(t *testing.T) {
 		ucp := postgresqltestutil.RandomUserCreateParams(t)
 
 		want := want{
-			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName),
+			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName), // repo responsibility
 			UserCreateParams: *ucp,
 		}
 
@@ -322,9 +308,7 @@ func TestUser_Create(t *testing.T) {
 		}
 
 		got, err := userRepo.Create(context.Background(), testPool, &args.params)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		require.NoError(t, err)
 
 		assert.Equal(t, want.FullName, got.FullName)
 		assert.Equal(t, want.ExternalID, got.ExternalID)
@@ -346,12 +330,9 @@ func TestUser_Create(t *testing.T) {
 			params: *ucp,
 		}
 
-		errContains := errViolatesCheckConstraint
-
 		_, err := userRepo.Create(context.Background(), testPool, &args.params)
-		if err == nil {
-			t.Fatalf("expected error = '%v' but got nothing", errContains)
-		}
-		assert.ErrorContains(t, err, errContains)
+		require.Error(t, err)
+
+		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }
