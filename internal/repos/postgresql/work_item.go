@@ -39,7 +39,7 @@ func (u *WorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkI
 }
 
 // TODO: remove from demo and demo_two.
-func (w *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
+func (w *WorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
 	wim := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
 		WorkItemID:   workItemID,
