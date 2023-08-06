@@ -121,7 +121,17 @@ func main() {
 		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
 			if params.Schema.ReflectType == reflect.TypeOf(uuid.New()) {
 				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
+				params.Schema.Pattern = pointers.New("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 				params.Schema.Items = &jsonschema.Items{}
+				// x-go* extensions cannot be used for Models(.*) themselves,
+				// but Models(.*) should not be generated at all. a ref tag is needed in structs
+				params.Schema.ExtraProperties = map[string]any{
+					"x-go-type": "uuid.UUID",
+					"x-go-type-import": map[string]any{
+						"name": "uuid",
+						"path": "github.com/google/uuid",
+					},
+				}
 			}
 
 			return false, nil

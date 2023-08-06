@@ -323,8 +323,8 @@
           ]
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -406,8 +406,8 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -464,8 +464,8 @@
           "type": "integer"
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -510,8 +510,8 @@
           ]
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -748,8 +748,8 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -825,8 +825,8 @@
                 "type": "integer"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -887,8 +887,8 @@
                 ]
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -1126,8 +1126,8 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -1203,8 +1203,8 @@
                 "type": "integer"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -1265,8 +1265,8 @@
                 ]
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -1819,8 +1819,8 @@
               ]
             },
             "userID": {
-              "type": "string",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
               "x-go-type": "uuid.UUID",
               "x-go-type-import": {
                 "name": "uuid",
@@ -2061,8 +2061,8 @@
           ]
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -2482,8 +2482,8 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UuidUUID": {
-      "type": "string",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+      "type": "string",
       "x-go-type": "uuid.UUID",
       "x-go-type-import": {
         "name": "uuid",
@@ -2588,8 +2588,8 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
-                    "type": "string",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    "type": "string",
                     "x-go-type": "uuid.UUID",
                     "x-go-type-import": {
                       "name": "uuid",
@@ -2711,8 +2711,8 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
-                    "type": "string",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    "type": "string",
                     "x-go-type": "uuid.UUID",
                     "x-go-type-import": {
                       "name": "uuid",
@@ -2938,8 +2938,8 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -3079,8 +3079,8 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -3132,8 +3132,8 @@
           "minLength": 1
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3409,8 +3409,8 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3779,8 +3779,8 @@
           ]
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3862,8 +3862,8 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3920,8 +3920,8 @@
           "type": "integer"
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -3966,8 +3966,8 @@
           ]
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -4204,8 +4204,8 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4281,8 +4281,8 @@
                 "type": "integer"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4343,8 +4343,8 @@
                 ]
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4582,8 +4582,8 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4659,8 +4659,8 @@
                 "type": "integer"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -4721,8 +4721,8 @@
                 ]
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -5275,8 +5275,8 @@
               ]
             },
             "userID": {
-              "type": "string",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
               "x-go-type": "uuid.UUID",
               "x-go-type-import": {
                 "name": "uuid",
@@ -5517,8 +5517,8 @@
           ]
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -5938,8 +5938,8 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UuidUUID": {
-      "type": "string",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+      "type": "string",
       "x-go-type": "uuid.UUID",
       "x-go-type-import": {
         "name": "uuid",
@@ -6044,8 +6044,8 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
-                    "type": "string",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    "type": "string",
                     "x-go-type": "uuid.UUID",
                     "x-go-type-import": {
                       "name": "uuid",
@@ -6167,8 +6167,8 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
-                    "type": "string",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    "type": "string",
                     "x-go-type": "uuid.UUID",
                     "x-go-type-import": {
                       "name": "uuid",
@@ -6394,8 +6394,8 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -6535,8 +6535,8 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "type": "string",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
                 "x-go-type": "uuid.UUID",
                 "x-go-type-import": {
                   "name": "uuid",
@@ -6588,8 +6588,8 @@
           "minLength": 1
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",
@@ -6865,8 +6865,8 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
-          "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
           "x-go-type": "uuid.UUID",
           "x-go-type-import": {
             "name": "uuid",

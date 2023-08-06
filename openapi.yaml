@@ -1256,8 +1256,8 @@ components:
           title: Contextual information
           type: object
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
-      type: string
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+      type: string
       x-go-type: uuid.UUID
       x-go-type-import:
         name: uuid

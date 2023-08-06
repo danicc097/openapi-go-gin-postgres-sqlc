@@ -539,18 +539,6 @@ x.gen.client-server() {
     echo "Running generation"
     paths=".openapi.paths.yaml"
 
-    # x-go* extensions cannot be used for Models(.*) themselves,
-    # but Models(.*) should not be generated at all. a ref tag is needed in structs
-    yq e '.components.schemas.UuidUUID = {
-        "type": "string",
-        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-        "x-go-type": "uuid.UUID",
-        "x-go-type-import":{
-          "name": "uuid",
-          "path": "github.com/google/uuid"
-        }
-      }' -i $SPEC
-
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
