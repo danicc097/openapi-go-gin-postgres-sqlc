@@ -539,18 +539,6 @@ x.gen.client-server() {
     echo "Running generation"
     paths=".openapi.paths.yaml"
 
-    # x-go* extensions cannot be used for Models(.*) themselves,
-    # but Models(.*) should not be generated at all. a ref tag is needed in structs
-    yq e '.components.schemas.UuidUUID = {
-        "type": "string",
-        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-        "x-go-type": "uuid.UUID",
-        "x-go-type-import":{
-          "name": "uuid",
-          "path": "github.com/google/uuid"
-        }
-      }' -i $SPEC
-
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
@@ -836,8 +824,10 @@ x.test.backend() {
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
-    echo "Running ${GREEN}\"APP_ENV=$env go test -tags skipxo -count=1 $* ./...\"${OFF}"
+
+    set -x
     APP_ENV="$env" go test -tags skipxo -count=1 "$@" ./...
+    set +x
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1354,7 +1344,7 @@ generate_structs_map() {
   find_go_enums enums "$PG_REPO_GEN/db"
   find_deleted_pkg_schemas structs enums Db
   for struct in ${structs[@]}; do
-    map_fields+=("\"Db$struct\": db.$struct{},")
+    map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
   done
   map_fields+=("
   //
@@ -1366,7 +1356,7 @@ generate_structs_map() {
   find_go_enums enums "internal/rest/models.go"
   find_deleted_pkg_schemas structs enums Rest
   for struct in ${structs[@]}; do
-    map_fields+=("\"Rest$struct\": rest.$struct{},")
+    map_fields+=("\"Rest$struct\": new(rest.$struct),")
   done
   map_fields+=("
   //
@@ -1380,7 +1370,7 @@ generate_structs_map() {
   for struct in ${structs[@]}; do
     # openapi-go uses last dir name by default.
     # we can intercept and generate based on t.PkgPath()
-    map_fields+=("\"Models$struct\": repomodels.$struct{},")
+    map_fields+=("\"Models$struct\": new(repomodels.$struct),")
   done
 
   out="internal/codegen/structs.gen.go"

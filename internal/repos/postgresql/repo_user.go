@@ -57,9 +57,8 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.U
 }
 
 func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
-	user, err := u.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
+	user := &db.User{
+		UserID: id,
 	}
 
 	if err := user.SoftDelete(ctx, d); err != nil {

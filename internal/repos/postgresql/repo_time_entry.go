@@ -57,12 +57,11 @@ func (wit *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.Ti
 }
 
 func (wit *TimeEntry) Delete(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
-	timeEntry, err := wit.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get timeEntry by id %w", parseErrorDetail(err))
+	timeEntry := &db.TimeEntry{
+		TimeEntryID: id,
 	}
 
-	err = timeEntry.Delete(ctx, d)
+	err := timeEntry.Delete(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not delete timeEntry: %w", parseErrorDetail(err))
 	}

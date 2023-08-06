@@ -112,10 +112,10 @@ func (r *Reflector) InlineDefinition(sample interface{}) {
 }
 
 // InterceptDefName allows modifying reflected definition names.
+//
+// Deprecated: add jsonschema.InterceptDefName to DefaultOptions.
 func (r *Reflector) InterceptDefName(f func(t reflect.Type, defaultDefName string) string) {
-	r.DefaultOptions = append(r.DefaultOptions, func(rc *ReflectContext) {
-		rc.DefName = f
-	})
+	r.DefaultOptions = append(r.DefaultOptions, InterceptDefName(f))
 }
 
 func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
@@ -221,20 +221,21 @@ func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
 //
 // Available options:
 //
-//	CollectDefinitions
-//	DefinitionsPrefix
-//	PropertyNameTag
-//	InterceptNullability
-//	InterceptType
-//	InterceptProperty
-//	InlineRefs
-//	RootNullable
-//	RootRef
-//	StripDefinitionNamePrefix
-//	PropertyNameMapping
-//	ProcessWithoutTags
-//	SkipEmbeddedMapsSlices
-//	SkipUnsupportedProperties
+//		CollectDefinitions
+//		DefinitionsPrefix
+//		PropertyNameTag
+//		InterceptNullability
+//		InterceptType
+//		InterceptProperty
+//	 	InterceptDefName
+//		InlineRefs
+//		RootNullable
+//		RootRef
+//		StripDefinitionNamePrefix
+//		PropertyNameMapping
+//		ProcessWithoutTags
+//		SkipEmbeddedMapsSlices
+//		SkipUnsupportedProperties
 func (r *Reflector) Reflect(i interface{}, options ...func(rc *ReflectContext)) (Schema, error) {
 	rc := ReflectContext{}
 	rc.Context = context.Background()
@@ -322,6 +323,11 @@ func (r *Reflector) reflectDefer(defName string, typeString refl.TypeString, rc 
 		ref := Ref{Path: "#"}
 
 		return ref.Schema()
+	}
+
+	// Inlining trivial scalar schemas.
+	if schema.IsTrivial() && schema.Type != nil && !schema.HasType(Object) && !schema.HasType(Array) {
+		return schema
 	}
 
 	if rc.definitions == nil {
@@ -433,7 +439,7 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		return ref.Schema(), nil
 	}
 
-	if rc.typeCycles[typeString] {
+	if rc.typeCycles[typeString] && !rc.InlineRefs {
 		return schema, nil
 	}
 
@@ -824,7 +830,10 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 			continue
 		}
 
-		if tag == "" && field.Anonymous && field.Type.Kind() == reflect.Struct {
+		deepIndirect := refl.DeepIndirect(field.Type)
+
+		if tag == "" && field.Anonymous &&
+			(field.Type.Kind() == reflect.Struct || deepIndirect.Kind() == reflect.Struct) {
 			if err := r.walkProperties(v.Field(i), parent, rc); err != nil {
 				return err
 			}
