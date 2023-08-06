@@ -16,14 +16,16 @@ linters-settings:
     check-exported: false
   unparam:
     check-exported: true
-  cyclop:
-    max-complexity: 12
 
 linters:
   enable-all: true
   disable:
+    - goerr113
+    - funlen
+    - gocyclo
+    - cyclop
+    - gocognit
     - musttag
-    - exhaustive
     - lll
     - maligned
     - gochecknoglobals
@@ -69,4 +71,7 @@ issues:
         - errcheck # Error checking omitted for brevity.
         - gosec
       path: "example_"
+    - linters:
+        - staticcheck
+      text: "SA1019: strings.Title .+ deprecated"
 

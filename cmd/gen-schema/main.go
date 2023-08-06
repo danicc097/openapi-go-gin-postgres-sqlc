@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3".
@@ -20,7 +21,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"golang.org/x/exp/slices"
 )
 
 func handleError(err error) {
@@ -124,23 +124,11 @@ func main() {
 				params.Schema.Items = &jsonschema.Items{}
 			}
 
-			// nullable prop not exposed
-			if params.Schema.Type != nil {
-				if (params.Schema.Type.SimpleTypes != nil && *params.Schema.Type.SimpleTypes == jsonschema.Object) ||
-					(len(params.Schema.Type.SliceOfSimpleTypeValues) > 0 && slices.Contains(params.Schema.Type.SliceOfSimpleTypeValues, jsonschema.Object)) {
-					if m, ok := params.Schema.Properties["metadata"]; ok {
-						m.TypeObject.ExtraProperties = map[string]interface{}{"nullable": false}
-						params.Schema.ExtraProperties = map[string]interface{}{"nullable": false}
-					}
-				}
-			}
-
 			return false, nil
 		}),
 	)
 
-	for _, sn := range structNames {
-		dummyOp := openapi3.Operation{}
+	for i, sn := range structNames {
 		// we need to compile gen-schema right after PublicStructs file is updated
 		// cannot import packages at runtime
 		// if we have an uncompilable state then we need workarounds to compile regardless
@@ -153,11 +141,15 @@ func main() {
 			log.Fatalf("struct %s: ensure there is at least a JSON tag set", sn)
 		}
 
-		// st = cloneStructWithoutIgnoredFields(st)
+		oc, err := reflector.NewOperationContext(http.MethodGet, "/dummy-op-"+strconv.Itoa(i))
+		handleError(err)
+		oc.AddRespStructure(st)
 
-		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
-		// not really needed
-		// handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
+		// helper/isTrivial
+		// if s.Items != nil && s.Items != nil && (len(s.Items.SchemaArray) > 0 || (s.Items.SchemaOrBool != nil && !s.Items.SchemaOrBool.IsTrivial(refResolvers...))) {
+		// 	return false
+		// }
+		handleError(reflector.AddOperation(oc))
 
 		// IMPORTANT: ensure structs are public
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]any{"x-postgen-struct": sn}
@@ -170,6 +162,11 @@ func main() {
 
 func hasJSONTag(input any) bool {
 	t := reflect.TypeOf(input)
+
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		if _, ok := field.Tag.Lookup("json"); ok {
@@ -185,22 +182,6 @@ func hasJSONTag(input any) bool {
 	}
 
 	return false
-}
-
-func cloneStructWithoutIgnoredFields(src any) any {
-	srcType := reflect.TypeOf(src)
-
-	dstType := reflect.StructOf(filterIgnoredFields(srcType))
-	// dstType = reflect.StructOf([]reflect.StructField{{
-	// 	Name:    srcType.Name(),
-	// 	PkgPath: srcType.PkgPath(),
-	// 	Type:    dstType,
-	// 	Tag:     `json:"activity" required:"true"`,
-	// }})
-
-	dst := reflect.New(dstType).Elem()
-
-	return dst.Interface()
 }
 
 // filterIgnoredFields returns all fields that do not have

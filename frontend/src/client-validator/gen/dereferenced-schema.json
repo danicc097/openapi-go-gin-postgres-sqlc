@@ -30,7 +30,6 @@
         "isProductive"
       ],
       "type": "object",
-      "x-postgen-struct": "DbActivity",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbKanbanStep": {
@@ -208,7 +207,6 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbTeam",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemTag": {
@@ -1529,7 +1527,6 @@
               "isProductive"
             ],
             "type": "object",
-            "x-postgen-struct": "DbActivity",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "type": [
@@ -1698,7 +1695,6 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbTeam",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "type": [
@@ -2057,7 +2053,6 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbTeam",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "type": [
@@ -3491,7 +3486,6 @@
         "isProductive"
       ],
       "type": "object",
-      "x-postgen-struct": "DbActivity",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbKanbanStep": {
@@ -3669,7 +3663,6 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbTeam",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemTag": {
@@ -4990,7 +4983,6 @@
               "isProductive"
             ],
             "type": "object",
-            "x-postgen-struct": "DbActivity",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "type": [
@@ -5159,7 +5151,6 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbTeam",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "type": [
@@ -5518,7 +5509,6 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbTeam",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "type": [
