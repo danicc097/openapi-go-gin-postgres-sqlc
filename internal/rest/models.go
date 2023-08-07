@@ -49,6 +49,8 @@ type ProjectBoardResponse struct {
 
 type ProjectBoardCreateRequest struct {
 	// services models not needed yet, projectId is trivial to include in every request...
+	// if services use db CreateParams as is we can also have specific per-project logic
+	// anyway
 	Teams *[]db.TeamCreateParams        `json:"teams"`
 	Tags  *[]db.WorkItemTagCreateParams `json:"tags"`
 }
