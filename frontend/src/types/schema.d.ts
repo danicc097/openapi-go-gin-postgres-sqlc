@@ -47,7 +47,7 @@ export interface paths {
     patch: operations["UpdateUser"];
   };
   "/project/{projectName}/initialize": {
-    /** creates initial data (teams, work item types, tags...) for a new project */
+    /** creates initial data (teams, tags...) for a new project */
     post: operations["InitializeProject"];
   };
   "/project/{projectName}/": {
@@ -261,25 +261,11 @@ export interface components {
       workItemTypeID: number;
     };
     InitializeProjectRequest: {
-      activities?: (components["schemas"]["DbActivityCreateParams"])[] | null;
-      projectID?: number;
+      tags?: (components["schemas"]["DbWorkItemTagCreateParams"])[] | null;
       teams?: (components["schemas"]["DbTeamCreateParams"])[] | null;
-      workItemTags?: (components["schemas"]["DbWorkItemTagCreateParams"])[] | null;
     };
     ProjectBoardResponse: {
-      activities: (components["schemas"]["DbActivity"])[] | null;
-      boardConfig: components["schemas"]["ProjectConfig"];
-      /** Format: date-time */
-      createdAt: string;
-      description: string;
-      kanbanSteps: (components["schemas"]["DbKanbanStep"])[] | null;
-      name: components["schemas"]["Project"];
-      projectID: number;
-      teams: (components["schemas"]["DbTeam"])[] | null;
-      /** Format: date-time */
-      updatedAt: string;
-      workItemTags: (components["schemas"]["DbWorkItemTag"])[] | null;
-      workItemTypes: (components["schemas"]["DbWorkItemType"])[] | null;
+      projectName: components["schemas"]["Project"];
     };
     User: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
@@ -693,7 +679,7 @@ export interface operations {
       };
     };
   };
-  /** creates initial data (teams, work item types, tags...) for a new project */
+  /** creates initial data (teams, tags...) for a new project */
   InitializeProject: {
     parameters: {
       path: {

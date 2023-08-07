@@ -3,7 +3,6 @@
 package codegen
 
 import (
-	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	rest "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
@@ -137,6 +136,7 @@ var PublicStructs = map[string]any{
 	"RestDemoWorkItemsResponse":        new(rest.DemoWorkItemsResponse),
 	"RestProjectBoardCreateRequest":    new(rest.ProjectBoardCreateRequest),
 	"RestProjectBoardResponse":         new(rest.ProjectBoardResponse),
+	"RestProjectName":                  new(rest.ProjectName),
 	"RestSharedWorkItemFields":         new(rest.SharedWorkItemFields),
 	"RestTeamCreateRequest":            new(rest.TeamCreateRequest),
 	"RestTeamUpdateRequest":            new(rest.TeamUpdateRequest),
@@ -147,5 +147,4 @@ var PublicStructs = map[string]any{
 
 	//
 
-	"ModelsProjectBoard": new(repomodels.ProjectBoard),
 }

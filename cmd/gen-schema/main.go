@@ -43,12 +43,6 @@ func main() {
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-		// default name comes from package directory, not the given import alias
-		// e.g. repomodels -/-> Repomodels, its the last dir (models)
-
-		// can intercept generated name full package path
-		// fmt.Fprintf(os.Stderr, "t.PkgPath(): %v\n", t.PkgPath())
-
 		return defaultDefName
 	})
 

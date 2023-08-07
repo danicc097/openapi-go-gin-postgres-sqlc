@@ -229,7 +229,7 @@ paths:
       x-required-role: user
   /project/{projectName}/initialize:
     post:
-      summary: creates initial data (teams, work item types, tags...) for a new project
+      summary: creates initial data (teams, tags...) for a new project
       !!merge <<: *x-require-authenticated
       operationId: InitializeProject
       parameters:
@@ -943,78 +943,24 @@ components:
       x-postgen-struct: RestDemoTwoWorkItemsResponse
     InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
-        activities:
+        tags:
           items:
-            $ref: '#/components/schemas/DbActivityCreateParams'
+            $ref: '#/components/schemas/DbWorkItemTagCreateParams'
           nullable: true
           type: array
-        projectID:
-          type: integer
         teams:
           items:
             $ref: '#/components/schemas/DbTeamCreateParams'
-          nullable: true
-          type: array
-        workItemTags:
-          items:
-            $ref: '#/components/schemas/DbWorkItemTagCreateParams'
           nullable: true
           type: array
       type: object
       x-postgen-struct: RestProjectBoardCreateRequest
     ProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
-        activities:
-          items:
-            $ref: '#/components/schemas/DbActivity'
-          nullable: true
-          type: array
-        boardConfig:
-          $ref: '#/components/schemas/ProjectConfig'
-        createdAt:
-          format: date-time
-          type: string
-        description:
-          type: string
-        kanbanSteps:
-          items:
-            $ref: '#/components/schemas/DbKanbanStep'
-          nullable: true
-          type: array
-        name:
+        projectName:
           $ref: '#/components/schemas/Project'
-        projectID:
-          type: integer
-        teams:
-          items:
-            $ref: '#/components/schemas/DbTeam'
-          nullable: true
-          type: array
-        updatedAt:
-          format: date-time
-          type: string
-        workItemTags:
-          items:
-            $ref: '#/components/schemas/DbWorkItemTag'
-          nullable: true
-          type: array
-        workItemTypes:
-          items:
-            $ref: '#/components/schemas/DbWorkItemType'
-          nullable: true
-          type: array
       required:
-        - projectID
-        - name
-        - description
-        - boardConfig
-        - createdAt
-        - updatedAt
-        - activities
-        - kanbanSteps
-        - teams
-        - workItemTags
-        - workItemTypes
+        - projectName
       type: object
       x-postgen-struct: RestProjectBoardResponse
     User: # Generated from internal structs. DO NOT EDIT.

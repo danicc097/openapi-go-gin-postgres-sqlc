@@ -225,14 +225,12 @@ export interface DbDemoTwoWorkItem {
   workItemID: number
 }
 export interface InitializeProjectRequest {
-  activities?: DbActivityCreateParams[] | null
-  projectID?: number
+  tags?: DbWorkItemTagCreateParams[] | null
   teams?: DbTeamCreateParams[] | null
-  workItemTags?: DbWorkItemTagCreateParams[] | null
 }
-export interface DbActivityCreateParams {
+export interface DbWorkItemTagCreateParams {
+  color: string
   description: string
-  isProductive: boolean
   name: string
   projectID?: number
 }
@@ -241,24 +239,8 @@ export interface DbTeamCreateParams {
   name: string
   projectID: number
 }
-export interface DbWorkItemTagCreateParams {
-  color: string
-  description: string
-  name: string
-  projectID?: number
-}
 export interface ProjectBoardResponse {
-  activities: DbActivity[] | null
-  boardConfig: ProjectConfig
-  createdAt: string
-  description: string
-  kanbanSteps: DbKanbanStep[] | null
-  name: Project
-  projectID: number
-  teams: DbTeam[] | null
-  updatedAt: string
-  workItemTags: DbWorkItemTag[] | null
-  workItemTypes: DbWorkItemType[] | null
+  projectName: Project
 }
 export interface User {
   apiKey?: DbUserAPIKey
@@ -387,4 +369,10 @@ export interface WorkItemCommentCreateRequest {
   message: string
   userID: UuidUUID
   workItemID: number
+}
+export interface DbActivityCreateParams {
+  description: string
+  isProductive: boolean
+  name: string
+  projectID?: number
 }

@@ -36,7 +36,7 @@ type Awaited<O> = O extends AwaitedInput<infer T> ? T : never
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
 
 /**
- * @summary creates initial data (teams, work item types, tags...) for a new project
+ * @summary creates initial data (teams, tags...) for a new project
  */
 export const initializeProject = (
   projectName: 'demo' | 'demo_two',
@@ -87,7 +87,7 @@ export type InitializeProjectMutationBody = InitializeProjectRequest
 export type InitializeProjectMutationError = unknown
 
 /**
- * @summary creates initial data (teams, work item types, tags...) for a new project
+ * @summary creates initial data (teams, tags...) for a new project
  */
 export const useInitializeProject = <TError = unknown, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
