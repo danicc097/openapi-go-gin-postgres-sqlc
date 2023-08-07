@@ -228,6 +228,9 @@ x.gen.pregen() {
     ######## Ensure consistent style for future codegen
 
     echo "Applying PascalCase to operation IDs in $SPEC"
+    # slow: N. instead construct yq command dynamically and concat operations with "|"
+    # also, command can be much simpler in a single yq call
+    # yq e ".. | select(has(\"operationId\") and .operationId == \"<oldOpId>\") | .operationId = \"<NewOpId>\"" openapi.yaml
     for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
       local new_opid="$(to_pascal $opid)"
       local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
@@ -236,6 +239,7 @@ x.gen.pregen() {
       new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
     done
 
+    echo "Updating roles and scopes in $SPEC"
     ######## Sync enums with external sources and validate
     ######## external json files are the source of truth
     # arrays can't be nested
