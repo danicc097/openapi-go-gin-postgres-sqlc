@@ -5,12 +5,14 @@
 # Component schemas:
 #   - `x-postgen-struct` generates (and keeps up to date) a schema from a struct,
 #      which can be tagged with OpenAPI fields (via openapi-go).
-#      Possible structs to generate from are listed in the postgen package.
+#      Possible structs to generate from are listed in internal/codegen/structs.gen.go
+#      indexed by x-postgen-struct.
 #      To use a yet to be generated schema in a path, create an empty schema
-#      with `x-postgen-struct: <pascal cased package+struct name>`
+#      with `x-postgen-struct: {Rest|Db}<struct name>`
+#      Packages to generate structs from are added adhoc.
 # Path operations:
-#   - `x-required-scopes` is an array of required scope keys from scopes.json
-#   - `x-required-role` is a required role name from roles.json
+#   - `x-required-scopes` defines required scopes for a request.
+#   - `x-required-role` defines the minimum required role for a request.
 #
 #
 #
@@ -18,7 +20,6 @@
 #
 #
 #######################################
-# https://github.com/deepmap/oapi-codegen/issues/760 does not work with ref
 x-uuidParameter: &x-uuidParameter
   description: UUID identifier
   explode: false
@@ -227,6 +228,8 @@ paths:
       tags:
         - user
       x-required-role: user
+  # TODO: useless, if no teams will just show "No teams" and "Add team" button
+  # same thing for tags
   /project/{projectName}/initialize:
     post:
       summary: creates initial data (teams, tags...) for a new project
@@ -372,8 +375,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/DbWorkItemTag'
+                $ref: '#/components/schemas/DbWorkItemTag'
       tags:
         - project
   /workitem/:

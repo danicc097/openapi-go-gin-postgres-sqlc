@@ -45,7 +45,7 @@ type ServerInterface interface {
 	// updates the project configuration
 	// (PUT /project/{projectName}/config)
 	UpdateProjectConfig(c *gin.Context, projectName externalRef0.ProjectName)
-	// creates initial data (teams, work item types, tags...) for a new project
+	// creates initial data (teams, tags...) for a new project
 	// (POST /project/{projectName}/initialize)
 	InitializeProject(c *gin.Context, projectName externalRef0.ProjectName)
 	// create workitem tag

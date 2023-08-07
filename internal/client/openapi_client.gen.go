@@ -1941,9 +1941,7 @@ func (r InitializeProjectResponse) StatusCode() int {
 type CreateWorkitemTagResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *struct {
-		union json.RawMessage
-	}
+	JSON201      *DbWorkItemTag
 }
 
 // Status returns HTTPResponse.Status
@@ -2694,9 +2692,7 @@ func ParseCreateWorkitemTagResponse(rsp *http.Response) (*CreateWorkitemTagRespo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest DbWorkItemTag
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

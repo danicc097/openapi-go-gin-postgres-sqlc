@@ -247,6 +247,7 @@ x.gen.pregen() {
       [Scope]="x-required-scopes"
       [Role]="x-required-role"
     )
+    declare -A enum_values=()
     for enum in ${!enum_src_files[@]}; do
       [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
         yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
@@ -268,15 +269,37 @@ x.gen.pregen() {
       for spec_enum in "${spec_enums[@]}"; do
         [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
       done
+
+      enum_list=$(printf ",\"%s\"" "${enums[@]}")
+      enum_list="[${enum_list:1}]"
+      enum_values[$enum]=$enum_list
     done
+
+    yq -e ".definitions.Operation.properties +=
+        {
+          \"${enum_vext[Role]}\": {
+            \"type\": \"string\",
+            \"enum\": ${enum_values[Role]}
+          },
+          \"${enum_vext[Scope]}\": {
+            \"type\": \"array\",
+            \"items\": {\"enum\": ${enum_values[Scope]}}
+          }
+        }" -i -oj .vscode/schema.json
 
     ######## Generate shared policies once the spec has been validated
     echo "Writing shared auth policies"
-    # NOTE: https://github.com/mikefarah/yq/issues/1738
+
     yq -o=json e "
     .paths[][]
     | explode(.)
-    | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
+    | {
+      .operationId: {
+        \"scopes\": .x-required-scopes,
+        \"role\": .x-required-role,
+        \"requiresAuthentication\": has(\"security\")
+        }
+      }
     | select(.[]) as \$i ireduce ({}; . + \$i)
   " $SPEC >$OPID_AUTH
 
