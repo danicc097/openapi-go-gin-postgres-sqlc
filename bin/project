@@ -231,7 +231,7 @@ x.gen.pregen() {
     # slow: N. instead construct yq command dynamically and concat operations with "|"
     # also, command can be much simpler in a single yq call
     # yq e ".. | select(has(\"operationId\") and .operationId == \"<oldOpId>\") | .operationId = \"<NewOpId>\"" openapi.yaml
-    for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
+    for opid in $(yq e ".paths[][].operationId" $SPEC); do
       local new_opid="$(to_pascal $opid)"
       local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
       mapfile -t paths <<<$paths
