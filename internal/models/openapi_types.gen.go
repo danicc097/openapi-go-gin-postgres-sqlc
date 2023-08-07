@@ -562,10 +562,8 @@ type HTTPValidationError struct {
 
 // InitializeProjectRequest defines the model for InitializeProjectRequest.
 type InitializeProjectRequest struct {
-	Activities   *[]DbActivityCreateParams    `json:"activities"`
-	ProjectID    *int                         `json:"projectID,omitempty"`
-	Teams        *[]DbTeamCreateParams        `json:"teams"`
-	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
+	Tags  *[]DbWorkItemTagCreateParams `json:"tags"`
+	Teams *[]DbTeamCreateParams        `json:"teams"`
 }
 
 // NotificationType represents a database 'notification_type'
@@ -576,17 +574,7 @@ type Project string
 
 // ProjectBoardResponse defines the model for ProjectBoardResponse.
 type ProjectBoardResponse struct {
-	Activities    *[]DbActivity     `json:"activities"`
-	BoardConfig   ProjectConfig     `json:"boardConfig"`
-	CreatedAt     time.Time         `json:"createdAt"`
-	Description   string            `json:"description"`
-	KanbanSteps   *[]DbKanbanStep   `json:"kanbanSteps"`
-	Name          Project           `json:"name"`
-	ProjectID     int               `json:"projectID"`
-	Teams         *[]DbTeam         `json:"teams"`
-	UpdatedAt     time.Time         `json:"updatedAt"`
-	WorkItemTags  *[]DbWorkItemTag  `json:"workItemTags"`
-	WorkItemTypes *[]DbWorkItemType `json:"workItemTypes"`
+	ProjectName Project `json:"projectName"`
 }
 
 // ProjectConfig defines the model for ProjectConfig.

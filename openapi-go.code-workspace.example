@@ -10,9 +10,11 @@
   "settings": {
     "yaml.schemas": {
       "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
+      // NOTE: ensure no other extensions override yaml.schemas
+      ".vscode/schema.json": "openapi.yaml"
     },
     "yaml.customTags": [
-      "tag:yaml.org,2002:merge", // required for broken
+      "tag:yaml.org,2002:merge", // required for broken yaml extension
     ],
     "go.testEnvVars": {
       "POSTGRES_TRACE": "false",

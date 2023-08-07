@@ -6,8 +6,6 @@ package rest
 
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
@@ -46,11 +44,15 @@ type DemoTwoWorkItemsResponse struct {
 
 // ProjectBoardResponse represents an OpenAPI schema response for a ProjectBoard.
 type ProjectBoardResponse struct {
-	repomodels.ProjectBoard
+	ProjectName
 }
 
 type ProjectBoardCreateRequest struct {
-	repos.ProjectBoardCreateParams
+	// services models not needed yet, projectId is trivial to include in every request...
+	// if services use db CreateParams as is we can also have specific per-project logic
+	// anyway
+	Teams *[]db.TeamCreateParams        `json:"teams"`
+	Tags  *[]db.WorkItemTagCreateParams `json:"tags"`
 }
 
 // WorkItemResponse represents an OpenAPI schema response for a WorkItem.
@@ -67,12 +69,12 @@ type TeamUpdateRequest struct {
 }
 
 type DemoWorkItemCreateRequest struct {
-	ProjectName models.Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
+	ProjectName
 	services.DemoWorkItemCreateParams
 }
 
 type DemoTwoWorkItemCreateRequest struct {
-	ProjectName models.Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
+	ProjectName
 	services.DemoTwoWorkItemCreateParams
 }
 
@@ -82,4 +84,8 @@ type WorkItemTagCreateRequest struct {
 
 type WorkItemCommentCreateRequest struct {
 	db.WorkItemCommentCreateParams
+}
+
+type ProjectName struct {
+	ProjectName models.Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }

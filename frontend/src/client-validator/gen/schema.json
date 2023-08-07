@@ -726,30 +726,18 @@
     },
     "InitializeProjectRequest": {
       "properties": {
-        "activities": {
+        "tags": {
           "items": {
-            "$ref": "#/definitions/DbActivityCreateParams"
+            "$ref": "#/definitions/DbWorkItemTagCreateParams"
           },
           "type": [
             "array",
             "null"
           ]
-        },
-        "projectID": {
-          "type": "integer"
         },
         "teams": {
           "items": {
             "$ref": "#/definitions/DbTeamCreateParams"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemTags": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemTagCreateParams"
           },
           "type": [
             "array",
@@ -763,89 +751,12 @@
     },
     "ProjectBoardResponse": {
       "properties": {
-        "activities": {
-          "items": {
-            "$ref": "#/definitions/DbActivity"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "boardConfig": {
-          "$ref": "#/definitions/ProjectConfig"
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "kanbanSteps": {
-          "items": {
-            "$ref": "#/definitions/DbKanbanStep"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "name": {
+        "projectName": {
           "$ref": "#/definitions/Project"
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "teams": {
-          "items": {
-            "$ref": "#/definitions/DbTeam"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "workItemTags": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemTypes": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemType"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "required": [
-        "projectID",
-        "name",
-        "description",
-        "boardConfig",
-        "createdAt",
-        "updatedAt",
-        "activities",
-        "kanbanSteps",
-        "teams",
-        "workItemTags",
-        "workItemTypes"
+        "projectName"
       ],
       "type": "object",
       "x-postgen-struct": "RestProjectBoardResponse",

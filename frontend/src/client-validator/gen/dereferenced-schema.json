@@ -1396,15 +1396,17 @@
     },
     "InitializeProjectRequest": {
       "properties": {
-        "activities": {
+        "tags": {
           "items": {
             "properties": {
-              "description": {
+              "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
-              "isProductive": {
-                "type": "boolean"
+              "description": {
+                "type": "string",
+                "minLength": 1
               },
               "name": {
                 "type": "string",
@@ -1415,8 +1417,8 @@
               }
             },
             "required": [
+              "color",
               "description",
-              "isProductive",
               "name"
             ],
             "type": "object",
@@ -1426,9 +1428,6 @@
             "array",
             "null"
           ]
-        },
-        "projectID": {
-          "type": "integer"
         },
         "teams": {
           "items": {
@@ -1457,39 +1456,6 @@
             "array",
             "null"
           ]
-        },
-        "workItemTags": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "color",
-              "description",
-              "name"
-            ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "type": "object",
@@ -1498,153 +1464,7 @@
     },
     "ProjectBoardResponse": {
       "properties": {
-        "activities": {
-          "items": {
-            "properties": {
-              "activityID": {
-                "type": "integer"
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "isProductive": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "activityID",
-              "projectID",
-              "name",
-              "description",
-              "isProductive"
-            ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "boardConfig": {
-          "properties": {
-            "fields": {
-              "items": {
-                "properties": {
-                  "isEditable": {
-                    "type": "boolean"
-                  },
-                  "isVisible": {
-                    "type": "boolean"
-                  },
-                  "name": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "path": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "showCollapsed": {
-                    "type": "boolean"
-                  }
-                },
-                "required": [
-                  "isEditable",
-                  "showCollapsed",
-                  "isVisible",
-                  "path",
-                  "name"
-                ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
-              },
-              "type": "array"
-            },
-            "header": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array",
-              "minLength": 1
-            },
-            "visualization": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "header",
-            "fields"
-          ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "kanbanSteps": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "kanbanStepID": {
-                "type": "integer"
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "stepOrder": {
-                "type": "integer"
-              },
-              "timeTrackable": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "kanbanStepID",
-              "projectID",
-              "stepOrder",
-              "name",
-              "description",
-              "color",
-              "timeTrackable"
-            ],
-            "type": "object",
-            "x-postgen-struct": "DbKanbanStep",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "name": {
+        "projectName": {
           "enum": [
             "demo",
             "demo_two"
@@ -1652,153 +1472,10 @@
           "type": "string",
           "x-generated": "-",
           "$schema": "http://json-schema.org/draft-04/schema#"
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "teams": {
-          "items": {
-            "properties": {
-              "createdAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "teamID": {
-                "type": "integer"
-              },
-              "updatedAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              }
-            },
-            "required": [
-              "teamID",
-              "projectID",
-              "name",
-              "description",
-              "createdAt",
-              "updatedAt"
-            ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "workItemTags": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "workItemTagID": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "workItemTagID",
-              "projectID",
-              "name",
-              "description",
-              "color"
-            ],
-            "type": "object",
-            "x-postgen-struct": "DbWorkItemTag",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemTypes": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "workItemTypeID": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "workItemTypeID",
-              "projectID",
-              "name",
-              "description",
-              "color"
-            ],
-            "type": "object",
-            "x-postgen-struct": "DbWorkItemType",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "required": [
-        "projectID",
-        "name",
-        "description",
-        "boardConfig",
-        "createdAt",
-        "updatedAt",
-        "activities",
-        "kanbanSteps",
-        "teams",
-        "workItemTags",
-        "workItemTypes"
+        "projectName"
       ],
       "type": "object",
       "x-postgen-struct": "RestProjectBoardResponse",
@@ -4852,15 +4529,17 @@
     },
     "InitializeProjectRequest": {
       "properties": {
-        "activities": {
+        "tags": {
           "items": {
             "properties": {
-              "description": {
+              "color": {
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
                 "type": "string",
                 "minLength": 1
               },
-              "isProductive": {
-                "type": "boolean"
+              "description": {
+                "type": "string",
+                "minLength": 1
               },
               "name": {
                 "type": "string",
@@ -4871,8 +4550,8 @@
               }
             },
             "required": [
+              "color",
               "description",
-              "isProductive",
               "name"
             ],
             "type": "object",
@@ -4882,9 +4561,6 @@
             "array",
             "null"
           ]
-        },
-        "projectID": {
-          "type": "integer"
         },
         "teams": {
           "items": {
@@ -4913,39 +4589,6 @@
             "array",
             "null"
           ]
-        },
-        "workItemTags": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "color",
-              "description",
-              "name"
-            ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "type": "object",
@@ -4954,153 +4597,7 @@
     },
     "ProjectBoardResponse": {
       "properties": {
-        "activities": {
-          "items": {
-            "properties": {
-              "activityID": {
-                "type": "integer"
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "isProductive": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "activityID",
-              "projectID",
-              "name",
-              "description",
-              "isProductive"
-            ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "boardConfig": {
-          "properties": {
-            "fields": {
-              "items": {
-                "properties": {
-                  "isEditable": {
-                    "type": "boolean"
-                  },
-                  "isVisible": {
-                    "type": "boolean"
-                  },
-                  "name": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "path": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "showCollapsed": {
-                    "type": "boolean"
-                  }
-                },
-                "required": [
-                  "isEditable",
-                  "showCollapsed",
-                  "isVisible",
-                  "path",
-                  "name"
-                ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
-              },
-              "type": "array"
-            },
-            "header": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array",
-              "minLength": 1
-            },
-            "visualization": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "header",
-            "fields"
-          ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "kanbanSteps": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "kanbanStepID": {
-                "type": "integer"
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "stepOrder": {
-                "type": "integer"
-              },
-              "timeTrackable": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "kanbanStepID",
-              "projectID",
-              "stepOrder",
-              "name",
-              "description",
-              "color",
-              "timeTrackable"
-            ],
-            "type": "object",
-            "x-postgen-struct": "DbKanbanStep",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "name": {
+        "projectName": {
           "enum": [
             "demo",
             "demo_two"
@@ -5108,153 +4605,10 @@
           "type": "string",
           "x-generated": "-",
           "$schema": "http://json-schema.org/draft-04/schema#"
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "teams": {
-          "items": {
-            "properties": {
-              "createdAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "teamID": {
-                "type": "integer"
-              },
-              "updatedAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              }
-            },
-            "required": [
-              "teamID",
-              "projectID",
-              "name",
-              "description",
-              "createdAt",
-              "updatedAt"
-            ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "workItemTags": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "workItemTagID": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "workItemTagID",
-              "projectID",
-              "name",
-              "description",
-              "color"
-            ],
-            "type": "object",
-            "x-postgen-struct": "DbWorkItemTag",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemTypes": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "workItemTypeID": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "workItemTypeID",
-              "projectID",
-              "name",
-              "description",
-              "color"
-            ],
-            "type": "object",
-            "x-postgen-struct": "DbWorkItemType",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "required": [
-        "projectID",
-        "name",
-        "description",
-        "boardConfig",
-        "createdAt",
-        "updatedAt",
-        "activities",
-        "kanbanSteps",
-        "teams",
-        "workItemTags",
-        "workItemTypes"
+        "projectName"
       ],
       "type": "object",
       "x-postgen-struct": "RestProjectBoardResponse",

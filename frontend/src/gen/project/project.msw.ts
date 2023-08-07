@@ -44,64 +44,7 @@ export const getGetProjectConfigMock = () => ({
   visualization: {},
 })
 
-export const getGetProjectBoardMock = () => ({
-  activities: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-    description: faker.random.word(),
-    isProductive: faker.datatype.boolean(),
-    name: faker.random.word(),
-    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-  })),
-  boardConfig: {
-    fields: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      isEditable: faker.datatype.boolean(),
-      isVisible: faker.datatype.boolean(),
-      name: faker.random.word(),
-      path: faker.random.word(),
-      showCollapsed: faker.datatype.boolean(),
-    })),
-    header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-      faker.random.word(),
-    ),
-    visualization: {},
-  },
-  createdAt: (() => faker.date.past())(),
-  description: faker.random.word(),
-  kanbanSteps: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    color: faker.random.word(),
-    description: faker.random.word(),
-    kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-    name: faker.random.word(),
-    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-    stepOrder: faker.datatype.number({ min: undefined, max: undefined }),
-    timeTrackable: faker.datatype.boolean(),
-  })),
-  name: faker.helpers.arrayElement(Object.values(Project)),
-  projectID: faker.datatype.number({ min: undefined, max: undefined }),
-  teams: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    createdAt: (() => faker.date.past())(),
-    description: faker.random.word(),
-    name: faker.random.word(),
-    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-    teamID: faker.datatype.number({ min: undefined, max: undefined }),
-    updatedAt: (() => faker.date.past())(),
-  })),
-  updatedAt: (() => faker.date.past())(),
-  workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    color: faker.random.word(),
-    description: faker.random.word(),
-    name: faker.random.word(),
-    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-  })),
-  workItemTypes: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    color: faker.random.word(),
-    description: faker.random.word(),
-    name: faker.random.word(),
-    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-  })),
-})
+export const getGetProjectBoardMock = () => ({ projectName: faker.helpers.arrayElement(Object.values(Project)) })
 
 export const getGetProjectWorkitemsMock = () =>
   faker.helpers.arrayElement([
@@ -240,16 +183,13 @@ export const getGetProjectWorkitemsMock = () =>
     },
   ])
 
-export const getCreateWorkitemTagMock = () =>
-  faker.helpers.arrayElement([
-    {
-      color: faker.random.word(),
-      description: faker.random.word(),
-      name: faker.random.word(),
-      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-      workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-    },
-  ])
+export const getCreateWorkitemTagMock = () => ({
+  color: faker.random.word(),
+  description: faker.random.word(),
+  name: faker.random.word(),
+  projectID: faker.datatype.number({ min: undefined, max: undefined }),
+  workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+})
 
 export const getProjectMSW = () => [
   rest.post('*/project/:projectName/initialize', (_req, res, ctx) => {

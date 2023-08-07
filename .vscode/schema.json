@@ -898,6 +898,34 @@
           "items": {
             "$ref": "#/definitions/Server"
           }
+        },
+        "x-required-scopes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "users:read",
+              "users:write",
+              "users:delete",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review"
+            ]
+          }
+        },
+        "x-required-role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ]
         }
       },
       "patternProperties": {

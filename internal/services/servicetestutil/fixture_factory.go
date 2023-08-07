@@ -1,15 +1,15 @@
 package servicetestutil
 
 import (
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // FixtureFactory provides fixtures to create randomized elements
 // in the data store.
 type FixtureFactory struct {
 	usvc     *services.User
-	pool     *pgxpool.Pool
+	d        db.DBTX
 	authnsvc *services.Authentication
 	authzsvc *services.Authorization
 }
@@ -17,13 +17,13 @@ type FixtureFactory struct {
 // NewFixtureFactory returns a new FixtureFactory.
 func NewFixtureFactory(
 	usvc *services.User,
-	pool *pgxpool.Pool,
+	d db.DBTX,
 	authnsvc *services.Authentication,
 	authzsvc *services.Authorization,
 ) *FixtureFactory {
 	return &FixtureFactory{
 		usvc:     usvc,
-		pool:     pool,
+		d:        d,
 		authnsvc: authnsvc,
 		authzsvc: authzsvc,
 	}

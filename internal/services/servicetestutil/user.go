@@ -39,13 +39,13 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	}
 
 	// don't use repos for tests
-	user, err := ff.usvc.Register(ctx, ff.pool, ucp)
+	user, err := ff.usvc.Register(ctx, ff.d, ucp)
 	if err != nil {
 		return nil, fmt.Errorf("usvc.Register: %w", err)
 	}
 
 	if params.DeletedAt != nil {
-		user, err = ff.usvc.Delete(ctx, ff.pool, user.UserID)
+		user, err = ff.usvc.Delete(ctx, ff.d, user.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("usvc.Delete: %w", err)
 		}

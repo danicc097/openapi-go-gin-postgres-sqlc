@@ -43,12 +43,6 @@ func main() {
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-		// default name comes from package directory, not the given import alias
-		// e.g. repomodels -/-> Repomodels, its the last dir (models)
-
-		// can intercept generated name full package path
-		// fmt.Fprintf(os.Stderr, "t.PkgPath(): %v\n", t.PkgPath())
-
 		return defaultDefName
 	})
 
@@ -141,8 +135,9 @@ func main() {
 	for i, sn := range structNames {
 		// we need to compile gen-schema right after PublicStructs file is updated
 		// cannot import packages at runtime
-		// if we have an uncompilable state then we need workarounds to compile regardless
+		// if we have an uncompilable state then we need to update src to compile. no way around it
 		// UDPATE: use https://github.com/pkujhd/goloader instead of plugin pkg which cant reload changed go file at runtime
+		// or use yaegi
 		st, ok := codegen.PublicStructs[sn]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)
@@ -155,10 +150,6 @@ func main() {
 		handleError(err)
 		oc.AddRespStructure(st)
 
-		// helper/isTrivial
-		// if s.Items != nil && s.Items != nil && (len(s.Items.SchemaArray) > 0 || (s.Items.SchemaOrBool != nil && !s.Items.SchemaOrBool.IsTrivial(refResolvers...))) {
-		// 	return false
-		// }
 		handleError(reflector.AddOperation(oc))
 
 		// IMPORTANT: ensure structs are public

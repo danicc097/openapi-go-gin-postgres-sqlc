@@ -4,48 +4,9 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
 )
-
-// Boards limited to one per project. All teams in a project share the same board.
-// IMPORTANT: If a board does not exist for a project, it will not be possible
-// to create teams, activities, etc. The first time we must go through the project
-// creation steps and create everything at once.
-// Later on everything can be updated in the project settings panel, and new elements created.
-type ProjectBoardCreateParams struct {
-	ProjectID int `json:"projectID"`
-	// TeamIDs   []int `json:"teamIDs"` // completely useless. the only check needed is to ensure at least one team
-	// is associated to projectID, else prompt the user to create >=1 team before creating a board, handled at /teams/:project_name/create.
-	Activities   []db.ActivityCreateParams    `json:"activities"`
-	Teams        []db.TeamCreateParams        `json:"teams"`
-	WorkItemTags []db.WorkItemTagCreateParams `json:"workItemTags"`
-}
-
-// ProjectBoard defines the datastore/repository handling persisting ProjectBoard records.
-type ProjectBoard interface {
-	/*
-		Create corresponds to initial info to be filled in once a project table has been manually
-		 created, before it can be used:
-		 - kanban columns and their info (order, name, can log time, etc.)
-		 - types of workitems (by all teams)
-		 - initial teams associated (at least 1 id initially)
-
-		  If we manually added a new project record
-		 in migrations (insert into projects) and created its specific work_items_<new project> table
-			at this point everything is empty and project.is_setup is False
-
-			!project.is_setup --> dashboard shows single centered [+ Initialize project] button
-			and we let the project admins create teams, work item types, etc. all at once.
-			if form submitted successfully, is_setup=False and won't show again. Else, the whole thing
-			is rolled back at once (should try to save this form state with zustand's persist just in case but not important)
-
-
-	*/
-	Create(ctx context.Context, d db.DBTX, params ProjectBoardCreateParams) (*repomodels.ProjectBoard, error)
-	ByID(ctx context.Context, d db.DBTX, projectID int) (*repomodels.ProjectBoard, error)
-}
 
 type DemoWorkItemUpdateParams struct {
 	DemoProject *db.DemoWorkItemUpdateParams `json:"demoProject"`
