@@ -435,6 +435,72 @@ x.gen.postgen() {
   backup-gen.cleanup
 }
 
+# saves the current gen state to allow restoring in the event of early exit
+# TODO: use random git branch + stashes
+# BACKUP_BRANCH="backup-$(date +%Y-%m-%d)-$RANDOM_STRING"
+# current_branch=$(git rev-parse --abbrev-ref HEAD)
+# git stash save "Uncommitted changes for code generation backup"
+# git checkout -b "$BACKUP_BRANCH"
+# git stash apply
+# run codegen
+# git checkout -b "$current_branch" # regardless
+# codegen success: git branch -D "$BACKUP_BRANCH"
+# else: git stash apply
+
+backup-gen() {
+  test -n "$backup_gen_caller" && return
+
+  backup_gen_caller="${FUNCNAME[1]}"
+
+  rm -rf "$GEN_BACKUP"
+  mkdir -p "$GEN_BACKUP"
+  mkdir -p "$FRONTEND_GEN_BACKUP"
+  mkdir -p "$PG_REPO_GEN_BACKUP"
+  backup_gen_files internal "$GEN_BACKUP"
+
+  cp "$SPEC" "$GEN_BACKUP"
+  rsync -a --delete "$FRONTEND_GEN/" "$FRONTEND_GEN_BACKUP"
+  rsync -a --delete "$PG_REPO_GEN/" "$PG_REPO_GEN_BACKUP"
+
+  restore_cache=1
+}
+
+backup-gen.cleanup() {
+  if [[ "$backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
+    restore_cache=0
+  fi
+}
+
+backup-gen.restore() {
+  echo "Restoring previously generated code..."
+  wait
+  mv "$GEN_BACKUP/$SPEC" "$SPEC" 2>/dev/null || true
+  rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
+  rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
+  restore_gen_files "$GEN_BACKUP" internal
+
+  rm -f "$CACHE"/*.md5 # clear gen cache
+}
+
+backup_gen_files() {
+  src_dir=$1
+  backup_dir=$2
+
+  mkdir -p "$backup_dir"
+
+  # -print0 alongside --null handle file names with spaces
+  find "$src_dir" -name "*.gen.go" -type f -print0 | tar czvf "$backup_dir/backup_gen_files.tar.gz" --null -T - &>/dev/null
+
+}
+
+restore_gen_files() {
+  backup_dir=$1
+  dest_dir=$2
+
+  # -C changes cwd to dir before extracting
+  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir" --overwrite --strip-components=1 &>/dev/null
+}
+
 # Generate type-safe Go code from SQL.
 x.gen.sqlc() {
   backup-gen
@@ -1633,61 +1699,6 @@ config_template_setup() {
     $dir/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
   envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
   frontend/nginx/replace-envvars.sh "$envvars"
-}
-
-# saves the current gen state to allow restoring in the event of early exit
-backup-gen() {
-  test -n "$backup_gen_caller" && return
-
-  backup_gen_caller="${FUNCNAME[1]}"
-
-  rm -rf "$GEN_BACKUP"
-  mkdir -p "$GEN_BACKUP"
-  mkdir -p "$FRONTEND_GEN_BACKUP"
-  mkdir -p "$PG_REPO_GEN_BACKUP"
-  backup_gen_files internal "$GEN_BACKUP"
-
-  cp "$SPEC" "$GEN_BACKUP"
-  rsync -a --delete "$FRONTEND_GEN/" "$FRONTEND_GEN_BACKUP"
-  rsync -a --delete "$PG_REPO_GEN/" "$PG_REPO_GEN_BACKUP"
-
-  restore_cache=1
-}
-
-backup-gen.cleanup() {
-  if [[ "$backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
-    restore_cache=0
-  fi
-}
-
-backup-gen.restore() {
-  echo "Restoring previously generated code..."
-  wait
-  mv "$GEN_BACKUP/$SPEC" "$SPEC" 2>/dev/null || true
-  rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
-  rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
-  restore_gen_files "$GEN_BACKUP" internal
-
-  rm -f "$CACHE"/*.md5 # clear gen cache
-}
-
-backup_gen_files() {
-  src_dir=$1
-  backup_dir=$2
-
-  mkdir -p "$backup_dir"
-
-  # -print0 alongside --null handle file names with spaces
-  find "$src_dir" -name "*.gen.go" -type f -print0 | tar czvf "$backup_dir/backup_gen_files.tar.gz" --null -T - &>/dev/null
-
-}
-
-restore_gen_files() {
-  backup_dir=$1
-  dest_dir=$2
-
-  # -C changes cwd to dir before extracting
-  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir" --overwrite --strip-components=1 &>/dev/null
 }
 
 ######################## ENTRYPOINT ########################
