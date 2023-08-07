@@ -230,14 +230,16 @@ x.gen.pregen() {
     echo "Applying PascalCase to operation IDs in $SPEC"
     # slow: N. instead construct yq command dynamically and concat operations with "|"
     # also, command can be much simpler in a single yq call
-    # yq e ".. | select(has(\"operationId\") and .operationId == \"<oldOpId>\") | .operationId = \"<NewOpId>\"" openapi.yaml
+    # yq e ".. | select(has(\"operationId\") and .operationId == \"<oldOpId>\") | .operationId = \"<NewOpId>\" < | parent>" openapi.yaml
+    spec_content=$(<$SPEC)
     for opid in $(yq e ".paths[][].operationId" $SPEC); do
       local new_opid="$(to_pascal $opid)"
-      local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
+      local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" < <(echo "$spec_content"))
       mapfile -t paths <<<$paths
       local escaped_path="$(join_yq_paths paths)"
-      new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
+      spec_content=$(new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" < <(echo "$spec_content"))
     done
+    echo "$spec_content" >$SPEC
 
     echo "Updating roles and scopes in $SPEC"
     ######## Sync enums with external sources and validate
