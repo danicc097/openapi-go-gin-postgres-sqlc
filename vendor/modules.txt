@@ -259,7 +259,7 @@ github.com/jackc/pgservicefile
 # github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
 ## explicit; go 1.17
 github.com/jackc/pgx-zap
-# github.com/jackc/pgx/v5 v5.4.2
+# github.com/jackc/pgx/v5 v5.4.3
 ## explicit; go 1.19
 github.com/jackc/pgx/v5
 github.com/jackc/pgx/v5/internal/anynil
@@ -275,7 +275,7 @@ github.com/jackc/pgx/v5/pgtype
 github.com/jackc/pgx/v5/pgxpool
 github.com/jackc/pgx/v5/stdlib
 github.com/jackc/pgx/v5/tracelog
-# github.com/jackc/puddle/v2 v2.2.0
+# github.com/jackc/puddle/v2 v2.2.1
 ## explicit; go 1.19
 github.com/jackc/puddle/v2
 github.com/jackc/puddle/v2/internal/genstack
