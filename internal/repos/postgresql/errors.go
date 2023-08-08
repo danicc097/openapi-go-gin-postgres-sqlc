@@ -51,6 +51,9 @@ func parseDBErrorDetail(err error) error {
 
 		var column, value string
 		switch pgErr.Code {
+		// TODO: better error detail message, e.g. trim id and if idTrimmed then build message
+		// with "invalid <prefix> ID (<val>)", or "<prefix>" not found.
+		// where prefix is trimmed _id and sentence case -> workItemTag=>work item tag
 		case pgerrcode.UniqueViolation:
 			matches := errorUniqueViolationRegex.FindStringSubmatch(pgErr.Detail)
 			if len(matches) == 0 {
