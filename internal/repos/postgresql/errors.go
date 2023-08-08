@@ -53,6 +53,13 @@ func parseDbErrorDetail(err error) error {
 			jsonTag := snaker.ForceLowerCamelIdentifier(column)
 			newErr = internal.NewErrorWithLocf(models.ErrorCodeAlreadyExists, []string{jsonTag}, fmt.Sprintf("%s %q already exists", jsonTag, value))
 		case pgerrcode.ForeignKeyViolation:
+			fmt.Printf("ColumnName: %+v\n", pgErr.ColumnName)
+			fmt.Printf("Hint: %+v\n", pgErr.Hint)
+			fmt.Printf("TableName: %+v\n", pgErr.TableName)
+			fmt.Printf("SchemaName: %+v\n", pgErr.SchemaName)
+			fmt.Printf("Where: %+v\n", pgErr.Where)
+			fmt.Printf("DataTypeName: %+v\n", pgErr.DataTypeName)
+			fmt.Printf("pgErr err: %+v\n", pgErr.Error())
 			matches := errorUniqueViolationRegex.FindStringSubmatch(pgErr.Detail)
 			if len(matches) == 0 {
 				break

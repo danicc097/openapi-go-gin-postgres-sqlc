@@ -9,6 +9,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/attribute"
@@ -62,6 +63,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		resp.Title = "internal error"
 		resp.Detail = title
 	} else {
+		resp.Loc = pointers.New(ierr.Loc())
 		resp.Type = ierr.Code()
 		resp.Detail = ierr.Cause().Error()
 		switch ierr.Code() {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -64,7 +65,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	for _, id := range params.TagIDs {
+	for i, id := range params.TagIDs {
 		err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
 			WorkItemTagID: id,
 			WorkItemID:    demoWi.WorkItemID,
@@ -77,16 +78,15 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 				continue
 			}
 
-			// TODO: internal.Error should contain location, if any.
-			// e.g. here tagIDs.i
-
-			return nil, fmt.Errorf("could not assign tag %d: %w", id, err)
+			// will be done in w.wiSvc.AssignWorkItemTags which returns loc []string{strconv.Itoa(i)}
+			// and here we wrap it again in loc: tagIDs which is specific to Create only...
+			return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs", strconv.Itoa(i)}, "could not assign tag %d", id)
 		}
 	}
 
 	err = w.wiSvc.AssignWorkItemMembers(ctx, d, demoWi, params.Members)
 	if err != nil {
-		return nil, fmt.Errorf("could not assign members: %w", err)
+		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
 	}
 
 	// TODO rest response with non pointer required joins as usual, so that it is always up to date

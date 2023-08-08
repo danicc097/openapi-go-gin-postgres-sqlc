@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
+	"strconv"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -42,12 +42,10 @@ func NewWorkItem(logger *zap.SugaredLogger, wiRepo repos.WorkItem, userRepo repo
 }
 
 func (w *WorkItem) AssignWorkItemMembers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []Member) error {
-	for _, member := range members {
+	for idx, member := range members {
 		user, err := w.userRepo.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{TeamsMember: true}))
 		if err != nil {
-			// TODO: WrapErrorWithLocf utility func that checks for wrapped internal.Error and appends a given `path` to loc.
-			// in this case, appends the index of the members array.
-			return internal.WrapErrorf(err, models.ErrorCodeNotFound, "user with id %s not found", member.UserID)
+			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "user with id %s not found", member.UserID)
 		}
 
 		var userInTeam bool
@@ -57,7 +55,7 @@ func (w *WorkItem) AssignWorkItemMembers(ctx context.Context, d db.DBTX, workIte
 			}
 		}
 		if !userInTeam {
-			return internal.NewErrorf(models.ErrorCodeUnauthorized, "user %q does not belong to team %q", user.Email, workItem.TeamID)
+			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "user %q does not belong to team %q", user.Email, workItem.TeamID)
 		}
 
 		// TODO: use wiRepo instead
@@ -72,7 +70,7 @@ func (w *WorkItem) AssignWorkItemMembers(ctx context.Context, d db.DBTX, workIte
 				continue
 			}
 
-			return fmt.Errorf("could not assign member %s: %w", member.UserID, err)
+			return internal.WrapErrorWithLocf(err, "", []string{strconv.Itoa(idx)}, "could not assign member %s", member.UserID)
 		}
 	}
 
