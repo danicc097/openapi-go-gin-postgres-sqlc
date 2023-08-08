@@ -184,7 +184,7 @@ x.gen.pregen() {
 
     go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$IGNORE_BUILD_ERRORS" ]]
 
-    missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
+    missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC_PATH)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
     # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
@@ -227,21 +227,21 @@ x.gen.pregen() {
 
     ######## Ensure consistent style for future codegen
 
-    echo "Applying PascalCase to operation IDs in $SPEC"
+    echo "Applying PascalCase to operation IDs in $SPEC_PATH"
     # slow: N. instead construct yq command dynamically and concat operations with "|"
     # also, command can be much simpler in a single yq call
     # yq e ".. | select(has(\"operationId\") and .operationId == \"<oldOpId>\") | .operationId = \"<NewOpId>\" < | parent>" openapi.yaml
-    spec_content=$(<$SPEC)
-    for opid in $(yq e ".paths[][].operationId" $SPEC); do
+    spec_content=$(<$SPEC_PATH)
+    for opid in $(yq e ".paths[][].operationId" $SPEC_PATH); do
       local new_opid="$(to_pascal $opid)"
       local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" < <(echo "$spec_content"))
       mapfile -t paths <<<$paths
       local escaped_path="$(join_yq_paths paths)"
       spec_content=$(new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" < <(echo "$spec_content"))
     done
-    echo "$spec_content" >$SPEC
+    echo "$spec_content" >$SPEC_PATH
 
-    echo "Updating roles and scopes in $SPEC"
+    echo "Updating roles and scopes in $SPEC_PATH"
     ######## Sync enums with external sources and validate
     ######## external json files are the source of truth
     # arrays can't be nested
@@ -255,8 +255,8 @@ x.gen.pregen() {
     )
     declare -A enum_values=()
     for enum in ${!enum_src_files[@]}; do
-      [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
-        yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
+      [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC_PATH) = "false" ]] &&
+        yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC_PATH
 
       local src_file="${enum_src_files[$enum]}"
       vendor_ext="${enum_vext[$enum]}"
@@ -267,7 +267,7 @@ x.gen.pregen() {
       src_comment="$src_file keys"
       replace_enum_in_spec "$enum" enums "$src_comment"
 
-      mapfile spec_enums < <(yq e ".paths[][].$vendor_ext | select(length > 0)" $SPEC)
+      mapfile spec_enums < <(yq e ".paths[][].$vendor_ext | select(length > 0)" $SPEC_PATH)
       spec_enums=("${spec_enums[*]//- /}")
       mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
       mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
@@ -307,9 +307,9 @@ x.gen.pregen() {
         }
       }
     | select(.[]) as \$i ireduce ({}; . + \$i)
-  " $SPEC >$OPID_AUTH
+  " $SPEC_PATH >$OPID_AUTH
 
-    yq --prettyPrint '.. style="single"' -i $SPEC
+    yq --prettyPrint '.. style="single"' -i $SPEC_PATH
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
 
@@ -464,7 +464,7 @@ backup-gen() {
   mkdir -p "$PG_REPO_GEN_BACKUP"
   backup_gen_files internal "$GEN_BACKUP"
 
-  cp "$SPEC" "$GEN_BACKUP"
+  cp "$SPEC_PATH" "$GEN_BACKUP"
   rsync -a --delete "$FRONTEND_GEN/" "$FRONTEND_GEN_BACKUP"
   rsync -a --delete "$PG_REPO_GEN/" "$PG_REPO_GEN_BACKUP"
 
@@ -480,7 +480,7 @@ backup-gen.cleanup() {
 backup-gen.restore() {
   echo "Restoring previously generated code..."
   wait
-  mv "$GEN_BACKUP/$SPEC" "$SPEC" 2>/dev/null || true
+  mv "$GEN_BACKUP/$SPEC_PATH" "$SPEC_PATH" 2>/dev/null || true
   rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
   rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
   restore_gen_files "$GEN_BACKUP" internal
@@ -637,13 +637,13 @@ x.gen.client-server() {
     paths=".openapi.paths.yaml"
 
     # hack to get separate types generation
-    sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
+    sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
 
-    oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
+    oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
-    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
+    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -715,7 +715,7 @@ x.gen.frontend() {
         echo "Skipping generation (cached). Force regen with --x-force-regen"
         exit 0
       fi
-      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC $orval_config frontend/scripts/* frontend/package.json
+      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/* frontend/package.json
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
@@ -730,7 +730,7 @@ x.gen.frontend() {
 
       {
         v="$(openapi-typescript --version)"
-        openapi-typescript $SPEC --output "$SCHEMA_OUT" --path-params-as-types --prettier-config .prettierrc
+        openapi-typescript $SPEC_PATH --output "$SCHEMA_OUT" --path-params-as-types --prettier-config .prettierrc
         echo "/* Generated by openapi-typescript $v */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable */
@@ -1055,7 +1055,7 @@ x.run-dev() {
   # close_write event, else duplicated, tripl. events -> race condition
   # while true; do
   #   inotifywait \
-  #     --monitor $SPEC \
+  #     --monitor $SPEC_PATH \
   #     --event=close_write \
   #     --format='%T %f' \
   #     --timefmt='%s' |
@@ -1384,20 +1384,20 @@ x.e2e.run() {
 x.diff-oas() {
   { { {
     base_spec="/tmp/openapi.yaml"
-    git show "main:$SPEC" >"$base_spec"
+    git show "main:$SPEC_PATH" >"$base_spec"
 
     tmp="$(yq .info.version "$base_spec")"
     base_v="${tmp%%.*}"
-    tmp=$(yq .info.version "$SPEC")
+    tmp=$(yq .info.version "$SPEC_PATH")
     rev_v="${tmp%%.*}"
     ((rev_v != base_v)) &&
       echo "${YELLOW}Revision mismatch $rev_v and $base_v, skipping diff.${OFF}" && return
 
     args="-format text -breaking-only -fail-on-diff -exclude-description -exclude-examples"
-    if oasdiff $args -base "$base_spec" -revision $SPEC; then
-      echo "${GREEN}No breaking changes found in $SPEC${OFF}"
+    if oasdiff $args -base "$base_spec" -revision $SPEC_PATH; then
+      echo "${GREEN}No breaking changes found in $SPEC_PATH${OFF}"
     else
-      echo "${RED}Breaking changes found in $SPEC${OFF}"
+      echo "${RED}Breaking changes found in $SPEC_PATH${OFF}"
       return 1
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1495,8 +1495,8 @@ sync_db_enums_with_spec() {
     mapfile -t enum_values < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
 
     local schema_path=".components.schemas.$schema_name"
-    if yq -e "$schema_path" $SPEC &>/dev/null; then # -e exits 1 if no match
-      if ! yq -e "$schema_path | has(\"x-generated\")" $SPEC &>/dev/null; then
+    if yq -e "$schema_path" $SPEC_PATH &>/dev/null; then # -e exits 1 if no match
+      if ! yq -e "$schema_path | has(\"x-generated\")" $SPEC_PATH &>/dev/null; then
         err "Clashing schema name '$schema_name'. Please remove it before continuing."
       fi
     fi
@@ -1512,7 +1512,7 @@ setup_swagger_ui() {
   go run cmd/swagger-ui-setup/main.go -env=".env.$env" -swagger-ui-dir=$SWAGGER_UI_DIR
 
   local bundle_spec="$SWAGGER_UI_DIR/openapi.yaml"
-  cp $SPEC $bundle_spec
+  cp $SPEC_PATH $bundle_spec
   yq 'explode(.)' -i $bundle_spec
   sed -i 's/!!merge //' $bundle_spec
 }
@@ -1528,12 +1528,12 @@ replace_enum_in_spec() {
   __enums=$(printf ",\"%s\"" "${__arr[@]}")
   __enums="[${__enums:1}]"
 
-  echo "Replacing '$enum' enum in $SPEC with values from $src_comment"
+  echo "Replacing '$enum' enum in $SPEC_PATH with values from $src_comment"
   __enums=$__enums yq e "
     $schema_path.type = \"string\" |
     $schema_path.enum = env(__enums) |
     $schema_path.x-generated = \"-\" |
-    ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC
+    ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
 }
 
 awk_remove_go_comments='
@@ -1583,7 +1583,7 @@ find_deleted_pkg_schemas() {
   local -n __enums="$2"
   local pkg="$3"
   echo "Finding deleted structs or enums from package '$pkg'..."
-  mapfile -t spec_schema < <(yq eval '.components.schemas[] | key' "$SPEC" | grep -E "^${pkg}" || true)
+  mapfile -t spec_schema < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg}" || true)
 
   local found=0
   for spec_schema in ${spec_schema[*]}; do
@@ -1597,15 +1597,15 @@ find_deleted_pkg_schemas() {
         found=1
       fi
     done
-    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC schema $spec_schema no longer exists in package '$(to_lower $pkg)'. Remove if necessary.${OFF}"
+    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC_PATH schema $spec_schema no longer exists in package '$(to_lower $pkg)'. Remove if necessary.${OFF}"
     found=0
   done
 }
 
 update_spec_with_structs() {
   vext="x-postgen-struct"
-  struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
-  schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC)
+  struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC_PATH)
+  schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC_PATH)
   mapfile -t struct_names <<<$struct_names
   mapfile -t schema_names <<<$schema_names
 
@@ -1652,14 +1652,14 @@ update_spec_with_structs() {
         | select(fi == 0)
         | .components.schemas.$schema_name = \$schema
         | (.components.schemas.$schema_name | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
-      " "$SPEC" $gen_schema_spec >/tmp/final-spec
+      " "$SPEC_PATH" $gen_schema_spec >/tmp/final-spec
 
     if [[ "$schema_name" != "$schema" ]]; then
       echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
       yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
     fi
 
-    mv /tmp/final-spec "$SPEC" # need to update at each iteration since next depends on it
+    mv /tmp/final-spec "$SPEC_PATH" # need to update at each iteration since next depends on it
   done
 }
 
@@ -1671,7 +1671,7 @@ delete_duplicate_schemas() {
     paths_arr+=(".components.schemas.$key")
   done
   local paths=$(join_by "," "${paths_arr[@]}")
-  yq e "del($paths)" -i "$SPEC"
+  yq e "del($paths)" -i "$SPEC_PATH"
 }
 
 xo_schema() {
@@ -1880,7 +1880,7 @@ source ".envrc"
 pids=""
 DUMP_PREFIX="dump_${env}_"
 
-readonly SPEC="openapi.yaml"
+readonly SPEC_PATH="openapi.yaml"
 
 readonly BUILD_DIR="bin/build"
 readonly TOOLS_DIR="bin/tools"
