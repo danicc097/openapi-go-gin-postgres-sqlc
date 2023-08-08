@@ -58,6 +58,8 @@ func parseDbErrorDetail(err error) error {
 				break
 			}
 			// TODO: handle multicolumn (should be empty loc slice, which will show error on whole object)
+			// in case of error in field unrelated to request params, frontend will simply attempt to show in nearest parent that does
+			// exist and default to generic callout.
 			column, value = matches[1], matches[2]
 			jsonTag := snaker.ForceLowerCamelIdentifier(column)
 			newErr = internal.NewErrorWithLocf(models.ErrorCodeInvalidArgument, []string{jsonTag}, fmt.Sprintf("%s %q is invalid", jsonTag, value))
