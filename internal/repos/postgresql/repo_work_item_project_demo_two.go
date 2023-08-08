@@ -30,16 +30,16 @@ func (u *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...d
 func (u *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoTwoWorkItemCreateParams) (*db.WorkItem, error) {
 	workItem, err := db.CreateWorkItem(ctx, d, &params.Base)
 	if err != nil {
-		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not create workItem: %w", parseDbErrorDetail(err))
 	}
 
 	params.DemoTwoProject.WorkItemID = workItem.WorkItemID
-	demoWorkItem, err := db.CreateDemoTwoWorkItem(ctx, d, &params.DemoTwoProject)
+	demoTwoWorkItem, err := db.CreateDemoTwoWorkItem(ctx, d, &params.DemoTwoProject)
 	if err != nil {
-		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not create demoTwoWorkItem: %w", parseDbErrorDetail(err))
 	}
 
-	workItem.DemoTwoWorkItemJoin = demoWorkItem
+	workItem.DemoTwoWorkItemJoin = demoTwoWorkItem
 
 	return workItem, nil
 }
@@ -47,28 +47,28 @@ func (u *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.De
 func (u *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
 	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItem by id: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get workItem by id: %w", parseDbErrorDetail(err))
 	}
-	demoWorkItem := workItem.DemoTwoWorkItemJoin
+	demoTwoWorkItem := workItem.DemoTwoWorkItemJoin
 
 	if params.Base != nil {
 		workItem.SetUpdateParams(params.Base)
 	}
 
 	if params.DemoTwoProject != nil {
-		demoWorkItem.SetUpdateParams(params.DemoTwoProject)
+		demoTwoWorkItem.SetUpdateParams(params.DemoTwoProject)
 	}
 
 	workItem, err = workItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update workItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update workItem: %w", parseDbErrorDetail(err))
 	}
-	demoWorkItem, err = demoWorkItem.Update(ctx, d)
+	demoTwoWorkItem, err = demoTwoWorkItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update demoWorkItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update demoTwoWorkItem: %w", parseDbErrorDetail(err))
 	}
 
-	workItem.DemoTwoWorkItemJoin = demoWorkItem
+	workItem.DemoTwoWorkItemJoin = demoTwoWorkItem
 
 	return workItem, err
 }

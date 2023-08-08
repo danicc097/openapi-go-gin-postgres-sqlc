@@ -15,7 +15,7 @@ import (
 func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpanWithUser(c, "CreateWorkitem").End()
+	defer newOTELSpanWithUser(c, "Handlers.CreateWorkitem").End()
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)

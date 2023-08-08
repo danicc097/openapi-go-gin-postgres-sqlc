@@ -661,7 +661,7 @@ x.gen.counterfeiter() {
       counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
       counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
       wait
-    } 2>&1 # outputs to stderr for some reason
+    } 2>&1
 
     # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
     sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
@@ -1179,7 +1179,7 @@ x.migrate() {
     migrate \
       -path $MIGRATIONS_DIR/ \
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" \
-      "$@" 2>&1 # migrate outputs everything to stderr
+      "$@" 2>&1
 
     if [[ "${*:1}" =~ (up)+ ]]; then
       echo "Running post-migration scripts"

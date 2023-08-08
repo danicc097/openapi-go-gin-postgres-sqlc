@@ -25,7 +25,7 @@ var _ repos.KanbanStep = (*KanbanStep)(nil)
 func (k *KanbanStep) ByProject(ctx context.Context, d db.DBTX, projectID int, opts ...db.KanbanStepSelectConfigOption) ([]db.KanbanStep, error) {
 	kss, err := db.KanbanStepsByProjectID(ctx, d, projectID, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get kanban steps: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get kanban steps: %w", parseDbErrorDetail(err))
 	}
 
 	return kss, nil
@@ -34,7 +34,7 @@ func (k *KanbanStep) ByProject(ctx context.Context, d db.DBTX, projectID int, op
 func (k *KanbanStep) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.KanbanStepSelectConfigOption) (*db.KanbanStep, error) {
 	ks, err := db.KanbanStepByKanbanStepID(ctx, d, id, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get kanban step: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get kanban step: %w", parseDbErrorDetail(err))
 	}
 
 	return ks, nil

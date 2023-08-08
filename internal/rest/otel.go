@@ -34,5 +34,5 @@ func userIDAttribute(c *gin.Context) attribute.KeyValue {
 func newOTELSpanWithUser(c *gin.Context, name string, opts ...trace.SpanStartOption) trace.Span {
 	opts = append(opts, trace.WithAttributes(userIDAttribute(c)))
 
-	return newOTELSpan(c.Request.Context(), name, opts...)
+	return newOTELSpan(c.Request.Context(), "handlers."+name, opts...)
 }

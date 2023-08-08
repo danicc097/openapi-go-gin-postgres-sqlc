@@ -26,7 +26,7 @@ var _ repos.Project = (*Project)(nil)
 func (u *Project) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	project, err := db.ProjectByProjectID(ctx, d, id, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get project: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get project: %w", parseDbErrorDetail(err))
 	}
 
 	return project, nil
@@ -35,7 +35,7 @@ func (u *Project) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.Projec
 func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	project, err := db.ProjectByName(ctx, d, name, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get project: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get project: %w", parseDbErrorDetail(err))
 	}
 
 	return project, nil
@@ -48,7 +48,7 @@ func (u *Project) UpdateBoardConfig(ctx context.Context, d db.DBTX, projectID in
 	WHERE project_id = $3`
 
 	if _, err := d.Exec(ctx, sqlstr, paths, obj, projectID); err != nil {
-		return fmt.Errorf("could not update project board config: %w", parseErrorDetail(err))
+		return fmt.Errorf("could not update project board config: %w", parseDbErrorDetail(err))
 	}
 
 	return nil

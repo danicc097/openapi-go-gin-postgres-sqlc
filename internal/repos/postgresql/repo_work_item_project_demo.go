@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -30,13 +31,13 @@ func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.W
 func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.WorkItem, error) {
 	workItem, err := db.CreateWorkItem(ctx, d, &params.Base)
 	if err != nil {
-		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
+		return nil, internal.WrapErrorWithLocf(parseDbErrorDetail(err), "", []string{"base"}, "could not create workItem")
 	}
 
 	params.DemoProject.WorkItemID = workItem.WorkItemID
 	demoWorkItem, err := db.CreateDemoWorkItem(ctx, d, &params.DemoProject)
 	if err != nil {
-		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
+		return nil, internal.WrapErrorWithLocf(parseDbErrorDetail(err), "", []string{"demoWorkItem"}, "could not create demoWorkItem")
 	}
 
 	workItem.DemoWorkItemJoin = demoWorkItem
@@ -47,7 +48,7 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
 	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItem by id: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get workItem by id: %w", parseDbErrorDetail(err))
 	}
 	demoWorkItem := workItem.DemoWorkItemJoin
 
@@ -61,11 +62,11 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params rep
 
 	workItem, err = workItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update workItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update workItem: %w", parseDbErrorDetail(err))
 	}
 	demoWorkItem, err = demoWorkItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update demoWorkItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update demoWorkItem: %w", parseDbErrorDetail(err))
 	}
 
 	workItem.DemoWorkItemJoin = demoWorkItem

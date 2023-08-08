@@ -313,6 +313,11 @@ export interface components {
       detail: string;
       status: number;
       error: string;
+      /**
+       * Location 
+       * @description location in body path, if any
+       */
+      loc?: (string)[];
       type: components["schemas"]["ErrorCode"];
       validationError?: components["schemas"]["HTTPValidationError"];
     };

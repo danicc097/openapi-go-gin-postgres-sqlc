@@ -919,6 +919,14 @@
           "type": "string",
           "minLength": 1
         },
+        "loc": {
+          "title": "Location",
+          "description": "location in body path, if any",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "type": {
           "$ref": "#/definitions/ErrorCode"
         },
