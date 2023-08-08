@@ -11,6 +11,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // renderErrorResponse writes an error response from title and error.
@@ -100,7 +102,17 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		span := newOTELSpan(c.Request.Context(), "renderErrorResponse")
 		defer span.End()
 
-		span.RecordError(err)
+		opts := []trace.EventOption{}
+
+		var ierr *internal.Error
+		if errors.As(err, &ierr) {
+			opts = append(opts, trace.WithAttributes(
+				attribute.Key("type").String(string(ierr.Code())),
+				attribute.Key("loc").StringSlice(ierr.Loc())),
+			)
+		}
+
+		span.RecordError(err, opts...)
 	}
 
 	renderResponse(c, resp, resp.Status)
