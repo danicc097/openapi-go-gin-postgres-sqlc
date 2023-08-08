@@ -25,7 +25,7 @@ var _ repos.WorkItemComment = (*WorkItemComment)(nil)
 func (wit *WorkItemComment) Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error) {
 	workItemComment, err := db.CreateWorkItemComment(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("could not create workItemComment: %w", parseDbErrorDetail(err))
+		return nil, fmt.Errorf("could not create workItemComment: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemComment, nil
@@ -34,14 +34,14 @@ func (wit *WorkItemComment) Create(ctx context.Context, d db.DBTX, params *db.Wo
 func (wit *WorkItemComment) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error) {
 	workItemComment, err := wit.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemComment by id %w", parseDbErrorDetail(err))
+		return nil, fmt.Errorf("could not get workItemComment by id %w", parseDBErrorDetail(err))
 	}
 
 	workItemComment.SetUpdateParams(params)
 
 	workItemComment, err = workItemComment.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update workItemComment: %w", parseDbErrorDetail(err))
+		return nil, fmt.Errorf("could not update workItemComment: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemComment, err
@@ -50,7 +50,7 @@ func (wit *WorkItemComment) Update(ctx context.Context, d db.DBTX, id int, param
 func (wit *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error) {
 	workItemComment, err := db.WorkItemCommentByWorkItemCommentID(ctx, d, id, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemComment: %w", parseDbErrorDetail(err))
+		return nil, fmt.Errorf("could not get workItemComment: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemComment, nil
@@ -63,7 +63,7 @@ func (wit *WorkItemComment) Delete(ctx context.Context, d db.DBTX, id int) (*db.
 
 	err := workItemComment.Delete(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not delete workItemComment: %w", parseDbErrorDetail(err))
+		return nil, fmt.Errorf("could not delete workItemComment: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemComment, err

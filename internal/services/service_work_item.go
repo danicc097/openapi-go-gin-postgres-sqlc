@@ -58,8 +58,7 @@ func (w *WorkItem) AssignWorkItemMembers(ctx context.Context, d db.DBTX, workIte
 			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "user %q does not belong to team %q", user.Email, workItem.TeamID)
 		}
 
-		// TODO: use wiRepo instead
-		_, err = db.CreateWorkItemAssignedUser(ctx, d, &db.WorkItemAssignedUserCreateParams{
+		err = w.wiRepo.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
 			AssignedUser: member.UserID,
 			WorkItemID:   workItem.WorkItemID,
 			Role:         member.Role,

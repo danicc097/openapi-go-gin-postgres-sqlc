@@ -17,7 +17,7 @@ import (
 
 var errorUniqueViolationRegex = regexp.MustCompile(`\((.*)\)=\((.*)\)`)
 
-func parseDbErrorDetail(err error) error {
+func parseDBErrorDetail(err error) error {
 	newErr := internal.WrapErrorf(err, models.ErrorCodeUnknown, err.Error())
 
 	/**
@@ -41,6 +41,14 @@ func parseDbErrorDetail(err error) error {
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
+		fmt.Printf("ColumnName: %+v\n", pgErr.ColumnName)
+		fmt.Printf("Hint: %+v\n", pgErr.Hint)
+		fmt.Printf("TableName: %+v\n", pgErr.TableName)
+		fmt.Printf("SchemaName: %+v\n", pgErr.SchemaName)
+		fmt.Printf("Where: %+v\n", pgErr.Where)
+		fmt.Printf("DataTypeName: %+v\n", pgErr.DataTypeName)
+		fmt.Printf("pgErr err: %+v\n", pgErr.Error())
+
 		var column, value string
 		switch pgErr.Code {
 		case pgerrcode.UniqueViolation:
@@ -53,20 +61,14 @@ func parseDbErrorDetail(err error) error {
 			jsonTag := snaker.ForceLowerCamelIdentifier(column)
 			newErr = internal.NewErrorWithLocf(models.ErrorCodeAlreadyExists, []string{jsonTag}, fmt.Sprintf("%s %q already exists", jsonTag, value))
 		case pgerrcode.ForeignKeyViolation:
-			fmt.Printf("ColumnName: %+v\n", pgErr.ColumnName)
-			fmt.Printf("Hint: %+v\n", pgErr.Hint)
-			fmt.Printf("TableName: %+v\n", pgErr.TableName)
-			fmt.Printf("SchemaName: %+v\n", pgErr.SchemaName)
-			fmt.Printf("Where: %+v\n", pgErr.Where)
-			fmt.Printf("DataTypeName: %+v\n", pgErr.DataTypeName)
-			fmt.Printf("pgErr err: %+v\n", pgErr.Error())
 			matches := errorUniqueViolationRegex.FindStringSubmatch(pgErr.Detail)
 			if len(matches) == 0 {
 				break
 			}
 			// TODO: handle multicolumn (should be empty loc slice, which will show error on whole object)
-			// in case of error in field unrelated to request params, frontend will simply attempt to show in nearest parent that does
+			// TODO: in case of error in field unrelated to request params, frontend will simply attempt to show in nearest parent that does
 			// exist and default to generic callout.
+			// custom tag mappers done at service level or above
 			column, value = matches[1], matches[2]
 			jsonTag := snaker.ForceLowerCamelIdentifier(column)
 			newErr = internal.NewErrorWithLocf(models.ErrorCodeInvalidArgument, []string{jsonTag}, fmt.Sprintf("%s %q is invalid", jsonTag, value))
