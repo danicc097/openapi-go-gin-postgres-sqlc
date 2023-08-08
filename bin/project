@@ -6,18 +6,6 @@
 #
 #
 
-export PROC=$$
-
-export POSTGRES_TRACE=${POSTGRES_TRACE:-false}
-export GIN_MODE=${GIN_MODE:-release}
-
-source ".helpers.sh"
-source ".project.dependencies.sh"
-source ".project.usage.sh"
-
-starting_cwd=$(pwd)
-ensure_pwd_is_top_level
-
 # log for any function output.
 xlog() {
   local fname="${FUNCNAME[1]#*.}"
@@ -123,6 +111,7 @@ x.bootstrap() {
 
     traefik_dir="$HOME/traefik-bootstrap"
     with_tty confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
+    echo "${RED}Make sure to add \`complete -o nospace -C project project\` to your ~/.bashrc for completion.${OFF}"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1709,13 +1698,25 @@ config_template_setup() {
 
 ######################## ENTRYPOINT ########################
 
+export PROC=$$
+
+export POSTGRES_TRACE=${POSTGRES_TRACE:-false}
+export GIN_MODE=${GIN_MODE:-release}
+
+source ".helpers.sh"
+source ".project.dependencies.sh"
+source ".project.usage.sh"
+
+starting_cwd=$(pwd)
+ensure_pwd_is_top_level
+
 set -Eeo pipefail
 set -o errtrace
 
 env="dev"
 
 # --------------------- completion and delegation --------------------
-#      `complete -C foo foo` > `source <(foo bloated_completion)`
+#      `complete -o nospace -C foo foo` > `source <(foo bloated_completion)`
 
 while IFS= read -r line; do
   [[ $line =~ ^declare\ -f\ x\. ]] || continue
@@ -1744,7 +1745,7 @@ if [[ -n $COMP_LINE ]]; then
 
   for c in "${COMMANDS[@]}"; do
     test -z "${xfn_specified}" || break
-    test -z "${pre}" -o "${c}" != "${c#"${pre}"}" -a "${pre}" != "${c}" && echo "${c}"
+    test -z "${pre}" -o "${c}" != "${c#"${pre}"}" -a "${pre}" != "${c}" && echo "${c} "
   done
 
   test -z "${xfn_specified}" && exit
@@ -1771,8 +1772,22 @@ if [[ -n $COMP_LINE ]]; then
 
   for opt in ${__x_options[@]}; do
     [[ -n "${__x_opts_seen[$opt]}" ]] && continue
-    # TODO prevent opts that accept values having whitespace added
-    [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt}"
+    if [[ ${opt:0:${#pre}} == "${pre,,}" ]]; then
+      [[ "$opt" == "${pre,,}" ]] && continue # will have to be removed for inner completion
+      if [[ "${opt,,}" =~ ^.*= ]]; then
+        # TODO: could complete if choices found for opt (assoc array) eg --x-env has # Options: "dev prod ci"
+        # which gets added to usage docs as arg: dev|prod|ci instead of using # Args: env
+        # for validation, it can be generic:
+        # if [[ ! " ${opts[${--x-(flag)}]} " =~ " $val " ]]; then
+        #   err "Invalid value for --x-(flag): val. Allowed values: opts[${--x-(flag)}]"
+        # fi`
+        # and for completion itself we cycle through echo "${opt}<val1>", "${opt}<val2>",...
+        # (can handle inner pre here, ie --x-env=de <TAB> outputs possible nested opts as well)
+        echo "${opt}"
+      else
+        echo "${opt} "
+      fi
+    fi
   done
 
   exit
