@@ -36,7 +36,7 @@ func NewProject(logger *zap.SugaredLogger, projectRepo repos.Project,
 }
 
 func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID int) (*db.Project, error) {
-	defer newOTELSpan(ctx, "Project.ByID").End()
+	defer newOTELSpan(ctx, "").End()
 
 	project, err := p.projectRepo.ByID(ctx, d, projectID)
 	if err != nil {
@@ -47,7 +47,7 @@ func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID int) (*db.Proje
 }
 
 func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error) {
-	defer newOTELSpan(ctx, "Project.ByName").End()
+	defer newOTELSpan(ctx, "").End()
 
 	project, err := p.projectRepo.ByName(ctx, d, name)
 	if err != nil {

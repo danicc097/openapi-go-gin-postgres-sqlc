@@ -24,7 +24,7 @@ func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification) *Notif
 
 // LatestUserNotifications gets a notification by ID.
 func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
-	defer newOTELSpan(ctx, "Notification.LatestUserNotifications").End()
+	defer newOTELSpan(ctx, "").End()
 
 	notification, err := n.nrepo.LatestUserNotifications(ctx, d, params)
 	if err != nil {
@@ -36,7 +36,7 @@ func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 
 // Create creates a new notification.
 func (n *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error) {
-	defer newOTELSpan(ctx, "Notification.Create").End()
+	defer newOTELSpan(ctx, "").End()
 
 	notification, err := n.nrepo.Create(ctx, d, params)
 	if err != nil {

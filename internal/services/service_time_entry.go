@@ -30,7 +30,7 @@ func NewTimeEntry(logger *zap.SugaredLogger, teRepo repos.TimeEntry, wiRepo repo
 
 // ByID gets a time entry by ID.
 func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
-	defer newOTELSpan(ctx, "TimeEntry.ByID").End()
+	defer newOTELSpan(ctx, "").End()
 
 	teObj, err := a.teRepo.ByID(ctx, d, id)
 	if err != nil {
@@ -42,7 +42,7 @@ func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry,
 
 // Create creates a new time entry.
 func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
-	defer newOTELSpan(ctx, "TimeEntry.Create").End()
+	defer newOTELSpan(ctx, "").End()
 
 	if caller.UserID != params.UserID {
 		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot add activity for a different user")
@@ -89,7 +89,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 
 // Update updates an existing time entry.
 func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
-	defer newOTELSpan(ctx, "TimeEntry.Update").End()
+	defer newOTELSpan(ctx, "").End()
 
 	teObj, err := a.teRepo.Update(ctx, d, id, params)
 	if err != nil {
@@ -101,7 +101,7 @@ func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int, params *db.Ti
 
 // Delete deletes a time entry by ID.
 func (a *TimeEntry) Delete(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
-	defer newOTELSpan(ctx, "TimeEntry.Delete").End()
+	defer newOTELSpan(ctx, "").End()
 
 	teObj, err := a.teRepo.Delete(ctx, d, id)
 	if err != nil {
