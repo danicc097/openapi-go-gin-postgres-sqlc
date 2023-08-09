@@ -15,7 +15,7 @@ import (
 func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpanWithUser(c).End()
+	defer newOTelSpanWithUser(c).End()
 
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)
@@ -32,7 +32,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 
 // GetCurrentUser returns the logged in user.
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
-	defer newOTELSpanWithUser(c).End()
+	defer newOTelSpanWithUser(c).End()
 
 	caller := getUserFromCtx(c)
 
@@ -56,7 +56,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
-	s := newOTELSpanWithUser(c)
+	s := newOTelSpanWithUser(c)
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
@@ -99,7 +99,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
-	s := newOTELSpanWithUser(c)
+	s := newOTelSpanWithUser(c)
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 

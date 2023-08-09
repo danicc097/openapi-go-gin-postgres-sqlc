@@ -17,11 +17,11 @@ const OtelName = "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/res
 // to the attributes provided when a Span is created.
 // Span name records a relative path to the current function and an optional suffix
 // to identify multiple spans in the same function.
-func newOTELSpan(ctx context.Context, suffix string, opts ...trace.SpanStartOption) trace.Span {
+func newOTelSpan(ctx context.Context, suffix string, opts ...trace.SpanStartOption) trace.Span {
 	if suffix != "" {
 		suffix = "[" + suffix + "]"
 	}
-	_, span := otel.Tracer(OtelName).Start(ctx, tracing.GetOTELSpanName(2)+suffix, opts...)
+	_, span := otel.Tracer(OtelName).Start(ctx, tracing.GetOTelSpanName(2)+suffix, opts...)
 
 	return span
 }
@@ -35,12 +35,12 @@ func userIDAttribute(c *gin.Context) attribute.KeyValue {
 	return tracing.UserIDAttribute.String(uid)
 }
 
-// newOTELSpanWithUser creates a new OTEL span with the current user included as attribute.
+// newOTelSpanWithUser creates a new OTel span with the current user included as attribute.
 // Should be called in all handlers.
-func newOTELSpanWithUser(c *gin.Context, opts ...trace.SpanStartOption) trace.Span {
+func newOTelSpanWithUser(c *gin.Context, opts ...trace.SpanStartOption) trace.Span {
 	opts = append(opts, trace.WithAttributes(userIDAttribute(c)))
 
-	_, span := otel.Tracer(OtelName).Start(c.Request.Context(), tracing.GetOTELSpanName(2), opts...)
+	_, span := otel.Tracer(OtelName).Start(c.Request.Context(), tracing.GetOTelSpanName(2), opts...)
 
 	return span
 }

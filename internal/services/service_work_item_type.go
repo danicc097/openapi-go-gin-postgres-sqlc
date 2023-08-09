@@ -24,7 +24,7 @@ func NewWorkItemType(logger *zap.SugaredLogger, witRepo repos.WorkItemType) *Wor
 
 // ByID gets a work item type by ID.
 func (wit *WorkItemType) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	witObj, err := wit.witRepo.ByID(ctx, d, id)
 	if err != nil {

@@ -24,7 +24,7 @@ func NewWorkItemTag(logger *zap.SugaredLogger, witRepo repos.WorkItemTag) *WorkI
 
 // ByID gets a work item tag by ID.
 func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	witObj, err := wit.witRepo.ByID(ctx, d, id)
 	if err != nil {
@@ -36,7 +36,7 @@ func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkIt
 
 // ByName gets a work item tag by name.
 func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	witObj, err := wit.witRepo.ByName(ctx, d, name, projectID)
 	if err != nil {
@@ -48,7 +48,7 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 
 // Create creates a new work item tag.
 func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	witObj, err := wit.witRepo.Create(ctx, d, params)
 	if err != nil {
@@ -60,7 +60,7 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, 
 
 // Update updates an existing work item tag.
 func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, id int, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	witObj, err := wit.witRepo.Update(ctx, d, id, params)
 	if err != nil {
@@ -72,7 +72,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, 
 
 // Delete deletes a work item tag by ID.
 func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller *db.User, id int) (*db.WorkItemTag, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	witObj, err := wit.witRepo.Delete(ctx, d, id)
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 // from each open instance.
 const UserIDAttribute = attribute.Key("user-id")
 
-func GetOTELSpanName(parentIndex int) string {
+func GetOTelSpanName(parentIndex int) string {
 	pc, _, _, _ := runtime.Caller(parentIndex)
 	funcPtr := runtime.FuncForPC(pc)
 	if funcPtr == nil {

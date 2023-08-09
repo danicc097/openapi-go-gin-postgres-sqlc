@@ -24,7 +24,7 @@ func NewActivity(logger *zap.SugaredLogger, aRepo repos.Activity) *Activity {
 
 // ByID gets an activity by ID.
 func (a *Activity) ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	activity, err := a.aRepo.ByID(ctx, d, id)
 	if err != nil {
@@ -36,7 +36,7 @@ func (a *Activity) ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, e
 
 // ByName gets an activity by name.
 func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	activity, err := a.aRepo.ByName(ctx, d, name, projectID)
 	if err != nil {
@@ -48,7 +48,7 @@ func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID
 
 // ByProjectID gets activities by project ID.
 func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID int) ([]db.Activity, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	activity, err := a.aRepo.ByProjectID(ctx, d, projectID)
 	if err != nil {
@@ -60,7 +60,7 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID int) ([
 
 // Create creates a new activity.
 func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	activity, err := a.aRepo.Create(ctx, d, params)
 	if err != nil {
@@ -72,7 +72,7 @@ func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCre
 
 // Update updates an existing activity.
 func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params *db.ActivityUpdateParams) (*db.Activity, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	activity, err := a.aRepo.Update(ctx, d, id, params)
 	if err != nil {
@@ -84,7 +84,7 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params *db.Act
 
 // Delete deletes an activity by ID.
 func (a *Activity) Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
-	defer newOTELSpan(ctx, "").End()
+	defer newOTelSpan(ctx, "").End()
 
 	activity, err := a.aRepo.Delete(ctx, d, id)
 	if err != nil {

@@ -36,7 +36,7 @@ func (h *Handlers) UpdateProjectConfig(c *gin.Context, project models.Project) {
 
 // GetProject.
 func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
-	defer newOTELSpanWithUser(c).End()
+	defer newOTelSpanWithUser(c).End()
 
 	// TODO project service (includes project, team, board...)
 	// role, ok := h.svc.authz.RoleByRank(user.RoleRank)
@@ -53,7 +53,7 @@ func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 }
 
 func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
-	defer newOTELSpanWithUser(c).End()
+	defer newOTelSpanWithUser(c).End()
 
 	caller := getUserFromCtx(c)
 
