@@ -280,7 +280,7 @@ x.gen.pregen() {
             \"type\": \"array\",
             \"items\": {\"enum\": ${enum_values[Scope]}}
           }
-        }" -i -oj .vscode/schema.json
+        }" -i -oj .vscode/openapi-schema.json
 
     ######## Generate shared policies once the spec has been validated
     echo "Writing shared auth policies"
