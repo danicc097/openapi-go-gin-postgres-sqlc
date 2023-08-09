@@ -666,6 +666,7 @@ x.gen.counterfeiter() {
     md5_all "$CACHE/counterfeiter.md5" ${CACHE_DEP_FILES[@]} go.mod $envvar $repos $tfidfpb
 
     echo "Recreating mocks"
+    # TODO: cache the same way as gen.gowrap
     {
       counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
       counterfeiter -o $REPOS_DIR/repostesting/user.gen.go $repos User &
