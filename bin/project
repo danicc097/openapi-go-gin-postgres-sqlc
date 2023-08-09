@@ -596,6 +596,10 @@ x.gen.gowrap() {
     local repo_interfaces=()
     find_go_interfaces repo_interfaces $repos
 
+    # gowrap super slow. approx 1s per interface
+    # TODO: cache md5 "$CACHE/gowrap/$interface.md5"
+    # find_go_interface_content Team $repos
+
     rm -rf $REPOS_DIR/reposwrappers
 
     for iface in ${repo_interfaces[@]}; do
@@ -614,7 +618,7 @@ x.gen.gowrap() {
       done
     done
 
-    wait
+    wait_without_error
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -769,12 +773,12 @@ x.gen() {
     # (with current setup the whole x.gen is executed and only then
     # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
     # shopt -s inherit_errexit
-    go generate ./... &
-    x.gen.gowrap &
-    x.gen.proto &
-    x.gen.xo &
-    x.gen.sqlc &
-    x.gen.jet &
+    { echo "time go genera: $(time go generate ./...)"; }
+    { echo "time x.gen.gow: $(time x.gen.gowrap)"; }
+    { echo "time x.gen.pro: $(time x.gen.proto)"; }
+    { echo "time x.gen.xo : $(time x.gen.xo)"; }
+    { echo "time x.gen.sql: $(time x.gen.sqlc)"; }
+    { echo "time x.gen.jet: $(time x.gen.jet)"; }
 
     wait_without_error
 
@@ -1554,6 +1558,14 @@ find_go_interfaces() {
     err "No interfaces found in package $pkg"
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+find_go_interface_content() {
+  local interface="$1"
+  local file="$2"
+  awk "/^type $interface /{flag=1; print; next} flag && /^}/{flag=0} flag" $file |
+    sed -e '1d' |
+    awk "$awk_remove_go_comments"
 }
 
 find_go_enums() {
