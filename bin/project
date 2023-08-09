@@ -514,11 +514,7 @@ x.gen.xo() {
   backup-gen
   drop-and-migrate-gen-db
   { { {
-    if md5sum -c "$CACHE/xo.md5" &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
-      echo "Skipping generation (cached). Force regen with --x-force-regen"
-      exit 0
-    fi
-    md5_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/
+    cache_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/
 
     echo "Running generation"
 
@@ -729,11 +725,7 @@ x.gen.frontend() {
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
       orval_config="frontend/orval.config.ts"
 
-      if md5sum -c "$CACHE/frontend.md5" &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
-        echo "Skipping generation (cached). Force regen with --x-force-regen"
-        exit 0
-      fi
-      md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/* frontend/package.json
+      cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/* frontend/package.json
 
       config_template_setup frontend
 
@@ -776,11 +768,7 @@ x.gen.e2e() {
 
     orval_config="e2e/orval.config.ts"
 
-    if md5sum -c "$CACHE/e2e.md5" &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
-      echo "Skipping generation (cached). Force regen with --x-force-regen"
-      exit 0
-    fi
-    md5_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json
+    cache_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json
 
     config_template_setup e2e
 
