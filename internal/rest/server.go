@@ -324,7 +324,7 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "redis.New")
 	}
 
-	tp := tracing.InitTracer()
+	tp := tracing.InitOTelTracer()
 
 	ctx := context.Background()
 

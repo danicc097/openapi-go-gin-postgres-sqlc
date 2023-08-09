@@ -77,12 +77,12 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 			resp.Status = http.StatusBadRequest
 			resp.Detail = "OpenAPI request validation failed"
 			resp.Error = "" // will use validationError
-			resp.ValidationError = extractValidationError(err, "request")
+			resp.ValidationError = extractValidationError(err)
 		case models.ErrorCodeResponseValidation:
 			resp.Status = http.StatusInternalServerError
 			resp.Detail = "OpenAPI response validation failed"
 			resp.Error = "" // will use validationError
-			resp.ValidationError = extractValidationError(err, "response")
+			resp.ValidationError = extractValidationError(err)
 		case models.ErrorCodeAlreadyExists:
 			resp.Status = http.StatusConflict
 		case models.ErrorCodeUnauthorized:
@@ -101,7 +101,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 	}
 
 	if err != nil {
-		span := newOTelSpan(c.Request.Context(), "")
+		span := newOTelSpan().Build(c.Request.Context())
 		defer span.End()
 
 		opts := []trace.EventOption{}
@@ -120,7 +120,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 	renderResponse(c, resp, resp.Status)
 }
 
-func extractValidationError(err error, typ string) *models.HTTPValidationError {
+func extractValidationError(err error) *models.HTTPValidationError {
 	var origErrs []string
 	var vErrs []models.ValidationError
 

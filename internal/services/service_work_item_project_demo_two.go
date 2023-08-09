@@ -38,7 +38,7 @@ func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkI
 
 // ByID gets a work item by ID.
 func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	defer newOTelSpan(ctx, "").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.demotwowiRepo.ByID(ctx, d, id)
 	if err != nil {
@@ -50,7 +50,7 @@ func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int) (*db.Work
 
 // Create creates a new work item.
 func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error) {
-	defer newOTelSpan(ctx, "").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	demoWi, err := w.demotwowiRepo.Create(ctx, d, params.DemoTwoWorkItemCreateParams)
 	if err != nil {
@@ -90,7 +90,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 
 // Update updates an existing work item.
 func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
-	defer newOTelSpan(ctx, "").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.demotwowiRepo.Update(ctx, d, id, params)
 	if err != nil {
@@ -102,7 +102,7 @@ func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params 
 
 // Delete deletes a work item by ID.
 func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	defer newOTelSpan(ctx, "").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.wiRepo.Delete(ctx, d, id)
 	if err != nil {

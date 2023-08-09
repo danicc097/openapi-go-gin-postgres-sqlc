@@ -71,7 +71,7 @@ func (m *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 			return
 		}
 
-		defer newOTelSpan(c.Request.Context(), "RequestValidator").End()
+		defer newOTelSpan().WithSuffix("RequestValidator").Build(c.Request.Context()).End()
 
 		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
 		c.Writer = rbw

@@ -607,8 +607,6 @@ x.gen.gowrap() {
         continue
       fi
 
-      rm -rf $REPOS_DIR/reposwrappers/${iface,,}*.gen.go
-
       for suffix in ${suffixes[@]}; do
         {
           IFS=":" read -r -a arr <<<${suffix}
@@ -810,8 +808,6 @@ x.gen() {
     #   restart_pid $pid &
     # done
 
-    x.lint.go
-
     x.gen.frontend
     x.gen.e2e # may depend on frontend output (config)
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -824,7 +820,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet oapi-codegen codegen gen-schema; do
+    for cmd in jet oapi-codegen codegen; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
@@ -917,10 +913,6 @@ x.test.backend.setup() {
 # Args: [...]
 x.test.backend() {
   { { {
-    # x.lint.go &
-    # x.lint.sql &
-    # wait
-
     x.test.xo
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
