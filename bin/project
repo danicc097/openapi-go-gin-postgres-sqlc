@@ -582,27 +582,33 @@ x.gen.gowrap() {
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
+    local repos="$REPOS_DIR/repos.go"
     md5_all "$CACHE/gowrap.md5" ${CACHE_DEP_FILES[@]} go.mod $repos $GOWRAP_TEMPLATES_DIR
 
     echo "Running generation"
 
+    local cache="$CACHE/gowrap"
     local suffixes=(
       "retry:with_retry"
       "timeout:with_timeout"
       "otel:with_otel"
       "prometheus:with_prometheus" # TODO: https://last9.io/blog/native-support-for-opentelemetry-metrics-in-prometheus/ https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/translator/prometheus
     )
-    local repos="$REPOS_DIR/repos.go"
+
     local repo_interfaces=()
     find_go_interfaces repo_interfaces $repos
 
-    # gowrap super slow. approx 1s per interface
-    # TODO: cache md5 "$CACHE/gowrap/$interface.md5"
-    # find_go_interface_content Team $repos
+    mkdir -p "$cache"
 
-    rm -rf $REPOS_DIR/reposwrappers
-
+    local updated_ifaces=()
     for iface in ${repo_interfaces[@]}; do
+      iface_content="$(find_go_interface_content $iface $repos)"
+      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null; then
+        continue
+      fi
+
+      rm -rf $REPOS_DIR/reposwrappers/${iface,,}*.gen.go
+
       for suffix in ${suffixes[@]}; do
         {
           IFS=":" read -r -a arr <<<${suffix}
@@ -616,9 +622,16 @@ x.gen.gowrap() {
             -o "$REPOS_DIR/reposwrappers/${iface,,}_$suffix.gen.go"
         } &
       done
+
+      echo "$iface_content" >"$cache/$iface"
+      updated_ifaces+=("$iface")
     done
 
     wait_without_error
+
+    if [[ ${#updated_ifaces[@]} -gt 0 ]]; then
+      echo "Updated repo interfaces: ${updated_ifaces[*]}"
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -773,12 +786,12 @@ x.gen() {
     # (with current setup the whole x.gen is executed and only then
     # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
     # shopt -s inherit_errexit
-    { echo "time go genera: $(time go generate ./...)"; }
-    { echo "time x.gen.gow: $(time x.gen.gowrap)"; }
-    { echo "time x.gen.pro: $(time x.gen.proto)"; }
-    { echo "time x.gen.xo : $(time x.gen.xo)"; }
-    { echo "time x.gen.sql: $(time x.gen.sqlc)"; }
-    { echo "time x.gen.jet: $(time x.gen.jet)"; }
+    go generate ./... &
+    x.gen.gowrap &
+    x.gen.proto &
+    x.gen.xo &
+    x.gen.sqlc &
+    x.gen.jet &
 
     wait_without_error
 
@@ -843,13 +856,11 @@ x.lint.go() {
       -not -path "**/*.cache/*" \
       -not -path "**/vendor/*" \
       -not -path "**/*.gen.*" \
+      -not -path "**/*.xo.go" \
       -name "*.go")
-
     goimports -w $files || echo "Linting failed"
     gofumpt -w $files || echo "Linting failed"
     golangci-lint run --config=.golangci.yml --fix &>/dev/null || true
-
-    echo "Success"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1668,7 +1679,7 @@ delete_duplicate_schemas() {
   local keys=("ModelsRole" "ModelsScope" "ModelsProjectConfigField" "ModelsProjectConfig" "ModelsProject" "ModelsWorkItemRole")
   local paths_arr=()
   for key in "${keys[@]}"; do
-    echo "Deleting ${key} (duplicate)"
+    echo "Deleting duplicate schema \"${key}\""
     paths_arr+=(".components.schemas.$key")
   done
   local paths=$(join_by "," "${paths_arr[@]}")
