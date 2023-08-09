@@ -648,7 +648,6 @@ x.gen.client-server() {
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
-
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -793,10 +792,8 @@ x.gen() {
 
     wait_without_error
 
-    x.gen.pregen
-
-    x.gen.client-server & # depends on schemas generated in postgen
-    x.gen.counterfeiter & # delay since it depends on generated output too
+    { x.gen.pregen && x.gen.client-server; } & # depends on pregen
+    x.gen.counterfeiter &                      # delay since it depends on generated output (xo, proto...)
 
     wait_without_error
 
@@ -808,8 +805,10 @@ x.gen() {
     #   restart_pid $pid &
     # done
 
-    x.gen.frontend
-    x.gen.e2e # may depend on frontend output (config)
+    x.gen.frontend &
+    x.gen.e2e &
+
+    wait_without_error
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
@@ -1706,7 +1705,7 @@ config_template_setup() {
   # this has to always be run at startup
   jq \
     'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-    $dir/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
+    $dir/config.template.json >/tmp/$dir-config.tmp.json && mv /tmp/$dir-config.tmp.json "$ENV_REPLACE_GLOB"
   envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
   frontend/nginx/replace-envvars.sh "$envvars"
 }
