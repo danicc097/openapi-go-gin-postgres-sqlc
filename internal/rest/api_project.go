@@ -7,7 +7,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // InitializeProject.
@@ -37,9 +36,7 @@ func (h *Handlers) UpdateProjectConfig(c *gin.Context, project models.Project) {
 
 // GetProject.
 func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
-	ctx := c.Request.Context()
-
-	defer newOTELSpan(ctx, "GetProject", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c).End()
 
 	// TODO project service (includes project, team, board...)
 	// role, ok := h.svc.authz.RoleByRank(user.RoleRank)
@@ -56,9 +53,7 @@ func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 }
 
 func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
-	ctx := c.Request.Context()
-
-	defer newOTELSpan(ctx, "CreateWorkitemTag", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpanWithUser(c).End()
 
 	caller := getUserFromCtx(c)
 

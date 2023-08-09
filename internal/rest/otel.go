@@ -15,8 +15,13 @@ const OtelName = "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/res
 // When creating a Span it is recommended to provide all known span attributes
 // using the `WithAttributes()` SpanOption as samplers will only have access
 // to the attributes provided when a Span is created.
+// Span name defaults to relative path to current function if not provided.
 func newOTELSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) trace.Span {
-	_, span := otel.Tracer(OtelName).Start(ctx, name, opts...)
+	sn := name
+	if sn == "" {
+		sn = tracing.GetOTELSpanName(2)
+	}
+	_, span := otel.Tracer(OtelName).Start(ctx, sn, opts...)
 
 	return span
 }
@@ -31,8 +36,9 @@ func userIDAttribute(c *gin.Context) attribute.KeyValue {
 }
 
 // newOTELSpanWithUser creates a new OTEL span with the current user included as attribute.
-func newOTELSpanWithUser(c *gin.Context, name string, opts ...trace.SpanStartOption) trace.Span {
+// Should be called in all handlers.
+func newOTELSpanWithUser(c *gin.Context, opts ...trace.SpanStartOption) trace.Span {
 	opts = append(opts, trace.WithAttributes(userIDAttribute(c)))
 
-	return newOTELSpan(c.Request.Context(), "handlers."+name, opts...)
+	return newOTELSpan(c.Request.Context(), tracing.GetOTELSpanName(2), opts...)
 }

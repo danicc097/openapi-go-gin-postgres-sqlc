@@ -15,7 +15,7 @@ import (
 func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpanWithUser(c, "Handlers.CreateWorkitem").End()
+	defer newOTELSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)
@@ -86,7 +86,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 func (h *Handlers) DeleteWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpanWithUser(c, "DeleteWorkitem").End()
+	defer newOTELSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)
@@ -99,7 +99,7 @@ func (h *Handlers) DeleteWorkitem(c *gin.Context, id int) {
 func (h *Handlers) GetWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpanWithUser(c, "GetWorkitem").End()
+	defer newOTELSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)
@@ -112,7 +112,7 @@ func (h *Handlers) GetWorkitem(c *gin.Context, id int) {
 func (h *Handlers) UpdateWorkitem(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpanWithUser(c, "UpdateWorkitem").End()
+	defer newOTELSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)
@@ -125,7 +125,7 @@ func (h *Handlers) UpdateWorkitem(c *gin.Context, id int) {
 func (h *Handlers) CreateWorkitemComment(c *gin.Context, id int) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpanWithUser(c, "CreateWorkitemComment").End()
+	defer newOTELSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)

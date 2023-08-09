@@ -101,7 +101,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 	}
 
 	if err != nil {
-		span := newOTELSpan(c.Request.Context(), "renderErrorResponse")
+		span := newOTELSpan(c.Request.Context(), "")
 		defer span.End()
 
 		opts := []trace.EventOption{}
