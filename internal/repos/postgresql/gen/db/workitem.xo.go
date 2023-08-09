@@ -387,9 +387,9 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 // Update updates a WorkItem in the database.
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_items SET
-	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, metadata = $5, target_date = $6, team_id = $7, title = $8, work_item_type_id = $9
-	WHERE work_item_id = $10
+	sqlstr := `UPDATE public.work_items SET 
+	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, metadata = $5, target_date = $6, team_id = $7, title = $8, work_item_type_id = $9 
+	WHERE work_item_id = $10 
 	RETURNING * `
 	// run
 	logf(sqlstr, wi.ClosedAt, wi.CreatedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.UpdatedAt, wi.WorkItemTypeID, wi.WorkItemID)
@@ -441,7 +441,7 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 // Delete deletes the WorkItem from the database.
 func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_items
+	sqlstr := `DELETE FROM public.work_items 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
@@ -453,8 +453,8 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the WorkItem from the database via 'deleted_at'.
 func (wi *WorkItem) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.work_items
-	SET deleted_at = NOW()
+	sqlstr := `UPDATE public.work_items 
+	SET deleted_at = NOW() 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
@@ -574,7 +574,7 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -586,11 +586,11 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s
-	 FROM public.work_items %s
+	work_items.work_item_type_id %s 
+	 FROM public.work_items %s 
 	 WHERE work_items.work_item_id > $1
-	 %s   AND work_items.deleted_at is %s  %s
-  ORDER BY
+	 %s   AND work_items.deleted_at is %s  %s 
+  ORDER BY 
 		work_item_id Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
@@ -706,7 +706,7 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -718,11 +718,11 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID in
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s
-	 FROM public.work_items %s
+	work_items.work_item_type_id %s 
+	 FROM public.work_items %s 
 	 WHERE work_items.work_item_id < $1
-	 %s   AND work_items.deleted_at is %s  %s
-  ORDER BY
+	 %s   AND work_items.deleted_at is %s  %s 
+  ORDER BY 
 		work_item_id Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
@@ -840,7 +840,7 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -852,10 +852,10 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s
-	 FROM public.work_items %s
+	work_items.work_item_type_id %s 
+	 FROM public.work_items %s 
 	 WHERE true
-	 %s   AND work_items.deleted_at is %s  %s
+	 %s   AND work_items.deleted_at is %s  %s 
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -977,7 +977,7 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -989,10 +989,10 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s
-	 FROM public.work_items %s
+	work_items.work_item_type_id %s 
+	 FROM public.work_items %s 
 	 WHERE work_items.deleted_at = $1 AND (deleted_at IS NOT NULL)
-	 %s   AND work_items.deleted_at is %s  %s
+	 %s   AND work_items.deleted_at is %s  %s 
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1114,7 +1114,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...Wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -1126,10 +1126,10 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...Wo
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s
-	 FROM public.work_items %s
+	work_items.work_item_type_id %s 
+	 FROM public.work_items %s 
 	 WHERE work_items.work_item_id = $1
-	 %s   AND work_items.deleted_at is %s  %s
+	 %s   AND work_items.deleted_at is %s  %s 
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1249,7 +1249,7 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemS
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -1261,10 +1261,10 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemS
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s
-	 FROM public.work_items %s
+	work_items.work_item_type_id %s 
+	 FROM public.work_items %s 
 	 WHERE work_items.team_id = $1
-	 %s   AND work_items.deleted_at is %s  %s
+	 %s   AND work_items.deleted_at is %s  %s 
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1386,7 +1386,7 @@ func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItem
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -1398,10 +1398,10 @@ func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItem
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s
-	 FROM public.work_items %s
+	work_items.work_item_type_id %s 
+	 FROM public.work_items %s 
 	 WHERE work_items.title = $1
-	 %s   AND work_items.deleted_at is %s  %s
+	 %s   AND work_items.deleted_at is %s  %s 
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
