@@ -514,7 +514,7 @@ x.gen.xo() {
   backup-gen
   drop-and-migrate-gen-db
   { { {
-    if md5sum -c "$CACHE/xo.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+    if md5sum -c "$CACHE/xo.md5" &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
       echo "Skipping generation (cached). Force regen with --x-force-regen"
       exit 0
     fi
@@ -578,12 +578,7 @@ x.gen.jet() {
 x.gen.gowrap() {
   backup-gen
   { { {
-    if md5sum -c "$CACHE/gowrap.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
-      echo "Skipping generation (cached). Force regen with --x-force-regen"
-      exit 0
-    fi
     local repos="$REPOS_DIR/repos.go"
-    md5_all "$CACHE/gowrap.md5" ${CACHE_DEP_FILES[@]} go.mod $repos $GOWRAP_TEMPLATES_DIR
 
     echo "Running generation"
 
@@ -603,7 +598,7 @@ x.gen.gowrap() {
     local updated_ifaces=()
     for iface in ${repo_interfaces[@]}; do
       iface_content="$(find_go_interface_content $iface $repos)"
-      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null; then
+      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
         continue
       fi
 
@@ -655,32 +650,53 @@ x.gen.client-server() {
 x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   { { {
+    tfidfpb_dir="internal/pb/python-ml-app-protos/tfidf/v1"
     envvar="internal/envvar/envvar.go"
     repos="$REPOS_DIR/repos.go"
-    tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
+    tfidfpb="$tfidfpb_dir/service_grpc.pb.go"
 
-    if md5sum -c "$CACHE/counterfeiter.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
-      echo "Skipping generation (cached). Force regen with --x-force-regen"
-      exit 0
-    fi
-    md5_all "$CACHE/counterfeiter.md5" ${CACHE_DEP_FILES[@]} go.mod $envvar $repos $tfidfpb
+    declare -A ifaces
+    ifaces=(
+      ["Provider-$envvar"]="internal/envvar/envvartesting/provider.gen.go"
+      ["User-$repos"]="$REPOS_DIR/repostesting/user.gen.go"
+      ["Notification-$repos"]="$REPOS_DIR/repostesting/notification.gen.go"
+      ["Project-$repos"]="$REPOS_DIR/repostesting/project.gen.go"
+      ["Team-$repos"]="$REPOS_DIR/repostesting/team.gen.go"
+      ["MovieGenreClient-$tfidfpb"]="$tfidfpb_dir/v1testing/movie_genre_client.gen.go"
+      ["MovieGenreServer-$tfidfpb"]="$tfidfpb_dir/v1testing/movie_genre_server.gen.go"
+    )
 
-    echo "Recreating mocks"
-    # TODO: cache the same way as gen.gowrap
-    {
-      counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-      counterfeiter -o $REPOS_DIR/repostesting/user.gen.go $repos User &
-      counterfeiter -o $REPOS_DIR/repostesting/notification.gen.go $repos Notification &
-      counterfeiter -o $REPOS_DIR/repostesting/project.gen.go $repos Project &
-      counterfeiter -o $REPOS_DIR/repostesting/team.gen.go $repos Team &
-      counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
-      counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
-      wait
-    } 2>&1
+    local cache="$CACHE/counterfeiter"
+    local updated_ifaces=()
+
+    mkdir -p "$cache"
+
+    for key in ${!ifaces[@]}; do
+      input_path="${key#*-}"
+      iface="${key%%-*}"
+      iface_content="$(find_go_interface_content $iface $input_path)"
+
+      cache_entry="$cache/$(echo "$key" | base64)"
+      if diff "$cache_entry" <(echo "$iface_content") &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+        continue
+      fi
+
+      counterfeiter -o "${ifaces[$key]}" "$input_path" "$iface" 2>&1 &
+      echo "$iface_content" >"$cache_entry"
+      updated_ifaces+=("$key")
+    done
+
+    wait_without_error
 
     # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
-    sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
-      internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go
+    if ! grep -q 'v1\.UnimplementedMovieGenreServer' $tfidfpb_dir/v1testing/movie_genre_server.gen.go; then
+      sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' $tfidfpb_dir/v1testing/movie_genre_server.gen.go
+    fi
+
+    if [[ ${#updated_ifaces[@]} -gt 0 ]]; then
+      echo "Updated repo interfaces: ${updated_ifaces[*]}"
+    fi
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -710,16 +726,16 @@ x.gen.frontend() {
     (
       export PATH=frontend/node_modules/.bin:$PATH
 
-      config_template_setup frontend
-
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
       orval_config="frontend/orval.config.ts"
 
-      if md5sum -c "$CACHE/frontend.md5" >/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+      if md5sum -c "$CACHE/frontend.md5" &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
         echo "Skipping generation (cached). Force regen with --x-force-regen"
         exit 0
       fi
       md5_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/* frontend/package.json
+
+      config_template_setup frontend
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
@@ -758,11 +774,18 @@ x.gen.e2e() {
 
     export PATH=e2e/node_modules/.bin:$PATH
 
+    orval_config="e2e/orval.config.ts"
+
+    if md5sum -c "$CACHE/e2e.md5" &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+      echo "Skipping generation (cached). Force regen with --x-force-regen"
+      exit 0
+    fi
+    md5_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json
+
     config_template_setup e2e
 
     rm -rf e2e/client/gen
 
-    orval_config="e2e/orval.config.ts"
     orval --config $orval_config
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
@@ -793,8 +816,8 @@ x.gen() {
 
     wait_without_error
 
-    { x.gen.pregen && x.gen.client-server; } & # depends on pregen
-    x.gen.counterfeiter &                      # delay since it depends on generated output (xo, proto...)
+    { x.gen.pregen && x.gen.client-server; } &
+    x.gen.counterfeiter & # delay since it depends on generated output (xo, proto...)
 
     wait_without_error
 
