@@ -225,10 +225,20 @@ x.gen.pregen() {
     # TODO: optimize (1s with just 22 op ids)
     # probably best with javascript to avoid bringing in python
     # and just use js-yaml to pascal case paths[i][j].operationId
+    # * alternatively, for opid in $(yq e ".paths[][].operationId" $SPEC_PATH)
+    # create an array of newopids and generate yq updates (.. | )
+    # where paths are: yq e ".paths[][].operationId | path | join(\".\")" openapi.yaml
+    # .$escaped_path.operationId = env(new_opid) | .$escaped_path.<..>" openapi.yaml
+
+    # IMPORTANT: fixed paths:  yq e '
+    # .paths[][].operationId
+    #  | path
+    #  ~~~~~~ better be safe instead | with(.[] | select(contains(".") or contains("/") or contains("{")); . = "\"" + . + "\"")
+    #  | with(.[] | select(.); . = "\"" + . + "\"")
+    #  | join(".")
+    # ' openapi.yaml
+    # yq -e '.paths."/workitem/{id}/comments/".post.operationId' openapi.yaml
     echo "Applying PascalCase to operation IDs in $SPEC_PATH"
-    # slow: N. instead construct yq command dynamically and concat operations with "|"
-    # also, command can be much simpler in a single yq call
-    # yq e ".. | select(has(\"operationId\") and .operationId == \"<oldOpId>\") | .operationId = \"<NewOpId>\" < | parent>" openapi.yaml
     spec_content=$(<$SPEC_PATH)
     for opid in $(yq e ".paths[][].operationId" $SPEC_PATH); do
       local new_opid paths escaped_path
@@ -237,6 +247,7 @@ x.gen.pregen() {
       paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" < <(echo "$spec_content"))
       mapfile -t paths <<<$paths
       escaped_path="$(join_yq_paths paths)"
+      echo escaped_path: $escaped_path
       spec_content=$(new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" < <(echo "$spec_content"))
     done
     echo "$spec_content" >$SPEC_PATH
@@ -453,6 +464,8 @@ generate_model_mappings_dicts() {
 
 # outputs safe double-quoted paths for yq and
 # fixes paths where a dot is present
+# TODO: workaround https://github.com/mikefarah/yq/issues/1295
+# this is not needed anymore
 join_yq_paths() {
   local -n __arr="$1"
   __arr=("${__arr[*]//- /}")
