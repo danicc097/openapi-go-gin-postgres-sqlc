@@ -5,6 +5,7 @@
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
 #
 #
+declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_CACHE X_ENV
 
 readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
@@ -190,7 +191,9 @@ x.install-tools() {
 # Fetch latest Swagger UI bundle.
 x.setup.swagger-ui() {
   { { {
-    local name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
+    local name
+
+    name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
     curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
     tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
     rm swagger-ui.tar.gz
@@ -209,13 +212,13 @@ x.gen.pregen() {
 
     echo "Running generation"
 
-    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$IGNORE_BUILD_ERRORS" ]]
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC_PATH)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
     # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
-    codegen validate-spec -env=".env.$env"
+    codegen validate-spec -env=".env.$X_ENV"
 
     ### TODO: start `cache_all db.md5 db/ $SPEC_PATH` related funcs
 
@@ -264,10 +267,12 @@ x.gen.pregen() {
     # yq e ".. | select(has(\"operationId\") and .operationId == \"<oldOpId>\") | .operationId = \"<NewOpId>\" < | parent>" openapi.yaml
     spec_content=$(<$SPEC_PATH)
     for opid in $(yq e ".paths[][].operationId" $SPEC_PATH); do
-      local new_opid="$(to_pascal $opid)"
-      local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" < <(echo "$spec_content"))
+      local new_opid paths escaped_path
+
+      new_opid="$(to_pascal $opid)"
+      paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" < <(echo "$spec_content"))
       mapfile -t paths <<<$paths
-      local escaped_path="$(join_yq_paths paths)"
+      escaped_path="$(join_yq_paths paths)"
       spec_content=$(new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" < <(echo "$spec_content"))
     done
     echo "$spec_content" >$SPEC_PATH
@@ -344,7 +349,7 @@ x.gen.pregen() {
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
 
-    codegen pre -env=".env.$env" -op-id-auth="$OPID_AUTH"
+    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH"
 
     generate_structs_map
 
@@ -480,10 +485,14 @@ backup-gen() {
   mkdir -p "$CACHE"
 
   gen_backup_branch="backup-gen-$(uuidgen)"
-  gen_backup_stash="backup-stash-$gen_backup_branch"
-  git stash push -m "$gen_backup_stash" --include-untracked
+  gen_backup_stash_name="backup-stash-$gen_backup_branch"
+
+  echo "Backing up untracked changes to branch: $gen_backup_branch"
+  git stash push -m "$gen_backup_stash_name" --include-untracked
   git checkout -b "$gen_backup_branch"
-  git stash apply "stash^{/$gen_backup_stash}" || true # ignore when there's no stash (no changes)
+  # TODO: instead of true, create dummy random file on root and delete on cleanup.
+  # else we get misleading stash error messages (since theres no stash)
+  git stash apply "stash^{/$gen_backup_stash_name}" || true # ignore when there's no stash (no changes)
 
   restore_cache=1
 }
@@ -495,34 +504,15 @@ backup-gen.cleanup() {
 }
 
 backup-gen.restore() {
-  echo "Restoring previously generated code..."
+  echo "Restoring previously generated code (branch $gen_backup_branch)..."
   wait
 
-  git stash --include-untracked
-  git stash apply "stash^{/$gen_backup_stash}" || true # ignore when there's no stash (no changes)
+  git reset --hard && git clean -df
+  git stash apply "stash^{/$gen_backup_stash_name}" || true # ignore when there's no stash (no changes)
 
   rm -rf "$CACHE/*.md5" # cache is not up to date due to forced exit and restore
   # TODO: delete specific folders like $CACHE/{counterfeiter,gowrap} only if
   # failure on those tools specifically
-}
-
-backup_gen_files() {
-  src_dir=$1
-  backup_dir=$2
-
-  mkdir -p "$backup_dir"
-
-  # -print0 alongside --null handle file names with spaces
-  find "$src_dir" -name "*.gen.go" -type f -print0 | tar czvf "$backup_dir/backup_gen_files.tar.gz" --null -T - &>/dev/null
-
-}
-
-restore_gen_files() {
-  backup_dir=$1
-  dest_dir=$2
-
-  # -C changes cwd to dir before extracting
-  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir" --overwrite --strip-components=1 &>/dev/null
 }
 
 # Generate type-safe Go code from SQL.
@@ -591,7 +581,7 @@ x.gen.jet() {
     local schema=public
     rm -rf "$gen_path"
     {
-      jet -dbname="$GEN_POSTGRES_DB" -env=.env."$env" --out=./"$gen_path" --schema=$schema
+      jet -dbname="$GEN_POSTGRES_DB" -env=.env."$X_ENV" --out=./"$gen_path" --schema=$schema
       mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
       rm -r "./$gen_path/$GEN_POSTGRES_DB/"
     }
@@ -623,7 +613,7 @@ x.gen.gowrap() {
     local updated_ifaces=()
     for iface in ${repo_interfaces[@]}; do
       iface_content="$(find_go_interface_content $iface $repos)"
-      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
         continue
       fi
 
@@ -663,7 +653,7 @@ x.gen.client-server() {
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
-    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
+    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
 
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
@@ -702,7 +692,7 @@ x.gen.counterfeiter() {
       iface_content="$(find_go_interface_content $iface $input_path)"
 
       cache_entry="$cache/$(echo "$key" | base64)"
-      if diff "$cache_entry" <(echo "$iface_content") &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+      if diff "$cache_entry" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
         continue
       fi
 
@@ -810,7 +800,7 @@ x.gen.e2e() {
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
-  [[ -n $NO_GEN ]] && return
+  [[ -n $X_NO_GEN ]] && return
   backup-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   drop-and-migrate-gen-db
   { { {
@@ -959,7 +949,7 @@ x.test.backend() {
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
 
     set -x
-    APP_ENV="$env" go test -tags skipxo -count=1 "$@" ./...
+    APP_ENV="$X_ENV" go test -tags skipxo -count=1 "$@" ./...
     set +x
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1012,7 +1002,7 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    APP_ENV="$env" go test -count=1 "$XO_TESTS_PKG" "$@" ||
+    APP_ENV="$X_ENV" go test -count=1 "$XO_TESTS_PKG" "$@" ||
       err "xo tests failed"
 
     if ! $test_dir/diff_check; then
@@ -1041,7 +1031,7 @@ x.test.backend.watch() {
         clear
 
         # NOTE: no count=1 default to allow caching
-        { APP_ENV="$env" go test -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
+        { APP_ENV="$X_ENV" go test -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
       done
   done
 }
@@ -1057,7 +1047,7 @@ x.run.backend-hr() {
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
     --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
+    --build.bin "go run ./cmd/rest-server/ -env=.env.$X_ENV" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
     --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$CACHE,$TOOLS_DIR" \
@@ -1077,8 +1067,6 @@ x.run.frontend() {
 
 # Run all project services with hot reload enabled in dev mode.
 x.run-dev() {
-  env="dev"
-
   run_hot_reload
 
   while true; do
@@ -1123,9 +1111,9 @@ x.run-dockerized() {
   setup_swagger_ui
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
-    --project-name "$PROJECT_PREFIX"_"$env" \
+    --project-name "$PROJECT_PREFIX"_"$X_ENV" \
     -f docker-compose.yml \
-    --env-file ".env.$env" \
+    --env-file ".env.$X_ENV" \
     up -d --build --wait --force-recreate 2>&1 # https://github.com/docker/compose/issues/7346
 
   x.migrate up
@@ -1289,7 +1277,7 @@ x.db.recreate() {
 
 # Drop and recreate the database in the current environment.
 x.db.drop() {
-  [[ $env = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && with_tty confirm "This will drop production database data. Continue?"
+  [[ $x_env = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && with_tty confirm "This will drop production database data. Continue?"
   { { {
     drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1332,27 +1320,27 @@ x.db.initial-data() {
     x.db.drop
     x.migrate up
     echo "Loading initial data to $POSTGRES_DB"
-    # dockerdb_psql -d $POSTGRES_DB <"./db/initial_data_$env.pgsql"
-    go run cmd/initial-data/main.go -env .env.$env
+    # dockerdb_psql -d $POSTGRES_DB <"./db/initial_data_$x_env.pgsql"
+    go run cmd/initial-data/main.go -env .env.$X_ENV
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # Backup the database for the current environment.
 x.db.dump() {
   { { {
-    running_dumps=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" \
+    running_dumps=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$x_env" \
       -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
     if [[ "$running_dumps" != "" ]]; then
       err "pg_dump is already running, aborting new dump"
     fi
 
     mkdir -p "$DUMPS_DIR"
-    schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" \
+    schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$x_env" \
       -c "SELECT version FROM schema_migrations;")
     dump_file="${DUMP_PREFIX}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
-    dockerdb pg_dump -U postgres -d "postgres_$env" |
+    dockerdb pg_dump -U postgres -d "postgres_$x_env" |
       gzip >"$DUMPS_DIR/$dump_file"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1373,12 +1361,12 @@ x.db.restore() {
     dump_file="$latest_dump_file"
   fi
 
-  confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
+  confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$x_env${OFF} environment?"
 
   x.db.drop
-  gunzip -c "$dump_file" | dockerdb_psql -U postgres -d "postgres_$env"
+  gunzip -c "$dump_file" | dockerdb_psql -U postgres -d "postgres_$x_env"
   # sanity check, but probably better to do it before restoring...
-  dump_schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
+  dump_schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$x_env" -c "SELECT version FROM schema_migrations;")
   file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
   echo "Migration revision: $dump_schema_v"
   if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
@@ -1454,7 +1442,7 @@ run_shared_services() {
   docker network create traefik-net 2>/dev/null || true
 
   local extra_services
-  if [[ $env != "prod" ]]; then
+  if [[ $x_env != "prod" ]]; then
     extra_services="-f docker-compose.oidc.yml"
   fi
   cd docker
@@ -1462,7 +1450,7 @@ run_shared_services() {
     -p "$PROJECT_PREFIX" \
     -f docker-compose.shared.yml \
     $extra_services \
-    --env-file ../.env."$env" \
+    --env-file ../.env."$X_ENV" \
     "$@" 2>&1 # https://github.com/docker/compose/issues/7346
   cd - >/dev/null
 }
@@ -1545,7 +1533,7 @@ sync_db_enums_with_spec() {
 }
 
 setup_swagger_ui() {
-  go run cmd/swagger-ui-setup/main.go -env=".env.$env" -swagger-ui-dir=$SWAGGER_UI_DIR
+  go run cmd/swagger-ui-setup/main.go -env=".env.$X_ENV" -swagger-ui-dir=$SWAGGER_UI_DIR
 
   local bundle_spec="$SWAGGER_UI_DIR/openapi.yaml"
   cp $SPEC_PATH $bundle_spec
@@ -1672,7 +1660,7 @@ update_spec_with_structs() {
   # always compile and run since we need new PublicStructs that were just changed
   go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
-    >$gen_schema_spec || [[ -n "$IGNORE_BUILD_ERRORS" ]]
+    >$gen_schema_spec || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
   # prevent possible overriding if name clashes with generated schemas from structs
   # skip_schemas=("Project")
@@ -1768,7 +1756,7 @@ ensure_pwd_is_top_level
 set -Eeo pipefail
 set -o errtrace
 
-env="dev"
+X_ENV="dev"
 
 # --------------------- completion and delegation --------------------
 #      `complete -o nospace -C foo foo` > `source <(foo bloated_completion)`
@@ -1864,31 +1852,32 @@ while [[ "$#" -gt 0 ]]; do
     # Proceeds with code generation regardless of tool rebuild errors.
     # Use in case of compilation errors that depend on generated code.
     # A clean gen run is required afterwards.
-    export IGNORE_BUILD_ERRORS=1
-    # export NO_CACHE=1 # on failed gen $CACHE is cleared, shouldn't be necessary
+    export X_IGNORE_BUILD_ERRORS=1
+    # export X_NO_CACHE=1 # on failed gen $CACHE is cleared, shouldn't be necessary
     ;;
   --x-force-regen)
     # Removes generation cache, forcing a new run.
-    export FORCE_REGEN=1
+    export X_FORCE_REGEN=1
     ;;
   --x-no-confirmation)
     # Bypasses confirmation messages. (WIP: Use `yes` in the meantime)
-    export NO_CONFIRMATION=1
+    export X_NO_CONFIRMATION=1
     ;;
   --x-no-gen)
     # Skips code generation steps.
-    export NO_GEN=1
+    export X_NO_GEN=1
     ;;
   --x-no-cache)
     # Code generation backup is not restored on failure.
-    export NO_CACHE=1
+    # Please ensure there are no uncommitted changes in the current branch beforehand.
+    export X_NO_CACHE=1
     ;;
   --x-env=*)
     # Environment to run commands in. Defaults to "dev".
     # Args: env
-    env="${1#--x-env=}"
+    export X_ENV="${1#--x-env=}"
     valid_envs="dev prod ci"
-    if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
+    if [[ ! " ${valid_envs[*]} " =~ " $X_ENV " ]]; then
       err "Valid environments: $valid_envs"
     fi
     ;;
@@ -1905,10 +1894,12 @@ for arg in ${args[@]}; do
   set -- "$@" "$arg"
 done
 
+readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_CACHE X_ENV
+
 ######################## INIT ########################
 
 # applicable to any command
-ensure_envvars_set ".env.template" ".env.${env}"
+ensure_envvars_set ".env.template" ".env.${X_ENV}"
 
 # export to all subsequent commands or scripts
 set -a
@@ -1917,7 +1908,7 @@ set -a
 # and if so saves to a global current_env assoc array
 # that is shared for all calls of this wrapper func
 # shellcheck source=SCRIPTDIR/../.env.dev
-source ".env.$env"
+source ".env.$X_ENV"
 set +a
 
 trap 'show_tracebacks' ERR
@@ -1926,7 +1917,7 @@ trap errtrap SIGUSR1
 trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
 
 exit-cleanup() {
-  if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
+  if [[ $restore_cache = 1 && -z $X_NO_CACHE ]]; then
     backup-gen.restore
   fi
 
@@ -1952,9 +1943,9 @@ source ".envrc"
 
 pids=""
 
-readonly DUMP_PREFIX="dump_${env}_"
+readonly DUMP_PREFIX="dump_${X_ENV}_"
 # common shared file dependencies for codegen checksums
-readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.$env")
+readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.$X_ENV")
 
 ################ handle executing x functions ################
 
@@ -1964,7 +1955,7 @@ if [[ -n "$1" ]]; then
     declare cmd=$(command -v "x.$c")
     if [[ $c == "$CMD" && -n "$cmd" ]]; then
       "x.$CMD" "$@"
-      if [[ -n $IGNORE_BUILD_ERRORS ]]; then
+      if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
         echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required" && continue
       fi
       exit $?
