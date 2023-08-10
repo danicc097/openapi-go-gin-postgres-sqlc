@@ -6,6 +6,44 @@
 #
 #
 
+readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+readonly SPEC_PATH="openapi.yaml"
+
+readonly BUILD_DIR="bin/build"
+readonly TOOLS_DIR="bin/tools"
+readonly PROTO_DIR="internal/pb"
+readonly MIGRATIONS_DIR="db/migrations"
+readonly CERTIFICATES_DIR="certificates"
+readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
+readonly REPOS_DIR="internal/repos"
+readonly PG_REPO_DIR="$REPOS_DIR/postgresql"
+readonly XO_TEMPLATES_DIR="$PG_REPO_DIR/xo-templates"
+
+readonly POSTGRES_TEST_DB="postgres_test"
+readonly DUMPS_DIR="$HOME/openapi_go_gin_postgres_dumps"
+pkg="$(head -1 go.mod)"
+readonly GOMOD_PKG="${pkg#module *}"
+# can only run with count=1 at most
+readonly XO_TESTS_PKG="$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests"
+readonly OPID_AUTH="operationAuth.gen.json"
+readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
+readonly CACHE=".generate.cache"
+readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
+readonly MAX_FNAME_LOG_LEN=13
+
+GEN_POSTGRES_DB="gen_db"
+
+# determines if gen cache should be restore at program exit. 0|1
+restore_cache=0
+# stores the first executing function to track if caching gen is already running,
+# to allow for nested backup-gen and cache-cleanup inside multiple functions.
+backup_gen_caller=""
+
+# stores the first executing function to determine if a migration
+# is needed when running gen* functions which call each other
+gen_migrated=""
+
 # log for any function output.
 xlog() {
   local fname="${FUNCNAME[1]#*.}"
@@ -179,6 +217,8 @@ x.gen.pregen() {
     # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
     codegen validate-spec -env=".env.$env"
 
+    ### TODO: start `cache_all db.md5 db/ $SPEC_PATH` related funcs
+
     sync_db_enums_with_spec
 
     ######## Sync projects and related project info
@@ -213,6 +253,8 @@ x.gen.pregen() {
     done
 
     generate_models_mappings
+
+    ### TODO: end `cache_all db.md5 db/ $SPEC_PATH` related funcs
 
     ######## Ensure consistent style for future codegen
 
@@ -430,32 +472,17 @@ x.gen.postgen() {
   backup-gen.cleanup
 }
 
-# saves the current gen state to allow restoring in the event of early exit
-# TODO: use random git branch + stashes
-# BACKUP_BRANCH="backup-$(date +%Y-%m-%d)-$RANDOM_STRING"
-# current_branch=$(git rev-parse --abbrev-ref HEAD)
-# git stash save "Uncommitted changes for code generation backup"
-# git checkout -b "$BACKUP_BRANCH"
-# git stash apply
-# run codegen
-# git checkout -b "$current_branch" # regardless
-# codegen success: git branch -D "$BACKUP_BRANCH"
-# else: git stash apply
-
 backup-gen() {
   test -n "$backup_gen_caller" && return
 
   backup_gen_caller="${FUNCNAME[1]}"
 
-  rm -rf "$GEN_BACKUP"
-  mkdir -p "$GEN_BACKUP"
-  mkdir -p "$FRONTEND_GEN_BACKUP"
-  mkdir -p "$PG_REPO_GEN_BACKUP"
-  backup_gen_files internal "$GEN_BACKUP"
+  mkdir -p "$CACHE"
 
-  cp "$SPEC_PATH" "$GEN_BACKUP"
-  rsync -a --delete "$FRONTEND_GEN/" "$FRONTEND_GEN_BACKUP"
-  rsync -a --delete "$PG_REPO_GEN/" "$PG_REPO_GEN_BACKUP"
+  gen_backup_branch="backup-gen-$(uuidgen)"
+  git stash push -m "$gen_backup_branch" --include-untracked
+  git checkout -b "$gen_backup_branch" &>/dev/null
+  git stash apply "stash^{/$gen_backup_branch}" &>/dev/null
 
   restore_cache=1
 }
@@ -469,12 +496,11 @@ backup-gen.cleanup() {
 backup-gen.restore() {
   echo "Restoring previously generated code..."
   wait
-  mv "$GEN_BACKUP/$SPEC_PATH" "$SPEC_PATH" 2>/dev/null || true
-  rsync -a --delete "$PG_REPO_GEN_BACKUP/" "$PG_REPO_GEN/"
-  rsync -a --delete "$FRONTEND_GEN_BACKUP/" "$FRONTEND_GEN/"
-  restore_gen_files "$GEN_BACKUP" internal
 
-  rm -f "$CACHE"/*.md5 # clear gen cache
+  git stash --include-untracked
+  git stash apply "stash^{/$gen_backup_branch}"
+
+  rm -rf "$CACHE"
 }
 
 backup_gen_files() {
@@ -725,7 +751,7 @@ x.gen.frontend() {
       SCHEMA_OUT="frontend/src/types/schema.d.ts"
       orval_config="frontend/orval.config.ts"
 
-      cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/* frontend/package.json
+      cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/ frontend/package.json
 
       config_template_setup frontend # no need to run if cached .env
 
@@ -1900,6 +1926,10 @@ exit-cleanup() {
   if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
     backup-gen.restore
   fi
+
+  git checkout "$CURRENT_BRANCH" &>/dev/null
+  git branch -D "$gen_backup_branch" &>/dev/null
+
   cd "$starting_cwd" || true
 }
 
@@ -1919,51 +1949,10 @@ errtrap() {
 source ".envrc"
 
 pids=""
-DUMP_PREFIX="dump_${env}_"
 
-readonly SPEC_PATH="openapi.yaml"
-
-readonly BUILD_DIR="bin/build"
-readonly TOOLS_DIR="bin/tools"
-readonly PROTO_DIR="internal/pb"
-readonly MIGRATIONS_DIR="db/migrations"
-readonly CERTIFICATES_DIR="certificates"
-readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
-readonly REPOS_DIR="internal/repos"
-readonly PG_REPO_DIR="$REPOS_DIR/postgresql"
-readonly XO_TEMPLATES_DIR="$PG_REPO_DIR/xo-templates"
-
-readonly POSTGRES_TEST_DB="postgres_test"
-readonly DUMPS_DIR="$HOME/openapi_go_gin_postgres_dumps"
-pkg="$(head -1 go.mod)"
-readonly GOMOD_PKG="${pkg#module *}"
-# can only run with count=1 at most
-readonly XO_TESTS_PKG="$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests"
-readonly OPID_AUTH="operationAuth.gen.json"
-readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
-readonly FRONTEND_SRC="frontend/src"
-readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
+readonly DUMP_PREFIX="dump_${env}_"
 # common shared file dependencies for codegen checksums
 readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.$env")
-readonly CACHE=".generate.cache"
-readonly GEN_BACKUP="$CACHE/gen"
-readonly PG_REPO_GEN_BACKUP="$GEN_BACKUP/pgrepo/gen"
-readonly FRONTEND_GEN_BACKUP="$GEN_BACKUP/frontend/gen"
-readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
-
-readonly MAX_FNAME_LOG_LEN=13
-
-GEN_POSTGRES_DB="gen_db"
-
-# determines if gen cache should be restore at program exit. 0|1
-restore_cache=0
-# stores the first executing function to track if caching gen is already running,
-# to allow for nested backup-gen and cache-cleanup inside multiple functions.
-backup_gen_caller=""
-
-# stores the first executing function to determine if a migration
-# is needed when running gen* functions which call each other
-gen_migrated=""
 
 ################ handle executing x functions ################
 
