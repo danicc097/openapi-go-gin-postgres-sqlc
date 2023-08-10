@@ -58,6 +58,10 @@ export type ErrorCode =
   | 'InvalidScope'
   | 'InvalidUUID'
 /**
+ * location in body path, if any
+ */
+export type Location1 = string[]
+/**
  * string identifiers for SSE event listeners.
  */
 export type Topics = 'GlobalAlerts'
@@ -285,6 +289,7 @@ export interface HTTPError {
   detail: string
   status: number
   error: string
+  loc?: Location1
   type: ErrorCode
   validationError?: HTTPValidationError
 }

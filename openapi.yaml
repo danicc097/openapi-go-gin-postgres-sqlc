@@ -1070,6 +1070,12 @@ components:
           type: integer
         error:
           type: string
+        loc:
+          title: Location
+          description: location in body path, if any
+          type: array
+          items:
+            type: string
         type:
           $ref: '#/components/schemas/ErrorCode'
         validationError:

@@ -47,7 +47,7 @@ func NewUser(logger *zap.SugaredLogger, urepo repos.User, notificationrepo repos
 
 // Register registers a user.
 func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParams) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.Register").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	if params.Role == "" {
 		params.Role = models.RoleUser
@@ -81,7 +81,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 
 // Update updates a user.
 func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User, params *models.UpdateUserRequest) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.Update").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	if caller == nil {
 		return nil, errors.New("caller cannot be nil")
@@ -126,7 +126,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 }
 
 func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string, caller *db.User, params *models.UpdateUserAuthRequest) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.UpdateUserAuthorization").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	if caller == nil {
 		return nil, errors.New("caller cannot be nil")
@@ -200,7 +200,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 }
 
 func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {
-	defer newOTELSpan(ctx, "User.CreateAPIKey").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	uak, err := u.urepo.CreateAPIKey(ctx, d, user)
 	if err != nil {
@@ -214,7 +214,7 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 
 // ByExternalID gets a user by ExternalID.
 func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.ByExternalID").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	user, err := u.urepo.ByExternalID(ctx, d, id)
 	if err != nil {
@@ -226,7 +226,7 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User
 
 // ByEmail gets a user by email.
 func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.ByEmail").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	user, err := u.urepo.ByEmail(ctx, d, email)
 	if err != nil {
@@ -238,7 +238,7 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, 
 
 // ByUsername gets a user by username.
 func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.ByUsername").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	user, err := u.urepo.ByUsername(ctx, d, username)
 	if err != nil {
@@ -250,7 +250,7 @@ func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.
 
 // ByAPIKey gets a user by apiKey.
 func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.ByAPIKey").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	user, err := u.urepo.ByAPIKey(ctx, d, apiKey)
 	if err != nil {
@@ -262,7 +262,7 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 
 // Delete marks a user as deleted.
 func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.Delete").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	user, err := u.urepo.Delete(ctx, d, id)
 	if err != nil {
@@ -279,7 +279,7 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 	// this will also set user.has_new_personal_notifications to false in the same tx
 	return []db.UserNotification{}, nil
 
-	// defer newOTELSpan(ctx, "User.ByAPIKey").End()
+	// defer newOTelSpan().Build(ctx).End()
 
 	// uid, err := uuid.Parse(userID)
 	// if err != nil {
@@ -301,7 +301,7 @@ func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID 
 }
 
 func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID uuid.UUID, teamID int) error {
-	defer newOTELSpan(ctx, "User.AssignTeam").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	_, err := db.CreateUserTeam(ctx, d, &db.UserTeamCreateParams{
 		TeamID: teamID,

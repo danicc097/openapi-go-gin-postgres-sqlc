@@ -541,8 +541,11 @@ type ErrorCode string
 type HTTPError struct {
 	Detail string `json:"detail"`
 	Error  string `json:"error"`
-	Status int    `json:"status"`
-	Title  string `json:"title"`
+
+	// Loc location in body path, if any
+	Loc    *[]string `json:"loc,omitempty"`
+	Status int       `json:"status"`
+	Title  string    `json:"title"`
 
 	// Type Represents standardized HTTP error types.
 	// Notes:

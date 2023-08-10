@@ -25,7 +25,7 @@ var _ repos.WorkItemTag = (*WorkItemTag)(nil)
 func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
 	workItemTag, err := db.CreateWorkItemTag(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("could not create work item tag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not create work item tag: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemTag, nil
@@ -34,14 +34,14 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params *db.WorkIt
 func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	workItemTag, err := wit.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get work item tag by id %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get work item tag by id %w", parseDBErrorDetail(err))
 	}
 
 	workItemTag.SetUpdateParams(params)
 
 	workItemTag, err = workItemTag.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update work item tag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update work item tag: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemTag, err
@@ -50,7 +50,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params *d
 func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error) {
 	workItemTag, err := db.WorkItemTagByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get work item tag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get work item tag: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemTag, nil
@@ -59,7 +59,7 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error) {
 	workItemTag, err := db.WorkItemTagByWorkItemTagID(ctx, d, id, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get work item tag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get work item tag: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemTag, nil
@@ -72,7 +72,7 @@ func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, id int) (*db.Work
 
 	err := workItemTag.Delete(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not delete work item tag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not delete work item tag: %w", parseDBErrorDetail(err))
 	}
 
 	return workItemTag, err

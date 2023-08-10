@@ -55,7 +55,7 @@ func (u *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem,
 
 	err := workItem.SoftDelete(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not soft delete workItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not soft delete workItem: %w", parseDBErrorDetail(err))
 	}
 
 	return workItem, err
@@ -69,7 +69,7 @@ func (u *WorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem
 
 	workItem, err = workItem.Restore(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not restore workItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not restore workItem: %w", parseDBErrorDetail(err))
 	}
 
 	return workItem, err

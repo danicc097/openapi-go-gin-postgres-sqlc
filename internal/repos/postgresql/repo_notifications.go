@@ -70,7 +70,7 @@ var _ repos.Notification = (*Notification)(nil)
 func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
 	nn, err := u.q.GetUserNotifications(ctx, d, *params)
 	if err != nil {
-		return nil, fmt.Errorf("could not get notifications for user: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get notifications for user: %w", parseDBErrorDetail(err))
 	}
 
 	return nn, nil
@@ -79,7 +79,7 @@ func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error) {
 	notification, err := db.CreateNotification(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("could not create notification: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not create notification: %w", parseDBErrorDetail(err))
 	}
 
 	return notification, nil
@@ -92,7 +92,7 @@ func (u *Notification) Delete(ctx context.Context, d db.DBTX, id int) (*db.Notif
 
 	err := notification.Delete(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not delete notification: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not delete notification: %w", parseDBErrorDetail(err))
 	}
 
 	return notification, err

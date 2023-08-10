@@ -24,7 +24,7 @@ func NewKanbanStep(logger *zap.SugaredLogger, ksrepo repos.KanbanStep) *KanbanSt
 
 // ByID gets a KanbanStep by ID.
 func (ks *KanbanStep) ByID(ctx context.Context, d db.DBTX, id int) (*db.KanbanStep, error) {
-	defer newOTELSpan(ctx, "KanbanStep.ByID").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	kanbanStep, err := ks.ksrepo.ByID(ctx, d, id)
 	if err != nil {
@@ -36,7 +36,7 @@ func (ks *KanbanStep) ByID(ctx context.Context, d db.DBTX, id int) (*db.KanbanSt
 
 // ByProject gets all KanbanSteps for a project.
 func (ks *KanbanStep) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.KanbanStep, error) {
-	defer newOTELSpan(ctx, "KanbanStep.ByProject").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	kanbanSteps, err := ks.ksrepo.ByProject(ctx, d, projectID)
 	if err != nil {

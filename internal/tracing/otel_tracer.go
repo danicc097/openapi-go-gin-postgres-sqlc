@@ -18,7 +18,7 @@ import (
 
 // https://www.timescale.com/blog/using-postgresql-as-a-scalable-durable-and-reliable-storage-for-jaeger-tracing/
 
-func InitTracer() *sdktrace.TracerProvider {
+func InitOTelTracer() *sdktrace.TracerProvider {
 	jaegerEndpoint := "http://localhost:14268/api/traces"
 
 	jaegerExporter, err := jaeger.New(

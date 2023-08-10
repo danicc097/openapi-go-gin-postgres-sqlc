@@ -24,7 +24,7 @@ func NewTeam(logger *zap.SugaredLogger, trepo repos.Team) *Team {
 
 // ByID gets a team by ID.
 func (t *Team) ByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
-	defer newOTELSpan(ctx, "Team.ByID").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.trepo.ByID(ctx, d, id)
 	if err != nil {
@@ -36,7 +36,7 @@ func (t *Team) ByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
 
 // ByName gets a team by name.
 func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error) {
-	defer newOTELSpan(ctx, "Team.ByName").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.trepo.ByName(ctx, d, name, projectID)
 	if err != nil {
@@ -48,7 +48,7 @@ func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int
 
 // Create creates a new team.
 func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error) {
-	defer newOTELSpan(ctx, "Team.Create").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.trepo.Create(ctx, d, params)
 	if err != nil {
@@ -60,7 +60,7 @@ func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParam
 
 // Update updates an existing team.
 func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpdateParams) (*db.Team, error) {
-	defer newOTELSpan(ctx, "Team.Update").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.trepo.Update(ctx, d, id, params)
 	if err != nil {
@@ -72,7 +72,7 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpd
 
 // Delete deletes an existing team.
 func (t *Team) Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
-	defer newOTELSpan(ctx, "Team.Delete").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.trepo.Delete(ctx, d, id)
 	if err != nil {

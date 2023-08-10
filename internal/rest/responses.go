@@ -9,8 +9,11 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // renderErrorResponse writes an error response from title and error.
@@ -60,6 +63,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		resp.Title = "internal error"
 		resp.Detail = title
 	} else {
+		resp.Loc = pointers.New(ierr.Loc())
 		resp.Type = ierr.Code()
 		resp.Detail = ierr.Cause().Error()
 		switch ierr.Code() {
@@ -73,12 +77,12 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 			resp.Status = http.StatusBadRequest
 			resp.Detail = "OpenAPI request validation failed"
 			resp.Error = "" // will use validationError
-			resp.ValidationError = extractValidationError(err, "request")
+			resp.ValidationError = extractValidationError(err)
 		case models.ErrorCodeResponseValidation:
 			resp.Status = http.StatusInternalServerError
 			resp.Detail = "OpenAPI response validation failed"
 			resp.Error = "" // will use validationError
-			resp.ValidationError = extractValidationError(err, "response")
+			resp.ValidationError = extractValidationError(err)
 		case models.ErrorCodeAlreadyExists:
 			resp.Status = http.StatusConflict
 		case models.ErrorCodeUnauthorized:
@@ -97,16 +101,26 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 	}
 
 	if err != nil {
-		span := newOTELSpan(c.Request.Context(), "renderErrorResponse")
+		span := newOTelSpan().Build(c.Request.Context())
 		defer span.End()
 
-		span.RecordError(err)
+		opts := []trace.EventOption{}
+
+		var ierr *internal.Error
+		if errors.As(err, &ierr) {
+			opts = append(opts, trace.WithAttributes(
+				attribute.Key("type").String(string(ierr.Code())),
+				attribute.Key("loc").StringSlice(ierr.Loc())),
+			)
+		}
+
+		span.RecordError(err, opts...)
 	}
 
 	renderResponse(c, resp, resp.Status)
 }
 
-func extractValidationError(err error, typ string) *models.HTTPValidationError {
+func extractValidationError(err error) *models.HTTPValidationError {
 	var origErrs []string
 	var vErrs []models.ValidationError
 

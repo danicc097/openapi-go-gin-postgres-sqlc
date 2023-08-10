@@ -16,6 +16,8 @@ export interface HTTPError {
   detail: string
   status: number
   error: string
+  /** location in body path, if any */
+  loc?: string[]
   type: ErrorCode
   validationError?: HTTPValidationError
 }

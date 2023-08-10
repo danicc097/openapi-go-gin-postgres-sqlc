@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -45,7 +46,7 @@ func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem, w
 
 // ByID gets a work item by ID.
 func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	defer newOTELSpan(ctx, "DemoWorkItem.ByID").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.demowiRepo.ByID(ctx, d, id)
 	if err != nil {
@@ -57,14 +58,14 @@ func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkIte
 
 // Create creates a new work item.
 func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error) {
-	defer newOTELSpan(ctx, "DemoWorkItem.Create").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	demoWi, err := w.demowiRepo.Create(ctx, d, params.DemoWorkItemCreateParams)
 	if err != nil {
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	for _, id := range params.TagIDs {
+	for i, id := range params.TagIDs {
 		err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
 			WorkItemTagID: id,
 			WorkItemID:    demoWi.WorkItemID,
@@ -77,16 +78,15 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 				continue
 			}
 
-			// TODO: internal.Error should contain location, if any.
-			// e.g. here tagIDs.i
-
-			return nil, fmt.Errorf("could not assign tag %d: %w", id, err)
+			// will be done in w.wiSvc.AssignWorkItemTags which returns loc []string{strconv.Itoa(i)}
+			// and here we wrap it again in loc: tagIDs which is specific to Create only...
+			return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs", strconv.Itoa(i)}, "could not assign tag %d", id)
 		}
 	}
 
 	err = w.wiSvc.AssignWorkItemMembers(ctx, d, demoWi, params.Members)
 	if err != nil {
-		return nil, fmt.Errorf("could not assign members: %w", err)
+		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
 	}
 
 	// TODO rest response with non pointer required joins as usual, so that it is always up to date
@@ -103,7 +103,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 
 // Update updates an existing work item.
 func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
-	defer newOTELSpan(ctx, "DemoWorkItem.Update").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.demowiRepo.Update(ctx, d, id, params)
 	if err != nil {
@@ -115,7 +115,7 @@ func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params rep
 
 // Delete deletes a work item by ID.
 func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
-	defer newOTELSpan(ctx, "DemoWorkItem.Delete").End()
+	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.wiRepo.Delete(ctx, d, id)
 	if err != nil {

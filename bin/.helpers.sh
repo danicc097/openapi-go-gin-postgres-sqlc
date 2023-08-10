@@ -262,14 +262,20 @@ show_tracebacks() {
   exit 1
 }
 
-md5_all() {
+# Cache given files and exit program if checksums match
+cache_all() {
   if [ $# -lt 2 ]; then
-    echo "Usage: md5_all <output_file> <file_or_directory> [<file_or_directory> ...]"
+    echo "Usage: cache_all <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]"
     return 1
   fi
 
   output_file="$1"
   shift
+
+  if md5sum -c "$output_file" &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+    echo "Skipping generation (cached). Force regen with --x-force-regen"
+    return 0
+  fi
 
   >"$output_file"
 
