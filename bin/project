@@ -212,55 +212,19 @@ x.gen.pregen() {
 
     echo "Running generation"
 
-    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
-
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC_PATH)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
     # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
     codegen validate-spec -env=".env.$X_ENV"
 
-    ### TODO: start `cache_all db.md5 db/ $SPEC_PATH` related funcs
-
-    sync_db_enums_with_spec
-
-    ######## Sync projects and related project info
-
-    mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
-
-    [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-    replace_enum_in_spec "Project" db_projects "projects table"
-
-    for project in ${db_projects[@]}; do
-      ### kanban steps
-      mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
-          select name from kanban_steps where project_id = (
-            select project_id from projects where name = '$project'
-            );" 2>/dev/null)
-      [[ ${#kanban_steps[@]} -gt 0 ]] || {
-        echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue
-      }
-      schema_name="$(to_pascal $project)KanbanSteps"
-      replace_enum_in_spec "$schema_name" kanban_steps "kanban_steps table"
-
-      ### work item types
-      mapfile -t work_item_types < <(dockerdb_psql -d $POSTGRES_DB -c "
-          select name from work_item_types where project_id = (
-            select project_id from projects where name = '$project'
-            );" 2>/dev/null)
-      [[ ${#work_item_types[@]} -gt 0 ]] || {
-        echo "${YELLOW}[WARNING] No work item types found for project '$project' in database $POSTGRES_DB${OFF}" && continue
-      }
-      schema_name="$(to_pascal $project)WorkItemTypes"
-      replace_enum_in_spec "$schema_name" work_item_types "work_item_types table"
-    done
-
-    generate_models_mappings
-
-    ### TODO: end `cache_all db.md5 db/ $SPEC_PATH` related funcs
+    sync_spec_with_db
 
     ######## Ensure consistent style for future codegen
 
+    # TODO: optimize (1s with just 22 op ids)
+    # probably best with javascript to avoid bringing in python
+    # and just use js-yaml to pascal case paths[i][j].operationId
     echo "Applying PascalCase to operation IDs in $SPEC_PATH"
     # slow: N. instead construct yq command dynamically and concat operations with "|"
     # also, command can be much simpler in a single yq call
@@ -358,6 +322,45 @@ x.gen.pregen() {
     delete_duplicate_schemas
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
+}
+
+sync_spec_with_db() {
+  cache_all "$CACHE/db.md5" ${CACHE_DEP_FILES[@]} db/ $SPEC_PATH || return 0
+
+  sync_db_enums_with_spec
+
+  ######## Sync projects and related project info
+
+  mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+
+  [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
+  replace_enum_in_spec "Project" db_projects "projects table"
+
+  for project in ${db_projects[@]}; do
+    ### kanban steps
+    mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
+          select name from kanban_steps where project_id = (
+            select project_id from projects where name = '$project'
+            );" 2>/dev/null)
+    [[ ${#kanban_steps[@]} -gt 0 ]] || {
+      echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue
+    }
+    schema_name="$(to_pascal $project)KanbanSteps"
+    replace_enum_in_spec "$schema_name" kanban_steps "kanban_steps table"
+
+    ### work item types
+    mapfile -t work_item_types < <(dockerdb_psql -d $POSTGRES_DB -c "
+          select name from work_item_types where project_id = (
+            select project_id from projects where name = '$project'
+            );" 2>/dev/null)
+    [[ ${#work_item_types[@]} -gt 0 ]] || {
+      echo "${YELLOW}[WARNING] No work item types found for project '$project' in database $POSTGRES_DB${OFF}" && continue
+    }
+    schema_name="$(to_pascal $project)WorkItemTypes"
+    replace_enum_in_spec "$schema_name" work_item_types "work_item_types table"
+  done
+
+  generate_models_mappings
 }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
