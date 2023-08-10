@@ -262,6 +262,7 @@ show_tracebacks() {
   exit 1
 }
 
+# Cache given files and exit program if checksums match
 cache_all() {
   if [ $# -lt 2 ]; then
     echo "Usage: cache_all <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]"

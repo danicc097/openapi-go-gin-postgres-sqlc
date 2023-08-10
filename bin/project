@@ -727,7 +727,7 @@ x.gen.frontend() {
 
       cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/* frontend/package.json
 
-      config_template_setup frontend
+      config_template_setup frontend # no need to run if cached .env
 
       mkdir -p frontend/src/types
       rm -rf frontend/src/gen
@@ -770,7 +770,7 @@ x.gen.e2e() {
 
     cache_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json
 
-    config_template_setup e2e
+    config_template_setup e2e # no need to run if cached .env
 
     rm -rf e2e/client/gen
 
