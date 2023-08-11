@@ -765,7 +765,10 @@ components:
     ProjectConfig:
       properties:
         fields:
-          $ref: '#/components/schemas/ProjectConfigFields'
+          items:
+            $ref: '#/components/schemas/ProjectConfigField'
+          nullable: false
+          type: array
         header:
           items:
             type: string
@@ -777,15 +780,6 @@ components:
         - header
         - fields
       type: object
-      x-oapi-codegen-extra-tags:
-        ref: '#/components/schemas/ProjectConfig'
-    ProjectConfigFields:
-      items:
-        $ref: '#/components/schemas/ProjectConfigField'
-      nullable: false
-      type: array
-      x-oapi-codegen-extra-tags:
-        ref: '#/components/schemas/ProjectConfigFields'
     ProjectConfigField:
       properties:
         isEditable:
@@ -1559,35 +1553,7 @@ components:
           nullable: true
           type: string
       type: object
-    # FIXME: shouldn't be generated
-    ModelsProjectConfig: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        fields:
-          $ref: '#/components/schemas/ProjectConfigFields'
-        header:
-          items:
-            type: string
-          nullable: true
-          type: array
-        visualization:
-          additionalProperties: {}
-          nullable: true
-          type: object
-      type: object
-    ModelsProjectConfigField: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        isEditable:
-          type: boolean
-        isVisible:
-          type: boolean
-        name:
-          type: string
-        path:
-          type: string
-        showCollapsed:
-          type: boolean
-      type: object
-  examples:
+  examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:
         username: username

@@ -20,7 +20,6 @@ import {
   DbTimeEntry,
   DbWorkItemComment,
   ProjectConfig,
-  ProjectConfigFields,
   ProjectConfigField,
   DemoWorkItemsResponse,
   DemoTwoWorkItemsResponse,
@@ -63,8 +62,6 @@ import {
   ServicesMember,
   DbDemoTwoWorkItem,
   DbDemoTwoWorkItemCreateParams,
-  ModelsProjectConfig,
-  ModelsProjectConfigField,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -215,18 +212,6 @@ export const ProjectConfigDecoder: Decoder<ProjectConfig> = {
       throw new Error(`Schema ${ProjectConfigDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ProjectConfigDecoder.definitionName)
-  },
-}
-export const ProjectConfigFieldsDecoder: Decoder<ProjectConfigFields> = {
-  definitionName: 'ProjectConfigFields',
-  schemaRef: '#/definitions/ProjectConfigFields',
-
-  decode(json: unknown): ProjectConfigFields {
-    const schema = ajv.getSchema(ProjectConfigFieldsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ProjectConfigFieldsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ProjectConfigFieldsDecoder.definitionName)
   },
 }
 export const ProjectConfigFieldDecoder: Decoder<ProjectConfigField> = {
@@ -731,29 +716,5 @@ export const DbDemoTwoWorkItemCreateParamsDecoder: Decoder<DbDemoTwoWorkItemCrea
       throw new Error(`Schema ${DbDemoTwoWorkItemCreateParamsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbDemoTwoWorkItemCreateParamsDecoder.definitionName)
-  },
-}
-export const ModelsProjectConfigDecoder: Decoder<ModelsProjectConfig> = {
-  definitionName: 'ModelsProjectConfig',
-  schemaRef: '#/definitions/ModelsProjectConfig',
-
-  decode(json: unknown): ModelsProjectConfig {
-    const schema = ajv.getSchema(ModelsProjectConfigDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsProjectConfigDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsProjectConfigDecoder.definitionName)
-  },
-}
-export const ModelsProjectConfigFieldDecoder: Decoder<ModelsProjectConfigField> = {
-  definitionName: 'ModelsProjectConfigField',
-  schemaRef: '#/definitions/ModelsProjectConfigField',
-
-  decode(json: unknown): ModelsProjectConfigField {
-    const schema = ajv.getSchema(ModelsProjectConfigFieldDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsProjectConfigFieldDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsProjectConfigFieldDecoder.definitionName)
   },
 }

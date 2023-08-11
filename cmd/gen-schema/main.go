@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -45,9 +44,6 @@ func main() {
 	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
 	reflector.DefaultOptions = append(reflector.DefaultOptions,
 		jsonschema.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-			if strings.HasSuffix(t.PkgPath(), "internal/models") {
-				fmt.Fprintf(os.Stderr, "Generated models package type found in spec: %+v\n", t)
-			}
 			return defaultDefName
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
@@ -79,6 +75,21 @@ func main() {
 			return nil
 		}),
 		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
+			if strings.HasSuffix(params.Schema.ReflectType.PkgPath(), "internal/models") {
+				t := params.Schema.ReflectType
+				if t.Kind() == reflect.Ptr {
+					t = t.Elem()
+				}
+				if t.Kind() == reflect.Struct {
+					// will generate duplicate models otherwise, exiting only simple makes exit early it and output an empty schema
+					params.Schema.ExtraProperties = map[string]any{
+						"x-TO-BE-DELETED": true,
+					}
+
+					return true, nil
+				}
+			}
+
 			if params.Schema.ReflectType == reflect.TypeOf(uuid.New()) {
 				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
 				params.Schema.Pattern = pointers.New("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
