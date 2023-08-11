@@ -323,7 +323,7 @@ type DbKanbanStep struct {
 
 // DbProject defines the model for DbProject.
 type DbProject struct {
-	BoardConfig ProjectConfig `json:"boardConfig"`
+	BoardConfig ProjectConfig `json:"boardConfig" ref:"#/components/schemas/ProjectConfig"`
 	CreatedAt   time.Time     `json:"createdAt"`
 	Description string        `json:"description"`
 	Name        Project       `json:"name"`
@@ -569,6 +569,22 @@ type InitializeProjectRequest struct {
 	Teams *[]DbTeamCreateParams        `json:"teams"`
 }
 
+// ModelsProjectConfig defines the model for ModelsProjectConfig.
+type ModelsProjectConfig struct {
+	Fields        *[]ModelsProjectConfigField `json:"fields"`
+	Header        *[]string                   `json:"header"`
+	Visualization *map[string]interface{}     `json:"visualization"`
+}
+
+// ModelsProjectConfigField defines the model for ModelsProjectConfigField.
+type ModelsProjectConfigField struct {
+	IsEditable    *bool   `json:"isEditable,omitempty"`
+	IsVisible     *bool   `json:"isVisible,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	Path          *string `json:"path,omitempty"`
+	ShowCollapsed *bool   `json:"showCollapsed,omitempty"`
+}
+
 // NotificationType represents a database 'notification_type'
 type NotificationType string
 
@@ -582,7 +598,7 @@ type ProjectBoardResponse struct {
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {
-	Fields        []ProjectConfigField    `json:"fields"`
+	Fields        ProjectConfigFields     `json:"fields" ref:"#/components/schemas/ProjectConfigFields"`
 	Header        []string                `json:"header"`
 	Visualization *map[string]interface{} `json:"visualization,omitempty"`
 }
@@ -595,6 +611,9 @@ type ProjectConfigField struct {
 	Path          string `json:"path"`
 	ShowCollapsed bool   `json:"showCollapsed"`
 }
+
+// ProjectConfigFields defines the model for ProjectConfigFields.
+type ProjectConfigFields = []ProjectConfigField
 
 // Role defines the model for Role.
 type Role string
@@ -641,7 +660,6 @@ type User struct {
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
 	LastName                 *string       `json:"lastName"`
-	Projects                 *[]DbProject  `json:"projects"`
 	Role                     Role          `json:"role"`
 	Scopes                   Scopes        `json:"scopes"`
 	Teams                    *[]DbTeam     `json:"teams"`

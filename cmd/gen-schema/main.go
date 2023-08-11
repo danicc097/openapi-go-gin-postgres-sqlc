@@ -42,12 +42,14 @@ func main() {
 
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
-	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-		return defaultDefName
-	})
-
 	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
 	reflector.DefaultOptions = append(reflector.DefaultOptions,
+		jsonschema.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
+			if strings.HasSuffix(t.PkgPath(), "internal/models") {
+				fmt.Fprintf(os.Stderr, "Generated models package type found in spec: %+v (ensure \"ref\" tag exists where referenced)\n", t)
+			}
+			return defaultDefName
+		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
 			if params.Field.Tag.Get("openapi-go") == "ignore" {
 				return jsonschema.ErrSkipProperty

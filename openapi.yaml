@@ -765,10 +765,7 @@ components:
     ProjectConfig:
       properties:
         fields:
-          items:
-            $ref: '#/components/schemas/ProjectConfigField'
-          nullable: false
-          type: array
+          $ref: '#/components/schemas/ProjectConfigFields'
         header:
           items:
             type: string
@@ -780,6 +777,15 @@ components:
         - header
         - fields
       type: object
+      x-oapi-codegen-extra-tags:
+        ref: '#/components/schemas/ProjectConfig'
+    ProjectConfigFields:
+      items:
+        $ref: '#/components/schemas/ProjectConfigField'
+      nullable: false
+      type: array
+      x-oapi-codegen-extra-tags:
+        ref: '#/components/schemas/ProjectConfigFields'
     ProjectConfigField:
       properties:
         isEditable:
@@ -991,11 +997,6 @@ components:
         lastName:
           nullable: true
           type: string
-        projects:
-          items:
-            $ref: '#/components/schemas/DbProject'
-          nullable: true
-          type: array
         role:
           $ref: '#/components/schemas/Role'
         scopes:
@@ -1552,6 +1553,34 @@ components:
           format: date-time
           nullable: true
           type: string
+      type: object
+    # FIXME: shouldn't be generated
+    ModelsProjectConfig: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        fields:
+          $ref: '#/components/schemas/ProjectConfigFields'
+        header:
+          items:
+            type: string
+          nullable: true
+          type: array
+        visualization:
+          additionalProperties: {}
+          nullable: true
+          type: object
+      type: object
+    ModelsProjectConfigField: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        isEditable:
+          type: boolean
+        isVisible:
+          type: boolean
+        name:
+          type: string
+        path:
+          type: string
+        showCollapsed:
+          type: boolean
       type: object
   examples:
     User:
