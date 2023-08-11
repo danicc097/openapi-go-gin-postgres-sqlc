@@ -1612,22 +1612,23 @@ find_deleted_pkg_schemas() {
   local -n __structs="$1"
   local -n __enums="$2"
   local pkg="$3"
-  echo "Finding deleted structs or enums from package '$pkg'..."
-  mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg}" || true)
+  local pkg_prefix=$(to_pascal $pkg)
+  echo "Finding deleted structs or enums from package '$pkg_prefix'..."
+  mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg_prefix}" || true)
 
   local found=0
   for spec_schema in ${spec_schemas[*]}; do
     for struct in ${__structs[@]}; do
-      if [[ $spec_schema == "${pkg}$struct" ]]; then
+      if [[ $spec_schema == "${pkg_prefix}$struct" ]]; then
         found=1
       fi
     done
     for enum in ${__enums[@]}; do
-      if [[ $spec_schema == "${pkg}$enum" ]]; then
+      if [[ $spec_schema == "${pkg_prefix}$enum" ]]; then
         found=1
       fi
     done
-    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC_PATH schema $spec_schema no longer exists in package '$(to_lower $pkg)'. Remove if necessary.${OFF}"
+    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC_PATH schema $spec_schema no longer exists in package '$pkg'. Remove if necessary.${OFF}"
     found=0
   done
 }
