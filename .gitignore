@@ -1,4 +1,5 @@
 .direnv
+/backup-gen-stash-dummy.txt
 **/*.so
 **/build
 .envrc.local

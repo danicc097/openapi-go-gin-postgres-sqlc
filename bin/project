@@ -485,12 +485,10 @@ backup-gen() {
   gen_backup_branch="backup-gen-$(uuidgen)"
   gen_backup_stash_name="backup-stash-$gen_backup_branch"
 
-  echo "Backing up untracked changes to branch: $gen_backup_branch"
+  uuidgen >backup-gen-stash-dummy.txt
   git stash push -m "$gen_backup_stash_name" --include-untracked
-  git checkout -b "$gen_backup_branch"
-  # TODO: instead of true, create dummy random file on root and delete on cleanup.
-  # else we get misleading stash error messages (since theres no stash)
-  git stash apply "stash^{/$gen_backup_stash_name}" || true # ignore when there's no stash (no changes)
+  git checkout -b "$gen_backup_branch" &>/dev/null
+  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 
   restore_cache=1
 }
@@ -505,8 +503,8 @@ backup-gen.restore() {
   echo "Restoring previously generated code (branch $gen_backup_branch)..."
   wait
 
-  git reset --hard && git clean -df
-  git stash apply "stash^{/$gen_backup_stash_name}" || true # ignore when there's no stash (no changes)
+  git reset --hard && git clean -df &>/dev/null
+  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 
   rm -rf "$CACHE/*.md5" # cache is not up to date due to forced exit and restore
   # TODO: delete specific folders like $CACHE/{counterfeiter,gowrap} only if
@@ -1916,6 +1914,7 @@ exit-cleanup() {
     backup-gen.restore
   fi
 
+  rm -f backup-gen-stash-dummy.txt
   git checkout "$CURRENT_BRANCH" &>/dev/null || true
   git branch -D "$gen_backup_branch" &>/dev/null || true
   cd "$starting_cwd" || true
