@@ -96,6 +96,63 @@ kill_descendants() {
   pids=""
 }
 
+######################### x-functions setup #########################
+
+xsetup.build-tools() {
+  test -n "$xsetup_tools_built" && return
+
+  xsetup_tools_built="${FUNCNAME[1]}"
+
+  x.gen.build-tools
+}
+
+xsetup.backup-gen() {
+  test -n "$xsetup_backup_gen_caller" && return
+
+  xsetup_backup_gen_caller="${FUNCNAME[1]}"
+
+  mkdir -p "$CACHE"
+
+  gen_backup_branch="backup-gen-$(uuidgen)"
+  gen_backup_stash_name="backup-stash-$gen_backup_branch"
+
+  uuidgen >backup-gen-stash-dummy.txt
+  git stash push -m "$gen_backup_stash_name" --include-untracked
+  git checkout -b "$gen_backup_branch" &>/dev/null
+  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
+
+  restore_cache=1
+}
+
+xsetup.backup-gen.cleanup() {
+  if [[ "$xsetup_backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
+    restore_cache=0
+  fi
+}
+
+xsetup.backup-gen.restore() {
+  echo "Restoring previously generated code (branch $gen_backup_branch)..."
+  wait
+
+  git reset --hard && git clean -df &>/dev/null
+  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
+
+  rm -rf "$CACHE/*.md5" # cache is not up to date due to forced exit and restore
+  # TODO: delete specific folders like $CACHE/{counterfeiter,gowrap} only if
+  # failure on those tools specifically
+}
+
+xsetup.drop-and-migrate-gen-db() {
+  test -n "$xsetup_gen_migrated" && return
+  xsetup_gen_migrated=1
+  { { {
+    POSTGRES_DB="$GEN_POSTGRES_DB"
+
+    x.db.drop
+    x.migrate up
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 ######################### x-functions #########################
 
 # Check build dependencies are met and prompt to install if missing.
@@ -478,61 +535,6 @@ x.gen.postgen() {
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
-}
-
-xsetup.build-tools() {
-  test -n "$xsetup_tools_built" && return
-
-  xsetup_tools_built="${FUNCNAME[1]}"
-
-  x.gen.build-tools
-}
-
-xsetup.backup-gen() {
-  test -n "$xsetup_backup_gen_caller" && return
-
-  xsetup_backup_gen_caller="${FUNCNAME[1]}"
-
-  mkdir -p "$CACHE"
-
-  gen_backup_branch="backup-gen-$(uuidgen)"
-  gen_backup_stash_name="backup-stash-$gen_backup_branch"
-
-  uuidgen >backup-gen-stash-dummy.txt
-  git stash push -m "$gen_backup_stash_name" --include-untracked
-  git checkout -b "$gen_backup_branch" &>/dev/null
-  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
-
-  restore_cache=1
-}
-
-xsetup.backup-gen.cleanup() {
-  if [[ "$xsetup_backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
-    restore_cache=0
-  fi
-}
-
-xsetup.backup-gen.restore() {
-  echo "Restoring previously generated code (branch $gen_backup_branch)..."
-  wait
-
-  git reset --hard && git clean -df &>/dev/null
-  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
-
-  rm -rf "$CACHE/*.md5" # cache is not up to date due to forced exit and restore
-  # TODO: delete specific folders like $CACHE/{counterfeiter,gowrap} only if
-  # failure on those tools specifically
-}
-
-xsetup.drop-and-migrate-gen-db() {
-  test -n "$xsetup_gen_migrated" && return
-  xsetup_gen_migrated=1
-  { { {
-    POSTGRES_DB="$GEN_POSTGRES_DB"
-
-    x.db.drop
-    x.migrate up
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # Generate type-safe Go code from SQL.
