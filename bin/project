@@ -1456,6 +1456,10 @@ run_shared_services() {
 # generate db structs for use with swaggest/openapi-go.
 # no need for ast parsing since all code is predictable
 # type grouping not supported.
+# TODO: MOVE BEFORE build-tools. and build-tools
+# will now build gen-schema.
+# (this also means we can get rid of gen-schema as well and
+# merge it with codegen as subcommand -> codegen schema ...)
 generate_structs_map() {
   local structs=()
   local enums=()
