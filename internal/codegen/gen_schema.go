@@ -1,10 +1,9 @@
 /*
 gen-schema generates OpenAPI v3 schema portions from code.
 */
-package main
+package codegen
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,9 +13,9 @@ import (
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3".
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	internalslices "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"github.com/google/uuid"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
@@ -28,17 +27,41 @@ func handleError(err error) {
 	}
 }
 
-func main() {
-	var structNamesList string
+// GenerateSpecSchemas creates OpenAPI schemas from code.
+func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
+	reflector := newSpecReflector()
 
-	flag.StringVar(&structNamesList, "struct-names", "", "comma-delimited db package struct names to generate an OpenAPI schema for")
-	flag.Parse()
+	for idx, structName := range structNames {
+		// we need to compile gen-schema right after PublicStructs file is updated
+		// cannot import packages at runtime
+		// if we have an uncompilable state then we need to update src to compile. no way around it
+		// UDPATE: use https://github.com/pkujhd/goloader instead of plugin pkg which cant reload changed go file at runtime
+		// or use yaegi
+		st, ok := PublicStructs[structName]
+		if !ok {
+			log.Fatalf("struct-name %s does not exist in PublicStructs", structName)
+		}
+		if !structs.HasJSONTag(st) {
+			log.Fatalf("struct %s: ensure there is at least a JSON tag set", structName)
+		}
 
-	structNames := strings.Split(structNamesList, ",")
-	for i := range structNames {
-		structNames[i] = strings.TrimSpace(structNames[i])
+		oc, err := reflector.NewOperationContext(http.MethodGet, "/dummy-op-"+strconv.Itoa(idx))
+		handleError(err)
+		oc.AddRespStructure(st)
+
+		handleError(reflector.AddOperation(oc))
+
+		// IMPORTANT: ensure structs are public
+		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName].Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
 	}
+	s, err := reflector.Spec.MarshalYAML()
+	handleError(err)
 
+	fmt.Println(string(s))
+}
+
+// newSpecReflector returns a new SpecReflector.
+func newSpecReflector() *openapi3.Reflector {
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
 	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
@@ -109,55 +132,5 @@ func main() {
 		}),
 	)
 
-	for i, sn := range structNames {
-		// we need to compile gen-schema right after PublicStructs file is updated
-		// cannot import packages at runtime
-		// if we have an uncompilable state then we need to update src to compile. no way around it
-		// UDPATE: use https://github.com/pkujhd/goloader instead of plugin pkg which cant reload changed go file at runtime
-		// or use yaegi
-		st, ok := codegen.PublicStructs[sn]
-		if !ok {
-			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)
-		}
-		if !hasJSONTag(st) {
-			log.Fatalf("struct %s: ensure there is at least a JSON tag set", sn)
-		}
-
-		oc, err := reflector.NewOperationContext(http.MethodGet, "/dummy-op-"+strconv.Itoa(i))
-		handleError(err)
-		oc.AddRespStructure(st)
-
-		handleError(reflector.AddOperation(oc))
-
-		// IMPORTANT: ensure structs are public
-		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]any{"x-postgen-struct": sn}
-	}
-	s, err := reflector.Spec.MarshalYAML()
-	handleError(err)
-
-	fmt.Println(string(s))
-}
-
-func hasJSONTag(input any) bool {
-	t := reflect.TypeOf(input)
-
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		if _, ok := field.Tag.Lookup("json"); ok {
-			return true
-		}
-
-		// Check embedded structs
-		if field.Type.Kind() == reflect.Struct && field.Anonymous {
-			if hasJSONTag(reflect.New(field.Type).Elem().Interface()) {
-				return true
-			}
-		}
-	}
-
-	return false
+	return &reflector
 }

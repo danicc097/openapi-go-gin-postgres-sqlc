@@ -227,30 +227,30 @@ func (o *CodeGen) analyzeSpec() error {
 
 	for path, pi := range openapi.Paths {
 		ops := pi.Operations()
-		for method, v := range ops {
-			if v.OperationID == "" {
+		for method, op := range ops {
+			if op.OperationID == "" {
 				errors = append(errors, fmt.Errorf("path %q: method %q: operationId is required for codegen", path, method).Error())
 			}
 
-			if !OperationIDRE.MatchString(v.OperationID) {
+			if !OperationIDRE.MatchString(op.OperationID) {
 				errors = append(errors, fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q",
-					path, method, v.OperationID, OperationIDRE.String()).Error())
+					path, method, op.OperationID, OperationIDRE.String()).Error())
 			}
 
-			if len(v.Tags) > 1 {
+			if len(op.Tags) > 1 {
 				errors = append(errors, fmt.Errorf("path %q: method %q: at most one tag is permitted for codegen", path, method).Error())
 			}
 
 			t := "default"
-			if len(v.Tags) > 0 {
-				t = v.Tags[0]
+			if len(op.Tags) > 0 {
+				t = op.Tags[0]
 			}
 
 			if !isValidFilename(t) {
 				errors = append(errors, fmt.Errorf("path %q: method %q: tag must be a valid filename with pattern %q", path, method, validFilenameRE.String()).Error())
 			}
 
-			o.operations[t] = append(o.operations[t], v.OperationID)
+			o.operations[t] = append(o.operations[t], op.OperationID)
 		}
 		for t, opIDs := range o.operations {
 			sort.Slice(opIDs, func(i, j int) bool {

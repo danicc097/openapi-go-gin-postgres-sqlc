@@ -851,7 +851,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet oapi-codegen codegen gen-schema; do
+    for cmd in jet oapi-codegen codegen; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
@@ -1659,7 +1659,7 @@ update_spec_with_structs() {
 
   local gen_schema_spec="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
-  gen-schema --struct-names $struct_names_list | yq '
+  codegen gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 

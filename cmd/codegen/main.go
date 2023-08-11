@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -13,40 +14,52 @@ import (
 
 // nolint: gochecknoglobals
 var (
-	env, spec, opIDAuthPath string
-	stderr                  bytes.Buffer
+	env, spec, opIDAuthPath, structNamesList string
+	stderr                                   bytes.Buffer
 
 	validateSpecCmd = flag.NewFlagSet("validate-spec", flag.ExitOnError)
 	preCmd          = flag.NewFlagSet("pre", flag.ExitOnError)
+	genSchemaCmd    = flag.NewFlagSet("gen-schema", flag.ExitOnError)
 
 	subcommands = map[string]*flag.FlagSet{
 		validateSpecCmd.Name(): validateSpecCmd,
 		preCmd.Name():          preCmd,
+		genSchemaCmd.Name():    genSchemaCmd,
 	}
 )
 
 func main() {
-	for _, fs := range subcommands {
+	for _, fs := range []*flag.FlagSet{validateSpecCmd, preCmd} {
 		fs.StringVar(&opIDAuthPath, "op-id-auth", "", "JSON file with authorization information per operation ID")
 		fs.StringVar(&env, "env", ".env", "Environment Variables filename")
 		fs.StringVar(&spec, "spec", "openapi.yaml", "OpenAPI specification")
 	}
 
+	genSchemaCmd.StringVar(&structNamesList, "struct-names", "", "comma-delimited db package struct names to generate an OpenAPI schema for")
+
 	cmd, ok := subcommands[os.Args[1]]
 	if !ok {
-		validateSpecCmd.Usage()
-		preCmd.Usage()
+		for _, fs := range subcommands {
+			fs.Usage()
+		}
 
 		return
 	}
 
 	cmd.Parse(os.Args[2:])
 
-	cg := codegen.New(&stderr, spec, opIDAuthPath, "internal/rest")
+	codeGen := codegen.New(&stderr, spec, opIDAuthPath, "internal/rest")
 
 	switch os.Args[1] {
+	case "gen-schema":
+		structNames := strings.Split(structNamesList, ",")
+		for i := range structNames {
+			structNames[i] = strings.TrimSpace(structNames[i])
+		}
+		codeGen.GenerateSpecSchemas(structNames)
+		os.Exit(0)
 	case "validate-spec":
-		if err := cg.ValidateProjectSpec(); err != nil {
+		if err := codeGen.ValidateProjectSpec(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			fmt.Fprintln(os.Stderr, stderr.String())
 			os.Exit(1)
@@ -61,13 +74,13 @@ func main() {
 			log.Fatal("op-id-auth flag is required")
 		}
 
-		if err := cg.Generate(); err != nil {
+		if err := codeGen.Generate(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			fmt.Fprintln(os.Stderr, stderr.String())
 			os.Exit(1)
 		}
 
-		if err := cg.EnsureCorrectMethodsPerTag(); err != nil {
+		if err := codeGen.EnsureCorrectMethodsPerTag(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			fmt.Fprintln(os.Stderr, stderr.String())
 			os.Exit(1)
