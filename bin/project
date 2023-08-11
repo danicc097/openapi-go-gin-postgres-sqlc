@@ -321,17 +321,15 @@ x.gen.pregen() {
 
     codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH"
 
-    generate_structs_map
-
     update_spec_with_structs
 
-    delete_duplicate_schemas
+    remove_schemas_marked_to_delete
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   backup-gen.cleanup
 }
 
 sync_spec_with_db() {
-  cache_all "$CACHE/db.md5" ${CACHE_DEP_FILES[@]} db/ $SPEC_PATH || return 0
+  cache_all "$CACHE/db.md5" ${CACHE_DEP_FILES[@]} db/ $SPEC_PATH && return 0
 
   sync_db_enums_with_spec
 
@@ -533,7 +531,7 @@ x.gen.xo() {
   backup-gen
   drop-and-migrate-gen-db
   { { {
-    cache_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/
+    cache_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/ && return 0
 
     echo "Running generation"
 
@@ -743,7 +741,7 @@ x.gen.frontend() {
     SCHEMA_OUT="frontend/src/types/schema.d.ts"
     orval_config="frontend/orval.config.ts"
 
-    cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/ frontend/package.json
+    cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/ frontend/package.json && return 0
 
     config_template_setup frontend # no need to run if cached .env
 
@@ -785,7 +783,7 @@ x.gen.e2e() {
 
     orval_config="e2e/orval.config.ts"
 
-    cache_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json
+    cache_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json && return 0
 
     config_template_setup e2e # no need to run if cached .env
 
@@ -821,7 +819,10 @@ x.gen() {
 
     wait_without_error
 
-    { x.gen.pregen && x.gen.client-server; } &
+    {
+      x.gen.pregen
+      x.gen.client-server
+    } &
     x.gen.counterfeiter & # delay since it depends on generated output (xo, proto...)
 
     wait_without_error
@@ -845,13 +846,14 @@ x.gen() {
 # Build code generation custom tools.
 x.gen.build-tools() {
   { { {
+    generate_structs_map # openapi-go requires structs already compiled
+
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
     for cmd in jet oapi-codegen codegen; do
       echo "Building $cmd..."
-      { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
-        echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
+      { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
     wait
@@ -946,8 +948,11 @@ x.test.backend() {
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
 
+    local cache_opt="-count=1"
+    cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
+
     set -x
-    APP_ENV="$X_ENV" go test -tags skipxo -count=1 "$@" ./...
+    APP_ENV="$X_ENV" go test -tags skipxo $cache_opt "$@" ./...
     set +x
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1455,7 +1460,7 @@ run_shared_services() {
 
 # generate db structs for use with swaggest/openapi-go.
 # no need for ast parsing since all code is predictable
-# type grouping not supported.
+# NOTE: type grouping not supported.
 generate_structs_map() {
   local structs=()
   local enums=()
@@ -1612,22 +1617,23 @@ find_deleted_pkg_schemas() {
   local -n __structs="$1"
   local -n __enums="$2"
   local pkg="$3"
-  echo "Finding deleted structs or enums from package '$pkg'..."
-  mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg}" || true)
+  local pkg_prefix=$(to_pascal $pkg)
+  echo "Finding deleted structs or enums from package '$pkg_prefix'..."
+  mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg_prefix}" || true)
 
   local found=0
   for spec_schema in ${spec_schemas[*]}; do
     for struct in ${__structs[@]}; do
-      if [[ $spec_schema == "${pkg}$struct" ]]; then
+      if [[ $spec_schema == "${pkg_prefix}$struct" ]]; then
         found=1
       fi
     done
     for enum in ${__enums[@]}; do
-      if [[ $spec_schema == "${pkg}$enum" ]]; then
+      if [[ $spec_schema == "${pkg_prefix}$enum" ]]; then
         found=1
       fi
     done
-    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC_PATH schema $spec_schema no longer exists in package '$(to_lower $pkg)'. Remove if necessary.${OFF}"
+    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC_PATH schema $spec_schema no longer exists in package '$pkg'. Remove if necessary.${OFF}"
     found=0
   done
 }
@@ -1656,24 +1662,12 @@ update_spec_with_structs() {
 
   local gen_schema_spec="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
-  go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
+  codegen gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
-  # prevent possible overriding if name clashes with generated schemas from structs
-  # skip_schemas=("Project")
-  # mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
-  # for project in ${db_projects[@]}; do
-  #   skip_schemas+=("$(to_pascal $project)KanbanSteps")
-  # done
-
   # replace every schema back into the spec
   for schema in $(yq '.components.schemas[] | key' $gen_schema_spec); do
-    # prevent certain schemas from getting replaced by (in)direct usage in structs with clashing names
-    # if [[ " ${skip_schemas[*]} " =~ " $schema " ]]; then
-    #   echo "Skipping $schema" && continue
-    # fi
-
     schema_name="${schemas[$schema]:-$schema}"
 
     yq eval-all "(
@@ -1693,14 +1687,17 @@ update_spec_with_structs() {
   done
 }
 
-delete_duplicate_schemas() {
-  local keys=("ModelsRole" "ModelsScope" "ModelsProjectConfigField" "ModelsProjectConfig" "ModelsProject" "ModelsWorkItemRole")
-  local paths_arr=()
-  for key in "${keys[@]}"; do
-    echo "Deleting duplicate schema \"${key}\""
-    paths_arr+=(".components.schemas.$key")
-  done
-  local paths=$(join_by "," "${paths_arr[@]}")
+remove_schemas_marked_to_delete() {
+  local paths_arr paths
+  paths_arr=$(yq e '..
+      | select(has("x-TO-BE-DELETED"))
+      | path
+      | with(.[] | select(contains(".") or contains("/") or contains("{")); . = "\"" + . + "\"")
+      | join(".")
+      | . = "." + .
+    ' $SPEC_PATH)
+
+  paths=$(join_by "," "${paths_arr[@]}")
   yq e "del($paths)" -i "$SPEC_PATH"
 }
 

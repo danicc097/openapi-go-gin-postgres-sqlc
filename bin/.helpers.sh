@@ -262,11 +262,10 @@ show_tracebacks() {
   exit 1
 }
 
-# Cache given files and exit program if checksums match
+# Cache given files and return if checksums match or an error code otherwise.
 cache_all() {
   if [ $# -lt 2 ]; then
-    echo "Usage: cache_all <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]"
-    return 1
+    err "Usage: ${FUNCNAME[0]} <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]"
   fi
 
   output_file="$1"
@@ -288,6 +287,8 @@ cache_all() {
       err "Invalid argument: $arg"
     fi
   done
+
+  return 1
 }
 
 # Block build if magic keyword is found in any file

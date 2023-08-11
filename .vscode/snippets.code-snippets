@@ -1,5 +1,5 @@
 {
-  "keywordqueries": {
+  "openapi-crud": {
     "scope": "yaml",
     "prefix": "openapi-crud",
     "body": [
@@ -78,6 +78,27 @@
       "          description: Success.",
       "      tags:",
       "        - ${1/\\s+/-/g}",
+    ]
+  },
+  "keywordqueries": {
+    "scope": "postgres,sql",
+    "prefix": "keywordqueries",
+    "body": [
+      "/* plpgsql-language-server:use-keyword-query-parameter */"
+    ]
+  },
+  "comment": {
+    "scope": "postgres,sql",
+    "prefix": "comment",
+    "body": [
+      "/* $1 */"
+    ]
+  },
+  "disablevalidation": {
+    "scope": "postgres,sql",
+    "prefix": "disablevalidation",
+    "body": [
+      "-- plpgsql-language-server:disable"
     ]
   },
 }

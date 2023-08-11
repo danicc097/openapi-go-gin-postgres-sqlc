@@ -118,3 +118,28 @@ func InitializeFields(v reflect.Value, maxDepth int) reflect.Value {
 
 	return v
 }
+
+// HasJSONTag ensures a struct has at least a JSON tag.
+func HasJSONTag(st any) bool {
+	t := reflect.TypeOf(st)
+
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		if _, ok := field.Tag.Lookup("json"); ok {
+			return true
+		}
+
+		// Check embedded structs
+		if field.Type.Kind() == reflect.Struct && field.Anonymous {
+			if HasJSONTag(reflect.New(field.Type).Elem().Interface()) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
