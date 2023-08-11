@@ -329,7 +329,7 @@ x.gen.pregen() {
 }
 
 sync_spec_with_db() {
-  cache_all "$CACHE/db.md5" ${CACHE_DEP_FILES[@]} db/ $SPEC_PATH || return 0
+  cache_all "$CACHE/db.md5" ${CACHE_DEP_FILES[@]} db/ $SPEC_PATH && return 0
 
   sync_db_enums_with_spec
 
@@ -531,7 +531,7 @@ x.gen.xo() {
   backup-gen
   drop-and-migrate-gen-db
   { { {
-    cache_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/
+    cache_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/ && return 0
 
     echo "Running generation"
 
@@ -741,7 +741,7 @@ x.gen.frontend() {
     SCHEMA_OUT="frontend/src/types/schema.d.ts"
     orval_config="frontend/orval.config.ts"
 
-    cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/ frontend/package.json
+    cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/ frontend/package.json && return 0
 
     config_template_setup frontend # no need to run if cached .env
 
@@ -783,7 +783,7 @@ x.gen.e2e() {
 
     orval_config="e2e/orval.config.ts"
 
-    cache_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json
+    cache_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json && return 0
 
     config_template_setup e2e # no need to run if cached .env
 
@@ -948,8 +948,11 @@ x.test.backend() {
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
 
+    local cache_opt="-count=1"
+    cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
+
     set -x
-    APP_ENV="$X_ENV" go test -tags skipxo -count=1 "$@" ./...
+    APP_ENV="$X_ENV" go test -tags skipxo $cache_opt "$@" ./...
     set +x
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
