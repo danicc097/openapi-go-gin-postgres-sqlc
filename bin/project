@@ -157,6 +157,8 @@ xsetup.drop-and-migrate-gen-db() {
 
 # Check build dependencies are met and prompt to install if missing.
 x.check-build-deps() {
+  # TODO: should check go installs in gobin are the version we expect when running x.gen
+  # via x.install-tools.check
   { { {
     mkdir -p $TOOLS_DIR
 
