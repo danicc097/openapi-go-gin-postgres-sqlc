@@ -1832,7 +1832,6 @@ fi
 declare CMD="$1"
 
 # First comment lines automatically added to usage docs.
-set +e
 while [[ "$#" -gt 0 ]]; do
   case $1 in
   --x-help)
@@ -1882,7 +1881,6 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-set -e # was temporarily removed for arg parsing
 for arg in ${args[@]}; do
   set -- "$@" "$arg"
 done
