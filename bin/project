@@ -321,8 +321,6 @@ x.gen.pregen() {
 
     codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH"
 
-    generate_structs_map
-
     update_spec_with_structs
 
     remove_schemas_marked_to_delete
@@ -821,7 +819,10 @@ x.gen() {
 
     wait_without_error
 
-    { x.gen.pregen && x.gen.client-server; } &
+    {
+      x.gen.pregen
+      x.gen.client-server
+    } &
     x.gen.counterfeiter & # delay since it depends on generated output (xo, proto...)
 
     wait_without_error
@@ -845,13 +846,14 @@ x.gen() {
 # Build code generation custom tools.
 x.gen.build-tools() {
   { { {
+    generate_structs_map # openapi-go requires structs already compiled
+
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet oapi-codegen codegen; do
+    for cmd in jet oapi-codegen codegen gen-schema; do
       echo "Building $cmd..."
-      { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
-        echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
+      { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
     wait
@@ -1455,11 +1457,7 @@ run_shared_services() {
 
 # generate db structs for use with swaggest/openapi-go.
 # no need for ast parsing since all code is predictable
-# type grouping not supported.
-# TODO: MOVE BEFORE build-tools. and build-tools
-# will now build gen-schema.
-# (this also means we can get rid of gen-schema as well and
-# merge it with codegen as subcommand -> codegen schema ...)
+# NOTE: type grouping not supported.
 generate_structs_map() {
   local structs=()
   local enums=()
@@ -1661,7 +1659,7 @@ update_spec_with_structs() {
 
   local gen_schema_spec="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
-  go run cmd/gen-schema/main.go --struct-names $struct_names_list | yq '
+  gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
