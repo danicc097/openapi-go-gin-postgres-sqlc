@@ -487,8 +487,8 @@ backup-gen() {
 
   uuidgen >backup-gen-stash-dummy.txt
   git stash push -m "$gen_backup_stash_name" --include-untracked
-  git checkout -b "$gen_backup_branch" &>/dev/null
-  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
+  git checkout -b "$gen_backup_branch"
+  git stash apply "stash^{/$gen_backup_stash_name}"
 
   restore_cache=1
 }
