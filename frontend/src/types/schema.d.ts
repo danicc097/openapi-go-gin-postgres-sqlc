@@ -195,10 +195,11 @@ export interface components {
       workItemID: number;
     };
     ProjectConfig: {
-      fields: components["schemas"]["ProjectConfigField"][];
+      fields: components["schemas"]["ProjectConfigFields"];
       header: string[];
       visualization?: Record<string, never>;
     };
+    ProjectConfigFields: components["schemas"]["ProjectConfigField"][];
     ProjectConfigField: {
       isEditable: boolean;
       isVisible: boolean;
@@ -506,6 +507,20 @@ export interface components {
     DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
       customDateForProject2?: string | null;
+    };
+    ModelsProjectConfig: {
+      fields?: components["schemas"]["ProjectConfigFields"];
+      header?: string[] | null;
+      visualization?: {
+        [key: string]: unknown;
+      } | null;
+    };
+    ModelsProjectConfigField: {
+      isEditable?: boolean;
+      isVisible?: boolean;
+      name?: string;
+      path?: string;
+      showCollapsed?: boolean;
     };
   };
   responses: never;

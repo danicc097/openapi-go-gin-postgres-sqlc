@@ -6,10 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { ProjectConfigFields } from './projectConfigFields'
-import type { ProjectConfigVisualization } from './projectConfigVisualization'
+import type { ModelsProjectConfigVisualization } from './modelsProjectConfigVisualization'
 
-export interface ProjectConfig {
-  fields: ProjectConfigFields
-  header: string[]
-  visualization?: ProjectConfigVisualization
+export interface ModelsProjectConfig {
+  fields?: ProjectConfigFields
+  header?: string[] | null
+  visualization?: ModelsProjectConfigVisualization
 }

@@ -997,6 +997,11 @@ components:
         lastName:
           nullable: true
           type: string
+        projects:
+          items:
+            $ref: '#/components/schemas/DbProject'
+          nullable: true
+          type: array
         role:
           $ref: '#/components/schemas/Role'
         scopes:

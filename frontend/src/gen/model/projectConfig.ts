@@ -5,11 +5,11 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { ProjectConfigField } from './projectConfigField'
+import type { ProjectConfigFields } from './projectConfigFields'
 import type { ProjectConfigVisualization } from './projectConfigVisualization'
 
 export interface ProjectConfig {
-  fields: ProjectConfigField[]
+  fields: ProjectConfigFields
   header: string[]
   visualization?: ProjectConfigVisualization
 }

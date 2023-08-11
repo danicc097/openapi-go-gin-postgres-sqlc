@@ -571,9 +571,9 @@ type InitializeProjectRequest struct {
 
 // ModelsProjectConfig defines the model for ModelsProjectConfig.
 type ModelsProjectConfig struct {
-	Fields        *[]ModelsProjectConfigField `json:"fields"`
-	Header        *[]string                   `json:"header"`
-	Visualization *map[string]interface{}     `json:"visualization"`
+	Fields        *ProjectConfigFields    `json:"fields,omitempty" ref:"#/components/schemas/ProjectConfigFields"`
+	Header        *[]string               `json:"header"`
+	Visualization *map[string]interface{} `json:"visualization"`
 }
 
 // ModelsProjectConfigField defines the model for ModelsProjectConfigField.
@@ -660,6 +660,7 @@ type User struct {
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
 	LastName                 *string       `json:"lastName"`
+	Projects                 *[]DbProject  `json:"projects"`
 	Role                     Role          `json:"role"`
 	Scopes                   Scopes        `json:"scopes"`
 	Teams                    *[]DbTeam     `json:"teams"`

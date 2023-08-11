@@ -108,7 +108,11 @@
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
-              "type": "array"
+              "type": "array",
+              "x-oapi-codegen-extra-tags": {
+                "ref": "#/definitions/ProjectConfigFields"
+              },
+              "$schema": "http://json-schema.org/draft-04/schema#"
             },
             "header": {
               "items": {
@@ -126,6 +130,9 @@
             "fields"
           ],
           "type": "object",
+          "x-oapi-codegen-extra-tags": {
+            "ref": "#/definitions/ProjectConfig"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "createdAt": {
@@ -571,7 +578,11 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": "array"
+          "type": "array",
+          "x-oapi-codegen-extra-tags": {
+            "ref": "#/definitions/ProjectConfigFields"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "header": {
           "items": {
@@ -589,6 +600,46 @@
         "fields"
       ],
       "type": "object",
+      "x-oapi-codegen-extra-tags": {
+        "ref": "#/definitions/ProjectConfig"
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectConfigFields": {
+      "items": {
+        "properties": {
+          "isEditable": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "showCollapsed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isEditable",
+          "showCollapsed",
+          "isVisible",
+          "path",
+          "name"
+        ],
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "type": "array",
+      "x-oapi-codegen-extra-tags": {
+        "ref": "#/definitions/ProjectConfigFields"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ProjectConfigField": {
@@ -1591,7 +1642,11 @@
                       "type": "object",
                       "$schema": "http://json-schema.org/draft-04/schema#"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-oapi-codegen-extra-tags": {
+                      "ref": "#/definitions/ProjectConfigFields"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "header": {
                     "items": {
@@ -1609,6 +1664,9 @@
                   "fields"
                 ],
                 "type": "object",
+                "x-oapi-codegen-extra-tags": {
+                  "ref": "#/definitions/ProjectConfig"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "createdAt": {
@@ -3136,6 +3194,86 @@
           "type": [
             "object"
           ]
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "properties": {
+              "isEditable": {
+                "type": "boolean"
+              },
+              "isVisible": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "showCollapsed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isEditable",
+              "showCollapsed",
+              "isVisible",
+              "path",
+              "name"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": "array",
+          "x-oapi-codegen-extra-tags": {
+            "ref": "#/definitions/ProjectConfigFields"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "visualization": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
         }
       },
       "type": "object",
@@ -3249,7 +3387,11 @@
                 "type": "object",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
-              "type": "array"
+              "type": "array",
+              "x-oapi-codegen-extra-tags": {
+                "ref": "#/definitions/ProjectConfigFields"
+              },
+              "$schema": "http://json-schema.org/draft-04/schema#"
             },
             "header": {
               "items": {
@@ -3267,6 +3409,9 @@
             "fields"
           ],
           "type": "object",
+          "x-oapi-codegen-extra-tags": {
+            "ref": "#/definitions/ProjectConfig"
+          },
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "createdAt": {
@@ -3712,7 +3857,11 @@
             "type": "object",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
-          "type": "array"
+          "type": "array",
+          "x-oapi-codegen-extra-tags": {
+            "ref": "#/definitions/ProjectConfigFields"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "header": {
           "items": {
@@ -3730,6 +3879,46 @@
         "fields"
       ],
       "type": "object",
+      "x-oapi-codegen-extra-tags": {
+        "ref": "#/definitions/ProjectConfig"
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectConfigFields": {
+      "items": {
+        "properties": {
+          "isEditable": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "showCollapsed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isEditable",
+          "showCollapsed",
+          "isVisible",
+          "path",
+          "name"
+        ],
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "type": "array",
+      "x-oapi-codegen-extra-tags": {
+        "ref": "#/definitions/ProjectConfigFields"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ProjectConfigField": {
@@ -4732,7 +4921,11 @@
                       "type": "object",
                       "$schema": "http://json-schema.org/draft-04/schema#"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-oapi-codegen-extra-tags": {
+                      "ref": "#/definitions/ProjectConfigFields"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "header": {
                     "items": {
@@ -4750,6 +4943,9 @@
                   "fields"
                 ],
                 "type": "object",
+                "x-oapi-codegen-extra-tags": {
+                  "ref": "#/definitions/ProjectConfig"
+                },
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "createdAt": {
@@ -6277,6 +6473,86 @@
           "type": [
             "object"
           ]
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "properties": {
+              "isEditable": {
+                "type": "boolean"
+              },
+              "isVisible": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "showCollapsed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isEditable",
+              "showCollapsed",
+              "isVisible",
+              "path",
+              "name"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": "array",
+          "x-oapi-codegen-extra-tags": {
+            "ref": "#/definitions/ProjectConfigFields"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "visualization": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
         }
       },
       "type": "object",

@@ -6,6 +6,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+export type ProjectConfigFields = ProjectConfigField[]
 export type Project = 'demo' | 'demo_two'
 export type UuidUUID = string
 export type Scope =
@@ -108,7 +109,7 @@ export interface DbProject {
   updatedAt: string
 }
 export interface ProjectConfig {
-  fields: ProjectConfigField[]
+  fields: ProjectConfigFields
   header: string[]
   visualization?: {}
 }
@@ -380,4 +381,16 @@ export interface DbActivityCreateParams {
   isProductive: boolean
   name: string
   projectID?: number
+}
+export interface ModelsProjectConfig {
+  fields?: ProjectConfigFields
+  header?: string[] | null
+  visualization?: {} | null
+}
+export interface ModelsProjectConfigField {
+  isEditable?: boolean
+  isVisible?: boolean
+  name?: string
+  path?: string
+  showCollapsed?: boolean
 }

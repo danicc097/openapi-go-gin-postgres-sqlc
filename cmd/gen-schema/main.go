@@ -46,7 +46,7 @@ func main() {
 	reflector.DefaultOptions = append(reflector.DefaultOptions,
 		jsonschema.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
 			if strings.HasSuffix(t.PkgPath(), "internal/models") {
-				fmt.Fprintf(os.Stderr, "Generated models package type found in spec: %+v (ensure \"ref\" tag exists where referenced)\n", t)
+				fmt.Fprintf(os.Stderr, "Generated models package type found in spec: %+v\n", t)
 			}
 			return defaultDefName
 		}),
@@ -55,42 +55,6 @@ func main() {
 				return jsonschema.ErrSkipProperty
 			}
 
-			// reproduce: gen-schema --struct-names DbProject | yq 'with_entries(select(.key == "components"))'
-			if shouldSkipType(params.Field.Type) {
-				fmt.Fprintf(os.Stderr, "skipping schema: %s", params.Name)
-
-				return jsonschema.ErrSkipProperty
-			}
-
-			// NOTE: forget about this, remove extra schemas manually that are referenced in db models
-			// (which are themselves already generated from the spec, most likely), since
-			// gen-schema doesn't know about external components we can't skip them beforehand.
-			// if params.PropertySchema != nil {
-			// 	if params.PropertySchema.Ref != nil {
-			// 		fmt.Fprintf(os.Stderr, "params.PropertySchema.Ref: %v\n", *params.PropertySchema.Ref)
-			// 		// if we ErrSkipProperty, we don't get the property. we just want to skip
-			// 		// schema generation.
-			// 		// ideally, it would try to generate, and skip if ref already exists
-			// 	}
-			// }
-
-			return nil
-		}),
-		// jsonschema.InterceptNullability(func(params jsonschema.InterceptNullabilityParams) {
-		// 	if params.Type.Kind() != reflect.Struct {
-		// 		return
-		// 	}
-		// 	for i := 0; i < params.Type.NumField(); i++ {
-		// 		if params.Schema != nil && params.Schema.Type != nil {
-		// 			if params.Type.Field(i).Tag.Get("nullable") == "false" {
-		// 				if types := params.Schema.Type.SliceOfSimpleTypeValues; len(types) > 0 {
-		// 					fmt.Fprintf(os.Stderr, "nullable schema: %s\n", params.Schema.ReflectType.Name())
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// }),
-		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
 			if params.Field.Tag.Get("x-omitempty") == "true" {
 				if params.PropertySchema == nil {
 					return nil
@@ -183,37 +147,6 @@ func hasJSONTag(input any) bool {
 			}
 		}
 	}
-
-	return false
-}
-
-// filterIgnoredFields returns all fields that do not have
-// the "openapi-go" tag set to "ignore".
-func filterIgnoredFields(t reflect.Type) []reflect.StructField {
-	var filteredFields []reflect.StructField
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		if val, ok := field.Tag.Lookup("openapi-go"); !ok || val != "ignore" {
-			if field.Type.Kind() == reflect.Struct {
-				subFields := filterIgnoredFields(field.Type)
-				field.Type = reflect.StructOf(subFields)
-			}
-			filteredFields = append(filteredFields, field)
-		}
-	}
-
-	return filteredFields
-}
-
-func shouldSkipType(typ reflect.Type) bool {
-	if typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
-	if typ.Kind() == reflect.Array || typ.Kind() == reflect.Slice {
-		return shouldSkipType(typ.Elem())
-	}
-
-	// return strings.HasSuffix(typ.PkgPath(), "/internal/models")
 
 	return false
 }

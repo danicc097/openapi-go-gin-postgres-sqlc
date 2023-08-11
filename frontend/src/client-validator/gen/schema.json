@@ -439,10 +439,7 @@
     "ProjectConfig": {
       "properties": {
         "fields": {
-          "items": {
-            "$ref": "#/definitions/ProjectConfigField"
-          },
-          "type": "array"
+          "$ref": "#/definitions/ProjectConfigFields"
         },
         "header": {
           "items": {
@@ -460,6 +457,19 @@
         "fields"
       ],
       "type": "object",
+      "x-oapi-codegen-extra-tags": {
+        "ref": "#/definitions/ProjectConfig"
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectConfigFields": {
+      "items": {
+        "$ref": "#/definitions/ProjectConfigField"
+      },
+      "type": "array",
+      "x-oapi-codegen-extra-tags": {
+        "ref": "#/definitions/ProjectConfigFields"
+      },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ProjectConfigField": {
@@ -1578,6 +1588,52 @@
       },
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfig": {
+      "properties": {
+        "fields": {
+          "$ref": "#/definitions/ProjectConfigFields"
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "visualization": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1616,6 +1672,9 @@
     },
     "ProjectConfig": {
       "$ref": "#/definitions/ProjectConfig"
+    },
+    "ProjectConfigFields": {
+      "$ref": "#/definitions/ProjectConfigFields"
     },
     "ProjectConfigField": {
       "$ref": "#/definitions/ProjectConfigField"
@@ -1742,6 +1801,12 @@
     },
     "DbDemoTwoWorkItemCreateParams": {
       "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+    },
+    "ModelsProjectConfig": {
+      "$ref": "#/definitions/ModelsProjectConfig"
+    },
+    "ModelsProjectConfigField": {
+      "$ref": "#/definitions/ModelsProjectConfigField"
     }
   }
 }

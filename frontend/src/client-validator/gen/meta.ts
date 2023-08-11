@@ -16,6 +16,7 @@ import {
   DbTimeEntry,
   DbWorkItemComment,
   ProjectConfig,
+  ProjectConfigFields,
   ProjectConfigField,
   DemoWorkItemsResponse,
   DemoTwoWorkItemsResponse,
@@ -58,6 +59,8 @@ import {
   ServicesMember,
   DbDemoTwoWorkItem,
   DbDemoTwoWorkItemCreateParams,
+  ModelsProjectConfig,
+  ModelsProjectConfigField,
 } from './models'
 
 export const schemaDefinitions = {
@@ -73,6 +76,7 @@ export const schemaDefinitions = {
   DbTimeEntry: info<DbTimeEntry>('DbTimeEntry', '#/definitions/DbTimeEntry'),
   DbWorkItemComment: info<DbWorkItemComment>('DbWorkItemComment', '#/definitions/DbWorkItemComment'),
   ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
+  ProjectConfigFields: info<ProjectConfigFields>('ProjectConfigFields', '#/definitions/ProjectConfigFields'),
   ProjectConfigField: info<ProjectConfigField>('ProjectConfigField', '#/definitions/ProjectConfigField'),
   DemoWorkItemsResponse: info<DemoWorkItemsResponse>('DemoWorkItemsResponse', '#/definitions/DemoWorkItemsResponse'),
   DemoTwoWorkItemsResponse: info<DemoTwoWorkItemsResponse>(
@@ -153,6 +157,11 @@ export const schemaDefinitions = {
   DbDemoTwoWorkItemCreateParams: info<DbDemoTwoWorkItemCreateParams>(
     'DbDemoTwoWorkItemCreateParams',
     '#/definitions/DbDemoTwoWorkItemCreateParams',
+  ),
+  ModelsProjectConfig: info<ModelsProjectConfig>('ModelsProjectConfig', '#/definitions/ModelsProjectConfig'),
+  ModelsProjectConfigField: info<ModelsProjectConfigField>(
+    'ModelsProjectConfigField',
+    '#/definitions/ModelsProjectConfigField',
   ),
 }
 
