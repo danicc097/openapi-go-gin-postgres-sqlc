@@ -385,7 +385,7 @@ x.gen.pregen() {
 }
 
 sync_spec_with_db() {
-  cache_all "$CACHE/db.md5" ${CACHE_DEP_FILES[@]} db/ $SPEC_PATH && return 0
+  cache_all "$CACHE/db.md5" bin/project bin/.helpers.sh .env.$X_ENV db/ $SPEC_PATH && return 0
 
   sync_db_enums_with_spec
 
@@ -550,7 +550,7 @@ x.gen.xo() {
   xsetup.backup-gen
   xsetup.drop-and-migrate-gen-db
   { { {
-    cache_all "$CACHE/xo.md5" ${CACHE_DEP_FILES[@]} go.mod db/ $XO_TEMPLATES_DIR/ && return 0
+    cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/ && return 0
 
     echo "Running generation"
 
@@ -761,7 +761,7 @@ x.gen.frontend() {
     SCHEMA_OUT="frontend/src/types/schema.d.ts"
     orval_config="frontend/orval.config.ts"
 
-    cache_all "$CACHE/frontend.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config frontend/scripts/ frontend/package.json && return 0
+    cache_all "$CACHE/frontend.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH $orval_config frontend/scripts/ frontend/package.json && return 0
 
     config_template_setup frontend # no need to run if cached .env
 
@@ -803,7 +803,7 @@ x.gen.e2e() {
 
     orval_config="e2e/orval.config.ts"
 
-    cache_all "$CACHE/e2e.md5" ${CACHE_DEP_FILES[@]} $SPEC_PATH $orval_config e2e/package.json && return 0
+    cache_all "$CACHE/e2e.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH $orval_config e2e/package.json && return 0
 
     config_template_setup e2e # no need to run if cached .env
 
@@ -1350,6 +1350,7 @@ x.db.initial-data() {
 # Backup the database for the current environment.
 x.db.dump() {
   { { {
+    local dump_prefix="dump_${X_ENV}_"
     running_dumps=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$x_env" \
       -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
     if [[ "$running_dumps" != "" ]]; then
@@ -1359,7 +1360,7 @@ x.db.dump() {
     mkdir -p "$DUMPS_DIR"
     schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$x_env" \
       -c "SELECT version FROM schema_migrations;")
-    dump_file="${DUMP_PREFIX}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
+    dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
     dockerdb pg_dump -U postgres -d "postgres_$x_env" |
@@ -1371,14 +1372,15 @@ x.db.dump() {
 # Args: [file]
 x.db.restore() {
   dump_file="$1"
+  local dump_prefix="dump_${X_ENV}_"
   if [[ -n $dump_file ]]; then
     [[ ! -f $dump_file ]] && err "$dump_file does not exist"
-    [[ "$dump_file" != *"$DUMP_PREFIX"* ]] && confirm "${RED}Dump doesn't match prefix '$DUMP_PREFIX'. Continue?${OFF}"
+    [[ "$dump_file" != *"$dump_prefix"* ]] && confirm "${RED}Dump doesn't match prefix '$dump_prefix'. Continue?${OFF}"
   else
     mkdir -p "$DUMPS_DIR"
-    latest_dump_file=$(find "$DUMPS_DIR"/ -name "$DUMP_PREFIX*.gz" | sort -r | head -n 1)
+    latest_dump_file=$(find "$DUMPS_DIR"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
     if [[ -z "$latest_dump_file" ]]; then
-      err "No $DUMP_PREFIX* file found in $DUMPS_DIR"
+      err "No $dump_prefix* file found in $DUMPS_DIR"
     fi
     dump_file="$latest_dump_file"
   fi
@@ -1944,10 +1946,6 @@ errtrap() {
 source ".envrc"
 
 pids=""
-
-readonly DUMP_PREFIX="dump_${X_ENV}_"
-# common shared file dependencies for codegen checksums
-readonly CACHE_DEP_FILES=("bin/project bin/.helpers.sh .env.$X_ENV")
 
 ################ handle executing x functions ################
 
