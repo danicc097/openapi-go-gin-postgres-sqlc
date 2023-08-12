@@ -101,4 +101,19 @@
       "-- plpgsql-language-server:disable"
     ]
   },
+  "fn-doc": {
+    "scope": "shellscript",
+    "prefix": "fn-doc",
+    "body": [
+      "# $1.",
+      "# Globals:",
+      "#   ${2:None}",
+      "# Parameters:",
+      "#   ${3:None}",
+      "# Outputs:",
+      "#   ${4:None}",
+      "# Returns:",
+      "#   ${5:None}",
+    ]
+  },
 }
