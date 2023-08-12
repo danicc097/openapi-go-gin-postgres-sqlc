@@ -192,7 +192,7 @@ restart_pid() {
 }
 
 err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] (${YELLOW}${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]}${OFF}): ${RED}$*${OFF}" >&2
   sleep 0.1 # while processing xerr in background
   # kill -s SIGUSR1 $PROC
   # FIXME parallel (sub-)subshell management instead of force killing
@@ -248,7 +248,7 @@ show_tracebacks() {
   local err_code="$?"
   set +o xtrace
   local bash_command=${BASH_COMMAND}
-  echo "${RED}Error in ${BASH_SOURCE[1]}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
+  echo "${RED}Error in ${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
 
   if [[ $bash_command != xlog* && $bash_command != xerr* && ${#FUNCNAME[@]} -gt 2 ]]; then
     # Print out the stack trace described by $function_stack
