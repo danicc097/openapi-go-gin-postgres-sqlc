@@ -145,12 +145,13 @@ xsetup.backup-gen.restore() {
 xsetup.drop-and-migrate-gen-db() {
   test -n "$xsetup_gen_migrated" && return
   xsetup_gen_migrated=1
-  { { {
+
+  (
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
     x.db.drop
     x.migrate up
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  )
 }
 
 ######################### x-functions #########################
