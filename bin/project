@@ -374,10 +374,6 @@ x.gen.pregen() {
     | select(.[]) as \$i ireduce ({}; . + \$i)
   " $SPEC_PATH >$OPID_AUTH
 
-    yq --prettyPrint '.. style="single"' -i $SPEC_PATH
-    # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
-    # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
-
     codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH"
 
     update_spec_with_structs
