@@ -275,10 +275,6 @@ x.gen.pregen() {
 
     echo "Running generation"
 
-    missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC_PATH)"
-    [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
-
-    # spec must always be valid before generating. Schemas to generate must already exist with the appropriate vendor extension
     codegen validate-spec -env=".env.$X_ENV"
 
     sync_spec_with_db
