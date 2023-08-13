@@ -390,14 +390,14 @@ sync_spec_with_db() {
 
   ######## Sync projects and related project info
 
-  mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+  mapfile -t db_projects < <(docker.postgres.psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
 
   [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
   replace_enum_in_spec "Project" db_projects "projects table"
 
   for project in ${db_projects[@]}; do
     ### kanban steps
-    mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
+    mapfile -t kanban_steps < <(docker.postgres.psql -d $POSTGRES_DB -c "
           select name from kanban_steps where project_id = (
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
@@ -408,7 +408,7 @@ sync_spec_with_db() {
     replace_enum_in_spec "$schema_name" kanban_steps "kanban_steps table"
 
     ### work item types
-    mapfile -t work_item_types < <(dockerdb_psql -d $POSTGRES_DB -c "
+    mapfile -t work_item_types < <(docker.postgres.psql -d $POSTGRES_DB -c "
           select name from work_item_types where project_id = (
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
@@ -436,11 +436,11 @@ import "$GOMOD_PKG/internal/models"
 
 EOF
 
-  mapfile -t projects_rows < <(dockerdb_psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
+  mapfile -t projects_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
   generate_model_mappings_dicts Project projects_rows
 
   for project in ${db_projects[@]}; do
-    mapfile -t kanban_steps_rows < <(dockerdb_psql -d $POSTGRES_DB -c "
+    mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
           select kanban_step_id,name from kanban_steps where project_id = (
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
@@ -449,7 +449,7 @@ EOF
     generate_model_mappings_dicts $prefix kanban_steps_rows
 
     kanban_steps_rows=()
-    mapfile -t kanban_steps_rows < <(dockerdb_psql -d $POSTGRES_DB -c "
+    mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
           select kanban_step_id,step_order from kanban_steps where project_id = (
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
@@ -469,7 +469,7 @@ EOF
   done
 
   for project in ${db_projects[@]}; do
-    mapfile -t work_item_types_rows < <(dockerdb_psql -d $POSTGRES_DB -c "
+    mapfile -t work_item_types_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
           select work_item_type_id,name from work_item_types where project_id = (
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
@@ -623,13 +623,13 @@ x.gen.gowrap() {
     )
 
     local repo_interfaces=()
-    find_go_interfaces repo_interfaces $repos
+    go-utils.find_interfaces repo_interfaces $repos
 
     mkdir -p "$cache"
 
     local updated_ifaces=()
     for iface in ${repo_interfaces[@]}; do
-      iface_content="$(find_go_interface_content $iface $repos)"
+      iface_content="$(go-utils.get_interface_methods $iface $repos)"
       if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
         continue
       fi
@@ -706,7 +706,7 @@ x.gen.counterfeiter() {
     for key in ${!ifaces[@]}; do
       input_path="${key#*-}"
       iface="${key%%-*}"
-      iface_content="$(find_go_interface_content $iface $input_path)"
+      iface_content="$(go-utils.get_interface_methods $iface $input_path)"
 
       cache_entry="$cache/$(echo "$key" | base64)"
       if diff "$cache_entry" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
@@ -952,7 +952,7 @@ x.test.backend.setup() {
     run_shared_services up -d --build --remove-orphans --wait
     x.gen
     # no need to migrate, done on every test run internally
-    drop_and_recreate_db $POSTGRES_TEST_DB
+    docker.postgres.drop_and_recreate_db $POSTGRES_TEST_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
 }
@@ -999,16 +999,17 @@ x.test.frontend.watch() {
 # Run custom xo generation script tests. Accepts `go test` parameters.
 # Args: [...]
 x.test.xo() {
+  xsetup.backup-gen
   { { {
     POSTGRES_DB="$POSTGRES_TEST_DB"
     GEN_POSTGRES_DB="$POSTGRES_TEST_DB"
 
-    drop_and_recreate_db $POSTGRES_DB # FIXME wrong xo gen when tables with equal names in public schema exist as well
+    docker.postgres.drop_and_recreate_db $POSTGRES_DB # FIXME wrong xo gen when tables with equal names in public schema exist as well
 
     echo "Running xo template tests"
 
     test_dir="$XO_TEMPLATES_DIR/tests"
-    dockerdb_psql -d $POSTGRES_DB <"$test_dir/schema.sql" # need correct schema for xo gen
+    docker.postgres.psql -d $POSTGRES_DB <"$test_dir/schema.sql" # need correct schema for xo gen
     echo "Schema loaded"
 
     rm -rf "$test_dir/got"
@@ -1032,8 +1033,8 @@ x.test.xo() {
         cp -r "$test_dir/got" "$test_dir/snapshot"
       }
     fi
-
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup-gen.cleanup
 }
 
 # Test backend on file changes. Accepts `go test` parameters.
@@ -1165,7 +1166,7 @@ x.release() {
 
 # Shows existing user api keys.
 x.dev-utils.api-keys() {
-  dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "select email, api_key from user_api_keys left join users using (user_id);"
+  docker.postgres psql --no-psqlrc -d $POSTGRES_DB -c "select email, api_key from user_api_keys left join users using (user_id);"
 }
 
 # Shows current database column comments used in xo codegen
@@ -1189,7 +1190,7 @@ WHERE a.attisdropped = false
   AND (true OR a.attnum > 0)
   AND col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position) is not null;"
 
-  dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "$query" 2>/dev/null
+  docker.postgres psql --no-psqlrc -d $POSTGRES_DB -c "$query" 2>/dev/null
 }
 
 # Setups a traefik container with predefined configuration in `install-dir`.
@@ -1240,7 +1241,7 @@ x.migrate() {
     if [[ "${*:1}" =~ (up)+ ]]; then
       echo "Running post-migration scripts"
       for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
-        dockerdb_psql -U postgres -d "$POSTGRES_DB" <$file
+        docker.postgres.psql -U postgres -d "$POSTGRES_DB" <$file
       done
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1282,8 +1283,8 @@ x.db.conns() {
 # Args: database
 x.db.conns-db() {
   { { {
-    current_conns=$(dockerdb_psql -d $1 -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$1';")
-    max_conns=$(dockerdb_psql -d $1 -c "SHOW max_connections;")
+    current_conns=$(docker.postgres.psql -d $1 -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$1';")
+    max_conns=$(docker.postgres.psql -d $1 -c "SHOW max_connections;")
     echo "$current_conns/$max_conns active connections in '$1'"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1291,8 +1292,8 @@ x.db.conns-db() {
 # and stops its running processes if any.
 x.db.recreate() {
   { { {
-    create_db_if_not_exists $POSTGRES_DB
-    stop_db_processes $POSTGRES_DB
+    docker.postgres.create_db $POSTGRES_DB
+    docker.postgres.stop_db_processes $POSTGRES_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1300,7 +1301,7 @@ x.db.recreate() {
 x.db.drop() {
   [[ $x_env = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && with_tty confirm "This will drop production database data. Continue?"
   { { {
-    drop_and_recreate_db "$POSTGRES_DB"
+    docker.postgres.drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1341,7 +1342,7 @@ x.db.initial-data() {
     x.db.drop
     x.migrate up
     echo "Loading initial data to $POSTGRES_DB"
-    # dockerdb_psql -d $POSTGRES_DB <"./db/initial_data_$x_env.pgsql"
+    # docker.postgres.psql -d $POSTGRES_DB <"./db/initial_data_$x_env.pgsql"
     go run cmd/initial-data/main.go -env .env.$X_ENV
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1350,19 +1351,19 @@ x.db.initial-data() {
 x.db.dump() {
   { { {
     local dump_prefix="dump_${X_ENV}_"
-    running_dumps=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$x_env" \
+    running_dumps=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" \
       -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
     if [[ "$running_dumps" != "" ]]; then
       err "pg_dump is already running, aborting new dump"
     fi
 
     mkdir -p "$DUMPS_DIR"
-    schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$x_env" \
+    schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" \
       -c "SELECT version FROM schema_migrations;")
     dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
-    dockerdb pg_dump -U postgres -d "postgres_$x_env" |
+    docker.postgres pg_dump -U postgres -d "postgres_$x_env" |
       gzip >"$DUMPS_DIR/$dump_file"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1387,9 +1388,9 @@ x.db.restore() {
   confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$x_env${OFF} environment?"
 
   x.db.drop
-  gunzip -c "$dump_file" | dockerdb_psql -U postgres -d "postgres_$x_env"
+  gunzip -c "$dump_file" | docker.postgres.psql -U postgres -d "postgres_$x_env"
   # sanity check, but probably better to do it before restoring...
-  dump_schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$x_env" -c "SELECT version FROM schema_migrations;")
+  dump_schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" -c "SELECT version FROM schema_migrations;")
   file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
   echo "Migration revision: $dump_schema_v"
   if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
@@ -1484,8 +1485,8 @@ run_shared_services() {
 generate_structs_map() {
   local structs=()
   local enums=()
-  find_go_structs structs "$PG_REPO_GEN/db"
-  find_go_enums enums "$PG_REPO_GEN/db"
+  go-utils.find_structs structs "$PG_REPO_GEN/db"
+  go-utils.find_enums enums "$PG_REPO_GEN/db"
   find_deleted_pkg_schemas structs enums Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
@@ -1496,8 +1497,8 @@ generate_structs_map() {
 
   structs=()
   enums=()
-  find_go_structs structs "internal/rest/models.go"
-  find_go_enums enums "internal/rest/models.go"
+  go-utils.find_structs structs "internal/rest/models.go"
+  go-utils.find_enums enums "internal/rest/models.go"
   find_deleted_pkg_schemas structs enums Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")
@@ -1536,11 +1537,11 @@ sync_db_enums_with_spec() {
     INNER JOIN pg_namespace n ON n.oid = t.typnamespace
     WHERE t.typtype = 'e' AND n.nspname IN (%s);" "$search_path_str")
 
-  mapfile -t db_enum_names < <(dockerdb_psql -d $POSTGRES_DB -c "$enum_query" 2>/dev/null)
+  mapfile -t db_enum_names < <(docker.postgres.psql -d $POSTGRES_DB -c "$enum_query" 2>/dev/null)
   for db_enum_name in "${db_enum_names[@]}"; do
     local schema_name="$(to_pascal $db_enum_name)"
     local enum_values=()
-    mapfile -t enum_values < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
+    mapfile -t enum_values < <(docker.postgres.psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
 
     local schema_path=".components.schemas.$schema_name"
     if yq -e "$schema_path" $SPEC_PATH &>/dev/null; then # -e exits 1 if no match
@@ -1596,51 +1597,6 @@ awk_remove_go_comments='
      /\*\// { f=0 } # reset flag at end of comment
 '
 
-# Stores go structs in package to a given array.
-# Parameters:
-#    Struct array (nameref)
-#    Package directory
-find_go_structs() {
-  local -n __arr="$1"
-  local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
-    sed -ne 's/[\s]*type\(.*\)struct.*/\1/p')
-  if [[ ${#__arr[@]} -eq 0 ]]; then
-    err "No structs found in package $pkg"
-  fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
-}
-
-# Stores go interfaces in package to a given array.
-# Parameters:
-#    Interface array (nameref)
-#    Package directory
-find_go_interfaces() {
-  local -n __arr="$1"
-  local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
-    sed -ne 's/[\s]*type\(.*\)interface.*/\1/p')
-  if [[ ${#__arr[@]} -eq 0 ]]; then
-    err "No interfaces found in package $pkg"
-  fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
-}
-
-# Stores go enums in package to a given array.
-# Parameters:
-#    Enum array (nameref)
-#    Package directory
-find_go_enums() {
-  local -n __arr="$1"
-  local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
-    sed -ne 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p')
-  if [[ ${#__arr[@]} -eq 0 ]]; then
-    echo "No enums found in package $pkg"
-  fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
-}
-
 find_deleted_pkg_schemas() {
   local -n __structs="$1"
   local -n __enums="$2"
@@ -1664,18 +1620,6 @@ find_deleted_pkg_schemas() {
     ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC_PATH schema $spec_schema no longer exists in package '$pkg'. Remove if necessary.${OFF}"
     found=0
   done
-}
-
-# Returns go interface methods in file.
-# Parameters:
-#    Interface name
-#    Go file
-find_go_interface_content() {
-  local interface="$1"
-  local file="$2"
-  awk "/^type $interface /{flag=1; print; next} flag && /^}/{flag=0} flag" $file |
-    sed -e '1d' |
-    awk "$awk_remove_go_comments"
 }
 
 update_spec_with_structs() {
