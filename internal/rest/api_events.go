@@ -180,7 +180,7 @@ func (h *Handlers) Events(c *gin.Context, params models.EventsParams) {
 	// TODO map of channels for each Role ('global' notif.) ?
 	// TODO map of channels for every connected user for 'personal' notif. ?
 	// will use to alert cards moving, selected as card member, etc.
-	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events' 'https://localhost:8090/v2/'
+	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events?projectName=demo'
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case msg, ok := <-clientChan:
@@ -191,7 +191,7 @@ func (h *Handlers) Events(c *gin.Context, params models.EventsParams) {
 			// should it fail marshalling earlier, msg is an error message (literal or {"error":"..."})
 			// but all sse channels receive strings
 			te := &timeEvent{
-				Foo: "bar",
+				Foo: "bar\n\n",
 				Msg: msg,
 			}
 			sseMsg, err := json.Marshal(te)
