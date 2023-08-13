@@ -1524,6 +1524,7 @@ EOF
   gofumpt -w $out
 }
 
+# Converts db enums to OpenAPI schemas.
 sync_db_enums_with_spec() {
   db_search_paths=("public" "other_schema")
 
@@ -1550,9 +1551,7 @@ sync_db_enums_with_spec() {
 
     src_comment="database enum '$db_enum_name'"
     replace_enum_in_spec "$schema_name" enum_values "$src_comment"
-
   done
-
 }
 
 setup_swagger_ui() {
@@ -1564,6 +1563,11 @@ setup_swagger_ui() {
   sed -i 's/!!merge //' $bundle_spec
 }
 
+# Replaces database.
+# Parameters:
+#   Schema name
+#   Enum values (nameref)
+#   Enum source comment
 replace_enum_in_spec() {
   local enum="$1"
   local -n __arr="$2"
@@ -1592,6 +1596,10 @@ awk_remove_go_comments='
      /\*\// { f=0 } # reset flag at end of comment
 '
 
+# Stores go structs in package to a given array.
+# Parameters:
+#    Struct array (nameref)
+#    Package directory
 find_go_structs() {
   local -n __arr="$1"
   local pkg="$2"
@@ -1603,6 +1611,10 @@ find_go_structs() {
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
+# Stores go interfaces in package to a given array.
+# Parameters:
+#    Interface array (nameref)
+#    Package directory
 find_go_interfaces() {
   local -n __arr="$1"
   local pkg="$2"
@@ -1614,14 +1626,10 @@ find_go_interfaces() {
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
-find_go_interface_content() {
-  local interface="$1"
-  local file="$2"
-  awk "/^type $interface /{flag=1; print; next} flag && /^}/{flag=0} flag" $file |
-    sed -e '1d' |
-    awk "$awk_remove_go_comments"
-}
-
+# Stores go enums in package to a given array.
+# Parameters:
+#    Enum array (nameref)
+#    Package directory
 find_go_enums() {
   local -n __arr="$1"
   local pkg="$2"
@@ -1656,6 +1664,18 @@ find_deleted_pkg_schemas() {
     ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC_PATH schema $spec_schema no longer exists in package '$pkg'. Remove if necessary.${OFF}"
     found=0
   done
+}
+
+# Returns go interface methods in file.
+# Parameters:
+#    Interface name
+#    Go file
+find_go_interface_content() {
+  local interface="$1"
+  local file="$2"
+  awk "/^type $interface /{flag=1; print; next} flag && /^}/{flag=0} flag" $file |
+    sed -e '1d' |
+    awk "$awk_remove_go_comments"
 }
 
 update_spec_with_structs() {
