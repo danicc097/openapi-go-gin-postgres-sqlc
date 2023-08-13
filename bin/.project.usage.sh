@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source ".helpers.sh"
-
 readonly MAX_COMMENT_LEN=88
 
 usage() {

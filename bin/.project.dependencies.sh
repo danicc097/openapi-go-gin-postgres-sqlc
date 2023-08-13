@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source ".helpers.sh"
+source ".project.usage.sh"
 
 report_failure() {
   local info="$1"
