@@ -23,10 +23,10 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Movie struct {
-	MovieID  int    `json:"movieID" db:"movie_id" required:"true" nullable:"false"`  // movie_id
-	Title    string `json:"title" db:"title" required:"true" nullable:"false"`       // title
-	Year     int    `json:"year" db:"year" required:"true" nullable:"false"`         // year
-	Synopsis string `json:"synopsis" db:"synopsis" required:"true" nullable:"false"` // synopsis
+	MovieID  MovieID `json:"movieID" db:"movie_id" required:"true" nullable:"false"`  // movie_id
+	Title    string  `json:"title" db:"title" required:"true" nullable:"false"`       // title
+	Year     int     `json:"year" db:"year" required:"true" nullable:"false"`         // year
+	Synopsis string  `json:"synopsis" db:"synopsis" required:"true" nullable:"false"` // synopsis
 
 }
 
@@ -36,6 +36,8 @@ type MovieCreateParams struct {
 	Title    string `json:"title" required:"true" nullable:"false"`    // title
 	Year     int    `json:"year" required:"true" nullable:"false"`     // year
 }
+
+type MovieID int // movie_id
 
 // CreateMovie creates a new Movie in the database with the given params.
 func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {

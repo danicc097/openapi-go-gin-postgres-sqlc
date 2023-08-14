@@ -24,7 +24,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Team struct {
-	TeamID      int       `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
+	TeamID      TeamID    `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 	ProjectID   int       `json:"projectID" db:"project_id" required:"true" nullable:"false"`    // project_id
 	Name        string    `json:"name" db:"name" required:"true" nullable:"false"`               // name
 	Description string    `json:"description" db:"description" required:"true" nullable:"false"` // description
@@ -43,6 +43,8 @@ type TeamCreateParams struct {
 	Name        string `json:"name" required:"true" nullable:"false"`        // name
 	ProjectID   int    `json:"projectID" required:"true" nullable:"false"`   // project_id
 }
+
+type TeamID int // team_id
 
 // CreateTeam creates a new Team in the database with the given params.
 func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {

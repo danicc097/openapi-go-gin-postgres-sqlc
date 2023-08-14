@@ -23,11 +23,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemType struct {
-	WorkItemTypeID int    `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                         // work_item_type_id
-	ProjectID      int    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
-	Name           string `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
-	Description    string `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
-	Color          string `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                         // work_item_type_id
+	ProjectID      int            `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	Name           string         `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
+	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
+	Color          string         `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 
 	ProjectJoin *Project `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 
@@ -40,6 +40,8 @@ type WorkItemTypeCreateParams struct {
 	Name        string `json:"name" required:"true" nullable:"false"`                                               // name
 	ProjectID   int    `json:"projectID" nullable:"false"`                                                          // project_id
 }
+
+type WorkItemTypeID int // work_item_type_id
 
 // CreateWorkItemType creates a new WorkItemType in the database with the given params.
 func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {

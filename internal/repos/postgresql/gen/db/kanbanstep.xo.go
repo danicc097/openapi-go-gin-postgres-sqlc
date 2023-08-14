@@ -23,13 +23,13 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type KanbanStep struct {
-	KanbanStepID  int    `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                              // kanban_step_id
-	ProjectID     int    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
-	StepOrder     int    `json:"stepOrder" db:"step_order" required:"true" nullable:"false"`                                     // step_order
-	Name          string `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
-	Description   string `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
-	Color         string `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	TimeTrackable bool   `json:"timeTrackable" db:"time_trackable" required:"true" nullable:"false"`                             // time_trackable
+	KanbanStepID  KanbanStepID `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                              // kanban_step_id
+	ProjectID     int          `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	StepOrder     int          `json:"stepOrder" db:"step_order" required:"true" nullable:"false"`                                     // step_order
+	Name          string       `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
+	Description   string       `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
+	Color         string       `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	TimeTrackable bool         `json:"timeTrackable" db:"time_trackable" required:"true" nullable:"false"`                             // time_trackable
 
 	ProjectJoin *Project `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 
@@ -44,6 +44,8 @@ type KanbanStepCreateParams struct {
 	StepOrder     int    `json:"stepOrder" required:"true" nullable:"false"`                                          // step_order
 	TimeTrackable bool   `json:"timeTrackable" required:"true" nullable:"false"`                                      // time_trackable
 }
+
+type KanbanStepID int // kanban_step_id
 
 // CreateKanbanStep creates a new KanbanStep in the database with the given params.
 func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {

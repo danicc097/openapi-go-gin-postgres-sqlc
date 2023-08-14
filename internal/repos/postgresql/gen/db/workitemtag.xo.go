@@ -23,11 +23,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemTag struct {
-	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"`                           // work_item_tag_id
-	ProjectID     int    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
-	Name          string `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
-	Description   string `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
-	Color         string `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	WorkItemTagID WorkItemTagID `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"`                           // work_item_tag_id
+	ProjectID     int           `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	Name          string        `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
+	Description   string        `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
+	Color         string        `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 
 	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
 	WorkItemTagWorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
@@ -41,6 +41,8 @@ type WorkItemTagCreateParams struct {
 	Name        string `json:"name" required:"true" nullable:"false"`                                               // name
 	ProjectID   int    `json:"projectID" nullable:"false"`                                                          // project_id
 }
+
+type WorkItemTagID int // work_item_tag_id
 
 // CreateWorkItemTag creates a new WorkItemTag in the database with the given params.
 func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreateParams) (*WorkItemTag, error) {

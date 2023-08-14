@@ -3642,7 +3642,7 @@ func (f *Funcs) typefn(typ string) string {
 }
 
 // field generates a field definition for a struct.
-func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
+func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	isPrivate := contains(field.Properties, propertyPrivate)
 	notRequired := contains(field.Properties, propertyFieldNotRequired)
@@ -3652,7 +3652,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	ignoreJson := isPrivate
 
 	var skipExtraTags bool
-	switch typ {
+	switch mode {
 	case "CreateParams":
 		if isSingleFK && isSinglePK {
 			ignoreJson = true // need for repo but unknown for request
@@ -3693,13 +3693,32 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 		tag = " `" + s + "`"
 	}
 	fieldType := f.typefn(field.Type)
-	if typ == "UpdateParams" {
+	if field.IsPrimary {
+		field.OpenAPISchema = "Db" + field.Type
+		if mode != "IDTypes" {
+			fieldType = table.GoName + "ID"
+		}
+	}
+
+	if mode == "UpdateParams" {
 		fieldType = "*" + fieldType // we do want **<field> and *<field>
 	}
 	if field.EnumPkg != "" {
 		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
 		fieldType = p + "." + fieldType // assumes no pointers
 		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
+	}
+
+	if mode == "IDTypes" {
+		// TODO: if
+		if isSingleFK && isSinglePK {
+			// use reference table ID. now it generates WorkItemID DemoTwoWorkItemID
+		}
+		if field.IsPrimary && !(isSingleFK && isSinglePK) {
+			return fmt.Sprintf("type %s %s // %s\n\n", table.GoName+"ID", fieldType, field.SQLName), nil
+		} else {
+			return "", nil
+		}
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil

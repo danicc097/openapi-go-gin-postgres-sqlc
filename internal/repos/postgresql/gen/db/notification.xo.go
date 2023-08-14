@@ -25,7 +25,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Notification struct {
-	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`                                                 // notification_id
+	NotificationID   NotificationID   `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`                                                 // notification_id
 	ReceiverRank     *int             `json:"receiverRank" db:"receiver_rank"`                                                                                      // receiver_rank
 	Title            string           `json:"title" db:"title" required:"true" nullable:"false"`                                                                    // title
 	Body             string           `json:"body" db:"body" required:"true" nullable:"false"`                                                                      // body
@@ -53,6 +53,8 @@ type NotificationCreateParams struct {
 	Sender           uuid.UUID        `json:"sender" required:"true" nullable:"false"`                                                       // sender
 	Title            string           `json:"title" required:"true" nullable:"false"`                                                        // title
 }
+
+type NotificationID int // notification_id
 
 // CreateNotification creates a new Notification in the database with the given params.
 func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {

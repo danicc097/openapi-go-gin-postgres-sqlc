@@ -25,7 +25,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Project struct {
-	ProjectID          int                  `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                              // project_id
+	ProjectID          ProjectID            `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                              // project_id
 	Name               models.Project       `json:"name" db:"name" required:"true" nullable:"false" ref:"#/components/schemas/Project"`                      // name
 	Description        string               `json:"description" db:"description" required:"true" nullable:"false"`                                           // description
 	WorkItemsTableName string               `json:"-" db:"work_items_table_name" nullable:"false"`                                                           // work_items_table_name
@@ -48,6 +48,8 @@ type ProjectCreateParams struct {
 	Name               models.Project       `json:"name" required:"true" nullable:"false" ref:"#/components/schemas/Project"`              // name
 	WorkItemsTableName string               `json:"-" nullable:"false"`                                                                    // work_items_table_name
 }
+
+type ProjectID int // project_id
 
 // CreateProject creates a new Project in the database with the given params.
 func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {

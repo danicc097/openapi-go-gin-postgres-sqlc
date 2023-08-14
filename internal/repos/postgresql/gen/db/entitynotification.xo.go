@@ -25,12 +25,12 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type EntityNotification struct {
-	EntityNotificationID int           `json:"entityNotificationID" db:"entity_notification_id" required:"true" nullable:"false"`       // entity_notification_id
-	Entity               Entity        `json:"entity" db:"entity" required:"true" nullable:"false" ref:"#/components/schemas/DbEntity"` // entity
-	ID                   string        `json:"id" db:"id" required:"true" nullable:"false"`                                             // id
-	Message              string        `json:"message" db:"message" required:"true" nullable:"false"`                                   // message
-	Topic                models.Topics `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`     // topic
-	CreatedAt            time.Time     `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                              // created_at
+	EntityNotificationID EntityNotificationID `json:"entityNotificationID" db:"entity_notification_id" required:"true" nullable:"false"`       // entity_notification_id
+	Entity               Entity               `json:"entity" db:"entity" required:"true" nullable:"false" ref:"#/components/schemas/DbEntity"` // entity
+	ID                   string               `json:"id" db:"id" required:"true" nullable:"false"`                                             // id
+	Message              string               `json:"message" db:"message" required:"true" nullable:"false"`                                   // message
+	Topic                models.Topics        `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`     // topic
+	CreatedAt            time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                              // created_at
 
 }
 
@@ -41,6 +41,8 @@ type EntityNotificationCreateParams struct {
 	Message string        `json:"message" required:"true" nullable:"false"`                                    // message
 	Topic   models.Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`    // topic
 }
+
+type EntityNotificationID int // entity_notification_id
 
 // CreateEntityNotification creates a new EntityNotification in the database with the given params.
 func CreateEntityNotification(ctx context.Context, db DB, params *EntityNotificationCreateParams) (*EntityNotification, error) {

@@ -27,7 +27,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type User struct {
-	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true" nullable:"false"`                                      // user_id
+	UserID                   UserID        `json:"userID" db:"user_id" required:"true" nullable:"false"`                                      // user_id
 	Username                 string        `json:"username" db:"username" required:"true" nullable:"false"`                                   // username
 	Email                    string        `json:"email" db:"email" required:"true" nullable:"false"`                                         // email
 	FirstName                *string       `json:"firstName" db:"first_name"`                                                                 // first_name
@@ -67,6 +67,8 @@ type UserCreateParams struct {
 	Scopes                   models.Scopes `json:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
 	Username                 string        `json:"username" required:"true" nullable:"false"`                                 // username
 }
+
+type UserID uuid.UUID // user_id
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
