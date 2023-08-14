@@ -23,16 +23,16 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoWorkItem struct {
-	WorkItemID int  `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
-	Checked    bool `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
+	WorkItemID WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	Checked    bool       `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 }
 
 // DemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.
 type DemoWorkItemCreateParams struct {
-	Checked    bool `json:"checked" required:"true" nullable:"false"` // checked
-	WorkItemID int  `json:"-" required:"true" nullable:"false"`       // work_item_id
+	Checked    bool       `json:"checked" required:"true" nullable:"false"` // checked
+	WorkItemID WorkItemID `json:"-" required:"true" nullable:"false"`       // work_item_id
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.

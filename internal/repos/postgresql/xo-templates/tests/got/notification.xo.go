@@ -24,10 +24,10 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Notification struct {
-	NotificationID int        `json:"notificationID" db:"notification_id" required:"true" nullable:"false"` // notification_id
-	Body           string     `json:"-" db:"body" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                // body
-	Sender         uuid.UUID  `json:"sender" db:"sender" required:"true" nullable:"false"`                  // sender
-	Receiver       *uuid.UUID `json:"receiver" db:"receiver"`                                               // receiver
+	NotificationID NotificationID `json:"notificationID" db:"notification_id" required:"true" nullable:"false"` // notification_id
+	Body           string         `json:"-" db:"body" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                // body
+	Sender         uuid.UUID      `json:"sender" db:"sender" required:"true" nullable:"false"`                  // sender
+	Receiver       *uuid.UUID     `json:"receiver" db:"receiver"`                                               // receiver
 
 	ReceiverJoin *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
 	SenderJoin   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
@@ -39,6 +39,8 @@ type NotificationCreateParams struct {
 	Receiver *uuid.UUID `json:"receiver"`                                    // receiver
 	Sender   uuid.UUID  `json:"sender" required:"true" nullable:"false"`     // sender
 }
+
+type NotificationID int // notification_id
 
 // CreateNotification creates a new Notification in the database with the given params.
 func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {

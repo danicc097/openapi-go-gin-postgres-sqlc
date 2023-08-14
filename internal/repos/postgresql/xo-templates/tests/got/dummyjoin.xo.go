@@ -23,14 +23,16 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DummyJoin struct {
-	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true" nullable:"false"` // dummy_join_id
-	Name        *string `json:"name" db:"name"`                                                  // name
+	DummyJoinID DummyJoinID `json:"dummyJoinID" db:"dummy_join_id" required:"true" nullable:"false"` // dummy_join_id
+	Name        *string     `json:"name" db:"name"`                                                  // name
 }
 
 // DummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
 type DummyJoinCreateParams struct {
 	Name *string `json:"name"` // name
 }
+
+type DummyJoinID int // dummy_join_id
 
 // CreateDummyJoin creates a new DummyJoin in the database with the given params.
 func CreateDummyJoin(ctx context.Context, db DB, params *DummyJoinCreateParams) (*DummyJoin, error) {

@@ -23,7 +23,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Book struct {
-	BookID int    `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
+	BookID BookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
 	Name   string `json:"name" db:"name" required:"true" nullable:"false"`      // name
 
 	BookAuthorsJoin     *[]User__BA_Book   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
@@ -36,6 +36,8 @@ type Book struct {
 type BookCreateParams struct {
 	Name string `json:"name" required:"true" nullable:"false"` // name
 }
+
+type BookID int // book_id
 
 // CreateBook creates a new Book in the database with the given params.
 func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {

@@ -25,10 +25,10 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
-	APIKey       string    `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
-	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
-	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	UserAPIKeyID UserAPIKeyID `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
+	APIKey       string       `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
+	ExpiresOn    time.Time    `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
+	UserID       uuid.UUID    `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
 
 	UserJoin *User `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
 }
@@ -39,6 +39,8 @@ type UserAPIKeyCreateParams struct {
 	ExpiresOn time.Time `json:"expiresOn" required:"true" nullable:"false"` // expires_on
 	UserID    uuid.UUID `json:"userID" required:"true" nullable:"false"`    // user_id
 }
+
+type UserAPIKeyID int // user_api_key_id
 
 // CreateUserAPIKey creates a new UserAPIKey in the database with the given params.
 func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {

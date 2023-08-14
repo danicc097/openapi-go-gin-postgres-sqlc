@@ -25,7 +25,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type User struct {
-	UserID    uuid.UUID  `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	UserID    UserID     `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
 	Name      string     `json:"name" db:"name" required:"true" nullable:"false"`            // name
 	APIKeyID  *int       `json:"apiKeyID" db:"api_key_id"`                                   // api_key_id
 	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
@@ -46,6 +46,8 @@ type UserCreateParams struct {
 	APIKeyID *int   `json:"apiKeyID"`                              // api_key_id
 	Name     string `json:"name" required:"true" nullable:"false"` // name
 }
+
+type UserID uuid.UUID // user_id
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {

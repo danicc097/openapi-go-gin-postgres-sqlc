@@ -3710,17 +3710,25 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 
 	if mode == "IDTypes" {
-		// TODO: if
 		if isSingleFK && isSinglePK {
-			// use reference table ID. now it generates WorkItemID DemoTwoWorkItemID
+			return "", nil
 		}
-		if field.IsPrimary && !(isSingleFK && isSinglePK) {
+		if field.IsPrimary {
 			return fmt.Sprintf("type %s %s // %s\n\n", table.GoName+"ID", fieldType, field.SQLName), nil
 		} else {
 			return "", nil
 		}
 	}
-
+	if mode != "IDTypes" {
+		if isSingleFK && isSinglePK {
+			for _, tfk := range table.ForeignKeys {
+				if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
+					fieldType = camelExport(singularize(tfk.RefTable)) + "ID"
+					break
+				}
+			}
+		}
+	}
 	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
 }
 

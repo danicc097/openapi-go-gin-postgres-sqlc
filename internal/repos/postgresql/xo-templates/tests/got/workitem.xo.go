@@ -23,9 +23,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItem struct {
-	WorkItemID  int     `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
-	Title       *string `json:"title" db:"title"`                                              // title
-	Description *string `json:"description" db:"description"`                                  // description
+	WorkItemID  WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	Title       *string    `json:"title" db:"title"`                                              // title
+	Description *string    `json:"description" db:"description"`                                  // description
 
 	DemoWorkItemJoin          *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
 	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -36,6 +36,8 @@ type WorkItemCreateParams struct {
 	Description *string `json:"description"` // description
 	Title       *string `json:"title"`       // title
 }
+
+type WorkItemID int // work_item_id
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {

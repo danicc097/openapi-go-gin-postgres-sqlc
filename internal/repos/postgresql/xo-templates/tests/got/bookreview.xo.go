@@ -24,9 +24,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookReview struct {
-	BookReviewID int       `json:"bookReviewID" db:"book_review_id" required:"true" nullable:"false"` // book_review_id
-	BookID       int       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
-	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
+	BookReviewID BookReviewID `json:"bookReviewID" db:"book_review_id" required:"true" nullable:"false"` // book_review_id
+	BookID       int          `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
+	Reviewer     uuid.UUID    `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
 
 	BookJoin     *Book `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
 	ReviewerJoin *User `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
@@ -37,6 +37,8 @@ type BookReviewCreateParams struct {
 	BookID   int       `json:"bookID" required:"true" nullable:"false"`   // book_id
 	Reviewer uuid.UUID `json:"reviewer" required:"true" nullable:"false"` // reviewer
 }
+
+type BookReviewID int // book_review_id
 
 // CreateBookReview creates a new BookReview in the database with the given params.
 func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams) (*BookReview, error) {
