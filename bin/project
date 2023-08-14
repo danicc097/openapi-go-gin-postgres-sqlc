@@ -125,6 +125,8 @@ xsetup.backup-gen() {
 }
 
 xsetup.backup-gen.cleanup() {
+  # only accept gen if the main function that backup it up in the first place
+  # finishes successfully, i.e. this very function was called
   if [[ "$xsetup_backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
     restore_cache=0
   fi
