@@ -58,6 +58,7 @@ import {
   ServicesMember,
   DbDemoTwoWorkItem,
   DbDemoTwoWorkItemCreateParams,
+  DbWorkItemID,
 } from './models'
 
 export const schemaDefinitions = {
@@ -154,6 +155,7 @@ export const schemaDefinitions = {
     'DbDemoTwoWorkItemCreateParams',
     '#/definitions/DbDemoTwoWorkItemCreateParams',
   ),
+  DbWorkItemID: info<DbWorkItemID>('DbWorkItemID', '#/definitions/DbWorkItemID'),
 }
 
 export interface SchemaInfo<T> {

@@ -284,8 +284,8 @@ type DbActivityCreateParams struct {
 
 // DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
 type DbDemoTwoWorkItem struct {
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
-	WorkItemID            int        `json:"workItemID"`
+	CustomDateForProject2 *time.Time   `json:"customDateForProject2"`
+	WorkItemID            DbWorkItemID `json:"workItemID"`
 }
 
 // DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
@@ -419,6 +419,9 @@ type DbWorkItemCreateParams struct {
 	Title          string                 `json:"title"`
 	WorkItemTypeID int                    `json:"workItemTypeID"`
 }
+
+// DbWorkItemID defines the model for DbWorkItemID.
+type DbWorkItemID = interface{}
 
 // DbWorkItemRole defines the model for DbWorkItemRole.
 type DbWorkItemRole = string

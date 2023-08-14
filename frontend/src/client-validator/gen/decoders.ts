@@ -62,6 +62,7 @@ import {
   ServicesMember,
   DbDemoTwoWorkItem,
   DbDemoTwoWorkItemCreateParams,
+  DbWorkItemID,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -716,5 +717,17 @@ export const DbDemoTwoWorkItemCreateParamsDecoder: Decoder<DbDemoTwoWorkItemCrea
       throw new Error(`Schema ${DbDemoTwoWorkItemCreateParamsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbDemoTwoWorkItemCreateParamsDecoder.definitionName)
+  },
+}
+export const DbWorkItemIDDecoder: Decoder<DbWorkItemID> = {
+  definitionName: 'DbWorkItemID',
+  schemaRef: '#/definitions/DbWorkItemID',
+
+  decode(json: unknown): DbWorkItemID {
+    const schema = ajv.getSchema(DbWorkItemIDDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemIDDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemIDDecoder.definitionName)
   },
 }

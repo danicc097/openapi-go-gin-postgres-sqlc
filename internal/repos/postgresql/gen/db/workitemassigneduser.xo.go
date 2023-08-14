@@ -26,7 +26,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemAssignedUser struct {
-	WorkItemID   int                 `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
+	WorkItemID   WorkItemID                 `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
 	AssignedUser uuid.UUID           `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
 	Role         models.WorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
@@ -39,7 +39,7 @@ type WorkItemAssignedUser struct {
 type WorkItemAssignedUserCreateParams struct {
 	AssignedUser uuid.UUID           `json:"assignedUser" required:"true" nullable:"false"`                                 // assigned_user
 	Role         models.WorkItemRole `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   int                 `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
+	WorkItemID   WorkItemID                 `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
 // CreateWorkItemAssignedUser creates a new WorkItemAssignedUser in the database with the given params.
@@ -57,7 +57,7 @@ func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssi
 type WorkItemAssignedUserUpdateParams struct {
 	AssignedUser *uuid.UUID           `json:"assignedUser" nullable:"false"`                                 // assigned_user
 	Role         *models.WorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   *int                 `json:"workItemID" nullable:"false"`                                   // work_item_id
+	WorkItemID   *WorkItemID                 `json:"workItemID" nullable:"false"`                                   // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_assigned_user struct fields with the specified params.
@@ -213,9 +213,9 @@ func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemA
 // Update updates a WorkItemAssignedUser in the database.
 func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_assigned_user SET 
-	role = $1 
-	WHERE work_item_id = $2  AND assigned_user = $3 
+	sqlstr := `UPDATE public.work_item_assigned_user SET
+	role = $1
+	WHERE work_item_id = $2  AND assigned_user = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, wiau.Role, wiau.WorkItemID, wiau.AssignedUser)
@@ -262,7 +262,7 @@ func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *Wor
 // Delete deletes the WorkItemAssignedUser from the database.
 func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.work_item_assigned_user 
+	sqlstr := `DELETE FROM public.work_item_assigned_user
 	WHERE work_item_id = $1 AND assigned_user = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wiau.WorkItemID, wiau.AssignedUser); err != nil {
@@ -274,7 +274,7 @@ func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 // WorkItemAssignedUsersByAssignedUserWorkItemID retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
-func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser uuid.UUID, workItemID int, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser uuid.UUID, workItemID WorkItemID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -329,13 +329,13 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -360,7 +360,7 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 // WorkItemAssignedUserByWorkItemIDAssignedUser retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID int, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
+func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID WorkItemID, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -415,13 +415,13 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -444,7 +444,7 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 // WorkItemAssignedUsersByWorkItemID retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -499,13 +499,13 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -585,13 +585,13 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.assigned_user = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

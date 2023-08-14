@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func RandomWorkItemCommentCreateParams(t *testing.T, workItemID int, userID uuid.UUID) *db.WorkItemCommentCreateParams {
+func RandomWorkItemCommentCreateParams(t *testing.T, workItemID db.WorkItemID, userID uuid.UUID) *db.WorkItemCommentCreateParams {
 	t.Helper()
 
 	return &db.WorkItemCommentCreateParams{

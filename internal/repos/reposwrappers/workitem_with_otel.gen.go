@@ -83,7 +83,7 @@ func (_d WorkItemWithTracing) AssignUser(ctx context.Context, d db.DBTX, params 
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -108,7 +108,7 @@ func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts 
 }
 
 // Delete implements repos.WorkItem
-func (_d WorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -132,7 +132,7 @@ func (_d WorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (wp
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID db.WorkItemID) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveAssignedUser")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -156,7 +156,7 @@ func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX,
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithTracing) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) (err error) {
+func (_d WorkItemWithTracing) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveTag")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -180,7 +180,7 @@ func (_d WorkItemWithTracing) RemoveTag(ctx context.Context, d db.DBTX, tagID in
 }
 
 // Restore implements repos.WorkItem
-func (_d WorkItemWithTracing) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTracing) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.Restore")
 	defer func() {
 		if _d._spanDecorator != nil {

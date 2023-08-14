@@ -501,12 +501,13 @@ export interface components {
     DbDemoTwoWorkItem: {
       /** Format: date-time */
       customDateForProject2?: string | null;
-      workItemID: number;
+      workItemID: components["schemas"]["DbWorkItemID"];
     };
     DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
       customDateForProject2?: string | null;
     };
+    DbWorkItemID: unknown;
   };
   responses: never;
   parameters: {

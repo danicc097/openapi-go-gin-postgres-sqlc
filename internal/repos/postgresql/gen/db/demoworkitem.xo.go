@@ -24,7 +24,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoWorkItem struct {
-	WorkItemID    int       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`       // work_item_id
+	WorkItemID    WorkItemID       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`       // work_item_id
 	Ref           string    `json:"ref" db:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"`  // ref
 	Line          string    `json:"line" db:"line" required:"true" nullable:"false"`                     // line
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true" nullable:"false"` // last_message_at
@@ -40,7 +40,7 @@ type DemoWorkItemCreateParams struct {
 	Line          string    `json:"line" required:"true" nullable:"false"`                     // line
 	Ref           string    `json:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"` // ref
 	Reopened      bool      `json:"reopened" required:"true" nullable:"false"`                 // reopened
-	WorkItemID    int       `json:"-" required:"true" nullable:"false"`                        // work_item_id
+	WorkItemID    WorkItemID       `json:"-" required:"true" nullable:"false"`                        // work_item_id
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
@@ -185,9 +185,9 @@ func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, erro
 // Update updates a DemoWorkItem in the database.
 func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.demo_work_items SET 
-	last_message_at = $1, line = $2, ref = $3, reopened = $4 
-	WHERE work_item_id = $5 
+	sqlstr := `UPDATE public.demo_work_items SET
+	last_message_at = $1, line = $2, ref = $3, reopened = $4
+	WHERE work_item_id = $5
 	RETURNING * `
 	// run
 	logf(sqlstr, dwi.LastMessageAt, dwi.Line, dwi.Ref, dwi.Reopened, dwi.WorkItemID)
@@ -236,7 +236,7 @@ func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB, params *DemoWorkItem
 // Delete deletes the DemoWorkItem from the database.
 func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.demo_work_items 
+	sqlstr := `DELETE FROM public.demo_work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dwi.WorkItemID); err != nil {
@@ -246,7 +246,7 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // DemoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoWorkItem in Asc order.
-func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -295,16 +295,16 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_work_items.last_message_at,
 	demo_work_items.line,
 	demo_work_items.ref,
 	demo_work_items.reopened,
-	demo_work_items.work_item_id %s 
-	 FROM public.demo_work_items %s 
+	demo_work_items.work_item_id %s
+	 FROM public.demo_work_items %s
 	 WHERE demo_work_items.work_item_id > $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
@@ -323,7 +323,7 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 }
 
 // DemoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoWorkItem in Desc order.
-func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -372,16 +372,16 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_work_items.last_message_at,
 	demo_work_items.line,
 	demo_work_items.ref,
 	demo_work_items.reopened,
-	demo_work_items.work_item_id %s 
-	 FROM public.demo_work_items %s 
+	demo_work_items.work_item_id %s
+	 FROM public.demo_work_items %s
 	 WHERE demo_work_items.work_item_id < $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
@@ -402,7 +402,7 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 // DemoWorkItemByWorkItemID retrieves a row from 'public.demo_work_items' as a DemoWorkItem.
 //
 // Generated from index 'demo_work_items_pkey'.
-func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
+func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -451,15 +451,15 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts .
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_work_items.last_message_at,
 	demo_work_items.line,
 	demo_work_items.ref,
 	demo_work_items.reopened,
-	demo_work_items.work_item_id %s 
-	 FROM public.demo_work_items %s 
+	demo_work_items.work_item_id %s
+	 FROM public.demo_work_items %s
 	 WHERE demo_work_items.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -531,15 +531,15 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_work_items.last_message_at,
 	demo_work_items.line,
 	demo_work_items.ref,
 	demo_work_items.reopened,
-	demo_work_items.work_item_id %s 
-	 FROM public.demo_work_items %s 
+	demo_work_items.work_item_id %s
+	 FROM public.demo_work_items %s
 	 WHERE demo_work_items.ref = $1 AND demo_work_items.line = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

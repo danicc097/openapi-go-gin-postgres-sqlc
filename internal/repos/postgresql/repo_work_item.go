@@ -27,7 +27,7 @@ func NewWorkItem() *WorkItem {
 
 var _ repos.WorkItem = (*WorkItem)(nil)
 
-func (w *WorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
+func (w *WorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
 	return db.WorkItemByWorkItemID(ctx, d, id, opts...)
 }
 
@@ -37,7 +37,7 @@ func (w *WorkItem) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkIte
 	return err
 }
 
-func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
+func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID db.WorkItemID) error {
 	lookup := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
 		WorkItemID:   workItemID,
@@ -52,7 +52,7 @@ func (w *WorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItem
 	return err
 }
 
-func (w *WorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
+func (w *WorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) error {
 	lookup := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
@@ -61,7 +61,7 @@ func (w *WorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItem
 	return lookup.Delete(ctx, d)
 }
 
-func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	workItem := &db.WorkItem{
 		WorkItemID: id,
 	}
@@ -74,7 +74,7 @@ func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem,
 	return workItem, err
 }
 
-func (w *WorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *WorkItem) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	var err error
 	workItem := &db.WorkItem{
 		WorkItemID: id,

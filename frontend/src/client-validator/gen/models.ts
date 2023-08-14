@@ -226,8 +226,9 @@ export interface DemoTwoWorkItemsResponse {
 }
 export interface DbDemoTwoWorkItem {
   customDateForProject2?: string | null
-  workItemID: number
+  workItemID: DbWorkItemID
 }
+export interface DbWorkItemID {}
 export interface InitializeProjectRequest {
   tags?: DbWorkItemTagCreateParams[] | null
   teams?: DbTeamCreateParams[] | null

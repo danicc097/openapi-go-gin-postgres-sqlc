@@ -26,7 +26,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type TimeEntry struct {
 	TimeEntryID     int       `json:"timeEntryID" db:"time_entry_id" required:"true" nullable:"false"` // time_entry_id
-	WorkItemID      *int      `json:"workItemID" db:"work_item_id"`                                    // work_item_id
+	WorkItemID      *WorkItemID      `json:"workItemID" db:"work_item_id"`                                    // work_item_id
 	ActivityID      int       `json:"activityID" db:"activity_id" required:"true" nullable:"false"`    // activity_id
 	TeamID          *int      `json:"teamID" db:"team_id"`                                             // team_id
 	UserID          uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`            // user_id
@@ -49,7 +49,7 @@ type TimeEntryCreateParams struct {
 	Start           time.Time `json:"start" required:"true" nullable:"false"`      // start
 	TeamID          *int      `json:"teamID"`                                      // team_id
 	UserID          uuid.UUID `json:"userID" required:"true" nullable:"false"`     // user_id
-	WorkItemID      *int      `json:"workItemID"`                                  // work_item_id
+	WorkItemID      *WorkItemID      `json:"workItemID"`                                  // work_item_id
 }
 
 // CreateTimeEntry creates a new TimeEntry in the database with the given params.
@@ -75,7 +75,7 @@ type TimeEntryUpdateParams struct {
 	Start           *time.Time `json:"start" nullable:"false"`      // start
 	TeamID          **int      `json:"teamID"`                      // team_id
 	UserID          *uuid.UUID `json:"userID" nullable:"false"`     // user_id
-	WorkItemID      **int      `json:"workItemID"`                  // work_item_id
+	WorkItemID      **WorkItemID      `json:"workItemID"`                  // work_item_id
 }
 
 // SetUpdateParams updates public.time_entries struct fields with the specified params.
@@ -245,9 +245,9 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 // Update updates a TimeEntry in the database.
 func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.time_entries SET 
-	activity_id = $1, comment = $2, duration_minutes = $3, start = $4, team_id = $5, user_id = $6, work_item_id = $7 
-	WHERE time_entry_id = $8 
+	sqlstr := `UPDATE public.time_entries SET
+	activity_id = $1, comment = $2, duration_minutes = $3, start = $4, team_id = $5, user_id = $6, work_item_id = $7
+	WHERE time_entry_id = $8
 	RETURNING * `
 	// run
 	logf(sqlstr, te.ActivityID, te.Comment, te.DurationMinutes, te.Start, te.TeamID, te.UserID, te.WorkItemID, te.TimeEntryID)
@@ -298,7 +298,7 @@ func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateP
 // Delete deletes the TimeEntry from the database.
 func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.time_entries 
+	sqlstr := `DELETE FROM public.time_entries
 	WHERE time_entry_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID); err != nil {
@@ -375,7 +375,7 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	time_entries.activity_id,
 	time_entries.comment,
 	time_entries.duration_minutes,
@@ -383,11 +383,11 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 	time_entries.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
-	time_entries.work_item_id %s 
-	 FROM public.time_entries %s 
+	time_entries.work_item_id %s
+	 FROM public.time_entries %s
 	 WHERE time_entries.time_entry_id > $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		time_entry_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntryPaginatedByTimeEntryIDAsc */\n" + sqlstr
@@ -473,7 +473,7 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	time_entries.activity_id,
 	time_entries.comment,
 	time_entries.duration_minutes,
@@ -481,11 +481,11 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 	time_entries.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
-	time_entries.work_item_id %s 
-	 FROM public.time_entries %s 
+	time_entries.work_item_id %s
+	 FROM public.time_entries %s
 	 WHERE time_entries.time_entry_id < $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		time_entry_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntryPaginatedByTimeEntryIDDesc */\n" + sqlstr
@@ -573,7 +573,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	time_entries.activity_id,
 	time_entries.comment,
 	time_entries.duration_minutes,
@@ -581,10 +581,10 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int, opts ..
 	time_entries.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
-	time_entries.work_item_id %s 
-	 FROM public.time_entries %s 
+	time_entries.work_item_id %s
+	 FROM public.time_entries %s
 	 WHERE time_entries.time_entry_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -674,7 +674,7 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	time_entries.activity_id,
 	time_entries.comment,
 	time_entries.duration_minutes,
@@ -682,10 +682,10 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 	time_entries.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
-	time_entries.work_item_id %s 
-	 FROM public.time_entries %s 
+	time_entries.work_item_id %s
+	 FROM public.time_entries %s
 	 WHERE time_entries.user_id = $1 AND time_entries.team_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -777,7 +777,7 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	time_entries.activity_id,
 	time_entries.comment,
 	time_entries.duration_minutes,
@@ -785,10 +785,10 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int, 
 	time_entries.team_id,
 	time_entries.time_entry_id,
 	time_entries.user_id,
-	time_entries.work_item_id %s 
-	 FROM public.time_entries %s 
+	time_entries.work_item_id %s
+	 FROM public.time_entries %s
 	 WHERE time_entries.work_item_id = $1 AND time_entries.team_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -1558,7 +1558,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$ref": "#/definitions/DbWorkItemID"
         }
       },
       "required": [
@@ -1577,6 +1577,9 @@
         }
       },
       "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -1742,6 +1745,9 @@
     },
     "DbDemoTwoWorkItemCreateParams": {
       "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+    },
+    "DbWorkItemID": {
+      "$ref": "#/definitions/DbWorkItemID"
     }
   }
 }

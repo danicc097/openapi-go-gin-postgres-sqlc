@@ -31,31 +31,31 @@ type DemoTwoWorkItemCreateParams struct {
 // WorkItem defines the datastore/repository handling retrieving WorkItem records.
 type WorkItem interface {
 	// ByID returns a generic WorkItem by default.
-	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
-	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error)
-	Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error)
+	ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error)
+	Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error)
 	AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error
-	RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error
+	RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID db.WorkItemID) error
 	AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error
-	RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error
+	RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) error
 }
 
 // DemoWorkItem defines the datastore/repository handling persisting DemoWorkItem records.
 type DemoWorkItem interface {
 	// ByID returns a generic WorkItem with project-specific fields joined by default.
-	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error)
-	Update(ctx context.Context, d db.DBTX, id int, params DemoWorkItemUpdateParams) (*db.WorkItem, error)
+	Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params DemoWorkItemUpdateParams) (*db.WorkItem, error)
 }
 
 // DemoTwoWorkItem defines the datastore/repository handling persisting DemoTwoWorkItem records.
 type DemoTwoWorkItem interface {
 	// ByID returns a generic WorkItem with project-specific fields joined by default.
-	ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error)
-	Update(ctx context.Context, d db.DBTX, id int, params DemoTwoWorkItemUpdateParams) (*db.WorkItem, error)
+	Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params DemoTwoWorkItemUpdateParams) (*db.WorkItem, error)
 }
 
 // Notification defines the datastore/repository handling persisting Notification records.

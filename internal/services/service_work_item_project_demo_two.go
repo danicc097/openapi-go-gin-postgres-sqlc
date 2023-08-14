@@ -37,7 +37,7 @@ func NewDemoTwoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoTwoWorkI
 }
 
 // ByID gets a work item by ID.
-func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.demotwowiRepo.ByID(ctx, d, id)
@@ -80,7 +80,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 }
 
 // Update updates an existing work item.
-func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.demotwowiRepo.Update(ctx, d, id, params)
@@ -92,7 +92,7 @@ func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params 
 }
 
 // Delete deletes a work item by ID.
-func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.wiRepo.Delete(ctx, d, id)
@@ -111,7 +111,7 @@ func (w *DemoTwoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.W
 }
 
 // TODO: same as assign/remove members.
-func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
+func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
@@ -134,6 +134,6 @@ func (w *DemoTwoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db
 	return []db.WorkItem{}, errors.New("not implemented")
 }
 
-func (w *DemoTwoWorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	return w.wiRepo.Restore(ctx, d, id)
 }

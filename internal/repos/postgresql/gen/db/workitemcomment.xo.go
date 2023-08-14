@@ -26,7 +26,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemComment struct {
 	WorkItemCommentID int       `json:"workItemCommentID" db:"work_item_comment_id" required:"true" nullable:"false"` // work_item_comment_id
-	WorkItemID        int       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                // work_item_id
+	WorkItemID        WorkItemID       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                // work_item_id
 	UserID            uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`                         // user_id
 	Message           string    `json:"message" db:"message" required:"true" nullable:"false"`                        // message
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                   // created_at
@@ -41,7 +41,7 @@ type WorkItemComment struct {
 type WorkItemCommentCreateParams struct {
 	Message    string    `json:"message" required:"true" nullable:"false"`    // message
 	UserID     uuid.UUID `json:"userID" required:"true" nullable:"false"`     // user_id
-	WorkItemID int       `json:"workItemID" required:"true" nullable:"false"` // work_item_id
+	WorkItemID WorkItemID       `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
 // CreateWorkItemComment creates a new WorkItemComment in the database with the given params.
@@ -59,7 +59,7 @@ func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCr
 type WorkItemCommentUpdateParams struct {
 	Message    *string    `json:"message" nullable:"false"`    // message
 	UserID     *uuid.UUID `json:"userID" nullable:"false"`     // user_id
-	WorkItemID *int       `json:"workItemID" nullable:"false"` // work_item_id
+	WorkItemID *WorkItemID       `json:"workItemID" nullable:"false"` // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_comments struct fields with the specified params.
@@ -197,9 +197,9 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 // Update updates a WorkItemComment in the database.
 func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_comments SET 
-	message = $1, user_id = $2, work_item_id = $3 
-	WHERE work_item_comment_id = $4 
+	sqlstr := `UPDATE public.work_item_comments SET
+	message = $1, user_id = $2, work_item_id = $3
+	WHERE work_item_comment_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, wic.CreatedAt, wic.Message, wic.UpdatedAt, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
@@ -246,7 +246,7 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB, params *WorkItemC
 // Delete deletes the WorkItemComment from the database.
 func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_comments 
+	sqlstr := `DELETE FROM public.work_item_comments
 	WHERE work_item_comment_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID); err != nil {
@@ -311,17 +311,17 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id > $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_comment_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentIDAsc */\n" + sqlstr
@@ -395,17 +395,17 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id < $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_comment_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentIDDesc */\n" + sqlstr
@@ -481,16 +481,16 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -513,7 +513,7 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 // WorkItemCommentsByWorkItemID retrieves a row from 'public.work_item_comments' as a WorkItemComment.
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
-func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -568,16 +568,16 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int, op
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

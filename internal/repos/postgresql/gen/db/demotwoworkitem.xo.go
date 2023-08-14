@@ -24,7 +24,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoTwoWorkItem struct {
-	WorkItemID            int        `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	WorkItemID            WorkItemID        `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"`          // custom_date_for_project_2
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
@@ -34,7 +34,7 @@ type DemoTwoWorkItem struct {
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemCreateParams struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2"`              // custom_date_for_project_2
-	WorkItemID            int        `json:"-" required:"true" nullable:"false"` // work_item_id
+	WorkItemID            WorkItemID        `json:"-" required:"true" nullable:"false"` // work_item_id
 }
 
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.
@@ -164,9 +164,9 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 // Update updates a DemoTwoWorkItem in the database.
 func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.demo_two_work_items SET 
-	custom_date_for_project_2 = $1 
-	WHERE work_item_id = $2 
+	sqlstr := `UPDATE public.demo_two_work_items SET
+	custom_date_for_project_2 = $1
+	WHERE work_item_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
@@ -212,7 +212,7 @@ func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoW
 // Delete deletes the DemoTwoWorkItem from the database.
 func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.demo_two_work_items 
+	sqlstr := `DELETE FROM public.demo_two_work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dtwi.WorkItemID); err != nil {
@@ -222,7 +222,7 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // DemoTwoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoTwoWorkItem in Asc order.
-func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -271,13 +271,13 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id %s 
-	 FROM public.demo_two_work_items %s 
+	demo_two_work_items.work_item_id %s
+	 FROM public.demo_two_work_items %s
 	 WHERE demo_two_work_items.work_item_id > $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_id Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* DemoTwoWorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
@@ -296,7 +296,7 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 }
 
 // DemoTwoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoTwoWorkItem in Desc order.
-func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -345,13 +345,13 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id %s 
-	 FROM public.demo_two_work_items %s 
+	demo_two_work_items.work_item_id %s
+	 FROM public.demo_two_work_items %s
 	 WHERE demo_two_work_items.work_item_id < $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_id Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* DemoTwoWorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
@@ -372,7 +372,7 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 // DemoTwoWorkItemByWorkItemID retrieves a row from 'public.demo_two_work_items' as a DemoTwoWorkItem.
 //
 // Generated from index 'demo_two_work_items_pkey'.
-func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
+func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -421,12 +421,12 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id %s 
-	 FROM public.demo_two_work_items %s 
+	demo_two_work_items.work_item_id %s
+	 FROM public.demo_two_work_items %s
 	 WHERE demo_two_work_items.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

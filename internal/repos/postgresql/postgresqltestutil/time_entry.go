@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID int, userID uuid.UUID, workItemID *int, teamID *int) (*db.TimeEntry, error) {
+func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID int, userID uuid.UUID, workItemID *db.WorkItemID, teamID *int) (*db.TimeEntry, error) {
 	t.Helper()
 
 	teRepo := postgresql.NewTimeEntry()
@@ -25,7 +25,7 @@ func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID int, userID uuid.UUI
 	return te, nil
 }
 
-func RandomTimeEntryCreateParams(t *testing.T, activityID int, userID uuid.UUID, workItemID *int, teamID *int) *db.TimeEntryCreateParams {
+func RandomTimeEntryCreateParams(t *testing.T, activityID int, userID uuid.UUID, workItemID *db.WorkItemID, teamID *int) *db.TimeEntryCreateParams {
 	t.Helper()
 
 	return &db.TimeEntryCreateParams{

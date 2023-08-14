@@ -64,7 +64,7 @@ func (_d WorkItemWithTimeout) AssignUser(ctx context.Context, d db.DBTX, params 
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -74,7 +74,7 @@ func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts 
 }
 
 // Delete implements repos.WorkItem
-func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -84,7 +84,7 @@ func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID db.WorkItemID) (err error) {
 	var cancelFunc func()
 	if _d.config.RemoveAssignedUserTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveAssignedUserTimeout)
@@ -94,7 +94,7 @@ func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX,
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) (err error) {
+func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) (err error) {
 	var cancelFunc func()
 	if _d.config.RemoveTagTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveTagTimeout)
@@ -104,7 +104,7 @@ func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d db.DBTX, tagID in
 }
 
 // Restore implements repos.WorkItem
-func (_d WorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.RestoreTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RestoreTimeout)

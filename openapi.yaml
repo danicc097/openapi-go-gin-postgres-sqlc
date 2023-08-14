@@ -1510,7 +1510,7 @@ components:
           nullable: true
           type: string
         workItemID:
-          type: integer
+          $ref: '#/components/schemas/DbWorkItemID'
       required:
         - workItemID
       type: object
@@ -1521,7 +1521,8 @@ components:
           nullable: true
           type: string
       type: object
-  examples:
+    DbWorkItemID: {}
+  examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:
         username: username
