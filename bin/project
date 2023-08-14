@@ -106,6 +106,8 @@ xsetup.build-tools() {
   x.gen.build-tools
 }
 
+gen_backup_branch="backup-gen-$(uuidgen)"
+
 xsetup.backup-gen() {
   test -n "$xsetup_backup_gen_caller" && return
 
@@ -113,7 +115,6 @@ xsetup.backup-gen() {
 
   mkdir -p "$CACHE"
 
-  gen_backup_branch="backup-gen-$(uuidgen)"
   gen_backup_stash_name="backup-stash-$gen_backup_branch"
 
   uuidgen >backup-gen-stash-dummy.txt
