@@ -15,7 +15,7 @@ func RandomNotificationCreateParams(t *testing.T, receiverRank *int, sender uuid
 	return &db.NotificationCreateParams{
 		Title:            testutil.RandomNameIdentifier(3, " "),
 		Body:             testutil.RandomString(6),
-		Label:            testutil.RandomString(6),
+		Labels:           []string{testutil.RandomString(6)},
 		Link:             pointers.New("https://" + testutil.RandomString(6)),
 		ReceiverRank:     receiverRank,
 		Sender:           sender,

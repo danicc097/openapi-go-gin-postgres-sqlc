@@ -137,7 +137,7 @@ xsetup.backup-gen.restore() {
   git reset --hard && git clean -df &>/dev/null
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 
-  rm -rf "$CACHE/*.md5" # cache is not up to date due to forced exit and restore
+  rm -rf "$CACHE"/*.md5 # cache is not up to date due to forced exit and restore
   # TODO: delete specific folders like $CACHE/{counterfeiter,gowrap} only if
   # failure on those tools specifically
 }

@@ -21,7 +21,7 @@ type notificationsTable struct {
 	ReceiverRank     postgres.ColumnInteger
 	Title            postgres.ColumnString
 	Body             postgres.ColumnString
-	Label            postgres.ColumnString
+	Labels           postgres.ColumnString
 	Link             postgres.ColumnString
 	CreatedAt        postgres.ColumnTimestampz
 	Sender           postgres.ColumnString
@@ -71,14 +71,14 @@ func newNotificationsTableImpl(schemaName, tableName, alias string) notification
 		ReceiverRankColumn     = postgres.IntegerColumn("receiver_rank")
 		TitleColumn            = postgres.StringColumn("title")
 		BodyColumn             = postgres.StringColumn("body")
-		LabelColumn            = postgres.StringColumn("label")
+		LabelsColumn           = postgres.StringColumn("labels")
 		LinkColumn             = postgres.StringColumn("link")
 		CreatedAtColumn        = postgres.TimestampzColumn("created_at")
 		SenderColumn           = postgres.StringColumn("sender")
 		ReceiverColumn         = postgres.StringColumn("receiver")
 		NotificationTypeColumn = postgres.StringColumn("notification_type")
-		allColumns             = postgres.ColumnList{NotificationIDColumn, ReceiverRankColumn, TitleColumn, BodyColumn, LabelColumn, LinkColumn, CreatedAtColumn, SenderColumn, ReceiverColumn, NotificationTypeColumn}
-		mutableColumns         = postgres.ColumnList{ReceiverRankColumn, TitleColumn, BodyColumn, LabelColumn, LinkColumn, CreatedAtColumn, SenderColumn, ReceiverColumn, NotificationTypeColumn}
+		allColumns             = postgres.ColumnList{NotificationIDColumn, ReceiverRankColumn, TitleColumn, BodyColumn, LabelsColumn, LinkColumn, CreatedAtColumn, SenderColumn, ReceiverColumn, NotificationTypeColumn}
+		mutableColumns         = postgres.ColumnList{ReceiverRankColumn, TitleColumn, BodyColumn, LabelsColumn, LinkColumn, CreatedAtColumn, SenderColumn, ReceiverColumn, NotificationTypeColumn}
 	)
 
 	return notificationsTable{
@@ -89,7 +89,7 @@ func newNotificationsTableImpl(schemaName, tableName, alias string) notification
 		ReceiverRank:     ReceiverRankColumn,
 		Title:            TitleColumn,
 		Body:             BodyColumn,
-		Label:            LabelColumn,
+		Labels:           LabelsColumn,
 		Link:             LinkColumn,
 		CreatedAt:        CreatedAtColumn,
 		Sender:           SenderColumn,

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const GetUserNotifications = `-- name: GetUserNotifications :many
@@ -19,7 +20,7 @@ select
   , notifications.sender
   , notifications.title
   , notifications.body
-  , notifications.label
+  , notifications.labels
   , notifications.link
 from
   user_notifications
@@ -42,16 +43,16 @@ type GetUserNotificationsParams struct {
 }
 
 type GetUserNotificationsRow struct {
-	UserNotificationID int64            `db:"user_notification_id" json:"user_notification_id"`
-	NotificationID     int32            `db:"notification_id" json:"notification_id"`
-	Read               bool             `db:"read" json:"read"`
-	UserID             uuid.UUID        `db:"user_id" json:"user_id"`
-	NotificationType   NotificationType `db:"notification_type" json:"notification_type"`
-	Sender             uuid.UUID        `db:"sender" json:"sender"`
-	Title              string           `db:"title" json:"title"`
-	Body               string           `db:"body" json:"body"`
-	Label              string           `db:"label" json:"label"`
-	Link               *string          `db:"link" json:"link"`
+	UserNotificationID int64                `db:"user_notification_id" json:"user_notification_id"`
+	NotificationID     int32                `db:"notification_id" json:"notification_id"`
+	Read               bool                 `db:"read" json:"read"`
+	UserID             uuid.UUID            `db:"user_id" json:"user_id"`
+	NotificationType   NotificationType     `db:"notification_type" json:"notification_type"`
+	Sender             uuid.UUID            `db:"sender" json:"sender"`
+	Title              string               `db:"title" json:"title"`
+	Body               string               `db:"body" json:"body"`
+	Labels             pgtype.Array[string] `db:"labels" json:"labels"`
+	Link               *string              `db:"link" json:"link"`
 }
 
 func (q *Queries) GetUserNotifications(ctx context.Context, db DBTX, arg GetUserNotificationsParams) ([]GetUserNotificationsRow, error) {
@@ -77,7 +78,7 @@ func (q *Queries) GetUserNotifications(ctx context.Context, db DBTX, arg GetUser
 			&i.Sender,
 			&i.Title,
 			&i.Body,
-			&i.Label,
+			&i.Labels,
 			&i.Link,
 		); err != nil {
 			return nil, err

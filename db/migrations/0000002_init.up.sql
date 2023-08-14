@@ -157,7 +157,7 @@ create table notifications (
   , receiver_rank smallint check (receiver_rank > 0) --check will not prevent null values
   , title text not null
   , body text not null
-  , label text not null
+  , labels text[] not null
   , link text
   , created_at timestamp with time zone default current_timestamp not null
   , sender uuid not null
@@ -177,7 +177,7 @@ comment on column notifications.receiver is '"cardinality":M2O';
 create table user_notifications (
   user_notification_id bigserial primary key
   , notification_id int not null
-  , read boolean default false not null -- frontend simply sends a list of user_notification_id to mark as read
+  , read boolean default false not null -- for badge. frontend simply sends a list of user_notification_id to mark as read
   , user_id uuid not null
   , unique (notification_id , user_id)
   , foreign key (user_id) references users (user_id) on delete cascade
@@ -191,7 +191,7 @@ comment on column user_notifications.notification_id is '"cardinality":M2O';
 
 create index on user_notifications (user_id);
 
--- read field simply used to show 'NEW' label but there is no filtering
+-- read field simply used to add 'NEW' badge but there is no filtering
 create or replace function notification_fan_out ()
   returns trigger
   language plpgsql
@@ -199,43 +199,47 @@ create or replace function notification_fan_out ()
 declare
   receiver_id uuid;
 begin
-  case when new.notification_type = 'personal' then
+  if new.notification_type = 'personal' then
     update
       users
     set
       has_personal_notifications = true
     where
       user_id = new.receiver;
-      --
-      insert into user_notifications (notification_id , user_id)
-        values (new.notification_id , new.receiver);
-        when new.notification_type = 'global' then
-          update
-            users
-          set
-            has_global_notifications = true
-          where
-            role_rank >= new.receiver_rank; for receiver_id in (
-              -- in parallel tests fan out will loop through all users with rank >= X, but one of those may be a user
-              -- that will be deleted, leading to could not create notification: Key (user_id)=(**) is not present in table "users".
-              select
-                user_id from users
-                where
-                  role_rank >= new.receiver_rank)
-            loop
-              begin
-                insert into user_notifications (notification_id , user_id)
-                  values (new.notification_id , receiver_id);
-              exception
-                when others then
-                  -- ignore all errors since this may loop through a user that is getting deleted (tests), etc.
-                  raise notice 'Error inserting notification for user_id=(%): % ' , receiver_id , SQLERRM;
-                end;
-        end loop;
-  end case;
+    --
+    insert into user_notifications (notification_id , user_id)
+      values (new.notification_id , new.receiver);
+  end if;
+
+  if new.notification_type = 'global' then
+    update
+      users
+    set
+      has_global_notifications = true
+    where
+      role_rank >= new.receiver_rank;
+    --
+    for receiver_id in (
+      -- in parallel tests fan out will loop through all users with rank >= X, but one of those may be a user
+      -- that will be deleted, leading to could not create notification: Key (user_id)=(**) is not present in table "users".
+      select
+        user_id from users
+        where
+          role_rank >= new.receiver_rank)
+    loop
+      begin
+        insert into user_notifications (notification_id , user_id)
+          values (new.notification_id , receiver_id);
+      exception
+        when others then
+          -- ignore all errors since this may loop through a user that is getting deleted (tests), etc.
+          raise notice 'Error inserting notification for user_id=(%): % ' , receiver_id , SQLERRM;
+      end;
+    end loop;
+  end if;
   -- it's after trigger so wouldn't mattern anyway
   return null;
-  end
+end
 $function$;
 
 -- deletes get cascaded

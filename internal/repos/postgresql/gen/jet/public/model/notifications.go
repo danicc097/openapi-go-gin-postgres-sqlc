@@ -17,7 +17,7 @@ type Notifications struct {
 	ReceiverRank     *int16           `db:"receiver_rank"`
 	Title            string           `db:"title"`
 	Body             string           `db:"body"`
-	Label            string           `db:"label"`
+	Labels           string           `db:"labels"`
 	Link             *string          `db:"link"`
 	CreatedAt        time.Time        `db:"created_at"`
 	Sender           uuid.UUID        `db:"sender"`

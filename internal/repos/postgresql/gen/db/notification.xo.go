@@ -29,7 +29,7 @@ type Notification struct {
 	ReceiverRank     *int             `json:"receiverRank" db:"receiver_rank"`                                                                                      // receiver_rank
 	Title            string           `json:"title" db:"title" required:"true" nullable:"false"`                                                                    // title
 	Body             string           `json:"body" db:"body" required:"true" nullable:"false"`                                                                      // body
-	Label            string           `json:"label" db:"label" required:"true" nullable:"false"`                                                                    // label
+	Labels           []string         `json:"labels" db:"labels" required:"true" nullable:"false"`                                                                  // labels
 	Link             *string          `json:"link" db:"link"`                                                                                                       // link
 	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                                           // created_at
 	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true" nullable:"false"`                                                                  // sender
@@ -45,7 +45,7 @@ type Notification struct {
 // NotificationCreateParams represents insert params for 'public.notifications'.
 type NotificationCreateParams struct {
 	Body             string           `json:"body" required:"true" nullable:"false"`                                                         // body
-	Label            string           `json:"label" required:"true" nullable:"false"`                                                        // label
+	Labels           []string         `json:"labels" required:"true" nullable:"false"`                                                       // labels
 	Link             *string          `json:"link"`                                                                                          // link
 	NotificationType NotificationType `json:"notificationType" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 	Receiver         *uuid.UUID       `json:"receiver"`                                                                                      // receiver
@@ -58,7 +58,7 @@ type NotificationCreateParams struct {
 func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
 	n := &Notification{
 		Body:             params.Body,
-		Label:            params.Label,
+		Labels:           params.Labels,
 		Link:             params.Link,
 		NotificationType: params.NotificationType,
 		Receiver:         params.Receiver,
@@ -73,7 +73,7 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 // NotificationUpdateParams represents update params for 'public.notifications'.
 type NotificationUpdateParams struct {
 	Body             *string           `json:"body" nullable:"false"`                                                         // body
-	Label            *string           `json:"label" nullable:"false"`                                                        // label
+	Labels           *[]string         `json:"labels" nullable:"false"`                                                       // labels
 	Link             **string          `json:"link"`                                                                          // link
 	NotificationType *NotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 	Receiver         **uuid.UUID       `json:"receiver"`                                                                      // receiver
@@ -87,8 +87,8 @@ func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
 	if params.Body != nil {
 		n.Body = *params.Body
 	}
-	if params.Label != nil {
-		n.Label = *params.Label
+	if params.Labels != nil {
+		n.Labels = *params.Labels
 	}
 	if params.Link != nil {
 		n.Link = *params.Link
@@ -222,14 +222,14 @@ const notificationTableUserNotificationsGroupBySQL = `joined_user_notifications.
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.notifications (
-	body, label, link, notification_type, receiver, receiver_rank, sender, title
+	body, labels, link, notification_type, receiver, receiver_rank, sender, title
 	) VALUES (
 	$1, $2, $3, $4, $5, $6, $7, $8
 	) RETURNING * `
 	// run
-	logf(sqlstr, n.Body, n.Label, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title)
+	logf(sqlstr, n.Body, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title)
 
-	rows, err := db.Query(ctx, sqlstr, n.Body, n.Label, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title)
+	rows, err := db.Query(ctx, sqlstr, n.Body, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -247,13 +247,13 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.notifications SET 
-	body = $1, label = $2, link = $3, notification_type = $4, receiver = $5, receiver_rank = $6, sender = $7, title = $8 
+	body = $1, labels = $2, link = $3, notification_type = $4, receiver = $5, receiver_rank = $6, sender = $7, title = $8 
 	WHERE notification_id = $9 
 	RETURNING * `
 	// run
-	logf(sqlstr, n.Body, n.CreatedAt, n.Label, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
+	logf(sqlstr, n.Body, n.CreatedAt, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
 
-	rows, err := db.Query(ctx, sqlstr, n.Body, n.Label, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
+	rows, err := db.Query(ctx, sqlstr, n.Body, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Update/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -272,7 +272,7 @@ func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCr
 	var err error
 
 	n.Body = params.Body
-	n.Label = params.Label
+	n.Labels = params.Labels
 	n.Link = params.Link
 	n.NotificationType = params.NotificationType
 	n.Receiver = params.Receiver
@@ -374,7 +374,7 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.created_at,
-	notifications.label,
+	notifications.labels,
 	notifications.link,
 	notifications.notification_id,
 	notifications.notification_type,
@@ -468,7 +468,7 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.created_at,
-	notifications.label,
+	notifications.labels,
 	notifications.link,
 	notifications.notification_id,
 	notifications.notification_type,
@@ -564,7 +564,7 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID int
 	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.created_at,
-	notifications.label,
+	notifications.labels,
 	notifications.link,
 	notifications.notification_id,
 	notifications.notification_type,
@@ -661,7 +661,7 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.created_at,
-	notifications.label,
+	notifications.labels,
 	notifications.link,
 	notifications.notification_id,
 	notifications.notification_type,
