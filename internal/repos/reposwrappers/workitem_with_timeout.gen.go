@@ -20,6 +20,8 @@ type WorkItemWithTimeout struct {
 }
 
 type WorkItemWithTimeoutConfig struct {
+	AssignTagTimeout time.Duration
+
 	AssignUserTimeout time.Duration
 
 	ByIDTimeout time.Duration
@@ -27,6 +29,8 @@ type WorkItemWithTimeoutConfig struct {
 	DeleteTimeout time.Duration
 
 	RemoveAssignedUserTimeout time.Duration
+
+	RemoveTagTimeout time.Duration
 
 	RestoreTimeout time.Duration
 }
@@ -37,6 +41,16 @@ func NewWorkItemWithTimeout(base repos.WorkItem, config WorkItemWithTimeoutConfi
 		WorkItem: base,
 		config:   config,
 	}
+}
+
+// AssignTag implements repos.WorkItem
+func (_d WorkItemWithTimeout) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) (err error) {
+	var cancelFunc func()
+	if _d.config.AssignTagTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.AssignTagTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.AssignTag(ctx, d, params)
 }
 
 // AssignUser implements repos.WorkItem
@@ -77,6 +91,16 @@ func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX,
 		defer cancelFunc()
 	}
 	return _d.WorkItem.RemoveAssignedUser(ctx, d, memberID, workItemID)
+}
+
+// RemoveTag implements repos.WorkItem
+func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) (err error) {
+	var cancelFunc func()
+	if _d.config.RemoveTagTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveTagTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItem.RemoveTag(ctx, d, tagID, workItemID)
 }
 
 // Restore implements repos.WorkItem

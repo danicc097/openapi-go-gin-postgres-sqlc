@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
@@ -56,19 +57,10 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	// TODO: abstract away since these are generic for all projects
-	// for _, id := range params.TagIDs {
-	// 	err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
-	// 		WorkItemTagID: id,
-	// 		WorkItemID:    demoWi.WorkItemID,
-	// 	})
-	// 	var ierr *internal.Error
-	// 	if err != nil {
-	// 		if errors.As(err, &ierr); ierr.Code() != models.ErrorCodeAlreadyExists {
-	// 			return nil, fmt.Errorf("db.CreateWorkItemWorkItemTag: %w", err)
-	// 		}
-	// 	}
-	// }
+	err = w.wiSvc.AssignTags(ctx, d, demoWi, params.TagIDs)
+	if err != nil {
+		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
+	}
 
 	err = w.wiSvc.AssignUsers(ctx, d, demoWi, params.Members)
 	if err != nil {

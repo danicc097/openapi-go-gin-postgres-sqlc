@@ -117,7 +117,7 @@ xsetup.backup-gen() {
   gen_backup_stash_name="backup-stash-$gen_backup_branch"
 
   uuidgen >backup-gen-stash-dummy.txt
-  git stash push -m "$gen_backup_stash_name" --include-untracked
+  git stash push -m "$gen_backup_stash_name" --include-untracked || true
   git checkout -b "$gen_backup_branch" &>/dev/null
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 

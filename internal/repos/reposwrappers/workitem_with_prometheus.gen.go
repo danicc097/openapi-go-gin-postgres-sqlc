@@ -39,6 +39,20 @@ func NewWorkItemWithPrometheus(base repos.WorkItem, instanceName string) WorkIte
 	}
 }
 
+// AssignTag implements repos.WorkItem
+func (_d WorkItemWithPrometheus) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) (err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "AssignTag", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.AssignTag(ctx, d, params)
+}
+
 // AssignUser implements repos.WorkItem
 func (_d WorkItemWithPrometheus) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
 	_since := time.Now()
@@ -93,6 +107,20 @@ func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DB
 		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "RemoveAssignedUser", result).Observe(time.Since(_since).Seconds())
 	}()
 	return _d.base.RemoveAssignedUser(ctx, d, memberID, workItemID)
+}
+
+// RemoveTag implements repos.WorkItem
+func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) (err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "RemoveTag", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.RemoveTag(ctx, d, tagID, workItemID)
 }
 
 // Restore implements repos.WorkItem

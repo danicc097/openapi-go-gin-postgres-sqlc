@@ -36,6 +36,8 @@ type WorkItem interface {
 	Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error)
 	AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error
 	RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error
+	AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error
+	RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error
 }
 
 // DemoWorkItem defines the datastore/repository handling persisting DemoWorkItem records.

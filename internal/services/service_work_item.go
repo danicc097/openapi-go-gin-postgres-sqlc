@@ -28,9 +28,10 @@ tag belonging to project and a member that belongs to the team
 */
 
 type WorkItem struct {
-	logger   *zap.SugaredLogger
-	wiRepo   repos.WorkItem
-	userRepo repos.User
+	logger    *zap.SugaredLogger
+	wiTagRepo repos.WorkItemTag
+	wiRepo    repos.WorkItem
+	userRepo  repos.User
 }
 
 // NewWorkItem returns a new WorkItem service with common logic for all project workitems.
@@ -87,6 +88,52 @@ func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem 
 		err := lookup.Delete(ctx, d)
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, "", []string{strconv.Itoa(idx)}, "could not remove member %s", member)
+		}
+	}
+
+	return nil
+}
+
+func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []int) error {
+	for idx, tagID := range tagIDs {
+		tag, err := w.wiTagRepo.ByID(ctx, d, tagID, db.WithWorkItemTagJoin(db.WorkItemTagJoins{Project: true}))
+		if err != nil {
+			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "tag with id %d not found", tagID)
+		}
+
+		// TODO: better pass projectName down and get project teams join directly
+		// instead of querying workitem again with teamjoin
+		if workItem.TeamJoin.ProjectID != tag.ProjectJoin.ProjectID {
+			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "tag %q does not belong to project %q", tag.Name, tag.ProjectJoin.Name)
+		}
+
+		err = w.wiRepo.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
+			WorkItemTagID: tagID,
+			WorkItemID:    workItem.WorkItemID,
+		})
+		var ierr *internal.Error
+		if err != nil {
+			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
+				continue
+			}
+
+			return internal.WrapErrorWithLocf(err, "", []string{strconv.Itoa(idx)}, "could not assign tag %s", tag.Name)
+		}
+	}
+
+	return nil
+}
+
+func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []int) error {
+	for idx, tagID := range tagIDs {
+		lookup := &db.WorkItemWorkItemTag{
+			WorkItemTagID: tagID,
+			WorkItemID:    workItem.WorkItemID,
+		}
+
+		err := lookup.Delete(ctx, d)
+		if err != nil {
+			return internal.WrapErrorWithLocf(err, "", []string{strconv.Itoa(idx)}, "could not remove tag %d", tagID)
 		}
 	}
 

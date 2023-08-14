@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -65,23 +64,9 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	for i, id := range params.TagIDs {
-		err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
-			WorkItemTagID: id,
-			WorkItemID:    demoWi.WorkItemID,
-		})
-		var ierr *internal.Error
-		if err != nil {
-			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
-				w.logger.Infof("skipping already assigned tag: %s\n", id)
-
-				continue
-			}
-
-			// will be done in w.wiSvc.AssignWorkItemTags which returns loc []string{strconv.Itoa(i)}
-			// and here we wrap it again in loc: tagIDs which is specific to Create only...
-			return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs", strconv.Itoa(i)}, "could not assign tag %d", id)
-		}
+	err = w.wiSvc.AssignTags(ctx, d, demoWi, params.TagIDs)
+	if err != nil {
+		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
 	}
 
 	err = w.wiSvc.AssignUsers(ctx, d, demoWi, params.Members)

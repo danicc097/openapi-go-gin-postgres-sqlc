@@ -29,6 +29,25 @@ func NewWorkItemWithRetry(base repos.WorkItem, retryCount int, retryInterval tim
 	}
 }
 
+// AssignTag implements repos.WorkItem
+func (_d WorkItemWithRetry) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) (err error) {
+	err = _d.WorkItem.AssignTag(ctx, d, params)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		err = _d.WorkItem.AssignTag(ctx, d, params)
+	}
+	return
+}
+
 // AssignUser implements repos.WorkItem
 func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
 	err = _d.WorkItem.AssignUser(ctx, d, params)
@@ -101,6 +120,25 @@ func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d db.DBTX, m
 		case <-_ticker.C:
 		}
 		err = _d.WorkItem.RemoveAssignedUser(ctx, d, memberID, workItemID)
+	}
+	return
+}
+
+// RemoveTag implements repos.WorkItem
+func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) (err error) {
+	err = _d.WorkItem.RemoveTag(ctx, d, tagID, workItemID)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		err = _d.WorkItem.RemoveTag(ctx, d, tagID, workItemID)
 	}
 	return
 }

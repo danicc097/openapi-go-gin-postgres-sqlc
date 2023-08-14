@@ -27,28 +27,41 @@ func NewWorkItem() *WorkItem {
 
 var _ repos.WorkItem = (*WorkItem)(nil)
 
-func (u *WorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
+func (w *WorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
 	return db.WorkItemByWorkItemID(ctx, d, id, opts...)
 }
 
-// TODO: remove from demo and demo_two.
-func (u *WorkItem) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
+func (w *WorkItem) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
 	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
 
 	return err
 }
 
-// TODO: remove from demo and demo_two.
 func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
-	wim := &db.WorkItemAssignedUser{
+	lookup := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
 		WorkItemID:   workItemID,
 	}
 
-	return wim.Delete(ctx, d)
+	return lookup.Delete(ctx, d)
 }
 
-func (u *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *WorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
+	_, err := db.CreateWorkItemWorkItemTag(ctx, d, params)
+
+	return err
+}
+
+func (w *WorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
+	lookup := &db.WorkItemWorkItemTag{
+		WorkItemTagID: tagID,
+		WorkItemID:    workItemID,
+	}
+
+	return lookup.Delete(ctx, d)
+}
+
+func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	workItem := &db.WorkItem{
 		WorkItemID: id,
 	}
@@ -61,7 +74,7 @@ func (u *WorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem,
 	return workItem, err
 }
 
-func (u *WorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *WorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
 	var err error
 	workItem := &db.WorkItem{
 		WorkItemID: id,
