@@ -13,6 +13,7 @@ func UseSchema(schema string) {
 	Activities = Activities.FromSchema(schema)
 	DemoTwoWorkItems = DemoTwoWorkItems.FromSchema(schema)
 	DemoWorkItems = DemoWorkItems.FromSchema(schema)
+	EntityNotifications = EntityNotifications.FromSchema(schema)
 	KanbanSteps = KanbanSteps.FromSchema(schema)
 	Movies = Movies.FromSchema(schema)
 	Notifications = Notifications.FromSchema(schema)

@@ -24,3 +24,5 @@ func (e *XoError) Error() string {
 func (err *XoError) Unwrap() error {
 	return err.Err
 }
+
+type Entity string

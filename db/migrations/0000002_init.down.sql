@@ -1,5 +1,7 @@
 drop table if exists movies cascade;
 
+drop table if exists entity_notifications cascade;
+
 drop table if exists time_entries cascade;
 
 drop table if exists activities cascade;

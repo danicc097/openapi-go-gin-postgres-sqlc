@@ -1,4 +1,5 @@
 {{ define "extra" -}}
+{{- $tables := .Data.Tables -}}
 
 func newPointer[T any](v T) *T {
 	return &v
@@ -19,6 +20,7 @@ func (err *XoError) Unwrap() error {
 	return err.Err
 }
 
+{{ entities $tables }}
 
 {{- end }}
 

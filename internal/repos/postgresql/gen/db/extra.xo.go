@@ -24,3 +24,29 @@ func (e *XoError) Error() string {
 func (err *XoError) Unwrap() error {
 	return err.Err
 }
+
+type Entity string
+
+const (
+	DemoWorkItemEntity         Entity = "DemoWorkItem"
+	UserTeamEntity             Entity = "UserTeam"
+	WorkItemAssignedUserEntity Entity = "WorkItemAssignedUser"
+	MovieEntity                Entity = "Movie"
+	TeamEntity                 Entity = "Team"
+	UserNotificationEntity     Entity = "UserNotification"
+	WorkItemTagEntity          Entity = "WorkItemTag"
+	WorkItemTypeEntity         Entity = "WorkItemType"
+	WorkItemEntity             Entity = "WorkItem"
+	UserEntity                 Entity = "User"
+	WorkItemWorkItemTagEntity  Entity = "WorkItemWorkItemTag"
+	ActivityEntity             Entity = "Activity"
+	KanbanStepEntity           Entity = "KanbanStep"
+	NotificationEntity         Entity = "Notification"
+	ProjectEntity              Entity = "Project"
+	SchemaMigrationEntity      Entity = "SchemaMigration"
+	UserAPIKeyEntity           Entity = "UserAPIKey"
+	DemoTwoWorkItemEntity      Entity = "DemoTwoWorkItem"
+	EntityNotificationEntity   Entity = "EntityNotification"
+	TimeEntryEntity            Entity = "TimeEntry"
+	WorkItemCommentEntity      Entity = "WorkItemComment"
+)
