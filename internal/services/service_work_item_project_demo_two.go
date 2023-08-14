@@ -7,7 +7,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -71,7 +70,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 	// 	}
 	// }
 
-	err = w.wiSvc.AssignWorkItemMembers(ctx, d, demoWi, params.Members)
+	err = w.wiSvc.AssignUsers(ctx, d, demoWi, params.Members)
 	if err != nil {
 		return nil, fmt.Errorf("could not assign members: %w", err)
 	}
@@ -127,23 +126,6 @@ func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, w
 	}
 
 	return wiwit.Delete(ctx, d)
-}
-
-// TODO: remove in favor of assignmembers generic workitem function.
-func (w *DemoTwoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
-	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
-
-	return err
-}
-
-// TODO: remove in favor of removemembers generic workitem function.
-func (w *DemoTwoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
-	wim := &db.WorkItemAssignedUser{
-		AssignedUser: memberID,
-		WorkItemID:   workItemID,
-	}
-
-	return wim.Delete(ctx, d)
 }
 
 // repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)

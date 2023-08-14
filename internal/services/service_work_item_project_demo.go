@@ -84,7 +84,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		}
 	}
 
-	err = w.wiSvc.AssignWorkItemMembers(ctx, d, demoWi, params.Members)
+	err = w.wiSvc.AssignUsers(ctx, d, demoWi, params.Members)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
 	}
@@ -140,23 +140,6 @@ func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, work
 	}
 
 	return wiwit.Delete(ctx, d)
-}
-
-// TODO: remove in favor of assignmembers generic workitem function.
-func (w *DemoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
-	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
-
-	return err
-}
-
-// TODO: remove in favor of removemembers generic workitem function.
-func (w *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
-	wim := &db.WorkItemAssignedUser{
-		AssignedUser: memberID,
-		WorkItemID:   workItemID,
-	}
-
-	return wim.Delete(ctx, d)
 }
 
 // repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)

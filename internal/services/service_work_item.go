@@ -9,6 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -17,8 +18,8 @@ import (
  * TODO: generic logic here, eg
 AssignTags
 RemoveTags
-AssignMembers
-RemoveMembers
+AssignUsers
+RemoveAssignedUsers
 
 it will accept projectName (tags) and teamID (members) if necessary, e.g. to ensure asigntag called with
 tag belonging to project and a member that belongs to the team
@@ -41,7 +42,7 @@ func NewWorkItem(logger *zap.SugaredLogger, wiRepo repos.WorkItem, userRepo repo
 	}
 }
 
-func (w *WorkItem) AssignWorkItemMembers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []Member) error {
+func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []Member) error {
 	for idx, member := range members {
 		user, err := w.userRepo.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{TeamsMember: true}))
 		if err != nil {
@@ -58,7 +59,7 @@ func (w *WorkItem) AssignWorkItemMembers(ctx context.Context, d db.DBTX, workIte
 			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "user %q does not belong to team %q", user.Email, workItem.TeamID)
 		}
 
-		err = w.wiRepo.AssignMember(ctx, d, &db.WorkItemAssignedUserCreateParams{
+		err = w.wiRepo.AssignUser(ctx, d, &db.WorkItemAssignedUserCreateParams{
 			AssignedUser: member.UserID,
 			WorkItemID:   workItem.WorkItemID,
 			Role:         member.Role,
@@ -70,6 +71,22 @@ func (w *WorkItem) AssignWorkItemMembers(ctx context.Context, d db.DBTX, workIte
 			}
 
 			return internal.WrapErrorWithLocf(err, "", []string{strconv.Itoa(idx)}, "could not assign member %s", member.UserID)
+		}
+	}
+
+	return nil
+}
+
+func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []uuid.UUID) error {
+	for idx, member := range members {
+		lookup := &db.WorkItemAssignedUser{
+			AssignedUser: member,
+			WorkItemID:   workItem.WorkItemID,
+		}
+
+		err := lookup.Delete(ctx, d)
+		if err != nil {
+			return internal.WrapErrorWithLocf(err, "", []string{strconv.Itoa(idx)}, "could not remove member %s", member)
 		}
 	}
 

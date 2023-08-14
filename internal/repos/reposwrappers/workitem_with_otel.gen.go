@@ -36,9 +36,9 @@ func NewWorkItemWithTracing(base repos.WorkItem, instance string, spanDecorator 
 	return d
 }
 
-// AssignMember implements repos.WorkItem
-func (_d WorkItemWithTracing) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.AssignMember")
+// AssignUser implements repos.WorkItem
+func (_d WorkItemWithTracing) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.AssignUser")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -56,7 +56,7 @@ func (_d WorkItemWithTracing) AssignMember(ctx context.Context, d db.DBTX, param
 
 		_span.End()
 	}()
-	return _d.WorkItem.AssignMember(ctx, d, params)
+	return _d.WorkItem.AssignUser(ctx, d, params)
 }
 
 // ByID implements repos.WorkItem
@@ -108,9 +108,9 @@ func (_d WorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (wp
 	return _d.WorkItem.Delete(ctx, d, id)
 }
 
-// RemoveMember implements repos.WorkItem
-func (_d WorkItemWithTracing) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveMember")
+// RemoveAssignedUser implements repos.WorkItem
+func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveAssignedUser")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -129,7 +129,7 @@ func (_d WorkItemWithTracing) RemoveMember(ctx context.Context, d db.DBTX, membe
 
 		_span.End()
 	}()
-	return _d.WorkItem.RemoveMember(ctx, d, memberID, workItemID)
+	return _d.WorkItem.RemoveAssignedUser(ctx, d, memberID, workItemID)
 }
 
 // Restore implements repos.WorkItem

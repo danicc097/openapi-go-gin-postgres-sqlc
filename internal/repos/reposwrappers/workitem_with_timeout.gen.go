@@ -20,13 +20,13 @@ type WorkItemWithTimeout struct {
 }
 
 type WorkItemWithTimeoutConfig struct {
-	AssignMemberTimeout time.Duration
+	AssignUserTimeout time.Duration
 
 	ByIDTimeout time.Duration
 
 	DeleteTimeout time.Duration
 
-	RemoveMemberTimeout time.Duration
+	RemoveAssignedUserTimeout time.Duration
 
 	RestoreTimeout time.Duration
 }
@@ -39,14 +39,14 @@ func NewWorkItemWithTimeout(base repos.WorkItem, config WorkItemWithTimeoutConfi
 	}
 }
 
-// AssignMember implements repos.WorkItem
-func (_d WorkItemWithTimeout) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+// AssignUser implements repos.WorkItem
+func (_d WorkItemWithTimeout) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
 	var cancelFunc func()
-	if _d.config.AssignMemberTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.AssignMemberTimeout)
+	if _d.config.AssignUserTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.AssignUserTimeout)
 		defer cancelFunc()
 	}
-	return _d.WorkItem.AssignMember(ctx, d, params)
+	return _d.WorkItem.AssignUser(ctx, d, params)
 }
 
 // ByID implements repos.WorkItem
@@ -69,14 +69,14 @@ func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp
 	return _d.WorkItem.Delete(ctx, d, id)
 }
 
-// RemoveMember implements repos.WorkItem
-func (_d WorkItemWithTimeout) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+// RemoveAssignedUser implements repos.WorkItem
+func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
 	var cancelFunc func()
-	if _d.config.RemoveMemberTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveMemberTimeout)
+	if _d.config.RemoveAssignedUserTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveAssignedUserTimeout)
 		defer cancelFunc()
 	}
-	return _d.WorkItem.RemoveMember(ctx, d, memberID, workItemID)
+	return _d.WorkItem.RemoveAssignedUser(ctx, d, memberID, workItemID)
 }
 
 // Restore implements repos.WorkItem

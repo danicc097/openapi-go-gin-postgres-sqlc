@@ -29,9 +29,9 @@ func NewWorkItemWithRetry(base repos.WorkItem, retryCount int, retryInterval tim
 	}
 }
 
-// AssignMember implements repos.WorkItem
-func (_d WorkItemWithRetry) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
-	err = _d.WorkItem.AssignMember(ctx, d, params)
+// AssignUser implements repos.WorkItem
+func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+	err = _d.WorkItem.AssignUser(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -43,7 +43,7 @@ func (_d WorkItemWithRetry) AssignMember(ctx context.Context, d db.DBTX, params 
 			return
 		case <-_ticker.C:
 		}
-		err = _d.WorkItem.AssignMember(ctx, d, params)
+		err = _d.WorkItem.AssignUser(ctx, d, params)
 	}
 	return
 }
@@ -86,9 +86,9 @@ func (_d WorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (wp1 
 	return
 }
 
-// RemoveMember implements repos.WorkItem
-func (_d WorkItemWithRetry) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
-	err = _d.WorkItem.RemoveMember(ctx, d, memberID, workItemID)
+// RemoveAssignedUser implements repos.WorkItem
+func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+	err = _d.WorkItem.RemoveAssignedUser(ctx, d, memberID, workItemID)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -100,7 +100,7 @@ func (_d WorkItemWithRetry) RemoveMember(ctx context.Context, d db.DBTX, memberI
 			return
 		case <-_ticker.C:
 		}
-		err = _d.WorkItem.RemoveMember(ctx, d, memberID, workItemID)
+		err = _d.WorkItem.RemoveAssignedUser(ctx, d, memberID, workItemID)
 	}
 	return
 }

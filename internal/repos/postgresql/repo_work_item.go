@@ -32,14 +32,14 @@ func (u *WorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkI
 }
 
 // TODO: remove from demo and demo_two.
-func (u *WorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
+func (u *WorkItem) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
 	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
 
 	return err
 }
 
 // TODO: remove from demo and demo_two.
-func (w *WorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
+func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
 	wim := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
 		WorkItemID:   workItemID,

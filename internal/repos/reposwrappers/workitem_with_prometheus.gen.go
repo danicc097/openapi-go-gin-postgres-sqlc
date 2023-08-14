@@ -39,8 +39,8 @@ func NewWorkItemWithPrometheus(base repos.WorkItem, instanceName string) WorkIte
 	}
 }
 
-// AssignMember implements repos.WorkItem
-func (_d WorkItemWithPrometheus) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+// AssignUser implements repos.WorkItem
+func (_d WorkItemWithPrometheus) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -48,9 +48,9 @@ func (_d WorkItemWithPrometheus) AssignMember(ctx context.Context, d db.DBTX, pa
 			result = "error"
 		}
 
-		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "AssignMember", result).Observe(time.Since(_since).Seconds())
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "AssignUser", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.AssignMember(ctx, d, params)
+	return _d.base.AssignUser(ctx, d, params)
 }
 
 // ByID implements repos.WorkItem
@@ -81,8 +81,8 @@ func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) 
 	return _d.base.Delete(ctx, d, id)
 }
 
-// RemoveMember implements repos.WorkItem
-func (_d WorkItemWithPrometheus) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+// RemoveAssignedUser implements repos.WorkItem
+func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -90,9 +90,9 @@ func (_d WorkItemWithPrometheus) RemoveMember(ctx context.Context, d db.DBTX, me
 			result = "error"
 		}
 
-		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "RemoveMember", result).Observe(time.Since(_since).Seconds())
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "RemoveAssignedUser", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.RemoveMember(ctx, d, memberID, workItemID)
+	return _d.base.RemoveAssignedUser(ctx, d, memberID, workItemID)
 }
 
 // Restore implements repos.WorkItem
