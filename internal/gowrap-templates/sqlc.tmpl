@@ -1,0 +1,31 @@
+import (
+    "context"
+
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/attribute"
+    "go.opentelemetry.io/otel/trace"
+  internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+)
+{{ $decorator := (or .Vars.DecoratorName (printf "%sWrapper" .Interface.Name)) }}
+
+// {{$decorator}} implements {{.Interface.Type}} and wraps errors with the associated query name.
+type {{$decorator}} struct{ {{.Interface.Type}} }
+
+// New{{$decorator}} returns {{$decorator}} with wrapped pgx errors.
+func New{{$decorator}} (base {{.Interface.Type}}) {{$decorator}} {
+  return {{$decorator}} {
+    {{.Interface.Name}}: base,
+  }
+}
+
+{{range $method := .Interface.Methods}}
+func (w {{$decorator}}) {{$method.Declaration}} {
+	/* defer newOTelSpan().Build(ctx).End() */
+
+	{{$method.ResultsNames}} = w.{{$.Interface.Name}}.{{$method.Call}}
+	if err != nil {
+		err = fmt.Errorf("{{$.Interface.Name}}: %w", parseDBErrorDetail(err))
+	}
+	return
+}
+{{end}}

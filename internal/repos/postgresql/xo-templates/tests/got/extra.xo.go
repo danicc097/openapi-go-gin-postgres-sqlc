@@ -28,17 +28,17 @@ func (err *XoError) Unwrap() error {
 type Entity string
 
 const (
-	WorkItemEntity                Entity = "WorkItem"
-	BookAuthorsSurrogateKeyEntity Entity = "BookAuthorsSurrogateKey"
 	BookEntity                    Entity = "Book"
-	DummyJoinEntity               Entity = "DummyJoin"
-	WorkItemAssignedUserEntity    Entity = "WorkItemAssignedUser"
-	NotificationEntity            Entity = "Notification"
-	PagElementEntity              Entity = "PagElement"
-	UserAPIKeyEntity              Entity = "UserAPIKey"
-	UserEntity                    Entity = "User"
 	BookAuthorEntity              Entity = "BookAuthor"
+	BookAuthorsSurrogateKeyEntity Entity = "BookAuthorsSurrogateKey"
 	BookReviewEntity              Entity = "BookReview"
 	BookSellerEntity              Entity = "BookSeller"
 	DemoWorkItemEntity            Entity = "DemoWorkItem"
+	DummyJoinEntity               Entity = "DummyJoin"
+	NotificationEntity            Entity = "Notification"
+	PagElementEntity              Entity = "PagElement"
+	UserEntity                    Entity = "User"
+	UserAPIKeyEntity              Entity = "UserAPIKey"
+	WorkItemEntity                Entity = "WorkItem"
+	WorkItemAssignedUserEntity    Entity = "WorkItemAssignedUser"
 )

@@ -11,7 +11,7 @@ import (
 
 // WorkItem represents the repository used for interacting with WorkItem records.
 type WorkItem struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewWorkItem instantiates the WorkItem repository.
@@ -21,7 +21,7 @@ type WorkItem struct {
 // and this simplifies everything a lot.
 func NewWorkItem() *WorkItem {
 	return &WorkItem{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

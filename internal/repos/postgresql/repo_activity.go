@@ -10,13 +10,13 @@ import (
 
 // Activity represents the repository used for interacting with Activity records.
 type Activity struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewActivity instantiates the Activity repository.
 func NewActivity() *Activity {
 	return &Activity{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

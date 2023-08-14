@@ -10,13 +10,13 @@ import (
 
 // WorkItemType represents the repository used for interacting with WorkItemType records.
 type WorkItemType struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewWorkItemType instantiates the WorkItemType repository.
 func NewWorkItemType() *WorkItemType {
 	return &WorkItemType{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

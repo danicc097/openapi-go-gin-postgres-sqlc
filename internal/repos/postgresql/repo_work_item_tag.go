@@ -10,13 +10,13 @@ import (
 
 // WorkItemTag represents the repository used for interacting with WorkItemTag records.
 type WorkItemTag struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewWorkItemTag instantiates the WorkItemTag repository.
 func NewWorkItemTag() *WorkItemTag {
 	return &WorkItemTag{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

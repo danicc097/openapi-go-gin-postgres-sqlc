@@ -542,6 +542,12 @@ x.gen.sqlc() {
     rm -f "$PG_REPO_GEN"/db/*.sqlc.go
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
     rm -f "$PG_REPO_GEN"/db/models.go # sqlc enums
+    gowrap gen \
+      -g \
+      -p "$GOMOD_PKG/$PG_REPO_GEN/db" \
+      -i Querier \
+      -t "$GOWRAP_TEMPLATES_DIR/sqlc.tmpl" \
+      -o "$PG_REPO_DIR/sqlc_querier_wrapper.gen.go"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
 }

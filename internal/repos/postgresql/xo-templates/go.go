@@ -1635,10 +1635,21 @@ func (f *Funcs) FuncMap() template.FuncMap {
 func (f *Funcs) entities(tables Tables) string {
 	var b strings.Builder
 
+	ee := make([]string, len(tables))
+	i := 0
+	for _, t := range tables {
+		ee[i] = t.GoName
+		i++
+	}
+
+	sort.Slice(ee, func(i, j int) bool {
+		return ee[i] < ee[j]
+	})
+
 	b.WriteString("type Entity string\n")
 	b.WriteString("const (\n")
-	for _, t := range tables {
-		b.WriteString(fmt.Sprintf("%[1]sEntity Entity = %[1]q \n", t.GoName))
+	for _, e := range ee {
+		b.WriteString(fmt.Sprintf("%[1]sEntity Entity = %[1]q \n", e))
 	}
 	b.WriteString(")")
 
