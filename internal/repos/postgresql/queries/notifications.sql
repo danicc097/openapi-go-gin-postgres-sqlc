@@ -6,7 +6,7 @@ select
   , notifications.sender
   , notifications.title
   , notifications.body
-  , notifications.label
+  , notifications.labels
   , notifications.link
 from
   user_notifications

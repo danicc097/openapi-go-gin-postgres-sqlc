@@ -10,13 +10,13 @@ import (
 
 // Notification represents the repository used for interacting with Notification records.
 type Notification struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewNotification instantiates the Notification repository.
 func NewNotification() *Notification {
 	return &Notification{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

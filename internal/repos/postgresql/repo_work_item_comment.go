@@ -10,13 +10,13 @@ import (
 
 // WorkItemComment represents the repository used for interacting with WorkItemComment records.
 type WorkItemComment struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewWorkItemComment instantiates the WorkItemComment repository.
 func NewWorkItemComment() *WorkItemComment {
 	return &WorkItemComment{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

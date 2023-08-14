@@ -11,13 +11,13 @@ import (
 
 // DemoWorkItem represents the repository used for interacting with DemoWorkItem records.
 type DemoWorkItem struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewDemoWorkItem instantiates the DemoWorkItem repository.
 func NewDemoWorkItem() *DemoWorkItem {
 	return &DemoWorkItem{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

@@ -405,9 +405,25 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 			}
 
 			if !NotFirst(ctx) && !Append(ctx) {
+				tables := make(Tables)
+				for _, schema := range set.Schemas {
+					tcc := append(schema.Tables, schema.Views...)
+					tcc = append(tcc, schema.MatViews...)
+					for _, tc := range tcc {
+						table, err := convertTable(ctx, tc)
+						if err != nil {
+							return err
+						}
+						tables[table.SQLName] = table
+					}
+				}
+
 				emit(xo.Template{
 					Partial: "extra",
 					Dest:    "extra.xo.go",
+					Data: struct {
+						Tables any
+					}{Tables: tables},
 				})
 				// If --single is provided, don't generate header for db.xo.go.
 				if xo.Single(ctx) == "" {
@@ -1386,6 +1402,9 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		typ = typeOverride
 		if strings.Count(typeOverride, ".") > 0 {
 			openAPISchema = camelExport(strings.Split(typeOverride, ".")[1])
+		} else {
+			// db schema (same package)
+			openAPISchema = "Db" + camelExport(typeOverride)
 		}
 	}
 
@@ -1543,6 +1562,7 @@ func (f *Funcs) sentence_case(names ...string) string {
 func (f *Funcs) FuncMap() template.FuncMap {
 	return template.FuncMap{
 		// general
+		"entities":      f.entities,
 		"sentence_case": f.sentence_case,
 		"camel":         f.camel,
 		"lowerFirst":    f.lower_first,
@@ -1610,6 +1630,30 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"add":              add,
 		"not_updatable":    notUpdatable,
 	}
+}
+
+func (f *Funcs) entities(tables Tables) string {
+	var b strings.Builder
+
+	ee := make([]string, len(tables))
+	i := 0
+	for _, t := range tables {
+		ee[i] = t.GoName
+		i++
+	}
+
+	sort.Slice(ee, func(i, j int) bool {
+		return ee[i] < ee[j]
+	})
+
+	b.WriteString("type Entity string\n")
+	b.WriteString("const (\n")
+	for _, e := range ee {
+		b.WriteString(fmt.Sprintf("%[1]sEntity Entity = %[1]q \n", e))
+	}
+	b.WriteString(")")
+
+	return b.String()
 }
 
 // last_nth returns the last hardcoded nth param for sqlstr

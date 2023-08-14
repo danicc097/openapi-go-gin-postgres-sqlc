@@ -11,13 +11,13 @@ import (
 
 // Project represents the repository used for interacting with Project records.
 type Project struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewProject instantiates the Project repository.
 func NewProject() *Project {
 	return &Project{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

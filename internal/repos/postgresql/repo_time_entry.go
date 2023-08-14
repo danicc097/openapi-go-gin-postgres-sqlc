@@ -10,13 +10,13 @@ import (
 
 // TimeEntry represents the repository used for interacting with TimeEntry records.
 type TimeEntry struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewTimeEntry instantiates the TimeEntry repository.
 func NewTimeEntry() *TimeEntry {
 	return &TimeEntry{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

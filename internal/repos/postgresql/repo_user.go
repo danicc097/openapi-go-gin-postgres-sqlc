@@ -14,13 +14,13 @@ import (
 
 // User represents the repository used for interacting with User records.
 type User struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewUser instantiates the User repository.
 func NewUser() *User {
 	return &User{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

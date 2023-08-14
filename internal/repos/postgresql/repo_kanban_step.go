@@ -10,13 +10,13 @@ import (
 
 // KanbanStep represents the repository used for interacting with KanbanStep records.
 type KanbanStep struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewKanbanStep instantiates the KanbanStep repository.
 func NewKanbanStep() *KanbanStep {
 	return &KanbanStep{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

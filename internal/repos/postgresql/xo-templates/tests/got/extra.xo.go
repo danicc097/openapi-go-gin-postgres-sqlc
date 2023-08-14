@@ -24,3 +24,21 @@ func (e *XoError) Error() string {
 func (err *XoError) Unwrap() error {
 	return err.Err
 }
+
+type Entity string
+
+const (
+	BookEntity                    Entity = "Book"
+	BookAuthorEntity              Entity = "BookAuthor"
+	BookAuthorsSurrogateKeyEntity Entity = "BookAuthorsSurrogateKey"
+	BookReviewEntity              Entity = "BookReview"
+	BookSellerEntity              Entity = "BookSeller"
+	DemoWorkItemEntity            Entity = "DemoWorkItem"
+	DummyJoinEntity               Entity = "DummyJoin"
+	NotificationEntity            Entity = "Notification"
+	PagElementEntity              Entity = "PagElement"
+	UserEntity                    Entity = "User"
+	UserAPIKeyEntity              Entity = "UserAPIKey"
+	WorkItemEntity                Entity = "WorkItem"
+	WorkItemAssignedUserEntity    Entity = "WorkItemAssignedUser"
+)

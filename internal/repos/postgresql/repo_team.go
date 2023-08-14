@@ -10,13 +10,13 @@ import (
 
 // Team represents the repository used for interacting with Team records.
 type Team struct {
-	q *db.Queries
+	q db.Querier
 }
 
 // NewTeam instantiates the Team repository.
 func NewTeam() *Team {
 	return &Team{
-		q: db.New(),
+		q: NewQuerierWrapper(db.New()),
 	}
 }
 

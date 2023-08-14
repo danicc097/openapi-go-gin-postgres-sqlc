@@ -192,7 +192,7 @@ restart_pid() {
 }
 
 err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] (${YELLOW}${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]}${OFF}): ${RED}$*${OFF}" >&2
   sleep 0.1 # while processing xerr in background
   # kill -s SIGUSR1 $PROC
   # FIXME parallel (sub-)subshell management instead of force killing
@@ -248,7 +248,7 @@ show_tracebacks() {
   local err_code="$?"
   set +o xtrace
   local bash_command=${BASH_COMMAND}
-  echo "${RED}Error in ${BASH_SOURCE[1]}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
+  echo "${RED}Error in ${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
 
   if [[ $bash_command != xlog* && $bash_command != xerr* && ${#FUNCNAME[@]} -gt 2 ]]; then
     # Print out the stack trace described by $function_stack
@@ -271,7 +271,7 @@ cache_all() {
   output_file="$1"
   shift
 
-  if md5sum -c "$output_file" &>/dev/null && [[ $FORCE_REGEN -eq 0 ]]; then
+  if md5sum -c "$output_file" &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
     echo "Skipping generation (cached). Force regen with --x-force-regen"
     return 0
   fi
@@ -316,62 +316,66 @@ search_stopship() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-######################## postgres ###########################
+######################## docker ###########################
+
+docker.redis() {
+  docker exec -i redis_"$PROJECT_PREFIX" "$@"
+}
+
+docker.postgres() {
+  docker exec -i postgres_db_"$PROJECT_PREFIX" "$@"
+}
+
+docker.postgres.psql() {
+  docker exec -i postgres_db_"$PROJECT_PREFIX" psql -qtAX -v ON_ERROR_STOP=on "$@"
+}
 
 # Drop and recreate database `db`. Defaults to POSTGRES_DB.
-drop_and_recreate_db() {
+docker.postgres.drop_and_recreate_db() {
   local db="${1:POSTGRES_DB}"
 
-  _pg_isready
+  docker.postgres.isready
 
-  dockerdb psql --no-psqlrc \
+  docker.postgres psql --no-psqlrc \
     -U "$POSTGRES_USER" \
     -d "postgres" \
     -c "CREATE DATABASE test OWNER $POSTGRES_USER;" 2>/dev/null || true
 
   echo "${RED}${BOLD}Dropping database $db.${OFF}"
-  dockerdb \
+  docker.postgres \
     dropdb --if-exists -f "$db"
 
   echo "${BLUE}${BOLD}Creating database $db.${OFF}"
-  dockerdb psql --no-psqlrc \
+  docker.postgres psql --no-psqlrc \
     -U "$POSTGRES_USER" \
     -d test \
     -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
 }
 
-dockerdb() {
-  docker exec -i postgres_db_"$PROJECT_PREFIX" "$@"
-}
-
-dockerdb_psql() {
-  docker exec -i postgres_db_"$PROJECT_PREFIX" psql -qtAX -v ON_ERROR_STOP=on "$@"
-}
-
 # Create database `db`.
-create_db_if_not_exists() {
+docker.postgres.create_db() {
   local db="$1"
 
-  _pg_isready
+  docker.postgres.isready
 
   echo "${BLUE}${BOLD}Creating database $db.${OFF}"
   {
-    dockerdb psql --no-psqlrc -U "$POSTGRES_USER" \
+    docker.postgres psql --no-psqlrc -U "$POSTGRES_USER" \
       -tc "SELECT 1 FROM pg_database WHERE datname = '$db'" |
       grep -q 1
   } ||
-    dockerdb psql --no-psqlrc -U "$POSTGRES_USER" -c "CREATE DATABASE $db" ||
+    docker.postgres psql --no-psqlrc -U "$POSTGRES_USER" -c "CREATE DATABASE $db" ||
     echo "Skipping $db database creation"
 }
 
 # Stop running processes in `db`.
-stop_db_processes() {
+docker.postgres.stop_db_processes() {
   local db="$1"
 
-  _pg_isready
+  docker.postgres.isready
 
   echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
-  dockerdb psql --no-psqlrc \
+  docker.postgres psql --no-psqlrc \
     -U "$POSTGRES_USER" \
     -d "postgres" \
     -c "select pg_terminate_backend(pid) \
@@ -379,10 +383,10 @@ stop_db_processes() {
         where datname='$db'" >/dev/null
 }
 
-_pg_isready() {
+docker.postgres.isready() {
   pg_ready=0
   while [[ ! $pg_ready -eq 1 ]]; do
-    dockerdb \
+    docker.postgres \
       pg_isready -U "$POSTGRES_USER" || {
       echo "${YELLOW}Waiting for postgres database to be ready...${OFF}"
       sleep 2
@@ -392,9 +396,11 @@ _pg_isready() {
   done
 }
 
-######################## docker ###########################
-
-gzip_latest_image() {
+# Saves latest image to destination.
+# Parameters:
+#   Output directory
+#   Image name
+docker.images.save_latest() {
   local dir="$1"
   local image="$2"
   echo "Saving latest image $image to $dir"
@@ -402,9 +408,72 @@ gzip_latest_image() {
   docker save "$image":latest | gzip >"$dir/${image}_latest.tar.gz"
 }
 
-load_latest_gzip_image() {
+# Loads latest image from destination.
+# Parameters:
+#   Input directory
+#   Image name
+docker.images.load_latest() {
   local dir="$1"
   local image="$2"
   echo "Loading latest image $image from $dir"
   docker load <"$dir/${image}_latest.tar.gz"
+}
+
+######################## go ###########################
+
+# Stores go structs in package to a given array.
+# Parameters:
+#    Struct array (nameref)
+#    Package directory
+go-utils.find_structs() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -ne 's/[\s]*type\(.*\)struct.*/\1/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No structs found in package $pkg"
+  fi
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+# Stores go interfaces in package to a given array.
+# Parameters:
+#    Interface array (nameref)
+#    Package directory
+go-utils.find_interfaces() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -ne 's/[\s]*type\(.*\)interface.*/\1/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No interfaces found in package $pkg"
+  fi
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+# Stores go enums in package to a given array.
+# Parameters:
+#    Enum array (nameref)
+#    Package directory
+go-utils.find_enums() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -ne 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    echo "No enums found in package $pkg"
+  fi
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+# Returns go interface methods in file.
+# Parameters:
+#    Interface name
+#    Go file
+go-utils.get_interface_methods() {
+  local interface="$1"
+  local file="$2"
+  awk "/^type $interface /{flag=1; print; next} flag && /^}/{flag=0} flag" $file |
+    sed -e '1d' |
+    awk "$awk_remove_go_comments"
 }

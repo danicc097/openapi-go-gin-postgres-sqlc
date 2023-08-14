@@ -17,6 +17,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	rv8 "github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -144,7 +145,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 
 	// no need to set provider and propagator again, will use server global's
 	router.Use(otelgin.Middleware(""))
-	// pprof.Register(router, "dev/pprof")
+	pprof.Register(router, "dev/pprof")
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	cfg := internal.Config

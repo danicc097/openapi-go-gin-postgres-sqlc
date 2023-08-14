@@ -162,7 +162,7 @@ func main() {
 	// fmt.Printf("dest: %#v\n", dest)
 	// format.PrintJSON(dest)
 
-	q := db.New()
+	q := postgresql.NewQuerierWrapper(db.New())
 	nn, err := q.GetUserNotifications(context.Background(), pool, db.GetUserNotificationsParams{UserID: user.UserID, Lim: pointers.New[int32](6), NotificationType: db.NotificationTypePersonal})
 	if err != nil {
 		log.Fatal(err.Error())
