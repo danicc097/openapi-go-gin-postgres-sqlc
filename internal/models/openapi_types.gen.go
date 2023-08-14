@@ -394,7 +394,7 @@ type DbWorkItem struct {
 	TeamID         int                    `json:"teamID"`
 	Title          string                 `json:"title"`
 	UpdatedAt      time.Time              `json:"updatedAt"`
-	WorkItemID     int                    `json:"workItemID"`
+	WorkItemID     DbWorkItemID           `json:"workItemID"`
 	WorkItemTypeID int                    `json:"workItemTypeID"`
 }
 
@@ -495,7 +495,7 @@ type DemoTwoWorkItemsResponse struct {
 	Title            string                 `json:"title"`
 	UpdatedAt        time.Time              `json:"updatedAt"`
 	WorkItemComments *[]DbWorkItemComment   `json:"workItemComments"`
-	WorkItemID       int                    `json:"workItemID"`
+	WorkItemID       DbWorkItemID           `json:"workItemID"`
 	WorkItemTags     *[]DbWorkItemTag       `json:"workItemTags"`
 	WorkItemType     *DbWorkItemType        `json:"workItemType,omitempty"`
 	WorkItemTypeID   int                    `json:"workItemTypeID"`
@@ -529,7 +529,7 @@ type DemoWorkItemsResponse struct {
 	Title            string                 `json:"title"`
 	UpdatedAt        time.Time              `json:"updatedAt"`
 	WorkItemComments *[]DbWorkItemComment   `json:"workItemComments"`
-	WorkItemID       int                    `json:"workItemID"`
+	WorkItemID       DbWorkItemID           `json:"workItemID"`
 	WorkItemTags     *[]DbWorkItemTag       `json:"workItemTags"`
 	WorkItemType     *DbWorkItemType        `json:"workItemType,omitempty"`
 	WorkItemTypeID   int                    `json:"workItemTypeID"`

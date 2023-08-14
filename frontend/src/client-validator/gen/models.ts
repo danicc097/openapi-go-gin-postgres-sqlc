@@ -199,11 +199,12 @@ export interface DemoWorkItemsResponse {
   title: string
   updatedAt: string
   workItemComments?: DbWorkItemComment[] | null
-  workItemID: number
+  workItemID: DbWorkItemID
   workItemTags?: DbWorkItemTag[] | null
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
+export interface DbWorkItemID {}
 export interface DemoTwoWorkItemsResponse {
   closedAt?: string | null
   createdAt: string
@@ -219,7 +220,7 @@ export interface DemoTwoWorkItemsResponse {
   title: string
   updatedAt: string
   workItemComments?: DbWorkItemComment[] | null
-  workItemID: number
+  workItemID: DbWorkItemID
   workItemTags?: DbWorkItemTag[] | null
   workItemType?: DbWorkItemType
   workItemTypeID: number
@@ -228,7 +229,6 @@ export interface DbDemoTwoWorkItem {
   customDateForProject2?: string | null
   workItemID: DbWorkItemID
 }
-export interface DbWorkItemID {}
 export interface InitializeProjectRequest {
   tags?: DbWorkItemTagCreateParams[] | null
   teams?: DbTeamCreateParams[] | null
@@ -362,7 +362,7 @@ export interface DbWorkItem {
   teamID: number
   title: string
   updatedAt: string
-  workItemID: number
+  workItemID: DbWorkItemID
   workItemTypeID: number
 }
 export interface WorkItemTagCreateRequest {

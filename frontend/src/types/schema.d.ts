@@ -228,7 +228,7 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
       workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
-      workItemID: number;
+      workItemID: components["schemas"]["DbWorkItemID"];
       workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
@@ -255,7 +255,7 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
       workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
-      workItemID: number;
+      workItemID: components["schemas"]["DbWorkItemID"];
       workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
@@ -406,7 +406,7 @@ export interface components {
       title: string;
       /** Format: date-time */
       updatedAt: string;
-      workItemID: number;
+      workItemID: components["schemas"]["DbWorkItemID"];
       workItemTypeID: number;
     };
     WorkItemTagCreateRequest: {

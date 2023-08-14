@@ -921,7 +921,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTags": {
           "items": {
@@ -1299,7 +1299,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTags": {
           "items": {
@@ -2496,7 +2496,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -4065,7 +4065,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTags": {
           "items": {
@@ -4443,7 +4443,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTags": {
           "items": {
@@ -5640,7 +5640,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTypeID": {
           "type": "integer"

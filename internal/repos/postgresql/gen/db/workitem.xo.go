@@ -29,7 +29,8 @@ type WorkItemID int // TODO: needs ref: to plain number schema (called ID) or ex
 // UPDATE: actually. we want unique schema as it now... however it is empty at this point
 
 type WorkItem struct {
-	WorkItemID     WorkItemID            `json:"workItemID" db:"work_item_id" required:"true" nullable:"false" x-oapi-gggggg:"fgsfsfes"`          // work_item_id
+	// ref needed here since it uses the current package models
+	WorkItemID     WorkItemID            `json:"workItemID" db:"work_item_id" required:"true" nullable:"false" ref:"#/components/schemas/DbWorkItemID"`          // work_item_id
 	Title          string         `json:"title" db:"title" required:"true" nullable:"false"`                      // title
 	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`          // description
 	WorkItemTypeID int            `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"` // work_item_type_id

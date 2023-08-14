@@ -23,7 +23,7 @@ export const getCreateWorkitemMock = () =>
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
       updatedAt: (() => faker.date.past())(),
-      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+      workItemID: {},
       workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
     },
   ])
@@ -43,7 +43,7 @@ export const getGetWorkitemMock = () =>
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
       updatedAt: (() => faker.date.past())(),
-      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+      workItemID: {},
       workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
     },
   ])
@@ -63,7 +63,7 @@ export const getUpdateWorkitemMock = () =>
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
       updatedAt: (() => faker.date.past())(),
-      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+      workItemID: {},
       workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
     },
   ])

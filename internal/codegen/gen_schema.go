@@ -16,6 +16,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	internalslices "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
+	"github.com/fatih/structtag"
 	"github.com/google/uuid"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
@@ -74,12 +75,26 @@ func newSpecReflector() *openapi3.Reflector {
 				return jsonschema.ErrSkipProperty
 			}
 
+			if params.PropertySchema != nil {
+				if params.PropertySchema.ExtraProperties == nil {
+					params.PropertySchema.ExtraProperties = map[string]any{}
+				}
+
+				tags, err := structtag.Parse(string(params.Field.Tag))
+				if err != nil {
+					panic(err)
+				}
+
+				for _, t := range tags.Tags() {
+					if strings.HasPrefix(t.Key, "x-") {
+						params.PropertySchema.ExtraProperties[t.Key] = t.Value()
+					}
+				}
+			}
+
 			if params.Field.Tag.Get("x-omitempty") == "true" {
 				if params.PropertySchema == nil {
 					return nil
-				}
-				if params.PropertySchema.ExtraProperties == nil {
-					params.PropertySchema.ExtraProperties = map[string]any{}
 				}
 				params.PropertySchema.ExtraProperties["x-omitempty"] = true
 			}

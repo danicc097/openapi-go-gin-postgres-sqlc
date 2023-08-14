@@ -99,7 +99,7 @@ export const getGetProjectWorkitemsMock = () =>
         workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
-      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+      workItemID: {},
       workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         color: faker.random.word(),
         description: faker.random.word(),
@@ -164,7 +164,7 @@ export const getGetProjectWorkitemsMock = () =>
         workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
-      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+      workItemID: {},
       workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         color: faker.random.word(),
         description: faker.random.word(),

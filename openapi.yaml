@@ -847,7 +847,7 @@ components:
           nullable: true
           type: array
         workItemID:
-          type: integer
+          $ref: '#/components/schemas/DbWorkItemID'
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -919,7 +919,7 @@ components:
           nullable: true
           type: array
         workItemID:
-          type: integer
+          $ref: '#/components/schemas/DbWorkItemID'
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -1258,7 +1258,7 @@ components:
           format: date-time
           type: string
         workItemID:
-          type: integer
+          $ref: '#/components/schemas/DbWorkItemID'
         workItemTypeID:
           type: integer
       required:
