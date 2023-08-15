@@ -99,7 +99,7 @@ export const getGetProjectWorkitemsMock = () =>
         workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
-      workItemID: {},
+      workItemID: faker.random.word(),
       workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         color: faker.random.word(),
         description: faker.random.word(),
@@ -122,7 +122,7 @@ export const getGetProjectWorkitemsMock = () =>
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       demoTwoWorkItem: {
         customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-        workItemID: {},
+        workItemID: faker.random.word(),
       },
       description: faker.random.word(),
       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -164,7 +164,7 @@ export const getGetProjectWorkitemsMock = () =>
         workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
-      workItemID: {},
+      workItemID: faker.random.word(),
       workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         color: faker.random.word(),
         description: faker.random.word(),

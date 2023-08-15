@@ -20,6 +20,7 @@ export type Scope =
   | 'work-item-tag:delete'
   | 'work-item:review'
 export type Scopes = Scope[]
+export type DbWorkItemID = string
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * location in body path, if any
@@ -204,7 +205,6 @@ export interface DemoWorkItemsResponse {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface DbWorkItemID {}
 export interface DemoTwoWorkItemsResponse {
   closedAt?: string | null
   createdAt: string
