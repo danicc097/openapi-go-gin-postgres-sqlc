@@ -23,9 +23,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookAuthor struct {
-	BookID    BookAuthorID `json:"bookID" db:"book_id" required:"true" nullable:"false"`     // book_id
-	AuthorID  BookAuthorID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
-	Pseudonym *string      `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
+	BookID    BookID  `json:"bookID" db:"book_id" required:"true" nullable:"false"`     // book_id
+	AuthorID  UserID  `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
+	Pseudonym *string `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
 
 	AuthorBooksJoin *[]Book__BA_BookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
 	BookAuthorsJoin *[]User__BA_BookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
@@ -33,9 +33,9 @@ type BookAuthor struct {
 
 // BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
 type BookAuthorCreateParams struct {
-	AuthorID  BookAuthorID `json:"authorID" required:"true" nullable:"false"` // author_id
-	BookID    BookAuthorID `json:"bookID" required:"true" nullable:"false"`   // book_id
-	Pseudonym *string      `json:"pseudonym"`                                 // pseudonym
+	AuthorID  UserID  `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    BookID  `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Pseudonym *string `json:"pseudonym"`                                 // pseudonym
 }
 
 // CreateBookAuthor creates a new BookAuthor in the database with the given params.
@@ -51,9 +51,9 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 
 // BookAuthorUpdateParams represents update params for 'xo_tests.book_authors'.
 type BookAuthorUpdateParams struct {
-	AuthorID  *BookAuthorID `json:"authorID" nullable:"false"` // author_id
-	BookID    *BookAuthorID `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string      `json:"pseudonym"`                 // pseudonym
+	AuthorID  *UserID  `json:"authorID" nullable:"false"` // author_id
+	BookID    *BookID  `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string `json:"pseudonym"`                 // pseudonym
 }
 
 // SetUpdateParams updates xo_tests.book_authors struct fields with the specified params.

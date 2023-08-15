@@ -21,7 +21,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type UserTeam struct {
 	TeamID TeamID `json:"teamID" db:"team_id" required:"true" nullable:"false"` // team_id
-	Member Member `json:"member" db:"member" required:"true" nullable:"false"`  // member
+	Member UserID `json:"member" db:"member" required:"true" nullable:"false"`  // member
 
 	MemberTeamsJoin *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
 	TeamMembersJoin *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
@@ -30,7 +30,7 @@ type UserTeam struct {
 
 // UserTeamCreateParams represents insert params for 'public.user_team'.
 type UserTeamCreateParams struct {
-	Member Member `json:"member" required:"true" nullable:"false"` // member
+	Member UserID `json:"member" required:"true" nullable:"false"` // member
 	TeamID TeamID `json:"teamID" required:"true" nullable:"false"` // team_id
 }
 
@@ -46,7 +46,7 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 
 // UserTeamUpdateParams represents update params for 'public.user_team'.
 type UserTeamUpdateParams struct {
-	Member *Member `json:"member" nullable:"false"` // member
+	Member *UserID `json:"member" nullable:"false"` // member
 	TeamID *TeamID `json:"teamID" nullable:"false"` // team_id
 }
 

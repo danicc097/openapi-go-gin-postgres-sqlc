@@ -3615,17 +3615,26 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 					}
 					switch c.Cardinality {
 					case M2M:
-						break
+						if c.ColumnName == field.SQLName {
+							fmt.Printf("c: %+v\n", c)
+							fmt.Printf("field: %+v\n", field)
+							fmt.Println("----")
+							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
+							break
+						}
 					case M2O:
 						if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
 							field.Type = camelExport(c.TableName) + "ID"
+							break
 						}
 						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
 							field.Type = camelExport(c.RefTableName) + "ID"
+							break
 						}
 					case O2O:
 						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
 							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
+							break
 						}
 
 					default:
@@ -3760,13 +3769,8 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 				if mode == "IDTypes" {
 					return "", nil
 				}
-				if c.RefColumnName == field.SQLName {
-					constraintTyp = camelExport(c.RefColumnName)
-					break
-				}
-				// FIXME: use ref PK, now getting AssignedUser instead of UserID
-				if c.LookupRefColumn == field.SQLName {
-					constraintTyp = camelExport(c.LookupRefColumn)
+				if c.ColumnName == field.SQLName {
+					constraintTyp = camelExport(singularize(c.RefTableName)) + "ID"
 					break
 				}
 			case M2O:
@@ -3791,7 +3795,6 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	if constraintTyp != "" && mode != "IDTypes" {
 		pc := strings.Count(fieldType, "*")
 		fieldType = strings.Repeat("*", pc) + constraintTyp
-		fmt.Printf("fieldType: %v\n", fieldType)
 	}
 
 	if mode == "UpdateParams" {

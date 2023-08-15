@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -25,8 +24,8 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type BookAuthorsSurrogateKey struct {
 	BookAuthorsSurrogateKeyID BookAuthorsSurrogateKeyID `json:"bookAuthorsSurrogateKeyID" db:"book_authors_surrogate_key_id" required:"true" nullable:"false"` // book_authors_surrogate_key_id
-	BookID                    int                       `json:"bookID" db:"book_id" required:"true" nullable:"false"`                                          // book_id
-	AuthorID                  uuid.UUID                 `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
+	BookID                    BookID                    `json:"bookID" db:"book_id" required:"true" nullable:"false"`                                          // book_id
+	AuthorID                  UserID                    `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
 	Pseudonym                 *string                   `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
 
 	AuthorBooksJoin *[]Book__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
@@ -35,9 +34,9 @@ type BookAuthorsSurrogateKey struct {
 
 // BookAuthorsSurrogateKeyCreateParams represents insert params for 'xo_tests.book_authors_surrogate_key'.
 type BookAuthorsSurrogateKeyCreateParams struct {
-	AuthorID  uuid.UUID `json:"authorID" required:"true" nullable:"false"` // author_id
-	BookID    int       `json:"bookID" required:"true" nullable:"false"`   // book_id
-	Pseudonym *string   `json:"pseudonym"`                                 // pseudonym
+	AuthorID  UserID  `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    BookID  `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Pseudonym *string `json:"pseudonym"`                                 // pseudonym
 }
 
 type BookAuthorsSurrogateKeyID int // book_authors_surrogate_key_id
@@ -55,9 +54,9 @@ func CreateBookAuthorsSurrogateKey(ctx context.Context, db DB, params *BookAutho
 
 // BookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'.
 type BookAuthorsSurrogateKeyUpdateParams struct {
-	AuthorID  *uuid.UUID `json:"authorID" nullable:"false"` // author_id
-	BookID    *int       `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string   `json:"pseudonym"`                 // pseudonym
+	AuthorID  *UserID  `json:"authorID" nullable:"false"` // author_id
+	BookID    *BookID  `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string `json:"pseudonym"`                 // pseudonym
 }
 
 // SetUpdateParams updates xo_tests.book_authors_surrogate_key struct fields with the specified params.
@@ -437,7 +436,7 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 // BookAuthorsSurrogateKeyByBookIDAuthorID retrieves a row from 'xo_tests.book_authors_surrogate_key' as a BookAuthorsSurrogateKey.
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
-func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorsSurrogateKeySelectConfigOption) (*BookAuthorsSurrogateKey, error) {
+func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID BookID, authorID UserID, opts ...BookAuthorsSurrogateKeySelectConfigOption) (*BookAuthorsSurrogateKey, error) {
 	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -522,7 +521,7 @@ func BookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID 
 // BookAuthorsSurrogateKeysByBookID retrieves a row from 'xo_tests.book_authors_surrogate_key' as a BookAuthorsSurrogateKey.
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
-func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
+func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID BookID, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
 	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -609,7 +608,7 @@ func BookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID int, op
 // BookAuthorsSurrogateKeysByAuthorID retrieves a row from 'xo_tests.book_authors_surrogate_key' as a BookAuthorsSurrogateKey.
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
-func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
+func BookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID UserID, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
 	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

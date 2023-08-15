@@ -20,8 +20,8 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookSeller struct {
-	BookID BookSellerID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
-	Seller BookSellerID `json:"seller" db:"seller" required:"true" nullable:"false"`  // seller
+	BookID BookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
+	Seller UserID `json:"seller" db:"seller" required:"true" nullable:"false"`  // seller
 
 	BookSellersJoin *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
 	SellerBooksJoin *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
@@ -29,8 +29,8 @@ type BookSeller struct {
 
 // BookSellerCreateParams represents insert params for 'xo_tests.book_sellers'.
 type BookSellerCreateParams struct {
-	BookID BookSellerID `json:"bookID" required:"true" nullable:"false"` // book_id
-	Seller BookSellerID `json:"seller" required:"true" nullable:"false"` // seller
+	BookID BookID `json:"bookID" required:"true" nullable:"false"` // book_id
+	Seller UserID `json:"seller" required:"true" nullable:"false"` // seller
 }
 
 // CreateBookSeller creates a new BookSeller in the database with the given params.
@@ -45,8 +45,8 @@ func CreateBookSeller(ctx context.Context, db DB, params *BookSellerCreateParams
 
 // BookSellerUpdateParams represents update params for 'xo_tests.book_sellers'.
 type BookSellerUpdateParams struct {
-	BookID *BookSellerID `json:"bookID" nullable:"false"` // book_id
-	Seller *BookSellerID `json:"seller" nullable:"false"` // seller
+	BookID *BookID `json:"bookID" nullable:"false"` // book_id
+	Seller *UserID `json:"seller" nullable:"false"` // seller
 }
 
 // SetUpdateParams updates xo_tests.book_sellers struct fields with the specified params.
