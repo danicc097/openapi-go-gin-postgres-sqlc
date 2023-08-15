@@ -3,7 +3,6 @@ package rest
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -13,7 +12,7 @@ const OtelName = "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/res
 func userIDAttribute(c *gin.Context) attribute.KeyValue {
 	uid := ""
 	if u := getUserFromCtx(c); u != nil {
-		uid = uuid.UUID(u.UserID).String()
+		uid = u.UserID.String()
 	}
 
 	return tracing.UserIDAttribute.String(uid)

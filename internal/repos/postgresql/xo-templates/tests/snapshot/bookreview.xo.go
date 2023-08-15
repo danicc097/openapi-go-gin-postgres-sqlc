@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -24,9 +23,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookReview struct {
-	BookReviewID int       `json:"bookReviewID" db:"book_review_id" required:"true" nullable:"false"` // book_review_id
-	BookID       int       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
-	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
+	BookReviewID BookReviewID `json:"bookReviewID" db:"book_review_id" required:"true" nullable:"false"` // book_review_id
+	BookID       BookID       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
+	Reviewer     UserID       `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
 
 	BookJoin     *Book `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
 	ReviewerJoin *User `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
@@ -34,9 +33,11 @@ type BookReview struct {
 
 // BookReviewCreateParams represents insert params for 'xo_tests.book_reviews'.
 type BookReviewCreateParams struct {
-	BookID   int       `json:"bookID" required:"true" nullable:"false"`   // book_id
-	Reviewer uuid.UUID `json:"reviewer" required:"true" nullable:"false"` // reviewer
+	BookID   BookID `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Reviewer UserID `json:"reviewer" required:"true" nullable:"false"` // reviewer
 }
+
+type BookReviewID int // book_review_id
 
 // CreateBookReview creates a new BookReview in the database with the given params.
 func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams) (*BookReview, error) {
@@ -50,8 +51,8 @@ func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams
 
 // BookReviewUpdateParams represents update params for 'xo_tests.book_reviews'.
 type BookReviewUpdateParams struct {
-	BookID   *int       `json:"bookID" nullable:"false"`   // book_id
-	Reviewer *uuid.UUID `json:"reviewer" nullable:"false"` // reviewer
+	BookID   *BookID `json:"bookID" nullable:"false"`   // book_id
+	Reviewer *UserID `json:"reviewer" nullable:"false"` // reviewer
 }
 
 // SetUpdateParams updates xo_tests.book_reviews struct fields with the specified params.
@@ -219,7 +220,7 @@ func (br *BookReview) Delete(ctx context.Context, db DB) error {
 }
 
 // BookReviewPaginatedByBookReviewIDAsc returns a cursor-paginated list of BookReview in Asc order.
-func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReviewID BookReviewID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -300,7 +301,7 @@ func BookReviewPaginatedByBookReviewIDAsc(ctx context.Context, db DB, bookReview
 }
 
 // BookReviewPaginatedByBookIDAsc returns a cursor-paginated list of BookReview in Asc order.
-func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID BookID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -381,7 +382,7 @@ func BookReviewPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts
 }
 
 // BookReviewPaginatedByBookReviewIDDesc returns a cursor-paginated list of BookReview in Desc order.
-func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookReviewID BookReviewID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -462,7 +463,7 @@ func BookReviewPaginatedByBookReviewIDDesc(ctx context.Context, db DB, bookRevie
 }
 
 // BookReviewPaginatedByBookIDDesc returns a cursor-paginated list of BookReview in Desc order.
-func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID BookID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -545,7 +546,7 @@ func BookReviewPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opt
 // BookReviewByBookReviewID retrieves a row from 'xo_tests.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_pkey'.
-func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
+func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID BookReviewID, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -629,7 +630,7 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 // BookReviewByReviewerBookID retrieves a row from 'xo_tests.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
-func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, bookID int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
+func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer UserID, bookID BookID, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -713,7 +714,7 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 // BookReviewsByReviewer retrieves a row from 'xo_tests.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
-func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewsByReviewer(ctx context.Context, db DB, reviewer UserID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -799,7 +800,7 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 // BookReviewsByBookID retrieves a row from 'xo_tests.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
-func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewsByBookID(ctx context.Context, db DB, bookID BookID, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

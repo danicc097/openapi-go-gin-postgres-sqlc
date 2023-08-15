@@ -68,7 +68,9 @@ type UserCreateParams struct {
 	Username                 string        `json:"username" required:"true" nullable:"false"`                                 // username
 }
 
-type UserID uuid.UUID // user_id
+type UserID struct {
+	uuid.UUID
+} // user_id
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
@@ -405,9 +407,9 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 // Update updates a User in the database.
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.users SET 
-	api_key_id = $1, deleted_at = $2, email = $3, external_id = $4, first_name = $5, has_global_notifications = $6, has_personal_notifications = $7, last_name = $8, role_rank = $9, scopes = $10, username = $11 
-	WHERE user_id = $12 
+	sqlstr := `UPDATE public.users SET
+	api_key_id = $1, deleted_at = $2, email = $3, external_id = $4, first_name = $5, has_global_notifications = $6, has_personal_notifications = $7, last_name = $8, role_rank = $9, scopes = $10, username = $11
+	WHERE user_id = $12
 	RETURNING * `
 	// run
 	logf(sqlstr, u.APIKeyID, u.CreatedAt, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.UpdatedAt, u.Username, u.UserID)
@@ -461,7 +463,7 @@ func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*Us
 // Delete deletes the User from the database.
 func (u *User) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.users 
+	sqlstr := `DELETE FROM public.users
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
@@ -473,8 +475,8 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the User from the database via 'deleted_at'.
 func (u *User) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.users 
-	SET deleted_at = NOW() 
+	sqlstr := `UPDATE public.users
+	SET deleted_at = NOW()
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
@@ -588,7 +590,7 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -603,11 +605,11 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.created_at > $1
-	 %s   AND users.deleted_at is %s  %s 
-  ORDER BY 
+	 %s   AND users.deleted_at is %s  %s
+  ORDER BY
 		created_at Asc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* UserPaginatedByCreatedAtAsc */\n" + sqlstr
@@ -717,7 +719,7 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -732,11 +734,11 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.created_at < $1
-	 %s   AND users.deleted_at is %s  %s 
-  ORDER BY 
+	 %s   AND users.deleted_at is %s  %s
+  ORDER BY
 		created_at Desc`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* UserPaginatedByCreatedAtDesc */\n" + sqlstr
@@ -848,7 +850,7 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -863,10 +865,10 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.created_at = $1
-	 %s   AND users.deleted_at is %s  %s 
+	 %s   AND users.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -980,7 +982,7 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -995,10 +997,10 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.deleted_at = $1 AND (deleted_at IS NOT NULL)
-	 %s   AND users.deleted_at is %s  %s 
+	 %s   AND users.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1114,7 +1116,7 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1129,10 +1131,10 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.email = $1
-	 %s   AND users.deleted_at is %s  %s 
+	 %s   AND users.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1246,7 +1248,7 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1261,10 +1263,10 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.external_id = $1
-	 %s   AND users.deleted_at is %s  %s 
+	 %s   AND users.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1378,7 +1380,7 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1393,10 +1395,10 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.user_id = $1
-	 %s   AND users.deleted_at is %s  %s 
+	 %s   AND users.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1510,7 +1512,7 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1525,10 +1527,10 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.updated_at = $1
-	 %s   AND users.deleted_at is %s  %s 
+	 %s   AND users.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1644,7 +1646,7 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1659,10 +1661,10 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.username = $1
-	 %s   AND users.deleted_at is %s  %s 
+	 %s   AND users.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

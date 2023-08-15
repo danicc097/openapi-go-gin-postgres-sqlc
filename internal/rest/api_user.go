@@ -21,7 +21,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)
 
-	_, err := h.svc.user.Delete(c, tx, db.UserID(id))
+	_, err := h.svc.user.Delete(c, tx, db.UserID{UUID: id})
 	if err != nil {
 		renderErrorResponse(c, "Could not delete user", err)
 
@@ -69,7 +69,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 		return
 	}
 
-	user, err := h.svc.user.Update(c, tx, db.UserID(id), caller, body)
+	user, err := h.svc.user.Update(c, tx, db.UserID{UUID: id}, caller, body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
@@ -96,7 +96,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 }
 
 // UpdateUserAuthorization updates authorization information, e.g. roles, scopes.
-func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) { // TODO: x-go-type db.<entity>ID directly worth it? won't be able to reuse parameters
+func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
@@ -112,7 +112,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) { // TO
 		return
 	}
 
-	if _, err := h.svc.user.UpdateUserAuthorization(c, tx, db.UserID(id), caller, body); err != nil {
+	if _, err := h.svc.user.UpdateUserAuthorization(c, tx, db.UserID{UUID: id}, caller, body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return

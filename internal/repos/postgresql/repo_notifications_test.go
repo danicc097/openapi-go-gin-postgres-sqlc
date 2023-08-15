@@ -8,7 +8,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,7 +35,7 @@ func TestNotification_Create(t *testing.T) {
 		_, err := notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
 
-		params := db.GetUserNotificationsParams{UserID: uuid.UUID(receiver.UserID), NotificationType: db.NotificationTypePersonal}
+		params := db.GetUserNotificationsParams{UserID: receiver.UserID.UUID, NotificationType: db.NotificationTypePersonal}
 		nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
 		require.NoError(t, err)
 
@@ -72,13 +71,13 @@ func TestNotification_Create(t *testing.T) {
 		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
 
-		notificationCount := map[uuid.UUID]int{
-			uuid.UUID(receiverRank1.UserID): 0,
-			uuid.UUID(receiverRank3.UserID): 1,
+		notificationCount := map[db.UserID]int{
+			receiverRank1.UserID: 0,
+			receiverRank3.UserID: 1,
 		}
 
 		for userID, count := range notificationCount {
-			params := db.GetUserNotificationsParams{UserID: userID, NotificationType: db.NotificationTypeGlobal}
+			params := db.GetUserNotificationsParams{UserID: userID.UUID, NotificationType: db.NotificationTypeGlobal}
 			nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
 			require.NoError(t, err)
 

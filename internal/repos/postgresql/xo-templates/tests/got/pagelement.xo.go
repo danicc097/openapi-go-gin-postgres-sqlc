@@ -41,7 +41,7 @@ type PagElementCreateParams struct {
 
 type PagElementID struct {
 	uuid.UUID
-}
+} // paginated_element_id
 
 // CreatePagElement creates a new PagElement in the database with the given params.
 func CreatePagElement(ctx context.Context, db DB, params *PagElementCreateParams) (*PagElement, error) {
@@ -175,9 +175,9 @@ func (pe *PagElement) Insert(ctx context.Context, db DB) (*PagElement, error) {
 // Update updates a PagElement in the database.
 func (pe *PagElement) Update(ctx context.Context, db DB) (*PagElement, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.pag_element SET
-	dummy = $1, name = $2
-	WHERE paginated_element_id = $3
+	sqlstr := `UPDATE xo_tests.pag_element SET 
+	dummy = $1, name = $2 
+	WHERE paginated_element_id = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, pe.CreatedAt, pe.Dummy, pe.Name, pe.PaginatedElementID)
@@ -223,7 +223,7 @@ func (pe *PagElement) Upsert(ctx context.Context, db DB, params *PagElementCreat
 // Delete deletes the PagElement from the database.
 func (pe *PagElement) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.pag_element
+	sqlstr := `DELETE FROM xo_tests.pag_element 
 	WHERE paginated_element_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, pe.PaginatedElementID); err != nil {
@@ -282,15 +282,15 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM xo_tests.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.created_at > $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		created_at Asc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* PagElementPaginatedByCreatedAtAsc */\n" + sqlstr
@@ -358,15 +358,15 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM xo_tests.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.created_at < $1
-	 %s   %s
-  ORDER BY
+	 %s   %s 
+  ORDER BY 
 		created_at Desc`, selects, joins, filters, groupbys)
 	sqlstr += c.limit
 	sqlstr = "/* PagElementPaginatedByCreatedAtDesc */\n" + sqlstr
@@ -436,14 +436,14 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM xo_tests.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.created_at = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -515,14 +515,14 @@ func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElement
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM xo_tests.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.paginated_element_id = $1
-	 %s   %s
+	 %s   %s 
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -3805,6 +3805,12 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 			return "", nil
 		}
 		if field.IsPrimary {
+			if strings.HasSuffix(fieldType, "uuid.UUID") {
+				fieldType = `struct {
+					uuid.UUID
+				}`
+			}
+
 			return fmt.Sprintf("type %s %s // %s\n\n", table.GoName+"ID", fieldType, field.SQLName), nil
 		} else {
 			return "", nil

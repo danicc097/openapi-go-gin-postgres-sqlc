@@ -23,14 +23,16 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DummyJoin struct {
-	DummyJoinID int     `json:"dummyJoinID" db:"dummy_join_id" required:"true" nullable:"false"` // dummy_join_id
-	Name        *string `json:"name" db:"name"`                                                  // name
+	DummyJoinID DummyJoinID `json:"dummyJoinID" db:"dummy_join_id" required:"true" nullable:"false"` // dummy_join_id
+	Name        *string     `json:"name" db:"name"`                                                  // name
 }
 
 // DummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
 type DummyJoinCreateParams struct {
 	Name *string `json:"name"` // name
 }
+
+type DummyJoinID int // dummy_join_id
 
 // CreateDummyJoin creates a new DummyJoin in the database with the given params.
 func CreateDummyJoin(ctx context.Context, db DB, params *DummyJoinCreateParams) (*DummyJoin, error) {
@@ -181,7 +183,7 @@ func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 }
 
 // DummyJoinPaginatedByDummyJoinIDAsc returns a cursor-paginated list of DummyJoin in Asc order.
-func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -249,7 +251,7 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 }
 
 // DummyJoinPaginatedByDummyJoinIDDesc returns a cursor-paginated list of DummyJoin in Desc order.
-func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -319,7 +321,7 @@ func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID
 // DummyJoinByDummyJoinID retrieves a row from 'xo_tests.dummy_join' as a DummyJoin.
 //
 // Generated from index 'dummy_join_pkey'.
-func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) (*DummyJoin, error) {
+func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) (*DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

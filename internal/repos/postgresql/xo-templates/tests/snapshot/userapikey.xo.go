@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -25,10 +24,10 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
-	APIKey       string    `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
-	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
-	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	UserAPIKeyID UserAPIKeyID `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
+	APIKey       string       `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
+	ExpiresOn    time.Time    `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
+	UserID       UserID       `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
 
 	UserJoin *User `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
 }
@@ -37,8 +36,10 @@ type UserAPIKey struct {
 type UserAPIKeyCreateParams struct {
 	APIKey    string    `json:"apiKey" required:"true" nullable:"false"`    // api_key
 	ExpiresOn time.Time `json:"expiresOn" required:"true" nullable:"false"` // expires_on
-	UserID    uuid.UUID `json:"userID" required:"true" nullable:"false"`    // user_id
+	UserID    UserID    `json:"userID" required:"true" nullable:"false"`    // user_id
 }
+
+type UserAPIKeyID int // user_api_key_id
 
 // CreateUserAPIKey creates a new UserAPIKey in the database with the given params.
 func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
@@ -55,7 +56,7 @@ func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams
 type UserAPIKeyUpdateParams struct {
 	APIKey    *string    `json:"apiKey" nullable:"false"`    // api_key
 	ExpiresOn *time.Time `json:"expiresOn" nullable:"false"` // expires_on
-	UserID    *uuid.UUID `json:"userID" nullable:"false"`    // user_id
+	UserID    *UserID    `json:"userID" nullable:"false"`    // user_id
 }
 
 // SetUpdateParams updates xo_tests.user_api_keys struct fields with the specified params.
@@ -236,7 +237,7 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 }
 
 // UserAPIKeyPaginatedByUserAPIKeyIDAsc returns a cursor-paginated list of UserAPIKey in Asc order.
-func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -312,7 +313,7 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 }
 
 // UserAPIKeyPaginatedByUserAPIKeyIDDesc returns a cursor-paginated list of UserAPIKey in Desc order.
-func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -469,7 +470,7 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 // UserAPIKeyByUserAPIKeyID retrieves a row from 'xo_tests.user_api_keys' as a UserAPIKey.
 //
 // Generated from index 'user_api_keys_pkey'.
-func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
+func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -548,7 +549,7 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 // UserAPIKeyByUserID retrieves a row from 'xo_tests.user_api_keys' as a UserAPIKey.
 //
 // Generated from index 'user_api_keys_user_id_key'.
-func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
+func UserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
