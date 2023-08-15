@@ -193,7 +193,7 @@ func (bs *BookSeller) Delete(ctx context.Context, db DB) error {
 // BookSellersByBookIDSeller retrieves a row from 'xo_tests.book_sellers' as a BookSeller.
 //
 // Generated from index 'book_sellers_book_id_seller_idx'.
-func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID BookSellerID, seller BookSellerID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
+func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID BookID, seller UserID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
 	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -278,7 +278,7 @@ func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID BookSellerID, 
 // BookSellersByBookID retrieves a row from 'xo_tests.book_sellers' as a BookSeller.
 //
 // Generated from index 'book_sellers_pkey'.
-func BookSellersByBookID(ctx context.Context, db DB, bookID BookSellerID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
+func BookSellersByBookID(ctx context.Context, db DB, bookID BookID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
 	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -363,7 +363,7 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID BookSellerID, opts .
 // BookSellersBySeller retrieves a row from 'xo_tests.book_sellers' as a BookSeller.
 //
 // Generated from index 'book_sellers_pkey'.
-func BookSellersBySeller(ctx context.Context, db DB, seller BookSellerID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
+func BookSellersBySeller(ctx context.Context, db DB, seller UserID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
 	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -448,7 +448,7 @@ func BookSellersBySeller(ctx context.Context, db DB, seller BookSellerID, opts .
 // BookSellersBySellerBookID retrieves a row from 'xo_tests.book_sellers' as a BookSeller.
 //
 // Generated from index 'book_sellers_seller_book_id_idx'.
-func BookSellersBySellerBookID(ctx context.Context, db DB, seller BookSellerID, bookID BookSellerID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
+func BookSellersBySellerBookID(ctx context.Context, db DB, seller UserID, bookID BookID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
 	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

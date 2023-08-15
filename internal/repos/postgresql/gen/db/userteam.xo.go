@@ -196,7 +196,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 // UserTeamsByMember retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_member_idx'.
-func UserTeamsByMember(ctx context.Context, db DB, member UserTeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -281,7 +281,7 @@ func UserTeamsByMember(ctx context.Context, db DB, member UserTeamID, opts ...Us
 // UserTeamByMemberTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserTeamID, teamID UserTeamID, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
+func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID TeamID, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -364,7 +364,7 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserTeamID, teamI
 // UserTeamsByTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamsByTeamID(ctx context.Context, db DB, teamID UserTeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -449,7 +449,7 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID UserTeamID, opts ...Us
 // UserTeamsByTeamIDMember retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_member_idx'.
-func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID UserTeamID, member UserTeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member UserID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

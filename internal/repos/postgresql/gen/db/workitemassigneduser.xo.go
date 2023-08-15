@@ -272,7 +272,7 @@ func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 // WorkItemAssignedUsersByAssignedUserWorkItemID retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
-func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser WorkItemAssignedUserID, workItemID WorkItemAssignedUserID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser UserID, workItemID WorkItemID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -358,7 +358,7 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 // WorkItemAssignedUserByWorkItemIDAssignedUser retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID WorkItemAssignedUserID, assignedUser WorkItemAssignedUserID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
+func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID WorkItemID, assignedUser UserID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -442,7 +442,7 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 // WorkItemAssignedUsersByWorkItemID retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID WorkItemAssignedUserID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -528,7 +528,7 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID Wo
 // WorkItemAssignedUsersByAssignedUser retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser WorkItemAssignedUserID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser UserID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

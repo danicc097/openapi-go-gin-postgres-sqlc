@@ -3636,13 +3636,10 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
 							break
 						}
-
 					default:
 					}
 				}
-			}
-
-			if field.IsPrimary {
+			} else if field.IsPrimary {
 				field.Type = table.GoName + "ID"
 			}
 

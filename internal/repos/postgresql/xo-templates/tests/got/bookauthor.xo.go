@@ -268,7 +268,7 @@ func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 // BookAuthorByBookIDAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID BookAuthorID, authorID BookAuthorID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
+func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID BookID, authorID UserID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -352,7 +352,7 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID BookAuthorID,
 // BookAuthorsByBookID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorsByBookID(ctx context.Context, db DB, bookID BookAuthorID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
+func BookAuthorsByBookID(ctx context.Context, db DB, bookID BookID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -438,7 +438,7 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID BookAuthorID, opts .
 // BookAuthorsByAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID BookAuthorID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
+func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID UserID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
