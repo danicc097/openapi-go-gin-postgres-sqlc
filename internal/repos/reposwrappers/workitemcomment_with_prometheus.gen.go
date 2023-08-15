@@ -39,7 +39,7 @@ func NewWorkItemCommentWithPrometheus(base repos.WorkItemComment, instanceName s
 }
 
 // ByID implements repos.WorkItemComment
-func (_d WorkItemCommentWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d WorkItemCommentWithPrometheus) Create(ctx context.Context, d db.DBTX, p
 }
 
 // Delete implements repos.WorkItemComment
-func (_d WorkItemCommentWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (wp1 *db.WorkItemComment, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d WorkItemCommentWithPrometheus) Delete(ctx context.Context, d db.DBTX, i
 }
 
 // Update implements repos.WorkItemComment
-func (_d WorkItemCommentWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

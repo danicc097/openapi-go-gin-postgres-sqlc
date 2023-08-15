@@ -37,7 +37,7 @@ func NewWorkItemCommentWithTimeout(base repos.WorkItemComment, config WorkItemCo
 }
 
 // ByID implements repos.WorkItemComment
-func (_d WorkItemCommentWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -57,7 +57,7 @@ func (_d WorkItemCommentWithTimeout) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.WorkItemComment
-func (_d WorkItemCommentWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (wp1 *db.WorkItemComment, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -67,7 +67,7 @@ func (_d WorkItemCommentWithTimeout) Delete(ctx context.Context, d db.DBTX, id i
 }
 
 // Update implements repos.WorkItemComment
-func (_d WorkItemCommentWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTimeout) Update(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

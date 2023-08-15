@@ -7,7 +7,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 )
 
 type FakeUser struct {
@@ -58,12 +57,12 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
-	ByIDStub        func(context.Context, db.DBTX, uuid.UUID, ...db.UserSelectConfigOption) (*db.User, error)
+	ByIDStub        func(context.Context, db.DBTX, db.UserID, ...db.UserSelectConfigOption) (*db.User, error)
 	byIDMutex       sync.RWMutex
 	byIDArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 uuid.UUID
+		arg3 db.UserID
 		arg4 []db.UserSelectConfigOption
 	}
 	byIDReturns struct {
@@ -74,12 +73,12 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
-	ByProjectStub        func(context.Context, db.DBTX, int) ([]db.User, error)
+	ByProjectStub        func(context.Context, db.DBTX, db.ProjectID) ([]db.User, error)
 	byProjectMutex       sync.RWMutex
 	byProjectArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 int
+		arg3 db.ProjectID
 	}
 	byProjectReturns struct {
 		result1 []db.User
@@ -89,12 +88,12 @@ type FakeUser struct {
 		result1 []db.User
 		result2 error
 	}
-	ByTeamStub        func(context.Context, db.DBTX, int) ([]db.User, error)
+	ByTeamStub        func(context.Context, db.DBTX, db.TeamID) ([]db.User, error)
 	byTeamMutex       sync.RWMutex
 	byTeamArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 int
+		arg3 db.TeamID
 	}
 	byTeamReturns struct {
 		result1 []db.User
@@ -150,12 +149,12 @@ type FakeUser struct {
 		result1 *db.UserAPIKey
 		result2 error
 	}
-	DeleteStub        func(context.Context, db.DBTX, uuid.UUID) (*db.User, error)
+	DeleteStub        func(context.Context, db.DBTX, db.UserID) (*db.User, error)
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 uuid.UUID
+		arg3 db.UserID
 	}
 	deleteReturns struct {
 		result1 *db.User
@@ -180,12 +179,12 @@ type FakeUser struct {
 		result1 *db.UserAPIKey
 		result2 error
 	}
-	UpdateStub        func(context.Context, db.DBTX, uuid.UUID, *db.UserUpdateParams) (*db.User, error)
+	UpdateStub        func(context.Context, db.DBTX, db.UserID, *db.UserUpdateParams) (*db.User, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 uuid.UUID
+		arg3 db.UserID
 		arg4 *db.UserUpdateParams
 	}
 	updateReturns struct {
@@ -400,13 +399,13 @@ func (fake *FakeUser) ByExternalIDReturnsOnCall(i int, result1 *db.User, result2
 	}{result1, result2}
 }
 
-func (fake *FakeUser) ByID(arg1 context.Context, arg2 db.DBTX, arg3 uuid.UUID, arg4 ...db.UserSelectConfigOption) (*db.User, error) {
+func (fake *FakeUser) ByID(arg1 context.Context, arg2 db.DBTX, arg3 db.UserID, arg4 ...db.UserSelectConfigOption) (*db.User, error) {
 	fake.byIDMutex.Lock()
 	ret, specificReturn := fake.byIDReturnsOnCall[len(fake.byIDArgsForCall)]
 	fake.byIDArgsForCall = append(fake.byIDArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 uuid.UUID
+		arg3 db.UserID
 		arg4 []db.UserSelectConfigOption
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByIDStub
@@ -428,13 +427,13 @@ func (fake *FakeUser) ByIDCallCount() int {
 	return len(fake.byIDArgsForCall)
 }
 
-func (fake *FakeUser) ByIDCalls(stub func(context.Context, db.DBTX, uuid.UUID, ...db.UserSelectConfigOption) (*db.User, error)) {
+func (fake *FakeUser) ByIDCalls(stub func(context.Context, db.DBTX, db.UserID, ...db.UserSelectConfigOption) (*db.User, error)) {
 	fake.byIDMutex.Lock()
 	defer fake.byIDMutex.Unlock()
 	fake.ByIDStub = stub
 }
 
-func (fake *FakeUser) ByIDArgsForCall(i int) (context.Context, db.DBTX, uuid.UUID, []db.UserSelectConfigOption) {
+func (fake *FakeUser) ByIDArgsForCall(i int) (context.Context, db.DBTX, db.UserID, []db.UserSelectConfigOption) {
 	fake.byIDMutex.RLock()
 	defer fake.byIDMutex.RUnlock()
 	argsForCall := fake.byIDArgsForCall[i]
@@ -467,13 +466,13 @@ func (fake *FakeUser) ByIDReturnsOnCall(i int, result1 *db.User, result2 error) 
 	}{result1, result2}
 }
 
-func (fake *FakeUser) ByProject(arg1 context.Context, arg2 db.DBTX, arg3 int) ([]db.User, error) {
+func (fake *FakeUser) ByProject(arg1 context.Context, arg2 db.DBTX, arg3 db.ProjectID) ([]db.User, error) {
 	fake.byProjectMutex.Lock()
 	ret, specificReturn := fake.byProjectReturnsOnCall[len(fake.byProjectArgsForCall)]
 	fake.byProjectArgsForCall = append(fake.byProjectArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 int
+		arg3 db.ProjectID
 	}{arg1, arg2, arg3})
 	stub := fake.ByProjectStub
 	fakeReturns := fake.byProjectReturns
@@ -494,13 +493,13 @@ func (fake *FakeUser) ByProjectCallCount() int {
 	return len(fake.byProjectArgsForCall)
 }
 
-func (fake *FakeUser) ByProjectCalls(stub func(context.Context, db.DBTX, int) ([]db.User, error)) {
+func (fake *FakeUser) ByProjectCalls(stub func(context.Context, db.DBTX, db.ProjectID) ([]db.User, error)) {
 	fake.byProjectMutex.Lock()
 	defer fake.byProjectMutex.Unlock()
 	fake.ByProjectStub = stub
 }
 
-func (fake *FakeUser) ByProjectArgsForCall(i int) (context.Context, db.DBTX, int) {
+func (fake *FakeUser) ByProjectArgsForCall(i int) (context.Context, db.DBTX, db.ProjectID) {
 	fake.byProjectMutex.RLock()
 	defer fake.byProjectMutex.RUnlock()
 	argsForCall := fake.byProjectArgsForCall[i]
@@ -533,13 +532,13 @@ func (fake *FakeUser) ByProjectReturnsOnCall(i int, result1 []db.User, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeUser) ByTeam(arg1 context.Context, arg2 db.DBTX, arg3 int) ([]db.User, error) {
+func (fake *FakeUser) ByTeam(arg1 context.Context, arg2 db.DBTX, arg3 db.TeamID) ([]db.User, error) {
 	fake.byTeamMutex.Lock()
 	ret, specificReturn := fake.byTeamReturnsOnCall[len(fake.byTeamArgsForCall)]
 	fake.byTeamArgsForCall = append(fake.byTeamArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 int
+		arg3 db.TeamID
 	}{arg1, arg2, arg3})
 	stub := fake.ByTeamStub
 	fakeReturns := fake.byTeamReturns
@@ -560,13 +559,13 @@ func (fake *FakeUser) ByTeamCallCount() int {
 	return len(fake.byTeamArgsForCall)
 }
 
-func (fake *FakeUser) ByTeamCalls(stub func(context.Context, db.DBTX, int) ([]db.User, error)) {
+func (fake *FakeUser) ByTeamCalls(stub func(context.Context, db.DBTX, db.TeamID) ([]db.User, error)) {
 	fake.byTeamMutex.Lock()
 	defer fake.byTeamMutex.Unlock()
 	fake.ByTeamStub = stub
 }
 
-func (fake *FakeUser) ByTeamArgsForCall(i int) (context.Context, db.DBTX, int) {
+func (fake *FakeUser) ByTeamArgsForCall(i int) (context.Context, db.DBTX, db.TeamID) {
 	fake.byTeamMutex.RLock()
 	defer fake.byTeamMutex.RUnlock()
 	argsForCall := fake.byTeamArgsForCall[i]
@@ -798,13 +797,13 @@ func (fake *FakeUser) CreateAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, r
 	}{result1, result2}
 }
 
-func (fake *FakeUser) Delete(arg1 context.Context, arg2 db.DBTX, arg3 uuid.UUID) (*db.User, error) {
+func (fake *FakeUser) Delete(arg1 context.Context, arg2 db.DBTX, arg3 db.UserID) (*db.User, error) {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 uuid.UUID
+		arg3 db.UserID
 	}{arg1, arg2, arg3})
 	stub := fake.DeleteStub
 	fakeReturns := fake.deleteReturns
@@ -825,13 +824,13 @@ func (fake *FakeUser) DeleteCallCount() int {
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *FakeUser) DeleteCalls(stub func(context.Context, db.DBTX, uuid.UUID) (*db.User, error)) {
+func (fake *FakeUser) DeleteCalls(stub func(context.Context, db.DBTX, db.UserID) (*db.User, error)) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = stub
 }
 
-func (fake *FakeUser) DeleteArgsForCall(i int) (context.Context, db.DBTX, uuid.UUID) {
+func (fake *FakeUser) DeleteArgsForCall(i int) (context.Context, db.DBTX, db.UserID) {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	argsForCall := fake.deleteArgsForCall[i]
@@ -930,13 +929,13 @@ func (fake *FakeUser) DeleteAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, r
 	}{result1, result2}
 }
 
-func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 uuid.UUID, arg4 *db.UserUpdateParams) (*db.User, error) {
+func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 db.UserID, arg4 *db.UserUpdateParams) (*db.User, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 uuid.UUID
+		arg3 db.UserID
 		arg4 *db.UserUpdateParams
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.UpdateStub
@@ -958,13 +957,13 @@ func (fake *FakeUser) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeUser) UpdateCalls(stub func(context.Context, db.DBTX, uuid.UUID, *db.UserUpdateParams) (*db.User, error)) {
+func (fake *FakeUser) UpdateCalls(stub func(context.Context, db.DBTX, db.UserID, *db.UserUpdateParams) (*db.User, error)) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeUser) UpdateArgsForCall(i int) (context.Context, db.DBTX, uuid.UUID, *db.UserUpdateParams) {
+func (fake *FakeUser) UpdateArgsForCall(i int) (context.Context, db.DBTX, db.UserID, *db.UserUpdateParams) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]

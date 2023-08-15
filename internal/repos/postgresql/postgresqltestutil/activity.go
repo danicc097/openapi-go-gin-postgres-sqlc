@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomActivity(t *testing.T, d db.DBTX, projectID int) (*db.Activity, error) {
+func NewRandomActivity(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.Activity, error) {
 	t.Helper()
 
 	activityRepo := postgresql.NewActivity()
@@ -23,7 +23,7 @@ func NewRandomActivity(t *testing.T, d db.DBTX, projectID int) (*db.Activity, er
 	return activity, nil
 }
 
-func RandomActivityCreateParams(t *testing.T, projectID int) *db.ActivityCreateParams {
+func RandomActivityCreateParams(t *testing.T, projectID db.ProjectID) *db.ActivityCreateParams {
 	t.Helper()
 
 	return &db.ActivityCreateParams{

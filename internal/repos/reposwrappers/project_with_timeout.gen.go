@@ -34,7 +34,7 @@ func NewProjectWithTimeout(base repos.Project, config ProjectWithTimeoutConfig) 
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)

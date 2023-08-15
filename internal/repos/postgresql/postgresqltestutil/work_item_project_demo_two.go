@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomDemoTwoWorkItem(t *testing.T, d db.DBTX, kanbanStepID, workItemTypeID, teamID int) (*db.WorkItem, error) {
+func NewRandomDemoTwoWorkItem(t *testing.T, d db.DBTX, kanbanStepID db.KanbanStepID, workItemTypeID db.WorkItemTypeID, teamID db.TeamID) (*db.WorkItem, error) {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoTwoWorkItem()

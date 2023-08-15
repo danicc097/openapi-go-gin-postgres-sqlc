@@ -31,7 +31,7 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params *db.WorkIt
 	return workItemTag, nil
 }
 
-func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	workItemTag, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get work item tag by id %w", parseDBErrorDetail(err))
@@ -47,7 +47,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params *d
 	return workItemTag, err
 }
 
-func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error) {
 	workItemTag, err := db.WorkItemTagByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get work item tag: %w", parseDBErrorDetail(err))
@@ -56,7 +56,7 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 	return workItemTag, nil
 }
 
-func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error) {
 	workItemTag, err := db.WorkItemTagByWorkItemTagID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get work item tag: %w", parseDBErrorDetail(err))
@@ -65,7 +65,7 @@ func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.
 	return workItemTag, nil
 }
 
-func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, id db.WorkItemTagID) (*db.WorkItemTag, error) {
 	workItemTag := &db.WorkItemTag{
 		WorkItemTagID: id,
 	}

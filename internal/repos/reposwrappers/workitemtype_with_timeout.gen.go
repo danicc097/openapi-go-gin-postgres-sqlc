@@ -33,7 +33,7 @@ func NewWorkItemTypeWithTimeout(base repos.WorkItemType, config WorkItemTypeWith
 }
 
 // ByID implements repos.WorkItemType
-func (_d WorkItemTypeWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTypeID, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -43,7 +43,7 @@ func (_d WorkItemTypeWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, o
 }
 
 // ByName implements repos.WorkItemType
-func (_d WorkItemTypeWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)

@@ -6,7 +6,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 )
 
 // WorkItem represents the repository used for interacting with WorkItem records.
@@ -37,7 +36,7 @@ func (w *WorkItem) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkIte
 	return err
 }
 
-func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID db.WorkItemID) error {
+func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) error {
 	lookup := &db.WorkItemAssignedUser{
 		AssignedUser: memberID,
 		WorkItemID:   workItemID,
@@ -52,7 +51,7 @@ func (w *WorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItem
 	return err
 }
 
-func (w *WorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) error {
+func (w *WorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) error {
 	lookup := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,

@@ -8,11 +8,10 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID int, userID uuid.UUID, workItemID *db.WorkItemID, teamID *int) (*db.TimeEntry, error) {
+func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userID db.UserID, workItemID *db.WorkItemID, teamID *db.TeamID) (*db.TimeEntry, error) {
 	t.Helper()
 
 	teRepo := postgresql.NewTimeEntry()
@@ -25,7 +24,7 @@ func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID int, userID uuid.UUI
 	return te, nil
 }
 
-func RandomTimeEntryCreateParams(t *testing.T, activityID int, userID uuid.UUID, workItemID *db.WorkItemID, teamID *int) *db.TimeEntryCreateParams {
+func RandomTimeEntryCreateParams(t *testing.T, activityID db.ActivityID, userID db.UserID, workItemID *db.WorkItemID, teamID *db.TeamID) *db.TimeEntryCreateParams {
 	t.Helper()
 
 	return &db.TimeEntryCreateParams{

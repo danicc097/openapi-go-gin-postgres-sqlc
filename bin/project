@@ -440,7 +440,7 @@ import "$GOMOD_PKG/internal/models"
 EOF
 
   mapfile -t projects_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
-  generate_model_mappings_dicts Project projects_rows
+  generate_model_mappings_dicts Project db.ProjectID projects_rows
 
   for project in ${db_projects[@]}; do
     mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
@@ -449,7 +449,7 @@ EOF
             );" 2>/dev/null)
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")KanbanSteps"
-    generate_model_mappings_dicts $prefix kanban_steps_rows
+    generate_model_mappings_dicts $prefix db.KanbanStepID kanban_steps_rows
 
     kanban_steps_rows=()
     mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
@@ -478,7 +478,7 @@ EOF
             );" 2>/dev/null)
     [[ ${#work_item_types_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")WorkItemTypes"
-    generate_model_mappings_dicts $prefix work_item_types_rows
+    generate_model_mappings_dicts $prefix db.WorkItemTypeID work_item_types_rows
   done
 
   gofumpt -w $model_mappings_path
@@ -488,9 +488,10 @@ EOF
 # inserted exclusively via migrations
 generate_model_mappings_dicts() {
   local prefix="$1"
-  local -n __arr="$2" # db rows
+  local idType="$2"
+  local -n __arr="$3" # db rows
   echo "var (
-	${prefix}NameByID = map[int]models.${prefix}{
+	${prefix}NameByID = map[${idType}]models.${prefix}{
   " >>$model_mappings_path
   for row in "${__arr[@]}"; do
     first=$(cut_first "$row" "|") # always safe
@@ -500,7 +501,7 @@ generate_model_mappings_dicts() {
     echo "${id}: models.${prefix}$(to_pascal "$name")," >>$model_mappings_path
   done
   echo "}
-	${prefix}IDByName = map[models.${prefix}]int{
+	${prefix}IDByName = map[models.${prefix}]${idType}{
   " >>$model_mappings_path
   for row in "${__arr[@]}"; do
     first=$(cut_first "$row" "|") # always safe

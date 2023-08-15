@@ -8,7 +8,7 @@ import (
 )
 
 // NOTE: Base work items never created via WorkItem repo, always through specific project struct.
-func RandomWorkItemCreateParams(t *testing.T, kanbanStepID, workItemTypeID, teamID int) *db.WorkItemCreateParams {
+func RandomWorkItemCreateParams(t *testing.T, kanbanStepID db.KanbanStepID, workItemTypeID db.WorkItemTypeID, teamID db.TeamID) *db.WorkItemCreateParams {
 	t.Helper()
 
 	return &db.WorkItemCreateParams{

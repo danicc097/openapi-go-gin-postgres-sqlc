@@ -29,7 +29,7 @@ func NewTeamWithRetry(base repos.Team, retryCount int, retryInterval time.Durati
 }
 
 // ByID implements repos.Team
-func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	tp1, err = _d.Team.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -48,7 +48,7 @@ func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.
 }
 
 // ByName implements repos.Team
-func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	tp1, err = _d.Team.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -86,7 +86,7 @@ func (_d TeamWithRetry) Create(ctx context.Context, d db.DBTX, params *db.TeamCr
 }
 
 // Delete implements repos.Team
-func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (tp1 *db.Team, err error) {
 	tp1, err = _d.Team.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -105,7 +105,7 @@ func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.
 }
 
 // Update implements repos.Team
-func (_d TeamWithRetry) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (tp1 *db.Team, err error) {
 	tp1, err = _d.Team.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

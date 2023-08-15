@@ -9,7 +9,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -132,7 +131,7 @@ func (_d WorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id db.WorkI
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveAssignedUser")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -156,7 +155,7 @@ func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX,
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithTracing) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithTracing) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveTag")
 	defer func() {
 		if _d._spanDecorator != nil {

@@ -5,10 +5,9 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/google/uuid"
 )
 
-func RandomWorkItemCommentCreateParams(t *testing.T, workItemID db.WorkItemID, userID uuid.UUID) *db.WorkItemCommentCreateParams {
+func RandomWorkItemCommentCreateParams(t *testing.T, workItemID db.WorkItemID, userID db.UserID) *db.WorkItemCommentCreateParams {
 	t.Helper()
 
 	return &db.WorkItemCommentCreateParams{

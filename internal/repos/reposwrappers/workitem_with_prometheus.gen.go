@@ -10,7 +10,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -96,7 +95,7 @@ func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.Wo
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -110,7 +109,7 @@ func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DB
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

@@ -36,7 +36,7 @@ func TestNotification_Create(t *testing.T) {
 		_, err := notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
 
-		params := db.GetUserNotificationsParams{UserID: receiver.UserID, NotificationType: db.NotificationTypePersonal}
+		params := db.GetUserNotificationsParams{UserID: uuid.UUID(receiver.UserID), NotificationType: db.NotificationTypePersonal}
 		nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
 		require.NoError(t, err)
 
@@ -73,8 +73,8 @@ func TestNotification_Create(t *testing.T) {
 		require.NoError(t, err)
 
 		notificationCount := map[uuid.UUID]int{
-			receiverRank1.UserID: 0,
-			receiverRank3.UserID: 1,
+			uuid.UUID(receiverRank1.UserID): 0,
+			uuid.UUID(receiverRank3.UserID): 1,
 		}
 
 		for userID, count := range notificationCount {

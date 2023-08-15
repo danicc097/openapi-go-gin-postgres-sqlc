@@ -31,7 +31,7 @@ func (wit *WorkItemComment) Create(ctx context.Context, d db.DBTX, params *db.Wo
 	return workItemComment, nil
 }
 
-func (wit *WorkItemComment) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error) {
+func (wit *WorkItemComment) Update(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error) {
 	workItemComment, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemComment by id %w", parseDBErrorDetail(err))
@@ -47,7 +47,7 @@ func (wit *WorkItemComment) Update(ctx context.Context, d db.DBTX, id int, param
 	return workItemComment, err
 }
 
-func (wit *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error) {
+func (wit *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, opts ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error) {
 	workItemComment, err := db.WorkItemCommentByWorkItemCommentID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemComment: %w", parseDBErrorDetail(err))
@@ -56,7 +56,7 @@ func (wit *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id int, opts ..
 	return workItemComment, nil
 }
 
-func (wit *WorkItemComment) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemComment, error) {
+func (wit *WorkItemComment) Delete(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (*db.WorkItemComment, error) {
 	workItemComment := &db.WorkItemComment{
 		WorkItemCommentID: id,
 	}

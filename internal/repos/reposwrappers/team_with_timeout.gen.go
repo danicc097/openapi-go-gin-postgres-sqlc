@@ -39,7 +39,7 @@ func NewTeamWithTimeout(base repos.Team, config TeamWithTimeoutConfig) TeamWithT
 }
 
 // ByID implements repos.Team
-func (_d TeamWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -49,7 +49,7 @@ func (_d TeamWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...d
 }
 
 // ByName implements repos.Team
-func (_d TeamWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
@@ -69,7 +69,7 @@ func (_d TeamWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.Team
 }
 
 // Delete implements repos.Team
-func (_d TeamWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (tp1 *db.Team, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -79,7 +79,7 @@ func (_d TeamWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *d
 }
 
 // Update implements repos.Team
-func (_d TeamWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (tp1 *db.Team, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

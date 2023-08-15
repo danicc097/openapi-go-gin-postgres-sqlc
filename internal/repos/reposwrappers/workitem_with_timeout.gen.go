@@ -10,7 +10,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 )
 
 // WorkItemWithTimeout implements repos.WorkItem interface instrumented with timeouts
@@ -84,7 +83,7 @@ func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.WorkI
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
 	var cancelFunc func()
 	if _d.config.RemoveAssignedUserTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveAssignedUserTimeout)
@@ -94,7 +93,7 @@ func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX,
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
 	var cancelFunc func()
 	if _d.config.RemoveTagTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveTagTimeout)

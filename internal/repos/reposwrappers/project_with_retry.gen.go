@@ -30,7 +30,7 @@ func NewProjectWithRetry(base repos.Project, retryCount int, retryInterval time.
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
 	pp1, err = _d.Project.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
