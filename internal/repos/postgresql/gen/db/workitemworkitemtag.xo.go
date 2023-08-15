@@ -20,8 +20,8 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemWorkItemTag struct {
-	WorkItemTagID WorkItemWorkItemTagID `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"` // work_item_tag_id
-	WorkItemID    WorkItemWorkItemTagID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`        // work_item_id
+	WorkItemTagID WorkItemTagID `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"` // work_item_tag_id
+	WorkItemID    WorkItemID    `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`        // work_item_id
 
 	WorkItemWorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
 	WorkItemTagWorkItemsJoin *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M work_item_work_item_tag
@@ -30,8 +30,8 @@ type WorkItemWorkItemTag struct {
 
 // WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagCreateParams struct {
-	WorkItemID    WorkItemWorkItemTagID `json:"workItemID" required:"true" nullable:"false"`    // work_item_id
-	WorkItemTagID WorkItemWorkItemTagID `json:"workItemTagID" required:"true" nullable:"false"` // work_item_tag_id
+	WorkItemID    WorkItemID    `json:"workItemID" required:"true" nullable:"false"`    // work_item_id
+	WorkItemTagID WorkItemTagID `json:"workItemTagID" required:"true" nullable:"false"` // work_item_tag_id
 }
 
 // CreateWorkItemWorkItemTag creates a new WorkItemWorkItemTag in the database with the given params.
@@ -46,8 +46,8 @@ func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkI
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagUpdateParams struct {
-	WorkItemID    *WorkItemWorkItemTagID `json:"workItemID" nullable:"false"`    // work_item_id
-	WorkItemTagID *WorkItemWorkItemTagID `json:"workItemTagID" nullable:"false"` // work_item_tag_id
+	WorkItemID    *WorkItemID    `json:"workItemID" nullable:"false"`    // work_item_id
+	WorkItemTagID *WorkItemTagID `json:"workItemTagID" nullable:"false"` // work_item_tag_id
 }
 
 // SetUpdateParams updates public.work_item_work_item_tag struct fields with the specified params.

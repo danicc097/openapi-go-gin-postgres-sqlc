@@ -3760,6 +3760,15 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 				if mode == "IDTypes" {
 					return "", nil
 				}
+				if c.RefColumnName == field.SQLName {
+					constraintTyp = camelExport(c.RefColumnName)
+					break
+				}
+				// FIXME: use ref PK, now getting AssignedUser instead of UserID
+				if c.LookupRefColumn == field.SQLName {
+					constraintTyp = camelExport(c.LookupRefColumn)
+					break
+				}
 			case M2O:
 				if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
 					constraintTyp = camelExport(c.TableName) + "ID"
@@ -3782,6 +3791,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	if constraintTyp != "" && mode != "IDTypes" {
 		pc := strings.Count(fieldType, "*")
 		fieldType = strings.Repeat("*", pc) + constraintTyp
+		fmt.Printf("fieldType: %v\n", fieldType)
 	}
 
 	if mode == "UpdateParams" {
@@ -3794,7 +3804,6 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 
 	if mode == "IDTypes" {
-
 		if af.isSingleFK && af.isSinglePK {
 			return "", nil
 		}

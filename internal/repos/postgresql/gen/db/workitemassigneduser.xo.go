@@ -24,9 +24,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemAssignedUser struct {
-	WorkItemID   WorkItemAssignedUserID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
-	AssignedUser WorkItemAssignedUserID `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
-	Role         models.WorkItemRole    `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   WorkItemID          `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
+	AssignedUser AssignedUser        `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
+	Role         models.WorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_WorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
 	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -35,9 +35,9 @@ type WorkItemAssignedUser struct {
 
 // WorkItemAssignedUserCreateParams represents insert params for 'public.work_item_assigned_user'.
 type WorkItemAssignedUserCreateParams struct {
-	AssignedUser WorkItemAssignedUserID `json:"assignedUser" required:"true" nullable:"false"`                                 // assigned_user
-	Role         models.WorkItemRole    `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   WorkItemAssignedUserID `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
+	AssignedUser AssignedUser        `json:"assignedUser" required:"true" nullable:"false"`                                 // assigned_user
+	Role         models.WorkItemRole `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   WorkItemID          `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
 // CreateWorkItemAssignedUser creates a new WorkItemAssignedUser in the database with the given params.
@@ -53,9 +53,9 @@ func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssi
 
 // WorkItemAssignedUserUpdateParams represents update params for 'public.work_item_assigned_user'.
 type WorkItemAssignedUserUpdateParams struct {
-	AssignedUser *WorkItemAssignedUserID `json:"assignedUser" nullable:"false"`                                 // assigned_user
-	Role         *models.WorkItemRole    `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   *WorkItemAssignedUserID `json:"workItemID" nullable:"false"`                                   // work_item_id
+	AssignedUser *AssignedUser        `json:"assignedUser" nullable:"false"`                                 // assigned_user
+	Role         *models.WorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   *WorkItemID          `json:"workItemID" nullable:"false"`                                   // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_assigned_user struct fields with the specified params.
