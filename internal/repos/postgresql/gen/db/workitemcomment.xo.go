@@ -257,7 +257,7 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 }
 
 // WorkItemCommentPaginatedByWorkItemCommentIDAsc returns a cursor-paginated list of WorkItemComment in Asc order.
-func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, workItemCommentID int, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -341,7 +341,7 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 }
 
 // WorkItemCommentPaginatedByWorkItemCommentIDDesc returns a cursor-paginated list of WorkItemComment in Desc order.
-func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB, workItemCommentID int, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -427,7 +427,7 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 // WorkItemCommentByWorkItemCommentID retrieves a row from 'public.work_item_comments' as a WorkItemComment.
 //
 // Generated from index 'work_item_comments_pkey'.
-func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
+func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -514,7 +514,7 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 // WorkItemCommentsByWorkItemID retrieves a row from 'public.work_item_comments' as a WorkItemComment.
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
-func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

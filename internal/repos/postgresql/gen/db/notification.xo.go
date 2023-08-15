@@ -311,7 +311,7 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 }
 
 // NotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of Notification in Asc order.
-func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -405,7 +405,7 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 }
 
 // NotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of Notification in Desc order.
-func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -501,7 +501,7 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 // NotificationByNotificationID retrieves a row from 'public.notifications' as a Notification.
 //
 // Generated from index 'notifications_pkey'.
-func NotificationByNotificationID(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) (*Notification, error) {
+func NotificationByNotificationID(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) (*Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -232,7 +231,7 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 }
 
 // UserNotificationPaginatedByUserNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
-func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB, userNotificationID UserNotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -314,7 +313,7 @@ func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB
 }
 
 // UserNotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
-func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID NotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -396,7 +395,7 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 }
 
 // UserNotificationPaginatedByUserNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
-func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db DB, userNotificationID UserNotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -478,7 +477,7 @@ func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db D
 }
 
 // UserNotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
-func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID NotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -562,7 +561,7 @@ func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, n
 // UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
-func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID int, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
+func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID NotificationID, userID UserID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -647,7 +646,7 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 // UserNotificationsByNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
-func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID NotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -734,7 +733,7 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 // UserNotificationByUserNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_pkey'.
-func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
+func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID UserNotificationID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -819,7 +818,7 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 // UserNotificationsByUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_user_id_idx'.
-func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationsByUserID(ctx context.Context, db DB, userID UserID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

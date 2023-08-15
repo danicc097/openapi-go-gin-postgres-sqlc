@@ -245,7 +245,7 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 }
 
 // ActivityPaginatedByActivityIDAsc returns a cursor-paginated list of Activity in Asc order.
-func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -328,7 +328,7 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 }
 
 // ActivityPaginatedByProjectIDAsc returns a cursor-paginated list of Activity in Asc order.
-func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -411,7 +411,7 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 }
 
 // ActivityPaginatedByActivityIDDesc returns a cursor-paginated list of Activity in Desc order.
-func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -494,7 +494,7 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 }
 
 // ActivityPaginatedByProjectIDDesc returns a cursor-paginated list of Activity in Desc order.
-func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -579,7 +579,7 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 // ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
+func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...ActivitySelectConfigOption) (*Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -753,7 +753,7 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 // ActivitiesByProjectID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -841,7 +841,7 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 // ActivityByActivityID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_pkey'.
-func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
+func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) (*Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

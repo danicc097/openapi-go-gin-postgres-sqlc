@@ -193,7 +193,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 }
 
 // SchemaMigrationPaginatedByVersionAsc returns a cursor-paginated list of SchemaMigration in Asc order.
-func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version int, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
+func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
 	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -261,7 +261,7 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 }
 
 // SchemaMigrationPaginatedByVersionDesc returns a cursor-paginated list of SchemaMigration in Desc order.
-func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version int, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
+func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
 	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -331,7 +331,7 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 // SchemaMigrationByVersion retrieves a row from 'public.schema_migrations' as a SchemaMigration.
 //
 // Generated from index 'schema_migrations_pkey'.
-func SchemaMigrationByVersion(ctx context.Context, db DB, version int, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
+func SchemaMigrationByVersion(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
 	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

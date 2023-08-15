@@ -1287,7 +1287,7 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 // UserByUserID retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_pkey'.
-func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
+func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectConfigOption) (*User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

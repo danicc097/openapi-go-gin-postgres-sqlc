@@ -3606,14 +3606,39 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 	}
 	// add the go type
 	if addType {
-		s += " " + f.typefn(field.Type)
-
 		if table != nil {
 			af := analyzeField(*table, field)
-			if af.isFK || field.IsPrimary {
-				// TODO: generate type IDs
-				fmt.Printf("field: %+v\n", field)
+			if af.isFK {
+				for _, c := range f.tableConstraints[table.SQLName] {
+					if c.Type != "foreign_key" {
+						continue
+					}
+					switch c.Cardinality {
+					case M2M:
+						field.Type = "AAAAAAAAAAAA"
+					case M2O:
+						if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
+							field.Type = camelExport(c.TableName) + "ID"
+						}
+						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
+							field.Type = camelExport(c.RefTableName) + "ID"
+						}
+					case O2O:
+						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
+							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
+						}
+
+					default:
+					}
+				}
 			}
+
+			if field.IsPrimary {
+				field.Type = table.GoName + "ID"
+			}
+
+			s += " " + f.typefn(field.Type)
+
 		}
 	}
 	// add to vals

@@ -233,7 +233,7 @@ func (en *EntityNotification) Delete(ctx context.Context, db DB) error {
 }
 
 // EntityNotificationPaginatedByEntityNotificationIDAsc returns a cursor-paginated list of EntityNotification in Asc order.
-func EntityNotificationPaginatedByEntityNotificationIDAsc(ctx context.Context, db DB, entityNotificationID int, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
+func EntityNotificationPaginatedByEntityNotificationIDAsc(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -305,7 +305,7 @@ func EntityNotificationPaginatedByEntityNotificationIDAsc(ctx context.Context, d
 }
 
 // EntityNotificationPaginatedByEntityNotificationIDDesc returns a cursor-paginated list of EntityNotification in Desc order.
-func EntityNotificationPaginatedByEntityNotificationIDDesc(ctx context.Context, db DB, entityNotificationID int, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
+func EntityNotificationPaginatedByEntityNotificationIDDesc(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -456,7 +456,7 @@ func EntityNotificationsByEntityID(ctx context.Context, db DB, entity Entity, id
 // EntityNotificationByEntityNotificationID retrieves a row from 'public.entity_notifications' as a EntityNotification.
 //
 // Generated from index 'entity_notifications_pkey'.
-func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entityNotificationID int, opts ...EntityNotificationSelectConfigOption) (*EntityNotification, error) {
+func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) (*EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

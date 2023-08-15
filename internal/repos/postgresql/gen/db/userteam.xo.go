@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -197,7 +196,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 // UserTeamsByMember retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_member_idx'.
-func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByMember(ctx context.Context, db DB, member UserTeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -282,7 +281,7 @@ func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...Use
 // UserTeamByMemberTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
+func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserTeamID, teamID UserTeamID, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -365,7 +364,7 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID
 // UserTeamsByTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByTeamID(ctx context.Context, db DB, teamID UserTeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -450,7 +449,7 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 // UserTeamsByTeamIDMember retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_member_idx'.
-func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID UserTeamID, member UserTeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

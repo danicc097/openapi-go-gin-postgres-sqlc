@@ -222,7 +222,7 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // DemoTwoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoTwoWorkItem in Asc order.
-func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID DemoTwoWorkItemID, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -296,7 +296,7 @@ func DemoTwoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workIte
 }
 
 // DemoTwoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoTwoWorkItem in Desc order.
-func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID DemoTwoWorkItemID, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -372,7 +372,7 @@ func DemoTwoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workIt
 // DemoTwoWorkItemByWorkItemID retrieves a row from 'public.demo_two_work_items' as a DemoTwoWorkItem.
 //
 // Generated from index 'demo_two_work_items_pkey'.
-func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
+func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID DemoTwoWorkItemID, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

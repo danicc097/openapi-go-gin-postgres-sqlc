@@ -335,7 +335,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 }
 
 // ProjectPaginatedByProjectIDAsc returns a cursor-paginated list of Project in Asc order.
-func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
+func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) ([]Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -438,7 +438,7 @@ func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, o
 }
 
 // ProjectPaginatedByProjectIDDesc returns a cursor-paginated list of Project in Desc order.
-func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
+func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) ([]Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -649,7 +649,7 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 // ProjectByProjectID retrieves a row from 'public.projects' as a Project.
 //
 // Generated from index 'projects_pkey'.
-func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
+func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

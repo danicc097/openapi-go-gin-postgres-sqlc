@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -310,7 +309,7 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 }
 
 // TimeEntryPaginatedByTimeEntryIDAsc returns a cursor-paginated list of TimeEntry in Asc order.
-func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID TimeEntryID, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -408,7 +407,7 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 }
 
 // TimeEntryPaginatedByTimeEntryIDDesc returns a cursor-paginated list of TimeEntry in Desc order.
-func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID TimeEntryID, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -508,7 +507,7 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 // TimeEntryByTimeEntryID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_pkey'.
-func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
+func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -609,7 +608,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int, opts ..
 // TimeEntriesByUserIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
-func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID UserID, teamID TeamID, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -712,7 +711,7 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 // TimeEntriesByWorkItemIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_work_item_id_team_id_idx'.
-func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID WorkItemID, teamID TeamID, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
