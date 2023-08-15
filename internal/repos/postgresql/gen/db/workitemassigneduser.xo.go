@@ -42,10 +42,6 @@ type WorkItemAssignedUserCreateParams struct {
 	WorkItemID   WorkItemAssignedUserID `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
-type WorkItemAssignedUserID uuid.UUID // assigned_user
-
-type WorkItemAssignedUserID int // work_item_id
-
 // CreateWorkItemAssignedUser creates a new WorkItemAssignedUser in the database with the given params.
 func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssignedUserCreateParams) (*WorkItemAssignedUser, error) {
 	wiau := &WorkItemAssignedUser{

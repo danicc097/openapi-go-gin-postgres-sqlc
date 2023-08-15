@@ -35,10 +35,6 @@ type UserTeamCreateParams struct {
 	TeamID UserTeamID `json:"teamID" required:"true" nullable:"false"` // team_id
 }
 
-type UserTeamID uuid.UUID // member
-
-type UserTeamID int // team_id
-
 // CreateUserTeam creates a new UserTeam in the database with the given params.
 func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*UserTeam, error) {
 	ut := &UserTeam{

@@ -34,10 +34,6 @@ type WorkItemWorkItemTagCreateParams struct {
 	WorkItemTagID WorkItemWorkItemTagID `json:"workItemTagID" required:"true" nullable:"false"` // work_item_tag_id
 }
 
-type WorkItemWorkItemTagID int // work_item_id
-
-type WorkItemWorkItemTagID int // work_item_tag_id
-
 // CreateWorkItemWorkItemTag creates a new WorkItemWorkItemTag in the database with the given params.
 func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
 	wiwit := &WorkItemWorkItemTag{
