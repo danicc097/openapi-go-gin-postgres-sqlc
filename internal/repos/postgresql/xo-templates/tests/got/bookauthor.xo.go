@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -38,10 +37,6 @@ type BookAuthorCreateParams struct {
 	BookID    BookAuthorID `json:"bookID" required:"true" nullable:"false"`   // book_id
 	Pseudonym *string      `json:"pseudonym"`                                 // pseudonym
 }
-
-type BookAuthorID uuid.UUID // author_id
-
-type BookAuthorID int // book_id
 
 // CreateBookAuthor creates a new BookAuthor in the database with the given params.
 func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
@@ -273,7 +268,7 @@ func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 // BookAuthorByBookIDAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
+func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID BookAuthorID, authorID BookAuthorID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -357,7 +352,7 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 // BookAuthorsByBookID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
+func BookAuthorsByBookID(ctx context.Context, db DB, bookID BookAuthorID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -443,7 +438,7 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 // BookAuthorsByAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
+func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID BookAuthorID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

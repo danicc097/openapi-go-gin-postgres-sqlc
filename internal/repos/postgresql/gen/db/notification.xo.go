@@ -32,7 +32,7 @@ type Notification struct {
 	Link             *string          `json:"link" db:"link"`                                                                                                       // link
 	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                                           // created_at
 	Sender           UserID           `json:"sender" db:"sender" required:"true" nullable:"false"`                                                                  // sender
-	Receiver         UserID           `json:"receiver" db:"receiver"`                                                                                               // receiver
+	Receiver         *UserID          `json:"receiver" db:"receiver"`                                                                                               // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
 	ReceiverJoin                      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
@@ -47,7 +47,7 @@ type NotificationCreateParams struct {
 	Labels           []string         `json:"labels" required:"true" nullable:"false"`                                                       // labels
 	Link             *string          `json:"link"`                                                                                          // link
 	NotificationType NotificationType `json:"notificationType" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
-	Receiver         UserID           `json:"receiver"`                                                                                      // receiver
+	Receiver         *UserID          `json:"receiver"`                                                                                      // receiver
 	ReceiverRank     *int             `json:"receiverRank"`                                                                                  // receiver_rank
 	Sender           UserID           `json:"sender" required:"true" nullable:"false"`                                                       // sender
 	Title            string           `json:"title" required:"true" nullable:"false"`                                                        // title
@@ -77,7 +77,7 @@ type NotificationUpdateParams struct {
 	Labels           *[]string         `json:"labels" nullable:"false"`                                                       // labels
 	Link             **string          `json:"link"`                                                                          // link
 	NotificationType *NotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
-	Receiver         *UserID           `json:"receiver"`                                                                      // receiver
+	Receiver         **UserID          `json:"receiver"`                                                                      // receiver
 	ReceiverRank     **int             `json:"receiverRank"`                                                                  // receiver_rank
 	Sender           *UserID           `json:"sender" nullable:"false"`                                                       // sender
 	Title            *string           `json:"title" nullable:"false"`                                                        // title

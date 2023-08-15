@@ -378,7 +378,7 @@ func TeamPaginatedByTeamIDAsc(ctx context.Context, db DB, teamID TeamID, opts ..
 }
 
 // TeamPaginatedByProjectIDAsc returns a cursor-paginated list of Team in Asc order.
-func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID AAAAAAAAAAAA, opts ...TeamSelectConfigOption) ([]Team, error) {
+func TeamPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -558,7 +558,7 @@ func TeamPaginatedByTeamIDDesc(ctx context.Context, db DB, teamID TeamID, opts .
 }
 
 // TeamPaginatedByProjectIDDesc returns a cursor-paginated list of Team in Desc order.
-func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID AAAAAAAAAAAA, opts ...TeamSelectConfigOption) ([]Team, error) {
+func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -650,7 +650,7 @@ func TeamPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID AAAAAAAA
 // TeamByNameProjectID retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
-func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID AAAAAAAAAAAA, opts ...TeamSelectConfigOption) (*Team, error) {
+func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...TeamSelectConfigOption) (*Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -838,7 +838,7 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 // TeamsByProjectID retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
-func TeamsByProjectID(ctx context.Context, db DB, projectID AAAAAAAAAAAA, opts ...TeamSelectConfigOption) ([]Team, error) {
+func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

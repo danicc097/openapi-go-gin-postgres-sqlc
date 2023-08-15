@@ -25,9 +25,9 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type TimeEntry struct {
 	TimeEntryID     TimeEntryID `json:"timeEntryID" db:"time_entry_id" required:"true" nullable:"false"` // time_entry_id
-	WorkItemID      WorkItemID  `json:"workItemID" db:"work_item_id"`                                    // work_item_id
+	WorkItemID      *WorkItemID `json:"workItemID" db:"work_item_id"`                                    // work_item_id
 	ActivityID      ActivityID  `json:"activityID" db:"activity_id" required:"true" nullable:"false"`    // activity_id
-	TeamID          TeamID      `json:"teamID" db:"team_id"`                                             // team_id
+	TeamID          *TeamID     `json:"teamID" db:"team_id"`                                             // team_id
 	UserID          UserID      `json:"userID" db:"user_id" required:"true" nullable:"false"`            // user_id
 	Comment         string      `json:"comment" db:"comment" required:"true" nullable:"false"`           // comment
 	Start           time.Time   `json:"start" db:"start" required:"true" nullable:"false"`               // start
@@ -42,13 +42,13 @@ type TimeEntry struct {
 
 // TimeEntryCreateParams represents insert params for 'public.time_entries'.
 type TimeEntryCreateParams struct {
-	ActivityID      ActivityID `json:"activityID" required:"true" nullable:"false"` // activity_id
-	Comment         string     `json:"comment" required:"true" nullable:"false"`    // comment
-	DurationMinutes *int       `json:"durationMinutes"`                             // duration_minutes
-	Start           time.Time  `json:"start" required:"true" nullable:"false"`      // start
-	TeamID          TeamID     `json:"teamID"`                                      // team_id
-	UserID          UserID     `json:"userID" required:"true" nullable:"false"`     // user_id
-	WorkItemID      WorkItemID `json:"workItemID"`                                  // work_item_id
+	ActivityID      ActivityID  `json:"activityID" required:"true" nullable:"false"` // activity_id
+	Comment         string      `json:"comment" required:"true" nullable:"false"`    // comment
+	DurationMinutes *int        `json:"durationMinutes"`                             // duration_minutes
+	Start           time.Time   `json:"start" required:"true" nullable:"false"`      // start
+	TeamID          *TeamID     `json:"teamID"`                                      // team_id
+	UserID          UserID      `json:"userID" required:"true" nullable:"false"`     // user_id
+	WorkItemID      *WorkItemID `json:"workItemID"`                                  // work_item_id
 }
 
 type TimeEntryID int // time_entry_id
@@ -70,13 +70,13 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'.
 type TimeEntryUpdateParams struct {
-	ActivityID      *ActivityID `json:"activityID" nullable:"false"` // activity_id
-	Comment         *string     `json:"comment" nullable:"false"`    // comment
-	DurationMinutes **int       `json:"durationMinutes"`             // duration_minutes
-	Start           *time.Time  `json:"start" nullable:"false"`      // start
-	TeamID          *TeamID     `json:"teamID"`                      // team_id
-	UserID          *UserID     `json:"userID" nullable:"false"`     // user_id
-	WorkItemID      *WorkItemID `json:"workItemID"`                  // work_item_id
+	ActivityID      *ActivityID  `json:"activityID" nullable:"false"` // activity_id
+	Comment         *string      `json:"comment" nullable:"false"`    // comment
+	DurationMinutes **int        `json:"durationMinutes"`             // duration_minutes
+	Start           *time.Time   `json:"start" nullable:"false"`      // start
+	TeamID          **TeamID     `json:"teamID"`                      // team_id
+	UserID          *UserID      `json:"userID" nullable:"false"`     // user_id
+	WorkItemID      **WorkItemID `json:"workItemID"`                  // work_item_id
 }
 
 // SetUpdateParams updates public.time_entries struct fields with the specified params.

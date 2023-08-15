@@ -298,7 +298,7 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 }
 
 // BookPaginatedByBookIDAsc returns a cursor-paginated list of Book in Asc order.
-func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
+func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID BookID, opts ...BookSelectConfigOption) ([]Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -390,7 +390,7 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 }
 
 // BookPaginatedByBookIDDesc returns a cursor-paginated list of Book in Desc order.
-func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
+func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID BookID, opts ...BookSelectConfigOption) ([]Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -484,7 +484,7 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 // BookByBookID retrieves a row from 'xo_tests.books' as a Book.
 //
 // Generated from index 'books_pkey'.
-func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) (*Book, error) {
+func BookByBookID(ctx context.Context, db DB, bookID BookID, opts ...BookSelectConfigOption) (*Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

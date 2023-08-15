@@ -183,7 +183,7 @@ func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 }
 
 // DummyJoinPaginatedByDummyJoinIDAsc returns a cursor-paginated list of DummyJoin in Asc order.
-func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -251,7 +251,7 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 }
 
 // DummyJoinPaginatedByDummyJoinIDDesc returns a cursor-paginated list of DummyJoin in Desc order.
-func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -321,7 +321,7 @@ func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID
 // DummyJoinByDummyJoinID retrieves a row from 'xo_tests.dummy_join' as a DummyJoin.
 //
 // Generated from index 'dummy_join_pkey'.
-func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID int, opts ...DummyJoinSelectConfigOption) (*DummyJoin, error) {
+func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) (*DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -33,10 +32,6 @@ type BookSellerCreateParams struct {
 	BookID BookSellerID `json:"bookID" required:"true" nullable:"false"` // book_id
 	Seller BookSellerID `json:"seller" required:"true" nullable:"false"` // seller
 }
-
-type BookSellerID int // book_id
-
-type BookSellerID uuid.UUID // seller
 
 // CreateBookSeller creates a new BookSeller in the database with the given params.
 func CreateBookSeller(ctx context.Context, db DB, params *BookSellerCreateParams) (*BookSeller, error) {
@@ -198,7 +193,7 @@ func (bs *BookSeller) Delete(ctx context.Context, db DB) error {
 // BookSellersByBookIDSeller retrieves a row from 'xo_tests.book_sellers' as a BookSeller.
 //
 // Generated from index 'book_sellers_book_id_seller_idx'.
-func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID int, seller uuid.UUID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
+func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID BookSellerID, seller BookSellerID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
 	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -283,7 +278,7 @@ func BookSellersByBookIDSeller(ctx context.Context, db DB, bookID int, seller uu
 // BookSellersByBookID retrieves a row from 'xo_tests.book_sellers' as a BookSeller.
 //
 // Generated from index 'book_sellers_pkey'.
-func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
+func BookSellersByBookID(ctx context.Context, db DB, bookID BookSellerID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
 	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -368,7 +363,7 @@ func BookSellersByBookID(ctx context.Context, db DB, bookID int, opts ...BookSel
 // BookSellersBySeller retrieves a row from 'xo_tests.book_sellers' as a BookSeller.
 //
 // Generated from index 'book_sellers_pkey'.
-func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
+func BookSellersBySeller(ctx context.Context, db DB, seller BookSellerID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
 	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -453,7 +448,7 @@ func BookSellersBySeller(ctx context.Context, db DB, seller uuid.UUID, opts ...B
 // BookSellersBySellerBookID retrieves a row from 'xo_tests.book_sellers' as a BookSeller.
 //
 // Generated from index 'book_sellers_seller_book_id_idx'.
-func BookSellersBySellerBookID(ctx context.Context, db DB, seller uuid.UUID, bookID int, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
+func BookSellersBySellerBookID(ctx context.Context, db DB, seller BookSellerID, bookID BookSellerID, opts ...BookSellerSelectConfigOption) ([]BookSeller, error) {
 	c := &BookSellerSelectConfig{joins: BookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

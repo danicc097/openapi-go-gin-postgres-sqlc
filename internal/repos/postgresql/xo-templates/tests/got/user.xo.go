@@ -25,11 +25,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type User struct {
-	UserID    UserID     `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
-	Name      string     `json:"name" db:"name" required:"true" nullable:"false"`            // name
-	APIKeyID  *int       `json:"apiKeyID" db:"api_key_id"`                                   // api_key_id
-	CreatedAt time.Time  `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
-	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
+	UserID    UserID        `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	Name      string        `json:"name" db:"name" required:"true" nullable:"false"`            // name
+	APIKeyID  *UserAPIKeyID `json:"apiKeyID" db:"api_key_id"`                                   // api_key_id
+	CreatedAt time.Time     `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
+	DeletedAt *time.Time    `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
 
 	AuthorBooksJoin           *[]Book__BA_User       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
 	AuthorBooksJoinBASK       *[]Book__BASK_User     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
@@ -43,8 +43,8 @@ type User struct {
 
 // UserCreateParams represents insert params for 'xo_tests.users'.
 type UserCreateParams struct {
-	APIKeyID *int   `json:"apiKeyID"`                              // api_key_id
-	Name     string `json:"name" required:"true" nullable:"false"` // name
+	APIKeyID *UserAPIKeyID `json:"apiKeyID"`                              // api_key_id
+	Name     string        `json:"name" required:"true" nullable:"false"` // name
 }
 
 type UserID uuid.UUID // user_id
@@ -61,8 +61,8 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'xo_tests.users'.
 type UserUpdateParams struct {
-	APIKeyID **int   `json:"apiKeyID"`              // api_key_id
-	Name     *string `json:"name" nullable:"false"` // name
+	APIKeyID **UserAPIKeyID `json:"apiKeyID"`              // api_key_id
+	Name     *string        `json:"name" nullable:"false"` // name
 }
 
 // SetUpdateParams updates xo_tests.users struct fields with the specified params.
@@ -938,7 +938,7 @@ func UserByName(ctx context.Context, db DB, name string, opts ...UserSelectConfi
 // UserByUserID retrieves a row from 'xo_tests.users' as a User.
 //
 // Generated from index 'users_pkey'.
-func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
+func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectConfigOption) (*User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

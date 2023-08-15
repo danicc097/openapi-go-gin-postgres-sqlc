@@ -334,7 +334,7 @@ func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItem
 }
 
 // WorkItemTagPaginatedByProjectIDAsc returns a cursor-paginated list of WorkItemTag in Asc order.
-func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID AAAAAAAAAAAA, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -500,7 +500,7 @@ func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workIte
 }
 
 // WorkItemTagPaginatedByProjectIDDesc returns a cursor-paginated list of WorkItemTag in Desc order.
-func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID AAAAAAAAAAAA, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -585,7 +585,7 @@ func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID A
 // WorkItemTagByNameProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
-func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, projectID AAAAAAAAAAAA, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
+func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -759,7 +759,7 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 // WorkItemTagsByProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
-func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID AAAAAAAAAAAA, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

@@ -3615,7 +3615,7 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 					}
 					switch c.Cardinality {
 					case M2M:
-						field.Type = "AAAAAAAAAAAA"
+						break
 					case M2O:
 						if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
 							field.Type = camelExport(c.TableName) + "ID"
@@ -3744,7 +3744,8 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	if field.IsPrimary {
 		field.OpenAPISchema = "Db" + field.Type
 		if mode != "IDTypes" {
-			fieldType = table.GoName + "ID"
+			pc := strings.Count(fieldType, "*")
+			fieldType = strings.Repeat("*", pc) + table.GoName + "ID"
 		}
 	}
 
@@ -3779,7 +3780,8 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 	}
 	if constraintTyp != "" && mode != "IDTypes" {
-		fieldType = constraintTyp
+		pc := strings.Count(fieldType, "*")
+		fieldType = strings.Repeat("*", pc) + constraintTyp
 	}
 
 	if mode == "UpdateParams" {
