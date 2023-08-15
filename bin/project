@@ -5,6 +5,12 @@
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
 #
 #
+
+source ".helpers.sh"
+
+starting_cwd=$(pwd)
+ensure_pwd_is_top_level
+
 declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_CACHE X_ENV
 
 readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -1724,12 +1730,8 @@ export PROC=$$
 export POSTGRES_TRACE=${POSTGRES_TRACE:-false}
 export GIN_MODE=${GIN_MODE:-release}
 
-source ".helpers.sh"
 source ".project.dependencies.sh"
 source ".project.usage.sh"
-
-starting_cwd=$(pwd)
-ensure_pwd_is_top_level
 
 set -Eeo pipefail
 set -o errtrace
