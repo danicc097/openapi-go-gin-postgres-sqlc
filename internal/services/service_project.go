@@ -35,7 +35,7 @@ func NewProject(logger *zap.SugaredLogger, projectRepo repos.Project,
 	}
 }
 
-func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID int) (*db.Project, error) {
+func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID db.ProjectID) (*db.Project, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	project, err := p.projectRepo.ByID(ctx, d, projectID)

@@ -23,7 +23,7 @@ func NewWorkItemTag(logger *zap.SugaredLogger, witRepo repos.WorkItemTag) *WorkI
 }
 
 // ByID gets a work item tag by ID.
-func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.witRepo.ByID(ctx, d, id)
@@ -35,7 +35,7 @@ func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkIt
 }
 
 // ByName gets a work item tag by name.
-func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.witRepo.ByName(ctx, d, name, projectID)
@@ -59,7 +59,7 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, 
 }
 
 // Update updates an existing work item tag.
-func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, id int, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.witRepo.Update(ctx, d, id, params)
@@ -71,7 +71,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, 
 }
 
 // Delete deletes a work item tag by ID.
-func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller *db.User, id int) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller *db.User, id db.WorkItemTagID) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.witRepo.Delete(ctx, d, id)

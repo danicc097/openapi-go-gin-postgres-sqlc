@@ -83,7 +83,8 @@ func TestM2M_SelectFilter(t *testing.T) {
 	assert.NotNil(t, *wi.WorkItemAssignedUsersJoin)
 	assert.Len(t, *wi.WorkItemAssignedUsersJoin, 2)
 	for _, member := range *wi.WorkItemAssignedUsersJoin {
-		if member.User.UserID == uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d") {
+		uid := db.UserID{UUID: uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")}
+		if member.User.UserID == uid {
 			assert.Nil(t, member.User.DeletedAt) // ensure proper filter clause used. e.g. filter where record is not null will exclude the whole record if just one element is null, see https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44
 			assert.Equal(t, db.WorkItemRolePreparer, member.Role.WorkItemRole)
 		}
@@ -95,15 +96,15 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 
 	ctx := context.Background()
 
-	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{BooksAuthor: true}))
+	u, err := db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")}, db.WithUserJoin(db.UserJoins{BooksAuthor: true}))
 	require.NoError(t, err)
 	assert.Len(t, *u.AuthorBooksJoin, 0)
 
-	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
+	u, err = db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")})
 	require.NoError(t, err)
 	assert.Nil(t, u.AuthorBooksJoin)
 
-	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksAuthor: true}))
+	u, err = db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")}, db.WithUserJoin(db.UserJoins{BooksAuthor: true}))
 	require.NoError(t, err)
 	assert.Len(t, *u.AuthorBooksJoin, 2)
 	for _, b := range *u.AuthorBooksJoin {
@@ -118,15 +119,15 @@ func TestM2M_SurrogatePK(t *testing.T) {
 
 	ctx := context.Background()
 
-	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"), db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
+	u, err := db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")}, db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
 	require.NoError(t, err)
 	assert.Len(t, *u.AuthorBooksJoinBASK, 0)
 
-	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
+	u, err = db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")})
 	require.NoError(t, err)
 	assert.Nil(t, u.AuthorBooksJoinBASK)
 
-	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
+	u, err = db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")}, db.WithUserJoin(db.UserJoins{BooksAuthorBooks: true}))
 	require.NoError(t, err)
 	assert.Len(t, *u.AuthorBooksJoinBASK, 2)
 	for _, b := range *u.AuthorBooksJoinBASK {
@@ -141,25 +142,25 @@ func TestM2M_TwoFKs(t *testing.T) {
 
 	ctx := context.Background()
 
-	u, err := db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"), db.WithUserJoin(db.UserJoins{BooksSeller: true}))
+	u, err := db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")}, db.WithUserJoin(db.UserJoins{BooksSeller: true}))
 	require.NoError(t, err)
 	assert.Len(t, *u.SellerBooksJoin, 0)
 
-	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71"))
+	u, err = db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")})
 	require.NoError(t, err)
 	assert.Nil(t, u.SellerBooksJoin)
 
-	u, err = db.UserByUserID(ctx, testPool, uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a"), db.WithUserJoin(db.UserJoins{BooksSeller: true}))
+	u, err = db.UserByUserID(ctx, testPool, db.UserID{UUID: uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a")}, db.WithUserJoin(db.UserJoins{BooksSeller: true}))
 	require.NoError(t, err)
 	assert.Len(t, *u.SellerBooksJoin, 1)
-	assert.Equal(t, (*u.SellerBooksJoin)[0].BookID, 1)
+	assert.EqualValues(t, (*u.SellerBooksJoin)[0].BookID, 1)
 }
 
 func TestM2O(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	userID := uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")
+	userID := db.UserID{UUID: uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")}
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{NotificationsSender: true, NotificationsReceiver: true}))
 	require.NoError(t, err)
@@ -177,7 +178,7 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 
 	ctx := context.Background()
 
-	workitemID := 1
+	workitemID := db.WorkItemID(1)
 
 	dwi, err := db.DemoWorkItemByWorkItemID(ctx, testPool, workitemID, db.WithDemoWorkItemJoin(db.DemoWorkItemJoins{WorkItem: true}))
 	require.NoError(t, err)
@@ -195,7 +196,7 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 
 	ctx := context.Background()
 
-	userID := uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")
+	userID := db.UserID{UUID: uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")}
 
 	u, err := db.UserByUserID(ctx, testPool, userID, db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
 	require.NoError(t, err)

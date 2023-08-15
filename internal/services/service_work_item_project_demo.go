@@ -117,7 +117,7 @@ func (w *DemoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.Work
 }
 
 // TODO: same as assign/remove members.
-func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) error {
+func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
@@ -130,7 +130,7 @@ func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, work
 // params for dedicated workItem require workItemID (FK-as-PK)
 // TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
 
-func (w *DemoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+func (w *DemoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.WorkItem, error) {
 	// WorkItemsByTeamID with deleted opt, orderby createdAt
 	return []db.WorkItem{}, errors.New("not implemented")
 }

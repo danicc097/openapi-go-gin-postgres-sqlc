@@ -8,7 +8,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
@@ -29,7 +28,7 @@ func NewTimeEntry(logger *zap.SugaredLogger, teRepo repos.TimeEntry, wiRepo repo
 }
 
 // ByID gets a time entry by ID.
-func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
+func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	teObj, err := a.teRepo.ByID(ctx, d, id)
@@ -49,7 +48,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 	}
 
 	if params.TeamID != nil {
-		teamIDs := make([]int, len(*caller.MemberTeamsJoin))
+		teamIDs := make([]db.TeamID, len(*caller.MemberTeamsJoin))
 		for i, t := range *caller.MemberTeamsJoin {
 			teamIDs[i] = t.TeamID
 		}
@@ -67,7 +66,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 		fmt.Printf("wi.WorkItemAssignedUsersJoin: %+v\n", wi.WorkItemAssignedUsersJoin)
 		fmt.Printf("wi.WorkItemTimeEntriesJoin: %+v\n", wi.WorkItemTimeEntriesJoin)
 
-		memberIDs := make([]uuid.UUID, len(*wi.WorkItemAssignedUsersJoin))
+		memberIDs := make([]db.UserID, len(*wi.WorkItemAssignedUsersJoin))
 		for i, m := range *wi.WorkItemAssignedUsersJoin {
 			memberIDs[i] = m.User.UserID
 		}
@@ -88,7 +87,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 }
 
 // Update updates an existing time entry.
-func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
+func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	teObj, err := a.teRepo.Update(ctx, d, id, params)
@@ -100,7 +99,7 @@ func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int, params *db.Ti
 }
 
 // Delete deletes a time entry by ID.
-func (a *TimeEntry) Delete(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
+func (a *TimeEntry) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	teObj, err := a.teRepo.Delete(ctx, d, id)

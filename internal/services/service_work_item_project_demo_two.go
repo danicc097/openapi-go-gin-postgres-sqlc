@@ -21,8 +21,8 @@ type DemoTwoWorkItem struct {
 
 type DemoTwoWorkItemCreateParams struct {
 	repos.DemoTwoWorkItemCreateParams
-	TagIDs  []int    `json:"tagIDs"  nullable:"false" required:"true"`
-	Members []Member `json:"members" nullable:"false" required:"true"`
+	TagIDs  []db.WorkItemTagID `json:"tagIDs"  nullable:"false" required:"true"`
+	Members []Member           `json:"members" nullable:"false" required:"true"`
 }
 
 // NewDemoTwoWorkItem returns a new DemoTwoWorkItem service.
@@ -111,7 +111,7 @@ func (w *DemoTwoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.W
 }
 
 // TODO: same as assign/remove members.
-func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID db.WorkItemID) error {
+func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
@@ -124,12 +124,12 @@ func (w *DemoTwoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, w
 // params for dedicated workItem require workItemID (FK-as-PK)
 // TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
 
-func (w *DemoTwoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+func (w *DemoTwoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.WorkItem, error) {
 	// WorkItemsByTeamID with deleted opt, orderby createdAt
 	return []db.WorkItem{}, errors.New("not implemented")
 }
 
-func (w *DemoTwoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+func (w *DemoTwoWorkItem) List(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.WorkItem, error) {
 	// WorkItemsByTeamID with orderby createdAt
 	return []db.WorkItem{}, errors.New("not implemented")
 }

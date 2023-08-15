@@ -3616,9 +3616,6 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 					switch c.Cardinality {
 					case M2M:
 						if c.ColumnName == field.SQLName {
-							fmt.Printf("c: %+v\n", c)
-							fmt.Printf("field: %+v\n", field)
-							fmt.Println("----")
 							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
 							break
 						}

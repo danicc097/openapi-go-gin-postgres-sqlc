@@ -9,7 +9,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -80,7 +79,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 }
 
 // Update updates a user.
-func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User, params *models.UpdateUserRequest) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller *db.User, params *models.UpdateUserRequest) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if caller == nil {
@@ -90,12 +89,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, errors.New("params cannot be nil")
 	}
 
-	uid, err := uuid.Parse(id)
-	if err != nil {
-		return nil, internal.NewErrorf(models.ErrorCodeInvalidUUID, "could not parse UUID")
-	}
-
-	user, err := u.urepo.ByID(ctx, d, uid)
+	user, err := u.urepo.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
@@ -115,7 +109,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		up.LastName = pointers.New(params.LastName)
 	}
 
-	user, err = u.urepo.Update(ctx, d, uid, &up)
+	user, err = u.urepo.Update(ctx, d, id, &up)
 	if err != nil {
 		return nil, fmt.Errorf("urepo.Update: %w", err)
 	}
@@ -256,7 +250,7 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 }
 
 // Delete marks a user as deleted.
-func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
+func (u *User) Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	user, err := u.urepo.Delete(ctx, d, id)
@@ -270,7 +264,7 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 }
 
 // TODO.
-func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID uuid.UUID) ([]db.UserNotification, error) {
+func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID db.UserID) ([]db.UserNotification, error) {
 	// this will also set user.has_new_personal_notifications to false in the same tx
 	return []db.UserNotification{}, nil
 
@@ -290,12 +284,12 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 }
 
 // TODO.
-func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID uuid.UUID) ([]db.GetUserNotificationsRow, error) {
+func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID db.UserID) ([]db.GetUserNotificationsRow, error) {
 	// this will also set user.has_new_global_notifications to false in the same tx
 	return []db.GetUserNotificationsRow{}, nil
 }
 
-func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID uuid.UUID, teamID int) error {
+func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, teamID db.TeamID) error {
 	defer newOTelSpan().Build(ctx).End()
 
 	_, err := db.CreateUserTeam(ctx, d, &db.UserTeamCreateParams{

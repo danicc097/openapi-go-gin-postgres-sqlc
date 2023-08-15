@@ -9,7 +9,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -78,7 +77,7 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItem *db.Work
 	return nil
 }
 
-func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []uuid.UUID) error {
+func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []db.UserID) error {
 	for idx, member := range members {
 		lookup := &db.WorkItemAssignedUser{
 			AssignedUser: member,
@@ -94,7 +93,7 @@ func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem 
 	return nil
 }
 
-func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []int) error {
+func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
 	for idx, tagID := range tagIDs {
 		tag, err := w.wiTagRepo.ByID(ctx, d, tagID, db.WithWorkItemTagJoin(db.WorkItemTagJoins{Project: true}))
 		if err != nil {
@@ -124,7 +123,7 @@ func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItem *db.WorkI
 	return nil
 }
 
-func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []int) error {
+func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
 	for idx, tagID := range tagIDs {
 		lookup := &db.WorkItemWorkItemTag{
 			WorkItemTagID: tagID,
