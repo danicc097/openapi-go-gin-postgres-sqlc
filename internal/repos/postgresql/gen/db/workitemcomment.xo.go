@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -26,8 +25,8 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemComment struct {
 	WorkItemCommentID WorkItemCommentID `json:"workItemCommentID" db:"work_item_comment_id" required:"true" nullable:"false"` // work_item_comment_id
-	WorkItemID        int               `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                // work_item_id
-	UserID            uuid.UUID         `json:"userID" db:"user_id" required:"true" nullable:"false"`                         // user_id
+	WorkItemID        WorkItemID        `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                // work_item_id
+	UserID            UserID            `json:"userID" db:"user_id" required:"true" nullable:"false"`                         // user_id
 	Message           string            `json:"message" db:"message" required:"true" nullable:"false"`                        // message
 	CreatedAt         time.Time         `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                   // created_at
 	UpdatedAt         time.Time         `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                   // updated_at
@@ -39,9 +38,9 @@ type WorkItemComment struct {
 
 // WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'.
 type WorkItemCommentCreateParams struct {
-	Message    string    `json:"message" required:"true" nullable:"false"`    // message
-	UserID     uuid.UUID `json:"userID" required:"true" nullable:"false"`     // user_id
-	WorkItemID int       `json:"workItemID" required:"true" nullable:"false"` // work_item_id
+	Message    string     `json:"message" required:"true" nullable:"false"`    // message
+	UserID     UserID     `json:"userID" required:"true" nullable:"false"`     // user_id
+	WorkItemID WorkItemID `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
 type WorkItemCommentID int // work_item_comment_id
@@ -59,9 +58,9 @@ func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCr
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'.
 type WorkItemCommentUpdateParams struct {
-	Message    *string    `json:"message" nullable:"false"`    // message
-	UserID     *uuid.UUID `json:"userID" nullable:"false"`     // user_id
-	WorkItemID *int       `json:"workItemID" nullable:"false"` // work_item_id
+	Message    *string     `json:"message" nullable:"false"`    // message
+	UserID     *UserID     `json:"userID" nullable:"false"`     // user_id
+	WorkItemID *WorkItemID `json:"workItemID" nullable:"false"` // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_comments struct fields with the specified params.

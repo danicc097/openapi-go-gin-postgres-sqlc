@@ -28,10 +28,10 @@ type WorkItem struct {
 	WorkItemID     WorkItemID     `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`          // work_item_id
 	Title          string         `json:"title" db:"title" required:"true" nullable:"false"`                      // title
 	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`          // description
-	WorkItemTypeID int            `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"` // work_item_type_id
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"` // work_item_type_id
 	Metadata       map[string]any `json:"metadata" db:"metadata" required:"true" nullable:"false"`                // metadata
-	TeamID         int            `json:"teamID" db:"team_id" required:"true" nullable:"false"`                   // team_id
-	KanbanStepID   int            `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`      // kanban_step_id
+	TeamID         TeamID         `json:"teamID" db:"team_id" required:"true" nullable:"false"`                   // team_id
+	KanbanStepID   KanbanStepID   `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`      // kanban_step_id
 	ClosedAt       *time.Time     `json:"closedAt" db:"closed_at"`                                                // closed_at
 	TargetDate     time.Time      `json:"targetDate" db:"target_date" required:"true" nullable:"false"`           // target_date
 	CreatedAt      time.Time      `json:"createdAt" db:"created_at" required:"true" nullable:"false"`             // created_at
@@ -54,12 +54,12 @@ type WorkItem struct {
 type WorkItemCreateParams struct {
 	ClosedAt       *time.Time     `json:"closedAt"`                                        // closed_at
 	Description    string         `json:"description" required:"true" nullable:"false"`    // description
-	KanbanStepID   int            `json:"kanbanStepID" required:"true" nullable:"false"`   // kanban_step_id
+	KanbanStepID   KanbanStepID   `json:"kanbanStepID" required:"true" nullable:"false"`   // kanban_step_id
 	Metadata       map[string]any `json:"metadata" required:"true" nullable:"false"`       // metadata
 	TargetDate     time.Time      `json:"targetDate" required:"true" nullable:"false"`     // target_date
-	TeamID         int            `json:"teamID" required:"true" nullable:"false"`         // team_id
+	TeamID         TeamID         `json:"teamID" required:"true" nullable:"false"`         // team_id
 	Title          string         `json:"title" required:"true" nullable:"false"`          // title
-	WorkItemTypeID int            `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
 }
 
 type WorkItemID int // work_item_id
@@ -84,12 +84,12 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 type WorkItemUpdateParams struct {
 	ClosedAt       **time.Time     `json:"closedAt"`                        // closed_at
 	Description    *string         `json:"description" nullable:"false"`    // description
-	KanbanStepID   *int            `json:"kanbanStepID" nullable:"false"`   // kanban_step_id
+	KanbanStepID   *KanbanStepID   `json:"kanbanStepID" nullable:"false"`   // kanban_step_id
 	Metadata       *map[string]any `json:"metadata" nullable:"false"`       // metadata
 	TargetDate     *time.Time      `json:"targetDate" nullable:"false"`     // target_date
-	TeamID         *int            `json:"teamID" nullable:"false"`         // team_id
+	TeamID         *TeamID         `json:"teamID" nullable:"false"`         // team_id
 	Title          *string         `json:"title" nullable:"false"`          // title
-	WorkItemTypeID *int            `json:"workItemTypeID" nullable:"false"` // work_item_type_id
+	WorkItemTypeID *WorkItemTypeID `json:"workItemTypeID" nullable:"false"` // work_item_type_id
 }
 
 // SetUpdateParams updates public.work_items struct fields with the specified params.

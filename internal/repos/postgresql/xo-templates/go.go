@@ -3700,19 +3700,8 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 	}
 
-	if mode == "UpdateParams" {
-		fieldType = "*" + fieldType // we do want **<field> and *<field>
-	}
-	if field.EnumPkg != "" {
-		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
-		fieldType = p + "." + fieldType // assumes no pointers
-		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
-	}
-
-	var constraintName, constraintTyp string
-	// TODO: fks should use types too, eg ProjectID, etc. in other tables
+	var constraintTyp string
 	if af.isFK {
-		// constraints done for rest of modes, not IDTypes (continues without generating type)
 		for _, c := range f.tableConstraints[table.SQLName] {
 			if c.Type != "foreign_key" {
 				continue
@@ -3723,29 +3712,38 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 					return "", nil
 				}
 			case M2O:
-				if c.RefTableName == table.SQLName {
+				if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
 					constraintTyp = camelExport(c.TableName) + "ID"
-					constraintName = constraintTyp
+					break
 				}
-				if c.TableName == table.SQLName {
+				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
 					constraintTyp = camelExport(c.RefTableName) + "ID"
-					constraintName = constraintTyp
+					break
 				}
 			case O2O:
-				if c.TableName == table.SQLName {
+				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
 					constraintTyp = camelExport(singularize(c.RefTableName)) + "ID"
-					constraintName = constraintTyp
+					break
 				}
 
 			default:
 			}
 		}
 	}
+	if constraintTyp != "" && mode != "IDTypes" {
+		fieldType = constraintTyp
+	}
+
+	if mode == "UpdateParams" {
+		fieldType = "*" + fieldType // we do want **<field> and *<field>
+	}
+	if field.EnumPkg != "" {
+		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
+		fieldType = p + "." + fieldType // assumes no pointers
+		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
+	}
 
 	if mode == "IDTypes" {
-		if constraintTyp != "" && constraintName != "" {
-			// return fmt.Sprintf("type %s %s // %s\n\n", constraintName, constraintTyp, field.SQLName), nil
-		}
 
 		if af.isSingleFK && af.isSinglePK {
 			return "", nil

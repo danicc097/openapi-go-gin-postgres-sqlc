@@ -24,7 +24,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type KanbanStep struct {
 	KanbanStepID  KanbanStepID `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                              // kanban_step_id
-	ProjectID     int          `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	ProjectID     ProjectID    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
 	StepOrder     int          `json:"stepOrder" db:"step_order" required:"true" nullable:"false"`                                     // step_order
 	Name          string       `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
 	Description   string       `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
@@ -37,12 +37,12 @@ type KanbanStep struct {
 
 // KanbanStepCreateParams represents insert params for 'public.kanban_steps'.
 type KanbanStepCreateParams struct {
-	Color         string `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description   string `json:"description" required:"true" nullable:"false"`                                        // description
-	Name          string `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID     int    `json:"projectID" nullable:"false"`                                                          // project_id
-	StepOrder     int    `json:"stepOrder" required:"true" nullable:"false"`                                          // step_order
-	TimeTrackable bool   `json:"timeTrackable" required:"true" nullable:"false"`                                      // time_trackable
+	Color         string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description   string    `json:"description" required:"true" nullable:"false"`                                        // description
+	Name          string    `json:"name" required:"true" nullable:"false"`                                               // name
+	ProjectID     ProjectID `json:"projectID" nullable:"false"`                                                          // project_id
+	StepOrder     int       `json:"stepOrder" required:"true" nullable:"false"`                                          // step_order
+	TimeTrackable bool      `json:"timeTrackable" required:"true" nullable:"false"`                                      // time_trackable
 }
 
 type KanbanStepID int // kanban_step_id
@@ -63,12 +63,12 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'.
 type KanbanStepUpdateParams struct {
-	Color         *string `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description   *string `json:"description" nullable:"false"`                                        // description
-	Name          *string `json:"name" nullable:"false"`                                               // name
-	ProjectID     *int    `json:"projectID" nullable:"false"`                                          // project_id
-	StepOrder     *int    `json:"stepOrder" nullable:"false"`                                          // step_order
-	TimeTrackable *bool   `json:"timeTrackable" nullable:"false"`                                      // time_trackable
+	Color         *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description   *string    `json:"description" nullable:"false"`                                        // description
+	Name          *string    `json:"name" nullable:"false"`                                               // name
+	ProjectID     *ProjectID `json:"projectID" nullable:"false"`                                          // project_id
+	StepOrder     *int       `json:"stepOrder" nullable:"false"`                                          // step_order
+	TimeTrackable *bool      `json:"timeTrackable" nullable:"false"`                                      // time_trackable
 }
 
 // SetUpdateParams updates public.kanban_steps struct fields with the specified params.

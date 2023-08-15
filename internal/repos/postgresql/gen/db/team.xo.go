@@ -25,7 +25,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type Team struct {
 	TeamID      TeamID    `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
-	ProjectID   int       `json:"projectID" db:"project_id" required:"true" nullable:"false"`    // project_id
+	ProjectID   ProjectID `json:"projectID" db:"project_id" required:"true" nullable:"false"`    // project_id
 	Name        string    `json:"name" db:"name" required:"true" nullable:"false"`               // name
 	Description string    `json:"description" db:"description" required:"true" nullable:"false"` // description
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`    // created_at
@@ -39,9 +39,9 @@ type Team struct {
 
 // TeamCreateParams represents insert params for 'public.teams'.
 type TeamCreateParams struct {
-	Description string `json:"description" required:"true" nullable:"false"` // description
-	Name        string `json:"name" required:"true" nullable:"false"`        // name
-	ProjectID   int    `json:"projectID" required:"true" nullable:"false"`   // project_id
+	Description string    `json:"description" required:"true" nullable:"false"` // description
+	Name        string    `json:"name" required:"true" nullable:"false"`        // name
+	ProjectID   ProjectID `json:"projectID" required:"true" nullable:"false"`   // project_id
 }
 
 type TeamID int // team_id
@@ -59,9 +59,9 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 
 // TeamUpdateParams represents update params for 'public.teams'.
 type TeamUpdateParams struct {
-	Description *string `json:"description" nullable:"false"` // description
-	Name        *string `json:"name" nullable:"false"`        // name
-	ProjectID   *int    `json:"projectID" nullable:"false"`   // project_id
+	Description *string    `json:"description" nullable:"false"` // description
+	Name        *string    `json:"name" nullable:"false"`        // name
+	ProjectID   *ProjectID `json:"projectID" nullable:"false"`   // project_id
 }
 
 // SetUpdateParams updates public.teams struct fields with the specified params.

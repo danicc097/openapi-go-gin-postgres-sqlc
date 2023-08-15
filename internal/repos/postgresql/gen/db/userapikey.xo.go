@@ -28,7 +28,7 @@ type UserAPIKey struct {
 	UserAPIKeyID UserAPIKeyID `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
 	APIKey       string       `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
 	ExpiresOn    time.Time    `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
-	UserID       uuid.UUID    `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	UserID       UserID       `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
 
 	UserJoin *User `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
 
@@ -38,7 +38,7 @@ type UserAPIKey struct {
 type UserAPIKeyCreateParams struct {
 	APIKey    string    `json:"apiKey" required:"true" nullable:"false"`    // api_key
 	ExpiresOn time.Time `json:"expiresOn" required:"true" nullable:"false"` // expires_on
-	UserID    uuid.UUID `json:"userID" required:"true" nullable:"false"`    // user_id
+	UserID    UserID    `json:"userID" required:"true" nullable:"false"`    // user_id
 }
 
 type UserAPIKeyID int // user_api_key_id
@@ -58,7 +58,7 @@ func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams
 type UserAPIKeyUpdateParams struct {
 	APIKey    *string    `json:"apiKey" nullable:"false"`    // api_key
 	ExpiresOn *time.Time `json:"expiresOn" nullable:"false"` // expires_on
-	UserID    *uuid.UUID `json:"userID" nullable:"false"`    // user_id
+	UserID    *UserID    `json:"userID" nullable:"false"`    // user_id
 }
 
 // SetUpdateParams updates public.user_api_keys struct fields with the specified params.

@@ -34,7 +34,7 @@ type User struct {
 	LastName                 *string       `json:"lastName" db:"last_name"`                                                                   // last_name
 	FullName                 *string       `json:"fullName" db:"full_name"`                                                                   // full_name
 	ExternalID               string        `json:"-" db:"external_id" nullable:"false"`                                                       // external_id
-	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                                         // api_key_id
+	APIKeyID                 UserAPIKeyID  `json:"-" db:"api_key_id"`                                                                         // api_key_id
 	Scopes                   models.Scopes `json:"scopes" db:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"`     // scopes
 	RoleRank                 int           `json:"-" db:"role_rank" nullable:"false"`                                                         // role_rank
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true" nullable:"false"` // has_personal_notifications
@@ -56,7 +56,7 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'.
 type UserCreateParams struct {
-	APIKeyID                 *int          `json:"-"`                                                                         // api_key_id
+	APIKeyID                 UserAPIKeyID  `json:"-"`                                                                         // api_key_id
 	Email                    string        `json:"email" required:"true" nullable:"false"`                                    // email
 	ExternalID               string        `json:"-" nullable:"false"`                                                        // external_id
 	FirstName                *string       `json:"firstName"`                                                                 // first_name
@@ -90,7 +90,7 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'public.users'.
 type UserUpdateParams struct {
-	APIKeyID                 **int          `json:"-"`                                                         // api_key_id
+	APIKeyID                 *UserAPIKeyID  `json:"-"`                                                         // api_key_id
 	Email                    *string        `json:"email" nullable:"false"`                                    // email
 	ExternalID               *string        `json:"-" nullable:"false"`                                        // external_id
 	FirstName                **string       `json:"firstName"`                                                 // first_name
