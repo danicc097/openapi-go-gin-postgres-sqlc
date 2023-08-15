@@ -125,7 +125,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 	return user, nil
 }
 
-func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string, caller *db.User, params *models.UpdateUserAuthRequest) (*db.User, error) {
+func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.UserID, caller *db.User, params *models.UpdateUserAuthRequest) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if caller == nil {
@@ -135,12 +135,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		return nil, errors.New("params cannot be nil")
 	}
 
-	uid, err := uuid.Parse(id)
-	if err != nil {
-		return nil, internal.NewErrorf(models.ErrorCodeInvalidUUID, "could not parse UUID")
-	}
-
-	user, err := u.urepo.ByID(ctx, d, uid)
+	user, err := u.urepo.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
@@ -186,7 +181,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		params.Scopes = pointers.New(u.authzsvc.DefaultScopes(*params.Role))
 	}
 
-	user, err = u.urepo.Update(ctx, d, uid, &db.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, id, &db.UserUpdateParams{
 		Scopes:   params.Scopes,
 		RoleRank: rank,
 	})

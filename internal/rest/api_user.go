@@ -7,6 +7,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -95,7 +96,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 }
 
 // UpdateUserAuthorization updates authorization information, e.g. roles, scopes.
-func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
+func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) { // TODO: x-go-type db.<entity>ID directly worth it? won't be able to reuse parameters
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
@@ -111,7 +112,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 		return
 	}
 
-	if _, err := h.svc.user.UpdateUserAuthorization(c, tx, id.String(), caller, body); err != nil {
+	if _, err := h.svc.user.UpdateUserAuthorization(c, tx, db.UserID(id), caller, body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return
