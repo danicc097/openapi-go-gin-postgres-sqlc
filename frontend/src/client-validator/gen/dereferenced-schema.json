@@ -921,8 +921,6 @@
           ]
         },
         "workItemID": {
-          "type": "string",
-          "x-orval-type": "branded",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTags": {
@@ -1047,8 +1045,6 @@
               ]
             },
             "workItemID": {
-              "type": "string",
-              "x-orval-type": "branded",
               "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
@@ -1303,8 +1299,6 @@
           ]
         },
         "workItemID": {
-          "type": "string",
-          "x-orval-type": "branded",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTags": {
@@ -2502,8 +2496,6 @@
           ]
         },
         "workItemID": {
-          "type": "string",
-          "x-orval-type": "branded",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTypeID": {
@@ -3128,8 +3120,6 @@
           ]
         },
         "workItemID": {
-          "type": "string",
-          "x-orval-type": "branded",
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -3152,8 +3142,6 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemID": {
-      "type": "string",
-      "x-orval-type": "branded",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -4077,8 +4065,6 @@
           ]
         },
         "workItemID": {
-          "type": "string",
-          "x-orval-type": "branded",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTags": {
@@ -4203,8 +4189,6 @@
               ]
             },
             "workItemID": {
-              "type": "string",
-              "x-orval-type": "branded",
               "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
@@ -4459,8 +4443,6 @@
           ]
         },
         "workItemID": {
-          "type": "string",
-          "x-orval-type": "branded",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTags": {
@@ -5658,8 +5640,6 @@
           ]
         },
         "workItemID": {
-          "type": "string",
-          "x-orval-type": "branded",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemTypeID": {
@@ -6284,8 +6264,6 @@
           ]
         },
         "workItemID": {
-          "type": "string",
-          "x-orval-type": "branded",
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -6308,8 +6286,6 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemID": {
-      "type": "string",
-      "x-orval-type": "branded",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   }

@@ -441,7 +441,11 @@ generate_models_mappings() {
 
 package internal
 
-import "$GOMOD_PKG/internal/models"
+import (
+  "$GOMOD_PKG/internal/models"
+  db "$GOMOD_PKG/$PG_REPO_GEN/db"
+)
+
 
 EOF
 
@@ -465,7 +469,7 @@ EOF
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")KanbanSteps"
     echo "var (
-    ${prefix}StepOrderByID = map[int]int{
+    ${prefix}StepOrderByID = map[db.KanbanStepID]int{
   " >>$model_mappings_path
     for row in "${kanban_steps_rows[@]}"; do
       first=$(cut_first "$row" "|") # always safe

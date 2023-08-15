@@ -291,9 +291,6 @@ devDependencies:
   openapi-typescript-validator:
     specifier: github:danicc097/openapi-typescript-validator
     version: github.com/danicc097/openapi-typescript-validator/2227323cb4343d16a3e7d316c6bf4861ae8a52d0(ajv-formats@2.1.1)(ajv@8.11.0)
-  orval:
-    specifier: github:danicc097/orval
-    version: github.com/danicc097/orval/c335f0098886f164eb17f5e084e54177101c28b2
   prettier:
     specifier: ^2.7.1
     version: 2.7.1
@@ -2129,10 +2126,6 @@ packages:
     resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
     dev: false
 
-  /@types/node@20.1.0:
-    resolution: {integrity: sha512-O+z53uwx64xY7D6roOi4+jApDGFg0qn6WHcxe5QeqjMaTezBO/mxdfFXIVAVVyNWKx84OmPB3L8kbVYOTeN34A==}
-    dev: false
-
   /@types/node@20.3.1:
     resolution: {integrity: sha512-EhcH/wvidPy1WeML3TtYFGR83UzjxeWRen9V402T8aUGYsCHOmfoisV3ZSg03gAFIbLq8TnWOJ0f4cALtnSEUg==}
 
@@ -2171,7 +2164,7 @@ packages:
   /@types/set-cookie-parser@2.4.2:
     resolution: {integrity: sha512-fBZgytwhYAUkj/jC/FAV4RQ5EerRup1YQsXQCh8rZfiHkc4UahC192oH0smGwsXol3cL3A5oETuAHeQHmhXM4w==}
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 20.3.1
     dev: false
 
   /@types/stack-utils@2.0.1:
@@ -6466,12 +6459,4 @@ packages:
       js-yaml: 4.1.0
       json-schema-to-typescript: 11.0.5
       lodash.keyby: 4.6.0
-    dev: true
-
-  github.com/danicc097/orval/c335f0098886f164eb17f5e084e54177101c28b2:
-    resolution: {tarball: https://codeload.github.com/danicc097/orval/tar.gz/c335f0098886f164eb17f5e084e54177101c28b2}
-    name: orval-workspaces
-    version: 6.14.4
-    prepare: true
-    requiresBuild: true
     dev: true

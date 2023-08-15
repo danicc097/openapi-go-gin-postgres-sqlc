@@ -9,7 +9,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -23,13 +22,13 @@ type DemoWorkItem struct {
 
 type Member struct {
 	Role   models.WorkItemRole `json:"role"   ref:"#/components/schemas/WorkItemRole" required:"true"`
-	UserID uuid.UUID           `json:"userID" required:"true"`
+	UserID db.UserID           `json:"userID" required:"true"`
 }
 
 type DemoWorkItemCreateParams struct {
 	repos.DemoWorkItemCreateParams
-	TagIDs  []int    `json:"tagIDs"  nullable:"false" required:"true"`
-	Members []Member `json:"members" nullable:"false" required:"true"`
+	TagIDs  []db.WorkItemTagID `json:"tagIDs"  nullable:"false" required:"true"`
+	Members []Member           `json:"members" nullable:"false" required:"true"`
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.

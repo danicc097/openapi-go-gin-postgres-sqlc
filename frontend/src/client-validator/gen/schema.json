@@ -1580,8 +1580,6 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemID": {
-      "type": "string",
-      "x-orval-type": "branded",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },

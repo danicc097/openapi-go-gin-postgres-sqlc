@@ -6,4 +6,4 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type DbWorkItemID = string
+export type DbWorkItemID = unknown

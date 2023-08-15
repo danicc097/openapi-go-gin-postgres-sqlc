@@ -507,7 +507,7 @@ export interface components {
       /** Format: date-time */
       customDateForProject2?: string | null;
     };
-    DbWorkItemID: string;
+    DbWorkItemID: unknown;
   };
   responses: never;
   parameters: {
