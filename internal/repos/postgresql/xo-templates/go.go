@@ -1893,7 +1893,7 @@ func (f *Funcs) func_name_context(v any, suffix string) string {
 }
 
 // funcfn builds a func definition.
-func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string {
+func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table Table) string {
 	var params, returns []string
 	if context {
 		params = append(params, "ctx context.Context")
@@ -1917,14 +1917,14 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string
 			returns = append(returns, "[]*"+x.Type.GoName)
 		}
 	case Proc:
-		params = append(params, f.params(x.Params, true))
+		params = append(params, f.params(x.Params, true, table))
 		if !x.Void {
 			for _, ret := range x.Returns {
 				returns = append(returns, f.typefn(ret.Type))
 			}
 		}
 	case Index:
-		params = append(params, f.params(x.Fields, true))
+		params = append(params, f.params(x.Fields, true, table))
 		params = append(params, "opts ..."+x.Table.GoName+"SelectConfigOption")
 		rt := x.Table.GoName
 		if !x.IsUnique {
@@ -1934,7 +1934,7 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string
 		}
 		returns = append(returns, rt)
 	case Table: // Paginated query
-		params = append(params, f.params(columns, true))
+		params = append(params, f.params(columns, true, table))
 		params = append(params, "opts ..."+x.GoName+"SelectConfigOption")
 		rt := "[]" + x.GoName
 
@@ -2274,15 +2274,23 @@ func With%[1]sFilters(filters map[string][]any) %[1]sSelectConfigOption {
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
-func (f *Funcs) func_context(v any, suffix string, columns any) string {
+func (f *Funcs) func_context(v any, suffix string, columns any, w any) string {
 	var cc []Field
+	var t Table
 	switch x := columns.(type) {
 	case []Field:
 		cc = x
 	default:
 		cc = []Field{}
 	}
-	return f.funcfn(f.func_name_context(v, suffix), f.contextfn(), v, cc)
+	switch x := w.(type) {
+	case Table:
+		t = x
+	default:
+		t = Table{}
+	}
+
+	return f.funcfn(f.func_name_context(v, suffix), f.contextfn(), v, cc, t)
 }
 
 // func_none genarates a func signature for v without context.
@@ -2294,7 +2302,7 @@ func (f *Funcs) func_none(v any, columns any) string {
 	default:
 		cc = []Field{}
 	}
-	return f.funcfn(f.func_name_none(v), false, v, cc)
+	return f.funcfn(f.func_name_none(v), false, v, cc, Table{})
 }
 
 // recv builds a receiver func definition.
@@ -2583,11 +2591,11 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 				names = append(names, prefix+checkName(p.GoName))
 			}
 		case Proc:
-			if params := f.params(x.Params, false); params != "" {
+			if params := f.params(x.Params, false, nil); params != "" {
 				names = append(names, params)
 			}
 		case Index:
-			names = append(names, f.params(x.Fields, false))
+			names = append(names, f.params(x.Fields, false, nil))
 
 			nn := ""
 			if len(names[2:]) > 0 {
@@ -2595,7 +2603,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 			}
 			return "ctx, sqlstr, append([]any{" + nn + "}, filterParams...)..."
 		case CursorPagination:
-			names = append(names, f.params(x.Fields, false))
+			names = append(names, f.params(x.Fields, false, nil))
 			nn := ""
 			if len(names[2:]) > 0 {
 				nn = strings.Join(names[2:], ", ")
@@ -3571,10 +3579,17 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 // Used to present a comma separated list of Go variable names for use with as
 // either a Go func parameter list, or in a call to another Go func.
 // (ie, ", a, b, c, ..." or ", a T1, b T2, c T3, ...").
-func (f *Funcs) params(fields []Field, addType bool) string {
+func (f *Funcs) params(fields []Field, addType bool, w any) string {
 	var vals []string
 	for _, field := range fields {
-		vals = append(vals, f.param(field, addType))
+		var t Table
+		switch x := w.(type) {
+		case Table:
+			t = x
+		default:
+			t = Table{}
+		}
+		vals = append(vals, f.param(field, addType, &t))
 	}
 	if len(vals) == 0 {
 		return ""
@@ -3582,7 +3597,7 @@ func (f *Funcs) params(fields []Field, addType bool) string {
 	return strings.Join(vals, ", ")
 }
 
-func (f *Funcs) param(field Field, addType bool) string {
+func (f *Funcs) param(field Field, addType bool, table *Table) string {
 	n := strings.Split(snaker.CamelToSnake(field.GoName), "_")
 	s := strings.ToLower(n[0]) + field.GoName[len(n[0]):]
 	// check go reserved names
@@ -3592,6 +3607,14 @@ func (f *Funcs) param(field Field, addType bool) string {
 	// add the go type
 	if addType {
 		s += " " + f.typefn(field.Type)
+
+		if table != nil {
+			af := analyzeField(*table, field)
+			if af.isFK || field.IsPrimary {
+				// TODO: generate type IDs
+				fmt.Printf("field: %+v\n", field)
+			}
+		}
 	}
 	// add to vals
 	return s

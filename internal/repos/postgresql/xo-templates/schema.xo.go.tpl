@@ -100,7 +100,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 // {{ func_name_context $i "" }} retrieves a row from '{{ schema $t.SQLName }}' as a {{ $t.GoName }}.
 //
 // Generated from index '{{ $i.SQLName }}'.
-{{ func_context $i "" "" }} {
+{{ func_context $i "" "" $t }} {
 	{{ initial_opts $i }}
 
 	for _, o := range opts {
@@ -136,7 +136,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
   sqlstr = "/* {{ func_name_context $i "" }} */\n"+sqlstr
 
 	// run
-	// logf(sqlstr, {{ params $i.Fields false }})
+	// logf(sqlstr, {{ params $i.Fields false $t }})
 
 {{- if $i.IsUnique }}
   rows, err := {{ db "Query" $i }}
@@ -176,7 +176,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- $ps := .Data -}}
 {{- range $p := $ps -}}
 // {{ func_name_context $p "" }} calls the stored {{ $p.Type }} '{{ $p.Signature }}' on db.
-{{ func_context $p "" "" }} {
+{{ func_context $p "" "" "" }} {
 {{- if and (driver "mysql") (eq $p.Type "procedure") (not $p.Void) }}
 	// At the moment, the Go MySQL driver does not support stored procedures
 	// with out parameters
@@ -189,7 +189,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- range $p.Returns }}
 	var {{ check_name .GoName }} {{ type .Type }}
 {{- end }}
-	// logf(sqlstr, {{ params $p.Params false }})
+	// logf(sqlstr, {{ params $p.Params false "" }})
 	if err := {{ db "QueryRow" $p }}.Scan({{ names "&" $p.Returns }}); err != nil {
 		return {{ zero $p.Returns }}, logerror(err)
 	}
@@ -437,7 +437,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ if len $cursor_fields }}
 {{ $suffix := print "PaginatedBy" (fields_to_goname $cursor_fields "") $order }}
 // {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }} in {{ $order }} order.
-{{ func_context $t $suffix $cursor_fields }} {
+{{ func_context $t $suffix $cursor_fields $t }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {
