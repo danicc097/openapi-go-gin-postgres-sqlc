@@ -3806,9 +3806,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 		if field.IsPrimary {
 			if strings.HasSuffix(fieldType, "uuid.UUID") {
-				fieldType = `struct {
-					uuid.UUID
-				}`
+				fieldType = "struct {\n	uuid.UUID `ref:\"#/components/schemas/UuidUUID\"` \n}"
 			}
 
 			return fmt.Sprintf("type %s %s // %s\n\n", table.GoName+"ID", fieldType, field.SQLName), nil

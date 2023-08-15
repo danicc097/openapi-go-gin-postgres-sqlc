@@ -48,7 +48,7 @@ type UserCreateParams struct {
 }
 
 type UserID struct {
-	uuid.UUID
+	uuid.UUID `ref:"#/components/schemas/UuidUUID"`
 } // user_id
 
 // CreateUser creates a new User in the database with the given params.

@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { Scopes } from './scopes'
-import type { UuidUUID } from './uuidUUID'
+import type { DbUserID } from './dbUserID'
 
 export interface DbUser {
   createdAt: Date
@@ -18,6 +18,6 @@ export interface DbUser {
   hasPersonalNotifications: boolean
   lastName?: string | null
   scopes: Scopes
-  userID: UuidUUID
+  userID: DbUserID
   username: string
 }

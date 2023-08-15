@@ -63,6 +63,9 @@ import {
   DbDemoTwoWorkItem,
   DbDemoTwoWorkItemCreateParams,
   DbWorkItemID,
+  DbProjectID,
+  DbUserID,
+  DbWorkItemTypeID,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -729,5 +732,41 @@ export const DbWorkItemIDDecoder: Decoder<DbWorkItemID> = {
       throw new Error(`Schema ${DbWorkItemIDDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemIDDecoder.definitionName)
+  },
+}
+export const DbProjectIDDecoder: Decoder<DbProjectID> = {
+  definitionName: 'DbProjectID',
+  schemaRef: '#/definitions/DbProjectID',
+
+  decode(json: unknown): DbProjectID {
+    const schema = ajv.getSchema(DbProjectIDDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbProjectIDDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbProjectIDDecoder.definitionName)
+  },
+}
+export const DbUserIDDecoder: Decoder<DbUserID> = {
+  definitionName: 'DbUserID',
+  schemaRef: '#/definitions/DbUserID',
+
+  decode(json: unknown): DbUserID {
+    const schema = ajv.getSchema(DbUserIDDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbUserIDDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbUserIDDecoder.definitionName)
+  },
+}
+export const DbWorkItemTypeIDDecoder: Decoder<DbWorkItemTypeID> = {
+  definitionName: 'DbWorkItemTypeID',
+  schemaRef: '#/definitions/DbWorkItemTypeID',
+
+  decode(json: unknown): DbWorkItemTypeID {
+    const schema = ajv.getSchema(DbWorkItemTypeIDDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemTypeIDDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemTypeIDDecoder.definitionName)
   },
 }

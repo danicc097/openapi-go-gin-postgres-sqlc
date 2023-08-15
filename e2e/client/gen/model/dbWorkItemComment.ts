@@ -5,13 +5,13 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { UuidUUID } from './uuidUUID'
+import type { DbUserID } from './dbUserID'
 
 export interface DbWorkItemComment {
   createdAt: Date
   message: string
   updatedAt: Date
-  userID: UuidUUID
+  userID: DbUserID
   workItemCommentID: number
   workItemID: number
 }

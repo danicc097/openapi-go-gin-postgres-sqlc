@@ -40,7 +40,7 @@ type PagElementCreateParams struct {
 }
 
 type PagElementID struct {
-	uuid.UUID
+	uuid.UUID `ref:"#/components/schemas/UuidUUID"`
 } // paginated_element_id
 
 // CreatePagElement creates a new PagElement in the database with the given params.

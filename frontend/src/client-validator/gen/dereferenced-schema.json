@@ -323,13 +323,14 @@
           ]
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -406,13 +407,14 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -464,13 +466,14 @@
           "type": "integer"
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -510,13 +513,14 @@
           ]
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemCommentID": {
@@ -748,13 +752,14 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -825,13 +830,14 @@
                 "type": "integer"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -887,13 +893,14 @@
                 ]
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -921,7 +928,7 @@
           ]
         },
         "workItemID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "integer"
         },
         "workItemTags": {
           "items": {
@@ -1126,13 +1133,14 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -1203,13 +1211,14 @@
                 "type": "integer"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -1265,13 +1274,14 @@
                 ]
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -1299,7 +1309,7 @@
           ]
         },
         "workItemID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "integer"
         },
         "workItemTags": {
           "items": {
@@ -1413,7 +1423,7 @@
                 "minLength": 1
               },
               "projectID": {
-                "type": "integer"
+                "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
             "required": [
@@ -1496,13 +1506,14 @@
               ]
             },
             "userID": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-              "type": "string",
-              "x-go-type": "uuid.UUID",
-              "x-go-type-import": {
-                "name": "uuid",
-                "path": "github.com/google/uuid"
+              "items": {
+                "minimum": 0,
+                "type": "integer"
               },
+              "type": [
+                "array",
+                "null"
+              ],
               "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
@@ -1738,13 +1749,14 @@
           ]
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -2273,13 +2285,14 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
-                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                    "type": "string",
-                    "x-go-type": "uuid.UUID",
-                    "x-go-type-import": {
-                      "name": "uuid",
-                      "path": "github.com/google/uuid"
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
                     },
+                    "type": [
+                      "array",
+                      "null"
+                    ],
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   }
                 },
@@ -2396,13 +2409,14 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
-                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                    "type": "string",
-                    "x-go-type": "uuid.UUID",
-                    "x-go-type-import": {
-                      "name": "uuid",
-                      "path": "github.com/google/uuid"
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
                     },
+                    "type": [
+                      "array",
+                      "null"
+                    ],
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   }
                 },
@@ -2496,7 +2510,7 @@
           ]
         },
         "workItemID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "integer"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -2623,13 +2637,14 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
@@ -2764,13 +2779,14 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
@@ -2817,13 +2833,14 @@
           "minLength": 1
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -2911,7 +2928,7 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
@@ -3094,13 +3111,14 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -3142,6 +3160,23 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProjectID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserID": {
+      "items": {
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": [
+        "array",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTypeID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -3467,13 +3502,14 @@
           ]
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -3550,13 +3586,14 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -3608,13 +3645,14 @@
           "type": "integer"
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -3654,13 +3692,14 @@
           ]
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemCommentID": {
@@ -3892,13 +3931,14 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -3969,13 +4009,14 @@
                 "type": "integer"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -4031,13 +4072,14 @@
                 ]
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -4065,7 +4107,7 @@
           ]
         },
         "workItemID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "integer"
         },
         "workItemTags": {
           "items": {
@@ -4270,13 +4312,14 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "username": {
@@ -4347,13 +4390,14 @@
                 "type": "integer"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemID": {
@@ -4409,13 +4453,14 @@
                 ]
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "workItemCommentID": {
@@ -4443,7 +4488,7 @@
           ]
         },
         "workItemID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "integer"
         },
         "workItemTags": {
           "items": {
@@ -4557,7 +4602,7 @@
                 "minLength": 1
               },
               "projectID": {
-                "type": "integer"
+                "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
             "required": [
@@ -4640,13 +4685,14 @@
               ]
             },
             "userID": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-              "type": "string",
-              "x-go-type": "uuid.UUID",
-              "x-go-type-import": {
-                "name": "uuid",
-                "path": "github.com/google/uuid"
+              "items": {
+                "minimum": 0,
+                "type": "integer"
               },
+              "type": [
+                "array",
+                "null"
+              ],
               "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
@@ -4882,13 +4928,14 @@
           ]
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "username": {
@@ -5417,13 +5464,14 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
-                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                    "type": "string",
-                    "x-go-type": "uuid.UUID",
-                    "x-go-type-import": {
-                      "name": "uuid",
-                      "path": "github.com/google/uuid"
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
                     },
+                    "type": [
+                      "array",
+                      "null"
+                    ],
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   }
                 },
@@ -5540,13 +5588,14 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
-                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                    "type": "string",
-                    "x-go-type": "uuid.UUID",
-                    "x-go-type-import": {
-                      "name": "uuid",
-                      "path": "github.com/google/uuid"
+                    "items": {
+                      "minimum": 0,
+                      "type": "integer"
                     },
+                    "type": [
+                      "array",
+                      "null"
+                    ],
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   }
                 },
@@ -5640,7 +5689,7 @@
           ]
         },
         "workItemID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "integer"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -5767,13 +5816,14 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
@@ -5908,13 +5958,14 @@
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
-                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-                "type": "string",
-                "x-go-type": "uuid.UUID",
-                "x-go-type-import": {
-                  "name": "uuid",
-                  "path": "github.com/google/uuid"
+                "items": {
+                  "minimum": 0,
+                  "type": "integer"
                 },
+                "type": [
+                  "array",
+                  "null"
+                ],
                 "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
@@ -5961,13 +6012,14 @@
           "minLength": 1
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "workItemID": {
@@ -6055,7 +6107,7 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
@@ -6238,13 +6290,14 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
           },
+          "type": [
+            "array",
+            "null"
+          ],
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -6286,6 +6339,23 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProjectID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserID": {
+      "items": {
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": [
+        "array",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTypeID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   }

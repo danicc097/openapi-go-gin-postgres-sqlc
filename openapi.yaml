@@ -657,7 +657,7 @@ components:
           format: date-time
           type: string
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
       required:
         - apiKey
         - expiresOn
@@ -691,7 +691,7 @@ components:
         scopes:
           $ref: '#/components/schemas/Scopes'
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         username:
           type: string
       required:
@@ -722,7 +722,7 @@ components:
         timeEntryID:
           type: integer
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         workItemID:
           nullable: true
           type: integer
@@ -745,7 +745,7 @@ components:
           format: date-time
           type: string
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         workItemCommentID:
           type: integer
         workItemID:
@@ -847,7 +847,7 @@ components:
           nullable: true
           type: array
         workItemID:
-          $ref: '#/components/schemas/DbWorkItemID'
+          type: integer
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -919,7 +919,7 @@ components:
           nullable: true
           type: array
         workItemID:
-          $ref: '#/components/schemas/DbWorkItemID'
+          type: integer
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -1006,7 +1006,7 @@ components:
           nullable: true
           type: array
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         username:
           type: string
       required:
@@ -1258,7 +1258,7 @@ components:
           format: date-time
           type: string
         workItemID:
-          $ref: '#/components/schemas/DbWorkItemID'
+          type: integer
         workItemTypeID:
           type: integer
       required:
@@ -1344,7 +1344,7 @@ components:
         message:
           type: string
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         workItemID:
           type: integer
       required:
@@ -1395,7 +1395,7 @@ components:
         name:
           type: string
         projectID:
-          type: integer
+          $ref: '#/components/schemas/DbProjectID'
       required:
         - color
         - description
@@ -1498,7 +1498,7 @@ components:
         role:
           $ref: '#/components/schemas/WorkItemRole'
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
       required:
         - role
         - userID
@@ -1536,6 +1536,14 @@ components:
     # type: string
     # x-orval-type: branded
     DbWorkItemID: {}
+    DbProjectID: {}
+    DbUserID: # Generated from internal structs. DO NOT EDIT.
+      items:
+        minimum: 0
+        type: integer
+      nullable: true
+      type: array
+    DbWorkItemTypeID: {}
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

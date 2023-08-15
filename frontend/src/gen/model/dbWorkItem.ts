@@ -6,7 +6,6 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbWorkItemMetadata } from './dbWorkItemMetadata'
-import type { DbWorkItemID } from './dbWorkItemID'
 
 export interface DbWorkItem {
   closedAt?: Date | null
@@ -19,6 +18,6 @@ export interface DbWorkItem {
   teamID: number
   title: string
   updatedAt: Date
-  workItemID: DbWorkItemID
+  workItemID: number
   workItemTypeID: number
 }

@@ -23,7 +23,7 @@ export const getCreateWorkitemMock = () =>
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
       updatedAt: (() => faker.date.past())(),
-      workItemID: {},
+      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
     },
   ])
@@ -43,7 +43,7 @@ export const getGetWorkitemMock = () =>
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
       updatedAt: (() => faker.date.past())(),
-      workItemID: {},
+      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
     },
   ])
@@ -63,7 +63,7 @@ export const getUpdateWorkitemMock = () =>
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
       title: faker.random.word(),
       updatedAt: (() => faker.date.past())(),
-      workItemID: {},
+      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
     },
   ])
@@ -74,7 +74,7 @@ export const getCreateWorkitemCommentMock = () =>
       createdAt: (() => faker.date.past())(),
       message: faker.random.word(),
       updatedAt: (() => faker.date.past())(),
-      userID: (() => faker.datatype.uuid())(),
+      userID: faker.helpers.arrayElement([(() => faker.datatype.uuid())(), null]),
       workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
       workItemID: faker.datatype.number({ min: undefined, max: undefined }),
     },

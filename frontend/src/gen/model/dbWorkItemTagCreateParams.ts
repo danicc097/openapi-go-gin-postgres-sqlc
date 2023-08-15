@@ -5,10 +5,11 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { DbProjectID } from './dbProjectID'
 
 export interface DbWorkItemTagCreateParams {
   color: string
   description: string
   name: string
-  projectID?: number
+  projectID?: DbProjectID
 }

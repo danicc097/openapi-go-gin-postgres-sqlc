@@ -10,7 +10,6 @@ import type { DbUser } from './dbUser'
 import type { DemoTwoWorkItemsResponseMetadata } from './demoTwoWorkItemsResponseMetadata'
 import type { DbTimeEntry } from './dbTimeEntry'
 import type { DbWorkItemComment } from './dbWorkItemComment'
-import type { DbWorkItemID } from './dbWorkItemID'
 import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
 
@@ -29,7 +28,7 @@ export interface DemoTwoWorkItemsResponse {
   title: string
   updatedAt: Date
   workItemComments?: DbWorkItemComment[] | null
-  workItemID: DbWorkItemID
+  workItemID: number
   workItemTags?: DbWorkItemTag[] | null
   workItemType?: DbWorkItemType
   workItemTypeID: number

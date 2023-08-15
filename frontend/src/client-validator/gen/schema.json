@@ -267,7 +267,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         }
       },
       "required": [
@@ -325,7 +325,7 @@
           "$ref": "#/definitions/Scopes"
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "username": {
           "type": "string",
@@ -376,7 +376,7 @@
           "type": "integer"
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "workItemID": {
           "type": [
@@ -415,7 +415,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "workItemCommentID": {
           "type": "integer"
@@ -573,7 +573,7 @@
           ]
         },
         "workItemID": {
-          "$ref": "#/definitions/DbWorkItemID"
+          "type": "integer"
         },
         "workItemTags": {
           "items": {
@@ -689,7 +689,7 @@
           ]
         },
         "workItemID": {
-          "$ref": "#/definitions/DbWorkItemID"
+          "type": "integer"
         },
         "workItemTags": {
           "items": {
@@ -832,7 +832,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "username": {
           "type": "string",
@@ -1150,7 +1150,7 @@
           ]
         },
         "workItemID": {
-          "$ref": "#/definitions/DbWorkItemID"
+          "type": "integer"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -1277,7 +1277,7 @@
           "minLength": 1
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "workItemID": {
           "type": "integer"
@@ -1364,7 +1364,7 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "$ref": "#/definitions/DbProjectID"
         }
       },
       "required": [
@@ -1539,7 +1539,7 @@
           "$ref": "#/definitions/WorkItemRole"
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         }
       },
       "required": [
@@ -1580,6 +1580,23 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProjectID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserID": {
+      "items": {
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": [
+        "array",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTypeID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -1748,6 +1765,15 @@
     },
     "DbWorkItemID": {
       "$ref": "#/definitions/DbWorkItemID"
+    },
+    "DbProjectID": {
+      "$ref": "#/definitions/DbProjectID"
+    },
+    "DbUserID": {
+      "$ref": "#/definitions/DbUserID"
+    },
+    "DbWorkItemTypeID": {
+      "$ref": "#/definitions/DbWorkItemTypeID"
     }
   }
 }

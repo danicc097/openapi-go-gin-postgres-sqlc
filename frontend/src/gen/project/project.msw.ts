@@ -71,7 +71,9 @@ export const getGetProjectWorkitemsMock = () =>
         hasPersonalNotifications: faker.datatype.boolean(),
         lastName: faker.helpers.arrayElement([faker.random.word(), null]),
         scopes: faker.helpers.arrayElements(Object.values(Scope)),
-        userID: faker.random.word(),
+        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+          faker.datatype.number({ min: 0, max: undefined }),
+        ),
         username: faker.random.word(),
       })),
       metadata: (() => ({
@@ -86,7 +88,9 @@ export const getGetProjectWorkitemsMock = () =>
         start: (() => faker.date.past())(),
         teamID: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
         timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-        userID: faker.random.word(),
+        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+          faker.datatype.number({ min: 0, max: undefined }),
+        ),
         workItemID: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
       })),
       title: faker.random.word(),
@@ -95,11 +99,13 @@ export const getGetProjectWorkitemsMock = () =>
         createdAt: (() => faker.date.past())(),
         message: faker.random.word(),
         updatedAt: (() => faker.date.past())(),
-        userID: faker.random.word(),
+        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+          faker.datatype.number({ min: 0, max: undefined }),
+        ),
         workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
-      workItemID: {},
+      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         color: faker.random.word(),
         description: faker.random.word(),
@@ -136,7 +142,9 @@ export const getGetProjectWorkitemsMock = () =>
         hasPersonalNotifications: faker.datatype.boolean(),
         lastName: faker.helpers.arrayElement([faker.random.word(), null]),
         scopes: faker.helpers.arrayElements(Object.values(Scope)),
-        userID: faker.random.word(),
+        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+          faker.datatype.number({ min: 0, max: undefined }),
+        ),
         username: faker.random.word(),
       })),
       metadata: (() => ({
@@ -151,7 +159,9 @@ export const getGetProjectWorkitemsMock = () =>
         start: (() => faker.date.past())(),
         teamID: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
         timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-        userID: faker.random.word(),
+        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+          faker.datatype.number({ min: 0, max: undefined }),
+        ),
         workItemID: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
       })),
       title: faker.random.word(),
@@ -160,11 +170,13 @@ export const getGetProjectWorkitemsMock = () =>
         createdAt: (() => faker.date.past())(),
         message: faker.random.word(),
         updatedAt: (() => faker.date.past())(),
-        userID: faker.random.word(),
+        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+          faker.datatype.number({ min: 0, max: undefined }),
+        ),
         workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
-      workItemID: {},
+      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         color: faker.random.word(),
         description: faker.random.word(),
