@@ -40,7 +40,7 @@ func NewProjectWithPrometheus(base repos.Project, instanceName string) ProjectWi
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

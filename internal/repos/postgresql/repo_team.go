@@ -31,7 +31,7 @@ func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParam
 	return team, nil
 }
 
-func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpdateParams) (*db.Team, error) {
+func (t *Team) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (*db.Team, error) {
 	team, err := t.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team by id %w", parseDBErrorDetail(err))
@@ -47,7 +47,7 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpd
 	return team, err
 }
 
-func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.TeamSelectConfigOption) (*db.Team, error) {
+func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.TeamSelectConfigOption) (*db.Team, error) {
 	team, err := db.TeamByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", parseDBErrorDetail(err))
@@ -56,7 +56,7 @@ func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int
 	return team, nil
 }
 
-func (t *Team) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelectConfigOption) (*db.Team, error) {
+func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts ...db.TeamSelectConfigOption) (*db.Team, error) {
 	team, err := db.TeamByTeamID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", parseDBErrorDetail(err))
@@ -65,7 +65,7 @@ func (t *Team) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TeamSelec
 	return team, nil
 }
 
-func (t *Team) Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
+func (t *Team) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, error) {
 	team := &db.Team{
 		TeamID: id,
 	}

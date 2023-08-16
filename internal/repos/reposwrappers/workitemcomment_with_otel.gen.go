@@ -36,7 +36,7 @@ func NewWorkItemCommentWithTracing(base repos.WorkItemComment, instance string, 
 }
 
 // ByID implements repos.WorkItemComment
-func (_d WorkItemCommentWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTracing) ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemComment.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -85,7 +85,7 @@ func (_d WorkItemCommentWithTracing) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.WorkItemComment
-func (_d WorkItemCommentWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTracing) Delete(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (wp1 *db.WorkItemComment, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemComment.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -109,7 +109,7 @@ func (_d WorkItemCommentWithTracing) Delete(ctx context.Context, d db.DBTX, id i
 }
 
 // Update implements repos.WorkItemComment
-func (_d WorkItemCommentWithTracing) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTracing) Update(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemComment.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

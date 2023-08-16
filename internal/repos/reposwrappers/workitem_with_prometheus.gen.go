@@ -10,7 +10,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -39,8 +38,8 @@ func NewWorkItemWithPrometheus(base repos.WorkItem, instanceName string) WorkIte
 	}
 }
 
-// AssignMember implements repos.WorkItem
-func (_d WorkItemWithPrometheus) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+// AssignTag implements repos.WorkItem
+func (_d WorkItemWithPrometheus) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -48,13 +47,27 @@ func (_d WorkItemWithPrometheus) AssignMember(ctx context.Context, d db.DBTX, pa
 			result = "error"
 		}
 
-		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "AssignMember", result).Observe(time.Since(_since).Seconds())
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "AssignTag", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.AssignMember(ctx, d, params)
+	return _d.base.AssignTag(ctx, d, params)
+}
+
+// AssignUser implements repos.WorkItem
+func (_d WorkItemWithPrometheus) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "AssignUser", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.AssignUser(ctx, d, params)
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -68,7 +81,7 @@ func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, op
 }
 
 // Delete implements repos.WorkItem
-func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,8 +94,8 @@ func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) 
 	return _d.base.Delete(ctx, d, id)
 }
 
-// RemoveMember implements repos.WorkItem
-func (_d WorkItemWithPrometheus) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+// RemoveAssignedUser implements repos.WorkItem
+func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -90,13 +103,27 @@ func (_d WorkItemWithPrometheus) RemoveMember(ctx context.Context, d db.DBTX, me
 			result = "error"
 		}
 
-		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "RemoveMember", result).Observe(time.Since(_since).Seconds())
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "RemoveAssignedUser", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.RemoveMember(ctx, d, memberID, workItemID)
+	return _d.base.RemoveAssignedUser(ctx, d, memberID, workItemID)
+}
+
+// RemoveTag implements repos.WorkItem
+func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemDurationSummaryVec.WithLabelValues(_d.instanceName, "RemoveTag", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.RemoveTag(ctx, d, tagID, workItemID)
 }
 
 // Restore implements repos.WorkItem
-func (_d WorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

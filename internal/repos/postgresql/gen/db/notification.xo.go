@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -25,15 +24,15 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Notification struct {
-	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`                                                 // notification_id
+	NotificationID   NotificationID   `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`                                                 // notification_id
 	ReceiverRank     *int             `json:"receiverRank" db:"receiver_rank"`                                                                                      // receiver_rank
 	Title            string           `json:"title" db:"title" required:"true" nullable:"false"`                                                                    // title
 	Body             string           `json:"body" db:"body" required:"true" nullable:"false"`                                                                      // body
 	Labels           []string         `json:"labels" db:"labels" required:"true" nullable:"false"`                                                                  // labels
 	Link             *string          `json:"link" db:"link"`                                                                                                       // link
 	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                                           // created_at
-	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true" nullable:"false"`                                                                  // sender
-	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                                                                                               // receiver
+	Sender           UserID           `json:"sender" db:"sender" required:"true" nullable:"false"`                                                                  // sender
+	Receiver         *UserID          `json:"receiver" db:"receiver"`                                                                                               // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
 	ReceiverJoin                      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
@@ -48,11 +47,13 @@ type NotificationCreateParams struct {
 	Labels           []string         `json:"labels" required:"true" nullable:"false"`                                                       // labels
 	Link             *string          `json:"link"`                                                                                          // link
 	NotificationType NotificationType `json:"notificationType" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
-	Receiver         *uuid.UUID       `json:"receiver"`                                                                                      // receiver
+	Receiver         *UserID          `json:"receiver"`                                                                                      // receiver
 	ReceiverRank     *int             `json:"receiverRank"`                                                                                  // receiver_rank
-	Sender           uuid.UUID        `json:"sender" required:"true" nullable:"false"`                                                       // sender
+	Sender           UserID           `json:"sender" required:"true" nullable:"false"`                                                       // sender
 	Title            string           `json:"title" required:"true" nullable:"false"`                                                        // title
 }
+
+type NotificationID int
 
 // CreateNotification creates a new Notification in the database with the given params.
 func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
@@ -76,9 +77,9 @@ type NotificationUpdateParams struct {
 	Labels           *[]string         `json:"labels" nullable:"false"`                                                       // labels
 	Link             **string          `json:"link"`                                                                          // link
 	NotificationType *NotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
-	Receiver         **uuid.UUID       `json:"receiver"`                                                                      // receiver
+	Receiver         **UserID          `json:"receiver"`                                                                      // receiver
 	ReceiverRank     **int             `json:"receiverRank"`                                                                  // receiver_rank
-	Sender           *uuid.UUID        `json:"sender" nullable:"false"`                                                       // sender
+	Sender           *UserID           `json:"sender" nullable:"false"`                                                       // sender
 	Title            *string           `json:"title" nullable:"false"`                                                        // title
 }
 
@@ -310,7 +311,7 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 }
 
 // NotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of Notification in Asc order.
-func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -404,7 +405,7 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 }
 
 // NotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of Notification in Desc order.
-func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -500,7 +501,7 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 // NotificationByNotificationID retrieves a row from 'public.notifications' as a Notification.
 //
 // Generated from index 'notifications_pkey'.
-func NotificationByNotificationID(ctx context.Context, db DB, notificationID int, opts ...NotificationSelectConfigOption) (*Notification, error) {
+func NotificationByNotificationID(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) (*Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

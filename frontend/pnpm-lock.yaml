@@ -1046,8 +1046,8 @@ packages:
       - supports-color
     dev: true
 
-  /@exodus/schemasafe@1.1.1:
-    resolution: {integrity: sha512-Pd7+aGvWIaTDL5ecV4ZBEtBrjXnk8/ly5xyHbikxVhgcq7qhihzHWHbcYmFupQBT2A5ggNZGvT7Bpj0M6AKHjA==}
+  /@exodus/schemasafe@1.2.3:
+    resolution: {integrity: sha512-hmdFF4vVyvXosVdCCnZPCfrgwNPA79y3K5l0QzlKFcK5Qd3nkM9oGKcQYCTnTRWJXIV5SUMkkTFIEIdDFtxQPQ==}
     dev: false
 
   /@faker-js/faker@7.6.0:
@@ -1170,7 +1170,7 @@ packages:
       '@stoplight/spectral-functions': 1.7.2
       '@stoplight/spectral-rulesets': 1.16.0
       lodash: 4.17.21
-      validator: 13.9.0
+      validator: 13.11.0
     transitivePeerDependencies:
       - encoding
     dev: false
@@ -1914,7 +1914,7 @@ packages:
       micromatch: 4.0.5
       openapi3-ts: 3.2.0
       swagger2openapi: 7.0.8
-      validator: 13.9.0
+      validator: 13.11.0
     transitivePeerDependencies:
       - encoding
       - openapi-types
@@ -2143,7 +2143,7 @@ packages:
     dependencies:
       '@stoplight/json': 3.21.0
       '@stoplight/path': 1.3.2
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       '@types/urijs': 1.19.19
       dependency-graph: 0.11.0
       fast-memoize: 2.5.2
@@ -2159,7 +2159,7 @@ packages:
     dependencies:
       '@stoplight/ordered-object-literal': 1.0.4
       '@stoplight/path': 1.3.2
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       jsonc-parser: 2.2.1
       lodash: 4.17.21
       safe-stable-stringify: 1.1.1
@@ -2175,8 +2175,8 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /@stoplight/spectral-cli@6.10.0:
-    resolution: {integrity: sha512-mJOlLtKvhiVUSXslcjHFrb+MPIMe6yrqsuABFyXqb2SMk/zOsLDIEKgB/UQ1w6hTcr54o6CVTAYf+0lnhCsWQw==}
+  /@stoplight/spectral-cli@6.10.1:
+    resolution: {integrity: sha512-yjal3WE42buthVnqfwppw2YmjeXZJ8rmMaHjpx9/94xbbfS79RsReExH9sj1QZam6A9XPGWtjLdWSrklqydpYg==}
     engines: {node: ^12.20 || >= 14.13}
     hasBin: true
     dependencies:
@@ -2190,7 +2190,7 @@ packages:
       '@stoplight/spectral-ruleset-migrator': 1.9.5
       '@stoplight/spectral-rulesets': 1.16.0
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       chalk: 4.1.2
       fast-glob: 3.2.12
       hpagent: 1.2.0
@@ -2251,7 +2251,7 @@ packages:
       '@stoplight/path': 1.3.2
       '@stoplight/spectral-core': 1.18.3
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       chalk: 4.1.2
       cliui: 7.0.4
       lodash: 4.17.21
@@ -2286,7 +2286,7 @@ packages:
     engines: {node: ^12.20 || >=14.13}
     dependencies:
       '@stoplight/json': 3.21.0
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       '@stoplight/yaml': 4.2.3
       tslib: 2.5.0
     dev: false
@@ -2318,7 +2318,7 @@ packages:
       '@stoplight/spectral-ruleset-migrator': 1.9.5
       '@stoplight/spectral-rulesets': 1.16.0
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       '@types/node': 20.3.1
       pony-cause: 1.1.1
       rollup: 2.79.1
@@ -2337,7 +2337,7 @@ packages:
       '@stoplight/path': 1.3.2
       '@stoplight/spectral-functions': 1.7.2
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       '@stoplight/yaml': 4.2.3
       '@types/node': 20.3.1
       ajv: 8.11.0
@@ -2361,7 +2361,7 @@ packages:
       '@stoplight/spectral-formats': 1.5.0
       '@stoplight/spectral-functions': 1.7.2
       '@stoplight/spectral-runtime': 1.1.2
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       '@types/json-schema': 7.0.12
       ajv: 8.11.0
       ajv-formats: 2.1.1(ajv@8.11.0)
@@ -2395,8 +2395,8 @@ packages:
       utility-types: 3.10.0
     dev: false
 
-  /@stoplight/types@13.17.0:
-    resolution: {integrity: sha512-9wzSi8MZQXjO+GSYehwMWFSUHO5qtDr282RxrDDsxO9ZHn0a4nWE+kTWDWSdtbiZrIEantTSkycmQJxKxnnRTQ==}
+  /@stoplight/types@13.19.0:
+    resolution: {integrity: sha512-HvbH6fbvNcTJZVRGV1Xb87cwnXXuc94XYTg4SOvKOL4F9cc4UMw7Q40oaIgJ8iewkMnOSIlLExdmTkjF/QH2pg==}
     engines: {node: ^12.20 || >=14.13}
     dependencies:
       '@types/json-schema': 7.0.12
@@ -2420,7 +2420,7 @@ packages:
     engines: {node: '>=10.8'}
     dependencies:
       '@stoplight/ordered-object-literal': 1.0.4
-      '@stoplight/types': 13.17.0
+      '@stoplight/types': 13.19.0
       '@stoplight/yaml-ast-parser': 0.0.48
       tslib: 2.5.0
     dev: false
@@ -2673,10 +2673,6 @@ packages:
     resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
     dev: false
 
-  /@types/node@20.1.0:
-    resolution: {integrity: sha512-O+z53uwx64xY7D6roOi4+jApDGFg0qn6WHcxe5QeqjMaTezBO/mxdfFXIVAVVyNWKx84OmPB3L8kbVYOTeN34A==}
-    dev: false
-
   /@types/node@20.3.1:
     resolution: {integrity: sha512-EhcH/wvidPy1WeML3TtYFGR83UzjxeWRen9V402T8aUGYsCHOmfoisV3ZSg03gAFIbLq8TnWOJ0f4cALtnSEUg==}
 
@@ -2715,7 +2711,7 @@ packages:
   /@types/set-cookie-parser@2.4.2:
     resolution: {integrity: sha512-fBZgytwhYAUkj/jC/FAV4RQ5EerRup1YQsXQCh8rZfiHkc4UahC192oH0smGwsXol3cL3A5oETuAHeQHmhXM4w==}
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 20.3.1
     dev: false
 
   /@types/stack-utils@2.0.1:
@@ -3213,7 +3209,7 @@ packages:
     resolution: {integrity: sha512-O0yuUDnZeQDL+ncNGlJ78BiO4jnYI3bvMsD5prT0/nsgijG/LpNBIr63gTjVTNsiGkgQhiyCShTgxt8oXOrklA==}
     engines: {node: '>=4'}
     dependencies:
-      tslib: 2.6.1
+      tslib: 2.5.0
     dev: false
 
   /astring@1.8.6:
@@ -5104,7 +5100,7 @@ packages:
     hasBin: true
     dependencies:
       '@ibm-cloud/openapi-ruleset': 0.45.5
-      '@stoplight/spectral-cli': 6.10.0
+      '@stoplight/spectral-cli': 6.10.1
       '@stoplight/spectral-core': 1.18.3
       '@stoplight/spectral-parsers': 1.0.3
       chalk: 4.1.2
@@ -6085,7 +6081,7 @@ packages:
   /oas-linter@3.2.2:
     resolution: {integrity: sha512-KEGjPDVoU5K6swgo9hJVA/qYGlwfbFx+Kg2QB/kd7rzV5N8N5Mg6PlsoCMohVnQmo+pzJap/F610qTodKzecGQ==}
     dependencies:
-      '@exodus/schemasafe': 1.1.1
+      '@exodus/schemasafe': 1.2.3
       should: 13.2.3
       yaml: 1.10.2
     dev: false
@@ -7669,8 +7665,8 @@ packages:
       builtins: 1.0.3
     dev: false
 
-  /validator@13.9.0:
-    resolution: {integrity: sha512-B+dGG8U3fdtM0/aNK4/X8CXq/EcxU2WPrPEkJGslb47qyHsxmbggTWK0yEA4qnYVNF+nxNlN88o14hIcPmSIEA==}
+  /validator@13.11.0:
+    resolution: {integrity: sha512-Ii+sehpSfZy+At5nPdnyMhx78fEoPDkR2XW/zimHEL3MyGJQOCQ7WeP20jPYRz7ZCpcKLB21NxuXHF3bxjStBQ==}
     engines: {node: '>= 0.10'}
     dev: false
 

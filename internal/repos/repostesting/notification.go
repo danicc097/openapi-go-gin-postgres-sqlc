@@ -38,7 +38,7 @@ func NewFakeNotification(notifications ...*db.Notification) *FakeNotification {
 
 	for _, u := range notifications {
 		uc := *u
-		fks.set(u.NotificationID, &uc)
+		fks.set(int(u.NotificationID), &uc)
 	}
 
 	fakeNotificationRepo := &FakeNotification{}

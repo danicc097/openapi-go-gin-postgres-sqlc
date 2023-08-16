@@ -25,13 +25,13 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItem struct {
-	WorkItemID     int            `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`          // work_item_id
+	WorkItemID     WorkItemID     `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`          // work_item_id
 	Title          string         `json:"title" db:"title" required:"true" nullable:"false"`                      // title
 	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`          // description
-	WorkItemTypeID int            `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"` // work_item_type_id
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"` // work_item_type_id
 	Metadata       map[string]any `json:"metadata" db:"metadata" required:"true" nullable:"false"`                // metadata
-	TeamID         int            `json:"teamID" db:"team_id" required:"true" nullable:"false"`                   // team_id
-	KanbanStepID   int            `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`      // kanban_step_id
+	TeamID         TeamID         `json:"teamID" db:"team_id" required:"true" nullable:"false"`                   // team_id
+	KanbanStepID   KanbanStepID   `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`      // kanban_step_id
 	ClosedAt       *time.Time     `json:"closedAt" db:"closed_at"`                                                // closed_at
 	TargetDate     time.Time      `json:"targetDate" db:"target_date" required:"true" nullable:"false"`           // target_date
 	CreatedAt      time.Time      `json:"createdAt" db:"created_at" required:"true" nullable:"false"`             // created_at
@@ -54,13 +54,15 @@ type WorkItem struct {
 type WorkItemCreateParams struct {
 	ClosedAt       *time.Time     `json:"closedAt"`                                        // closed_at
 	Description    string         `json:"description" required:"true" nullable:"false"`    // description
-	KanbanStepID   int            `json:"kanbanStepID" required:"true" nullable:"false"`   // kanban_step_id
+	KanbanStepID   KanbanStepID   `json:"kanbanStepID" required:"true" nullable:"false"`   // kanban_step_id
 	Metadata       map[string]any `json:"metadata" required:"true" nullable:"false"`       // metadata
 	TargetDate     time.Time      `json:"targetDate" required:"true" nullable:"false"`     // target_date
-	TeamID         int            `json:"teamID" required:"true" nullable:"false"`         // team_id
+	TeamID         TeamID         `json:"teamID" required:"true" nullable:"false"`         // team_id
 	Title          string         `json:"title" required:"true" nullable:"false"`          // title
-	WorkItemTypeID int            `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
 }
+
+type WorkItemID int
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
@@ -82,12 +84,12 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 type WorkItemUpdateParams struct {
 	ClosedAt       **time.Time     `json:"closedAt"`                        // closed_at
 	Description    *string         `json:"description" nullable:"false"`    // description
-	KanbanStepID   *int            `json:"kanbanStepID" nullable:"false"`   // kanban_step_id
+	KanbanStepID   *KanbanStepID   `json:"kanbanStepID" nullable:"false"`   // kanban_step_id
 	Metadata       *map[string]any `json:"metadata" nullable:"false"`       // metadata
 	TargetDate     *time.Time      `json:"targetDate" nullable:"false"`     // target_date
-	TeamID         *int            `json:"teamID" nullable:"false"`         // team_id
+	TeamID         *TeamID         `json:"teamID" nullable:"false"`         // team_id
 	Title          *string         `json:"title" nullable:"false"`          // title
-	WorkItemTypeID *int            `json:"workItemTypeID" nullable:"false"` // work_item_type_id
+	WorkItemTypeID *WorkItemTypeID `json:"workItemTypeID" nullable:"false"` // work_item_type_id
 }
 
 // SetUpdateParams updates public.work_items struct fields with the specified params.
@@ -477,7 +479,7 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 }
 
 // WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
-func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -609,7 +611,7 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int
 }
 
 // WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
-func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -1017,7 +1019,7 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 // WorkItemByWorkItemID retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_pkey'.
-func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
+func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -1152,7 +1154,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...Wo
 // WorkItemsByTeamID retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_team_id_idx'.
-func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

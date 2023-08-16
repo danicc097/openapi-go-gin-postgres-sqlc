@@ -39,7 +39,7 @@ func NewActivityWithPrometheus(base repos.Activity, instanceName string) Activit
 }
 
 // ByID implements repos.Activity
-func (_d ActivityWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.ActivityID, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d ActivityWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, op
 }
 
 // ByName implements repos.Activity
-func (_d ActivityWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d ActivityWithPrometheus) ByName(ctx context.Context, d db.DBTX, name str
 }
 
 // ByProjectID implements repos.Activity
-func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -95,7 +95,7 @@ func (_d ActivityWithPrometheus) Create(ctx context.Context, d db.DBTX, params *
 }
 
 // Delete implements repos.Activity
-func (_d ActivityWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (ap1 *db.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -109,7 +109,7 @@ func (_d ActivityWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) 
 }
 
 // Update implements repos.Activity
-func (_d ActivityWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

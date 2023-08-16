@@ -24,11 +24,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoWorkItem struct {
-	WorkItemID    int       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`       // work_item_id
-	Ref           string    `json:"ref" db:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"`  // ref
-	Line          string    `json:"line" db:"line" required:"true" nullable:"false"`                     // line
-	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true" nullable:"false"` // last_message_at
-	Reopened      bool      `json:"reopened" db:"reopened" required:"true" nullable:"false"`             // reopened
+	WorkItemID    WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`       // work_item_id
+	Ref           string     `json:"ref" db:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"`  // ref
+	Line          string     `json:"line" db:"line" required:"true" nullable:"false"`                     // line
+	LastMessageAt time.Time  `json:"lastMessageAt" db:"last_message_at" required:"true" nullable:"false"` // last_message_at
+	Reopened      bool       `json:"reopened" db:"reopened" required:"true" nullable:"false"`             // reopened
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
@@ -36,11 +36,11 @@ type DemoWorkItem struct {
 
 // DemoWorkItemCreateParams represents insert params for 'public.demo_work_items'.
 type DemoWorkItemCreateParams struct {
-	LastMessageAt time.Time `json:"lastMessageAt" required:"true" nullable:"false"`            // last_message_at
-	Line          string    `json:"line" required:"true" nullable:"false"`                     // line
-	Ref           string    `json:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"` // ref
-	Reopened      bool      `json:"reopened" required:"true" nullable:"false"`                 // reopened
-	WorkItemID    int       `json:"-" required:"true" nullable:"false"`                        // work_item_id
+	LastMessageAt time.Time  `json:"lastMessageAt" required:"true" nullable:"false"`            // last_message_at
+	Line          string     `json:"line" required:"true" nullable:"false"`                     // line
+	Ref           string     `json:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"` // ref
+	Reopened      bool       `json:"reopened" required:"true" nullable:"false"`                 // reopened
+	WorkItemID    WorkItemID `json:"-" required:"true" nullable:"false"`                        // work_item_id
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
@@ -246,7 +246,7 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // DemoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoWorkItem in Asc order.
-func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -323,7 +323,7 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 }
 
 // DemoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoWorkItem in Desc order.
-func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -402,7 +402,7 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 // DemoWorkItemByWorkItemID retrieves a row from 'public.demo_work_items' as a DemoWorkItem.
 //
 // Generated from index 'demo_work_items_pkey'.
-func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
+func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

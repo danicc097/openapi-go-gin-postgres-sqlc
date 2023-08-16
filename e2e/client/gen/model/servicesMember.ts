@@ -6,9 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { WorkItemRole } from './workItemRole'
-import type { UuidUUID } from './uuidUUID'
+import type { DbUserID } from './dbUserID'
 
 export interface ServicesMember {
   role: WorkItemRole
-  userID: UuidUUID
+  userID: DbUserID
 }

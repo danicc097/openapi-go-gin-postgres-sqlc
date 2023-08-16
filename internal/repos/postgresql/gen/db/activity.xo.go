@@ -23,11 +23,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Activity struct {
-	ActivityID   int    `json:"activityID" db:"activity_id" required:"true" nullable:"false"`     // activity_id
-	ProjectID    int    `json:"projectID" db:"project_id" required:"true" nullable:"false"`       // project_id
-	Name         string `json:"name" db:"name" required:"true" nullable:"false"`                  // name
-	Description  string `json:"description" db:"description" required:"true" nullable:"false"`    // description
-	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true" nullable:"false"` // is_productive
+	ActivityID   ActivityID `json:"activityID" db:"activity_id" required:"true" nullable:"false"`     // activity_id
+	ProjectID    ProjectID  `json:"projectID" db:"project_id" required:"true" nullable:"false"`       // project_id
+	Name         string     `json:"name" db:"name" required:"true" nullable:"false"`                  // name
+	Description  string     `json:"description" db:"description" required:"true" nullable:"false"`    // description
+	IsProductive bool       `json:"isProductive" db:"is_productive" required:"true" nullable:"false"` // is_productive
 
 	ProjectJoin             *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 	ActivityTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O activities
@@ -36,11 +36,13 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
-	Description  string `json:"description" required:"true" nullable:"false"`  // description
-	IsProductive bool   `json:"isProductive" required:"true" nullable:"false"` // is_productive
-	Name         string `json:"name" required:"true" nullable:"false"`         // name
-	ProjectID    int    `json:"projectID" nullable:"false"`                    // project_id
+	Description  string    `json:"description" required:"true" nullable:"false"`  // description
+	IsProductive bool      `json:"isProductive" required:"true" nullable:"false"` // is_productive
+	Name         string    `json:"name" required:"true" nullable:"false"`         // name
+	ProjectID    ProjectID `json:"projectID" nullable:"false"`                    // project_id
 }
+
+type ActivityID int
 
 // CreateActivity creates a new Activity in the database with the given params.
 func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
@@ -56,10 +58,10 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {
-	Description  *string `json:"description" nullable:"false"`  // description
-	IsProductive *bool   `json:"isProductive" nullable:"false"` // is_productive
-	Name         *string `json:"name" nullable:"false"`         // name
-	ProjectID    *int    `json:"projectID" nullable:"false"`    // project_id
+	Description  *string    `json:"description" nullable:"false"`  // description
+	IsProductive *bool      `json:"isProductive" nullable:"false"` // is_productive
+	Name         *string    `json:"name" nullable:"false"`         // name
+	ProjectID    *ProjectID `json:"projectID" nullable:"false"`    // project_id
 }
 
 // SetUpdateParams updates public.activities struct fields with the specified params.
@@ -243,7 +245,7 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 }
 
 // ActivityPaginatedByActivityIDAsc returns a cursor-paginated list of Activity in Asc order.
-func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -326,7 +328,7 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID int
 }
 
 // ActivityPaginatedByProjectIDAsc returns a cursor-paginated list of Activity in Asc order.
-func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -409,7 +411,7 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, 
 }
 
 // ActivityPaginatedByActivityIDDesc returns a cursor-paginated list of Activity in Desc order.
-func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -492,7 +494,7 @@ func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID in
 }
 
 // ActivityPaginatedByProjectIDDesc returns a cursor-paginated list of Activity in Desc order.
-func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -577,7 +579,7 @@ func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int,
 // ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
+func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...ActivitySelectConfigOption) (*Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -751,7 +753,7 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 // ActivitiesByProjectID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -839,7 +841,7 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...Ac
 // ActivityByActivityID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_pkey'.
-func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
+func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) (*Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

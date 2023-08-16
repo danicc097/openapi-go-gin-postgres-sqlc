@@ -4,13 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -24,13 +22,13 @@ type DemoWorkItem struct {
 
 type Member struct {
 	Role   models.WorkItemRole `json:"role"   ref:"#/components/schemas/WorkItemRole" required:"true"`
-	UserID uuid.UUID           `json:"userID" required:"true"`
+	UserID db.UserID           `json:"userID" required:"true"`
 }
 
 type DemoWorkItemCreateParams struct {
 	repos.DemoWorkItemCreateParams
-	TagIDs  []int    `json:"tagIDs"  nullable:"false" required:"true"`
-	Members []Member `json:"members" nullable:"false" required:"true"`
+	TagIDs  []db.WorkItemTagID `json:"tagIDs"  nullable:"false" required:"true"`
+	Members []Member           `json:"members" nullable:"false" required:"true"`
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.
@@ -45,7 +43,7 @@ func NewDemoWorkItem(logger *zap.SugaredLogger, demowiRepo repos.DemoWorkItem, w
 }
 
 // ByID gets a work item by ID.
-func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.demowiRepo.ByID(ctx, d, id)
@@ -65,26 +63,12 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	for i, id := range params.TagIDs {
-		err := w.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
-			WorkItemTagID: id,
-			WorkItemID:    demoWi.WorkItemID,
-		})
-		var ierr *internal.Error
-		if err != nil {
-			if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
-				w.logger.Infof("skipping already assigned tag: %s\n", id)
-
-				continue
-			}
-
-			// will be done in w.wiSvc.AssignWorkItemTags which returns loc []string{strconv.Itoa(i)}
-			// and here we wrap it again in loc: tagIDs which is specific to Create only...
-			return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs", strconv.Itoa(i)}, "could not assign tag %d", id)
-		}
+	err = w.wiSvc.AssignTags(ctx, d, demoWi, params.TagIDs)
+	if err != nil {
+		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
 	}
 
-	err = w.wiSvc.AssignWorkItemMembers(ctx, d, demoWi, params.Members)
+	err = w.wiSvc.AssignUsers(ctx, d, demoWi, params.Members)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
 	}
@@ -102,7 +86,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 }
 
 // Update updates an existing work item.
-func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.demowiRepo.Update(ctx, d, id, params)
@@ -114,7 +98,7 @@ func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params rep
 }
 
 // Delete deletes a work item by ID.
-func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.wiRepo.Delete(ctx, d, id)
@@ -133,7 +117,7 @@ func (w *DemoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.Work
 }
 
 // TODO: same as assign/remove members.
-func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) error {
+func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) error {
 	wiwit := &db.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
@@ -142,28 +126,11 @@ func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID int, work
 	return wiwit.Delete(ctx, d)
 }
 
-// TODO: remove in favor of assignmembers generic workitem function.
-func (w *DemoWorkItem) AssignMember(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
-	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
-
-	return err
-}
-
-// TODO: remove in favor of removemembers generic workitem function.
-func (w *DemoWorkItem) RemoveMember(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) error {
-	wim := &db.WorkItemAssignedUser{
-		AssignedUser: memberID,
-		WorkItemID:   workItemID,
-	}
-
-	return wim.Delete(ctx, d)
-}
-
 // repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
 // params for dedicated workItem require workItemID (FK-as-PK)
 // TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
 
-func (w *DemoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+func (w *DemoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.WorkItem, error) {
 	// WorkItemsByTeamID with deleted opt, orderby createdAt
 	return []db.WorkItem{}, errors.New("not implemented")
 }
@@ -173,6 +140,6 @@ func (w *DemoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.Wo
 	return []db.WorkItem{}, errors.New("not implemented")
 }
 
-func (w *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	return w.wiRepo.Restore(ctx, d, id)
 }

@@ -477,3 +477,18 @@ go-utils.get_interface_methods() {
     sed -e '1d' |
     awk "$awk_remove_go_comments"
 }
+
+# Stores go custom types in package to a given array.
+# Parameters:
+#    Custom types array (nameref)
+#    Package directory
+go-utils.find_all_types() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -E -n 's/^type[[:space:]]+([A-Z][A-Za-z0-9_]+)[[:space:]].*/\1/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    echo "No types found in package $pkg"
+  fi
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}

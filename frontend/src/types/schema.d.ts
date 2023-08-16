@@ -156,7 +156,7 @@ export interface components {
       apiKey: string;
       /** Format: date-time */
       expiresOn: string;
-      userID: components["schemas"]["UuidUUID"];
+      userID: components["schemas"]["DbUserID"];
     };
     DbUser: {
       /** Format: date-time */
@@ -170,7 +170,7 @@ export interface components {
       hasPersonalNotifications: boolean;
       lastName?: string | null;
       scopes: components["schemas"]["Scopes"];
-      userID: components["schemas"]["UuidUUID"];
+      userID: components["schemas"]["DbUserID"];
       username: string;
     };
     DbTimeEntry: {
@@ -181,7 +181,7 @@ export interface components {
       start: string;
       teamID?: number | null;
       timeEntryID: number;
-      userID: components["schemas"]["UuidUUID"];
+      userID: components["schemas"]["DbUserID"];
       workItemID?: number | null;
     };
     DbWorkItemComment: {
@@ -190,7 +190,7 @@ export interface components {
       message: string;
       /** Format: date-time */
       updatedAt: string;
-      userID: components["schemas"]["UuidUUID"];
+      userID: components["schemas"]["DbUserID"];
       workItemCommentID: number;
       workItemID: number;
     };
@@ -283,7 +283,7 @@ export interface components {
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
       teams?: components["schemas"]["DbTeam"][] | null;
-      userID: components["schemas"]["UuidUUID"];
+      userID: components["schemas"]["DbUserID"];
       username: string;
     };
     /** HTTPValidationError */
@@ -431,7 +431,7 @@ export interface components {
     };
     WorkItemCommentCreateRequest: {
       message: string;
-      userID: components["schemas"]["UuidUUID"];
+      userID: components["schemas"]["DbUserID"];
       workItemID: number;
     };
     /** @enum {string} */
@@ -451,7 +451,7 @@ export interface components {
       color: string;
       description: string;
       name: string;
-      projectID?: number;
+      projectID?: components["schemas"]["DbProjectID"];
     };
     DbWorkItemRole: string;
     /**
@@ -496,17 +496,21 @@ export interface components {
     };
     ServicesMember: {
       role: components["schemas"]["WorkItemRole"];
-      userID: components["schemas"]["UuidUUID"];
+      userID: components["schemas"]["DbUserID"];
     };
     DbDemoTwoWorkItem: {
       /** Format: date-time */
       customDateForProject2?: string | null;
-      workItemID: number;
+      workItemID: components["schemas"]["DbWorkItemID"];
     };
     DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
       customDateForProject2?: string | null;
     };
+    DbWorkItemID: unknown;
+    DbProjectID: unknown;
+    DbUserID: string;
+    DbWorkItemTypeID: unknown;
   };
   responses: never;
   parameters: {

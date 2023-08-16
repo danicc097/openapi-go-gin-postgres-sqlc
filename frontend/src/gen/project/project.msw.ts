@@ -122,7 +122,7 @@ export const getGetProjectWorkitemsMock = () =>
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       demoTwoWorkItem: {
         customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+        workItemID: {},
       },
       description: faker.random.word(),
       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),

@@ -13,8 +13,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // WorkItemAssignedUser represents a row from 'public.work_item_assigned_user'.
@@ -26,8 +24,8 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemAssignedUser struct {
-	WorkItemID   int                 `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
-	AssignedUser uuid.UUID           `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
+	WorkItemID   WorkItemID          `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
+	AssignedUser UserID              `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
 	Role         models.WorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_WorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
@@ -37,9 +35,9 @@ type WorkItemAssignedUser struct {
 
 // WorkItemAssignedUserCreateParams represents insert params for 'public.work_item_assigned_user'.
 type WorkItemAssignedUserCreateParams struct {
-	AssignedUser uuid.UUID           `json:"assignedUser" required:"true" nullable:"false"`                                 // assigned_user
+	AssignedUser UserID              `json:"assignedUser" required:"true" nullable:"false"`                                 // assigned_user
 	Role         models.WorkItemRole `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   int                 `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
+	WorkItemID   WorkItemID          `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
 // CreateWorkItemAssignedUser creates a new WorkItemAssignedUser in the database with the given params.
@@ -55,9 +53,9 @@ func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssi
 
 // WorkItemAssignedUserUpdateParams represents update params for 'public.work_item_assigned_user'.
 type WorkItemAssignedUserUpdateParams struct {
-	AssignedUser *uuid.UUID           `json:"assignedUser" nullable:"false"`                                 // assigned_user
+	AssignedUser *UserID              `json:"assignedUser" nullable:"false"`                                 // assigned_user
 	Role         *models.WorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   *int                 `json:"workItemID" nullable:"false"`                                   // work_item_id
+	WorkItemID   *WorkItemID          `json:"workItemID" nullable:"false"`                                   // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_assigned_user struct fields with the specified params.
@@ -274,7 +272,7 @@ func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 // WorkItemAssignedUsersByAssignedUserWorkItemID retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
-func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser uuid.UUID, workItemID int, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser UserID, workItemID WorkItemID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -360,7 +358,7 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 // WorkItemAssignedUserByWorkItemIDAssignedUser retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID int, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
+func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID WorkItemID, assignedUser UserID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -444,7 +442,7 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 // WorkItemAssignedUsersByWorkItemID retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -530,7 +528,7 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID in
 // WorkItemAssignedUsersByAssignedUser retrieves a row from 'public.work_item_assigned_user' as a WorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser uuid.UUID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
+func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser UserID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
 	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

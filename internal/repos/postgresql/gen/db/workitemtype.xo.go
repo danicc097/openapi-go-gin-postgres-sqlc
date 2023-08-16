@@ -23,11 +23,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemType struct {
-	WorkItemTypeID int    `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                         // work_item_type_id
-	ProjectID      int    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
-	Name           string `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
-	Description    string `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
-	Color          string `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                         // work_item_type_id
+	ProjectID      ProjectID      `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	Name           string         `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
+	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
+	Color          string         `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 
 	ProjectJoin *Project `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 
@@ -35,11 +35,13 @@ type WorkItemType struct {
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'.
 type WorkItemTypeCreateParams struct {
-	Color       string `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description string `json:"description" required:"true" nullable:"false"`                                        // description
-	Name        string `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID   int    `json:"projectID" nullable:"false"`                                                          // project_id
+	Color       string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description string    `json:"description" required:"true" nullable:"false"`                                        // description
+	Name        string    `json:"name" required:"true" nullable:"false"`                                               // name
+	ProjectID   ProjectID `json:"projectID" nullable:"false"`                                                          // project_id
 }
+
+type WorkItemTypeID int
 
 // CreateWorkItemType creates a new WorkItemType in the database with the given params.
 func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
@@ -55,10 +57,10 @@ func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreatePa
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'.
 type WorkItemTypeUpdateParams struct {
-	Color       *string `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description *string `json:"description" nullable:"false"`                                        // description
-	Name        *string `json:"name" nullable:"false"`                                               // name
-	ProjectID   *int    `json:"projectID" nullable:"false"`                                          // project_id
+	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description *string    `json:"description" nullable:"false"`                                        // description
+	Name        *string    `json:"name" nullable:"false"`                                               // name
+	ProjectID   *ProjectID `json:"projectID" nullable:"false"`                                          // project_id
 }
 
 // SetUpdateParams updates public.work_item_types struct fields with the specified params.
@@ -224,7 +226,7 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 }
 
 // WorkItemTypePaginatedByWorkItemTypeIDAsc returns a cursor-paginated list of WorkItemType in Asc order.
-func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workItemTypeID WorkItemTypeID, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -301,7 +303,7 @@ func WorkItemTypePaginatedByWorkItemTypeIDAsc(ctx context.Context, db DB, workIt
 }
 
 // WorkItemTypePaginatedByProjectIDAsc returns a cursor-paginated list of WorkItemType in Asc order.
-func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -378,7 +380,7 @@ func WorkItemTypePaginatedByProjectIDAsc(ctx context.Context, db DB, projectID i
 }
 
 // WorkItemTypePaginatedByWorkItemTypeIDDesc returns a cursor-paginated list of WorkItemType in Desc order.
-func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workItemTypeID WorkItemTypeID, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -455,7 +457,7 @@ func WorkItemTypePaginatedByWorkItemTypeIDDesc(ctx context.Context, db DB, workI
 }
 
 // WorkItemTypePaginatedByProjectIDDesc returns a cursor-paginated list of WorkItemType in Desc order.
-func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -534,7 +536,7 @@ func WorkItemTypePaginatedByProjectIDDesc(ctx context.Context, db DB, projectID 
 // WorkItemTypeByNameProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_name_project_id_key'.
-func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
+func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -696,7 +698,7 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 // WorkItemTypesByProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_name_project_id_key'.
-func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -778,7 +780,7 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ..
 // WorkItemTypeByWorkItemTypeID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_pkey'.
-func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
+func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID WorkItemTypeID, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

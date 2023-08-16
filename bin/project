@@ -5,6 +5,12 @@
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
 #
 #
+
+source ".helpers.sh"
+
+starting_cwd=$(pwd)
+ensure_pwd_is_top_level
+
 declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_CACHE X_ENV
 
 readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -106,6 +112,8 @@ xsetup.build-tools() {
   x.gen.build-tools
 }
 
+gen_backup_branch="backup-gen-$(uuidgen)"
+
 xsetup.backup-gen() {
   test -n "$xsetup_backup_gen_caller" && return
 
@@ -113,11 +121,10 @@ xsetup.backup-gen() {
 
   mkdir -p "$CACHE"
 
-  gen_backup_branch="backup-gen-$(uuidgen)"
   gen_backup_stash_name="backup-stash-$gen_backup_branch"
 
   uuidgen >backup-gen-stash-dummy.txt
-  git stash push -m "$gen_backup_stash_name" --include-untracked
+  git stash push -m "$gen_backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
   git checkout -b "$gen_backup_branch" &>/dev/null
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 
@@ -434,12 +441,16 @@ generate_models_mappings() {
 
 package internal
 
-import "$GOMOD_PKG/internal/models"
+import (
+  "$GOMOD_PKG/internal/models"
+  db "$GOMOD_PKG/$PG_REPO_GEN/db"
+)
+
 
 EOF
 
   mapfile -t projects_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
-  generate_model_mappings_dicts Project projects_rows
+  generate_model_mappings_dicts Project db.ProjectID projects_rows
 
   for project in ${db_projects[@]}; do
     mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
@@ -448,7 +459,7 @@ EOF
             );" 2>/dev/null)
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")KanbanSteps"
-    generate_model_mappings_dicts $prefix kanban_steps_rows
+    generate_model_mappings_dicts $prefix db.KanbanStepID kanban_steps_rows
 
     kanban_steps_rows=()
     mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
@@ -458,7 +469,7 @@ EOF
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")KanbanSteps"
     echo "var (
-    ${prefix}StepOrderByID = map[int]int{
+    ${prefix}StepOrderByID = map[db.KanbanStepID]int{
   " >>$model_mappings_path
     for row in "${kanban_steps_rows[@]}"; do
       first=$(cut_first "$row" "|") # always safe
@@ -477,7 +488,7 @@ EOF
             );" 2>/dev/null)
     [[ ${#work_item_types_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")WorkItemTypes"
-    generate_model_mappings_dicts $prefix work_item_types_rows
+    generate_model_mappings_dicts $prefix db.WorkItemTypeID work_item_types_rows
   done
 
   gofumpt -w $model_mappings_path
@@ -487,9 +498,10 @@ EOF
 # inserted exclusively via migrations
 generate_model_mappings_dicts() {
   local prefix="$1"
-  local -n __arr="$2" # db rows
+  local idType="$2"
+  local -n __arr="$3" # db rows
   echo "var (
-	${prefix}NameByID = map[int]models.${prefix}{
+	${prefix}NameByID = map[${idType}]models.${prefix}{
   " >>$model_mappings_path
   for row in "${__arr[@]}"; do
     first=$(cut_first "$row" "|") # always safe
@@ -499,7 +511,7 @@ generate_model_mappings_dicts() {
     echo "${id}: models.${prefix}$(to_pascal "$name")," >>$model_mappings_path
   done
   echo "}
-	${prefix}IDByName = map[models.${prefix}]int{
+	${prefix}IDByName = map[models.${prefix}]${idType}{
   " >>$model_mappings_path
   for row in "${__arr[@]}"; do
     first=$(cut_first "$row" "|") # always safe
@@ -1493,9 +1505,11 @@ run_shared_services() {
 generate_structs_map() {
   local structs=()
   local enums=()
+  local all_types=()
   go-utils.find_structs structs "$PG_REPO_GEN/db"
   go-utils.find_enums enums "$PG_REPO_GEN/db"
-  find_deleted_pkg_schemas structs enums Db
+  go-utils.find_all_types all_types "$PG_REPO_GEN/db"
+  find_deleted_pkg_schemas all_types Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
   done
@@ -1505,9 +1519,11 @@ generate_structs_map() {
 
   structs=()
   enums=()
+  all_types=()
   go-utils.find_structs structs "internal/rest/models.go"
   go-utils.find_enums enums "internal/rest/models.go"
-  find_deleted_pkg_schemas structs enums Rest
+  go-utils.find_all_types all_types "internal/rest/models.go"
+  find_deleted_pkg_schemas all_types Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")
   done
@@ -1606,22 +1622,16 @@ awk_remove_go_comments='
 '
 
 find_deleted_pkg_schemas() {
-  local -n __structs="$1"
-  local -n __enums="$2"
-  local pkg="$3"
+  local -n __all_types="$1"
+  local pkg="$2"
   local pkg_prefix=$(to_pascal $pkg)
   echo "Finding deleted structs or enums from package '$pkg_prefix'..."
   mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg_prefix}" || true)
 
   local found=0
   for spec_schema in ${spec_schemas[*]}; do
-    for struct in ${__structs[@]}; do
-      if [[ $spec_schema == "${pkg_prefix}$struct" ]]; then
-        found=1
-      fi
-    done
-    for enum in ${__enums[@]}; do
-      if [[ $spec_schema == "${pkg_prefix}$enum" ]]; then
+    for type in ${__all_types[@]}; do
+      if [[ $spec_schema == "${pkg_prefix}$type" ]]; then
         found=1
       fi
     done
@@ -1722,12 +1732,8 @@ export PROC=$$
 export POSTGRES_TRACE=${POSTGRES_TRACE:-false}
 export GIN_MODE=${GIN_MODE:-release}
 
-source ".helpers.sh"
 source ".project.dependencies.sh"
 source ".project.usage.sh"
-
-starting_cwd=$(pwd)
-ensure_pwd_is_top_level
 
 set -Eeo pipefail
 set -o errtrace
@@ -1888,17 +1894,24 @@ set +a
 trap 'show_tracebacks' ERR
 trap killgroup EXIT HUP INT TERM
 trap errtrap SIGUSR1
+# may get called multiple times
 trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
 
+exit_cleanup_calls=0
+
 exit-cleanup() {
+  [[ "$exit_cleanup_calls" -gt 0 ]] && return
+  ((exit_cleanup_calls++)) || true
+
   if [[ $restore_cache = 1 && -z $X_NO_CACHE ]]; then
     xsetup.backup-gen.restore
   fi
 
   rm -f backup-gen-stash-dummy.txt
-  git checkout "$CURRENT_BRANCH" &>/dev/null || true
-  git branch -D "$gen_backup_branch" &>/dev/null || true
+  git checkout "$CURRENT_BRANCH" >/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
+  git branch -D "$gen_backup_branch" >/dev/null || true
   cd "$starting_cwd" || true
+
 }
 
 killgroup() {

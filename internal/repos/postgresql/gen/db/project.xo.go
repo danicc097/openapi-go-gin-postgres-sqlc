@@ -25,7 +25,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Project struct {
-	ProjectID          int                  `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                              // project_id
+	ProjectID          ProjectID            `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                              // project_id
 	Name               models.Project       `json:"name" db:"name" required:"true" nullable:"false" ref:"#/components/schemas/Project"`                      // name
 	Description        string               `json:"description" db:"description" required:"true" nullable:"false"`                                           // description
 	WorkItemsTableName string               `json:"-" db:"work_items_table_name" nullable:"false"`                                                           // work_items_table_name
@@ -48,6 +48,8 @@ type ProjectCreateParams struct {
 	Name               models.Project       `json:"name" required:"true" nullable:"false" ref:"#/components/schemas/Project"`              // name
 	WorkItemsTableName string               `json:"-" nullable:"false"`                                                                    // work_items_table_name
 }
+
+type ProjectID int
 
 // CreateProject creates a new Project in the database with the given params.
 func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
@@ -333,7 +335,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 }
 
 // ProjectPaginatedByProjectIDAsc returns a cursor-paginated list of Project in Asc order.
-func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
+func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) ([]Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -436,7 +438,7 @@ func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, o
 }
 
 // ProjectPaginatedByProjectIDDesc returns a cursor-paginated list of Project in Desc order.
-func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
+func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) ([]Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -647,7 +649,7 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 // ProjectByProjectID retrieves a row from 'public.projects' as a Project.
 //
 // Generated from index 'projects_pkey'.
-func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
+func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

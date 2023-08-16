@@ -39,7 +39,7 @@ func NewDemoTwoWorkItemWithPrometheus(base repos.DemoTwoWorkItem, instanceName s
 }
 
 // ByID implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d DemoTwoWorkItemWithPrometheus) Create(ctx context.Context, d db.DBTX, p
 }
 
 // Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

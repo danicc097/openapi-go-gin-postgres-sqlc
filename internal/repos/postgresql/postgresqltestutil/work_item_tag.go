@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomWorkItemTag(t *testing.T, d db.DBTX, projectID int) (*db.WorkItemTag, error) {
+func NewRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.WorkItemTag, error) {
 	t.Helper()
 
 	witRepo := postgresql.NewWorkItemTag()
@@ -23,7 +23,7 @@ func NewRandomWorkItemTag(t *testing.T, d db.DBTX, projectID int) (*db.WorkItemT
 	return wit, nil
 }
 
-func RandomWorkItemTagCreateParams(t *testing.T, projectID int) *db.WorkItemTagCreateParams {
+func RandomWorkItemTagCreateParams(t *testing.T, projectID db.ProjectID) *db.WorkItemTagCreateParams {
 	t.Helper()
 
 	return &db.WorkItemTagCreateParams{

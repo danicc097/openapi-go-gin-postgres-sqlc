@@ -39,7 +39,7 @@ func NewWorkItemTypeWithPrometheus(base repos.WorkItemType, instanceName string)
 }
 
 // ByID implements repos.WorkItemType
-func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTypeID, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int
 }
 
 // ByName implements repos.WorkItemType
-func (_d WorkItemTypeWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

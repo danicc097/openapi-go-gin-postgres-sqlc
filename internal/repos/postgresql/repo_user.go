@@ -36,7 +36,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 	return user, nil
 }
 
-func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (*db.User, error) {
 	user, err := u.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by id: %w", parseDBErrorDetail(err))
@@ -56,7 +56,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.U
 	return user, err
 }
 
-func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
+func (u *User) Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, error) {
 	user := &db.User{
 		UserID: id,
 	}
@@ -86,7 +86,7 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.
 	return user, nil
 }
 
-func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID int) ([]db.User, error) {
+func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.User, error) {
 	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{Members: true}))
 	if err != nil {
 		return []db.User{}, fmt.Errorf("could not get users by team: %w", parseDBErrorDetail(err))
@@ -95,7 +95,7 @@ func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID int) ([]db.User, er
 	return *team.TeamMembersJoin, nil
 }
 
-func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.User, error) {
+func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) ([]db.User, error) {
 	teams, err := db.TeamsByProjectID(ctx, d, projectID)
 	if err != nil {
 		return []db.User{}, fmt.Errorf("could not get teams in project: %w", parseDBErrorDetail(err))
@@ -122,7 +122,7 @@ func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string, opts 
 	return user, nil
 }
 
-func (u *User) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (*db.User, error) {
+func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts ...db.UserSelectConfigOption) (*db.User, error) {
 	user, err := db.UserByUserID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user: %w", parseDBErrorDetail(err))

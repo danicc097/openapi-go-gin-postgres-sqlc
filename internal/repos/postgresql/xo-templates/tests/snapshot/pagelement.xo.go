@@ -25,18 +25,28 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type PagElement struct {
-	PaginatedElementID uuid.UUID `json:"paginatedElementID" db:"paginated_element_id" required:"true" nullable:"false"` // paginated_element_id
-	Name               string    `json:"name" db:"name" required:"true" nullable:"false"`                               // name
-	CreatedAt          time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
-	Dummy              *int      `json:"dummy" db:"dummy"`                                                              // dummy
+	PaginatedElementID PagElementID `json:"paginatedElementID" db:"paginated_element_id" required:"true" nullable:"false"` // paginated_element_id
+	Name               string       `json:"name" db:"name" required:"true" nullable:"false"`                               // name
+	CreatedAt          time.Time    `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
+	Dummy              *DummyJoinID `json:"dummy" db:"dummy"`                                                              // dummy
 
 	DummyJoin *DummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
 }
 
 // PagElementCreateParams represents insert params for 'xo_tests.pag_element'.
 type PagElementCreateParams struct {
-	Dummy *int   `json:"dummy"`                                 // dummy
-	Name  string `json:"name" required:"true" nullable:"false"` // name
+	Dummy *DummyJoinID `json:"dummy"`                                 // dummy
+	Name  string       `json:"name" required:"true" nullable:"false"` // name
+}
+
+type PagElementID struct {
+	uuid.UUID
+}
+
+func NewPagElementID(id uuid.UUID) PagElementID {
+	return PagElementID{
+		UUID: id,
+	}
 }
 
 // CreatePagElement creates a new PagElement in the database with the given params.
@@ -51,8 +61,8 @@ func CreatePagElement(ctx context.Context, db DB, params *PagElementCreateParams
 
 // PagElementUpdateParams represents update params for 'xo_tests.pag_element'.
 type PagElementUpdateParams struct {
-	Dummy **int   `json:"dummy"`                 // dummy
-	Name  *string `json:"name" nullable:"false"` // name
+	Dummy **DummyJoinID `json:"dummy"`                 // dummy
+	Name  *string       `json:"name" nullable:"false"` // name
 }
 
 // SetUpdateParams updates xo_tests.pag_element struct fields with the specified params.
@@ -462,7 +472,7 @@ func PagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts
 // PagElementByPaginatedElementID retrieves a row from 'xo_tests.pag_element' as a PagElement.
 //
 // Generated from index 'pag_element_pkey'.
-func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElementID uuid.UUID, opts ...PagElementSelectConfigOption) (*PagElement, error) {
+func PagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElementID PagElementID, opts ...PagElementSelectConfigOption) (*PagElement, error) {
 	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

@@ -22,7 +22,7 @@ func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification) *Notif
 	}
 }
 
-// LatestUserNotifications gets a notification by ID.
+// LatestUserNotifications gets user notifications ordered by creation date.
 func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
 	defer newOTelSpan().Build(ctx).End()
 

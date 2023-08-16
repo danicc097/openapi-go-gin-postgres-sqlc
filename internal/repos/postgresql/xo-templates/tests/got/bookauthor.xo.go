@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -24,9 +23,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type BookAuthor struct {
-	BookID    int       `json:"bookID" db:"book_id" required:"true" nullable:"false"`     // book_id
-	AuthorID  uuid.UUID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
-	Pseudonym *string   `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
+	BookID    BookID  `json:"bookID" db:"book_id" required:"true" nullable:"false"`     // book_id
+	AuthorID  UserID  `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
+	Pseudonym *string `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
 
 	AuthorBooksJoin *[]Book__BA_BookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
 	BookAuthorsJoin *[]User__BA_BookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
@@ -34,9 +33,9 @@ type BookAuthor struct {
 
 // BookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
 type BookAuthorCreateParams struct {
-	AuthorID  uuid.UUID `json:"authorID" required:"true" nullable:"false"` // author_id
-	BookID    int       `json:"bookID" required:"true" nullable:"false"`   // book_id
-	Pseudonym *string   `json:"pseudonym"`                                 // pseudonym
+	AuthorID  UserID  `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    BookID  `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Pseudonym *string `json:"pseudonym"`                                 // pseudonym
 }
 
 // CreateBookAuthor creates a new BookAuthor in the database with the given params.
@@ -52,9 +51,9 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 
 // BookAuthorUpdateParams represents update params for 'xo_tests.book_authors'.
 type BookAuthorUpdateParams struct {
-	AuthorID  *uuid.UUID `json:"authorID" nullable:"false"` // author_id
-	BookID    *int       `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string   `json:"pseudonym"`                 // pseudonym
+	AuthorID  *UserID  `json:"authorID" nullable:"false"` // author_id
+	BookID    *BookID  `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string `json:"pseudonym"`                 // pseudonym
 }
 
 // SetUpdateParams updates xo_tests.book_authors struct fields with the specified params.
@@ -269,7 +268,7 @@ func (ba *BookAuthor) Delete(ctx context.Context, db DB) error {
 // BookAuthorByBookIDAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
+func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID BookID, authorID UserID, opts ...BookAuthorSelectConfigOption) (*BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -353,7 +352,7 @@ func BookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID int, authorID
 // BookAuthorsByBookID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
+func BookAuthorsByBookID(ctx context.Context, db DB, bookID BookID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -439,7 +438,7 @@ func BookAuthorsByBookID(ctx context.Context, db DB, bookID int, opts ...BookAut
 // BookAuthorsByAuthorID retrieves a row from 'xo_tests.book_authors' as a BookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID uuid.UUID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
+func BookAuthorsByAuthorID(ctx context.Context, db DB, authorID UserID, opts ...BookAuthorSelectConfigOption) ([]BookAuthor, error) {
 	c := &BookAuthorSelectConfig{joins: BookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

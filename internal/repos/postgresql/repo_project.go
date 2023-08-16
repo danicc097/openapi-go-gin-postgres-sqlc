@@ -23,7 +23,7 @@ func NewProject() *Project {
 
 var _ repos.Project = (*Project)(nil)
 
-func (u *Project) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
+func (u *Project) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	project, err := db.ProjectByProjectID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get project: %w", parseDBErrorDetail(err))
@@ -41,7 +41,7 @@ func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project, op
 	return project, nil
 }
 
-func (u *Project) UpdateBoardConfig(ctx context.Context, d db.DBTX, projectID int, paths []string, obj any) error {
+func (u *Project) UpdateBoardConfig(ctx context.Context, d db.DBTX, projectID db.ProjectID, paths []string, obj any) error {
 	sqlstr := `
 	UPDATE public.projects
 	SET board_config = jsonb_set_deep(board_config, $1, $2)

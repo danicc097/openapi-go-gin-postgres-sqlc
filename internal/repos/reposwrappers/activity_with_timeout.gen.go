@@ -41,7 +41,7 @@ func NewActivityWithTimeout(base repos.Activity, config ActivityWithTimeoutConfi
 }
 
 // ByID implements repos.Activity
-func (_d ActivityWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.ActivityID, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -51,7 +51,7 @@ func (_d ActivityWithTimeout) ByID(ctx context.Context, d db.DBTX, id int, opts 
 }
 
 // ByName implements repos.Activity
-func (_d ActivityWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
@@ -61,7 +61,7 @@ func (_d ActivityWithTimeout) ByName(ctx context.Context, d db.DBTX, name string
 }
 
 // ByProjectID implements repos.Activity
-func (_d ActivityWithTimeout) ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
+func (_d ActivityWithTimeout) ByProjectID(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByProjectIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByProjectIDTimeout)
@@ -81,7 +81,7 @@ func (_d ActivityWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.
 }
 
 // Delete implements repos.Activity
-func (_d ActivityWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (ap1 *db.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -91,7 +91,7 @@ func (_d ActivityWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (ap
 }
 
 // Update implements repos.Activity
-func (_d ActivityWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTimeout) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)
