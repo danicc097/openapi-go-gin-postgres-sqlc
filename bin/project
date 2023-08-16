@@ -124,7 +124,7 @@ xsetup.backup-gen() {
   gen_backup_stash_name="backup-stash-$gen_backup_branch"
 
   uuidgen >backup-gen-stash-dummy.txt
-  git stash push -m "$gen_backup_stash_name" --include-untracked || true
+  git stash push -m "$gen_backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
   git checkout -b "$gen_backup_branch" &>/dev/null
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 
@@ -1505,9 +1505,11 @@ run_shared_services() {
 generate_structs_map() {
   local structs=()
   local enums=()
+  local all_types=()
   go-utils.find_structs structs "$PG_REPO_GEN/db"
   go-utils.find_enums enums "$PG_REPO_GEN/db"
-  find_deleted_pkg_schemas structs enums Db
+  go-utils.find_all_types all_types "$PG_REPO_GEN/db"
+  find_deleted_pkg_schemas all_types Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
   done
@@ -1517,9 +1519,11 @@ generate_structs_map() {
 
   structs=()
   enums=()
+  all_types=()
   go-utils.find_structs structs "internal/rest/models.go"
   go-utils.find_enums enums "internal/rest/models.go"
-  find_deleted_pkg_schemas structs enums Rest
+  go-utils.find_all_types all_types "internal/rest/models.go"
+  find_deleted_pkg_schemas all_types Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")
   done
@@ -1618,22 +1622,16 @@ awk_remove_go_comments='
 '
 
 find_deleted_pkg_schemas() {
-  local -n __structs="$1"
-  local -n __enums="$2"
-  local pkg="$3"
+  local -n __all_types="$1"
+  local pkg="$2"
   local pkg_prefix=$(to_pascal $pkg)
   echo "Finding deleted structs or enums from package '$pkg_prefix'..."
   mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg_prefix}" || true)
 
   local found=0
   for spec_schema in ${spec_schemas[*]}; do
-    for struct in ${__structs[@]}; do
-      if [[ $spec_schema == "${pkg_prefix}$struct" ]]; then
-        found=1
-      fi
-    done
-    for enum in ${__enums[@]}; do
-      if [[ $spec_schema == "${pkg_prefix}$enum" ]]; then
+    for type in ${__all_types[@]}; do
+      if [[ $spec_schema == "${pkg_prefix}$type" ]]; then
         found=1
       fi
     done
@@ -1904,8 +1902,8 @@ exit-cleanup() {
   fi
 
   rm -f backup-gen-stash-dummy.txt
-  git checkout "$CURRENT_BRANCH" &>/dev/null || true
-  git branch -D "$gen_backup_branch" &>/dev/null || true
+  git checkout "$CURRENT_BRANCH" >/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
+  git branch -D "$gen_backup_branch" >/dev/null || true
   cd "$starting_cwd" || true
 }
 
