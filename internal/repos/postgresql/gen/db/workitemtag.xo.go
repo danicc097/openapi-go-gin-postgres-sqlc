@@ -42,7 +42,7 @@ type WorkItemTagCreateParams struct {
 	ProjectID   ProjectID `json:"projectID" nullable:"false"`                                                          // project_id
 }
 
-type WorkItemTagID int // work_item_tag_id
+type WorkItemTagID int
 
 // CreateWorkItemTag creates a new WorkItemTag in the database with the given params.
 func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreateParams) (*WorkItemTag, error) {

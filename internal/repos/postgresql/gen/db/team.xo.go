@@ -44,7 +44,7 @@ type TeamCreateParams struct {
 	ProjectID   ProjectID `json:"projectID" required:"true" nullable:"false"`   // project_id
 }
 
-type TeamID int // team_id
+type TeamID int
 
 // CreateTeam creates a new Team in the database with the given params.
 func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {

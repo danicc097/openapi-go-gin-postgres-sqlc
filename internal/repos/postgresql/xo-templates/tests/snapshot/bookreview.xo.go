@@ -37,7 +37,7 @@ type BookReviewCreateParams struct {
 	Reviewer UserID `json:"reviewer" required:"true" nullable:"false"` // reviewer
 }
 
-type BookReviewID int // book_review_id
+type BookReviewID int
 
 // CreateBookReview creates a new BookReview in the database with the given params.
 func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams) (*BookReview, error) {

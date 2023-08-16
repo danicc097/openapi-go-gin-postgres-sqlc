@@ -41,7 +41,7 @@ type WorkItemTypeCreateParams struct {
 	ProjectID   ProjectID `json:"projectID" nullable:"false"`                                                          // project_id
 }
 
-type WorkItemTypeID int // work_item_type_id
+type WorkItemTypeID int
 
 // CreateWorkItemType creates a new WorkItemType in the database with the given params.
 func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {

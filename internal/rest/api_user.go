@@ -21,7 +21,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)
 
-	_, err := h.svc.user.Delete(c, tx, db.UserID{UUID: id})
+	_, err := h.svc.user.Delete(c, tx, db.NewUserID(id))
 	if err != nil {
 		renderErrorResponse(c, "Could not delete user", err)
 

@@ -40,7 +40,7 @@ type UserNotificationCreateParams struct {
 	UserID         UserID         `json:"userID" required:"true" nullable:"false"`         // user_id
 }
 
-type UserNotificationID int // user_notification_id
+type UserNotificationID int
 
 // CreateUserNotification creates a new UserNotification in the database with the given params.
 func CreateUserNotification(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {

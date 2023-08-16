@@ -51,7 +51,7 @@ type TimeEntryCreateParams struct {
 	WorkItemID      *WorkItemID `json:"workItemID"`                                  // work_item_id
 }
 
-type TimeEntryID int // time_entry_id
+type TimeEntryID int
 
 // CreateTimeEntry creates a new TimeEntry in the database with the given params.
 func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {

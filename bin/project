@@ -851,7 +851,7 @@ x.gen() {
     go generate ./... &
     x.gen.gowrap &
     x.gen.proto &
-    # x.gen.xo &
+    x.gen.xo &
     x.gen.sqlc &
     x.gen.jet &
 

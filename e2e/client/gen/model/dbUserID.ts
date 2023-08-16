@@ -6,4 +6,4 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type DbUserID = number[] | null
+export type DbUserID = string

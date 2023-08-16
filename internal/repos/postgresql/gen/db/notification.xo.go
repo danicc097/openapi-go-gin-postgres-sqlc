@@ -53,7 +53,7 @@ type NotificationCreateParams struct {
 	Title            string           `json:"title" required:"true" nullable:"false"`                                                        // title
 }
 
-type NotificationID int // notification_id
+type NotificationID int
 
 // CreateNotification creates a new Notification in the database with the given params.
 func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {

@@ -39,7 +39,7 @@ type UserAPIKeyCreateParams struct {
 	UserID    UserID    `json:"userID" required:"true" nullable:"false"`    // user_id
 }
 
-type UserAPIKeyID int // user_api_key_id
+type UserAPIKeyID int
 
 // CreateUserAPIKey creates a new UserAPIKey in the database with the given params.
 func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {

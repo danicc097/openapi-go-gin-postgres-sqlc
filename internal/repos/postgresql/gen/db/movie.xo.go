@@ -37,7 +37,7 @@ type MovieCreateParams struct {
 	Year     int    `json:"year" required:"true" nullable:"false"`     // year
 }
 
-type MovieID int // movie_id
+type MovieID int
 
 // CreateMovie creates a new Movie in the database with the given params.
 func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {

@@ -43,7 +43,7 @@ type WorkItemCommentCreateParams struct {
 	WorkItemID WorkItemID `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
-type WorkItemCommentID int // work_item_comment_id
+type WorkItemCommentID int
 
 // CreateWorkItemComment creates a new WorkItemComment in the database with the given params.
 func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCreateParams) (*WorkItemComment, error) {

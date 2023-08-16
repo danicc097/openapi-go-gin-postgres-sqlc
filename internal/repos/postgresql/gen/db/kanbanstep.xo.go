@@ -45,7 +45,7 @@ type KanbanStepCreateParams struct {
 	TimeTrackable bool      `json:"timeTrackable" required:"true" nullable:"false"`                                      // time_trackable
 }
 
-type KanbanStepID int // kanban_step_id
+type KanbanStepID int
 
 // CreateKanbanStep creates a new KanbanStep in the database with the given params.
 func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {

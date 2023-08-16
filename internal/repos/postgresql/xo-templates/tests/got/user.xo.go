@@ -48,8 +48,14 @@ type UserCreateParams struct {
 }
 
 type UserID struct {
-	uuid.UUID `ref:"#/components/schemas/UuidUUID"`
-} // user_id
+	uuid.UUID
+}
+
+func NewUserID(id uuid.UUID) UserID {
+	return UserID{
+		UUID: id,
+	}
+}
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {

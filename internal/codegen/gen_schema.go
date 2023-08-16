@@ -113,8 +113,8 @@ func newSpecReflector() *openapi3.Reflector {
 			return nil
 		}),
 		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
+			t := params.Schema.ReflectType
 			if strings.HasSuffix(params.Schema.ReflectType.PkgPath(), "internal/models") {
-				t := params.Schema.ReflectType
 				if t.Kind() == reflect.Ptr {
 					t = t.Elem()
 				}
@@ -128,7 +128,18 @@ func newSpecReflector() *openapi3.Reflector {
 				}
 			}
 
-			if params.Schema.ReflectType == reflect.TypeOf(uuid.New()) {
+			var isCustomUUID bool
+			if t.Kind() == reflect.Ptr {
+				t = t.Elem()
+			}
+			if t.Kind() == reflect.Struct {
+				if t.Field(0).Type == reflect.TypeOf(uuid.New()) {
+					isCustomUUID = true
+				}
+			}
+
+			// TODO: also if type script and has a field UUID
+			if t == reflect.TypeOf(uuid.New()) || isCustomUUID {
 				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
 				params.Schema.Pattern = pointers.New("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 				params.Schema.Items = &jsonschema.Items{}

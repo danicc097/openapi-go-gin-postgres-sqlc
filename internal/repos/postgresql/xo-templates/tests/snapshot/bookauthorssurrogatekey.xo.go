@@ -39,7 +39,7 @@ type BookAuthorsSurrogateKeyCreateParams struct {
 	Pseudonym *string `json:"pseudonym"`                                 // pseudonym
 }
 
-type BookAuthorsSurrogateKeyID int // book_authors_surrogate_key_id
+type BookAuthorsSurrogateKeyID int
 
 // CreateBookAuthorsSurrogateKey creates a new BookAuthorsSurrogateKey in the database with the given params.
 func CreateBookAuthorsSurrogateKey(ctx context.Context, db DB, params *BookAuthorsSurrogateKeyCreateParams) (*BookAuthorsSurrogateKey, error) {

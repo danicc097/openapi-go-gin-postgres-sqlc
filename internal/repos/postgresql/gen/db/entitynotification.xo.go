@@ -42,7 +42,7 @@ type EntityNotificationCreateParams struct {
 	Topic   models.Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`    // topic
 }
 
-type EntityNotificationID int // entity_notification_id
+type EntityNotificationID int
 
 // CreateEntityNotification creates a new EntityNotification in the database with the given params.
 func CreateEntityNotification(ctx context.Context, db DB, params *EntityNotificationCreateParams) (*EntityNotification, error) {

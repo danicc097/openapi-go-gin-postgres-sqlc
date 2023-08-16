@@ -234,7 +234,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := "could not save api key"
 
-		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: db.UserID{UUID: uuid.New()}})
+		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: db.NewUserID(uuid.New())})
 
 		assert.ErrorContains(t, err, errContains)
 	})

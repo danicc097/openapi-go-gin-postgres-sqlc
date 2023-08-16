@@ -509,7 +509,7 @@ export interface components {
     };
     DbWorkItemID: unknown;
     DbProjectID: unknown;
-    DbUserID: number[] | null;
+    DbUserID: string;
     DbWorkItemTypeID: unknown;
   };
   responses: never;

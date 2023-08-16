@@ -32,7 +32,7 @@ type DummyJoinCreateParams struct {
 	Name *string `json:"name"` // name
 }
 
-type DummyJoinID int // dummy_join_id
+type DummyJoinID int
 
 // CreateDummyJoin creates a new DummyJoin in the database with the given params.
 func CreateDummyJoin(ctx context.Context, db DB, params *DummyJoinCreateParams) (*DummyJoin, error) {

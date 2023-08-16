@@ -42,7 +42,7 @@ type ActivityCreateParams struct {
 	ProjectID    ProjectID `json:"projectID" nullable:"false"`                    // project_id
 }
 
-type ActivityID int // activity_id
+type ActivityID int
 
 // CreateActivity creates a new Activity in the database with the given params.
 func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {

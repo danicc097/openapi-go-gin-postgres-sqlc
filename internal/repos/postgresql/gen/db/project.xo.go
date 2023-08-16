@@ -49,7 +49,7 @@ type ProjectCreateParams struct {
 	WorkItemsTableName string               `json:"-" nullable:"false"`                                                                    // work_items_table_name
 }
 
-type ProjectID int // project_id
+type ProjectID int
 
 // CreateProject creates a new Project in the database with the given params.
 func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {

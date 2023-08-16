@@ -34,7 +34,7 @@ type SchemaMigrationCreateParams struct {
 	Version SchemaMigrationID `json:"version" required:"true" nullable:"false"` // version
 }
 
-type SchemaMigrationID int // version
+type SchemaMigrationID int
 
 // CreateSchemaMigration creates a new SchemaMigration in the database with the given params.
 func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {

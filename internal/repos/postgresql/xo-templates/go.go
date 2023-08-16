@@ -3805,11 +3805,13 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 			return "", nil
 		}
 		if field.IsPrimary {
+			goName := table.GoName + "ID"
 			if strings.HasSuffix(fieldType, "uuid.UUID") {
-				fieldType = "struct {\n	uuid.UUID `ref:\"#/components/schemas/UuidUUID\"` \n}"
+				fieldType = "struct {\n	uuid.UUID \n}\n" +
+					fmt.Sprintf("func New%[1]s(id uuid.UUID) %[1]s {\n return %[1]s{\n UUID: id,\n}\n }\n", goName)
 			}
 
-			return fmt.Sprintf("type %s %s // %s\n\n", table.GoName+"ID", fieldType, field.SQLName), nil
+			return fmt.Sprintf("type %s %s\n\n", goName, fieldType), nil
 		} else {
 			return "", nil
 		}

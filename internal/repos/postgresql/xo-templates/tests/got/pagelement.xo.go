@@ -40,8 +40,14 @@ type PagElementCreateParams struct {
 }
 
 type PagElementID struct {
-	uuid.UUID `ref:"#/components/schemas/UuidUUID"`
-} // paginated_element_id
+	uuid.UUID
+}
+
+func NewPagElementID(id uuid.UUID) PagElementID {
+	return PagElementID{
+		UUID: id,
+	}
+}
 
 // CreatePagElement creates a new PagElement in the database with the given params.
 func CreatePagElement(ctx context.Context, db DB, params *PagElementCreateParams) (*PagElement, error) {

@@ -62,7 +62,7 @@ type WorkItemCreateParams struct {
 	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
 }
 
-type WorkItemID int // work_item_id
+type WorkItemID int
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {

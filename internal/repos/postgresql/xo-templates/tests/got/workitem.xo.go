@@ -37,7 +37,7 @@ type WorkItemCreateParams struct {
 	Title       *string `json:"title"`       // title
 }
 
-type WorkItemID int // work_item_id
+type WorkItemID int
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
 func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {

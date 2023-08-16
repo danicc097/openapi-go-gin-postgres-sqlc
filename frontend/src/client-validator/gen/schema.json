@@ -1586,14 +1586,13 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbUserID": {
-      "items": {
-        "minimum": 0,
-        "type": "integer"
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+      "type": "string",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
       },
-      "type": [
-        "array",
-        "null"
-      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemTypeID": {

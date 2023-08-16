@@ -7,7 +7,7 @@
  */
 
 export type Project = 'demo' | 'demo_two'
-export type DbUserID = number[] | null
+export type DbUserID = string
 export type Scope =
   | 'users:read'
   | 'users:write'

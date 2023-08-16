@@ -37,7 +37,7 @@ type BookCreateParams struct {
 	Name string `json:"name" required:"true" nullable:"false"` // name
 }
 
-type BookID int // book_id
+type BookID int
 
 // CreateBook creates a new Book in the database with the given params.
 func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
