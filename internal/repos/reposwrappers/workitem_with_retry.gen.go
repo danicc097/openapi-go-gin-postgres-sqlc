@@ -10,7 +10,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 )
 
 // WorkItemWithRetry implements repos.WorkItem interface instrumented with retries
@@ -68,7 +67,7 @@ func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d db.DBTX, params *d
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.WorkItem.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -87,7 +86,7 @@ func (_d WorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id int, opts ..
 }
 
 // Delete implements repos.WorkItem
-func (_d WorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.WorkItem.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -106,7 +105,7 @@ func (_d WorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (wp1 
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
 	err = _d.WorkItem.RemoveAssignedUser(ctx, d, memberID, workItemID)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -125,7 +124,7 @@ func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d db.DBTX, m
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) (err error) {
+func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
 	err = _d.WorkItem.RemoveTag(ctx, d, tagID, workItemID)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -144,7 +143,7 @@ func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d db.DBTX, tagID int,
 }
 
 // Restore implements repos.WorkItem
-func (_d WorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	wp1, err = _d.WorkItem.Restore(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return

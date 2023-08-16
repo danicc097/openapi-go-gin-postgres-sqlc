@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomDemoTwoWorkItem(t *testing.T, d db.DBTX, kanbanStepID, workItemTypeID, teamID int) (*db.WorkItem, error) {
+func NewRandomDemoTwoWorkItem(t *testing.T, d db.DBTX, kanbanStepID db.KanbanStepID, workItemTypeID db.WorkItemTypeID, teamID db.TeamID) (*db.WorkItem, error) {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoTwoWorkItem()
@@ -20,7 +20,7 @@ func NewRandomDemoTwoWorkItem(t *testing.T, d db.DBTX, kanbanStepID, workItemTyp
 	dpwi, err := dpwiRepo.Create(context.Background(), d, repos.DemoTwoWorkItemCreateParams{
 		DemoTwoProject: db.DemoTwoWorkItemCreateParams{
 			// PK is FK. it will be set in repo method after base workitem creation which is unknown beforehand.
-			WorkItemID:            -1,
+			WorkItemID:            db.WorkItemID(-1),
 			CustomDateForProject2: pointers.New(testutil.RandomDate()),
 		},
 		Base: *RandomWorkItemCreateParams(t, kanbanStepID, workItemTypeID, teamID),

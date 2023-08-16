@@ -39,7 +39,7 @@ func NewWorkItemTagWithPrometheus(base repos.WorkItemTag, instanceName string) W
 }
 
 // ByID implements repos.WorkItemTag
-func (_d WorkItemTagWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d WorkItemTagWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int,
 }
 
 // ByName implements repos.WorkItemTag
-func (_d WorkItemTagWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d WorkItemTagWithPrometheus) Create(ctx context.Context, d db.DBTX, param
 }
 
 // Delete implements repos.WorkItemTag
-func (_d WorkItemTagWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.WorkItemTagID) (wp1 *db.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -95,7 +95,7 @@ func (_d WorkItemTagWithPrometheus) Delete(ctx context.Context, d db.DBTX, id in
 }
 
 // Update implements repos.WorkItemTag
-func (_d WorkItemTagWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

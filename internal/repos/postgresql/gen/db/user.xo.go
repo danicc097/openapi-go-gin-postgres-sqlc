@@ -27,14 +27,14 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type User struct {
-	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true" nullable:"false"`                                      // user_id
+	UserID                   UserID        `json:"userID" db:"user_id" required:"true" nullable:"false"`                                      // user_id
 	Username                 string        `json:"username" db:"username" required:"true" nullable:"false"`                                   // username
 	Email                    string        `json:"email" db:"email" required:"true" nullable:"false"`                                         // email
 	FirstName                *string       `json:"firstName" db:"first_name"`                                                                 // first_name
 	LastName                 *string       `json:"lastName" db:"last_name"`                                                                   // last_name
 	FullName                 *string       `json:"fullName" db:"full_name"`                                                                   // full_name
 	ExternalID               string        `json:"-" db:"external_id" nullable:"false"`                                                       // external_id
-	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                                         // api_key_id
+	APIKeyID                 *UserAPIKeyID `json:"-" db:"api_key_id"`                                                                         // api_key_id
 	Scopes                   models.Scopes `json:"scopes" db:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"`     // scopes
 	RoleRank                 int           `json:"-" db:"role_rank" nullable:"false"`                                                         // role_rank
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true" nullable:"false"` // has_personal_notifications
@@ -56,7 +56,7 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'.
 type UserCreateParams struct {
-	APIKeyID                 *int          `json:"-"`                                                                         // api_key_id
+	APIKeyID                 *UserAPIKeyID `json:"-"`                                                                         // api_key_id
 	Email                    string        `json:"email" required:"true" nullable:"false"`                                    // email
 	ExternalID               string        `json:"-" nullable:"false"`                                                        // external_id
 	FirstName                *string       `json:"firstName"`                                                                 // first_name
@@ -66,6 +66,16 @@ type UserCreateParams struct {
 	RoleRank                 int           `json:"-" nullable:"false"`                                                        // role_rank
 	Scopes                   models.Scopes `json:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
 	Username                 string        `json:"username" required:"true" nullable:"false"`                                 // username
+}
+
+type UserID struct {
+	uuid.UUID
+}
+
+func NewUserID(id uuid.UUID) UserID {
+	return UserID{
+		UUID: id,
+	}
 }
 
 // CreateUser creates a new User in the database with the given params.
@@ -88,7 +98,7 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'public.users'.
 type UserUpdateParams struct {
-	APIKeyID                 **int          `json:"-"`                                                         // api_key_id
+	APIKeyID                 **UserAPIKeyID `json:"-"`                                                         // api_key_id
 	Email                    *string        `json:"email" nullable:"false"`                                    // email
 	ExternalID               *string        `json:"-" nullable:"false"`                                        // external_id
 	FirstName                **string       `json:"firstName"`                                                 // first_name
@@ -1285,7 +1295,7 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 // UserByUserID retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_pkey'.
-func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
+func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectConfigOption) (*User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

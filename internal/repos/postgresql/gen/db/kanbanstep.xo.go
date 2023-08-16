@@ -23,13 +23,13 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type KanbanStep struct {
-	KanbanStepID  int    `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                              // kanban_step_id
-	ProjectID     int    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
-	StepOrder     int    `json:"stepOrder" db:"step_order" required:"true" nullable:"false"`                                     // step_order
-	Name          string `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
-	Description   string `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
-	Color         string `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	TimeTrackable bool   `json:"timeTrackable" db:"time_trackable" required:"true" nullable:"false"`                             // time_trackable
+	KanbanStepID  KanbanStepID `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                              // kanban_step_id
+	ProjectID     ProjectID    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	StepOrder     int          `json:"stepOrder" db:"step_order" required:"true" nullable:"false"`                                     // step_order
+	Name          string       `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
+	Description   string       `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
+	Color         string       `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	TimeTrackable bool         `json:"timeTrackable" db:"time_trackable" required:"true" nullable:"false"`                             // time_trackable
 
 	ProjectJoin *Project `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 
@@ -37,13 +37,15 @@ type KanbanStep struct {
 
 // KanbanStepCreateParams represents insert params for 'public.kanban_steps'.
 type KanbanStepCreateParams struct {
-	Color         string `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description   string `json:"description" required:"true" nullable:"false"`                                        // description
-	Name          string `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID     int    `json:"projectID" nullable:"false"`                                                          // project_id
-	StepOrder     int    `json:"stepOrder" required:"true" nullable:"false"`                                          // step_order
-	TimeTrackable bool   `json:"timeTrackable" required:"true" nullable:"false"`                                      // time_trackable
+	Color         string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description   string    `json:"description" required:"true" nullable:"false"`                                        // description
+	Name          string    `json:"name" required:"true" nullable:"false"`                                               // name
+	ProjectID     ProjectID `json:"projectID" nullable:"false"`                                                          // project_id
+	StepOrder     int       `json:"stepOrder" required:"true" nullable:"false"`                                          // step_order
+	TimeTrackable bool      `json:"timeTrackable" required:"true" nullable:"false"`                                      // time_trackable
 }
+
+type KanbanStepID int
 
 // CreateKanbanStep creates a new KanbanStep in the database with the given params.
 func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {
@@ -61,12 +63,12 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'.
 type KanbanStepUpdateParams struct {
-	Color         *string `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description   *string `json:"description" nullable:"false"`                                        // description
-	Name          *string `json:"name" nullable:"false"`                                               // name
-	ProjectID     *int    `json:"projectID" nullable:"false"`                                          // project_id
-	StepOrder     *int    `json:"stepOrder" nullable:"false"`                                          // step_order
-	TimeTrackable *bool   `json:"timeTrackable" nullable:"false"`                                      // time_trackable
+	Color         *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description   *string    `json:"description" nullable:"false"`                                        // description
+	Name          *string    `json:"name" nullable:"false"`                                               // name
+	ProjectID     *ProjectID `json:"projectID" nullable:"false"`                                          // project_id
+	StepOrder     *int       `json:"stepOrder" nullable:"false"`                                          // step_order
+	TimeTrackable *bool      `json:"timeTrackable" nullable:"false"`                                      // time_trackable
 }
 
 // SetUpdateParams updates public.kanban_steps struct fields with the specified params.
@@ -240,7 +242,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 }
 
 // KanbanStepPaginatedByKanbanStepIDAsc returns a cursor-paginated list of KanbanStep in Asc order.
-func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStepID KanbanStepID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -319,7 +321,7 @@ func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStep
 }
 
 // KanbanStepPaginatedByProjectIDAsc returns a cursor-paginated list of KanbanStep in Asc order.
-func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -477,7 +479,7 @@ func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int
 }
 
 // KanbanStepPaginatedByKanbanStepIDDesc returns a cursor-paginated list of KanbanStep in Desc order.
-func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanStepID KanbanStepID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -556,7 +558,7 @@ func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanSte
 }
 
 // KanbanStepPaginatedByProjectIDDesc returns a cursor-paginated list of KanbanStep in Desc order.
-func KanbanStepPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -716,7 +718,7 @@ func KanbanStepPaginatedByStepOrderDesc(ctx context.Context, db DB, stepOrder in
 // KanbanStepByKanbanStepID retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_pkey'.
-func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanStepID, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -798,7 +800,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 // KanbanStepByProjectIDNameStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
-func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID int, name string, stepOrder int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID ProjectID, name string, stepOrder int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -880,7 +882,7 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID in
 // KanbanStepsByProjectID retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
-func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -1132,7 +1134,7 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 // KanbanStepByProjectIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
-func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, stepOrder int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID ProjectID, stepOrder int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -24,10 +23,10 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type UserNotification struct {
-	UserNotificationID int       `json:"userNotificationID" db:"user_notification_id" required:"true" nullable:"false"` // user_notification_id
-	NotificationID     int       `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`          // notification_id
-	Read               bool      `json:"read" db:"read" required:"true" nullable:"false"`                               // read
-	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true" nullable:"false"`                          // user_id
+	UserNotificationID UserNotificationID `json:"userNotificationID" db:"user_notification_id" required:"true" nullable:"false"` // user_notification_id
+	NotificationID     NotificationID     `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`          // notification_id
+	Read               bool               `json:"read" db:"read" required:"true" nullable:"false"`                               // read
+	UserID             UserID             `json:"userID" db:"user_id" required:"true" nullable:"false"`                          // user_id
 
 	NotificationJoin *Notification `json:"-" db:"notification_notification_id" openapi-go:"ignore"` // O2O notifications (generated from M2O)
 	UserJoin         *User         `json:"-" db:"user_user_id" openapi-go:"ignore"`                 // O2O users (generated from M2O)
@@ -36,10 +35,12 @@ type UserNotification struct {
 
 // UserNotificationCreateParams represents insert params for 'public.user_notifications'.
 type UserNotificationCreateParams struct {
-	NotificationID int       `json:"notificationID" required:"true" nullable:"false"` // notification_id
-	Read           bool      `json:"read" required:"true" nullable:"false"`           // read
-	UserID         uuid.UUID `json:"userID" required:"true" nullable:"false"`         // user_id
+	NotificationID NotificationID `json:"notificationID" required:"true" nullable:"false"` // notification_id
+	Read           bool           `json:"read" required:"true" nullable:"false"`           // read
+	UserID         UserID         `json:"userID" required:"true" nullable:"false"`         // user_id
 }
+
+type UserNotificationID int
 
 // CreateUserNotification creates a new UserNotification in the database with the given params.
 func CreateUserNotification(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {
@@ -54,9 +55,9 @@ func CreateUserNotification(ctx context.Context, db DB, params *UserNotification
 
 // UserNotificationUpdateParams represents update params for 'public.user_notifications'.
 type UserNotificationUpdateParams struct {
-	NotificationID *int       `json:"notificationID" nullable:"false"` // notification_id
-	Read           *bool      `json:"read" nullable:"false"`           // read
-	UserID         *uuid.UUID `json:"userID" nullable:"false"`         // user_id
+	NotificationID *NotificationID `json:"notificationID" nullable:"false"` // notification_id
+	Read           *bool           `json:"read" nullable:"false"`           // read
+	UserID         *UserID         `json:"userID" nullable:"false"`         // user_id
 }
 
 // SetUpdateParams updates public.user_notifications struct fields with the specified params.
@@ -230,7 +231,7 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 }
 
 // UserNotificationPaginatedByUserNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
-func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB, userNotificationID UserNotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -312,7 +313,7 @@ func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB
 }
 
 // UserNotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of UserNotification in Asc order.
-func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID NotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -394,7 +395,7 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 }
 
 // UserNotificationPaginatedByUserNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
-func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db DB, userNotificationID UserNotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -476,7 +477,7 @@ func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db D
 }
 
 // UserNotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of UserNotification in Desc order.
-func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID NotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -560,7 +561,7 @@ func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, n
 // UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
-func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID int, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
+func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID NotificationID, userID UserID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -645,7 +646,7 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 // UserNotificationsByNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
-func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID NotificationID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -732,7 +733,7 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 // UserNotificationByUserNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_pkey'.
-func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
+func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID UserNotificationID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -817,7 +818,7 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 // UserNotificationsByUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_user_id_idx'.
-func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationsByUserID(ctx context.Context, db DB, userID UserID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

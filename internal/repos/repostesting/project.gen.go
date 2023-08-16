@@ -11,12 +11,12 @@ import (
 )
 
 type FakeProject struct {
-	ByIDStub        func(context.Context, db.DBTX, int, ...db.ProjectSelectConfigOption) (*db.Project, error)
+	ByIDStub        func(context.Context, db.DBTX, db.ProjectID, ...db.ProjectSelectConfigOption) (*db.Project, error)
 	byIDMutex       sync.RWMutex
 	byIDArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 int
+		arg3 db.ProjectID
 		arg4 []db.ProjectSelectConfigOption
 	}
 	byIDReturns struct {
@@ -47,13 +47,13 @@ type FakeProject struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeProject) ByID(arg1 context.Context, arg2 db.DBTX, arg3 int, arg4 ...db.ProjectSelectConfigOption) (*db.Project, error) {
+func (fake *FakeProject) ByID(arg1 context.Context, arg2 db.DBTX, arg3 db.ProjectID, arg4 ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	fake.byIDMutex.Lock()
 	ret, specificReturn := fake.byIDReturnsOnCall[len(fake.byIDArgsForCall)]
 	fake.byIDArgsForCall = append(fake.byIDArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 int
+		arg3 db.ProjectID
 		arg4 []db.ProjectSelectConfigOption
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByIDStub
@@ -75,13 +75,13 @@ func (fake *FakeProject) ByIDCallCount() int {
 	return len(fake.byIDArgsForCall)
 }
 
-func (fake *FakeProject) ByIDCalls(stub func(context.Context, db.DBTX, int, ...db.ProjectSelectConfigOption) (*db.Project, error)) {
+func (fake *FakeProject) ByIDCalls(stub func(context.Context, db.DBTX, db.ProjectID, ...db.ProjectSelectConfigOption) (*db.Project, error)) {
 	fake.byIDMutex.Lock()
 	defer fake.byIDMutex.Unlock()
 	fake.ByIDStub = stub
 }
 
-func (fake *FakeProject) ByIDArgsForCall(i int) (context.Context, db.DBTX, int, []db.ProjectSelectConfigOption) {
+func (fake *FakeProject) ByIDArgsForCall(i int) (context.Context, db.DBTX, db.ProjectID, []db.ProjectSelectConfigOption) {
 	fake.byIDMutex.RLock()
 	defer fake.byIDMutex.RUnlock()
 	argsForCall := fake.byIDArgsForCall[i]

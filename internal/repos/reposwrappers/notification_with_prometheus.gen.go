@@ -53,7 +53,7 @@ func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (np1 *db.Notification, err error) {
+func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.NotificationID) (np1 *db.Notification, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

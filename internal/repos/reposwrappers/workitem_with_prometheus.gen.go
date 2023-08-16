@@ -10,7 +10,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -68,7 +67,7 @@ func (_d WorkItemWithPrometheus) AssignUser(ctx context.Context, d db.DBTX, para
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -82,7 +81,7 @@ func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, op
 }
 
 // Delete implements repos.WorkItem
-func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -96,7 +95,7 @@ func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) 
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID uuid.UUID, workItemID int) (err error) {
+func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -110,7 +109,7 @@ func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d db.DB
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d db.DBTX, tagID int, workItemID int) (err error) {
+func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -124,7 +123,7 @@ func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d db.DBTX, tagID
 }
 
 // Restore implements repos.WorkItem
-func (_d WorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithPrometheus) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

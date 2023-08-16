@@ -21,7 +21,7 @@ func TestUser_Update(t *testing.T) {
 	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
-		id     uuid.UUID
+		id     db.UserID
 		params db.UserUpdateParams
 	}
 	type params struct {
@@ -80,7 +80,7 @@ func TestUser_SoftDelete(t *testing.T) {
 	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
-		id uuid.UUID
+		id db.UserID
 	}
 	type params struct {
 		name          string
@@ -234,7 +234,8 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := "could not save api key"
 
-		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: uuid.New()})
+		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: db.NewUserID(uuid.New())})
+
 		assert.ErrorContains(t, err, errContains)
 	})
 

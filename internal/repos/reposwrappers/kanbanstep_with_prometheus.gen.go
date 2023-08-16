@@ -39,7 +39,7 @@ func NewKanbanStepWithPrometheus(base repos.KanbanStep, instanceName string) Kan
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
+func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.KanbanStepID, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int, 
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID int, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
+func (_d KanbanStepWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

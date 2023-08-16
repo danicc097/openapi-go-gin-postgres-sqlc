@@ -10,7 +10,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 )
 
 // UserWithRetry implements repos.User interface instrumented with retries
@@ -87,7 +86,7 @@ func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID strin
 }
 
 // ByID implements repos.User
-func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	up1, err = _d.User.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -106,7 +105,7 @@ func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts 
 }
 
 // ByProject implements repos.User
-func (_d UserWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID int) (ua1 []db.User, err error) {
+func (_d UserWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) (ua1 []db.User, err error) {
 	ua1, err = _d.User.ByProject(ctx, d, projectID)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -125,7 +124,7 @@ func (_d UserWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID int)
 }
 
 // ByTeam implements repos.User
-func (_d UserWithRetry) ByTeam(ctx context.Context, d db.DBTX, teamID int) (ua1 []db.User, err error) {
+func (_d UserWithRetry) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) (ua1 []db.User, err error) {
 	ua1, err = _d.User.ByTeam(ctx, d, teamID)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -201,7 +200,7 @@ func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.Us
 }
 
 // Delete implements repos.User
-func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
+func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id db.UserID) (up1 *db.User, err error) {
 	up1, err = _d.User.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -239,7 +238,7 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey stri
 }
 
 // Update implements repos.User
-func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	up1, err = _d.User.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

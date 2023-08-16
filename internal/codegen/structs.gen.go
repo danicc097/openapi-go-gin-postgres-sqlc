@@ -84,6 +84,7 @@ var PublicStructs = map[string]any{
 	"DbUserAPIKeySelectConfig":              new(db.UserAPIKeySelectConfig),
 	"DbUserAPIKeyUpdateParams":              new(db.UserAPIKeyUpdateParams),
 	"DbUserCreateParams":                    new(db.UserCreateParams),
+	"DbUserID":                              new(db.UserID),
 	"DbUserJoins":                           new(db.UserJoins),
 	"DbUserNotification":                    new(db.UserNotification),
 	"DbUserNotificationCreateParams":        new(db.UserNotificationCreateParams),

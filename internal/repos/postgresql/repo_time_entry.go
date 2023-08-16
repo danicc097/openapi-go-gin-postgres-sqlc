@@ -31,7 +31,7 @@ func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntr
 	return timeEntry, nil
 }
 
-func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
+func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
 	timeEntry, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get timeEntry by id %w", parseDBErrorDetail(err))
@@ -47,7 +47,7 @@ func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id int, params *db.
 	return timeEntry, err
 }
 
-func (wit *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TimeEntrySelectConfigOption) (*db.TimeEntry, error) {
+func (wit *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID, opts ...db.TimeEntrySelectConfigOption) (*db.TimeEntry, error) {
 	timeEntry, err := db.TimeEntryByTimeEntryID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get timeEntry: %w", parseDBErrorDetail(err))
@@ -56,7 +56,7 @@ func (wit *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.Ti
 	return timeEntry, nil
 }
 
-func (wit *TimeEntry) Delete(ctx context.Context, d db.DBTX, id int) (*db.TimeEntry, error) {
+func (wit *TimeEntry) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
 	timeEntry := &db.TimeEntry{
 		TimeEntryID: id,
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomTeam(t *testing.T, d db.DBTX, projectID int) (*db.Team, error) {
+func NewRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.Team, error) {
 	t.Helper()
 
 	teamRepo := postgresql.NewTeam()
@@ -23,7 +23,7 @@ func NewRandomTeam(t *testing.T, d db.DBTX, projectID int) (*db.Team, error) {
 	return team, nil
 }
 
-func RandomTeamCreateParams(t *testing.T, projectID int) *db.TeamCreateParams {
+func RandomTeamCreateParams(t *testing.T, projectID db.ProjectID) *db.TeamCreateParams {
 	t.Helper()
 
 	return &db.TeamCreateParams{

@@ -94,21 +94,27 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase[T]) {
 func buildFilterArgs(filter reflect.Value, zero bool) ([]reflect.Value, error) {
 	args := []reflect.Value{}
 
-	switch filter.Type().Kind() {
+	t := filter.Type()
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	switch t.Kind() {
 	case reflect.String, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		if !zero {
 			args = append(args, filter)
 
 			break
 		}
-		args = append(args, reflect.Zero(filter.Type()))
+		args = append(args, reflect.Zero(t))
 	case reflect.Array:
 		if !zero {
 			args = append(args, filter)
 
 			break
 		}
-		if filter.Type() == reflect.TypeOf(uuid.UUID{}) {
+		if t == reflect.TypeOf(uuid.UUID{}) {
+			// FIXME: unsupported filter type: db.UserID
+			// need to handle case reflect.Struct with field UUID
 			args = append(args, reflect.ValueOf(uuid.Nil))
 		}
 	case reflect.Slice: // assume testing with multiple parameters
@@ -119,6 +125,17 @@ func buildFilterArgs(filter reflect.Value, zero bool) ([]reflect.Value, error) {
 				return nil, err
 			}
 			args = append(args, elemArgs...)
+		}
+	case reflect.Struct:
+		if t.Kind() == reflect.Struct {
+			if t.Field(0).Type == reflect.TypeOf(uuid.New()) {
+				if !zero {
+					args = append(args, filter)
+
+					break
+				}
+				args = append(args, reflect.Zero(t)) // zero value of db.UserID, etc.
+			}
 		}
 	case reflect.Interface: // handle `any`
 		if !filter.IsNil() {

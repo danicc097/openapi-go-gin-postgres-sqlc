@@ -1219,8 +1219,8 @@ cc_label:
 			// need to check RefTable PKs since this should get called when generating for a
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
-			isSingleFK, isSinglePK := analyzeField(t, f)
-			if isSingleFK && isSinglePK {
+			af := analyzeField(t, f)
+			if af.isSingleFK && af.isSinglePK {
 				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", constraint.TableName, constraint.RefColumnName)
 				cc = append(cc, Constraint{
 					Type:           constraint.Type,
@@ -1893,7 +1893,7 @@ func (f *Funcs) func_name_context(v any, suffix string) string {
 }
 
 // funcfn builds a func definition.
-func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string {
+func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table Table) string {
 	var params, returns []string
 	if context {
 		params = append(params, "ctx context.Context")
@@ -1917,14 +1917,14 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string
 			returns = append(returns, "[]*"+x.Type.GoName)
 		}
 	case Proc:
-		params = append(params, f.params(x.Params, true))
+		params = append(params, f.params(x.Params, true, table))
 		if !x.Void {
 			for _, ret := range x.Returns {
 				returns = append(returns, f.typefn(ret.Type))
 			}
 		}
 	case Index:
-		params = append(params, f.params(x.Fields, true))
+		params = append(params, f.params(x.Fields, true, table))
 		params = append(params, "opts ..."+x.Table.GoName+"SelectConfigOption")
 		rt := x.Table.GoName
 		if !x.IsUnique {
@@ -1934,7 +1934,7 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field) string
 		}
 		returns = append(returns, rt)
 	case Table: // Paginated query
-		params = append(params, f.params(columns, true))
+		params = append(params, f.params(columns, true, table))
 		params = append(params, "opts ..."+x.GoName+"SelectConfigOption")
 		rt := "[]" + x.GoName
 
@@ -2274,15 +2274,23 @@ func With%[1]sFilters(filters map[string][]any) %[1]sSelectConfigOption {
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
-func (f *Funcs) func_context(v any, suffix string, columns any) string {
+func (f *Funcs) func_context(v any, suffix string, columns any, w any) string {
 	var cc []Field
+	var t Table
 	switch x := columns.(type) {
 	case []Field:
 		cc = x
 	default:
 		cc = []Field{}
 	}
-	return f.funcfn(f.func_name_context(v, suffix), f.contextfn(), v, cc)
+	switch x := w.(type) {
+	case Table:
+		t = x
+	default:
+		t = Table{}
+	}
+
+	return f.funcfn(f.func_name_context(v, suffix), f.contextfn(), v, cc, t)
 }
 
 // func_none genarates a func signature for v without context.
@@ -2294,7 +2302,7 @@ func (f *Funcs) func_none(v any, columns any) string {
 	default:
 		cc = []Field{}
 	}
-	return f.funcfn(f.func_name_none(v), false, v, cc)
+	return f.funcfn(f.func_name_none(v), false, v, cc, Table{})
 }
 
 // recv builds a receiver func definition.
@@ -2583,11 +2591,11 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 				names = append(names, prefix+checkName(p.GoName))
 			}
 		case Proc:
-			if params := f.params(x.Params, false); params != "" {
+			if params := f.params(x.Params, false, nil); params != "" {
 				names = append(names, params)
 			}
 		case Index:
-			names = append(names, f.params(x.Fields, false))
+			names = append(names, f.params(x.Fields, false, nil))
 
 			nn := ""
 			if len(names[2:]) > 0 {
@@ -2595,7 +2603,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 			}
 			return "ctx, sqlstr, append([]any{" + nn + "}, filterParams...)..."
 		case CursorPagination:
-			names = append(names, f.params(x.Fields, false))
+			names = append(names, f.params(x.Fields, false, nil))
 			nn := ""
 			if len(names[2:]) > 0 {
 				nn = strings.Join(names[2:], ", ")
@@ -3405,8 +3413,8 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
 			params["Alias"] = "_" + c.TableName
-			isSingleFK, isSinglePK := analyzeField(t, field)
-			if isSingleFK && isSinglePK || c.RefPKisFK {
+			af := analyzeField(t, field)
+			if af.isSingleFK && af.isSinglePK || c.RefPKisFK {
 				params["Alias"] = "_" + c.RefTableName
 				params["JoinTableAlias"] = c.ColumnName
 			}
@@ -3414,7 +3422,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			joinTable := tables[c.RefTableName]
 			var joinTablePKGroupBys []string
 			for _, pk := range joinTable.PrimaryKeys {
-				if !(isSingleFK && isSinglePK) {
+				if !(af.isSingleFK && af.isSinglePK) {
 					gb := params["Alias"].(string) + "_" + params["JoinTableAlias"].(string) + "." + pk.SQLName
 					joinTablePKGroupBys = append(joinTablePKGroupBys, gb)
 				}
@@ -3571,10 +3579,17 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 // Used to present a comma separated list of Go variable names for use with as
 // either a Go func parameter list, or in a call to another Go func.
 // (ie, ", a, b, c, ..." or ", a T1, b T2, c T3, ...").
-func (f *Funcs) params(fields []Field, addType bool) string {
+func (f *Funcs) params(fields []Field, addType bool, w any) string {
 	var vals []string
 	for _, field := range fields {
-		vals = append(vals, f.param(field, addType))
+		var t Table
+		switch x := w.(type) {
+		case Table:
+			t = x
+		default:
+			t = Table{}
+		}
+		vals = append(vals, f.param(field, addType, &t))
 	}
 	if len(vals) == 0 {
 		return ""
@@ -3582,7 +3597,7 @@ func (f *Funcs) params(fields []Field, addType bool) string {
 	return strings.Join(vals, ", ")
 }
 
-func (f *Funcs) param(field Field, addType bool) string {
+func (f *Funcs) param(field Field, addType bool, table *Table) string {
 	n := strings.Split(snaker.CamelToSnake(field.GoName), "_")
 	s := strings.ToLower(n[0]) + field.GoName[len(n[0]):]
 	// check go reserved names
@@ -3591,7 +3606,43 @@ func (f *Funcs) param(field Field, addType bool) string {
 	}
 	// add the go type
 	if addType {
-		s += " " + f.typefn(field.Type)
+		if table != nil {
+			af := analyzeField(*table, field)
+			if af.isFK {
+				for _, c := range f.tableConstraints[table.SQLName] {
+					if c.Type != "foreign_key" {
+						continue
+					}
+					switch c.Cardinality {
+					case M2M:
+						if c.ColumnName == field.SQLName {
+							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
+							break
+						}
+					case M2O:
+						if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
+							field.Type = camelExport(c.TableName) + "ID"
+							break
+						}
+						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
+							field.Type = camelExport(c.RefTableName) + "ID"
+							break
+						}
+					case O2O:
+						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
+							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
+							break
+						}
+					default:
+					}
+				}
+			} else if field.IsPrimary {
+				field.Type = table.GoName + "ID"
+			}
+
+			s += " " + f.typefn(field.Type)
+
+		}
 	}
 	// add to vals
 	return s
@@ -3642,19 +3693,19 @@ func (f *Funcs) typefn(typ string) string {
 }
 
 // field generates a field definition for a struct.
-func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
+func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	isPrivate := contains(field.Properties, propertyPrivate)
 	notRequired := contains(field.Properties, propertyFieldNotRequired)
 	isPointer := strings.HasPrefix(field.Type, "*")
-	isSingleFK, isSinglePK := analyzeField(table, field)
+	af := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
 	ignoreJson := isPrivate
 
 	var skipExtraTags bool
-	switch typ {
+	switch mode {
 	case "CreateParams":
-		if isSingleFK && isSinglePK {
+		if af.isSingleFK && af.isSinglePK {
 			ignoreJson = true // need for repo but unknown for request
 		}
 		if skipField {
@@ -3666,7 +3717,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 		if skipField {
 			return "", nil
 		}
-		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it. PK is FK
+		if af.isSingleFK && af.isSinglePK { // e.g. workitemid in project tables. don't ever want to update it. PK is FK
 			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
@@ -3693,13 +3744,88 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 		tag = " `" + s + "`"
 	}
 	fieldType := f.typefn(field.Type)
-	if typ == "UpdateParams" {
+	if field.IsPrimary {
+		field.OpenAPISchema = "Db" + field.Type
+		if mode != "IDTypes" {
+			pc := strings.Count(fieldType, "*")
+			fieldType = strings.Repeat("*", pc) + table.GoName + "ID"
+		}
+	}
+
+	var constraintTyp string
+	if af.isFK {
+		for _, c := range f.tableConstraints[table.SQLName] {
+			if c.Type != "foreign_key" {
+				continue
+			}
+			switch c.Cardinality {
+			case M2M:
+				if mode == "IDTypes" {
+					return "", nil
+				}
+				if c.ColumnName == field.SQLName {
+					constraintTyp = camelExport(singularize(c.RefTableName)) + "ID"
+					break
+				}
+			case M2O:
+				if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
+					constraintTyp = camelExport(c.TableName) + "ID"
+					break
+				}
+				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
+					constraintTyp = camelExport(c.RefTableName) + "ID"
+					break
+				}
+			case O2O:
+				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
+					constraintTyp = camelExport(singularize(c.RefTableName)) + "ID"
+					break
+				}
+
+			default:
+			}
+		}
+	}
+	if constraintTyp != "" && mode != "IDTypes" {
+		pc := strings.Count(fieldType, "*")
+		fieldType = strings.Repeat("*", pc) + constraintTyp
+	}
+
+	if mode == "UpdateParams" {
 		fieldType = "*" + fieldType // we do want **<field> and *<field>
 	}
 	if field.EnumPkg != "" {
 		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
 		fieldType = p + "." + fieldType // assumes no pointers
 		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
+	}
+
+	if mode == "IDTypes" {
+		if af.isSingleFK && af.isSinglePK {
+			return "", nil
+		}
+		if field.IsPrimary {
+			goName := table.GoName + "ID"
+			if strings.HasSuffix(fieldType, "uuid.UUID") {
+				fieldType = "struct {\n	uuid.UUID \n}\n" +
+					fmt.Sprintf("func New%[1]s(id uuid.UUID) %[1]s {\n return %[1]s{\n UUID: id,\n}\n }\n", goName)
+			}
+
+			return fmt.Sprintf("type %s %s\n\n", goName, fieldType), nil
+		} else {
+			return "", nil
+		}
+	}
+
+	if mode != "IDTypes" {
+		if af.isSingleFK && af.isSinglePK {
+			for _, tfk := range table.ForeignKeys {
+				if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
+					fieldType = camelExport(singularize(tfk.RefTable)) + "ID"
+					break
+				}
+			}
+		}
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
@@ -3720,12 +3846,12 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 		return "", nil
 	}
 
-	isSingleFK, isSinglePK := analyzeField(table, field)
+	af := analyzeField(table, field)
 	switch typ {
 	case "CreateParams":
 	case "UpsertParams":
 	case "UpdateParams":
-		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
+		if af.isSingleFK && af.isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
 			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
@@ -3746,19 +3872,39 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 	return "", fmt.Errorf("invalid typ: %s", typ)
 }
 
-func analyzeField(table Table, field Field) (bool, bool) {
-	var isSingleFK bool
+type analyzedField struct {
+	isSinglePK bool
+	isSingleFK bool
+	isFK       bool
+}
+
+func analyzeField(table Table, field Field) analyzedField {
+	var isSinglePK, isSingleFK, isFK bool
+
 	for _, tfk := range table.ForeignKeys {
 		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
 			isSingleFK = true
+			isFK = true
 			break
 		}
+
+		for _, f := range tfk.FieldNames {
+			if field.SQLName == f {
+				isFK = true
+				break
+			}
+		}
 	}
-	var isSinglePK bool
+
 	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
 		isSinglePK = true
 	}
-	return isSingleFK, isSinglePK
+
+	return analyzedField{
+		isSinglePK: isSinglePK,
+		isSingleFK: isSingleFK,
+		isFK:       isFK,
+	}
 }
 
 // fieldmapping generates field mappings from a struct to another.
@@ -3893,8 +4039,8 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 						f = tf
 					}
 				}
-				isSingleFK, isSinglePK := analyzeField(t, f)
-				if isSingleFK && isSinglePK || c.RefPKisFK {
+				af := analyzeField(t, f)
+				if af.isSingleFK && af.isSinglePK || c.RefPKisFK {
 					goName = camelExport(singularize(c.RefTableName)) + "Join"
 				}
 				joinPrefix := inflector.Singularize(c.RefTableName) + "_"

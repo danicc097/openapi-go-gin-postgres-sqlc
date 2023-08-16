@@ -36,7 +36,7 @@ func NewActivityWithTracing(base repos.Activity, instance string, spanDecorator 
 }
 
 // ByID implements repos.Activity
-func (_d ActivityWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTracing) ByID(ctx context.Context, d db.DBTX, id db.ActivityID, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -61,7 +61,7 @@ func (_d ActivityWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts 
 }
 
 // ByName implements repos.Activity
-func (_d ActivityWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -87,7 +87,7 @@ func (_d ActivityWithTracing) ByName(ctx context.Context, d db.DBTX, name string
 }
 
 // ByProjectID implements repos.Activity
-func (_d ActivityWithTracing) ByProjectID(ctx context.Context, d db.DBTX, projectID int, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
+func (_d ActivityWithTracing) ByProjectID(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByProjectID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -136,7 +136,7 @@ func (_d ActivityWithTracing) Create(ctx context.Context, d db.DBTX, params *db.
 }
 
 // Delete implements repos.Activity
-func (_d ActivityWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTracing) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (ap1 *db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -160,7 +160,7 @@ func (_d ActivityWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (ap
 }
 
 // Update implements repos.Activity
-func (_d ActivityWithTracing) Update(ctx context.Context, d db.DBTX, id int, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
+func (_d ActivityWithTracing) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

@@ -60,7 +60,7 @@ func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (np1 *db.Notification, err error) {
+func (_d NotificationWithTracing) Delete(ctx context.Context, d db.DBTX, id db.NotificationID) (np1 *db.Notification, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {

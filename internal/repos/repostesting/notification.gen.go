@@ -25,12 +25,12 @@ type FakeNotification struct {
 		result1 *db.Notification
 		result2 error
 	}
-	DeleteStub        func(context.Context, db.DBTX, int) (*db.Notification, error)
+	DeleteStub        func(context.Context, db.DBTX, db.NotificationID) (*db.Notification, error)
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 int
+		arg3 db.NotificationID
 	}
 	deleteReturns struct {
 		result1 *db.Notification
@@ -125,13 +125,13 @@ func (fake *FakeNotification) CreateReturnsOnCall(i int, result1 *db.Notificatio
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) Delete(arg1 context.Context, arg2 db.DBTX, arg3 int) (*db.Notification, error) {
+func (fake *FakeNotification) Delete(arg1 context.Context, arg2 db.DBTX, arg3 db.NotificationID) (*db.Notification, error) {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 int
+		arg3 db.NotificationID
 	}{arg1, arg2, arg3})
 	stub := fake.DeleteStub
 	fakeReturns := fake.deleteReturns
@@ -152,13 +152,13 @@ func (fake *FakeNotification) DeleteCallCount() int {
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *FakeNotification) DeleteCalls(stub func(context.Context, db.DBTX, int) (*db.Notification, error)) {
+func (fake *FakeNotification) DeleteCalls(stub func(context.Context, db.DBTX, db.NotificationID) (*db.Notification, error)) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = stub
 }
 
-func (fake *FakeNotification) DeleteArgsForCall(i int) (context.Context, db.DBTX, int) {
+func (fake *FakeNotification) DeleteArgsForCall(i int) (context.Context, db.DBTX, db.NotificationID) {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	argsForCall := fake.deleteArgsForCall[i]

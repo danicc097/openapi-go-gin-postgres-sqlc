@@ -284,8 +284,8 @@ type DbActivityCreateParams struct {
 
 // DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
 type DbDemoTwoWorkItem struct {
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
-	WorkItemID            int        `json:"workItemID"`
+	CustomDateForProject2 *time.Time   `json:"customDateForProject2"`
+	WorkItemID            DbWorkItemID `json:"workItemID"`
 }
 
 // DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
@@ -331,6 +331,9 @@ type DbProject struct {
 	UpdatedAt   time.Time     `json:"updatedAt"`
 }
 
+// DbProjectID defines the model for DbProjectID.
+type DbProjectID = interface{}
+
 // DbTeam defines the model for DbTeam.
 type DbTeam struct {
 	CreatedAt   time.Time `json:"createdAt"`
@@ -356,7 +359,7 @@ type DbTimeEntry struct {
 	Start           time.Time `json:"start"`
 	TeamID          *int      `json:"teamID"`
 	TimeEntryID     int       `json:"timeEntryID"`
-	UserID          UuidUUID  `json:"userID"`
+	UserID          DbUserID  `json:"userID"`
 	WorkItemID      *int      `json:"workItemID"`
 }
 
@@ -371,7 +374,7 @@ type DbUser struct {
 	HasPersonalNotifications bool       `json:"hasPersonalNotifications"`
 	LastName                 *string    `json:"lastName"`
 	Scopes                   Scopes     `json:"scopes"`
-	UserID                   UuidUUID   `json:"userID"`
+	UserID                   DbUserID   `json:"userID"`
 	Username                 string     `json:"username"`
 }
 
@@ -379,8 +382,11 @@ type DbUser struct {
 type DbUserAPIKey struct {
 	ApiKey    string    `json:"apiKey"`
 	ExpiresOn time.Time `json:"expiresOn"`
-	UserID    UuidUUID  `json:"userID"`
+	UserID    DbUserID  `json:"userID"`
 }
+
+// DbUserID defines the model for DbUserID.
+type DbUserID = uuid.UUID
 
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
@@ -403,7 +409,7 @@ type DbWorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt"`
 	Message           string    `json:"message"`
 	UpdatedAt         time.Time `json:"updatedAt"`
-	UserID            UuidUUID  `json:"userID"`
+	UserID            DbUserID  `json:"userID"`
 	WorkItemCommentID int       `json:"workItemCommentID"`
 	WorkItemID        int       `json:"workItemID"`
 }
@@ -420,6 +426,9 @@ type DbWorkItemCreateParams struct {
 	WorkItemTypeID int                    `json:"workItemTypeID"`
 }
 
+// DbWorkItemID defines the model for DbWorkItemID.
+type DbWorkItemID = interface{}
+
 // DbWorkItemRole defines the model for DbWorkItemRole.
 type DbWorkItemRole = string
 
@@ -434,10 +443,10 @@ type DbWorkItemTag struct {
 
 // DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
 type DbWorkItemTagCreateParams struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-	ProjectID   *int   `json:"projectID,omitempty"`
+	Color       string       `json:"color"`
+	Description string       `json:"description"`
+	Name        string       `json:"name"`
+	ProjectID   *DbProjectID `json:"projectID,omitempty"`
 }
 
 // DbWorkItemType defines the model for DbWorkItemType.
@@ -448,6 +457,9 @@ type DbWorkItemType struct {
 	ProjectID      int    `json:"projectID"`
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
+
+// DbWorkItemTypeID defines the model for DbWorkItemTypeID.
+type DbWorkItemTypeID = interface{}
 
 // Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
 type Demo2WorkItemTypes string
@@ -609,7 +621,7 @@ type Scopes = []Scope
 type ServicesMember struct {
 	// Role represents a database 'work_item_role'
 	Role   WorkItemRole `json:"role"`
-	UserID UuidUUID     `json:"userID"`
+	UserID DbUserID     `json:"userID"`
 }
 
 // Topics string identifiers for SSE event listeners.
@@ -645,7 +657,7 @@ type User struct {
 	Role                     Role          `json:"role"`
 	Scopes                   Scopes        `json:"scopes"`
 	Teams                    *[]DbTeam     `json:"teams"`
-	UserID                   UuidUUID      `json:"userID"`
+	UserID                   DbUserID      `json:"userID"`
 	Username                 string        `json:"username"`
 }
 
@@ -672,7 +684,7 @@ type ValidationError struct {
 // WorkItemCommentCreateRequest defines the model for WorkItemCommentCreateRequest.
 type WorkItemCommentCreateRequest struct {
 	Message    string   `json:"message"`
-	UserID     UuidUUID `json:"userID"`
+	UserID     DbUserID `json:"userID"`
 	WorkItemID int      `json:"workItemID"`
 }
 

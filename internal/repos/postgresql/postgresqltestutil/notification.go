@@ -6,10 +6,9 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/google/uuid"
 )
 
-func RandomNotificationCreateParams(t *testing.T, receiverRank *int, sender uuid.UUID, receiver *uuid.UUID, notificationType db.NotificationType) *db.NotificationCreateParams {
+func RandomNotificationCreateParams(t *testing.T, receiverRank *int, sender db.UserID, receiver *db.UserID, notificationType db.NotificationType) *db.NotificationCreateParams {
 	t.Helper()
 
 	return &db.NotificationCreateParams{

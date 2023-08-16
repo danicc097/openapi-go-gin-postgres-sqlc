@@ -1045,7 +1045,7 @@
               ]
             },
             "workItemID": {
-              "type": "integer"
+              "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
           "required": [
@@ -1413,7 +1413,7 @@
                 "minLength": 1
               },
               "projectID": {
-                "type": "integer"
+                "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
             "required": [
@@ -2911,7 +2911,7 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
@@ -3120,7 +3120,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
@@ -3139,6 +3139,25 @@
         }
       },
       "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProjectID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserID": {
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+      "type": "string",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTypeID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -4186,7 +4205,7 @@
               ]
             },
             "workItemID": {
-              "type": "integer"
+              "$schema": "http://json-schema.org/draft-04/schema#"
             }
           },
           "required": [
@@ -4554,7 +4573,7 @@
                 "minLength": 1
               },
               "projectID": {
-                "type": "integer"
+                "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
             "required": [
@@ -6052,7 +6071,7 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
@@ -6261,7 +6280,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
@@ -6280,6 +6299,25 @@
         }
       },
       "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProjectID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserID": {
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+      "type": "string",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTypeID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   }

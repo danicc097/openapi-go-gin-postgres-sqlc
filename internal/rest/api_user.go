@@ -7,6 +7,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -20,7 +21,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)
 
-	_, err := h.svc.user.Delete(c, tx, id)
+	_, err := h.svc.user.Delete(c, tx, db.NewUserID(id))
 	if err != nil {
 		renderErrorResponse(c, "Could not delete user", err)
 
@@ -68,7 +69,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 		return
 	}
 
-	user, err := h.svc.user.Update(c, tx, id.String(), caller, body)
+	user, err := h.svc.user.Update(c, tx, db.UserID{UUID: id}, caller, body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
@@ -111,7 +112,7 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 		return
 	}
 
-	if _, err := h.svc.user.UpdateUserAuthorization(c, tx, id.String(), caller, body); err != nil {
+	if _, err := h.svc.user.UpdateUserAuthorization(c, tx, db.UserID{UUID: id}, caller, body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return

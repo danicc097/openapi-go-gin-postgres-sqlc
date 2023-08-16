@@ -22,7 +22,7 @@ func NewDemoTwoWorkItem() *DemoTwoWorkItem {
 
 var _ repos.DemoTwoWorkItem = (*DemoTwoWorkItem)(nil)
 
-func (u *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
+func (u *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
 	extraOpts := []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{DemoTwoWorkItem: true})}
 	return db.WorkItemByWorkItemID(ctx, d, id, (append(extraOpts, opts...))...)
 }
@@ -44,7 +44,7 @@ func (u *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.De
 	return workItem, nil
 }
 
-func (u *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id int, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (u *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
 	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItem by id: %w", parseDBErrorDetail(err))

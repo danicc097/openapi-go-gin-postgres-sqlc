@@ -23,10 +23,10 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Movie struct {
-	MovieID  int    `json:"movieID" db:"movie_id" required:"true" nullable:"false"`  // movie_id
-	Title    string `json:"title" db:"title" required:"true" nullable:"false"`       // title
-	Year     int    `json:"year" db:"year" required:"true" nullable:"false"`         // year
-	Synopsis string `json:"synopsis" db:"synopsis" required:"true" nullable:"false"` // synopsis
+	MovieID  MovieID `json:"movieID" db:"movie_id" required:"true" nullable:"false"`  // movie_id
+	Title    string  `json:"title" db:"title" required:"true" nullable:"false"`       // title
+	Year     int     `json:"year" db:"year" required:"true" nullable:"false"`         // year
+	Synopsis string  `json:"synopsis" db:"synopsis" required:"true" nullable:"false"` // synopsis
 
 }
 
@@ -36,6 +36,8 @@ type MovieCreateParams struct {
 	Title    string `json:"title" required:"true" nullable:"false"`    // title
 	Year     int    `json:"year" required:"true" nullable:"false"`     // year
 }
+
+type MovieID int
 
 // CreateMovie creates a new Movie in the database with the given params.
 func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
@@ -201,7 +203,7 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 }
 
 // MoviePaginatedByMovieIDAsc returns a cursor-paginated list of Movie in Asc order.
-func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
+func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID MovieID, opts ...MovieSelectConfigOption) ([]Movie, error) {
 	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -271,7 +273,7 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID int, opts ..
 }
 
 // MoviePaginatedByMovieIDDesc returns a cursor-paginated list of Movie in Desc order.
-func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
+func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID MovieID, opts ...MovieSelectConfigOption) ([]Movie, error) {
 	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -343,7 +345,7 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID int, opts .
 // MovieByMovieID retrieves a row from 'public.movies' as a Movie.
 //
 // Generated from index 'movies_pkey'.
-func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
+func MovieByMovieID(ctx context.Context, db DB, movieID MovieID, opts ...MovieSelectConfigOption) (*Movie, error) {
 	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

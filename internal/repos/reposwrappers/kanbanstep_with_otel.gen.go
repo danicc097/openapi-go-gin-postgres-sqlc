@@ -36,7 +36,7 @@ func NewKanbanStepWithTracing(base repos.KanbanStep, instance string, spanDecora
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
+func (_d KanbanStepWithTracing) ByID(ctx context.Context, d db.DBTX, id db.KanbanStepID, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.KanbanStep.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -61,7 +61,7 @@ func (_d KanbanStepWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opt
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithTracing) ByProject(ctx context.Context, d db.DBTX, projectID int, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
+func (_d KanbanStepWithTracing) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.KanbanStep.ByProject")
 	defer func() {
 		if _d._spanDecorator != nil {

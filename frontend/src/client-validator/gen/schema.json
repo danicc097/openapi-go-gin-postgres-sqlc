@@ -267,7 +267,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         }
       },
       "required": [
@@ -325,7 +325,7 @@
           "$ref": "#/definitions/Scopes"
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "username": {
           "type": "string",
@@ -376,7 +376,7 @@
           "type": "integer"
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "workItemID": {
           "type": [
@@ -415,7 +415,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "workItemCommentID": {
           "type": "integer"
@@ -832,7 +832,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "username": {
           "type": "string",
@@ -1277,7 +1277,7 @@
           "minLength": 1
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         },
         "workItemID": {
           "type": "integer"
@@ -1364,7 +1364,7 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "$ref": "#/definitions/DbProjectID"
         }
       },
       "required": [
@@ -1539,7 +1539,7 @@
           "$ref": "#/definitions/WorkItemRole"
         },
         "userID": {
-          "$ref": "#/definitions/UuidUUID"
+          "$ref": "#/definitions/DbUserID"
         }
       },
       "required": [
@@ -1558,7 +1558,7 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "$ref": "#/definitions/DbWorkItemID"
         }
       },
       "required": [
@@ -1577,6 +1577,25 @@
         }
       },
       "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProjectID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserID": {
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+      "type": "string",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTypeID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -1742,6 +1761,18 @@
     },
     "DbDemoTwoWorkItemCreateParams": {
       "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+    },
+    "DbWorkItemID": {
+      "$ref": "#/definitions/DbWorkItemID"
+    },
+    "DbProjectID": {
+      "$ref": "#/definitions/DbProjectID"
+    },
+    "DbUserID": {
+      "$ref": "#/definitions/DbUserID"
+    },
+    "DbWorkItemTypeID": {
+      "$ref": "#/definitions/DbWorkItemTypeID"
     }
   }
 }

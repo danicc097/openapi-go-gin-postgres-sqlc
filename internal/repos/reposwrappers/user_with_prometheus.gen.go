@@ -10,7 +10,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -82,7 +81,7 @@ func (_d UserWithPrometheus) ByExternalID(ctx context.Context, d db.DBTX, extID 
 }
 
 // ByID implements repos.User
-func (_d UserWithPrometheus) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -96,7 +95,7 @@ func (_d UserWithPrometheus) ByID(ctx context.Context, d db.DBTX, id uuid.UUID, 
 }
 
 // ByProject implements repos.User
-func (_d UserWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID int) (ua1 []db.User, err error) {
+func (_d UserWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) (ua1 []db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -110,7 +109,7 @@ func (_d UserWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID
 }
 
 // ByTeam implements repos.User
-func (_d UserWithPrometheus) ByTeam(ctx context.Context, d db.DBTX, teamID int) (ua1 []db.User, err error) {
+func (_d UserWithPrometheus) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) (ua1 []db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -166,7 +165,7 @@ func (_d UserWithPrometheus) CreateAPIKey(ctx context.Context, d db.DBTX, user *
 }
 
 // Delete implements repos.User
-func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.UserID) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -194,7 +193,7 @@ func (_d UserWithPrometheus) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey
 }
 
 // Update implements repos.User
-func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

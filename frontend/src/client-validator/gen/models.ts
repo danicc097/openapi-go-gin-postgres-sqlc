@@ -7,7 +7,7 @@
  */
 
 export type Project = 'demo' | 'demo_two'
-export type UuidUUID = string
+export type DbUserID = string
 export type Scope =
   | 'users:read'
   | 'users:write'
@@ -69,6 +69,7 @@ export type Topics = 'GlobalAlerts'
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
+export type UuidUUID = string
 export type WorkItemCreateRequest = DemoWorkItemCreateRequest | DemoTwoWorkItemCreateRequest
 export type DbWorkItemRole = string
 /**
@@ -151,7 +152,7 @@ export interface DbDemoWorkItem {
 export interface DbUserAPIKey {
   apiKey: string
   expiresOn: string
-  userID: UuidUUID
+  userID: DbUserID
 }
 export interface DbUser {
   createdAt: string
@@ -163,7 +164,7 @@ export interface DbUser {
   hasPersonalNotifications: boolean
   lastName?: string | null
   scopes: Scopes
-  userID: UuidUUID
+  userID: DbUserID
   username: string
 }
 export interface DbTimeEntry {
@@ -173,14 +174,14 @@ export interface DbTimeEntry {
   start: string
   teamID?: number | null
   timeEntryID: number
-  userID: UuidUUID
+  userID: DbUserID
   workItemID?: number | null
 }
 export interface DbWorkItemComment {
   createdAt: string
   message: string
   updatedAt: string
-  userID: UuidUUID
+  userID: DbUserID
   workItemCommentID: number
   workItemID: number
 }
@@ -226,8 +227,9 @@ export interface DemoTwoWorkItemsResponse {
 }
 export interface DbDemoTwoWorkItem {
   customDateForProject2?: string | null
-  workItemID: number
+  workItemID: DbWorkItemID
 }
+export interface DbWorkItemID {}
 export interface InitializeProjectRequest {
   tags?: DbWorkItemTagCreateParams[] | null
   teams?: DbTeamCreateParams[] | null
@@ -236,8 +238,9 @@ export interface DbWorkItemTagCreateParams {
   color: string
   description: string
   name: string
-  projectID?: number
+  projectID?: DbProjectID
 }
+export interface DbProjectID {}
 export interface DbTeamCreateParams {
   description: string
   name: string
@@ -260,7 +263,7 @@ export interface User {
   role: Role
   scopes: Scopes
   teams?: DbTeam[] | null
-  userID: UuidUUID
+  userID: DbUserID
   username: string
 }
 export interface HTTPValidationError {
@@ -338,7 +341,7 @@ export interface DbDemoWorkItemCreateParams {
 }
 export interface ServicesMember {
   role: WorkItemRole
-  userID: UuidUUID
+  userID: DbUserID
 }
 export interface DemoTwoWorkItemCreateRequest {
   base: DbWorkItemCreateParams
@@ -372,7 +375,7 @@ export interface WorkItemTagCreateRequest {
 }
 export interface WorkItemCommentCreateRequest {
   message: string
-  userID: UuidUUID
+  userID: DbUserID
   workItemID: number
 }
 export interface DbActivityCreateParams {
@@ -381,3 +384,4 @@ export interface DbActivityCreateParams {
   name: string
   projectID?: number
 }
+export interface DbWorkItemTypeID {}

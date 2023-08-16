@@ -23,16 +23,16 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type DemoWorkItem struct {
-	WorkItemID int  `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
-	Checked    bool `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
+	WorkItemID WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	Checked    bool       `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 }
 
 // DemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.
 type DemoWorkItemCreateParams struct {
-	Checked    bool `json:"checked" required:"true" nullable:"false"` // checked
-	WorkItemID int  `json:"-" required:"true" nullable:"false"`       // work_item_id
+	Checked    bool       `json:"checked" required:"true" nullable:"false"` // checked
+	WorkItemID WorkItemID `json:"-" required:"true" nullable:"false"`       // work_item_id
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
@@ -199,7 +199,7 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // DemoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoWorkItem in Asc order.
-func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -273,7 +273,7 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 }
 
 // DemoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoWorkItem in Desc order.
-func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -349,7 +349,7 @@ func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemI
 // DemoWorkItemByWorkItemID retrieves a row from 'xo_tests.demo_work_items' as a DemoWorkItem.
 //
 // Generated from index 'demo_work_items_pkey'.
-func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
+func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

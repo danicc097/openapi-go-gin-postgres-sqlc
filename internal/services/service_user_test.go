@@ -33,7 +33,7 @@ func TestUser_UpdateUser(t *testing.T) {
 
 	type args struct {
 		params *models.UpdateUserRequest
-		id     string
+		id     db.UserID
 		caller *db.User
 	}
 	type want struct {
@@ -55,7 +55,7 @@ func TestUser_UpdateUser(t *testing.T) {
 				params: &models.UpdateUserRequest{
 					FirstName: pointers.New("changed"),
 				},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.user.User,
 			},
 			want: want{
@@ -67,7 +67,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			name: "cannot_update_different_user",
 			args: args{
 				params: &models.UpdateUserRequest{},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.advancedUser.User,
 			},
 			error: "cannot change another user's information",
@@ -79,7 +79,7 @@ func TestUser_UpdateUser(t *testing.T) {
 					FirstName: pointers.New("changed"),
 					LastName:  pointers.New("changed"),
 				},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.admin.User,
 			},
 			want: want{
@@ -138,7 +138,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 
 	type args struct {
 		params *models.UpdateUserAuthRequest
-		id     string
+		id     db.UserID
 		caller *db.User
 	}
 	type want struct {
@@ -159,7 +159,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: pointers.New(authzsvc.DefaultScopes(models.RoleManager)),
 					Role:   pointers.New(models.RoleManager),
 				},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.manager.User,
 			},
 			want: want{
@@ -173,7 +173,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: pointers.New(models.RoleAdmin),
 				},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.manager.User,
 			},
 			error: "cannot set a user rank higher than self",
@@ -184,7 +184,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
 				},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.admin.User,
 			},
 			error: "cannot set a scope unassigned to self",
@@ -195,7 +195,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: pointers.New(authzsvc.DefaultScopes(models.RoleAdmin)),
 				},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.admin.User,
 			},
 			want: want{
@@ -209,7 +209,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
 				},
-				id:     testUsers.manager.User.UserID.String(),
+				id:     testUsers.manager.User.UserID,
 				caller: testUsers.manager.User,
 			},
 			error: "cannot update your own authorization information",
@@ -220,7 +220,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: pointers.New(models.RoleGuest),
 				},
-				id:     testUsers.advancedUser.User.UserID.String(),
+				id:     testUsers.advancedUser.User.UserID,
 				caller: testUsers.manager.User,
 			},
 			error: "cannot demote a user role",
@@ -231,7 +231,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
 				},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.manager.User,
 			},
 			error: "cannot unassign a user's scope",
@@ -242,7 +242,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
 				},
-				id:     testUsers.user.User.UserID.String(),
+				id:     testUsers.user.User.UserID,
 				caller: testUsers.admin.User,
 			},
 			want: want{
@@ -256,7 +256,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: pointers.New(models.RoleGuest),
 				},
-				id:     testUsers.advancedUser.User.UserID.String(),
+				id:     testUsers.advancedUser.User.UserID,
 				caller: testUsers.admin.User,
 			},
 			want: want{

@@ -22,7 +22,7 @@ func NewWorkItemType() *WorkItemType {
 
 var _ repos.WorkItemType = (*WorkItemType)(nil)
 
-func (wit *WorkItemType) ByName(ctx context.Context, d db.DBTX, name string, projectID int, opts ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error) {
+func (wit *WorkItemType) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error) {
 	workItemType, err := db.WorkItemTypeByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get work item type: %w", parseDBErrorDetail(err))
@@ -31,7 +31,7 @@ func (wit *WorkItemType) ByName(ctx context.Context, d db.DBTX, name string, pro
 	return workItemType, nil
 }
 
-func (wit *WorkItemType) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error) {
+func (wit *WorkItemType) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTypeID, opts ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error) {
 	workItemType, err := db.WorkItemTypeByWorkItemTypeID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get work item type: %w", parseDBErrorDetail(err))

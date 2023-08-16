@@ -85,7 +85,7 @@ func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.Notific
 	return notification, nil
 }
 
-func (u *Notification) Delete(ctx context.Context, d db.DBTX, id int) (*db.Notification, error) {
+func (u *Notification) Delete(ctx context.Context, d db.DBTX, id db.NotificationID) (*db.Notification, error) {
 	notification := &db.Notification{
 		NotificationID: id,
 	}

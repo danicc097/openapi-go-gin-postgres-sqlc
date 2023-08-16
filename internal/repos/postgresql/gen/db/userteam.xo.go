@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -21,8 +20,8 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type UserTeam struct {
-	TeamID int       `json:"teamID" db:"team_id" required:"true" nullable:"false"` // team_id
-	Member uuid.UUID `json:"member" db:"member" required:"true" nullable:"false"`  // member
+	TeamID TeamID `json:"teamID" db:"team_id" required:"true" nullable:"false"` // team_id
+	Member UserID `json:"member" db:"member" required:"true" nullable:"false"`  // member
 
 	MemberTeamsJoin *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
 	TeamMembersJoin *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
@@ -31,8 +30,8 @@ type UserTeam struct {
 
 // UserTeamCreateParams represents insert params for 'public.user_team'.
 type UserTeamCreateParams struct {
-	Member uuid.UUID `json:"member" required:"true" nullable:"false"` // member
-	TeamID int       `json:"teamID" required:"true" nullable:"false"` // team_id
+	Member UserID `json:"member" required:"true" nullable:"false"` // member
+	TeamID TeamID `json:"teamID" required:"true" nullable:"false"` // team_id
 }
 
 // CreateUserTeam creates a new UserTeam in the database with the given params.
@@ -47,8 +46,8 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 
 // UserTeamUpdateParams represents update params for 'public.user_team'.
 type UserTeamUpdateParams struct {
-	Member *uuid.UUID `json:"member" nullable:"false"` // member
-	TeamID *int       `json:"teamID" nullable:"false"` // team_id
+	Member *UserID `json:"member" nullable:"false"` // member
+	TeamID *TeamID `json:"teamID" nullable:"false"` // team_id
 }
 
 // SetUpdateParams updates public.user_team struct fields with the specified params.
@@ -197,7 +196,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 // UserTeamsByMember retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_member_idx'.
-func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -282,7 +281,7 @@ func UserTeamsByMember(ctx context.Context, db DB, member uuid.UUID, opts ...Use
 // UserTeamByMemberTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
+func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID TeamID, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -365,7 +364,7 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member uuid.UUID, teamID
 // UserTeamsByTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -450,7 +449,7 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 // UserTeamsByTeamIDMember retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_member_idx'.
-func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID int, member uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
+func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member UserID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

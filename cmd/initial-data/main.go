@@ -248,7 +248,7 @@ func main() {
 					LastMessageAt: time.Now().Add(time.Duration(-i) * day),
 				},
 			},
-			TagIDs: []int{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+			TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
 			Members: []services.Member{
 				{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
 				{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},

@@ -23,7 +23,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Book struct {
-	BookID int    `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
+	BookID BookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
 	Name   string `json:"name" db:"name" required:"true" nullable:"false"`      // name
 
 	BookAuthorsJoin     *[]User__BA_Book   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
@@ -36,6 +36,8 @@ type Book struct {
 type BookCreateParams struct {
 	Name string `json:"name" required:"true" nullable:"false"` // name
 }
+
+type BookID int
 
 // CreateBook creates a new Book in the database with the given params.
 func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
@@ -296,7 +298,7 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 }
 
 // BookPaginatedByBookIDAsc returns a cursor-paginated list of Book in Asc order.
-func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
+func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID BookID, opts ...BookSelectConfigOption) ([]Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -388,7 +390,7 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID int, opts ...Bo
 }
 
 // BookPaginatedByBookIDDesc returns a cursor-paginated list of Book in Desc order.
-func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) ([]Book, error) {
+func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID BookID, opts ...BookSelectConfigOption) ([]Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -482,7 +484,7 @@ func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID int, opts ...B
 // BookByBookID retrieves a row from 'xo_tests.books' as a Book.
 //
 // Generated from index 'books_pkey'.
-func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConfigOption) (*Book, error) {
+func BookByBookID(ctx context.Context, db DB, bookID BookID, opts ...BookSelectConfigOption) (*Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

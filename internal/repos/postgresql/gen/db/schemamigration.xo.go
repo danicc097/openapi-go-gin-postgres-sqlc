@@ -23,16 +23,18 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type SchemaMigration struct {
-	Version int  `json:"version" db:"version" required:"true" nullable:"false"` // version
-	Dirty   bool `json:"dirty" db:"dirty" required:"true" nullable:"false"`     // dirty
+	Version SchemaMigrationID `json:"version" db:"version" required:"true" nullable:"false"` // version
+	Dirty   bool              `json:"dirty" db:"dirty" required:"true" nullable:"false"`     // dirty
 
 }
 
 // SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'.
 type SchemaMigrationCreateParams struct {
-	Dirty   bool `json:"dirty" required:"true" nullable:"false"`   // dirty
-	Version int  `json:"version" required:"true" nullable:"false"` // version
+	Dirty   bool              `json:"dirty" required:"true" nullable:"false"`   // dirty
+	Version SchemaMigrationID `json:"version" required:"true" nullable:"false"` // version
 }
+
+type SchemaMigrationID int
 
 // CreateSchemaMigration creates a new SchemaMigration in the database with the given params.
 func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
@@ -46,8 +48,8 @@ func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCr
 
 // SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'.
 type SchemaMigrationUpdateParams struct {
-	Dirty   *bool `json:"dirty" nullable:"false"`   // dirty
-	Version *int  `json:"version" nullable:"false"` // version
+	Dirty   *bool              `json:"dirty" nullable:"false"`   // dirty
+	Version *SchemaMigrationID `json:"version" nullable:"false"` // version
 }
 
 // SetUpdateParams updates public.schema_migrations struct fields with the specified params.
@@ -191,7 +193,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 }
 
 // SchemaMigrationPaginatedByVersionAsc returns a cursor-paginated list of SchemaMigration in Asc order.
-func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version int, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
+func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
 	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -259,7 +261,7 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version in
 }
 
 // SchemaMigrationPaginatedByVersionDesc returns a cursor-paginated list of SchemaMigration in Desc order.
-func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version int, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
+func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
 	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -329,7 +331,7 @@ func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version i
 // SchemaMigrationByVersion retrieves a row from 'public.schema_migrations' as a SchemaMigration.
 //
 // Generated from index 'schema_migrations_pkey'.
-func SchemaMigrationByVersion(ctx context.Context, db DB, version int, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
+func SchemaMigrationByVersion(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
 	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

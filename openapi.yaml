@@ -657,7 +657,7 @@ components:
           format: date-time
           type: string
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
       required:
         - apiKey
         - expiresOn
@@ -691,7 +691,7 @@ components:
         scopes:
           $ref: '#/components/schemas/Scopes'
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         username:
           type: string
       required:
@@ -722,7 +722,7 @@ components:
         timeEntryID:
           type: integer
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         workItemID:
           nullable: true
           type: integer
@@ -745,7 +745,7 @@ components:
           format: date-time
           type: string
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         workItemCommentID:
           type: integer
         workItemID:
@@ -1006,7 +1006,7 @@ components:
           nullable: true
           type: array
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         username:
           type: string
       required:
@@ -1344,7 +1344,7 @@ components:
         message:
           type: string
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
         workItemID:
           type: integer
       required:
@@ -1395,7 +1395,7 @@ components:
         name:
           type: string
         projectID:
-          type: integer
+          $ref: '#/components/schemas/DbProjectID'
       required:
         - color
         - description
@@ -1498,7 +1498,7 @@ components:
         role:
           $ref: '#/components/schemas/WorkItemRole'
         userID:
-          $ref: '#/components/schemas/UuidUUID'
+          $ref: '#/components/schemas/DbUserID'
       required:
         - role
         - userID
@@ -1510,7 +1510,7 @@ components:
           nullable: true
           type: string
         workItemID:
-          type: integer
+          $ref: '#/components/schemas/DbWorkItemID'
       required:
         - workItemID
       type: object
@@ -1521,7 +1521,31 @@ components:
           nullable: true
           type: string
       type: object
-  examples:
+    # https://github.com/ferdikoomen/openapi-typescript-codegen/issues/998
+    # for our case, this should be part of orval, at least
+    # declare const Brand: unique symbol
+    # export type Branded<T, B> = T & { [Brand]: B }
+
+    # type UserID = Branded<string, "UserID">;
+    # type TeamID = Branded<string, "TeamID">;
+
+    # function doSomethingWithUser(id: UserID) {}
+
+    # doSomethingWithUser("123" as UserID);
+    # doSomethingWithUser("invalid" as TeamID); // Error: Argument of type 'string' is not assignable to parameter of type 'UserID'
+    # type: string
+    # x-orval-type: branded
+    DbWorkItemID: {}
+    DbProjectID: {}
+    DbUserID: # Generated from internal structs. DO NOT EDIT.
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+      type: string
+      x-go-type: uuid.UUID
+      x-go-type-import:
+        name: uuid
+        path: github.com/google/uuid
+    DbWorkItemTypeID: {}
+  examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:
         username: username

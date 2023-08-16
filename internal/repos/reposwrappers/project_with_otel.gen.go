@@ -37,7 +37,7 @@ func NewProjectWithTracing(base repos.Project, instance string, spanDecorator ..
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithTracing) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {

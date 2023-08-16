@@ -25,12 +25,12 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type EntityNotification struct {
-	EntityNotificationID int           `json:"entityNotificationID" db:"entity_notification_id" required:"true" nullable:"false"`       // entity_notification_id
-	Entity               Entity        `json:"entity" db:"entity" required:"true" nullable:"false" ref:"#/components/schemas/DbEntity"` // entity
-	ID                   string        `json:"id" db:"id" required:"true" nullable:"false"`                                             // id
-	Message              string        `json:"message" db:"message" required:"true" nullable:"false"`                                   // message
-	Topic                models.Topics `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`     // topic
-	CreatedAt            time.Time     `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                              // created_at
+	EntityNotificationID EntityNotificationID `json:"entityNotificationID" db:"entity_notification_id" required:"true" nullable:"false"`       // entity_notification_id
+	Entity               Entity               `json:"entity" db:"entity" required:"true" nullable:"false" ref:"#/components/schemas/DbEntity"` // entity
+	ID                   string               `json:"id" db:"id" required:"true" nullable:"false"`                                             // id
+	Message              string               `json:"message" db:"message" required:"true" nullable:"false"`                                   // message
+	Topic                models.Topics        `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`     // topic
+	CreatedAt            time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                              // created_at
 
 }
 
@@ -41,6 +41,8 @@ type EntityNotificationCreateParams struct {
 	Message string        `json:"message" required:"true" nullable:"false"`                                    // message
 	Topic   models.Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`    // topic
 }
+
+type EntityNotificationID int
 
 // CreateEntityNotification creates a new EntityNotification in the database with the given params.
 func CreateEntityNotification(ctx context.Context, db DB, params *EntityNotificationCreateParams) (*EntityNotification, error) {
@@ -231,7 +233,7 @@ func (en *EntityNotification) Delete(ctx context.Context, db DB) error {
 }
 
 // EntityNotificationPaginatedByEntityNotificationIDAsc returns a cursor-paginated list of EntityNotification in Asc order.
-func EntityNotificationPaginatedByEntityNotificationIDAsc(ctx context.Context, db DB, entityNotificationID int, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
+func EntityNotificationPaginatedByEntityNotificationIDAsc(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -303,7 +305,7 @@ func EntityNotificationPaginatedByEntityNotificationIDAsc(ctx context.Context, d
 }
 
 // EntityNotificationPaginatedByEntityNotificationIDDesc returns a cursor-paginated list of EntityNotification in Desc order.
-func EntityNotificationPaginatedByEntityNotificationIDDesc(ctx context.Context, db DB, entityNotificationID int, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
+func EntityNotificationPaginatedByEntityNotificationIDDesc(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -454,7 +456,7 @@ func EntityNotificationsByEntityID(ctx context.Context, db DB, entity Entity, id
 // EntityNotificationByEntityNotificationID retrieves a row from 'public.entity_notifications' as a EntityNotification.
 //
 // Generated from index 'entity_notifications_pkey'.
-func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entityNotificationID int, opts ...EntityNotificationSelectConfigOption) (*EntityNotification, error) {
+func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) (*EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

@@ -36,7 +36,7 @@ func NewTimeEntryWithTracing(base repos.TimeEntry, instance string, spanDecorato
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithTracing) ByID(ctx context.Context, d db.DBTX, id int, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTracing) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -85,7 +85,7 @@ func (_d TimeEntryWithTracing) Create(ctx context.Context, d db.DBTX, params *db
 }
 
 // Delete implements repos.TimeEntry
-func (_d TimeEntryWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTracing) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (tp1 *db.TimeEntry, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -109,7 +109,7 @@ func (_d TimeEntryWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (t
 }
 
 // Update implements repos.TimeEntry
-func (_d TimeEntryWithTracing) Update(ctx context.Context, d db.DBTX, id int, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTracing) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
