@@ -1894,9 +1894,15 @@ set +a
 trap 'show_tracebacks' ERR
 trap killgroup EXIT HUP INT TERM
 trap errtrap SIGUSR1
+# may get called multiple times
 trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
 
+exit_cleanup_calls=0
+
 exit-cleanup() {
+  [[ "$exit_cleanup_calls" -gt 0 ]] && return
+  ((exit_cleanup_calls++)) || true
+
   if [[ $restore_cache = 1 && -z $X_NO_CACHE ]]; then
     xsetup.backup-gen.restore
   fi
@@ -1905,6 +1911,7 @@ exit-cleanup() {
   git checkout "$CURRENT_BRANCH" >/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
   git branch -D "$gen_backup_branch" >/dev/null || true
   cd "$starting_cwd" || true
+
 }
 
 killgroup() {
