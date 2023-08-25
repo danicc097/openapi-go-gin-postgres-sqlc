@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/attribute"
@@ -21,6 +22,7 @@ func userIDAttribute(c *gin.Context) attribute.KeyValue {
 func newOTelSpan(opts ...trace.SpanStartOption) *tracing.OTelSpanBuilder {
 	builder := tracing.NewOTelSpanBuilder(opts...).
 		WithName(tracing.GetOTelSpanName(2)).
+		WithAttributes(attribute.String("build-version", internal.Config.BuildVersion)).
 		WithTracer(OtelName)
 
 	return builder

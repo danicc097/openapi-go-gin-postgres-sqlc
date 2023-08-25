@@ -12,6 +12,7 @@ starting_cwd=$(pwd)
 ensure_pwd_is_top_level
 
 declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_CACHE X_ENV
+declare BUILD_VERSION
 
 readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
@@ -1873,6 +1874,8 @@ done
 for arg in ${args[@]}; do
   set -- "$@" "$arg"
 done
+
+export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
 readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_CACHE X_ENV
 

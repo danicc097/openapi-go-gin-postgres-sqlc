@@ -5,6 +5,6 @@
   "API_PREFIX": "",
   "API_PORT": "",
   "FRONTEND_PORT": "",
-  "BUILD_NUMBER": "",
+  "BUILD_VERSION": "",
   "AUTH_SERVER_UI_PROFILE": ""
 }
