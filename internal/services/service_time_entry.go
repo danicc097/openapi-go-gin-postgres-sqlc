@@ -66,11 +66,11 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 		fmt.Printf("wi.WorkItemAssignedUsersJoin: %+v\n", wi.WorkItemAssignedUsersJoin)
 		fmt.Printf("wi.WorkItemTimeEntriesJoin: %+v\n", wi.WorkItemTimeEntriesJoin)
 
-		memberIDs := make([]db.UserID, len(*wi.WorkItemAssignedUsersJoin))
-		for i, m := range *wi.WorkItemAssignedUsersJoin {
-			memberIDs[i] = m.User.UserID
+		memberIDs := make(map[db.UserID]bool)
+		for _, m := range *wi.WorkItemAssignedUsersJoin {
+			memberIDs[m.User.UserID] = true
 		}
-		if !slices.Contains(memberIDs, caller.UserID) {
+		if _, ok := memberIDs[caller.UserID]; !ok {
 			// FIXME filter where not null for m2m in assigned members not doing what we think
 			return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot link activity to an unassigned work item")
 		}

@@ -16,7 +16,7 @@ func userIDAttribute(c *gin.Context) attribute.KeyValue {
 		uid = u.UserID.String()
 	}
 
-	return tracing.UserIDAttribute.String(uid)
+	return tracing.UserIDAttributeKey.String(uid)
 }
 
 func newOTelSpan(opts ...trace.SpanStartOption) *tracing.OTelSpanBuilder {

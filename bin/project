@@ -1911,8 +1911,8 @@ exit-cleanup() {
   fi
 
   rm -f backup-gen-stash-dummy.txt
-  git checkout "$CURRENT_BRANCH" >/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
-  git branch -D "$gen_backup_branch" >/dev/null || true
+  git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
+  git branch -D "$gen_backup_branch" &>/dev/null || true
   cd "$starting_cwd" || true
 
 }

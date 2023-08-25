@@ -230,6 +230,14 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		postgresql.OtelName,
 		nil,
 	)
+	projectrepo := reposwrappers.NewProjectWithTracing(
+		reposwrappers.NewProjectWithTimeout(
+			postgresql.NewProject(),
+			reposwrappers.ProjectWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
 	urepo := reposwrappers.NewUserWithTracing(
 		reposwrappers.NewUserWithTimeout(
 			postgresql.NewUser(),
@@ -252,7 +260,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
 	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
-	workitemsvc := services.NewWorkItem(conf.Logger, workitemrepo, urepo)
+	workitemsvc := services.NewWorkItem(conf.Logger, workitemtagrepo, workitemrepo, urepo, projectrepo)
 	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, demoworkitemrepo, workitemrepo, urepo, workitemsvc)
 	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, demotwoworkitemrepo, workitemrepo, urepo, workitemsvc)
 	workitemtagsvc := services.NewWorkItemTag(conf.Logger, workitemtagrepo)

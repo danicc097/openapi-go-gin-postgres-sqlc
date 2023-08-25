@@ -53,6 +53,7 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
+	projectRepo := postgresql.NewProject()
 	notifRepo := postgresql.NewNotification()
 	userRepo := postgresql.NewUser()
 	activityRepo := postgresql.NewActivity()
@@ -70,7 +71,7 @@ func main() {
 	activitySvc := services.NewActivity(logger, activityRepo)
 	teamSvc := services.NewTeam(logger, teamRepo)
 	teSvc := services.NewTimeEntry(logger, teRepo, wiRepo)
-	wiSvc := services.NewWorkItem(logger, wiRepo, userRepo)
+	wiSvc := services.NewWorkItem(logger, wiTagRepo, wiRepo, userRepo, projectRepo)
 	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo, wiRepo, userRepo, wiSvc)
 	wiTagSvc := services.NewWorkItemTag(logger, wiTagRepo)
 
@@ -222,6 +223,15 @@ func main() {
 	})
 	handleError(err)
 	logger.Info("Created tag ", wiTag2.Name)
+
+	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+		Name:        "Tag 1",
+		Description: "Tag 1 description",
+		Color:       "#be6cc4",
+	})
+	handleError(err)
+	logger.Info("Created tag ", wiTagDemo2_1.Name)
 
 	/**
 	 *

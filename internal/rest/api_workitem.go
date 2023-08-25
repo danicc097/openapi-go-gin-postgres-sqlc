@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +16,8 @@ import (
 func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	defer newOTelSpanWithUser(c).End()
+	span := newOTelSpanWithUser(c)
+	defer span.End()
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)
@@ -27,6 +29,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 
 		return
 	}
+	span.SetAttributes(tracing.ParamsAttribute(jsonBody))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
 
 	body := &models.WorkItemCreateRequest{}
