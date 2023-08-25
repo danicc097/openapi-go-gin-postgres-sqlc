@@ -32,9 +32,11 @@ func ParamsAttribute(params any) attribute.KeyValue {
 	case []byte:
 		p = string(x)
 	default:
-		if s, err := json.Marshal(params); err != nil {
-			p = string(s)
+		s, err := json.Marshal(params)
+		if err != nil {
+			break
 		}
+		p = string(s)
 	}
 
 	return ParamsAttributeKey.String(p)
