@@ -26,16 +26,8 @@ func GetOTelSpanName(parentIndex int) string {
 
 func ParamsAttribute(params any) attribute.KeyValue {
 	p := ""
-	switch x := params.(type) {
-	case string:
-		p = x
-	case []byte:
-		p = string(x)
-	default:
-		s, err := json.Marshal(params)
-		if err != nil {
-			break
-		}
+	s, err := json.Marshal(params)
+	if err == nil {
 		p = string(s)
 	}
 
