@@ -76,11 +76,12 @@ with `--x-help`:
 
 ### Configuration and local development
 
-- Fill in `.env.template`s:
+Fill in `.env.template`'s:
 
-  ```bash
-  find . -name ".env*.template"
-  ```
+```bash
+find . -name ".env*.template"
+```
+
 Assuming a recent Ubuntu release:
 
 ```bash
