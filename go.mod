@@ -8,7 +8,7 @@ require (
 	github.com/dave/dst v0.27.2
 	github.com/deepmap/oapi-codegen v1.13.4
 	github.com/fatih/structtag v1.2.0
-	github.com/getkin/kin-openapi v0.118.0
+	github.com/getkin/kin-openapi v0.119.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-contrib/zap v0.1.0
