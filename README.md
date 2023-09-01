@@ -74,6 +74,13 @@ with `--x-help`:
 
 ## Setup
 
+### Configuration and local development
+
+- Fill in `.env.template`s:
+
+  ```bash
+  find . -name ".env*.template"
+  ```
 Assuming a recent Ubuntu release:
 
 ```bash
@@ -84,23 +91,9 @@ direnv allow # you can also customize direnv with .envrc.local as you would a re
 cp openapi-go.code-workspace.example openapi-go.code-workspace # edit as desired
 
 project bootstrap # dependency and tools interactive installation
-
-```
-
-### Configuration
-
-- Fill in `.env.template`s:
-
-  ```bash
-  find . -name ".env*.template"
-  ```
-
-### Code generation
-
-```
 project gen
+project run-dev 
 ```
-
 
 ### Tracing, monitoring...
 
@@ -108,7 +101,7 @@ project gen
 bin/deploy-instrumentation
 ```
 
-## Code generation
+## Notes on code generation
 
 Docs WIP:
 
