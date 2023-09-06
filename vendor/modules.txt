@@ -471,9 +471,10 @@ github.com/zitadel/oidc/v2/pkg/oidc
 github.com/zitadel/oidc/v2/pkg/oidc/grants/tokenexchange
 github.com/zitadel/oidc/v2/pkg/op
 github.com/zitadel/oidc/v2/pkg/strings
-# go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0
+# go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.43.0
 ## explicit; go 1.19
 go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin
+go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin/internal/semconvutil
 # go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0
 ## explicit; go 1.19
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
@@ -493,10 +494,8 @@ go.opentelemetry.io/otel/internal/baggage
 go.opentelemetry.io/otel/internal/global
 go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/semconv/internal
-go.opentelemetry.io/otel/semconv/internal/v2
 go.opentelemetry.io/otel/semconv/v1.12.0
 go.opentelemetry.io/otel/semconv/v1.17.0
-go.opentelemetry.io/otel/semconv/v1.17.0/httpconv
 go.opentelemetry.io/otel/semconv/v1.4.0
 # go.opentelemetry.io/otel/exporters/jaeger v1.16.0
 ## explicit; go 1.19
