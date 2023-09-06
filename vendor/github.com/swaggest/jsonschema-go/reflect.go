@@ -377,8 +377,8 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		defName    string
 	)
 
-	if st, ok := i.(Struct); ok {
-		s = &st
+	if st, ok := i.(withStruct); ok {
+		s = st.structPtr()
 	}
 
 	defer func() {
@@ -421,7 +421,7 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		defName, typeString = s.names()
 	}
 
-	if mappedTo, found := r.typesMap[t]; found {
+	if mappedTo, found := r.typesMap[t]; found && s == nil {
 		t = refl.DeepIndirect(reflect.TypeOf(mappedTo))
 		v = reflect.ValueOf(mappedTo)
 
@@ -847,17 +847,25 @@ func (r *Reflector) makeFields(v reflect.Value) ([]reflect.StructField, []reflec
 		values []reflect.Value
 	)
 
-	if s, ok := v.Interface().(Struct); ok {
-		for _, f := range s.Fields {
-			field := reflect.StructField{}
-			field.Name = f.Name
-			field.Tag = f.Tag
-			field.Type = reflect.TypeOf(f.Value)
+	isVirtualStruct := false
 
-			fields = append(fields, field)
-			values = append(values, reflect.ValueOf(f.Value))
+	if v.CanInterface() {
+		if s, ok := v.Interface().(Struct); ok {
+			isVirtualStruct = true
+
+			for _, f := range s.Fields {
+				field := reflect.StructField{}
+				field.Name = f.Name
+				field.Tag = f.Tag
+				field.Type = reflect.TypeOf(f.Value)
+
+				fields = append(fields, field)
+				values = append(values, reflect.ValueOf(f.Value))
+			}
 		}
-	} else {
+	}
+
+	if !isVirtualStruct {
 		for i := 0; i < t.NumField(); i++ {
 			fields = append(fields, t.Field(i))
 			values = append(values, v.Field(i))
