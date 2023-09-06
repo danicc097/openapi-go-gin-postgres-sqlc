@@ -103,12 +103,12 @@ func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models
 	}
 
 	for idx, tagID := range tagIDs {
-		tag, err := w.wiTagRepo.ByID(ctx, d, tagID, db.WithWorkItemTagJoin(db.WorkItemTagJoins{Project: true}))
+		tag, err := w.wiTagRepo.ByID(ctx, d, tagID)
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "tag with id %d not found", tagID)
 		}
 
-		if project.ProjectID != tag.ProjectJoin.ProjectID {
+		if project.ProjectID != tag.ProjectID {
 			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "tag %q does not belong to project %q", tag.Name, tag.ProjectJoin.Name)
 		}
 
