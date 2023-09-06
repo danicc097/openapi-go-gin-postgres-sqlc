@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode/utf16"
 
 	"github.com/go-openapi/jsonpointer"
@@ -47,27 +48,9 @@ var (
 	ErrSchemaInputNaN = errors.New("floating point NaN is not allowed")
 	// ErrSchemaInputInf may be returned when validating a number
 	ErrSchemaInputInf = errors.New("floating point Inf is not allowed")
+
+	compiledPatterns sync.Map
 )
-
-// Float64Ptr is a helper for defining OpenAPI schemas.
-func Float64Ptr(value float64) *float64 {
-	return &value
-}
-
-// BoolPtr is a helper for defining OpenAPI schemas.
-func BoolPtr(value bool) *bool {
-	return &value
-}
-
-// Int64Ptr is a helper for defining OpenAPI schemas.
-func Int64Ptr(value int64) *int64 {
-	return &value
-}
-
-// Uint64Ptr is a helper for defining OpenAPI schemas.
-func Uint64Ptr(value uint64) *uint64 {
-	return &value
-}
 
 // NewSchemaRef simply builds a SchemaRef
 func NewSchemaRef(ref string, value *Schema) *SchemaRef {
@@ -81,10 +64,10 @@ type Schemas map[string]*SchemaRef
 
 var _ jsonpointer.JSONPointable = (*Schemas)(nil)
 
-// JSONLookup implements github.com/go-openapi/jsonpointer#JSONPointable
+// JSONLookup implements https://pkg.go.dev/github.com/go-openapi/jsonpointer#JSONPointable
 func (s Schemas) JSONLookup(token string) (interface{}, error) {
 	ref, ok := s[token]
-	if ref == nil || ok == false {
+	if ref == nil || !ok {
 		return nil, fmt.Errorf("object has no field %q", token)
 	}
 
@@ -98,7 +81,7 @@ type SchemaRefs []*SchemaRef
 
 var _ jsonpointer.JSONPointable = (*SchemaRefs)(nil)
 
-// JSONLookup implements github.com/go-openapi/jsonpointer#JSONPointable
+// JSONLookup implements https://pkg.go.dev/github.com/go-openapi/jsonpointer#JSONPointable
 func (s SchemaRefs) JSONLookup(token string) (interface{}, error) {
 	i, err := strconv.ParseUint(token, 10, 64)
 	if err != nil {
@@ -154,10 +137,9 @@ type Schema struct {
 	MultipleOf *float64 `json:"multipleOf,omitempty" yaml:"multipleOf,omitempty"`
 
 	// String
-	MinLength       uint64  `json:"minLength,omitempty" yaml:"minLength,omitempty"`
-	MaxLength       *uint64 `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
-	Pattern         string  `json:"pattern,omitempty" yaml:"pattern,omitempty"`
-	compiledPattern *regexp.Regexp
+	MinLength uint64  `json:"minLength,omitempty" yaml:"minLength,omitempty"`
+	MaxLength *uint64 `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
+	Pattern   string  `json:"pattern,omitempty" yaml:"pattern,omitempty"`
 
 	// Array
 	MinItems uint64     `json:"minItems,omitempty" yaml:"minItems,omitempty"`
@@ -424,7 +406,7 @@ func (schema *Schema) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// JSONLookup implements github.com/go-openapi/jsonpointer#JSONPointable
+// JSONLookup implements https://pkg.go.dev/github.com/go-openapi/jsonpointer#JSONPointable
 func (schema Schema) JSONLookup(token string) (interface{}, error) {
 	switch token {
 	case "additionalProperties":
@@ -712,7 +694,6 @@ func (schema *Schema) WithMaxLengthDecodedBase64(i int64) *Schema {
 
 func (schema *Schema) WithPattern(pattern string) *Schema {
 	schema.Pattern = pattern
-	schema.compiledPattern = nil
 	return schema
 }
 
@@ -960,8 +941,8 @@ func (schema *Schema) validate(ctx context.Context, stack []*Schema) ([]*Schema,
 				}
 			}
 		}
-		if schema.Pattern != "" && !validationOpts.schemaPatternValidationDisabled {
-			if err := schema.compilePattern(); err != nil {
+		if !validationOpts.schemaPatternValidationDisabled && schema.Pattern != "" {
+			if _, err := schema.compilePattern(); err != nil {
 				return stack, err
 			}
 		}
@@ -1166,6 +1147,10 @@ func (schema *Schema) visitSetOperations(settings *schemaValidationSettings, val
 					return err
 				}
 				if v == f {
+					return
+				}
+			case int64:
+				if v == float64(c) {
 					return
 				}
 			default:
@@ -1405,7 +1390,7 @@ func (schema *Schema) visitJSONNumber(settings *schemaValidationSettings, value 
 				Value:                 value,
 				Schema:                schema,
 				SchemaField:           "type",
-				Reason:                fmt.Sprintf("value must be an integer"),
+				Reason:                "value must be an integer",
 				customizeMessageError: settings.customizeMessageError,
 			}
 			if !settings.multiError {
@@ -1612,27 +1597,31 @@ func (schema *Schema) visitJSONString(settings *schemaValidationSettings, value 
 	}
 
 	// "pattern"
-	if schema.Pattern != "" && schema.compiledPattern == nil && !settings.patternValidationDisabled {
-		var err error
-		if err = schema.compilePattern(); err != nil {
+	if !settings.patternValidationDisabled && schema.Pattern != "" {
+		cpiface, _ := compiledPatterns.Load(schema.Pattern)
+		cp, _ := cpiface.(*regexp.Regexp)
+		if cp == nil {
+			var err error
+			if cp, err = schema.compilePattern(); err != nil {
+				if !settings.multiError {
+					return err
+				}
+				me = append(me, err)
+			}
+		}
+		if !cp.MatchString(value) {
+			err := &SchemaError{
+				Value:                 value,
+				Schema:                schema,
+				SchemaField:           "pattern",
+				Reason:                fmt.Sprintf(`string doesn't match the regular expression "%s"`, schema.Pattern),
+				customizeMessageError: settings.customizeMessageError,
+			}
 			if !settings.multiError {
 				return err
 			}
 			me = append(me, err)
 		}
-	}
-	if cp := schema.compiledPattern; cp != nil && !cp.MatchString(value) {
-		err := &SchemaError{
-			Value:                 value,
-			Schema:                schema,
-			SchemaField:           "pattern",
-			Reason:                fmt.Sprintf(`string doesn't match the regular expression "%s"`, schema.Pattern),
-			customizeMessageError: settings.customizeMessageError,
-		}
-		if !settings.multiError {
-			return err
-		}
-		me = append(me, err)
 	}
 
 	// "format"
@@ -1985,16 +1974,20 @@ func (schema *Schema) expectedType(settings *schemaValidationSettings, value int
 	}
 }
 
-func (schema *Schema) compilePattern() (err error) {
-	if schema.compiledPattern, err = regexp.Compile(schema.Pattern); err != nil {
-		return &SchemaError{
+// NOTE: racey WRT [writes to schema.Pattern] vs [reads schema.Pattern then writes to compiledPatterns]
+func (schema *Schema) compilePattern() (cp *regexp.Regexp, err error) {
+	pattern := schema.Pattern
+	if cp, err = regexp.Compile(pattern); err != nil {
+		err = &SchemaError{
 			Schema:      schema,
 			SchemaField: "pattern",
 			Origin:      err,
-			Reason:      fmt.Sprintf("cannot compile pattern %q: %v", schema.Pattern, err),
+			Reason:      fmt.Sprintf("cannot compile pattern %q: %v", pattern, err),
 		}
+		return
 	}
-	return nil
+	var _ bool = compiledPatterns.CompareAndSwap(pattern, nil, cp)
+	return
 }
 
 // SchemaError is an error that occurs during schema validation.
@@ -2109,8 +2102,8 @@ func isSliceOfUniqueItems(xs []interface{}) bool {
 	s := len(xs)
 	m := make(map[string]struct{}, s)
 	for _, x := range xs {
-		// The input slice is coverted from a JSON string, there shall
-		// have no error when covert it back.
+		// The input slice is converted from a JSON string, there shall
+		// have no error when convert it back.
 		key, _ := json.Marshal(&x)
 		m[string(key)] = struct{}{}
 	}
