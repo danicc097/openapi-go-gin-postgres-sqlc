@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
@@ -57,7 +58,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	err = w.wiSvc.AssignTags(ctx, d, demoWi, params.TagIDs)
+	err = w.wiSvc.AssignTags(ctx, d, models.ProjectDemoTwo, demoWi, params.TagIDs)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
 	}

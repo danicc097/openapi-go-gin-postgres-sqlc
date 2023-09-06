@@ -63,7 +63,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
 	}
 
-	err = w.wiSvc.AssignTags(ctx, d, demoWi, params.TagIDs)
+	err = w.wiSvc.AssignTags(ctx, d, models.ProjectDemo, demoWi, params.TagIDs)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
 	}

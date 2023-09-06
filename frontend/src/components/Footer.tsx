@@ -44,7 +44,7 @@ export default function Footer() {
         <Text fz="xs">
           <Group position="left" noWrap>
             <p>Copyright © {new Date().getFullYear()}</p>
-            <p>Build version: {CONFIG.BUILD_NUMBER ?? 'DEVELOPMENT'}</p>
+            <p>Build version: {CONFIG.BUILD_VERSION ?? 'DEVELOPMENT'}</p>
           </Group>
         </Text>
         <Dropdown

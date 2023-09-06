@@ -27,18 +27,21 @@ tag belonging to project and a member that belongs to the team
 */
 
 type WorkItem struct {
-	logger    *zap.SugaredLogger
-	wiTagRepo repos.WorkItemTag
-	wiRepo    repos.WorkItem
-	userRepo  repos.User
+	logger      *zap.SugaredLogger
+	projectRepo repos.Project
+	wiTagRepo   repos.WorkItemTag
+	wiRepo      repos.WorkItem
+	userRepo    repos.User
 }
 
 // NewWorkItem returns a new WorkItem service with common logic for all project workitems.
-func NewWorkItem(logger *zap.SugaredLogger, wiRepo repos.WorkItem, userRepo repos.User) *WorkItem {
+func NewWorkItem(logger *zap.SugaredLogger, wiTagRepo repos.WorkItemTag, wiRepo repos.WorkItem, userRepo repos.User, projectRepo repos.Project) *WorkItem {
 	return &WorkItem{
-		logger:   logger,
-		wiRepo:   wiRepo,
-		userRepo: userRepo,
+		logger:      logger,
+		projectRepo: projectRepo,
+		wiTagRepo:   wiTagRepo,
+		wiRepo:      wiRepo,
+		userRepo:    userRepo,
 	}
 }
 
@@ -93,16 +96,19 @@ func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem 
 	return nil
 }
 
-func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
+func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models.Project, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
+	project, err := w.projectRepo.ByName(ctx, d, projectName, db.WithProjectJoin(db.ProjectJoins{Teams: true}))
+	if err != nil {
+		return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{}, "project %s not found", projectName)
+	}
+
 	for idx, tagID := range tagIDs {
-		tag, err := w.wiTagRepo.ByID(ctx, d, tagID, db.WithWorkItemTagJoin(db.WorkItemTagJoins{Project: true}))
+		tag, err := w.wiTagRepo.ByID(ctx, d, tagID)
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "tag with id %d not found", tagID)
 		}
 
-		// TODO: better pass projectName down and get project teams join directly
-		// instead of querying workitem again with teamjoin
-		if workItem.TeamJoin.ProjectID != tag.ProjectJoin.ProjectID {
+		if project.ProjectID != tag.ProjectID {
 			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "tag %q does not belong to project %q", tag.Name, tag.ProjectJoin.Name)
 		}
 

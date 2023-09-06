@@ -185,7 +185,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 				assert.Len(t, res, 1)
 				assert.Equal(t, res[0].UserID, user.UserID)
 				assert.Equal(t, (*team.TeamMembersJoin)[0].UserID, user.UserID)
-				assert.Equal(t, team.ProjectJoin.ProjectID, project.ProjectID)
+				assert.Equal(t, team.ProjectID, project.ProjectID)
 			},
 		},
 		{
