@@ -197,6 +197,11 @@ x.check-build-deps() {
       if ! "install.bin.$bin"; then
         err "$bin installation failed"
       fi
+
+      if ! "check.bin.$bin"; then
+        err "$bin check failed after installation"
+      fi
+
       echo "Installed $bin..."
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
