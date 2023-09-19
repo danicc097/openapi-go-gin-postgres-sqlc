@@ -189,7 +189,7 @@ func (h *Handlers) Baz() {}
 		},
 		{
 			name:        "missing method in existing file",
-			errContains: `missing function method for operation ID "Bar"`,
+			errContains: `missing function method for operation ID "Bar" in api_foo.go`,
 			operations:  map[tag][]string{foo: {"Foo", "Bar"}},
 			files: func() handlerFiles {
 				content := `package rest

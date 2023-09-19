@@ -49,7 +49,7 @@ install.bin.column() {
     cd util-linux-2.36.2 || exit 1
     ./configure
     make column
-    cp .libs/column ./bin/tools/
+    cp .libs/column ../bin/tools/
     cd ..
     rm -rf util-linux-2.*
     column --version

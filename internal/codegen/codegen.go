@@ -451,7 +451,7 @@ func (o *CodeGen) ensureFunctionMethods() error {
 
 		for _, opID := range o.operations[tag] {
 			if !contains(functions, opID) {
-				errs = append(errs, fmt.Sprintf("missing function method for operation ID %q", opID))
+				errs = append(errs, fmt.Sprintf("missing function method for operation ID %q in api_%s.go", opID, tag))
 			}
 		}
 	}
