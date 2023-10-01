@@ -413,7 +413,7 @@ github.com/spf13/pflag
 ## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# github.com/swaggest/jsonschema-go v0.3.59
+# github.com/swaggest/jsonschema-go v0.3.61
 ## explicit; go 1.18
 github.com/swaggest/jsonschema-go
 # github.com/swaggest/openapi-go v0.2.39
@@ -421,7 +421,7 @@ github.com/swaggest/jsonschema-go
 github.com/swaggest/openapi-go
 github.com/swaggest/openapi-go/internal
 github.com/swaggest/openapi-go/openapi3
-# github.com/swaggest/refl v1.2.0
+# github.com/swaggest/refl v1.2.1
 ## explicit; go 1.17
 github.com/swaggest/refl
 # github.com/twitchyliquid64/golang-asm v0.15.1

@@ -74,7 +74,21 @@ func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.Struct
 			fieldVal = fieldVal.Addr()
 		}
 
+		// Don't traverse unexported non-anonymous fields.
+		if field.PkgPath != "" && !field.Anonymous {
+			continue
+		}
+
 		f(fieldVal, field, path)
+
+		if len(path) > 100 {
+			pp := ""
+			for _, p := range path[0:10] {
+				pp += "." + p.Name
+			}
+
+			panic("too deep recursion, possible cyclic reference: " + pp)
+		}
 
 		walkFieldsRecursively(fieldVal, f, append(path, field))
 	}
