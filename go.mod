@@ -33,8 +33,8 @@ require (
 	github.com/smartystreets/assertions v1.13.1
 	github.com/smartystreets/gunit v1.4.5
 	github.com/stretchr/testify v1.8.4
-	github.com/swaggest/jsonschema-go v0.3.59
-	github.com/swaggest/openapi-go v0.2.39
+	github.com/swaggest/jsonschema-go v0.3.61
+	github.com/swaggest/openapi-go v0.2.40
 	github.com/zitadel/oidc/v2 v2.7.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.43.0
 	go.opentelemetry.io/contrib/propagators/jaeger v1.18.0
@@ -46,7 +46,7 @@ require (
 	go.uber.org/zap v1.25.0
 	golang.org/x/exp v0.0.0-20230728194245-b0cb94b80691
 	golang.org/x/sync v0.3.0
-	golang.org/x/text v0.12.0
+	golang.org/x/text v0.13.0
 	mvdan.cc/gofumpt v0.5.0
 )
 
@@ -81,7 +81,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cobra v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/swaggest/refl v1.2.0 // indirect
+	github.com/swaggest/refl v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/yuin/gopher-lua v1.1.0 // indirect
 	github.com/zitadel/logging v0.3.4 // indirect
