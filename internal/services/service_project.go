@@ -66,6 +66,7 @@ func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 // we are not typing the update to save ourselves from manually adding a migration to change projects.board_config
 // when _any_ field changes. we generate a new config the way it must be and merge with whatever was in db's board_config there at app startup.
 // the endpoint to update it will be validated by openapi libs as usual.
+// Deprecated: will use frontend config per user + admin config is stored raw in db.
 func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName models.Project, update map[string]any) (*models.ProjectConfig, error) {
 	project, err := p.projectRepo.ByName(ctx, d, projectName)
 	if err != nil {

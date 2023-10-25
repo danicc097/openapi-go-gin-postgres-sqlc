@@ -98,14 +98,15 @@ export interface InputOptions<Return, E = unknown> {
   propsFn?: (registerOnChange: ChangeHandler) => React.ComponentProps<'input'>
 }
 
-export const selectOptionsBuilder = <Return, V>({
+// NOTE: handles select (single return value) and multiselect (array return).
+export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends unknown[] ? Return[number] : Return>({
   type,
   values,
   formValueTransformer,
   optionTransformer,
   labelTransformer,
   labelColor,
-}: SelectOptions<Return, V>): SelectOptions<Return, V> => ({
+}: SelectOptions<ReturnElement, V>): SelectOptions<ReturnElement, V> => ({
   type,
   values,
   optionTransformer,
@@ -141,8 +142,8 @@ const valueComponentTemplate =
             display: 'flex',
             cursor: 'default',
             alignItems: 'center',
-            backgroundColor: color || (theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white),
-            border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[4]}`,
+            backgroundColor: color || (theme.colorScheme === 'dark' ? theme.colors.dark?.[7] : theme.white),
+            border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark?.[7] : theme.colors.gray?.[4]}`,
             paddingLeft: theme.spacing.xs,
             borderRadius: theme.radius.sm,
           })}

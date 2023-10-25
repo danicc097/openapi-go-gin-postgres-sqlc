@@ -99,7 +99,6 @@ func main() {
 	handleError(err)
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, superAdmin)
 	handleError(err)
-	logger.Info("Registered ", superAdmin.Username)
 	users = append(users, superAdmin)
 
 	//
@@ -123,7 +122,7 @@ func main() {
 	err = json.Unmarshal(usersBlob, &uu)
 	handleError(err)
 
-	logger.Info("Registering users...")
+	logger.Info("Creating users...")
 	for i := 0; i < 10; i++ {
 		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
@@ -135,7 +134,6 @@ func main() {
 		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 		handleError(err)
 
-		logger.Info("Registered ", u.Username)
 		users = append(users, u)
 	}
 	u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
@@ -148,7 +146,6 @@ func main() {
 	handleError(err)
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 	handleError(err)
-	logger.Info("Registered ", u.Username)
 	users = append(users, u)
 
 	/**
@@ -156,13 +153,14 @@ func main() {
 	 * TEAMS
 	 *
 	 **/
+	logger.Info("Creating teams...")
 
 	team1, err := teamSvc.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Team 1",
 		Description: "Team 1 description",
 	})
-	handleError(err)
+	handleError(err, team1)
 
 	for _, u := range users {
 		err = userSvc.AssignTeam(ctx, pool, u.UserID, team1.TeamID)
@@ -176,6 +174,7 @@ func main() {
 	 * ACTIVITIES
 	 *
 	 **/
+	logger.Info("Creating activities...")
 
 	activity1, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:    internal.ProjectIDByName[models.ProjectDemo],
@@ -183,28 +182,26 @@ func main() {
 		Description:  "Activity 1 description",
 		IsProductive: true,
 	})
-	handleError(err)
-	logger.Info("Created activity ", activity1.Name)
+	handleError(err, activity1)
 	activity2, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Activity 2",
 		Description: "Activity 2 description",
 	})
-	handleError(err)
-	logger.Info("Created activity ", activity2.Name)
+	handleError(err, activity2)
 	activity3, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Activity 3",
 		Description: "Activity 3 description",
 	})
-	handleError(err)
-	logger.Info("Created activity ", activity3.Name)
+	handleError(err, activity3)
 
 	/**
 	 *
 	 * WORK ITEM TAGS
 	 *
 	 **/
+	logger.Info("Creating workitem tags...")
 
 	wiTag1, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
@@ -212,8 +209,7 @@ func main() {
 		Description: "Tag 1 description",
 		Color:       "#be6cc4",
 	})
-	handleError(err)
-	logger.Info("Created tag ", wiTag1.Name)
+	handleError(err, wiTag1)
 
 	wiTag2, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
@@ -221,8 +217,7 @@ func main() {
 		Description: "Tag 2 description",
 		Color:       "#29b8db",
 	})
-	handleError(err)
-	logger.Info("Created tag ", wiTag2.Name)
+	handleError(err, wiTag2)
 
 	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
@@ -230,14 +225,14 @@ func main() {
 		Description: "Tag 1 description",
 		Color:       "#be6cc4",
 	})
-	handleError(err)
-	logger.Info("Created tag ", wiTagDemo2_1.Name)
+	handleError(err, wiTagDemo2_1)
 
 	/**
 	 *
 	 * WORK ITEMS
 	 *
 	 **/
+	logger.Info("Creating workitems...")
 
 	demoWorkItems := []*db.WorkItem{}
 	for i := 1; i <= 20; i++ {
@@ -265,7 +260,6 @@ func main() {
 			},
 		})
 		handleError(err)
-		logger.Info("Created work item with title: ", demowi.Title)
 		fmt.Printf("demowi.WorkItemAssignedUsersJoin: %+v\n", demowi.WorkItemAssignedUsersJoin)
 		demoWorkItems = append(demoWorkItems, demowi)
 	}
@@ -281,8 +275,9 @@ func main() {
 	 * TIME ENTRIES
 	 *
 	 **/
+	logger.Info("Creating time entries...")
 
-	_, err = teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+	te1, err := teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
 		WorkItemID:      &demoWorkItems[0].WorkItemID,
 		ActivityID:      activity1.ActivityID,
 		UserID:          users[0].UserID,
@@ -290,9 +285,9 @@ func main() {
 		Start:           time.Now(),
 		DurationMinutes: pointers.New(56),
 	})
-	handleError(err)
+	handleError(err, te1)
 
-	_, err = teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+	te2, err := teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
 		ActivityID:      activity2.ActivityID,
 		UserID:          users[0].UserID,
 		TeamID:          &team1.TeamID,
@@ -300,7 +295,7 @@ func main() {
 		Start:           time.Now(),
 		DurationMinutes: pointers.New(26),
 	})
-	handleError(err)
+	handleError(err, te2)
 
 	for _, u := range users {
 		_, err := teSvc.Create(ctx, pool, u, &db.TimeEntryCreateParams{
@@ -326,8 +321,8 @@ func errAndExit(out []byte, err error) {
 	os.Exit(1)
 }
 
-func handleError(err error) {
+func handleError(err error, info ...any) {
 	if err != nil {
-		l.Sugar().Fatalf("error: %s", err)
+		l.Sugar().Fatalf("error: %s || info: %v", err, info)
 	}
 }
