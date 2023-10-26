@@ -9,6 +9,10 @@ interface IsAuthorizedParams {
   requiredScopes?: Scopes | null
 }
 
+// TODO: isAuthorized mapped against @operationAuth. would need to generate a wrapper
+// for orval's react query per operation id that checks the current user state and its
+// scopes, role and requiresAuthentication before making the request.
+
 export function isAuthorized({ user, requiredRole = null, requiredScopes = null }: IsAuthorizedParams): boolean {
   if (requiredRole !== null) {
     if (ROLES[user.role].rank < ROLES[requiredRole].rank) {
