@@ -1,0 +1,16 @@
+.sidebar {
+  @media (max-width: var(--mantine-breakpoint-xs)) {
+    /* Styles for smaller than xs breakpoint */
+  }
+}
+
+.drawer {
+  /* margin-top: var(--header-height); Uncomment if needed */
+  height: 100%;
+  min-width: 100%;
+  z-index: 10000;
+
+  @media (min-width: var(--mantine-breakpoint-md)) {
+    min-width: 40%;
+  }
+}

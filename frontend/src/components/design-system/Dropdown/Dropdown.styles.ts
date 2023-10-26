@@ -1,4 +1,4 @@
-import { createStyles, MantineTheme } from '@mantine/core'
+import { MantineTheme } from '@mantine/core'
 import { colors, shadows } from '../config'
 
 export default createStyles((theme: MantineTheme) => {

@@ -10,11 +10,11 @@ import {
   Tabs,
   Burger,
   Loader,
-  Header as MantineHeader,
   Box,
   Tooltip,
   Badge,
   useMantineTheme,
+  useMantineColorScheme,
 } from '@mantine/core'
 import { IconLogout, IconHeart, IconSettings, IconChevronDown } from '@tabler/icons'
 import LoginButton from './LoginButton'
@@ -31,68 +31,8 @@ import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import logoDark from 'src/assets/logo/two-white-clouds.svg'
 import logoLight from 'src/assets/logo/two-black-clouds.svg'
-
-const useStyles = createStyles((theme) => ({
-  header: {
-    backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
-    borderBottom: `1px solid ${theme.colorScheme === 'dark' ? 'transparent' : theme.colors.gray[2]}`,
-    padding: '30px',
-    display: 'grid',
-    alignContent: 'center',
-  },
-
-  user: {
-    color: theme.colorScheme === 'dark' ? theme.colors.dark[0] : theme.black,
-    padding: `${theme.spacing.xs}px ${theme.spacing.sm}px`,
-    borderRadius: theme.radius.sm,
-    transition: 'background-color 100ms ease',
-
-    '&:hover': {
-      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.white,
-    },
-
-    [theme.fn.smallerThan('xs')]: {
-      '.display-name': {
-        display: 'none',
-      },
-    },
-  },
-
-  userActive: {
-    backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.white,
-  },
-
-  tabs: {
-    [theme.fn.smallerThan('sm')]: {
-      display: 'none',
-    },
-  },
-
-  burger: {
-    [theme.fn.largerThan(1200)]: {
-      display: 'none',
-    },
-  },
-
-  tabsList: {
-    borderBottom: '0 !important',
-  },
-
-  tab: {
-    fontWeight: 500,
-    height: 38,
-    backgroundColor: 'transparent',
-
-    '&:hover': {
-      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1],
-    },
-
-    '&[data-active]': {
-      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
-      borderColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2],
-    },
-  },
-}))
+import classes from './Header.module.css'
+import cx from 'clsx'
 
 interface HeaderProps {
   tabs: string[]
@@ -103,12 +43,12 @@ export const HEADER_HEIGHT = 60
 export default function Header({ tabs }: HeaderProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const { classes, theme, cx } = useStyles()
+  const theme = useMantineTheme()
   // const [opened, { toggle }] = useDisclosure(false)
   const [userMenuOpened, setUserMenuOpened] = useState(false)
   const { user } = useAuthenticatedUser()
   const [loginOut, setLoginOut] = useState(false)
-  const { colorScheme } = useMantineTheme() // TODO: app logo useffect
+  const { colorScheme } = useMantineColorScheme() // TODO: app logo useffect
 
   const items = tabs.map((tab) => (
     <Tabs.Tab value={tab} key={tab}>
@@ -140,7 +80,7 @@ export default function Header({ tabs }: HeaderProps) {
   function renderAvatarMenu() {
     if (loginOut)
       return (
-        <Group spacing={7} align="center">
+        <Group gap={'md'} align="center">
           <Loader size={'sm'} variant="dots"></Loader>
           Logging out...
         </Group>
@@ -148,9 +88,14 @@ export default function Header({ tabs }: HeaderProps) {
 
     return user ? (
       <UnstyledButton className={cx(classes.user, { [classes.userActive]: userMenuOpened })}>
-        <Group spacing={4} m={4}>
+        <Group gap={'md'} m={4}>
           <Avatar alt={user.username} radius="xl" size={35} mt={6} mb={6} />
-          <Text className="display-name" weight={500}>
+          <Text
+            className="display-name"
+            css={`
+              font-weight: 500;
+            `}
+          >
             {user.username}
           </Text>
           <IconChevronDown size={12} stroke={1.5} />
@@ -170,12 +115,13 @@ export default function Header({ tabs }: HeaderProps) {
           z-index: 100;
         `}
       >
+        {/* TODO: v7 is https://mantine.dev/core/app-shell/ */}
         <MantineHeader height={HEADER_HEIGHT} px="md" sx={{ height: '100%' }} className={classes.header}>
           <Group
-            position="apart"
             m={6}
             css={css`
               align-self: center;
+              position: apart;
             `}
           >
             <a href="/">
@@ -198,7 +144,7 @@ export default function Header({ tabs }: HeaderProps) {
                   }
                 `}
               >
-                <Menu.Item onClick={() => setNotify(true)} icon={<IconHeart size={20} />}>
+                <Menu.Item onClick={() => setNotify(true)} leftSection={<IconHeart size={20} />}>
                   <Text fz="s">Test notification</Text>
                 </Menu.Item>
                 <Menu.Divider />
@@ -210,7 +156,7 @@ export default function Header({ tabs }: HeaderProps) {
                       href: CONFIG.AUTH_SERVER_UI_PROFILE,
                     }).click()
                   }
-                  icon={<FontAwesomeIcon icon={faUser} size="xl" />}
+                  leftSection={<FontAwesomeIcon icon={faUser} size="xl" />}
                 >
                   <Text fz="s">Profile</Text>
                 </Menu.Item>
@@ -218,9 +164,9 @@ export default function Header({ tabs }: HeaderProps) {
                 <ThemeSwitcher />
                 <Menu.Divider />
                 <Menu.Label>Settings</Menu.Label>
-                <Menu.Item icon={<IconSettings size={14} stroke={1.5} />}>Account settings</Menu.Item>
+                <Menu.Item leftSection={<IconSettings size={14} stroke={1.5} />}>Account settings</Menu.Item>
                 <Menu.Divider />
-                <Menu.Item icon={<IconLogout size={14} stroke={1.5} />} onClick={onLogout}>
+                <Menu.Item leftSection={<IconLogout size={14} stroke={1.5} />} onClick={onLogout}>
                   Logout
                 </Menu.Item>
               </Menu.Dropdown>
@@ -232,7 +178,7 @@ export default function Header({ tabs }: HeaderProps) {
               variant="outline"
               classNames={{
                 root: classes.tabs,
-                tabsList: classes.tabsList,
+                tabSection: classes.tabsList,
                 tab: classes.tab,
               }}
             >

@@ -1,48 +1,15 @@
-import { createStyles, Container, Group, ActionIcon, Image, Text, Tooltip, Avatar } from '@mantine/core'
+import { Container, Group, ActionIcon, Image, Text, Tooltip, Avatar } from '@mantine/core'
 import { IconBrandTwitter, IconBrandYoutube, IconBrandInstagram, IconBrandTwitch } from '@tabler/icons'
 import { Dropdown } from 'src/components/design-system/Dropdown/Dropdown'
 import CONFIG from 'src/config'
-
-export const FOOTER_HEIGHT = 55
-
-const useStyles = createStyles((theme) => ({
-  footer: {
-    borderTop: `1px solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[2]}`,
-    backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.white,
-    position: 'fixed',
-    bottom: 0,
-    left: 0,
-    width: '100%',
-    zIndex: 999,
-  },
-
-  inner: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    minWidth: '95vw',
-    minHeight: FOOTER_HEIGHT,
-
-    [theme.fn.smallerThan('xs')]: {
-      flexDirection: 'column',
-    },
-  },
-
-  links: {
-    [theme.fn.smallerThan('xs')]: {
-      marginTop: theme.spacing.md,
-    },
-  },
-}))
+import classes from './Footer.module.css'
 
 export default function Footer() {
-  const { classes } = useStyles()
-
   return (
     <div className={classes.footer}>
       <Container className={classes.inner}>
         <Text fz="xs">
-          <Group position="left" noWrap>
+          <Group align="left">
             <p>Copyright © {new Date().getFullYear()}</p>
             <p>Build version: {CONFIG.BUILD_VERSION ?? 'DEVELOPMENT'}</p>
           </Group>
@@ -62,7 +29,7 @@ export default function Footer() {
             user 2
           </Dropdown.Item>
         </Dropdown>
-        <Group spacing={0} className={classes.links} position="right" noWrap>
+        <Group gap={0} className={classes.links} align="right">
           <Tooltip label={`Follow us on Twitter`}>
             <ActionIcon size="lg">
               <a href="#" target="_blank" rel="noopener noreferrer">

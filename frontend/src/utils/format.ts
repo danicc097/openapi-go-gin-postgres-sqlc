@@ -33,7 +33,7 @@ export const getStringPixelLength = (str: string) => {
   span.style.visibility = 'hidden'
   span.style.fontFamily = 'sans-serif'
   span.style.position = 'absolute'
-  span.style.whiteSpace = 'nowrap'
+  span.style.whiteSpace = ''
   span.style.fontSize = '12px'
   span.textContent = str
   document.body.appendChild(span)

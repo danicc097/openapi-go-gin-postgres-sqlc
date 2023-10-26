@@ -39,7 +39,7 @@ import {
   Tooltip,
   Divider,
 } from '@mantine/core'
-import { Prism } from '@mantine/prism'
+import { CodeHighlight } from '@mantine/code-highlight'
 import { notifications } from '@mantine/notifications'
 import { IconCheck } from '@tabler/icons'
 import RoleBadge from 'src/components/Badges/RoleBadge'
@@ -100,7 +100,7 @@ const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
   ({ value, user, ...others }: SelectUserItemProps, ref) => {
     return (
       <div ref={ref} {...others}>
-        <Group noWrap spacing="lg" align="center">
+        <Group spacing="lg" align="center">
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
               {nameInitials(user.fullName || '')}
@@ -323,7 +323,7 @@ export default function UserPermissionsPage() {
       <Modal
         opened={isModalVisible}
         title={
-          <Text weight={'bold'} size={18}>
+          <Text fw={'bold'} size={18}>
             Update auth information
           </Text>
         }
@@ -367,7 +367,7 @@ function FormData() {
 
   form.watch()
 
-  return <Prism language="json">{JSON.stringify(form.getValues(), null, 4)}</Prism>
+  return <CodeHighlight language="json">{JSON.stringify(form.getValues(), null, 4)}</CodeHighlight>
 }
 
 interface CheckboxPanelProps {

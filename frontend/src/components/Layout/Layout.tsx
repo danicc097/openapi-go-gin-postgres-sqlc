@@ -5,27 +5,11 @@ import { Helmet } from 'react-helmet'
 import { css } from '@emotion/react'
 import { Fragment } from 'react'
 import shallow from 'zustand/shallow'
-import Footer, { FOOTER_HEIGHT } from 'src/components/Footer'
-import { Drawer, Flex, createStyles, useMantineTheme } from '@mantine/core'
+import Footer from 'src/components/Footer'
+import { Drawer, Flex, useMantineTheme } from '@mantine/core'
 import Header, { HEADER_HEIGHT } from 'src/components/Header'
 import { useUISlice } from 'src/slices/ui'
-
-const useStyles = createStyles((theme) => ({
-  sidebar: {
-    [theme.fn.smallerThan('xs')]: {},
-  },
-
-  drawer: {
-    /* margin-top: ${HEADER_HEIGHT}px; */
-    height: ' 100%',
-    minWidth: '100%',
-    zIndex: 10000,
-
-    [theme.fn.largerThan('md')]: {
-      minWidth: '40%',
-    },
-  },
-}))
+import classes from './Layout.module.css'
 
 type LayoutProps = {
   children: React.ReactElement

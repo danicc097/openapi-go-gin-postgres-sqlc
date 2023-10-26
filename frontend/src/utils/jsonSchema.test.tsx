@@ -289,7 +289,7 @@ describe('form generation', () => {
                 optionTransformer(el) {
                   return (
                     <>
-                      <Group noWrap spacing="lg" align="center">
+                      <Group spacing="lg" align="center">
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
                             {nameInitials(el?.fullName || '')}
@@ -314,7 +314,7 @@ describe('form generation', () => {
                 values: tags,
                 optionTransformer(el) {
                   return (
-                    <Group noWrap spacing="lg" align="center">
+                    <Group spacing="lg" align="center">
                       <Flex align={'center'}></Flex>
                       <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
                     </Group>

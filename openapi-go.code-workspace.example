@@ -8,6 +8,13 @@
     }
   ],
   "settings": {
+    "cssVariables.lookupFiles": [
+      "**/*.css",
+      "**/*.scss",
+      "**/*.sass",
+      "**/*.less",
+      "frontend/node_modules/@mantine/core/esm/index.css",
+    ],
     "yaml.schemas": {
       "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
       // NOTE: ensure no other extensions override yaml.schemas

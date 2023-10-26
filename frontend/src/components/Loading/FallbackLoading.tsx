@@ -4,10 +4,10 @@ import cloudsLight from 'src/assets/logo/two-black-clouds.svg'
 import React from 'react'
 import { RouteLoading } from './FallbackLoading.styles'
 import { useUISlice } from 'src/slices/ui'
-import { useMantineTheme } from '@mantine/styles'
+import { useMantineColorScheme, useMantineTheme } from '@mantine/core'
 
 export default function FallbackLoading() {
-  const { colorScheme } = useMantineTheme()
+  const { colorScheme } = useMantineColorScheme()
 
   return (
     <RouteLoading>

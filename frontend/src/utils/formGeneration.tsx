@@ -27,10 +27,11 @@ import {
   type MultiSelectValueProps,
   CloseButton,
 } from '@mantine/core'
+import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { useFocusWithin } from '@mantine/hooks'
-import { Prism } from '@mantine/prism'
-import { rem, useMantineTheme } from '@mantine/styles'
+import { CodeHighlight } from '@mantine/code-highlight'
+import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
 import _, { lowerFirst, memoize } from 'lodash'
@@ -650,7 +651,7 @@ function FormData() {
       <Accordion.Item value="form">
         <Accordion.Control>{`See form`}</Accordion.Control>
         <Accordion.Panel>
-          <Prism language="json">{JSON.stringify(myFormData, null, 2)}</Prism>
+          <CodeHighlight language="json">{JSON.stringify(myFormData, null, 2)}</CodeHighlight>
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
@@ -1048,7 +1049,7 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
 
   return (
     <div>
-      {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
+      {/* {<CodeHighlight language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</CodeHighlight>} */}
       <Flex direction="row" align="center">
         {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
         {options.selectOptions?.[schemaKey]?.type !== 'multiselect' && (

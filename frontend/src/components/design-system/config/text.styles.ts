@@ -1,4 +1,4 @@
-import { createStyles, type MantineTheme } from '@mantine/core'
+import { type MantineTheme } from '@mantine/core'
 import { colors } from './colors'
 
 export default createStyles((theme: MantineTheme) => {
