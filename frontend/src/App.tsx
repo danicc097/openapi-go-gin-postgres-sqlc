@@ -38,9 +38,8 @@ import DynamicForm, {
   type SelectOptions,
   type DynamicFormOptions,
 } from 'src/utils/formGeneration'
-import type { DbWorkItemTag, RestDemoWorkItemCreateRequest, User, WorkItemRole } from 'src/gen/model'
+import type { DbWorkItemTag, User, WorkItemRole } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
-import { RestDemoWorkItemCreateRequestDecoder } from 'src/client-validator/gen/decoders'
 import { validateField } from 'src/utils/validation'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
@@ -272,8 +271,6 @@ const userIdOptionTransformer = (el: User) => {
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
 export default function App() {
-  const theme = useMantineTheme()
-
   useEffect(() => {
     document.body.style.background = 'none !important'
   }, [])
@@ -458,7 +455,7 @@ export default function App() {
                                   title: (
                                     <Flex align="center" gap={10}>
                                       <IconTag size={16} />
-                                      <Text fw={700} size={'md'} color={theme.primaryColor}>
+                                      <Text fw={700} size={'md'}>
                                         Items
                                       </Text>
                                     </Flex>

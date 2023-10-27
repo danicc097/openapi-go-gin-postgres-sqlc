@@ -1,6 +1,6 @@
 import _, { capitalize, random } from 'lodash'
 import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
-import type { RestDemoWorkItemCreateRequest, Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
+import type { Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 import SCOPES from 'src/scopes'
@@ -10,7 +10,7 @@ import PageTemplate from 'src/components/PageTemplate'
 import type { ValidationErrors } from 'src/client-validator/validate'
 import { updateUserAuthorization, useUpdateUserAuthorization } from 'src/gen/user/user'
 import { validateField } from 'src/utils/validation'
-import { RestDemoWorkItemCreateRequestDecoder, UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
+import { UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
 import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
@@ -26,7 +26,6 @@ import {
   Text,
   Title,
   Select,
-  type SelectItem,
   Group,
   Modal,
   Checkbox,
@@ -35,9 +34,9 @@ import {
   Box,
   type DefaultMantineColor,
   Grid,
-  type MultiSelectValueProps,
   Tooltip,
   Divider,
+  ComboboxItem,
 } from '@mantine/core'
 import { CodeHighlight } from '@mantine/code-highlight'
 import { notifications } from '@mantine/notifications'
@@ -56,7 +55,7 @@ import type { components, schemas } from 'src/types/schema'
 import { FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form'
 import { nameInitials } from 'src/utils/strings'
 import type { AppError } from 'src/types/ui'
-
+import classes from './UserPermissionsPage.module.css'
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
 const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean> = {}
@@ -100,7 +99,7 @@ const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
   ({ value, user, ...others }: SelectUserItemProps, ref) => {
     return (
       <div ref={ref} {...others}>
-        <Group spacing="lg" align="center">
+        <Group align="center">
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
               {nameInitials(user.fullName || '')}
@@ -240,7 +239,7 @@ export default function UserPermissionsPage() {
     showModal()
   }
 
-  const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.RestDemoWorkItemCreateRequest)
+  const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.DemoWorkItemCreateRequest)
 
   const registerProps = form.register('role')
 
@@ -257,15 +256,19 @@ export default function UserPermissionsPage() {
       <Space pt={12} />
       <form onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}>
         <Flex direction="column">
+          {/* TODO: in v7: https://mantine.dev/combobox/?e=SelectOptionComponent */}
           <Select
             label="Select user to update"
-            itemComponent={SelectUserItem}
+            value={SelectUserItem}
             data-test-subj="updateUserAuthForm__selectable"
             searchable
-            filter={(value, item) =>
-              item.label?.toLowerCase().includes(value.toLowerCase().trim()) ||
-              item.description?.toLowerCase().includes(value.toLowerCase().trim())
-            }
+            filter={({ options, search }) => {
+              const splittedSearch = search.toLowerCase().trim().split(' ')
+              return (options as ComboboxItem[]).filter((option) => {
+                const words = option.label.toLowerCase().trim().split(' ')
+                return splittedSearch.every((searchWord) => words.some((word) => word.includes(searchWord)))
+              })
+            }}
             data={userOptions ?? []}
             onChange={onEmailSelectableChange}
           />
@@ -367,7 +370,7 @@ function FormData() {
 
   form.watch()
 
-  return <CodeHighlight language="json">{JSON.stringify(form.getValues(), null, 4)}</CodeHighlight>
+  return <CodeHighlight language="json" code={JSON.stringify(form.getValues(), null, 4)}></CodeHighlight>
 }
 
 interface CheckboxPanelProps {
@@ -408,14 +411,7 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
   useWatch({ name: 'scopes', control: form.control })
 
   return (
-    <Box
-      mb={12}
-      sx={(theme) => ({
-        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
-        borderRadius: theme.radius.md,
-        padding: '4px 16px',
-      })}
-    >
+    <Box className={classes.box}>
       <Title size={15} mt={4} mb={8}>
         {title}
       </Title>
@@ -427,7 +423,7 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
         return (
           <div key={key}>
             <Tooltip
-              label={<Text size={12}>{`${message}`}</Text>}
+              label={<Text size={'sm'}>{`${message}`}</Text>}
               position="left"
               withArrow
               disabled={allowed}
@@ -458,7 +454,7 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
                   </Flex>
                 </Grid.Col>
                 <Grid.Col span="auto">
-                  <Text size={14}>{scope.description}</Text>
+                  <Text size={'md'}>{scope.description}</Text>
                 </Grid.Col>
               </Grid>
             </Tooltip>

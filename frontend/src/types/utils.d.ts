@@ -54,7 +54,7 @@ export type GetKeys<T> = T extends StopTypes
  * Access underlying types by dot notation path.
 
  * @example
-    type RestDemoWorkItemCreateRequest = {
+    type DemoWorkItemCreateRequest = {
         base: {
           nested: {
             kanbanStepID: number
@@ -62,7 +62,7 @@ export type GetKeys<T> = T extends StopTypes
         }
       }
 
-    PathType<RestDemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
+    PathType<DemoWorkItemCreateRequest, 'base.nested.kanbanStepID'> // number
  */
 type PathType<T, Path extends GetKeys<T>> = Path extends keyof T
   ? T[Path]

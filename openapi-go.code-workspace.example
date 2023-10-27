@@ -9,10 +9,7 @@
   ],
   "settings": {
     "cssVariables.lookupFiles": [
-      "**/*.css",
-      "**/*.scss",
-      "**/*.sass",
-      "**/*.less",
+      "frontend/src/**/*.css",
       "frontend/node_modules/@mantine/core/esm/index.css",
     ],
     "yaml.schemas": {

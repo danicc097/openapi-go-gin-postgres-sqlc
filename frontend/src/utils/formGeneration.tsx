@@ -24,8 +24,9 @@ import {
   Input,
   Code,
   MultiSelect,
-  type MultiSelectValueProps,
   CloseButton,
+  useMantineColorScheme,
+  getThemeColor,
 } from '@mantine/core'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
@@ -64,7 +65,7 @@ import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
 import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
-import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
+import type { DemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
 import type {
   DeepPartial,
@@ -129,28 +130,24 @@ const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
     )
   })
 
+interface MultiSelectValueProps extends React.ComponentPropsWithoutRef<'div'> {
+  value: string
+  onRemove?(): void
+}
+
 const valueComponentTemplate =
   (transformer: (...args: any[]) => JSX.Element, colorFn?: (...args: any[]) => string) =>
-  ({ value, option, onRemove, classNames, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
+  ({ value, option, onRemove, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
     let color
     if (colorFn) {
       color = colorFn(option)
     }
     return (
       <div {...others}>
-        <Box
-          sx={(theme) => ({
-            display: 'flex',
-            cursor: 'default',
-            alignItems: 'center',
-            backgroundColor: color || (theme.colorScheme === 'dark' ? theme.colors.dark?.[7] : theme.white),
-            border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark?.[7] : theme.colors.gray?.[4]}`,
-            paddingLeft: theme.spacing.xs,
-            borderRadius: theme.radius.sm,
-          })}
-        >
+        <Box className={classes['value-component-outer-box']}>
           <Box
-            sx={{ lineHeight: 1, fontSize: rem(12), color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black' }}
+            className={classes['value-component-inner-box']}
+            color={getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'}
           >
             {transformer(option)}
           </Box>
@@ -514,6 +511,7 @@ function ArrayOfObjectsChildren({
   const form = useFormContext()
   // form.watch(formField, fieldArray.fields) // inf rerendering
   const theme = useMantineTheme()
+  const { colorScheme } = useMantineColorScheme()
   const itemName = singularize(options.labels[schemaKey] || '')
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
@@ -533,7 +531,9 @@ function ArrayOfObjectsChildren({
           mb={12}
           withBorder
           radius={cardRadius}
-          bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
+          css={css`
+            background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
+          `}
         >
           <Flex justify={'end'}>
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
@@ -620,10 +620,10 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
     <Card
       radius={cardRadius}
       p={6}
-      bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
       withBorder
       css={css`
         width: 100%;
+        background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
       `}
     >
       <Flex
@@ -651,7 +651,7 @@ function FormData() {
       <Accordion.Item value="form">
         <Accordion.Control>{`See form`}</Accordion.Control>
         <Accordion.Panel>
-          <CodeHighlight language="json">{JSON.stringify(myFormData, null, 2)}</CodeHighlight>
+          <CodeHighlight language="json" code={JSON.stringify(myFormData, null, 2)}></CodeHighlight>
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
@@ -776,7 +776,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             <Select
               onBlur={(e) => setIsSelectVisible(false)}
               withinPortal
-              initiallyOpened={option !== undefined}
+              initiallyopened={option !== undefined}
               itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
               searchable
               // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
@@ -834,7 +834,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                     font-size: ${theme.fontSizes.sm};
 
                     :focus {
-                      border-color: ${theme.colors.blue[8]} !important;
+                      border-color: var(--mantine-color-blue-8) !important;
                     }
                   `}
                   onKeyUp={(e) => {
@@ -871,11 +871,11 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
           el = (
             <MultiSelect
               styles={{
-                input: {
-                  backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
-                },
+                input: 'background: light-dark(white, var(--mantine-color-dark-7));',
               }}
               withinPortal
+              // TODO: in v7: see https://mantine.dev/combobox/?e=MultiSelectValueRenderer
+              // see examples with `custom value` https://mantine.dev/combobox/
               itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
               valueComponent={valueComponentTemplate(
                 selectOptions.labelTransformer ? selectOptions.labelTransformer : selectOptions.optionTransformer,
@@ -1020,7 +1020,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
         }}
         // variant="filled"
         css={css`
-          background-color: ${theme.colorScheme === 'dark' ? '#7c1a1a' : '#b03434'};
+          background-color: light-dark(#7c1a1a, #b03434);
           color: white;
           :hover {
             background-color: gray;
@@ -1049,14 +1049,13 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
 
   return (
     <div>
-      {/* {<CodeHighlight language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</CodeHighlight>} */}
       <Flex direction="row" align="center">
         {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
         {options.selectOptions?.[schemaKey]?.type !== 'multiselect' && (
           <Button
             size="xs"
             p={4}
-            leftIcon={<IconPlus size="1rem" />}
+            leftSection={<IconPlus size="1rem" />}
             onClick={() => {
               const initialValue = initialValueByType(schemaFields[schemaKey]?.type)
               const vals = form.getValues(formField) || []

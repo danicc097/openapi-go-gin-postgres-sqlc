@@ -1,7 +1,14 @@
-.button {
-  color: red;
+.value-component-outer-box {
+  display: flex;
+  cursor: default;
+  align-items: center;
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  border: 1rem solid light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-7));
+  padding-left: var(--mantine-spacing-xs);
+  border-radius: var(--mantine-radius-sm);
 }
 
-.text {
-  color: blue;
+.value-component-inner-box {
+  line-height: 1;
+  font-size: 12rem;
 }

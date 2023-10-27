@@ -1,3 +1,35 @@
+:root {
+  --footer-height: 55px;
+  --header-height: 60px;
+}
+
+.footer {
+  border-top: 1px solid var(--mantine-shadow-sm);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+}
+
+.inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 95vw;
+  min-height: var(--footer-height);
+
+  @media (max-width: var(--mantine-breakpoint-sm)) {
+    flex-direction: column;
+  }
+}
+
+.links {
+  @media (max-width: var(--mantine-breakpoint-sm)) {
+    margin-top: var(--mantine-spacing-md);
+  }
+}
+
 .sidebar {
   @media (max-width: var(--mantine-breakpoint-xs)) {
     /* Styles for smaller than xs breakpoint */
@@ -12,5 +44,64 @@
 
   @media (min-width: var(--mantine-breakpoint-md)) {
     min-width: 40%;
+  }
+}
+
+.header {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-2), 'transparent');
+  padding: 30px;
+  display: grid;
+  align-content: center;
+}
+
+.user {
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
+  padding: var(--mantine-spacing-xs) px var(--mantine-spacing-sm) px;
+  border-radius: var(--mantine-radius-sm);
+  transition: background-color 100ms ease;
+}
+
+.user:hover {
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-8));
+}
+
+@media (max-width: var(--mantine-breakpoint-sm)) {
+  .display-name {
+    display: none;
+  }
+}
+
+.user-active {
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-8));
+}
+
+.tabs {
+  @media (max-width: var(--mantine-breakpoint-sm)) {
+    display: none;
+  }
+}
+
+.burger {
+  @media (min-width: 1200px) {
+    display: none;
+  }
+}
+
+.tabsList {
+  border-bottom: 0 !important;
+}
+
+.tab {
+  font-weight: 500;
+  height: 38px;
+  background-color: transparent;
+
+  :hover {
+    background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+  }
+
+  [data-active] {
+    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
   }
 }
