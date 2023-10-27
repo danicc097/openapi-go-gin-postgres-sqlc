@@ -16,3 +16,16 @@
 .child-card {
   background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
 }
+
+.array-child-card {
+  width: 100%;
+  background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
+}
+
+.remove-button {
+  background-color: light-dark(#7c1a1a, #b03434);
+  color: white;
+  :hover {
+    background-color: gray;
+  }
+}

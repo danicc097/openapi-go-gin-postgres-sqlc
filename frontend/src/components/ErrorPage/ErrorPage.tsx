@@ -28,14 +28,7 @@ export function ErrorPage({ status }: ErrorPageProps) {
   }
 
   return (
-    <Container
-      className={classes.root}
-      miw={'100vw'}
-      css={css`
-        min-height: calc(100vh - var(--footer-height) - var(--header-height));
-        background: light-dark(--mantine-color-white, --mantine-color-dark-7);
-      `}
-    >
+    <Container className={classes.root} miw={'100vw'}>
       <div className={classes.label}>{status}</div>
       <Title className={classes.title}>You have found a secret place.</Title>
       <Text color="dimmed" size="lg" ta="center" className={classes.description}>

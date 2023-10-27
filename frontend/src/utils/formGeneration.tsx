@@ -605,15 +605,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
   if (children.length === 0) return null
 
   return (
-    <Card
-      radius={cardRadius}
-      p={6}
-      withBorder
-      css={css`
-        width: 100%;
-        background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
-      `}
-    >
+    <Card radius={cardRadius} p={6} withBorder className={classes['array-child-card']}>
       <Flex
         gap={6}
         align="center"
@@ -1065,13 +1057,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
           form.setValue(formField, listItems as any)
         }}
         // variant="filled"
-        css={css`
-          background-color: light-dark(#7c1a1a, #b03434);
-          color: white;
-          :hover {
-            background-color: gray;
-          }
-        `}
+        className={classes['remove-button']}
         size="sm"
         id={`${formName}-${formField}-remove-button-${index}`}
       >

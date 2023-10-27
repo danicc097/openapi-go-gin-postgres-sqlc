@@ -124,6 +124,7 @@ export default function Layout({ children }: LayoutProps) {
         <link rel="canonical" href="#" />
       </Helmet>
       <AppShell
+        className={classes['app-shell']}
         header={{ height: 60 }}
         footer={{ height: 60 }}
         navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
