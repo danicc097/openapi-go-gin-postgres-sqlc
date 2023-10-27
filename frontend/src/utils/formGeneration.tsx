@@ -27,6 +27,9 @@ import {
   CloseButton,
   useMantineColorScheme,
   getThemeColor,
+  Combobox,
+  useCombobox,
+  InputBase,
 } from '@mantine/core'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
@@ -121,14 +124,9 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
   component,
 })
 
-const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
-  forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
-    return (
-      <Box ref={ref} {...others} m={2}>
-        {transformer(option)}
-      </Box>
-    )
-  })
+const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element, option) => {
+  return <Box m={2}>{transformer(option)}</Box>
+}
 
 interface MultiSelectValueProps extends React.ComponentPropsWithoutRef<'div'> {
   value: string
@@ -303,22 +301,20 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
 
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
-      <PageTemplate minWidth={800}>
-        <>
-          <FormData />
-          <ErrorCallout title="Custom error title" errors={extractCalloutErrors()} />
-          <form
-            onSubmit={onSubmit}
-            css={css`
-              min-width: 100%;
-            `}
-            data-testid={formName}
-          >
-            <Button type="submit">Submit</Button>
-            <GeneratedInputs />
-          </form>
-        </>
-      </PageTemplate>
+      <>
+        <FormData />
+        <ErrorCallout title="Custom error title" errors={extractCalloutErrors()} />
+        <form
+          onSubmit={onSubmit}
+          css={css`
+            min-width: 100%;
+          `}
+          data-testid={formName}
+        >
+          <Button type="submit">Submit</Button>
+          <GeneratedInputs />
+        </form>
+      </>
     </DynamicFormProvider>
   )
 }
@@ -526,15 +522,7 @@ function ArrayOfObjectsChildren({
           min-width: 100%;
         `}
       >
-        <Card
-          mt={12}
-          mb={12}
-          withBorder
-          radius={cardRadius}
-          css={css`
-            background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
-          `}
-        >
+        <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes['child-card']}>
           <Flex justify={'end'}>
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
@@ -740,6 +728,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   const { ref: focusRef, focused: selectFocused } = useFocusWithin()
 
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  })
+
   useEffect(() => {
     if (isSelectVisible) {
       setCustomElMinHeight(selectRef.current?.clientHeight ?? 34.5)
@@ -767,36 +759,26 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     switch (selectOptions.type) {
       case 'select':
         {
-          const option = selectOptions.values.find((option) => {
+          const selectedOption = selectOptions.values.find((option) => {
             return selectOptions.formValueTransformer(option) === form.getValues(formField)
+          })
+
+          const options = selectOptions.values.map((option) => {
+            const value = String(selectOptions.formValueTransformer(option))
+
+            return (
+              <Combobox.Option value={value} key={value}>
+                {itemComponentTemplate(selectOptions.optionTransformer, option)}
+              </Combobox.Option>
+            )
           })
 
           // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
           el = (
-            <Select
-              onBlur={(e) => setIsSelectVisible(false)}
-              withinPortal
-              initiallyopened={option !== undefined}
-              itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
-              searchable
-              // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
-              // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-              // else we need to forcefully use current label/value
-              filter={(option, item) => {
-                if (option !== '') {
-                  return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-                }
-
-                return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-              }}
-              // IMPORTANT: Select value should always be either string or null as per doc
-              // (and implicitly label must be equal to value else all is broken unlike with multiselect)
-              data={selectOptions.values.map((option) => ({
-                label: String(selectOptions.formValueTransformer(option)),
-                value: String(selectOptions.formValueTransformer(option)),
-                option,
-              }))}
-              onChange={async (value) => {
+            <Combobox
+              store={combobox}
+              withinPortal={false}
+              onOptionSubmit={async (value) => {
                 const option = selectOptions.values.find(
                   (option) => String(selectOptions.formValueTransformer(option)) === value,
                 )
@@ -809,18 +791,80 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                   },
                 })
                 setIsSelectVisible(false)
+                combobox.closeDropdown()
               }}
-              value={String(form.getValues(formField))}
-              {..._props}
-              ref={(el) => {
-                selectRef.current = el
-                focusRef.current = el
-              }}
-              placeholder={`Select ${lowerFirst(itemName)}`}
-            />
+            >
+              <Combobox.Target>
+                <InputBase
+                  component="button"
+                  type="button"
+                  pointer
+                  rightSection={<Combobox.Chevron />}
+                  onClick={() => combobox.toggleDropdown()}
+                  rightSectionPointerEvents="none"
+                  multiline
+                >
+                  {selectedOption ? (
+                    itemComponentTemplate(selectOptions.optionTransformer, selectedOption)
+                  ) : (
+                    <Input.Placeholder>Pick value</Input.Placeholder>
+                  )}
+                </InputBase>
+              </Combobox.Target>
+
+              <Combobox.Dropdown>
+                <Combobox.Options>{options}</Combobox.Options>
+              </Combobox.Dropdown>
+            </Combobox>
+
+            // <Select
+            //   onBlur={(e) => setIsSelectVisible(false)}
+            //   withinPortal
+            //   initiallyopened={selectedOption !== undefined}
+            //   searchable
+            //   // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
+            //   // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
+            //   // else we need to forcefully use current label/value
+            //   filter={(input) => {
+            //     if (selectedOption !== '') {
+            //       return JSON.stringify(item.option).toLowerCase().includes(selectedOption.toLowerCase().trim())
+            //     }
+
+            //     return JSON.stringify(item.option).toLowerCase().includes(selectedOption.toLowerCase().trim())
+            //   }}
+            //   // IMPORTANT: Select value should always be either string or null as per doc
+            //   // (and implicitly label must be equal to value else all is broken unlike with multiselect)
+            //   data={selectOptions.values.map((option) => ({
+            //     label: String(selectOptions.formValueTransformer(option)),
+            //     value: String(selectOptions.formValueTransformer(option)),
+            //     option,
+            //   }))}
+            //   onChange={async (value) => {
+            //     const option = selectOptions.values.find(
+            //       (option) => String(selectOptions.formValueTransformer(option)) === value,
+            //     )
+            //     console.log({ onChangeOption: option })
+            //     if (!option) return
+            //     await registerOnChange({
+            //       target: {
+            //         name: formField,
+            //         value: selectOptions.formValueTransformer(option),
+            //       },
+            //     })
+            //     setIsSelectVisible(false)
+            //   }}
+            //   value={String(form.getValues(formField))}
+            //   {..._props}
+            //   ref={(el) => {
+            //     selectRef.current = el
+            //     focusRef.current = el
+            //   }}
+            //   placeholder={`Select ${lowerFirst(itemName)}`}
+            // />
           )
 
-          if (!isSelectVisible && option !== undefined) {
+          // TODO: maybe with v7 this hack isn't needed
+          if (!isSelectVisible && selectedOption !== undefined) {
             const { ref, ...customSelectProps } = _props
             customEl = (
               <Input.Wrapper {...customSelectProps} pt={0} pb={0}>
@@ -852,8 +896,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                   }}
                 >
                   {selectOptions.labelTransformer
-                    ? selectOptions.labelTransformer(option)
-                    : selectOptions.optionTransformer(option)}
+                    ? selectOptions.labelTransformer(selectedOption)
+                    : selectOptions.optionTransformer(selectedOption)}
                 </Card>
               </Input.Wrapper>
             )
@@ -861,6 +905,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         }
         break
       case 'multiselect':
+        break
+        // TODO:
         {
           const data = selectOptions.values.map((option) => ({
             label: selectOptions.formValueTransformer(option),
@@ -876,7 +922,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               withinPortal
               // TODO: in v7: see https://mantine.dev/combobox/?e=MultiSelectValueRenderer
               // see examples with `custom value` https://mantine.dev/combobox/
-              itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
+              // itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
               valueComponent={valueComponentTemplate(
                 selectOptions.labelTransformer ? selectOptions.labelTransformer : selectOptions.optionTransformer,
                 selectOptions.labelColor,

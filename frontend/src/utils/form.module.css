@@ -12,3 +12,7 @@
   line-height: 1;
   font-size: 12rem;
 }
+
+.child-card {
+  background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
+}

@@ -48,6 +48,7 @@ import cx from 'clsx'
 import LoginButton from 'src/components/LoginButton'
 import { useDisclosure } from '@mantine/hooks'
 import { ThemeSwitcher } from 'src/components/ThemeSwitcher'
+import TestMantineV7 from 'src/components/Layout/TestMantineV7'
 
 type LayoutProps = {
   children: React.ReactElement
@@ -126,7 +127,7 @@ export default function Layout({ children }: LayoutProps) {
         header={{ height: 60 }}
         footer={{ height: 60 }}
         navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
-        aside={{ width: 300, breakpoint: 'md', collapsed: { desktop: false, mobile: true } }}
+        // aside={{ width: 300, breakpoint: 'md', collapsed: { desktop: false, mobile: true } }}
         padding="md"
       >
         <AppShell.Header>
@@ -207,8 +208,11 @@ export default function Layout({ children }: LayoutProps) {
               <Skeleton key={index} h={28} mt="sm" animate={false} />
             ))}
         </AppShell.Navbar>
-        <AppShell.Main>{children}</AppShell.Main>
-        <AppShell.Aside p="md">Aside</AppShell.Aside>
+        <AppShell.Main>
+          {/* <TestMantineV7 /> */}
+          {children}
+        </AppShell.Main>
+        {/* <AppShell.Aside p="md">Aside</AppShell.Aside> */}
         <AppShell.Footer p="md">
           <div className={classes.footer}>
             <Container className={classes.inner}>

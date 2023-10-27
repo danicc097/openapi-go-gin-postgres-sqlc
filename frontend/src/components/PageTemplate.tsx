@@ -12,14 +12,7 @@ const PageTemplate = ({ children, minWidth }: PageTemplateProps) => {
 
   return (
     <Container size="sm" style={{ paddingTop: '2rem', paddingBottom: '2rem', minWidth }}>
-      <Paper
-        css={css`
-          background-color: ${theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0]};
-        `}
-        p="md"
-        shadow="lg"
-        c={theme.primaryColor}
-      >
+      <Paper p="md" shadow="lg" c={theme.primaryColor}>
         {children}
       </Paper>
     </Container>
