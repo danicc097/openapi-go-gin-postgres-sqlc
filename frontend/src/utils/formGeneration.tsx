@@ -767,47 +767,54 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
           // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
           el = (
-            <Combobox
-              store={combobox}
-              withinPortal={false}
-              onOptionSubmit={async (value) => {
-                const option = selectOptions.values.find(
-                  (option) => String(selectOptions.formValueTransformer(option)) === value,
-                )
-                console.log({ onChangeOption: option })
-                if (!option) return
-                await registerOnChange({
-                  target: {
-                    name: formField,
-                    value: selectOptions.formValueTransformer(option),
-                  },
-                })
-                setIsSelectVisible(false)
-                combobox.closeDropdown()
-              }}
+            <div
+              css={css`
+                min-width: 100%;
+              `}
             >
-              <Combobox.Target>
-                <InputBase
-                  component="button"
-                  type="button"
-                  pointer
-                  rightSection={<Combobox.Chevron />}
-                  onClick={() => combobox.toggleDropdown()}
-                  rightSectionPointerEvents="none"
-                  multiline
-                >
-                  {selectedOption ? (
-                    itemComponentTemplate(selectOptions.optionTransformer, selectedOption)
-                  ) : (
-                    <Input.Placeholder>Pick value</Input.Placeholder>
-                  )}
-                </InputBase>
-              </Combobox.Target>
+              <Combobox
+                store={combobox}
+                withinPortal={false}
+                onOptionSubmit={async (value) => {
+                  const option = selectOptions.values.find(
+                    (option) => String(selectOptions.formValueTransformer(option)) === value,
+                  )
+                  console.log({ onChangeOption: option })
+                  if (!option) return
+                  await registerOnChange({
+                    target: {
+                      name: formField,
+                      value: selectOptions.formValueTransformer(option),
+                    },
+                  })
+                  setIsSelectVisible(false)
+                  combobox.closeDropdown()
+                }}
+              >
+                <Combobox.Target>
+                  <InputBase
+                    className={classes['select']}
+                    component="button"
+                    type="button"
+                    pointer
+                    rightSection={<Combobox.Chevron />}
+                    onClick={() => combobox.toggleDropdown()}
+                    rightSectionPointerEvents="none"
+                    multiline
+                  >
+                    {selectedOption ? (
+                      itemComponentTemplate(selectOptions.optionTransformer, selectedOption)
+                    ) : (
+                      <Input.Placeholder>Pick value</Input.Placeholder>
+                    )}
+                  </InputBase>
+                </Combobox.Target>
 
-              <Combobox.Dropdown>
-                <Combobox.Options>{options}</Combobox.Options>
-              </Combobox.Dropdown>
-            </Combobox>
+                <Combobox.Dropdown>
+                  <Combobox.Options>{options}</Combobox.Options>
+                </Combobox.Dropdown>
+              </Combobox>
+            </div>
 
             // <Select
             //   onBlur={(e) => setIsSelectVisible(false)}
@@ -868,6 +875,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                     align-items: center;
                     justify-content: space-between;
                     font-size: ${theme.fontSizes.sm};
+                    place-content: center;
 
                     :focus {
                       border-color: var(--mantine-color-blue-8) !important;
