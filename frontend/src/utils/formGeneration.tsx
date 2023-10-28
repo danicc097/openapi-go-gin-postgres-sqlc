@@ -99,8 +99,14 @@ export type SelectOptions<Return, E = unknown> = {
    * It searches in the whole stringified object by default.
    */
   filterValueTransformer?: <V extends E>(el: V & E) => string
+  /**
+   * Overrides combobox option components.
+   */
   optionTransformer: <V extends E>(el: V & E) => JSX.Element
-  labelTransformer?: <V extends E>(el: V & E) => JSX.Element
+  /**
+   * Overrides combobox selected item pill components.
+   */
+  pillTransformer?: <V extends E>(el: V & E) => JSX.Element
   /**
    * Overrides default combobox item label color.
    */
@@ -119,13 +125,13 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   formValueTransformer,
   filterValueTransformer,
   optionTransformer,
-  labelTransformer,
+  pillTransformer,
   labelColor,
 }: SelectOptions<ReturnElement, V>): SelectOptions<ReturnElement, V> => ({
   type,
   values,
   optionTransformer,
-  labelTransformer,
+  pillTransformer,
   formValueTransformer,
   filterValueTransformer,
   labelColor,
@@ -729,7 +735,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
   const [search, setSearch] = useState('')
-  const [selectedMultiselectOptions, setSelectedMultiselectOptions] = useState<any[]>([])
 
   const { ref: focusRef, focused: selectFocused } = useFocusWithin()
 
@@ -791,9 +796,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               )
             })
 
-          console.log(selectOptions.values)
-
-          // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
           el = (
             <Box miw={'100%'}>
               <Combobox
@@ -854,8 +856,12 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         break
       case 'multiselect':
         {
+          const formValues = form.getValues(formField) || []
           const handleValueRemove = (val: string) =>
-            setSelectedMultiselectOptions((current) => current.filter((v) => v !== val))
+            form.setValue(
+              formField,
+              formValues.filter((v) => v !== val),
+            )
 
           const comboboxOptions = selectOptions.values
             .filter((item: any) =>
@@ -867,60 +873,78 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               const value = String(selectOptions.formValueTransformer(option))
 
               return (
-                <Combobox.Option value={value} key={value} active={selectedMultiselectOptions.includes(value)}>
-                  {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+                <Combobox.Option value={value} key={value} active={formValues.includes(value)}>
+                  <Group align="stretch" justify="space-between">
+                    {selectOptions.optionTransformer(option)}
+                    <CloseButton
+                      onMouseDown={() => handleValueRemove(selectOptions.formValueTransformer(option))}
+                      variant="transparent"
+                      color="gray"
+                      size={22}
+                      iconSize={14}
+                      tabIndex={-1}
+                    />
+                  </Group>
                 </Combobox.Option>
               )
             })
 
           el = (
-            <Combobox
-              store={combobox}
-              onOptionSubmit={(value, props) => {
-                console.log({ selectedMultiselectOptions, formValues: form.getValues(formField) })
-                setSelectedMultiselectOptions((current) => [...current, value])
-                const options = selectedMultiselectOptions.map((value) =>
-                  selectOptions.values.find((option) => value === selectOptions.formValueTransformer(option)),
-                )
-                //if (!option) return
-                registerOnChange({
-                  target: {
-                    name: formField,
-                    value: options.map((o) => selectOptions.formValueTransformer(o)),
-                  },
-                })
-              }}
-              withinPortal={false}
-            >
-              <Combobox.DropdownTarget>
-                <PillsInput pointer onClick={() => combobox.toggleDropdown()}>
-                  <Pill.Group>
-                    {selectedMultiselectOptions.length > 0 ? (
-                      comboboxOptions
-                    ) : (
-                      <Input.Placeholder>{`Pick one or more ${lowerFirst(itemName)}`}</Input.Placeholder>
-                    )}
+            <Box miw={'100%'}>
+              <Combobox
+                store={combobox}
+                onOptionSubmit={(value, props) => {
+                  const option = selectOptions.values.find(
+                    (option) => String(selectOptions.formValueTransformer(option)) === value,
+                  )
+                  //if (!option) return
+                  registerOnChange({
+                    target: {
+                      name: formField,
+                      value: [...formValues, selectOptions.formValueTransformer(option)],
+                    },
+                  })
+                  console.log({ current: formValues, value, formValues: form.getValues(formField) })
+                }}
+                withinPortal
+              >
+                <Combobox.DropdownTarget>
+                  <PillsInput pointer onClick={() => combobox.toggleDropdown()}>
+                    <Pill.Group>
+                      {formValues.length > 0 ? (
+                        formValues.map((formValue) => {
+                          const option = selectOptions.values.find(
+                            (option) => selectOptions.formValueTransformer(option) === formValue,
+                          )
+                          return selectOptions.pillTransformer
+                            ? selectOptions.pillTransformer(option)
+                            : selectOptions.optionTransformer(option)
+                        })
+                      ) : (
+                        <Input.Placeholder>{`Pick one or more ${pluralize(lowerFirst(itemName))}`}</Input.Placeholder>
+                      )}
 
-                    <Combobox.EventsTarget>
-                      <PillsInput.Field
-                        type="hidden"
-                        onBlur={() => combobox.closeDropdown()}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Backspace') {
-                            event.preventDefault()
-                            handleValueRemove(selectedMultiselectOptions[selectedMultiselectOptions.length - 1])
-                          }
-                        }}
-                      />
-                    </Combobox.EventsTarget>
-                  </Pill.Group>
-                </PillsInput>
-              </Combobox.DropdownTarget>
+                      <Combobox.EventsTarget>
+                        <PillsInput.Field
+                          type="hidden"
+                          onBlur={() => combobox.closeDropdown()}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Backspace') {
+                              event.preventDefault()
+                              form.setValue(formField, formValues[formValues.length - 1])
+                            }
+                          }}
+                        />
+                      </Combobox.EventsTarget>
+                    </Pill.Group>
+                  </PillsInput>
+                </Combobox.DropdownTarget>
 
-              <Combobox.Dropdown>
-                <Combobox.Options>{comboboxOptions}</Combobox.Options>
-              </Combobox.Dropdown>
-            </Combobox>
+                <Combobox.Dropdown>
+                  <Combobox.Options>{comboboxOptions}</Combobox.Options>
+                </Combobox.Dropdown>
+              </Combobox>
+            </Box>
           )
         }
 
@@ -942,7 +966,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               // see examples with `custom value` https://mantine.dev/combobox/
               // itemComponent={comboboxOptionTemplate(selectOptions.optionTransformer)}
               valueComponent={valueComponentTemplate(
-                selectOptions.labelTransformer ? selectOptions.labelTransformer : selectOptions.optionTransformer,
+                selectOptions.pillTransformer ? selectOptions.pillTransformer : selectOptions.optionTransformer,
                 selectOptions.labelColor,
               )}
               searchable

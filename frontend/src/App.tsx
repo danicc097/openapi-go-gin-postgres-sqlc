@@ -246,11 +246,11 @@ const members = [...Array(10)].map((x, i) => {
 
 const tags = [...Array(10)].map((x, i) => {
   const tag: DbWorkItemTag = {
-    name: `${i} tag`,
+    name: `tag #${i}`,
     color: `#${i}34236`,
     workItemTagID: i,
     projectID: 1,
-    description: 'description',
+    description: `description for tag #${i}`,
   } // TODO: get workitem tags endpoint
   return tag
 })
@@ -481,7 +481,7 @@ export default function App() {
                                   formValueTransformer(el) {
                                     return el.userID
                                   },
-                                  labelTransformer(el) {
+                                  pillTransformer(el) {
                                     return <>{el.email}</>
                                   },
                                   filterValueTransformer(el) {
@@ -502,8 +502,8 @@ export default function App() {
                                   formValueTransformer(el) {
                                     return el.workItemTagID
                                   },
-                                  labelTransformer(el) {
-                                    return <>{el.name} label</>
+                                  pillTransformer(el) {
+                                    return <div>{el.name}</div>
                                   },
                                   labelColor(el) {
                                     return el.color
@@ -518,7 +518,7 @@ export default function App() {
                                   formValueTransformer(el) {
                                     return el
                                   },
-                                  labelTransformer(el) {
+                                  pillTransformer(el) {
                                     return <WorkItemRoleBadge role={el} />
                                   },
                                 }),

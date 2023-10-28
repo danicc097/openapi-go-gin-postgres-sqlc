@@ -305,7 +305,7 @@ describe('form generation', () => {
                 formValueTransformer(el) {
                   return el.userID
                 },
-                labelTransformer(el) {
+                pillTransformer(el) {
                   return <>el.email</>
                 },
               }),
@@ -323,7 +323,7 @@ describe('form generation', () => {
                 formValueTransformer(el) {
                   return el.workItemTagID
                 },
-                labelTransformer(el) {
+                pillTransformer(el) {
                   return <>{el.name} label</>
                 },
               }),
