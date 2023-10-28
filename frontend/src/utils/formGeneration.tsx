@@ -30,6 +30,8 @@ import {
   Combobox,
   useCombobox,
   InputBase,
+  PillsInput,
+  Pill,
 } from '@mantine/core'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
@@ -727,6 +729,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
   const [search, setSearch] = useState('')
+  const [selectedMultiselectOptions, setSelectedMultiselectOptions] = useState<any[]>([])
 
   const { ref: focusRef, focused: selectFocused } = useFocusWithin()
 
@@ -772,8 +775,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             return selectOptions.formValueTransformer(option) === form.getValues(formField)
           })
 
-          console.log(selectOptions.values)
-          const options = selectOptions.values
+          const comboboxOptions = selectOptions.values
             .filter((item: any) =>
               JSON.stringify(selectOptions.filterValueTransformer ? selectOptions.filterValueTransformer(item) : item)
                 .toLowerCase()
@@ -788,6 +790,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 </Combobox.Option>
               )
             })
+
+          console.log(selectOptions.values)
 
           // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
           el = (
@@ -840,7 +844,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                     placeholder={`Search ${lowerFirst(itemName)}`}
                   />
                   <Combobox.Options>
-                    {options.length > 0 ? options : <Combobox.Empty>Nothing found</Combobox.Empty>}
+                    {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
                   </Combobox.Options>
                 </Combobox.Dropdown>
               </Combobox>
@@ -849,9 +853,79 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         }
         break
       case 'multiselect':
-        break
-        // TODO:
         {
+          const handleValueRemove = (val: string) =>
+            setSelectedMultiselectOptions((current) => current.filter((v) => v !== val))
+
+          const comboboxOptions = selectOptions.values
+            .filter((item: any) =>
+              JSON.stringify(selectOptions.filterValueTransformer ? selectOptions.filterValueTransformer(item) : item)
+                .toLowerCase()
+                .includes(search.toLowerCase().trim()),
+            )
+            .map((option) => {
+              const value = String(selectOptions.formValueTransformer(option))
+
+              return (
+                <Combobox.Option value={value} key={value} active={selectedMultiselectOptions.includes(value)}>
+                  {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+                </Combobox.Option>
+              )
+            })
+
+          el = (
+            <Combobox
+              store={combobox}
+              onOptionSubmit={(value, props) => {
+                console.log({ selectedMultiselectOptions, formValues: form.getValues(formField) })
+                setSelectedMultiselectOptions((current) => [...current, value])
+                const options = selectedMultiselectOptions.map((value) =>
+                  selectOptions.values.find((option) => value === selectOptions.formValueTransformer(option)),
+                )
+                //if (!option) return
+                registerOnChange({
+                  target: {
+                    name: formField,
+                    value: options.map((o) => selectOptions.formValueTransformer(o)),
+                  },
+                })
+              }}
+              withinPortal={false}
+            >
+              <Combobox.DropdownTarget>
+                <PillsInput pointer onClick={() => combobox.toggleDropdown()}>
+                  <Pill.Group>
+                    {selectedMultiselectOptions.length > 0 ? (
+                      comboboxOptions
+                    ) : (
+                      <Input.Placeholder>{`Pick one or more ${lowerFirst(itemName)}`}</Input.Placeholder>
+                    )}
+
+                    <Combobox.EventsTarget>
+                      <PillsInput.Field
+                        type="hidden"
+                        onBlur={() => combobox.closeDropdown()}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Backspace') {
+                            event.preventDefault()
+                            handleValueRemove(selectedMultiselectOptions[selectedMultiselectOptions.length - 1])
+                          }
+                        }}
+                      />
+                    </Combobox.EventsTarget>
+                  </Pill.Group>
+                </PillsInput>
+              </Combobox.DropdownTarget>
+
+              <Combobox.Dropdown>
+                <Combobox.Options>{comboboxOptions}</Combobox.Options>
+              </Combobox.Dropdown>
+            </Combobox>
+          )
+        }
+
+        // TODO:
+        /*{
           const data = selectOptions.values.map((option) => ({
             label: selectOptions.formValueTransformer(option),
             value: selectOptions.formValueTransformer(option),
@@ -900,7 +974,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               placeholder={`Select ${lowerFirst(pluralize(itemName))}`}
             />
           )
-        }
+        }*/
         break
       default:
         break
