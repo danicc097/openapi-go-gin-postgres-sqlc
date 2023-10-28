@@ -124,7 +124,7 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
   component,
 })
 
-const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element, option) => {
+const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, option) => {
   return <Box m={2}>{transformer(option)}</Box>
 }
 
@@ -717,13 +717,21 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const selectOptions = options.selectOptions?.[schemaKey]
   const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
+  const [search, setSearch] = useState('')
 
   const { ref: focusRef, focused: selectFocused } = useFocusWithin()
 
   const combobox = useCombobox({
-    onDropdownClose: () => combobox.resetSelectedOption(),
-  })
+    onDropdownClose: () => {
+      combobox.resetSelectedOption()
+      combobox.focusTarget()
+      setSearch('')
+    },
 
+    onDropdownOpen: () => {
+      combobox.focusSearchInput()
+    },
+  })
   useEffect(() => {
     if (isSelectVisible) {
       setCustomElMinHeight(selectRef.current?.clientHeight ?? 34.5)
@@ -755,26 +763,25 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             return selectOptions.formValueTransformer(option) === form.getValues(formField)
           })
 
-          const options = selectOptions.values.map((option) => {
-            const value = String(selectOptions.formValueTransformer(option))
+          console.log(selectOptions.values)
+          const options = selectOptions.values
+            .filter((item: any) => JSON.stringify(item).toLowerCase().includes(search.toLowerCase().trim()))
+            .map((option) => {
+              const value = String(selectOptions.formValueTransformer(option))
 
-            return (
-              <Combobox.Option value={value} key={value}>
-                {itemComponentTemplate(selectOptions.optionTransformer, option)}
-              </Combobox.Option>
-            )
-          })
+              return (
+                <Combobox.Option value={value} key={value}>
+                  {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+                </Combobox.Option>
+              )
+            })
 
           // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
           el = (
-            <div
-              css={css`
-                min-width: 100%;
-              `}
-            >
+            <Box miw={'100%'}>
               <Combobox
                 store={combobox}
-                withinPortal={false}
+                withinPortal={true}
                 onOptionSubmit={async (value) => {
                   const option = selectOptions.values.find(
                     (option) => String(selectOptions.formValueTransformer(option)) === value,
@@ -803,18 +810,27 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                     multiline
                   >
                     {selectedOption ? (
-                      itemComponentTemplate(selectOptions.optionTransformer, selectedOption)
+                      comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
                     ) : (
                       <Input.Placeholder>Pick value</Input.Placeholder>
                     )}
                   </InputBase>
                 </Combobox.Target>
 
+                <Combobox.Search
+                  miw={'100%'}
+                  value={search}
+                  onChange={(event) => setSearch(event.currentTarget.value)}
+                  placeholder={`Search items`}
+                />
+
                 <Combobox.Dropdown>
-                  <Combobox.Options>{options}</Combobox.Options>
+                  <Combobox.Options>
+                    {options.length > 0 ? options : <Combobox.Empty>Nothing found</Combobox.Empty>}
+                  </Combobox.Options>
                 </Combobox.Dropdown>
               </Combobox>
-            </div>
+            </Box>
 
             // <Select
             //   onBlur={(e) => setIsSelectVisible(false)}
@@ -922,7 +938,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               withinPortal
               // TODO: in v7: see https://mantine.dev/combobox/?e=MultiSelectValueRenderer
               // see examples with `custom value` https://mantine.dev/combobox/
-              // itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
+              // itemComponent={comboboxOptionTemplate(selectOptions.optionTransformer)}
               valueComponent={valueComponentTemplate(
                 selectOptions.labelTransformer ? selectOptions.labelTransformer : selectOptions.optionTransformer,
                 selectOptions.labelColor,
