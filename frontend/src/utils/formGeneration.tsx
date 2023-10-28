@@ -765,6 +765,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
           console.log(selectOptions.values)
           const options = selectOptions.values
+            // TODO: we could filter on labelTransformer innertext, but it would be best to create
+            // a filterValueTransformer, which e.g. could return `${email} ${name} ${username}` for combobox filtering
             .filter((item: any) => JSON.stringify(item).toLowerCase().includes(search.toLowerCase().trim()))
             .map((option) => {
               const value = String(selectOptions.formValueTransformer(option))
