@@ -311,7 +311,7 @@ export default function App() {
       reopened: false, // for create will ignore field for form gen
     },
     tagIDs: [0, 5, 8],
-    members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'user 2' }],
+    members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'bad userID' }],
   } as TestTypes.RestDemoWorkItemCreateRequest
 
   const form = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
@@ -483,6 +483,9 @@ export default function App() {
                                   },
                                   labelTransformer(el) {
                                     return <>{el.email}</>
+                                  },
+                                  filterValueTransformer(el) {
+                                    return `${el.email} ${el.fullName} ${el.username}`
                                   },
                                 }),
                                 tagIDs: selectOptionsBuilder({

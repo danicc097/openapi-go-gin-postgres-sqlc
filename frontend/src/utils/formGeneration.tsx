@@ -93,8 +93,15 @@ export type SelectOptions<Return, E = unknown> = {
   type: SelectOptionsTypes
   values: E[]
   formValueTransformer: <V extends E>(el: V & E) => Return extends unknown[] ? Return[number] : Return
+  /** Modify search behavior, e.g. matching against `${el.<field_1>} ${el.<field_2>} ${el.field_3}`.
+   * It searches in the whole stringified object by default.
+   */
+  filterValueTransformer?: <V extends E>(el: V & E) => string
   optionTransformer: <V extends E>(el: V & E) => JSX.Element
   labelTransformer?: <V extends E>(el: V & E) => JSX.Element
+  /**
+   * Overrides default combobox item label color.
+   */
   labelColor?: <V extends E>(el: V & E) => string
 }
 
@@ -108,6 +115,7 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   type,
   values,
   formValueTransformer,
+  filterValueTransformer,
   optionTransformer,
   labelTransformer,
   labelColor,
@@ -117,6 +125,7 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   optionTransformer,
   labelTransformer,
   formValueTransformer,
+  filterValueTransformer,
   labelColor,
 })
 
@@ -765,9 +774,11 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
           console.log(selectOptions.values)
           const options = selectOptions.values
-            // TODO: we could filter on labelTransformer innertext, but it would be best to create
-            // a filterValueTransformer, which e.g. could return `${email} ${name} ${username}` for combobox filtering
-            .filter((item: any) => JSON.stringify(item).toLowerCase().includes(search.toLowerCase().trim()))
+            .filter((item: any) =>
+              JSON.stringify(selectOptions.filterValueTransformer ? selectOptions.filterValueTransformer(item) : item)
+                .toLowerCase()
+                .includes(search.toLowerCase().trim()),
+            )
             .map((option) => {
               const value = String(selectOptions.formValueTransformer(option))
 
