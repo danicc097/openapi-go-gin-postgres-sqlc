@@ -312,9 +312,9 @@ export default function App() {
     },
     tagIDs: [0, 5, 8],
     members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'bad userID' }],
-  } as TestTypes.RestDemoWorkItemCreateRequest
+  } as TestTypes.DemoWorkItemCreateRequest
 
-  const form = useForm<TestTypes.RestDemoWorkItemCreateRequest>({
+  const form = useForm<TestTypes.DemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {
       strict: false,
       formats: fullFormats,
@@ -334,7 +334,7 @@ export default function App() {
   // useEffect(() => {
   //   console.log(demoWorkItemCreateForm.values)
   //   try {
-  //     RestDemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
+  //     DemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
   //   } catch (error) {
   //     console.error(JSON.stringify(error.validationErrors.errors))
   //   }
@@ -377,7 +377,7 @@ export default function App() {
                               console.log(errors?.demoProject)
                               // const r = demoWorkItemCreateForm.validate()
                               // console.log({ r })
-                              // RestDemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
+                              // DemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
                             } catch (error) {
                               console.error(JSON.stringify(error?.validationErrors?.errors))
                             }
@@ -386,7 +386,7 @@ export default function App() {
                           Validate form
                         </Button>
                         <FormProvider {...form}>
-                          <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys>
+                          <DynamicForm<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys>
                             onSubmit={(e) => {
                               e.preventDefault()
                               form.handleSubmit(
@@ -545,7 +545,7 @@ export default function App() {
                                   description: 'This is some help text.',
                                 },
                               },
-                            }} // satisfies DynamicFormOptions<TestTypes.RestDemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
+                            }} // satisfies DynamicFormOptions<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
                           />
                         </FormProvider>
                       </React.Suspense>

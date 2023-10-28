@@ -178,9 +178,9 @@ const formInitialValues = {
     // userid does not exist in selectOptions users -> will show input directly instead
     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
   ],
-} as TestTypes.RestDemoWorkItemCreateRequest
+} as TestTypes.DemoWorkItemCreateRequest
 
-const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
+const schemaFields: Record<GetKeys<TestTypes.DemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
   'base.closed': { type: 'date-time', required: false, isArray: false },
   'base.description': { type: 'string', required: true, isArray: false },
@@ -216,7 +216,7 @@ describe('form generation', () => {
      * https://react-hook-form.com/advanced-usage#TestingForm
      */
     const { result: form } = renderHook(() =>
-      useForm<TestTypes.RestDemoWorkItemCreateRequest>({
+      useForm<TestTypes.DemoWorkItemCreateRequest>({
         resolver: ajvResolver(schema as any, {
           strict: false,
           formats: fullFormats,
@@ -233,7 +233,7 @@ describe('form generation', () => {
 
     const view = render(
       <FormProvider {...form.current}>
-        <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, 'base.metadata'>
+        <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
           onSubmit={(e) => {
             e.preventDefault()
             form.current.handleSubmit(
