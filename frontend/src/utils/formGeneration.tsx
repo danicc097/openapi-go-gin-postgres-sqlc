@@ -827,7 +827,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                     {selectedOption ? (
                       comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
                     ) : (
-                      <Input.Placeholder>Pick value</Input.Placeholder>
+                      <Input.Placeholder>{`Pick ${lowerFirst(itemName)}`}</Input.Placeholder>
                     )}
                   </InputBase>
                 </Combobox.Target>
@@ -837,7 +837,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                     miw={'100%'}
                     value={search}
                     onChange={(event) => setSearch(event.currentTarget.value)}
-                    placeholder={`Search items`}
+                    placeholder={`Search ${lowerFirst(itemName)}`}
                   />
                   <Combobox.Options>
                     {options.length > 0 ? options : <Combobox.Empty>Nothing found</Combobox.Empty>}
@@ -845,51 +845,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 </Combobox.Dropdown>
               </Combobox>
             </Box>
-
-            // <Select
-            //   onBlur={(e) => setIsSelectVisible(false)}
-            //   withinPortal
-            //   initiallyopened={selectedOption !== undefined}
-            //   searchable
-            //   // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
-            //   // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-            //   // else we need to forcefully use current label/value
-            //   filter={(input) => {
-            //     if (selectedOption !== '') {
-            //       return JSON.stringify(item.option).toLowerCase().includes(selectedOption.toLowerCase().trim())
-            //     }
-
-            //     return JSON.stringify(item.option).toLowerCase().includes(selectedOption.toLowerCase().trim())
-            //   }}
-            //   // IMPORTANT: Select value should always be either string or null as per doc
-            //   // (and implicitly label must be equal to value else all is broken unlike with multiselect)
-            //   data={selectOptions.values.map((option) => ({
-            //     label: String(selectOptions.formValueTransformer(option)),
-            //     value: String(selectOptions.formValueTransformer(option)),
-            //     option,
-            //   }))}
-            //   onChange={async (value) => {
-            //     const option = selectOptions.values.find(
-            //       (option) => String(selectOptions.formValueTransformer(option)) === value,
-            //     )
-            //     console.log({ onChangeOption: option })
-            //     if (!option) return
-            //     await registerOnChange({
-            //       target: {
-            //         name: formField,
-            //         value: selectOptions.formValueTransformer(option),
-            //       },
-            //     })
-            //     setIsSelectVisible(false)
-            //   }}
-            //   value={String(form.getValues(formField))}
-            //   {..._props}
-            //   ref={(el) => {
-            //     selectRef.current = el
-            //     focusRef.current = el
-            //   }}
-            //   placeholder={`Select ${lowerFirst(itemName)}`}
-            // />
           )
         }
         break
