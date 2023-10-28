@@ -710,7 +710,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   }
 
   let el: JSX.Element | null = null
-  let customEl: JSX.Element | null = null
+  const customEl: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
   // TODO: componentPropsFn must return {}
   const componentPropsFn = options.input?.[schemaKey]?.propsFn
@@ -782,6 +782,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               <Combobox
                 store={combobox}
                 withinPortal={true}
+                position="bottom-start"
+                withArrow
                 onOptionSubmit={async (value) => {
                   const option = selectOptions.values.find(
                     (option) => String(selectOptions.formValueTransformer(option)) === value,
@@ -798,7 +800,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                   combobox.closeDropdown()
                 }}
               >
-                <Combobox.Target>
+                <Combobox.Target withAriaAttributes={false}>
                   <InputBase
                     className={classes['select']}
                     component="button"
@@ -817,14 +819,13 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                   </InputBase>
                 </Combobox.Target>
 
-                <Combobox.Search
-                  miw={'100%'}
-                  value={search}
-                  onChange={(event) => setSearch(event.currentTarget.value)}
-                  placeholder={`Search items`}
-                />
-
                 <Combobox.Dropdown>
+                  <Combobox.Search
+                    miw={'100%'}
+                    value={search}
+                    onChange={(event) => setSearch(event.currentTarget.value)}
+                    placeholder={`Search items`}
+                  />
                   <Combobox.Options>
                     {options.length > 0 ? options : <Combobox.Empty>Nothing found</Combobox.Empty>}
                   </Combobox.Options>
@@ -877,47 +878,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             //   placeholder={`Select ${lowerFirst(itemName)}`}
             // />
           )
-
-          // TODO: maybe with v7 this hack isn't needed
-          if (!isSelectVisible && selectedOption !== undefined) {
-            const { ref, ...customSelectProps } = _props
-            customEl = (
-              <Input.Wrapper {...customSelectProps} pt={0} pb={0}>
-                <Card
-                  tabIndex={0}
-                  css={css`
-                    min-height: ${customElMinHeight}px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    font-size: ${theme.fontSizes.sm};
-                    place-content: center;
-
-                    :focus {
-                      border-color: var(--mantine-color-blue-8) !important;
-                    }
-                  `}
-                  onKeyUp={(e) => {
-                    if (e.key === 'Enter') setIsSelectVisible(true)
-                  }}
-                  withBorder
-                  //onFocus={toggleVisibility}
-                  pl={12}
-                  pr={12}
-                  pt={0}
-                  pb={0}
-                  onClick={() => {
-                    setIsSelectVisible(true)
-                    selectRef.current?.focus()
-                  }}
-                >
-                  {selectOptions.labelTransformer
-                    ? selectOptions.labelTransformer(selectedOption)
-                    : selectOptions.optionTransformer(selectedOption)}
-                </Card>
-              </Input.Wrapper>
-            )
-          }
         }
         break
       case 'multiselect':
