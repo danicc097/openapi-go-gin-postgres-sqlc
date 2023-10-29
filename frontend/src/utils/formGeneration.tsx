@@ -161,13 +161,13 @@ const valueComponentTemplate =
     return (
       <div {...others}>
         <Box
-          className={classes['value-component-outer-box']}
+          className={classes.valueComponentOuterBox}
           css={css`
             background-color: ${color};
           `}
         >
           <Box
-            className={classes['value-component-inner-box']}
+            className={classes.valueComponentInnerBox}
             color={getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'}
           >
             {transformer(option)}
@@ -545,7 +545,7 @@ function ArrayOfObjectsChildren({
           min-width: 100%;
         `}
       >
-        <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes['child-card']}>
+        <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
           <Flex justify={'end'}>
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
@@ -628,7 +628,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
   if (children.length === 0) return null
 
   return (
-    <Card radius={cardRadius} p={6} withBorder className={classes['array-child-card']}>
+    <Card radius={cardRadius} p={6} withBorder className={classes.arrayChildCard}>
       <Flex
         gap={6}
         align="center"
@@ -827,7 +827,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               >
                 <Combobox.Target withAriaAttributes={false}>
                   <InputBase
-                    className={classes['select']}
+                    className={classes.select}
                     component="button"
                     type="button"
                     pointer
@@ -1123,7 +1123,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
           form.setValue(formField, listItems as any)
         }}
         // variant="filled"
-        className={classes['remove-button']}
+        className={classes.removeButton}
         size="sm"
         id={`${formName}-${formField}-remove-button-${index}`}
       >

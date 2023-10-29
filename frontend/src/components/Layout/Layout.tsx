@@ -102,10 +102,10 @@ export default function Layout({ children }: LayoutProps) {
       )
 
     return user ? (
-      <UnstyledButton className={cx(classes.user, { [classes['user-active'] as string]: userMenuOpened })}>
+      <UnstyledButton className={cx(classes.user, { [classes.userActive as string]: userMenuOpened })}>
         <Group gap={'md'} m={4}>
           <Avatar alt={user.username} radius="xl" size={35} mt={6} mb={6} />
-          <Text className={classes['display-name']} fw={500}>
+          <Text className={classes.displayName} fw={500}>
             {user.username}
           </Text>
           <IconChevronDown size={12} stroke={1.5} />
@@ -124,7 +124,7 @@ export default function Layout({ children }: LayoutProps) {
         <link rel="canonical" href="#" />
       </Helmet>
       <AppShell
-        className={classes['app-shell']}
+        className={classes.appShell}
         header={{ height: 60 }}
         footer={{ height: 60 }}
         navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}

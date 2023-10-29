@@ -12,7 +12,7 @@
   z-index: 999;
 }
 
-.app-shell {
+.appShell {
   background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-9));
 }
 
@@ -76,7 +76,7 @@
   }
 }
 
-.user-active {
+.userActive {
   background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-8));
 }
 

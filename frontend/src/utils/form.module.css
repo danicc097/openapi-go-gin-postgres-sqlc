@@ -1,4 +1,4 @@
-.value-component-outer-box {
+.valueComponentOuterBox {
   display: flex;
   cursor: default;
   align-items: center;
@@ -7,20 +7,20 @@
   border-radius: var(--mantine-radius-sm);
 }
 
-.value-component-inner-box {
+.valueComponentInnerBox {
   line-height: 1;
 }
 
-.child-card {
+.childCard {
   background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
 }
 
-.array-child-card {
+.arrayChildCard {
   width: 100%;
   background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
 }
 
-.remove-button {
+.removeButton {
   background-color: light-dark(#7c1a1a, #b03434);
   color: white;
   :hover {
