@@ -247,7 +247,7 @@ const members = [...Array(10)].map((x, i) => {
 const tags = [...Array(10)].map((x, i) => {
   const tag: DbWorkItemTag = {
     name: `tag #${i}`,
-    color: `#${i}34236`,
+    color: `#aaa${i}32`,
     workItemTagID: i,
     projectID: 1,
     description: `description for tag #${i}`,

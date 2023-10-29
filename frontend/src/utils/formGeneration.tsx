@@ -145,45 +145,38 @@ const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, op
   return <Box m={2}>{transformer(option)}</Box>
 }
 
-interface MultiSelectValueProps extends React.ComponentPropsWithoutRef<'div'> {
+interface PillComponentProps extends React.ComponentPropsWithoutRef<'div'> {
   value: string
+  option: any
   onRemove?(): void
+  transformer: (...args: any[]) => JSX.Element
+  colorFn?: (...args: any[]) => string
 }
 
-const valueComponentTemplate =
-  (transformer: (...args: any[]) => JSX.Element, colorFn?: (...args: any[]) => string) =>
-  ({ value, option, onRemove, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
-    let color
-    if (colorFn) {
-      color = colorFn(option)
-    }
-    console.log({ color })
-    return (
-      <div {...others}>
-        <Box
-          className={classes.valueComponentOuterBox}
-          css={css`
-            background-color: ${color};
-          `}
-        >
-          <Box
-            className={classes.valueComponentInnerBox}
-            color={getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'}
-          >
-            {transformer(option)}
-          </Box>
-          <CloseButton
-            //@ts-ignore
-            onMouseDown={onRemove}
-            variant="transparent"
-            size={22}
-            iconSize={14}
-            tabIndex={-1}
-          />
-        </Box>
-      </div>
-    )
+const pillComponentTemplate = ({ value, option, onRemove, transformer, colorFn, ...others }: PillComponentProps) => {
+  let color
+  if (colorFn) {
+    color = colorFn(option)
   }
+  return (
+    <div {...others}>
+      <Box
+        className={classes.valueComponentOuterBox}
+        css={css`
+          background-color: ${color};
+          * {
+            color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'};
+          }
+        `}
+      >
+        <Box className={classes.valueComponentInnerBox} css={css``}>
+          {transformer(option)}
+        </Box>
+        <CloseButton onMouseDown={onRemove} variant="transparent" size={22} iconSize={14} tabIndex={-1} />
+      </Box>
+    </div>
+  )
+}
 
 export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   labels: {
@@ -863,6 +856,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       case 'multiselect':
         {
           const formValues = (form.getValues(formField) as any[]) || []
+
           const handleValueRemove = (val: string) => {
             console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
             form.setValue(
@@ -905,14 +899,12 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                   const option = selectOptions.values.find(
                     (option) => String(selectOptions.formValueTransformer(option)) === value,
                   )
-                  //if (!option) return
                   registerOnChange({
                     target: {
                       name: formField,
                       value: [...formValues, selectOptions.formValueTransformer(option)],
                     },
                   })
-                  console.log({ current: formValues, value, formValues: form.getValues(formField) })
                 }}
                 withinPortal
               >
@@ -925,19 +917,18 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                             (option) => selectOptions.formValueTransformer(option) === formValue,
                           )
 
-                          return valueComponentTemplate(
-                            selectOptions.pillTransformer
-                              ? selectOptions.pillTransformer
-                              : selectOptions.optionTransformer,
-                            selectOptions?.labelColor,
-                          )({
+                          return pillComponentTemplate({
                             option,
                             value: formValue,
                             onRemove: () => handleValueRemove(formValue),
+                            transformer: selectOptions.pillTransformer
+                              ? selectOptions.pillTransformer
+                              : selectOptions.optionTransformer,
+                            colorFn: selectOptions?.labelColor,
                           })
                         })
                       ) : (
-                        <Input.Placeholder>{`Pick one or more ${pluralize(lowerFirst(itemName))}`}</Input.Placeholder>
+                        <Input.Placeholder>{`Pick ${pluralize(lowerFirst(itemName))}`}</Input.Placeholder>
                       )}
 
                       <Combobox.EventsTarget>
@@ -947,7 +938,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                           onKeyDown={(event) => {
                             if (event.key === 'Backspace') {
                               event.preventDefault()
-                              form.setValue(formField, formValues[formValues.length - 1])
+                              form.setValue(formField, formValues)
                             }
                           }}
                         />
@@ -981,7 +972,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
               // TODO: in v7: see https://mantine.dev/combobox/?e=MultiSelectValueRenderer
               // see examples with `custom value` https://mantine.dev/combobox/
               // itemComponent={comboboxOptionTemplate(selectOptions.optionTransformer)}
-              valueComponent={valueComponentTemplate(
+              valueComponent={pillComponentTemplate(
                 selectOptions.pillTransformer ? selectOptions.pillTransformer : selectOptions.optionTransformer,
                 selectOptions.labelColor,
               )}
