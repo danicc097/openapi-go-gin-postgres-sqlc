@@ -60,9 +60,9 @@ import { nameInitials } from 'src/utils/strings'
 import WorkItemRoleBadge from 'src/components/Badges/WorkItemRoleBadge'
 import { WORK_ITEM_ROLES } from 'src/services/authorization'
 
-import '@mantine/code-highlight/styles.css'
-import '@mantine/notifications/styles.css'
 import '@mantine/core/styles.css'
+import '@mantine/notifications/styles.css'
+import '@mantine/code-highlight/styles.css'
 import '@mantine/dates/styles.css'
 
 const schema = {

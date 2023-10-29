@@ -159,7 +159,7 @@ const pillComponentTemplate = ({ value, option, onRemove, transformer, colorFn, 
     color = colorFn(option)
   }
   return (
-    <div {...others}>
+    <div {...others} key={option}>
       <Box
         className={classes.valueComponentOuterBox}
         css={css`
@@ -1103,7 +1103,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
   const { formName, options, schemaFields } = useDynamicFormContext()
 
   return (
-    <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
+    <Tooltip withinPortal label={`Remove ${lowerFirst(itemName)}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
           // NOTE: don't use rhf useFieldArray, way too many edge cases for no gain. if reordering is needed, implement it manually.
@@ -1155,7 +1155,7 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
             variant="filled"
             color={'green'}
             id={`${formName}-${formField}-add-button`}
-          >{`Add ${itemName}`}</Button>
+          >{`Add ${lowerFirst(itemName)}`}</Button>
         )}
       </Flex>
     </div>

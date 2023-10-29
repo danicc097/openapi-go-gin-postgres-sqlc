@@ -24,7 +24,7 @@
   background-color: light-dark(#7c1a1a, #b03434);
   color: white;
   :hover {
-    background-color: gray;
+    color: light-dark(#b03434, #7c1a1a);
   }
 }
 
