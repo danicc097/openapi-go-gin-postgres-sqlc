@@ -1,0 +1,39 @@
+.root {
+  padding-bottom: 80px;
+  min-height: calc(100vh - var(--footer-height) - var(--header-height));
+  background: light-dark(--mantine-color-white, --mantine-color-dark-7);
+}
+
+.label {
+  text-align: center;
+  font-weight: 900;
+  font-size: 220px;
+  line-height: 1;
+  margin-bottom: var(--mantine-spacing-xl);
+  color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+}
+
+@media (max-width: var(--mantine-breakpoint-sm)) {
+  .label {
+    font-size: 120px;
+  }
+}
+
+.title {
+  text-align: center;
+  font-weight: 900;
+  font-size: 38px;
+}
+
+@media (max-width: var(--mantine-breakpoint-sm)) {
+  .title {
+    font-size: 32px;
+  }
+}
+
+.description {
+  max-width: 500px;
+  margin: auto;
+  margin-top: var(--mantine-spacing-xl);
+  margin-bottom: var(--mantine-spacing-xl);
+}

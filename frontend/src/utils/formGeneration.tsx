@@ -24,13 +24,20 @@ import {
   Input,
   Code,
   MultiSelect,
-  type MultiSelectValueProps,
   CloseButton,
+  useMantineColorScheme,
+  getThemeColor,
+  Combobox,
+  useCombobox,
+  InputBase,
+  PillsInput,
+  Pill,
 } from '@mantine/core'
+import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { useFocusWithin } from '@mantine/hooks'
-import { Prism } from '@mantine/prism'
-import { rem, useMantineTheme } from '@mantine/styles'
+import { CodeHighlight } from '@mantine/code-highlight'
+import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
 import _, { lowerFirst, memoize } from 'lodash'
@@ -63,7 +70,7 @@ import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
 import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
-import type { RestDemoWorkItemCreateRequest } from 'src/gen/model'
+import type { DemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
 import type {
   DeepPartial,
@@ -88,8 +95,21 @@ export type SelectOptions<Return, E = unknown> = {
   type: SelectOptionsTypes
   values: E[]
   formValueTransformer: <V extends E>(el: V & E) => Return extends unknown[] ? Return[number] : Return
+  /** Modify search behavior, e.g. matching against `${el.<field_1>} ${el.<field_2>} ${el.field_3}`.
+   * It searches in the whole stringified object by default.
+   */
+  searchValueTransformer?: <V extends E>(el: V & E) => string
+  /**
+   * Overrides combobox option components.
+   */
   optionTransformer: <V extends E>(el: V & E) => JSX.Element
-  labelTransformer?: <V extends E>(el: V & E) => JSX.Element
+  /**
+   * Overrides combobox selected item pill components.
+   */
+  pillTransformer?: <V extends E>(el: V & E) => JSX.Element
+  /**
+   * Overrides default combobox item label color.
+   */
   labelColor?: <V extends E>(el: V & E) => string
 }
 
@@ -98,19 +118,22 @@ export interface InputOptions<Return, E = unknown> {
   propsFn?: (registerOnChange: ChangeHandler) => React.ComponentProps<'input'>
 }
 
-export const selectOptionsBuilder = <Return, V>({
+// NOTE: handles select (single return value) and multiselect (array return).
+export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends unknown[] ? Return[number] : Return>({
   type,
   values,
   formValueTransformer,
+  searchValueTransformer,
   optionTransformer,
-  labelTransformer,
+  pillTransformer,
   labelColor,
-}: SelectOptions<Return, V>): SelectOptions<Return, V> => ({
+}: SelectOptions<ReturnElement, V>): SelectOptions<ReturnElement, V> => ({
   type,
   values,
   optionTransformer,
-  labelTransformer,
+  pillTransformer,
   formValueTransformer,
+  searchValueTransformer,
   labelColor,
 })
 
@@ -118,52 +141,9 @@ export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>):
   component,
 })
 
-const itemComponentTemplate = (transformer: (...args: any[]) => JSX.Element) =>
-  forwardRef<HTMLDivElement, any>(({ value, option, ...others }, ref) => {
-    return (
-      <Box ref={ref} {...others} m={2}>
-        {transformer(option)}
-      </Box>
-    )
-  })
-
-const valueComponentTemplate =
-  (transformer: (...args: any[]) => JSX.Element, colorFn?: (...args: any[]) => string) =>
-  ({ value, option, onRemove, classNames, ...others }: MultiSelectValueProps & { value: string; option: any }) => {
-    let color
-    if (colorFn) {
-      color = colorFn(option)
-    }
-    return (
-      <div {...others}>
-        <Box
-          sx={(theme) => ({
-            display: 'flex',
-            cursor: 'default',
-            alignItems: 'center',
-            backgroundColor: color || (theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white),
-            border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[4]}`,
-            paddingLeft: theme.spacing.xs,
-            borderRadius: theme.radius.sm,
-          })}
-        >
-          <Box
-            sx={{ lineHeight: 1, fontSize: rem(12), color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black' }}
-          >
-            {transformer(option)}
-          </Box>
-          <CloseButton
-            //@ts-ignore
-            onMouseDown={onRemove}
-            variant="transparent"
-            size={22}
-            iconSize={14}
-            tabIndex={-1}
-          />
-        </Box>
-      </div>
-    )
-  }
+const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, option) => {
+  return <Box m={2}>{transformer(option)}</Box>
+}
 
 export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   labels: {
@@ -304,22 +284,20 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
 
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
-      <PageTemplate minWidth={800}>
-        <>
-          <FormData />
-          <ErrorCallout title="Custom error title" errors={extractCalloutErrors()} />
-          <form
-            onSubmit={onSubmit}
-            css={css`
-              min-width: 100%;
-            `}
-            data-testid={formName}
-          >
-            <Button type="submit">Submit</Button>
-            <GeneratedInputs />
-          </form>
-        </>
-      </PageTemplate>
+      <>
+        <FormData />
+        <ErrorCallout title="Custom error title" errors={extractCalloutErrors()} />
+        <form
+          onSubmit={onSubmit}
+          css={css`
+            min-width: 100%;
+          `}
+          data-testid={formName}
+        >
+          <Button type="submit">Submit</Button>
+          <GeneratedInputs />
+        </form>
+      </>
     </DynamicFormProvider>
   )
 }
@@ -512,6 +490,7 @@ function ArrayOfObjectsChildren({
   const form = useFormContext()
   // form.watch(formField, fieldArray.fields) // inf rerendering
   const theme = useMantineTheme()
+  const { colorScheme } = useMantineColorScheme()
   const itemName = singularize(options.labels[schemaKey] || '')
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
@@ -526,13 +505,7 @@ function ArrayOfObjectsChildren({
           min-width: 100%;
         `}
       >
-        <Card
-          mt={12}
-          mb={12}
-          withBorder
-          radius={cardRadius}
-          bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
-        >
+        <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
           <Flex justify={'end'}>
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
@@ -615,15 +588,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
   if (children.length === 0) return null
 
   return (
-    <Card
-      radius={cardRadius}
-      p={6}
-      bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2]}
-      withBorder
-      css={css`
-        width: 100%;
-      `}
-    >
+    <Card radius={cardRadius} p={6} withBorder className={classes.arrayChildCard}>
       <Flex
         gap={6}
         align="center"
@@ -649,7 +614,7 @@ function FormData() {
       <Accordion.Item value="form">
         <Accordion.Control>{`See form`}</Accordion.Control>
         <Accordion.Panel>
-          <Prism language="json">{JSON.stringify(myFormData, null, 2)}</Prism>
+          <CodeHighlight language="json" code={JSON.stringify(myFormData, null, 2)}></CodeHighlight>
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
@@ -728,7 +693,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   }
 
   let el: JSX.Element | null = null
-  let customEl: JSX.Element | null = null
+  const customEl: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
   // TODO: componentPropsFn must return {}
   const componentPropsFn = options.input?.[schemaKey]?.propsFn
@@ -764,151 +729,25 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   } else if (selectOptions) {
     switch (selectOptions.type) {
       case 'select':
-        {
-          const option = selectOptions.values.find((option) => {
-            return selectOptions.formValueTransformer(option) === form.getValues(formField)
-          })
-
-          // IMPORTANT: mantine assumes label = value, else it doesn't work: https://github.com/mantinedev/mantine/issues/980
-          el = (
-            <Select
-              onBlur={(e) => setIsSelectVisible(false)}
-              withinPortal
-              initiallyOpened={option !== undefined}
-              itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
-              searchable
-              // TODO: need to have typed selectOptions.filter. that way we can filter user.email, username, etc.
-              // if not set use generic JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-              // else we need to forcefully use current label/value
-              filter={(option, item) => {
-                if (option !== '') {
-                  return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-                }
-
-                return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-              }}
-              // IMPORTANT: Select value should always be either string or null as per doc
-              // (and implicitly label must be equal to value else all is broken unlike with multiselect)
-              data={selectOptions.values.map((option) => ({
-                label: String(selectOptions.formValueTransformer(option)),
-                value: String(selectOptions.formValueTransformer(option)),
-                option,
-              }))}
-              onChange={async (value) => {
-                const option = selectOptions.values.find(
-                  (option) => String(selectOptions.formValueTransformer(option)) === value,
-                )
-                console.log({ onChangeOption: option })
-                if (!option) return
-                await registerOnChange({
-                  target: {
-                    name: formField,
-                    value: selectOptions.formValueTransformer(option),
-                  },
-                })
-                setIsSelectVisible(false)
-              }}
-              value={String(form.getValues(formField))}
-              {..._props}
-              ref={(el) => {
-                selectRef.current = el
-                focusRef.current = el
-              }}
-              placeholder={`Select ${lowerFirst(itemName)}`}
-            />
-          )
-
-          if (!isSelectVisible && option !== undefined) {
-            const { ref, ...customSelectProps } = _props
-            customEl = (
-              <Input.Wrapper {...customSelectProps} pt={0} pb={0}>
-                <Card
-                  tabIndex={0}
-                  css={css`
-                    min-height: ${customElMinHeight}px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    font-size: ${theme.fontSizes.sm};
-
-                    :focus {
-                      border-color: ${theme.colors.blue[8]} !important;
-                    }
-                  `}
-                  onKeyUp={(e) => {
-                    if (e.key === 'Enter') setIsSelectVisible(true)
-                  }}
-                  withBorder
-                  //onFocus={toggleVisibility}
-                  pl={12}
-                  pr={12}
-                  pt={0}
-                  pb={0}
-                  onClick={() => {
-                    setIsSelectVisible(true)
-                    selectRef.current?.focus()
-                  }}
-                >
-                  {selectOptions.labelTransformer
-                    ? selectOptions.labelTransformer(option)
-                    : selectOptions.optionTransformer(option)}
-                </Card>
-              </Input.Wrapper>
-            )
-          }
-        }
+        el = (
+          <CustomSelect
+            formField={formField}
+            registerOnChange={registerOnChange}
+            schemaKey={schemaKey}
+            itemName={itemName}
+          />
+        )
         break
       case 'multiselect':
-        {
-          const data = selectOptions.values.map((option) => ({
-            label: selectOptions.formValueTransformer(option),
-            value: selectOptions.formValueTransformer(option),
-            option,
-          }))
+        el = (
+          <CustomMultiselect
+            formField={formField}
+            registerOnChange={registerOnChange}
+            schemaKey={schemaKey}
+            itemName={itemName}
+          />
+        )
 
-          el = (
-            <MultiSelect
-              styles={{
-                input: {
-                  backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
-                },
-              }}
-              withinPortal
-              itemComponent={itemComponentTemplate(selectOptions.optionTransformer)}
-              valueComponent={valueComponentTemplate(
-                selectOptions.labelTransformer ? selectOptions.labelTransformer : selectOptions.optionTransformer,
-                selectOptions.labelColor,
-              )}
-              searchable
-              filter={(option, selected, item) => {
-                if (option !== '') {
-                  return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-                }
-
-                return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-              }}
-              data={data}
-              onChange={async (values) => {
-                console.log({ values, formValues: form.getValues(formField) })
-                const options = values.map((value) =>
-                  selectOptions.values.find((option) => value === selectOptions.formValueTransformer(option)),
-                )
-                console.log({ onChangeOptions: options })
-                //if (!option) return
-                registerOnChange({
-                  target: {
-                    name: formField,
-                    value: options.map((o) => selectOptions.formValueTransformer(o)),
-                  },
-                })
-              }}
-              value={form.getValues(formField)}
-              {..._props}
-              ref={selectRef}
-              placeholder={`Select ${lowerFirst(pluralize(itemName))}`}
-            />
-          )
-        }
         break
       default:
         break
@@ -1006,24 +845,18 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
   const { formName, options, schemaFields } = useDynamicFormContext()
 
   return (
-    <Tooltip withinPortal label={`Remove ${itemName}`} position="top-end" withArrow>
+    <Tooltip withinPortal label={`Remove ${lowerFirst(itemName)}`} position="top-end" withArrow>
       <ActionIcon
         onClick={(e) => {
           // NOTE: don't use rhf useFieldArray, way too many edge cases for no gain. if reordering is needed, implement it manually.
           // we could even implement flat array reordering by handling them internally as objects with id prop
           const listItems = form.getValues(formField)
           removeElementByIndex(listItems, index)
-          form.unregister(formField) // needs to be before setValue
+          form.unregister(formField) // needs to be called before setValue
           form.setValue(formField, listItems as any)
         }}
         // variant="filled"
-        css={css`
-          background-color: ${theme.colorScheme === 'dark' ? '#7c1a1a' : '#b03434'};
-          color: white;
-          :hover {
-            background-color: gray;
-          }
-        `}
+        className={classes.removeButton}
         size="sm"
         id={`${formName}-${formField}-remove-button-${index}`}
       >
@@ -1047,25 +880,25 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
 
   return (
     <div>
-      {/* {<Prism language="json">{JSON.stringify({ formField, parentFormField }, null, 4)}</Prism>} */}
       <Flex direction="row" align="center">
         {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
         {options.selectOptions?.[schemaKey]?.type !== 'multiselect' && (
           <Button
             size="xs"
             p={4}
-            leftIcon={<IconPlus size="1rem" />}
+            leftSection={<IconPlus size="1rem" />}
             onClick={() => {
               const initialValue = initialValueByType(schemaFields[schemaKey]?.type)
               const vals = form.getValues(formField) || []
               console.log([...vals, initialValue] as any)
 
+              form.unregister(formField) // needs to be called before setValue
               form.setValue(formField, [...vals, initialValue] as any)
             }}
             variant="filled"
             color={'green'}
             id={`${formName}-${formField}-add-button`}
-          >{`Add ${itemName}`}</Button>
+          >{`Add ${lowerFirst(itemName)}`}</Button>
         )}
       </Flex>
     </div>
@@ -1087,4 +920,280 @@ const initialValueByType = (type?: SchemaField['type']) => {
       console.log(`unknown type: ${type}`)
       return ''
   }
+}
+
+type CustomPillProps = {
+  value: any
+  schemaKey: SchemaKey
+  handleValueRemove: (val: string) => void
+}
+
+type CustomMultiselectProps = {
+  formField: FormField
+  registerOnChange: ChangeHandler
+  schemaKey: SchemaKey
+  itemName: string
+}
+
+function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }: CustomMultiselectProps) {
+  const form = useFormContext()
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
+  const selectOptions = options.selectOptions![schemaKey]!
+  const formValues = (form.getValues(formField) as any[]) || []
+
+  const [search, setSearch] = useState('')
+
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+    onDropdownOpen: () => combobox.updateSelectedOptionIndex('active'),
+  })
+
+  const handleValueRemove = (val: string) => {
+    console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
+    form.unregister(formField) // needs to be called before setValue
+    form.setValue(
+      formField,
+      formValues.filter((v) => v !== val),
+    )
+  }
+
+  const comboboxOptions = selectOptions.values
+    .filter((item: any) => {
+      const inSearch = JSON.stringify(
+        selectOptions.searchValueTransformer ? selectOptions.searchValueTransformer(item) : item,
+      )
+        .toLowerCase()
+        .includes(search.toLowerCase().trim())
+
+      const notSelected = !formValues.includes(selectOptions.formValueTransformer(item))
+
+      return inSearch && notSelected
+    })
+    .map((option) => {
+      const value = String(selectOptions.formValueTransformer(option))
+
+      return (
+        <Combobox.Option value={value} key={value} active={formValues.includes(value)}>
+          <Group align="stretch" justify="space-between">
+            {selectOptions.optionTransformer(option)}
+            <CloseButton
+              onMouseDown={() => handleValueRemove(selectOptions.formValueTransformer(option))}
+              variant="transparent"
+              color="gray"
+              size={22}
+              iconSize={14}
+              tabIndex={-1}
+            />
+          </Group>
+        </Combobox.Option>
+      )
+    })
+
+  return (
+    <Box miw={'100%'}>
+      <Combobox
+        store={combobox}
+        onOptionSubmit={(value, props) => {
+          const option = selectOptions.values.find(
+            (option) => String(selectOptions.formValueTransformer(option)) === value,
+          )
+          registerOnChange({
+            target: {
+              name: formField,
+              value: [...formValues, selectOptions.formValueTransformer(option)],
+            },
+          })
+        }}
+        withinPortal
+      >
+        <Combobox.DropdownTarget>
+          <PillsInput onClick={() => combobox.openDropdown()}>
+            <Pill.Group>
+              {formValues.length > 0 &&
+                formValues.map((formValue, i) => (
+                  <CustomPill
+                    key={`${formField}-${i}-pill`}
+                    value={formValue}
+                    handleValueRemove={handleValueRemove}
+                    schemaKey={schemaKey}
+                  />
+                ))}
+
+              <Combobox.EventsTarget>
+                <PillsInput.Field
+                  placeholder={`Search ${pluralize(lowerFirst(itemName))}`}
+                  onChange={(event) => {
+                    combobox.updateSelectedOptionIndex()
+                    setSearch(event.currentTarget.value)
+                  }}
+                  value={search}
+                  onFocus={() => combobox.openDropdown()}
+                  onBlur={() => combobox.closeDropdown()}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Backspace' && search.length === 0) {
+                      event.preventDefault()
+                      form.unregister(formField) // needs to be called before setValue
+                      form.setValue(formField, formValues)
+                    }
+                  }}
+                />
+              </Combobox.EventsTarget>
+            </Pill.Group>
+          </PillsInput>
+        </Combobox.DropdownTarget>
+
+        <Combobox.Dropdown>
+          {/* FIXME: not opening search */}
+          {/* <Combobox.Search
+                  miw={'100%'}
+                  value={search}
+                  onChange={(event) => setSearch(event.currentTarget.value)}
+                  placeholder={`Search ${lowerFirst(itemName)}`}
+                /> */}
+          <Combobox.Options>{comboboxOptions}</Combobox.Options>
+        </Combobox.Dropdown>
+      </Combobox>
+    </Box>
+  )
+}
+
+type CustomSelectProps = {
+  formField: FormField
+  registerOnChange: ChangeHandler
+  schemaKey: SchemaKey
+  itemName: string
+}
+
+function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: CustomSelectProps) {
+  const form = useFormContext()
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
+  const selectOptions = options.selectOptions![schemaKey]!
+  const formValues = (form.getValues(formField) as any[]) || []
+
+  const [search, setSearch] = useState('')
+
+  const combobox = useCombobox({
+    onDropdownClose: () => {
+      combobox.resetSelectedOption()
+      combobox.focusTarget()
+      setSearch('')
+    },
+
+    onDropdownOpen: () => {
+      combobox.focusSearchInput()
+    },
+  })
+
+  const selectedOption = selectOptions.values.find((option) => {
+    return selectOptions.formValueTransformer(option) === form.getValues(formField)
+  })
+
+  const comboboxOptions = selectOptions.values
+    .filter((item: any) =>
+      JSON.stringify(selectOptions.searchValueTransformer ? selectOptions.searchValueTransformer(item) : item)
+        .toLowerCase()
+        .includes(search.toLowerCase().trim()),
+    )
+    .map((option) => {
+      const value = String(selectOptions.formValueTransformer(option))
+
+      return (
+        <Combobox.Option value={value} key={value}>
+          {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+        </Combobox.Option>
+      )
+    })
+
+  return (
+    <Box miw={'100%'}>
+      <Combobox
+        store={combobox}
+        withinPortal={true}
+        position="bottom-start"
+        withArrow
+        onOptionSubmit={async (value) => {
+          const option = selectOptions.values.find(
+            (option) => String(selectOptions.formValueTransformer(option)) === value,
+          )
+          console.log({ onChangeOption: option })
+          if (!option) return
+          await registerOnChange({
+            target: {
+              name: formField,
+              value: selectOptions.formValueTransformer(option),
+            },
+          })
+          combobox.closeDropdown()
+        }}
+      >
+        <Combobox.Target withAriaAttributes={false}>
+          <InputBase
+            className={classes.select}
+            component="button"
+            type="button"
+            pointer
+            rightSection={<Combobox.Chevron />}
+            onClick={() => combobox.toggleDropdown()}
+            rightSectionPointerEvents="none"
+            multiline
+          >
+            {selectedOption ? (
+              comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
+            ) : (
+              <Input.Placeholder>{`Pick ${lowerFirst(itemName)}`}</Input.Placeholder>
+            )}
+          </InputBase>
+        </Combobox.Target>
+
+        <Combobox.Dropdown>
+          <Combobox.Search
+            miw={'100%'}
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+            placeholder={`Search ${lowerFirst(itemName)}`}
+          />
+          <Combobox.Options>
+            {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
+          </Combobox.Options>
+        </Combobox.Dropdown>
+      </Combobox>
+    </Box>
+  )
+}
+
+function CustomPill({ value, schemaKey, handleValueRemove }: CustomPillProps): JSX.Element {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+  const selectOptions = options.selectOptions![schemaKey]!
+
+  const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
+
+  let color
+  if (selectOptions?.labelColor) {
+    color = selectOptions?.labelColor(option)
+  }
+
+  const transformer = selectOptions.pillTransformer ? selectOptions.pillTransformer : selectOptions.optionTransformer
+
+  return (
+    <Box
+      className={classes.valueComponentOuterBox}
+      css={css`
+        background-color: ${color};
+        * {
+          color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'};
+        }
+      `}
+    >
+      <Box className={classes.valueComponentInnerBox}>{transformer(option)}</Box>
+      <CloseButton
+        onMouseDown={() => handleValueRemove(value)}
+        variant="transparent"
+        size={22}
+        iconSize={14}
+        tabIndex={-1}
+      />
+    </Box>
+  )
 }

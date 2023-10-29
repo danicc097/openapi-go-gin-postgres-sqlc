@@ -1,0 +1,23 @@
+.control {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 1000px;
+  padding-left: light-dark(4px, var(--mantine-spacing-sm));
+  padding-right: light-dark(47px, 4px);
+  width: 66px;
+  height: 32px;
+}
+
+.iconWrapper {
+  min-height: 24px;
+  min-width: 24px;
+  border-radius: 24px;
+  background-color: light-dark(var(--mantine-color-dark-4), var(--mantine-color-yellow-4));
+  color: light-dark(var(--mantine-color-blue-2), var(--mantine-color-black));
+}
+
+.value {
+  line-height: 1;
+}

@@ -9,7 +9,7 @@ import { entries, keys } from 'src/utils/object'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import { fullFormats } from 'ajv-formats/dist/formats'
-import { Group, Avatar, Space, Flex } from '@mantine/core'
+import { Group, Avatar, Space, Flex, MantineProvider } from '@mantine/core'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import { nameInitials } from 'src/utils/strings'
 
@@ -178,9 +178,9 @@ const formInitialValues = {
     // userid does not exist in selectOptions users -> will show input directly instead
     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
   ],
-} as TestTypes.RestDemoWorkItemCreateRequest
+} as TestTypes.DemoWorkItemCreateRequest
 
-const schemaFields: Record<GetKeys<TestTypes.RestDemoWorkItemCreateRequest>, SchemaField> = {
+const schemaFields: Record<GetKeys<TestTypes.DemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
   'base.closed': { type: 'date-time', required: false, isArray: false },
   'base.description': { type: 'string', required: true, isArray: false },
@@ -216,7 +216,7 @@ describe('form generation', () => {
      * https://react-hook-form.com/advanced-usage#TestingForm
      */
     const { result: form } = renderHook(() =>
-      useForm<TestTypes.RestDemoWorkItemCreateRequest>({
+      useForm<TestTypes.DemoWorkItemCreateRequest>({
         resolver: ajvResolver(schema as any, {
           strict: false,
           formats: fullFormats,
@@ -232,64 +232,64 @@ describe('form generation', () => {
     const { isDirty, isSubmitting, submitCount } = form.current.formState
 
     const view = render(
-      <FormProvider {...form.current}>
-        <DynamicForm<TestTypes.RestDemoWorkItemCreateRequest, 'base.metadata'>
-          onSubmit={(e) => {
-            e.preventDefault()
-            form.current.handleSubmit(
-              (data) => {
-                console.log({ data })
+      <MantineProvider>
+        <FormProvider {...form.current}>
+          <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.current.handleSubmit(
+                (data) => {
+                  console.log({ data })
+                },
+                (errors) => {
+                  console.log({ errors })
+                },
+              )(e)
+            }}
+            formName={formName}
+            schemaFields={schemaFields}
+            options={{
+              renderOrderPriority: ['tagIDs', 'members'],
+              labels: {
+                base: 'base', // just title via renderTitle
+                'base.closed': 'closed',
+                'base.description': 'description',
+                // 'base.metadata': 'metadata', // ignored -> not a key
+                'base.kanbanStepID': 'kanbanStepID',
+                'base.targetDate': 'targetDate',
+                'demoProject.reopened': 'reopened',
+                'base.teamID': 'teamID',
+                'base.items': 'items',
+                'base.items.name': 'name',
+                'base.items.items': 'items',
+                'base.workItemTypeID': 'workItemTypeID',
+                demoProject: null, // won't render title
+                'demoProject.lastMessageAt': 'lastMessageAt',
+                'demoProject.line': 'line',
+                'demoProject.ref': 'ref',
+                'demoProject.workItemID': 'workItemID',
+                members: 'members',
+                'members.role': 'role',
+                'members.userID': 'User',
+                tagIDs: 'tagIDs',
+                tagIDsMultiselect: 'tagIDsMultiselect',
               },
-              (errors) => {
-                console.log({ errors })
+              defaultValues: {
+                'demoProject.line': '43121234', // should be ignored since it's set
+                'members.role': 'preparer',
               },
-            )(e)
-          }}
-          formName={formName}
-          schemaFields={schemaFields}
-          options={{
-            renderOrderPriority: ['tagIDs', 'members'],
-            labels: {
-              base: 'base', // just title via renderTitle
-              'base.closed': 'closed',
-              'base.description': 'description',
-              // 'base.metadata': 'metadata', // ignored -> not a key
-              'base.kanbanStepID': 'kanbanStepID',
-              'base.targetDate': 'targetDate',
-              'demoProject.reopened': 'reopened',
-              'base.teamID': 'teamID',
-              'base.items': 'items',
-              'base.items.name': 'name',
-              'base.items.items': 'items',
-              'base.workItemTypeID': 'workItemTypeID',
-              demoProject: null, // won't render title
-              'demoProject.lastMessageAt': 'lastMessageAt',
-              'demoProject.line': 'line',
-              'demoProject.ref': 'ref',
-              'demoProject.workItemID': 'workItemID',
-              members: 'members',
-              'members.role': 'role',
-              'members.userID': 'User',
-              tagIDs: 'tagIDs',
-              tagIDsMultiselect: 'tagIDsMultiselect',
-            },
-            defaultValues: {
-              'demoProject.line': '43121234', // should be ignored since it's set
-              'members.role': 'preparer',
-            },
-            selectOptions: {
-              'members.userID': selectOptionsBuilder({
-                type: 'select',
-                values: [...Array(1)].map((x, i) => {
-                  const user = getGetCurrentUserMock()
-                  user.email = '1@mail.com'
-                  user.userID = 'a446259c-1083-4212-98fe-bd080c41e7d7'
-                  return user
-                }),
-                optionTransformer(el) {
-                  return (
-                    <>
-                      <Group noWrap spacing="lg" align="center">
+              selectOptions: {
+                'members.userID': selectOptionsBuilder({
+                  type: 'select',
+                  values: [...Array(1)].map((x, i) => {
+                    const user = getGetCurrentUserMock()
+                    user.email = '1@mail.com'
+                    user.userID = 'a446259c-1083-4212-98fe-bd080c41e7d7'
+                    return user
+                  }),
+                  optionTransformer(el) {
+                    return (
+                      <Group align="center">
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
                             {nameInitials(el?.fullName || '')}
@@ -299,41 +299,42 @@ describe('form generation', () => {
 
                         <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
                       </Group>
-                    </>
-                  )
-                },
-                formValueTransformer(el) {
-                  return el.userID
-                },
-                labelTransformer(el) {
-                  return <>el.email</>
-                },
-              }),
-              tagIDsMultiselect: selectOptionsBuilder({
-                type: 'multiselect',
-                values: tags,
-                optionTransformer(el) {
-                  return (
-                    <Group noWrap spacing="lg" align="center">
-                      <Flex align={'center'}></Flex>
-                      <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
-                    </Group>
-                  )
-                },
-                formValueTransformer(el) {
-                  return el.workItemTagID
-                },
-                labelTransformer(el) {
-                  return <>{el.name} label</>
-                },
-              }),
-            },
-          }}
-        />
-      </FormProvider>,
+                    )
+                  },
+                  formValueTransformer(el) {
+                    return el.userID
+                  },
+                  pillTransformer(el) {
+                    return <>el.email</>
+                  },
+                }),
+                tagIDsMultiselect: selectOptionsBuilder({
+                  type: 'multiselect',
+                  values: tags,
+                  optionTransformer(el) {
+                    return (
+                      <Group align="center">
+                        <Flex align={'center'}></Flex>
+                        <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
+                      </Group>
+                    )
+                  },
+                  formValueTransformer(el) {
+                    return el.workItemTagID
+                  },
+                  pillTransformer(el) {
+                    return <>{el.name} label</>
+                  },
+                }),
+              },
+            }}
+          />
+        </FormProvider>
+      </MantineProvider>,
     )
 
     const ids = [
+      'demoWorkItemCreateForm-base.closed',
       'demoWorkItemCreateForm-base.closed-label',
       'demoWorkItemCreateForm-base.description',
       'demoWorkItemCreateForm-base.description-label',
@@ -362,6 +363,7 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-base.teamID-label',
       'demoWorkItemCreateForm-base.workItemTypeID',
       'demoWorkItemCreateForm-base.workItemTypeID-label',
+      'demoWorkItemCreateForm-demoProject.lastMessageAt',
       'demoWorkItemCreateForm-demoProject.lastMessageAt-label',
       'demoWorkItemCreateForm-demoProject.line',
       'demoWorkItemCreateForm-demoProject.line-label',
@@ -375,13 +377,8 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.0.role',
       'demoWorkItemCreateForm-members.0.role-label',
-      // 'demoWorkItemCreateForm-members.0.userID', // will show custom select
-      'demoWorkItemCreateForm-members.0.userID-label',
       'demoWorkItemCreateForm-members.1.role',
       'demoWorkItemCreateForm-members.1.role-label',
-      'demoWorkItemCreateForm-members.1.userID',
-      'demoWorkItemCreateForm-members.1.userID-label',
-      'demoWorkItemCreateForm-tagIDsMultiselect',
       'demoWorkItemCreateForm-tagIDs-0',
       'demoWorkItemCreateForm-tagIDs-1',
       'demoWorkItemCreateForm-tagIDs-2',
@@ -392,7 +389,7 @@ describe('form generation', () => {
     ]
 
     const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id)
-
+    console.log(actualIds.sort())
     expect(actualIds.sort()).toEqual(ids.sort())
 
     const dataTestIds = [

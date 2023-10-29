@@ -13,7 +13,7 @@ declare namespace TestTypes {
     workItemID: number
   }
 
-  interface RestDemoWorkItemCreateRequest {
+  interface DemoWorkItemCreateRequest {
     base: DbWorkItemCreateParams
     demoProject: DbDemoWorkItemCreateParams
     members: ServicesMember[] | null

@@ -1,52 +1,16 @@
-import { createStyles, Title, Text, Button, Container, Group } from '@mantine/core'
+import { css } from '@emotion/react'
+import { Title, Text, Button, Container, Group, useMantineTheme, useMantineColorScheme } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
-import { FOOTER_HEIGHT } from 'src/components/Footer'
 import { HEADER_HEIGHT } from 'src/components/Header'
 import HttpStatus from 'src/utils/httpStatus'
-
-const useStyles = createStyles((theme) => ({
-  root: {
-    paddingBottom: 80,
-  },
-
-  label: {
-    textAlign: 'center',
-    fontWeight: 900,
-    fontSize: 220,
-    lineHeight: 1,
-    marginBottom: theme.spacing.xl,
-    color: theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[2],
-
-    [theme.fn.smallerThan('sm')]: {
-      fontSize: 120,
-    },
-  },
-
-  title: {
-    textAlign: 'center',
-    fontWeight: 900,
-    fontSize: 38,
-
-    [theme.fn.smallerThan('sm')]: {
-      fontSize: 32,
-    },
-  },
-
-  description: {
-    maxWidth: 500,
-    margin: 'auto',
-    marginTop: theme.spacing.xl,
-    marginBottom: theme.spacing.xl,
-  },
-}))
+import classes from './ErrorPage.module.css'
 
 interface ErrorPageProps {
   status: number
 }
 
 export function ErrorPage({ status }: ErrorPageProps) {
-  const { classes, theme } = useStyles()
-
+  const { colorScheme } = useMantineColorScheme()
   const navigate = useNavigate()
 
   let text = 'An unknown error ocurred.'
@@ -64,18 +28,13 @@ export function ErrorPage({ status }: ErrorPageProps) {
   }
 
   return (
-    <Container
-      className={classes.root}
-      miw={'100vw'}
-      mih={`calc(100vh - ${HEADER_HEIGHT}px - ${FOOTER_HEIGHT}px)`}
-      bg={theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white}
-    >
+    <Container className={classes.root} miw={'100vw'}>
       <div className={classes.label}>{status}</div>
       <Title className={classes.title}>You have found a secret place.</Title>
-      <Text color="dimmed" size="lg" align="center" className={classes.description}>
+      <Text color="dimmed" size="lg" ta="center" className={classes.description}>
         {text}
       </Text>
-      <Group position="center">
+      <Group align="center">
         <Button
           size="md"
           color="teal"
