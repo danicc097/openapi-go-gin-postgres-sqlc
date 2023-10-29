@@ -822,169 +822,15 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         }
         break
       case 'multiselect':
-        {
-          const formValues = (form.getValues(formField) as any[]) || []
+        el = (
+          <CustomMultiselect
+            formField={formField}
+            registerOnChange={registerOnChange}
+            schemaKey={schemaKey}
+            itemName={itemName}
+          />
+        )
 
-          const handleValueRemove = (val: string) => {
-            console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
-            form.unregister(formField) // needs to be called before setValue
-            form.setValue(
-              formField,
-              formValues.filter((v) => v !== val),
-            )
-          }
-
-          const comboboxOptions = selectOptions.values
-            .filter((item: any) => {
-              const inSearch = JSON.stringify(
-                selectOptions.searchValueTransformer ? selectOptions.searchValueTransformer(item) : item,
-              )
-                .toLowerCase()
-                .includes(search.toLowerCase().trim())
-
-              const notSelected = !formValues.includes(selectOptions.formValueTransformer(item))
-
-              return inSearch && notSelected
-            })
-            .map((option) => {
-              const value = String(selectOptions.formValueTransformer(option))
-
-              return (
-                <Combobox.Option value={value} key={value} active={formValues.includes(value)}>
-                  <Group align="stretch" justify="space-between">
-                    {selectOptions.optionTransformer(option)}
-                    <CloseButton
-                      onMouseDown={() => handleValueRemove(selectOptions.formValueTransformer(option))}
-                      variant="transparent"
-                      color="gray"
-                      size={22}
-                      iconSize={14}
-                      tabIndex={-1}
-                    />
-                  </Group>
-                </Combobox.Option>
-              )
-            })
-
-          el = (
-            <Box miw={'100%'}>
-              <Combobox
-                store={combobox}
-                onOptionSubmit={(value, props) => {
-                  const option = selectOptions.values.find(
-                    (option) => String(selectOptions.formValueTransformer(option)) === value,
-                  )
-                  registerOnChange({
-                    target: {
-                      name: formField,
-                      value: [...formValues, selectOptions.formValueTransformer(option)],
-                    },
-                  })
-                }}
-                withinPortal
-              >
-                <Combobox.DropdownTarget>
-                  <PillsInput pointer onClick={() => combobox.toggleDropdown()}>
-                    <Pill.Group>
-                      {formValues.length > 0 &&
-                        formValues.map((formValue, i) => (
-                          <CustomPill
-                            key={`${formField}-${i}-pill`}
-                            value={formValue}
-                            handleValueRemove={handleValueRemove}
-                            schemaKey={schemaKey}
-                          />
-                        ))}
-
-                      <Combobox.EventsTarget>
-                        <PillsInput.Field
-                          placeholder={`Search ${pluralize(lowerFirst(itemName))}`}
-                          onChange={(event) => {
-                            combobox.updateSelectedOptionIndex()
-                            setSearch(event.currentTarget.value)
-                          }}
-                          value={search}
-                          onFocus={() => combobox.openDropdown()}
-                          onBlur={() => combobox.closeDropdown()}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Backspace' && search.length === 0) {
-                              event.preventDefault()
-                              form.unregister(formField) // needs to be called before setValue
-                              form.setValue(formField, formValues)
-                            }
-                          }}
-                        />
-                      </Combobox.EventsTarget>
-                    </Pill.Group>
-                  </PillsInput>
-                </Combobox.DropdownTarget>
-
-                <Combobox.Dropdown>
-                  {/* FIXME: not opening search */}
-                  {/* <Combobox.Search
-                    miw={'100%'}
-                    value={search}
-                    onChange={(event) => setSearch(event.currentTarget.value)}
-                    placeholder={`Search ${lowerFirst(itemName)}`}
-                  /> */}
-                  <Combobox.Options>{comboboxOptions}</Combobox.Options>
-                </Combobox.Dropdown>
-              </Combobox>
-            </Box>
-          )
-        }
-
-        // TODO:
-        /*{
-          const data = selectOptions.values.map((option) => ({
-            label: selectOptions.formValueTransformer(option),
-            value: selectOptions.formValueTransformer(option),
-            option,
-          }))
-
-          el = (
-            <MultiSelect
-              styles={{
-                input: 'background: light-dark(white, var(--mantine-color-dark-7));',
-              }}
-              withinPortal
-              // TODO: in v7: see https://mantine.dev/combobox/?e=MultiSelectValueRenderer
-              // see examples with `custom value` https://mantine.dev/combobox/
-              // itemComponent={comboboxOptionTemplate(selectOptions.optionTransformer)}
-              valueComponent={pillComponentTemplate(
-                selectOptions.pillTransformer ? selectOptions.pillTransformer : selectOptions.optionTransformer,
-                selectOptions.labelColor,
-              )}
-              searchable
-              filter={(option, selected, item) => {
-                if (option !== '') {
-                  return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-                }
-
-                return JSON.stringify(item.option).toLowerCase().includes(option.toLowerCase().trim())
-              }}
-              data={data}
-              onChange={async (values) => {
-                console.log({ values, formValues: form.getValues(formField) })
-                const options = values.map((value) =>
-                  selectOptions.values.find((option) => value === selectOptions.formValueTransformer(option)),
-                )
-                console.log({ onChangeOptions: options })
-                //if (!option) return
-                registerOnChange({
-                  target: {
-                    name: formField,
-                    value: options.map((o) => selectOptions.formValueTransformer(o)),
-                  },
-                })
-              }}
-              value={form.getValues(formField)}
-              {..._props}
-              ref={selectRef}
-              placeholder={`Select ${lowerFirst(pluralize(itemName))}`}
-            />
-          )
-        }*/
         break
       default:
         break
@@ -1163,6 +1009,136 @@ type CustomPillProps = {
   value: any
   schemaKey: SchemaKey
   handleValueRemove: (val: string) => void
+}
+
+type CustomMultiselectProps = {
+  formField: FormField
+  registerOnChange: ChangeHandler
+  schemaKey: SchemaKey
+  itemName: string
+}
+
+function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }: CustomMultiselectProps) {
+  const form = useFormContext()
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
+  const selectOptions = options.selectOptions![schemaKey]!
+  const formValues = (form.getValues(formField) as any[]) || []
+
+  const [search, setSearch] = useState('')
+
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+    onDropdownOpen: () => combobox.updateSelectedOptionIndex('active'),
+  })
+
+  const handleValueRemove = (val: string) => {
+    console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
+    form.unregister(formField) // needs to be called before setValue
+    form.setValue(
+      formField,
+      formValues.filter((v) => v !== val),
+    )
+  }
+
+  const comboboxOptions = selectOptions.values
+    .filter((item: any) => {
+      const inSearch = JSON.stringify(
+        selectOptions.searchValueTransformer ? selectOptions.searchValueTransformer(item) : item,
+      )
+        .toLowerCase()
+        .includes(search.toLowerCase().trim())
+
+      const notSelected = !formValues.includes(selectOptions.formValueTransformer(item))
+
+      return inSearch && notSelected
+    })
+    .map((option) => {
+      const value = String(selectOptions.formValueTransformer(option))
+
+      return (
+        <Combobox.Option value={value} key={value} active={formValues.includes(value)}>
+          <Group align="stretch" justify="space-between">
+            {selectOptions.optionTransformer(option)}
+            <CloseButton
+              onMouseDown={() => handleValueRemove(selectOptions.formValueTransformer(option))}
+              variant="transparent"
+              color="gray"
+              size={22}
+              iconSize={14}
+              tabIndex={-1}
+            />
+          </Group>
+        </Combobox.Option>
+      )
+    })
+
+  return (
+    <Box miw={'100%'}>
+      <Combobox
+        store={combobox}
+        onOptionSubmit={(value, props) => {
+          const option = selectOptions.values.find(
+            (option) => String(selectOptions.formValueTransformer(option)) === value,
+          )
+          registerOnChange({
+            target: {
+              name: formField,
+              value: [...formValues, selectOptions.formValueTransformer(option)],
+            },
+          })
+        }}
+        withinPortal
+      >
+        <Combobox.DropdownTarget>
+          <PillsInput onClick={() => combobox.openDropdown()}>
+            <Pill.Group>
+              {formValues.length > 0 &&
+                formValues.map((formValue, i) => (
+                  <CustomPill
+                    key={`${formField}-${i}-pill`}
+                    value={formValue}
+                    handleValueRemove={handleValueRemove}
+                    schemaKey={schemaKey}
+                  />
+                ))}
+
+              <Combobox.EventsTarget>
+                <PillsInput.Field
+                  placeholder={`Search ${pluralize(lowerFirst(itemName))}`}
+                  onChange={(event) => {
+                    combobox.updateSelectedOptionIndex()
+                    setSearch(event.currentTarget.value)
+                  }}
+                  value={search}
+                  onFocus={() => combobox.openDropdown()}
+                  onBlur={() => combobox.closeDropdown()}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Backspace' && search.length === 0) {
+                      event.preventDefault()
+                      form.unregister(formField) // needs to be called before setValue
+                      form.setValue(formField, formValues)
+                    }
+                  }}
+                />
+              </Combobox.EventsTarget>
+            </Pill.Group>
+          </PillsInput>
+        </Combobox.DropdownTarget>
+
+        <Combobox.Dropdown>
+          {/* FIXME: not opening search */}
+          {/* <Combobox.Search
+                  miw={'100%'}
+                  value={search}
+                  onChange={(event) => setSearch(event.currentTarget.value)}
+                  placeholder={`Search ${lowerFirst(itemName)}`}
+                /> */}
+          <Combobox.Options>{comboboxOptions}</Combobox.Options>
+        </Combobox.Dropdown>
+      </Combobox>
+    </Box>
+  )
 }
 
 function CustomPill({ value, schemaKey, handleValueRemove }: CustomPillProps): JSX.Element {
