@@ -1,6 +1,7 @@
 package refl
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -128,4 +129,33 @@ func As(v interface{}, target interface{}) bool {
 	}
 
 	return false
+}
+
+// NoEmptyFields checks structure (or a pointer to it) for potentially uninitialized fields.
+// Fields with zero values are considered uninitialized.
+func NoEmptyFields(l interface{}) error {
+	v := reflect.ValueOf(l)
+
+	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
+		v = v.Elem()
+	}
+
+	if v.Kind() != reflect.Struct {
+		return fmt.Errorf("%w, %s received", ErrStructExpected, v.Type().String())
+	}
+
+	var missing []string
+
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		if f.IsZero() {
+			missing = append(missing, v.Type().Field(i).Name)
+		}
+	}
+
+	if len(missing) > 0 {
+		return fmt.Errorf("%w: %v", ErrEmptyFields, missing)
+	}
+
+	return nil
 }
