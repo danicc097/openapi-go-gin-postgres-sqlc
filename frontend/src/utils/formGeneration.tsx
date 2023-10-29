@@ -157,9 +157,15 @@ const valueComponentTemplate =
     if (colorFn) {
       color = colorFn(option)
     }
+    console.log({ color })
     return (
       <div {...others}>
-        <Box className={classes['value-component-outer-box']}>
+        <Box
+          className={classes['value-component-outer-box']}
+          css={css`
+            background-color: ${color};
+          `}
+        >
           <Box
             className={classes['value-component-inner-box']}
             color={getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'}
@@ -856,12 +862,14 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         break
       case 'multiselect':
         {
-          const formValues = form.getValues(formField) || []
-          const handleValueRemove = (val: string) =>
+          const formValues = (form.getValues(formField) as any[]) || []
+          const handleValueRemove = (val: string) => {
+            console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
             form.setValue(
               formField,
               formValues.filter((v) => v !== val),
             )
+          }
 
           const comboboxOptions = selectOptions.values
             .filter((item: any) =>
@@ -916,9 +924,17 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                           const option = selectOptions.values.find(
                             (option) => selectOptions.formValueTransformer(option) === formValue,
                           )
-                          return selectOptions.pillTransformer
-                            ? selectOptions.pillTransformer(option)
-                            : selectOptions.optionTransformer(option)
+
+                          return valueComponentTemplate(
+                            selectOptions.pillTransformer
+                              ? selectOptions.pillTransformer
+                              : selectOptions.optionTransformer,
+                            selectOptions?.labelColor,
+                          )({
+                            option,
+                            value: formValue,
+                            onRemove: () => handleValueRemove(formValue),
+                          })
                         })
                       ) : (
                         <Input.Placeholder>{`Pick one or more ${pluralize(lowerFirst(itemName))}`}</Input.Placeholder>
