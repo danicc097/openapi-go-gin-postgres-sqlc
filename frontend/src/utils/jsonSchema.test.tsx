@@ -333,6 +333,8 @@ describe('form generation', () => {
       </MantineProvider>,
     )
 
+    console.log(view.container.innerHTML)
+
     const ids = [
       'demoWorkItemCreateForm-base.closed',
       'demoWorkItemCreateForm-base.closed-label',
@@ -389,7 +391,6 @@ describe('form generation', () => {
     ]
 
     const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id)
-    console.log(actualIds.sort())
     expect(actualIds.sort()).toEqual(ids.sort())
 
     const dataTestIds = [

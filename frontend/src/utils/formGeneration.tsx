@@ -692,8 +692,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     placeholder: `Enter ${lowerFirst(singularize(options.labels[schemaKey] || ''))}`,
   }
 
-  let el: JSX.Element | null = null
-  const customEl: JSX.Element | null = null
+  let formFieldComponent: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
   // TODO: componentPropsFn must return {}
   const componentPropsFn = options.input?.[schemaKey]?.propsFn
@@ -715,7 +714,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   }, [selectFocused])
 
   if (component) {
-    el = React.cloneElement(component, {
+    // explicit component given
+    formFieldComponent = React.cloneElement(component, {
       ..._props,
       // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
       // props
@@ -729,7 +729,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   } else if (selectOptions) {
     switch (selectOptions.type) {
       case 'select':
-        el = (
+        formFieldComponent = (
           <CustomSelect
             formField={formField}
             registerOnChange={registerOnChange}
@@ -739,7 +739,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'multiselect':
-        el = (
+        formFieldComponent = (
           <CustomMultiselect
             formField={formField}
             registerOnChange={registerOnChange}
@@ -755,7 +755,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   } else {
     switch (schemaFields[schemaKey]?.type) {
       case 'string':
-        el = (
+        formFieldComponent = (
           <TextInput
             onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.value } })}
             {..._props}
@@ -763,7 +763,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'boolean':
-        el = (
+        formFieldComponent = (
           <Checkbox
             onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.checked } })}
             pt={10}
@@ -773,7 +773,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'date':
-        el = (
+        formFieldComponent = (
           <DateInput
             valueFormat="DD/MM/YYYY"
             onChange={(e) =>
@@ -787,7 +787,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'date-time':
-        el = (
+        formFieldComponent = (
           <DateTimePicker
             onChange={(e) =>
               registerOnChange({
@@ -800,10 +800,12 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'integer':
-        el = <NumberInput onChange={(e) => registerOnChange({ target: { name: formField, value: e } })} {..._props} />
+        formFieldComponent = (
+          <NumberInput onChange={(e) => registerOnChange({ target: { name: formField, value: e } })} {..._props} />
+        )
         break
       case 'number':
-        el = (
+        formFieldComponent = (
           <NumberInput
             onChange={(e) => registerOnChange({ target: { name: formField, value: e } })}
             precision={2}
@@ -818,7 +820,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   return (
     <Flex align="center" gap={6} justify={'center'} {...props?.container}>
-      {customEl || el}
+      {formFieldComponent}
       {index !== undefined && (
         <RemoveButton
           formField={formFieldArrayPath}
@@ -926,6 +928,7 @@ type CustomPillProps = {
   value: any
   schemaKey: SchemaKey
   handleValueRemove: (val: string) => void
+  props?: React.HTMLProps<HTMLDivElement>
 }
 
 type CustomMultiselectProps = {
@@ -1163,7 +1166,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
   )
 }
 
-function CustomPill({ value, schemaKey, handleValueRemove }: CustomPillProps): JSX.Element {
+function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPillProps): JSX.Element {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const selectOptions = options.selectOptions![schemaKey]!
 
@@ -1185,6 +1188,7 @@ function CustomPill({ value, schemaKey, handleValueRemove }: CustomPillProps): J
           color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'};
         }
       `}
+      {...props}
     >
       <Box className={classes.valueComponentInnerBox}>{transformer(option)}</Box>
       <CloseButton
