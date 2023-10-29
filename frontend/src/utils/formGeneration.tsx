@@ -145,39 +145,6 @@ const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, op
   return <Box m={2}>{transformer(option)}</Box>
 }
 
-interface PillComponentProps extends React.ComponentPropsWithoutRef<'div'> {
-  value: string
-  option: any
-  onRemove?(): void
-  transformer: (...args: any[]) => JSX.Element
-  colorFn?: (...args: any[]) => string
-}
-
-const pillComponentTemplate = ({ value, option, onRemove, transformer, colorFn, ...others }: PillComponentProps) => {
-  let color
-  if (colorFn) {
-    color = colorFn(option)
-  }
-  return (
-    <div {...others} key={option}>
-      <Box
-        className={classes.valueComponentOuterBox}
-        css={css`
-          background-color: ${color};
-          * {
-            color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'};
-          }
-        `}
-      >
-        <Box className={classes.valueComponentInnerBox} css={css``}>
-          {transformer(option)}
-        </Box>
-        <CloseButton onMouseDown={onRemove} variant="transparent" size={22} iconSize={14} tabIndex={-1} />
-      </Box>
-    </div>
-  )
-}
-
 export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
   labels: {
     [key in Exclude<U, ExcludeKeys>]: string | null
@@ -912,21 +879,14 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                   <PillsInput pointer onClick={() => combobox.toggleDropdown()}>
                     <Pill.Group>
                       {formValues.length > 0 ? (
-                        formValues.map((formValue) => {
-                          const option = selectOptions.values.find(
-                            (option) => selectOptions.formValueTransformer(option) === formValue,
-                          )
-
-                          return pillComponentTemplate({
-                            option,
-                            value: formValue,
-                            onRemove: () => handleValueRemove(formValue),
-                            transformer: selectOptions.pillTransformer
-                              ? selectOptions.pillTransformer
-                              : selectOptions.optionTransformer,
-                            colorFn: selectOptions?.labelColor,
-                          })
-                        })
+                        formValues.map((formValue, i) => (
+                          <CustomPill
+                            key={`${formField}-${i}-pill`}
+                            value={formValue}
+                            handleValueRemove={handleValueRemove}
+                            schemaKey={schemaKey}
+                          />
+                        ))
                       ) : (
                         <Input.Placeholder>{`Pick ${pluralize(lowerFirst(itemName))}`}</Input.Placeholder>
                       )}
@@ -948,6 +908,12 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 </Combobox.DropdownTarget>
 
                 <Combobox.Dropdown>
+                  <Combobox.Search
+                    miw={'100%'}
+                    value={search}
+                    onChange={(event) => setSearch(event.currentTarget.value)}
+                    placeholder={`Search ${lowerFirst(itemName)}`}
+                  />
                   <Combobox.Options>{comboboxOptions}</Combobox.Options>
                 </Combobox.Dropdown>
               </Combobox>
@@ -1177,4 +1143,45 @@ const initialValueByType = (type?: SchemaField['type']) => {
       console.log(`unknown type: ${type}`)
       return ''
   }
+}
+
+type CustomPillProps = {
+  value: any
+  schemaKey: SchemaKey
+  handleValueRemove: (val: string) => void
+}
+
+function CustomPill({ value, schemaKey, handleValueRemove }: CustomPillProps): JSX.Element {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+  const selectOptions = options.selectOptions![schemaKey]!
+
+  const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
+
+  let color
+  if (selectOptions?.labelColor) {
+    color = selectOptions?.labelColor(option)
+  }
+
+  const transformer = selectOptions.pillTransformer ? selectOptions.pillTransformer : selectOptions.optionTransformer
+
+  return (
+    <Box
+      className={classes.valueComponentOuterBox}
+      css={css`
+        background-color: ${color};
+        * {
+          color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'};
+        }
+      `}
+    >
+      <Box className={classes.valueComponentInnerBox}>{transformer(option)}</Box>
+      <CloseButton
+        onMouseDown={() => handleValueRemove(value)}
+        variant="transparent"
+        size={22}
+        iconSize={14}
+        tabIndex={-1}
+      />
+    </Box>
+  )
 }

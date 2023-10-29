@@ -217,12 +217,10 @@ export default function Layout({ children }: LayoutProps) {
         <AppShell.Footer p="md">
           <div className={classes.footer}>
             <Container className={classes.inner}>
-              <Text fz="xs">
-                <Group align="left">
-                  <p>Copyright © {new Date().getFullYear()}</p>
-                  <p>Build version: {CONFIG.BUILD_VERSION ?? 'DEVELOPMENT'}</p>
-                </Group>
-              </Text>
+              <Group align="left">
+                <Text size={'xs'}>Copyright © {new Date().getFullYear()}</Text>
+                <Text size={'xs'}>Build version: {CONFIG.BUILD_VERSION ?? 'DEVELOPMENT'}</Text>
+              </Group>
               <Group gap={15} className={classes.links} align="right">
                 <Tooltip label={`Follow us on Twitter`}>
                   <ActionIcon size="sm" variant="subtle">
