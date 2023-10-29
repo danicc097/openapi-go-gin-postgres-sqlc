@@ -59,6 +59,7 @@ import { fullFormats } from 'ajv-formats/dist/formats'
 import { nameInitials } from 'src/utils/strings'
 import WorkItemRoleBadge from 'src/components/Badges/WorkItemRoleBadge'
 import { WORK_ITEM_ROLES } from 'src/services/authorization'
+import { v4 as uuidv4 } from 'uuid'
 
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
@@ -240,7 +241,7 @@ const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectMa
 const members = [...Array(10)].map((x, i) => {
   const user = getGetCurrentUserMock()
   user.email = `${i}@mail.com`
-  user.userID = `${i}ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65`
+  user.userID = uuidv4()
   return user
 })
 
