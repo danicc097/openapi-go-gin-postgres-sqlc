@@ -15,6 +15,7 @@
     "test-types:no-watch": "vitest typecheck --run",
     "test-types": "vitest typecheck"
   },
+  "type": "module",
   "dependencies": {
     "@babel/core": "^7.20.2",
     "@emotion/babel-plugin": "^11.11.0",
