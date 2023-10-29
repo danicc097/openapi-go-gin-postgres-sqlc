@@ -9,6 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"github.com/rs/cors"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/text/language"
 	"gopkg.in/square/go-jose.v2"
 
@@ -66,6 +68,12 @@ var (
 		},
 	}
 )
+
+var tracer trace.Tracer
+
+func init() {
+	tracer = otel.Tracer("github.com/zitadel/oidc/pkg/op")
+}
 
 type OpenIDProvider interface {
 	Configuration
@@ -161,8 +169,15 @@ func NewOpenIDProvider(issuer string, config *Config, storage Storage, opOpts ..
 	return newProvider(config, storage, StaticIssuer(issuer), opOpts...)
 }
 
+// NewForwardedOpenIDProvider tries to establishes the issuer from the request Host.
 func NewDynamicOpenIDProvider(path string, config *Config, storage Storage, opOpts ...Option) (*Provider, error) {
 	return newProvider(config, storage, IssuerFromHost(path), opOpts...)
+}
+
+// NewForwardedOpenIDProvider tries to establish the Issuer from a Forwarded request header, if it is set.
+// See [IssuerFromForwardedOrHost] for details.
+func NewForwardedOpenIDProvider(path string, config *Config, storage Storage, opOpts ...Option) (*Provider, error) {
+	return newProvider(config, storage, IssuerFromForwardedOrHost(path), opOpts...)
 }
 
 func newProvider(config *Config, storage Storage, issuer func(bool) (IssuerFromRequest, error), opOpts ...Option) (_ *Provider, err error) {
