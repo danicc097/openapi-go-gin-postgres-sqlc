@@ -46,13 +46,13 @@ import { ajvResolver } from '@hookform/resolvers/ajv'
 import dayjs from 'dayjs'
 import { ErrorBoundary } from 'react-error-boundary'
 import { CodeHighlight } from '@mantine/code-highlight'
-import { initial } from 'lodash'
+import _, { initial } from 'lodash'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import { colorBlindPalette } from 'src/utils/colors'
 import { validateJson } from 'src/client-validator/validate'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
-import { IconTag } from '@tabler/icons'
+import { IconCircle, IconTag } from '@tabler/icons'
 import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 import useRenders from 'src/hooks/utils/useRenders'
 import { fullFormats } from 'ajv-formats/dist/formats'
@@ -247,7 +247,7 @@ const members = [...Array(10)].map((x, i) => {
 const tags = [...Array(10)].map((x, i) => {
   const tag: DbWorkItemTag = {
     name: `tag #${i}`,
-    color: `#aaa${i}32`,
+    color: _.sample(colorBlindPalette)!,
     workItemTagID: i,
     projectID: 1,
     description: `description for tag #${i}`,
@@ -494,8 +494,10 @@ export default function App() {
                                   optionTransformer(el) {
                                     return (
                                       <Group align="center">
-                                        <Flex align={'center'}></Flex>
-                                        <div>{el?.name}</div>
+                                        <Flex align="center" gap={12} justify="center">
+                                          <IconCircle size={12} fill={el.color} />
+                                          <div>{el.name}</div>
+                                        </Flex>
                                       </Group>
                                     )
                                   },

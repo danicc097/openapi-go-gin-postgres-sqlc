@@ -700,21 +700,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const selectOptions = options.selectOptions?.[schemaKey]
   const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
-  const [search, setSearch] = useState('')
 
   const { ref: focusRef, focused: selectFocused } = useFocusWithin()
-
-  const combobox = useCombobox({
-    onDropdownClose: () => {
-      combobox.resetSelectedOption()
-      combobox.focusTarget()
-      setSearch('')
-    },
-
-    onDropdownOpen: () => {
-      combobox.focusSearchInput()
-    },
-  })
 
   useEffect(() => {
     if (isSelectVisible) {
@@ -742,84 +729,14 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   } else if (selectOptions) {
     switch (selectOptions.type) {
       case 'select':
-        {
-          const selectedOption = selectOptions.values.find((option) => {
-            return selectOptions.formValueTransformer(option) === form.getValues(formField)
-          })
-
-          const comboboxOptions = selectOptions.values
-            .filter((item: any) =>
-              JSON.stringify(selectOptions.searchValueTransformer ? selectOptions.searchValueTransformer(item) : item)
-                .toLowerCase()
-                .includes(search.toLowerCase().trim()),
-            )
-            .map((option) => {
-              const value = String(selectOptions.formValueTransformer(option))
-
-              return (
-                <Combobox.Option value={value} key={value}>
-                  {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
-                </Combobox.Option>
-              )
-            })
-
-          el = (
-            <Box miw={'100%'}>
-              <Combobox
-                store={combobox}
-                withinPortal={true}
-                position="bottom-start"
-                withArrow
-                onOptionSubmit={async (value) => {
-                  const option = selectOptions.values.find(
-                    (option) => String(selectOptions.formValueTransformer(option)) === value,
-                  )
-                  console.log({ onChangeOption: option })
-                  if (!option) return
-                  await registerOnChange({
-                    target: {
-                      name: formField,
-                      value: selectOptions.formValueTransformer(option),
-                    },
-                  })
-                  setIsSelectVisible(false)
-                  combobox.closeDropdown()
-                }}
-              >
-                <Combobox.Target withAriaAttributes={false}>
-                  <InputBase
-                    className={classes.select}
-                    component="button"
-                    type="button"
-                    pointer
-                    rightSection={<Combobox.Chevron />}
-                    onClick={() => combobox.toggleDropdown()}
-                    rightSectionPointerEvents="none"
-                    multiline
-                  >
-                    {selectedOption ? (
-                      comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
-                    ) : (
-                      <Input.Placeholder>{`Pick ${lowerFirst(itemName)}`}</Input.Placeholder>
-                    )}
-                  </InputBase>
-                </Combobox.Target>
-
-                <Combobox.Dropdown>
-                  <Combobox.Search
-                    miw={'100%'}
-                    value={search}
-                    onChange={(event) => setSearch(event.currentTarget.value)}
-                    placeholder={`Search ${lowerFirst(itemName)}`}
-                  />
-                  <Combobox.Options>
-                    {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
-                  </Combobox.Options>
-                </Combobox.Dropdown>
-              </Combobox>
-            </Box>
-          )
-        }
+        el = (
+          <CustomSelect
+            formField={formField}
+            registerOnChange={registerOnChange}
+            schemaKey={schemaKey}
+            itemName={itemName}
+          />
+        )
         break
       case 'multiselect':
         el = (
@@ -1135,6 +1052,111 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
                   placeholder={`Search ${lowerFirst(itemName)}`}
                 /> */}
           <Combobox.Options>{comboboxOptions}</Combobox.Options>
+        </Combobox.Dropdown>
+      </Combobox>
+    </Box>
+  )
+}
+
+type CustomSelectProps = {
+  formField: FormField
+  registerOnChange: ChangeHandler
+  schemaKey: SchemaKey
+  itemName: string
+}
+
+function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: CustomSelectProps) {
+  const form = useFormContext()
+  const { formName, options, schemaFields } = useDynamicFormContext()
+
+  const selectOptions = options.selectOptions![schemaKey]!
+  const formValues = (form.getValues(formField) as any[]) || []
+
+  const [search, setSearch] = useState('')
+
+  const combobox = useCombobox({
+    onDropdownClose: () => {
+      combobox.resetSelectedOption()
+      combobox.focusTarget()
+      setSearch('')
+    },
+
+    onDropdownOpen: () => {
+      combobox.focusSearchInput()
+    },
+  })
+
+  const selectedOption = selectOptions.values.find((option) => {
+    return selectOptions.formValueTransformer(option) === form.getValues(formField)
+  })
+
+  const comboboxOptions = selectOptions.values
+    .filter((item: any) =>
+      JSON.stringify(selectOptions.searchValueTransformer ? selectOptions.searchValueTransformer(item) : item)
+        .toLowerCase()
+        .includes(search.toLowerCase().trim()),
+    )
+    .map((option) => {
+      const value = String(selectOptions.formValueTransformer(option))
+
+      return (
+        <Combobox.Option value={value} key={value}>
+          {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+        </Combobox.Option>
+      )
+    })
+
+  return (
+    <Box miw={'100%'}>
+      <Combobox
+        store={combobox}
+        withinPortal={true}
+        position="bottom-start"
+        withArrow
+        onOptionSubmit={async (value) => {
+          const option = selectOptions.values.find(
+            (option) => String(selectOptions.formValueTransformer(option)) === value,
+          )
+          console.log({ onChangeOption: option })
+          if (!option) return
+          await registerOnChange({
+            target: {
+              name: formField,
+              value: selectOptions.formValueTransformer(option),
+            },
+          })
+          combobox.closeDropdown()
+        }}
+      >
+        <Combobox.Target withAriaAttributes={false}>
+          <InputBase
+            className={classes.select}
+            component="button"
+            type="button"
+            pointer
+            rightSection={<Combobox.Chevron />}
+            onClick={() => combobox.toggleDropdown()}
+            rightSectionPointerEvents="none"
+            multiline
+          >
+            {selectedOption ? (
+              comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
+            ) : (
+              <Input.Placeholder>{`Pick ${lowerFirst(itemName)}`}</Input.Placeholder>
+            )}
+          </InputBase>
+        </Combobox.Target>
+
+        <Combobox.Dropdown>
+          <Combobox.Search
+            miw={'100%'}
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+            placeholder={`Search ${lowerFirst(itemName)}`}
+          />
+          <Combobox.Options>
+            {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
+          </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
     </Box>
