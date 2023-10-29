@@ -86,7 +86,7 @@ type Reflector struct {
 	DefaultOptions   []func(*ReflectContext)
 	typesMap         map[reflect.Type]interface{}
 	inlineDefinition map[refl.TypeString]bool
-	defNames         map[reflect.Type]string
+	defNameTypes     map[string]reflect.Type
 }
 
 // AddTypeMapping creates substitution link between types of src and dst when reflecting JSON Schema.
@@ -194,6 +194,8 @@ func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
 //   - `uniqueItems`, https://json-schema.org/draft-04/json-schema-validation.html#rfc.section.5.3.4
 //   - `enum`, tag value must be a JSON or comma-separated list of strings,
 //     https://json-schema.org/draft-04/json-schema-validation.html#rfc.section.5.5.1
+//   - `required`, boolean, marks property as required
+//   - `nullable`, boolean, overrides nullability of a property
 //
 // Unnamed fields can be used to configure parent schema:
 //
@@ -634,14 +636,11 @@ func (r *Reflector) defName(rc *ReflectContext, t reflect.Type) string {
 		return ""
 	}
 
-	if r.defNames == nil {
-		r.defNames = map[reflect.Type]string{}
+	if r.defNameTypes == nil {
+		r.defNameTypes = map[string]reflect.Type{}
 	}
 
-	defName, found := r.defNames[t]
-	if found {
-		return defName
-	}
+	var defName string
 
 	try := 1
 
@@ -665,7 +664,7 @@ func (r *Reflector) defName(rc *ReflectContext, t reflect.Type) string {
 
 		conflict := false
 
-		for tt, dn := range r.defNames {
+		for dn, tt := range r.defNameTypes {
 			if dn == defName && tt != t {
 				conflict = true
 
@@ -674,7 +673,7 @@ func (r *Reflector) defName(rc *ReflectContext, t reflect.Type) string {
 		}
 
 		if !conflict {
-			r.defNames[t] = defName
+			r.defNameTypes[defName] = t
 
 			return defName
 		}
@@ -930,11 +929,17 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 		omitEmpty := strings.Contains(tag, ",omitempty")
 		required := false
 
+		var nullable *bool
+
 		if propName == "" {
 			propName = field.Name
 		}
 
 		if err := refl.ReadBoolTag(field.Tag, "required", &required); err != nil {
+			return err
+		}
+
+		if err := refl.ReadBoolPtrTag(field.Tag, "nullable", &nullable); err != nil {
 			return err
 		}
 
@@ -949,10 +954,11 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 
 		if rc.interceptProp != nil {
 			if err := rc.interceptProp(InterceptPropParams{
-				Context: rc,
-				Path:    rc.Path,
-				Name:    propName,
-				Field:   field,
+				Context:      rc,
+				Path:         rc.Path,
+				Name:         propName,
+				Field:        field,
+				ParentSchema: parent,
 			}); err != nil {
 				if errors.Is(err, ErrSkipProperty) {
 					rc.Path = rc.Path[:len(rc.Path)-1]
@@ -973,7 +979,7 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 			return err
 		}
 
-		checkNullability(&propertySchema, rc, ft, omitEmpty)
+		checkNullability(&propertySchema, rc, ft, omitEmpty, nullable)
 
 		if !rc.SkipNonConstraints {
 			err = checkInlineValue(&propertySchema, field, "default", propertySchema.WithDefault)
@@ -1018,6 +1024,7 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 				Name:           propName,
 				Field:          field,
 				PropertySchema: &propertySchema,
+				ParentSchema:   parent,
 				Processed:      true,
 			}); err != nil {
 				if errors.Is(err, ErrSkipProperty) {
@@ -1137,7 +1144,7 @@ func checkInlineValue(propertySchema *Schema, field reflect.StructField, tag str
 //   - Array, slice accepts `null` as a value.
 //   - Object without properties, it is a map, and it accepts `null` as a value.
 //   - Pointer type.
-func checkNullability(propertySchema *Schema, rc *ReflectContext, ft reflect.Type, omitEmpty bool) {
+func checkNullability(propertySchema *Schema, rc *ReflectContext, ft reflect.Type, omitEmpty bool, nullable *bool) {
 	in := InterceptNullabilityParams{
 		Context:    rc,
 		OrigSchema: *propertySchema,
@@ -1151,6 +1158,20 @@ func checkNullability(propertySchema *Schema, rc *ReflectContext, ft reflect.Typ
 			rc.InterceptNullability(in)
 		}
 	}()
+
+	if nullable != nil {
+		if *nullable {
+			propertySchema.AddType(Null)
+
+			in.NullAdded = true
+		} else if propertySchema.Ref == nil && propertySchema.HasType(Null) {
+			propertySchema.RemoveType(Null)
+
+			in.NullAdded = false
+		}
+
+		return
+	}
 
 	if omitEmpty {
 		return
