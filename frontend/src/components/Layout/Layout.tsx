@@ -223,23 +223,23 @@ export default function Layout({ children }: LayoutProps) {
                   <p>Build version: {CONFIG.BUILD_VERSION ?? 'DEVELOPMENT'}</p>
                 </Group>
               </Text>
-              <Group gap={0} className={classes.links} align="right">
+              <Group gap={15} className={classes.links} align="right">
                 <Tooltip label={`Follow us on Twitter`}>
-                  <ActionIcon size="lg">
+                  <ActionIcon size="sm" variant="subtle">
                     <a href="#" target="_blank" rel="noopener noreferrer">
                       <IconBrandTwitter size={18} stroke={1.5} color="#2d8bb3" />
                     </a>
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={`Follow us on YouTube`}>
-                  <ActionIcon>
+                  <ActionIcon size="sm" variant="subtle">
                     <a href="#" target="_blank" rel="noopener noreferrer">
                       <IconBrandYoutube size={18} stroke={1.5} color="#d63808" />
                     </a>
                   </ActionIcon>
                 </Tooltip>
                 <Tooltip label={`Follow us on Instagram`}>
-                  <ActionIcon size="lg">
+                  <ActionIcon size="sm" variant="subtle">
                     <a href="#" target="_blank" rel="noopener noreferrer">
                       <IconBrandInstagram size={18} stroke={1.5} color="#e15d16" />
                     </a>
