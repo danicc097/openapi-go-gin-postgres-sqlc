@@ -21,6 +21,8 @@ const (
 	ErrNeedPointer          = SentinelError("could not find field value in struct")
 	ErrMissingFieldValue    = SentinelError("can not take address of structure, please pass a pointer")
 	ErrMissingStructOrField = SentinelError("structPtr and fieldPtr are required")
+	ErrEmptyFields          = SentinelError("empty fields")
+	ErrStructExpected       = SentinelError("struct expected")
 )
 
 // HasTaggedFields checks if the structure has fields with tag name.
@@ -74,7 +76,21 @@ func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.Struct
 			fieldVal = fieldVal.Addr()
 		}
 
+		// Don't traverse unexported non-anonymous fields.
+		if field.PkgPath != "" && !field.Anonymous {
+			continue
+		}
+
 		f(fieldVal, field, path)
+
+		if len(path) > 100 {
+			pp := ""
+			for _, p := range path[0:10] {
+				pp += "." + p.Name
+			}
+
+			panic("too deep recursion, possible cyclic reference: " + pp)
+		}
 
 		walkFieldsRecursively(fieldVal, f, append(path, field))
 	}
