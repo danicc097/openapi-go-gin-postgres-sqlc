@@ -826,6 +826,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
           const handleValueRemove = (val: string) => {
             console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
+            form.unregister(formField) // needs to be called before setValue
             form.setValue(
               formField,
               formValues.filter((v) => v !== val),
@@ -857,6 +858,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 </Combobox.Option>
               )
             })
+
+          console.log({ formValues })
 
           el = (
             <Box miw={'100%'}>
@@ -898,6 +901,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                           onKeyDown={(event) => {
                             if (event.key === 'Backspace') {
                               event.preventDefault()
+                              form.unregister(formField) // needs to be called before setValue
                               form.setValue(formField, formValues)
                             }
                           }}
@@ -908,12 +912,13 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 </Combobox.DropdownTarget>
 
                 <Combobox.Dropdown>
-                  <Combobox.Search
+                  {/* FIXME: not opening search */}
+                  {/* <Combobox.Search
                     miw={'100%'}
                     value={search}
                     onChange={(event) => setSearch(event.currentTarget.value)}
                     placeholder={`Search ${lowerFirst(itemName)}`}
-                  />
+                  /> */}
                   <Combobox.Options>{comboboxOptions}</Combobox.Options>
                 </Combobox.Dropdown>
               </Combobox>
@@ -1076,7 +1081,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
           // we could even implement flat array reordering by handling them internally as objects with id prop
           const listItems = form.getValues(formField)
           removeElementByIndex(listItems, index)
-          form.unregister(formField) // needs to be before setValue
+          form.unregister(formField) // needs to be called before setValue
           form.setValue(formField, listItems as any)
         }}
         // variant="filled"
@@ -1116,6 +1121,7 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
               const vals = form.getValues(formField) || []
               console.log([...vals, initialValue] as any)
 
+              form.unregister(formField) // needs to be called before setValue
               form.setValue(formField, [...vals, initialValue] as any)
             }}
             variant="filled"
