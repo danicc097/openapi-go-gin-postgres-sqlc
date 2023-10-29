@@ -490,6 +490,9 @@ export default function App() {
                                 }),
                                 tagIDs: selectOptionsBuilder({
                                   type: 'multiselect',
+                                  searchValueTransformer(el) {
+                                    return el.name
+                                  },
                                   values: tags,
                                   optionTransformer(el) {
                                     return (
