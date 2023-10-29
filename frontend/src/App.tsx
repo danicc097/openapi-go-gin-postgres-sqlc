@@ -484,7 +484,7 @@ export default function App() {
                                   pillTransformer(el) {
                                     return <>{el.email}</>
                                   },
-                                  filterValueTransformer(el) {
+                                  searchValueTransformer(el) {
                                     return `${el.email} ${el.fullName} ${el.username}`
                                   },
                                 }),

@@ -98,7 +98,7 @@ export type SelectOptions<Return, E = unknown> = {
   /** Modify search behavior, e.g. matching against `${el.<field_1>} ${el.<field_2>} ${el.field_3}`.
    * It searches in the whole stringified object by default.
    */
-  filterValueTransformer?: <V extends E>(el: V & E) => string
+  searchValueTransformer?: <V extends E>(el: V & E) => string
   /**
    * Overrides combobox option components.
    */
@@ -123,7 +123,7 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   type,
   values,
   formValueTransformer,
-  filterValueTransformer,
+  searchValueTransformer,
   optionTransformer,
   pillTransformer,
   labelColor,
@@ -133,7 +133,7 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   optionTransformer,
   pillTransformer,
   formValueTransformer,
-  filterValueTransformer,
+  searchValueTransformer,
   labelColor,
 })
 
@@ -715,6 +715,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       combobox.focusSearchInput()
     },
   })
+
   useEffect(() => {
     if (isSelectVisible) {
       setCustomElMinHeight(selectRef.current?.clientHeight ?? 34.5)
@@ -748,7 +749,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
           const comboboxOptions = selectOptions.values
             .filter((item: any) =>
-              JSON.stringify(selectOptions.filterValueTransformer ? selectOptions.filterValueTransformer(item) : item)
+              JSON.stringify(selectOptions.searchValueTransformer ? selectOptions.searchValueTransformer(item) : item)
                 .toLowerCase()
                 .includes(search.toLowerCase().trim()),
             )
@@ -834,11 +835,17 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
           }
 
           const comboboxOptions = selectOptions.values
-            .filter((item: any) =>
-              JSON.stringify(selectOptions.filterValueTransformer ? selectOptions.filterValueTransformer(item) : item)
+            .filter((item: any) => {
+              const inSearch = JSON.stringify(
+                selectOptions.searchValueTransformer ? selectOptions.searchValueTransformer(item) : item,
+              )
                 .toLowerCase()
-                .includes(search.toLowerCase().trim()),
-            )
+                .includes(search.toLowerCase().trim())
+
+              const notSelected = !formValues.includes(selectOptions.formValueTransformer(item))
+
+              return inSearch && notSelected
+            })
             .map((option) => {
               const value = String(selectOptions.formValueTransformer(option))
 
@@ -858,8 +865,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 </Combobox.Option>
               )
             })
-
-          console.log({ formValues })
 
           el = (
             <Box miw={'100%'}>
@@ -881,7 +886,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                 <Combobox.DropdownTarget>
                   <PillsInput pointer onClick={() => combobox.toggleDropdown()}>
                     <Pill.Group>
-                      {formValues.length > 0 ? (
+                      {formValues.length > 0 &&
                         formValues.map((formValue, i) => (
                           <CustomPill
                             key={`${formField}-${i}-pill`}
@@ -889,17 +894,20 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
                             handleValueRemove={handleValueRemove}
                             schemaKey={schemaKey}
                           />
-                        ))
-                      ) : (
-                        <Input.Placeholder>{`Pick ${pluralize(lowerFirst(itemName))}`}</Input.Placeholder>
-                      )}
+                        ))}
 
                       <Combobox.EventsTarget>
                         <PillsInput.Field
-                          type="hidden"
+                          placeholder={`Search ${pluralize(lowerFirst(itemName))}`}
+                          onChange={(event) => {
+                            combobox.updateSelectedOptionIndex()
+                            setSearch(event.currentTarget.value)
+                          }}
+                          value={search}
+                          onFocus={() => combobox.openDropdown()}
                           onBlur={() => combobox.closeDropdown()}
                           onKeyDown={(event) => {
-                            if (event.key === 'Backspace') {
+                            if (event.key === 'Backspace' && search.length === 0) {
                               event.preventDefault()
                               form.unregister(formField) // needs to be called before setValue
                               form.setValue(formField, formValues)
