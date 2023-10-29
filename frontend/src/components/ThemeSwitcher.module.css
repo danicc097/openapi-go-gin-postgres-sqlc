@@ -4,8 +4,8 @@
   align-items: center;
   justify-content: space-between;
   border-radius: 1000px;
-  padding-left: light-dark(4px, var(--mantine-spacing-sm));
-  padding-right: light-dark(47px, 4px);
+  padding-left: 4px;
+  padding-right: 4px;
   width: 66px;
   height: 32px;
 }
@@ -20,4 +20,8 @@
 
 .value {
   line-height: 1;
+}
+
+.group {
+  justify-content: center;
 }

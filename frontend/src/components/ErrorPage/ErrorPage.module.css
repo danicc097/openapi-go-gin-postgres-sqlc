@@ -1,7 +1,7 @@
 .root {
   padding-bottom: 80px;
   min-height: calc(100vh - var(--footer-height) - var(--header-height));
-  background: light-dark(--mantine-color-white, --mantine-color-dark-7);
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
 }
 
 .label {

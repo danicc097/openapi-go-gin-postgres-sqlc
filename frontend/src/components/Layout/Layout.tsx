@@ -57,7 +57,6 @@ type LayoutProps = {
 export default function Layout({ children }: LayoutProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const theme = useMantineTheme()
   const [opened, { toggle }] = useDisclosure(false)
   const [userMenuOpened, setUserMenuOpened] = useState(false)
   const { user } = useAuthenticatedUser()
@@ -77,8 +76,9 @@ export default function Layout({ children }: LayoutProps) {
   const [logo, setLogo] = useState<string>(colorScheme === 'dark' ? logoDark : logoLight)
 
   useEffect(() => {
+    console.log('fsfdesf')
     setLogo(colorScheme === 'dark' ? logoDark : logoLight)
-  }, [theme])
+  }, [colorScheme])
 
   useEffect(() => {
     if (user && notify) {
@@ -134,13 +134,20 @@ export default function Layout({ children }: LayoutProps) {
         <AppShell.Header>
           <Group
             m={6}
+            pl={10}
+            pr={10}
             css={css`
               align-self: center;
-              position: apart;
+              justify-content: space-between;
             `}
           >
             <a href="/">
-              <img src={logo} css={css`var(--header-height) * 0.5`}></img>
+              <img
+                src={logo}
+                css={css`
+                  height: 30px;
+                `}
+              ></img>
             </a>
             <Menu
               width={220}
