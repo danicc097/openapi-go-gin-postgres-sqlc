@@ -1420,7 +1420,7 @@ x.db.restore() {
   file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
   echo "Migration revision: $dump_schema_v"
   if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
-    err "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
+    err "Schema version mismatch: $dump_schema_v (dump) != $file_schema_v (file). Dump has probably been renamed."
   fi
 }
 
