@@ -29,10 +29,10 @@
     "allowUnreachableCode": true,
     "noUncheckedIndexedAccess": true,
     "suppressImplicitAnyIndexErrors": false,
-    "paths": {
-      "@operationAuth": [
-        "operationAuth.gen.json"
-      ],
-    },
+    // "paths": {
+    //   "@operationAuth": [
+    //     "operationAuth.gen.json"
+    //   ],
+    // },
   },
 }

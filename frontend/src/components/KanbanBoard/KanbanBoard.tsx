@@ -12,7 +12,7 @@ import { generateColor } from 'src/utils/colors'
 import { css } from '@emotion/css'
 import type { ArrayElement } from 'src/types/utils'
 import { isValidURL } from 'src/utils/urls'
-import { removePrefix } from 'src/utils/strings'
+import { removePrefix } from 'src/utils/strings' <
 import { Text } from '@mantine/core'
 
 const exampleDemoWorkItem = {
