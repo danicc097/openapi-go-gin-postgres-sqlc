@@ -40,7 +40,7 @@ import { CodeHighlight } from '@mantine/code-highlight'
 import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
-import _, { lowerFirst, memoize } from 'lodash'
+import _, { lowerFirst, memoize, upperFirst } from 'lodash'
 import React, {
   useState,
   type ComponentProps,
@@ -506,7 +506,7 @@ function ArrayOfObjectsChildren({
         `}
       >
         <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
-          <Flex justify={'end'}>
+          <Flex justify={'end'} mb={10}>
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
           <Group>
@@ -1011,7 +1011,7 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
         withinPortal
       >
         <Combobox.DropdownTarget>
-          <PillsInput onClick={() => combobox.openDropdown()}>
+          <PillsInput label={pluralize(upperFirst(itemName))} onClick={() => combobox.openDropdown()}>
             <Pill.Group>
               {formValues.length > 0 &&
                 formValues.map((formValue, i) => (
@@ -1131,6 +1131,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
       >
         <Combobox.Target withAriaAttributes={false}>
           <InputBase
+            label={singularize(upperFirst(itemName))}
             className={classes.select}
             component="button"
             type="button"
@@ -1143,7 +1144,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
             {selectedOption ? (
               comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
             ) : (
-              <Input.Placeholder>{`Pick ${lowerFirst(itemName)}`}</Input.Placeholder>
+              <Input.Placeholder>{`Pick ${singularize(lowerFirst(itemName))}`}</Input.Placeholder>
             )}
           </InputBase>
         </Combobox.Target>
