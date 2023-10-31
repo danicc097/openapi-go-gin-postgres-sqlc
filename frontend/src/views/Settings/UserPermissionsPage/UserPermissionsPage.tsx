@@ -37,10 +37,14 @@ import {
   Tooltip,
   Divider,
   ComboboxItem,
+  Combobox,
+  useCombobox,
+  InputBase,
+  Input,
 } from '@mantine/core'
 import { CodeHighlight } from '@mantine/code-highlight'
 import { notifications } from '@mantine/notifications'
-import { IconCheck } from '@tabler/icons'
+import { IconCheck, IconCircle } from '@tabler/icons'
 import RoleBadge from 'src/components/Badges/RoleBadge'
 import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
@@ -61,8 +65,6 @@ type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean> = {}
 
 interface SelectUserItemProps extends React.ComponentPropsWithoutRef<'div'> {
-  label: string
-  value: User['email']
   user: User
 }
 
@@ -85,38 +87,32 @@ function scopeColor(scopeName?: string): DefaultMantineColor {
   }
 }
 
-const SelectRoleItem = forwardRef<HTMLDivElement, SelectRoleItemProps>(
-  ({ value, ...others }: SelectRoleItemProps, ref) => {
-    return (
-      <div ref={ref} {...others}>
-        <RoleBadge role={value} />
-      </div>
-    )
-  },
-)
+const SelectRoleItem = ({ value }: SelectRoleItemProps) => {
+  return (
+    <Combobox.Option value={value}>
+      <RoleBadge role={value} />
+    </Combobox.Option>
+  )
+}
 
-const SelectUserItem = forwardRef<HTMLDivElement, SelectUserItemProps>(
-  ({ value, user, ...others }: SelectUserItemProps, ref) => {
-    return (
-      <div ref={ref} {...others}>
-        <Group align="center">
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
-              {nameInitials(user.fullName || '')}
-            </Avatar>
-            <Space p={5} />
-            <RoleBadge role={user.role} />
-          </div>
-
-          <div style={{ marginLeft: 'auto' }}>{user?.email}</div>
-        </Group>
+const SelectUserItem = ({ user }: SelectUserItemProps) => {
+  return (
+    <Group align="center">
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
+          {nameInitials(user.fullName || '')}
+        </Avatar>
+        <Space p={5} />
+        <RoleBadge role={user.role} />
       </div>
-    )
-  },
-)
+
+      <div style={{ marginLeft: 'auto' }}>{user?.email}</div>
+    </Group>
+  )
+}
 
 export default function UserPermissionsPage() {
-  const [userSelection, setUserSelection] = useState<User | null>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps> | null>(null)
   const { user } = useAuthenticatedUser()
 
@@ -169,9 +165,9 @@ export default function UserPermissionsPage() {
   const submitRoleUpdate = async () => {
     const span = newFrontendSpan('submitRoleUpdate')
     try {
-      if (!userSelection) return
+      if (!selectedUser) return
       const updateUserAuthRequest = UpdateUserAuthRequestDecoder.decode(form.getValues())
-      const payload = await updateUserAuthorization(userSelection.userID, updateUserAuthRequest)
+      const payload = await updateUserAuthorization(selectedUser.userID, updateUserAuthRequest)
       console.log('fulfilled', payload)
       notifications.show({
         id: ToastId.FormSubmit,
@@ -226,7 +222,7 @@ export default function UserPermissionsPage() {
     const user = allUsers.find((user) => user.email === email)
     if (!user) return
     console.log(user)
-    setUserSelection(user)
+    setSelectedUser(user)
     form.setValue('role', user.role)
     form.setValue('scopes', user.scopes)
   }
@@ -245,6 +241,36 @@ export default function UserPermissionsPage() {
 
   useWatch({ name: 'role', control: form.control })
 
+  const selectedOption = userOptions?.find((option) => {
+    return option.user.email === selectedUser?.email
+  })
+
+  const [search, setSearch] = useState('')
+
+  const combobox = useCombobox({
+    onDropdownClose: () => {
+      combobox.resetSelectedOption()
+      combobox.focusTarget()
+      setSearch('')
+    },
+
+    onDropdownOpen: () => {
+      combobox.focusSearchInput()
+    },
+  })
+  const comboboxOptions =
+    userOptions
+      ?.filter((item: any) => JSON.stringify(item.value).toLowerCase().includes(search.toLowerCase().trim()))
+      .map((option) => {
+        const value = String(option.user.email)
+
+        return (
+          <Combobox.Option value={value} key={value}>
+            <SelectUserItem user={option.user} key={JSON.stringify(option.user)} />
+          </Combobox.Option>
+        )
+      }) || []
+
   const element = (
     <FormProvider {...form}>
       <ErrorCallout title={extractCalloutTitle()} errors={extractCalloutErrors()} />
@@ -257,7 +283,51 @@ export default function UserPermissionsPage() {
       <form onSubmit={form.handleSubmit(onRoleUpdateSubmit, handleError)}>
         <Flex direction="column">
           {/* TODO: in v7: https://mantine.dev/combobox/?e=SelectOptionComponent */}
-          <Select
+          <Combobox
+            store={combobox}
+            withinPortal={true}
+            position="bottom-start"
+            withArrow
+            onOptionSubmit={async (value) => {
+              const option = userOptions?.find((option) => String(option.user.email) === value)
+              console.log({ onChangeOption: option })
+              if (!option) return
+              onEmailSelectableChange(value)
+              combobox.closeDropdown()
+            }}
+          >
+            <Combobox.Target withAriaAttributes={false}>
+              <InputBase
+                className={classes.select}
+                component="button"
+                type="button"
+                pointer
+                rightSection={<Combobox.Chevron />}
+                onClick={() => combobox.toggleDropdown()}
+                rightSectionPointerEvents="none"
+                multiline
+              >
+                {selectedUser ? (
+                  <SelectUserItem user={selectedUser} key={JSON.stringify(selectedUser.email)} />
+                ) : (
+                  <Input.Placeholder>{`Pick user`}</Input.Placeholder>
+                )}
+              </InputBase>
+            </Combobox.Target>
+
+            <Combobox.Dropdown>
+              <Combobox.Search
+                miw={'100%'}
+                value={search}
+                onChange={(event) => setSearch(event.currentTarget.value)}
+                placeholder={`Search user`}
+              />
+              <Combobox.Options>
+                {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
+              </Combobox.Options>
+            </Combobox.Dropdown>
+          </Combobox>
+          {/* <Select
             label="Select user to update"
             value={SelectUserItem}
             data-test-subj="updateUserAuthForm__selectable"
@@ -271,7 +341,7 @@ export default function UserPermissionsPage() {
             }}
             data={userOptions ?? []}
             onChange={onEmailSelectableChange}
-          />
+          /> */}
           {/* TODO: {renderSuperSelect<UpdateUserAuthRequest, 'role'>({
             formKey: 'role',
             form,
@@ -281,10 +351,10 @@ export default function UserPermissionsPage() {
           })} */}
         </Flex>
         <Space pt={12} />
-        {userSelection?.email && (
+        {selectedUser?.email && (
           <>
             <Divider m={8} />
-            {isAuthorized({ user, requiredRole: userSelection.role }) && (
+            {isAuthorized({ user, requiredRole: selectedUser.role }) && (
               <>
                 <Select
                   label={
@@ -294,7 +364,7 @@ export default function UserPermissionsPage() {
                   }
                   itemComponent={SelectRoleItem}
                   data-test-subj="updateUserAuthForm__selectable_Role"
-                  defaultValue={userSelection.role}
+                  defaultValue={selectedUser.role}
                   data={roleOptions ?? []}
                   {...registerProps}
                   onChange={(value) => registerProps.onChange({ target: { name: 'role', value } })}
@@ -309,7 +379,7 @@ export default function UserPermissionsPage() {
               {entries(scopeEditPanels).map(([group, scopes]) => (
                 <CheckboxPanel
                   user={user}
-                  userSelection={userSelection}
+                  userSelection={selectedUser}
                   key={group}
                   title={group.replace(/-/g, ' ').replace(/^\w{1}/g, (c) => c.toUpperCase())}
                   scopes={scopes}
@@ -317,7 +387,7 @@ export default function UserPermissionsPage() {
               ))}
             </Card>
             <Space pt={24} />
-            <Button disabled={userSelection === null} data-test-subj="updateUserAuthForm__submit" onClick={showModal}>
+            <Button disabled={selectedUser === null} data-test-subj="updateUserAuthForm__submit" onClick={showModal}>
               Update authorization settings
             </Button>
           </>
@@ -326,7 +396,7 @@ export default function UserPermissionsPage() {
       <Modal
         opened={isModalVisible}
         title={
-          <Text fw={'bold'} size={18}>
+          <Text fw={'bold'} size={'md'}>
             Update auth information
           </Text>
         }
@@ -335,7 +405,7 @@ export default function UserPermissionsPage() {
       >
         <>
           {`You're about to update auth information for `}
-          <strong>{userSelection?.email}</strong>.<p>Are you sure you want to do this?</p>
+          <strong>{selectedUser?.email}</strong>.<p>Are you sure you want to do this?</p>
           <Group style={{ justifyContent: 'flex-end' }}>
             <Button variant="subtle" color="orange" onClick={closeModal}>
               Cancel
