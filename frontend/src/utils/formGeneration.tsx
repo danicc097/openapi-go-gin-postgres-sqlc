@@ -364,7 +364,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
 
     if (field.isArray && field.type !== 'object') {
       // nested array of nonbjects generation
-      return (
+      return accordion ? (
         <Card
           radius={cardRadius}
           key={schemaKey}
@@ -376,20 +376,18 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
           `}
         >
           {/* existing array fields, if any */}
-          {accordion ? (
+          {
             <FormAccordion schemaKey={schemaKey}>
               <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
               <Space p={10} />
               <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
             </FormAccordion>
-          ) : (
-            <>
-              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
-              <Space p={6} />
-              <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
-            </>
-          )}
+          }
         </Card>
+      ) : (
+        <>
+          <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
+        </>
       )
     }
 
@@ -1168,12 +1166,14 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
   )
 }
 
-function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPillProps): JSX.Element {
+function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const selectOptions = options.selectOptions![schemaKey]!
 
   const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
-
+  if (!option) {
+    return null
+  }
   let color
   if (selectOptions?.labelColor) {
     color = selectOptions?.labelColor(option)
