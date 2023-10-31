@@ -507,7 +507,7 @@ function ArrayOfObjectsChildren({
           <Flex justify={'end'} mb={10}>
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
-          <Group>
+          <Group gap={0}>
             <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${k}` as FormField} />
           </Group>
         </Card>

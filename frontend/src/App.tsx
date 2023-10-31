@@ -292,9 +292,10 @@ export default function App() {
     // TODO: formGeneration must not assume options do exist, else all fails catastrophically.
     // it's not just checking types...
     // 1. move callout errors state to zustand, and create callout warnings too
-    // 2. if option not found for initial data, remove from form values
+    // 2.(sol 1) if option not found for initial data, remove from form values
     // and show persistent callout _warning_ that X was deleted since it was not found.
     // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
+    // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
     tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
     // tagIDs: [0, 5, 8],
     demoProject: {
