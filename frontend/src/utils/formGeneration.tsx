@@ -386,6 +386,10 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
         </Card>
       ) : (
         <>
+          {/*
+          FIXME: should only header if it's not a multiselect. else its add and remove via buttons
+          which needs header for title and `+ add $item`
+          <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} /> */}
           <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
         </>
       )
