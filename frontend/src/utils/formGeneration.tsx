@@ -1047,14 +1047,12 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
         </Combobox.DropdownTarget>
 
         <Combobox.Dropdown>
-          {/* FIXME: not opening search */}
-          {/* <Combobox.Search
-                  miw={'100%'}
-                  value={search}
-                  onChange={(event) => setSearch(event.currentTarget.value)}
-                  placeholder={`Search ${lowerFirst(itemName)}`}
-                /> */}
-          <Combobox.Options>{comboboxOptions}</Combobox.Options>
+          <Combobox.Options
+            mah={200} // scrollable
+            style={{ overflowY: 'auto' }}
+          >
+            {comboboxOptions}
+          </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
     </Box>
@@ -1157,7 +1155,10 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
             onChange={(event) => setSearch(event.currentTarget.value)}
             placeholder={`Search ${lowerFirst(itemName)}`}
           />
-          <Combobox.Options>
+          <Combobox.Options
+            mah={200} // scrollable
+            style={{ overflowY: 'auto' }}
+          >
             {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
           </Combobox.Options>
         </Combobox.Dropdown>

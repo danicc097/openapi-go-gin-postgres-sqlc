@@ -308,7 +308,10 @@ export default function UserPermissionsPage() {
                 onChange={(event) => setSearch(event.currentTarget.value)}
                 placeholder={`Search user`}
               />
-              <Combobox.Options>
+              <Combobox.Options
+                mah={200} // scrollable
+                style={{ overflowY: 'auto' }}
+              >
                 {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
               </Combobox.Options>
             </Combobox.Dropdown>
