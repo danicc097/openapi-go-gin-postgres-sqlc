@@ -60,6 +60,8 @@ import { FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form
 import { nameInitials } from 'src/utils/strings'
 import type { AppError } from 'src/types/ui'
 import classes from './UserPermissionsPage.module.css'
+import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
+
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
 const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean> = {}
@@ -92,22 +94,6 @@ const SelectRoleItem = ({ value }: SelectRoleItemProps) => {
     <Combobox.Option value={value}>
       <RoleBadge role={value} />
     </Combobox.Option>
-  )
-}
-
-const SelectUserItem = ({ user }: SelectUserItemProps) => {
-  return (
-    <Group align="center">
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={user?.username}>
-          {nameInitials(user.fullName || '')}
-        </Avatar>
-        <Space p={5} />
-        <RoleBadge role={user.role} />
-      </div>
-
-      <div style={{ marginLeft: 'auto' }}>{user?.email}</div>
-    </Group>
   )
 }
 
@@ -266,7 +252,7 @@ export default function UserPermissionsPage() {
 
         return (
           <Combobox.Option value={value} key={value}>
-            <SelectUserItem user={option.user} key={JSON.stringify(option.user)} />
+            <UserComboboxOption user={option.user} key={JSON.stringify(option.user)} />
           </Combobox.Option>
         )
       }) || []
@@ -308,7 +294,7 @@ export default function UserPermissionsPage() {
                 multiline
               >
                 {selectedUser ? (
-                  <SelectUserItem user={selectedUser} key={JSON.stringify(selectedUser.email)} />
+                  <UserComboboxOption user={selectedUser} key={JSON.stringify(selectedUser.email)} />
                 ) : (
                   <Input.Placeholder>{`Pick user`}</Input.Placeholder>
                 )}
@@ -329,7 +315,7 @@ export default function UserPermissionsPage() {
           </Combobox>
           {/* <Select
             label="Select user to update"
-            value={SelectUserItem}
+            value={UserComboboxOption}
             data-test-subj="updateUserAuthForm__selectable"
             searchable
             filter={({ options, search }) => {

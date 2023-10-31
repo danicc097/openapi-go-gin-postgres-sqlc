@@ -65,6 +65,7 @@ import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
 import '@mantine/code-highlight/styles.css'
 import '@mantine/dates/styles.css'
+import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 
 const schema = {
   properties: {
@@ -255,20 +256,6 @@ const tags = [...Array(10)].map((x, i) => {
   } // TODO: get workitem tags endpoint
   return tag
 })
-
-const userIdOptionTransformer = (el: User) => {
-  return (
-    <Group align="center" mr={8}>
-      <Flex align={'center'}>
-        <Avatar size={'28px'} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
-          {nameInitials(el?.fullName || '')}
-        </Avatar>
-        <Space p={5} />
-      </Flex>
-      <Box ml={'auto'}>{el?.email}</Box>
-    </Group>
-  )
-}
 
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
@@ -478,7 +465,9 @@ export default function App() {
                                   //   values: ...
                                   //   ...userIdFormTransformers
                                   // }
-                                  optionTransformer: userIdOptionTransformer,
+                                  optionTransformer(el) {
+                                    return <UserComboboxOption user={el} />
+                                  },
                                   formValueTransformer(el) {
                                     return el.userID
                                   },
