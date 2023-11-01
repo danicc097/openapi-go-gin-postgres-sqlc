@@ -511,7 +511,7 @@ function ArrayOfObjectsChildren({
           <Flex justify={'end'} mb={10}>
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
-          <Group gap={0}>
+          <Group gap={10}>
             <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${k}` as FormField} />
           </Group>
         </Card>
@@ -536,6 +536,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
   const form = useFormContext()
   const theme = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
+  const itemName = singularize(options.labels[schemaKey] || '')
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
@@ -590,18 +591,19 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
   if (children.length === 0) return null
 
   return (
-    <Card radius={cardRadius} p={6} withBorder className={classes.arrayChildCard}>
-      <Flex
-        gap={6}
-        align="center"
-        direction="column"
-        css={css`
-          width: 100%;
-        `}
-      >
+    <Flex
+      gap={6}
+      align="left"
+      direction="column"
+      css={css`
+        width: 100%;
+      `}
+    >
+      <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
+      <Card radius={cardRadius} p={6} withBorder className={classes.arrayChildCard}>
         {children}
-      </Flex>
-    </Card>
+      </Card>
+    </Flex>
   )
 }
 
