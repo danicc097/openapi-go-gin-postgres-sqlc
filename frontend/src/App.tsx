@@ -41,7 +41,7 @@ import DynamicForm, {
 import type { DbWorkItemTag, User, WorkItemRole } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { validateField } from 'src/utils/validation'
-import { FormProvider, useForm, useWatch } from 'react-hook-form'
+import { FormProvider, useForm, useFormState, useWatch } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import dayjs from 'dayjs'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -66,6 +66,8 @@ import '@mantine/notifications/styles.css'
 import '@mantine/code-highlight/styles.css'
 import '@mantine/dates/styles.css'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
+import { useFormSlice } from 'src/slices/form'
+import { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
 
 const schema = {
   properties: {
@@ -318,12 +320,28 @@ export default function App() {
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors, defaultValues },
-  } = form
+  const { register, handleSubmit, control, formState } = form
+  const errors = formState.errors
+  const formSLice = useFormSlice()
+  const [errorSet, seterrorSet] = useState(false)
+  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } =
+    useCalloutErrors('demoWorkItemCreateForm')
+
+  useEffect(() => {
+    console.log('errors')
+    console.log(errors)
+    // if (Object.keys(errors).length > 0 && !errorSet) {
+    // setCalloutError('Validation error')
+
+    // console.log('errors')
+    // console.log(errors)
+
+    // setCalloutError('Validation error')
+    // seterrorSet(true)
+    // // console.log(formSLice.callout[formName])
+    // // console.log(`form has errors: ${Object.keys(errors).length > 0}`)
+    // }
+  }, [formState])
 
   // useEffect(() => {
   //   console.log(demoWorkItemCreateForm.values)

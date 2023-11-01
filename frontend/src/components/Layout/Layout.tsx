@@ -76,7 +76,6 @@ export default function Layout({ children }: LayoutProps) {
   const [logo, setLogo] = useState<string>(colorScheme === 'dark' ? logoDark : logoLight)
 
   useEffect(() => {
-    console.log('fsfdesf')
     setLogo(colorScheme === 'dark' ? logoDark : logoLight)
   }, [colorScheme])
 

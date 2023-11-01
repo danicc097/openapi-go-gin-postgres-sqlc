@@ -40,7 +40,7 @@ import { CodeHighlight } from '@mantine/code-highlight'
 import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
-import _, { lowerFirst, memoize, upperFirst } from 'lodash'
+import _, { lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
 import React, {
   useState,
   type ComponentProps,
@@ -266,10 +266,6 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
   const theme = useMantineTheme()
   const form = useFormContext()
   const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
-
-  useEffect(() => {
-    setCalloutError(new ApiError('Remote error message'))
-  }, [])
 
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.renderOrderPriority) {
@@ -1138,6 +1134,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
         </Combobox.Option>
       )
     })
+  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
   return (
     <Box miw={'100%'}>
@@ -1151,7 +1148,10 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
             (option) => String(selectOptions.formValueTransformer(option)) === value,
           )
           console.log({ onChangeOption: option })
-          if (!option) return
+          if (!option) {
+            setCalloutError(`${value} is not a valid ${itemName}`)
+            return
+          }
           await registerOnChange({
             target: {
               name: formField,
@@ -1202,10 +1202,14 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
 
 function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
+  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
   const selectOptions = options.selectOptions![schemaKey]!
+  const itemName = singularize(options.labels[schemaKey] || '')
 
   const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
   if (!option) {
+    console.log(`${value} is not a valid ${singularize(lowerCase(itemName))}`)
+
     return null
   }
   let color
