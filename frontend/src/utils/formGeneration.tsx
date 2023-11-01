@@ -265,10 +265,10 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors(formName)
+  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
   useEffect(() => {
-    setCalloutErrors(new ApiError('Remote error message'))
+    setCalloutError(new ApiError('Remote error message'))
   }, [])
 
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
@@ -295,7 +295,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <>
         <FormData />
-        <ErrorCallout title="Custom error title" errors={extractCalloutErrors()} />
+        <ErrorCallout title={extractCalloutTitle()} formName={formName} />
         <form
           onSubmit={onSubmit}
           css={css`

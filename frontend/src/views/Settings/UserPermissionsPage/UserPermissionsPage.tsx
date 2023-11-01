@@ -140,7 +140,7 @@ export default function UserPermissionsPage() {
     }
   }, [allUsers, userOptions])
 
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors()
+  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } = useCalloutErrors()
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 
@@ -163,15 +163,15 @@ export default function UserPermissionsPage() {
         autoClose: 15000,
         message: 'Submitted',
       })
-      setCalloutErrors(null)
+      setCalloutError(null)
     } catch (error) {
       console.error(error)
       if (error.validationErrors) {
-        setCalloutErrors(error.validationErrors)
+        setCalloutError(error.validationErrors)
         console.log('error')
         return
       }
-      setCalloutErrors(error)
+      setCalloutError(error)
     }
     span?.end()
   }
@@ -187,14 +187,14 @@ export default function UserPermissionsPage() {
       // so all validation errors are aggregated with full description in a callout)
       try {
         UpdateUserAuthRequestDecoder.decode(form.getValues())
-        setCalloutErrors(null)
+        setCalloutError(null)
       } catch (error) {
         if (error.validationErrors) {
-          setCalloutErrors(error.validationErrors)
+          setCalloutError(error.validationErrors)
           console.error(error)
           return
         }
-        setCalloutErrors(error)
+        setCalloutError(error)
       }
     }
   }

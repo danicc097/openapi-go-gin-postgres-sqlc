@@ -13,6 +13,8 @@ export default function ErrorCallout({ title, formName }: { title: string; formN
 
   if (!errors) return null
 
+  console.log({ errors })
+
   return errors?.length > 0 ? (
     <Alert icon={<IconAlertCircle size={16} />} title={title} color="red">
       {errors.map((error, i) => (
@@ -33,23 +35,32 @@ function renderCalloutError(error: CalloutError) {
 export const useCalloutErrors = (formName: string) => {
   const formSlice = useFormSlice()
   const calloutErrors = formSlice.callout[formName]?.errors
-  const setCalloutErrors = (error: CalloutError) => formSlice.setCalloutErrors(formName, error)
+  const setCalloutError = (error: CalloutError) => formSlice.setCalloutError(formName, error)
 
   const extractCalloutErrors = () => {
     const errors: string[] = []
 
     if (!calloutErrors) return []
-    console.log(calloutErrors)
+
     for (const calloutError of calloutErrors) {
       // TODO: instead construct based on spec HTTPError which internally could have validationError array with loc, etc, see FastAPI template
       // or a regular error with message, title, detail, status...
       // and construct appropriately
-      if (calloutError instanceof ApiError) errors.push(calloutError.message)
+      if (calloutError instanceof ApiError) {
+        errors.push(calloutError.message)
+        continue
+      }
 
       // external call error
-      if (calloutError instanceof AxiosError) errors.push(calloutError.message)
+      if (calloutError instanceof AxiosError) {
+        errors.push(calloutError.message)
+        continue
+      }
 
-      if (typeof calloutError === 'string') errors.push(calloutError)
+      if (typeof calloutError === 'string') {
+        errors.push(calloutError)
+        continue
+      }
 
       // client side validation replaced by react hook form ajv resolver
       // error callout is just used for remote errors.
@@ -64,7 +75,7 @@ export const useCalloutErrors = (formName: string) => {
   }
 
   const extractCalloutTitle = () => {
-    if (!calloutErrors) return
+    if (!calloutErrors) return ''
 
     const unknownError = 'An unknown error ocurred'
 
@@ -89,15 +100,16 @@ export const useCalloutErrors = (formName: string) => {
 
       // external call error
       if (calloutErrors instanceof AxiosError) return unknownError
-
-      // errors unrelated to api calls -> no automatic title
     }
+
+    // errors unrelated to api calls -> validation error
+    return 'Validation error'
   }
 
   return {
     calloutErrors,
     extractCalloutErrors,
-    setCalloutErrors,
+    setCalloutError,
     extractCalloutTitle,
   }
 }

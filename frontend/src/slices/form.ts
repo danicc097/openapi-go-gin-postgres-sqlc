@@ -20,8 +20,8 @@ interface FormState {
       warnings: Array<CalloutWarning>
     }
   }
-  setCalloutWarnings: (formName: string, warning: CalloutWarning) => void
-  setCalloutErrors: (formName: string, error: CalloutError) => void
+  setCalloutWarning: (formName: string, warning: CalloutWarning) => void
+  setCalloutError: (formName: string, error: CalloutError) => void
 }
 
 const useFormSlice = create<FormState>()(
@@ -30,10 +30,11 @@ const useFormSlice = create<FormState>()(
     (set) => {
       return {
         callout: {},
-        setCalloutWarnings: (formName: string, warning: string | null) =>
+        setCalloutWarning: (formName: string, warning: string | null) =>
           set(
             (state) => {
-              const form = state.callout[formName] || { errors: [], warnings: [] }
+              const form: FormState['callout'][string] = state.callout[formName] || { errors: [], warnings: [] }
+
               return {
                 ...state,
                 callout: {
@@ -46,12 +47,13 @@ const useFormSlice = create<FormState>()(
               }
             },
             false,
-            `setCalloutWarnings`,
+            `setCalloutWarning`,
           ),
-        setCalloutErrors: (formName: string, error: AppError | null) =>
+        setCalloutError: (formName: string, error: AppError | null) =>
           set(
             (state) => {
-              const form = state.callout[formName] || { errors: [], warnings: [] }
+              const form: FormState['callout'][string] = state.callout[formName] || { errors: [], warnings: [] }
+
               return {
                 ...state,
                 callout: {
@@ -64,7 +66,7 @@ const useFormSlice = create<FormState>()(
               }
             },
             false,
-            `setCalloutErrors`,
+            `setCalloutError`,
           ),
       }
     },
