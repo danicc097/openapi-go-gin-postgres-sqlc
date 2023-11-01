@@ -515,8 +515,8 @@ go.opentelemetry.io/otel/exporters/stdout/stdouttrace
 ## explicit; go 1.20
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/metric/embedded
-# go.opentelemetry.io/otel/sdk v1.17.0
-## explicit; go 1.19
+# go.opentelemetry.io/otel/sdk v1.19.0
+## explicit; go 1.20
 go.opentelemetry.io/otel/sdk
 go.opentelemetry.io/otel/sdk/instrumentation
 go.opentelemetry.io/otel/sdk/internal
