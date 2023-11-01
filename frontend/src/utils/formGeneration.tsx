@@ -145,14 +145,18 @@ const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, op
   return <Box m={2}>{transformer(option)}</Box>
 }
 
-export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+export type DynamicFormOptions<
+  T extends object,
+  IgnoredFormKeys extends U | null,
+  U extends PropertyKey = GetKeys<T>,
+> = {
   labels: {
-    [key in Exclude<U, ExcludeKeys>]: string | null
+    [key in Exclude<U, IgnoredFormKeys>]: string | null
   }
-  renderOrderPriority?: Array<Exclude<keyof T, ExcludeKeys>>
+  renderOrderPriority?: Array<Exclude<keyof T, IgnoredFormKeys>>
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: DeepPartial<
+    [key in Exclude<U, IgnoredFormKeys>]: DeepPartial<
       PathType<
         T,
         // can fix key constraint error with U extends RecursiveKeyOf<T, ''> but not worth it due to cpu usage, just ignore
@@ -162,7 +166,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
     >
   }>
   selectOptions?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: ReturnType<
+    [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
       typeof selectOptionsBuilder<
         PathType<
           T,
@@ -177,7 +181,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
    * override default input component.
    */
   input?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: ReturnType<
+    [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
       typeof inputBuilder<
         PathType<
           T,
@@ -189,12 +193,13 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
     >
   }>
   propsOverride?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: {
+    [key in Exclude<U, IgnoredFormKeys>]: {
       description?: string
+      disabled?: boolean
     }
   }>
   accordion?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: {
+    [key in Exclude<U, IgnoredFormKeys>]: {
       defaultOpen?: boolean
       title?: JSX.Element
     }
@@ -228,9 +233,9 @@ const useDynamicFormContext = (): DynamicFormContextValue => {
   return context
 }
 
-type DynamicFormProps<T extends object, ExcludeKeys extends GetKeys<T> | null = null> = {
-  schemaFields: Record<Exclude<GetKeys<T>, ExcludeKeys>, SchemaField>
-  options: DynamicFormOptions<T, ExcludeKeys, GetKeys<T>>
+type DynamicFormProps<T extends object, IgnoredFormKeys extends GetKeys<T> | null = null> = {
+  schemaFields: Record<Exclude<GetKeys<T>, IgnoredFormKeys>, SchemaField>
+  options: DynamicFormOptions<T, IgnoredFormKeys, GetKeys<T>>
   formName: string
   onSubmit: React.FormEventHandler<HTMLFormElement>
 }
@@ -248,12 +253,16 @@ function renderTitle(key: FormField, title) {
 
 const cardRadius = 6
 
-export default function DynamicForm<T extends object, ExcludeKeys extends GetKeys<T> | null = null>({
+/**
+ *
+ * NOTE: arrays of arrays not supported.
+ */
+export default function DynamicForm<Form extends object, IgnoredFormKeys extends GetKeys<Form> | null = null>({
   formName,
   schemaFields,
   options,
   onSubmit,
-}: DynamicFormProps<T, ExcludeKeys>) {
+}: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
   const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors()

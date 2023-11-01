@@ -542,7 +542,8 @@ export default function App() {
                               // these should probably be all required later, to ensure formField is never used.
                               propsOverride: {
                                 'demoProject.line': {
-                                  description: 'This is some help text.',
+                                  description: 'This is some help text for a disabled field.',
+                                  disabled: true,
                                 },
                               },
                             }} // satisfies DynamicFormOptions<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
