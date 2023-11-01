@@ -298,7 +298,7 @@ export default function App() {
     // and show persistent callout _warning_ that X was deleted since it was not found.
     // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
     // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
-    tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+    tagIDs: [1, 2, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
     // tagIDs: [0, 5, 8],
     demoProject: {
       lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),

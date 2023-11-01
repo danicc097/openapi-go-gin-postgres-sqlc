@@ -40,7 +40,7 @@ import { CodeHighlight } from '@mantine/code-highlight'
 import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
-import _, { lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
+import _, { isArray, lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
 import React, {
   useState,
   type ComponentProps,
@@ -65,6 +65,7 @@ import {
   useFormState,
   type UseFormRegisterReturn,
   type ChangeHandler,
+  UseFormSetError,
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
@@ -693,14 +694,18 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     }
   }
 
-  const _props = {
-    ...registerProps,
+  const _propsWithoutRegister = {
     ...props?.input,
-    ...(propsOverride && propsOverride),
+    ...propsOverride,
     ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, formValue) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
     required: schemaFields[schemaKey]?.required && type !== 'boolean',
     placeholder: `Enter ${lowerFirst(singularize(options.labels[schemaKey] || ''))}`,
+  }
+
+  const _props = {
+    ...registerProps,
+    ..._propsWithoutRegister,
   }
 
   let formFieldComponent: JSX.Element | null = null
@@ -738,6 +743,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     // which do allow custom labels by default and doesnt need workaround
     // use them with tagIDs -> DbWorkItemTag[] -> tag.name
   } else if (selectOptions) {
+    const props = {
+      ..._propsWithoutRegister,
+      ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
+    }
     switch (selectOptions.type) {
       case 'select':
         formFieldComponent = (
@@ -746,6 +755,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             registerOnChange={registerOnChange}
             schemaKey={schemaKey}
             itemName={itemName}
+            {...props}
           />
         )
         break
@@ -756,6 +766,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
             registerOnChange={registerOnChange}
             schemaKey={schemaKey}
             itemName={itemName}
+            {...props}
           />
         )
 
@@ -966,7 +977,13 @@ type CustomMultiselectProps = {
   itemName: string
 }
 
-function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }: CustomMultiselectProps) {
+function CustomMultiselect({
+  formField,
+  registerOnChange,
+  schemaKey,
+  itemName,
+  ...inputProps
+}: CustomMultiselectProps) {
   const form = useFormContext()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
@@ -1021,6 +1038,21 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
       )
     })
 
+  const formState = useFormState({ control: form.control })
+  const [multiselectFirstError, setMultiselectFirstError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const formFieldErrors = _.get(formState.errors, formField)
+    if (isArray(formFieldErrors)) {
+      formFieldErrors.forEach((error, index) => {
+        if (!!error) {
+          setMultiselectFirstError(`${itemName} number ${index + 1} ${error.message}`)
+        }
+      })
+      console.log({ stateErrors: formState.errors, multiselectFirstError })
+    }
+  }, [formState])
+
   return (
     <Box miw={'100%'}>
       <Combobox
@@ -1039,7 +1071,15 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
         withinPortal
       >
         <Combobox.DropdownTarget>
-          <PillsInput label={pluralize(upperFirst(itemName))} onClick={() => combobox.openDropdown()}>
+          <PillsInput
+            error={multiselectFirstError}
+            styles={{
+              error: {},
+            }}
+            label={pluralize(upperFirst(itemName))}
+            onClick={() => combobox.openDropdown()}
+            {...inputProps}
+          >
             <Pill.Group>
               {formValues.length > 0 &&
                 formValues.map((formValue, i) => (
@@ -1094,7 +1134,7 @@ type CustomSelectProps = {
   itemName: string
 }
 
-function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: CustomSelectProps) {
+function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inputProps }: CustomSelectProps) {
   const form = useFormContext()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
@@ -1172,6 +1212,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
             onClick={() => combobox.toggleDropdown()}
             rightSectionPointerEvents="none"
             multiline
+            {...inputProps}
           >
             {selectedOption ? (
               comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
@@ -1206,14 +1247,19 @@ function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPil
   const selectOptions = options.selectOptions![schemaKey]!
   const itemName = singularize(options.labels[schemaKey] || '')
 
+  let invalidValue = null
+
   const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
   if (!option) {
     console.log(`${value} is not a valid ${singularize(lowerCase(itemName))}`)
 
-    return null
+    // explicitly set wrong values so that error positions make sense and the user knows there is a wrong form value beforehand
+    // instead of us deleting it implicitly
+    invalidValue = value
   }
-  let color
-  if (selectOptions?.labelColor) {
+
+  let color = '#bbbbbb' // for invalid values
+  if (selectOptions?.labelColor && !invalidValue) {
     color = selectOptions?.labelColor(option)
   }
 
@@ -1230,7 +1276,7 @@ function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPil
       `}
       {...props}
     >
-      <Box className={classes.valueComponentInnerBox}>{transformer(option)}</Box>
+      <Box className={classes.valueComponentInnerBox}>{invalidValue || transformer(option)}</Box>
       <CloseButton
         onMouseDown={() => handleValueRemove(value)}
         variant="transparent"
