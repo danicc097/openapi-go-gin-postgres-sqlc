@@ -86,7 +86,7 @@ import type {
 import { removeElementByIndex } from 'src/utils/array'
 import { getContrastYIQ } from 'src/utils/colors'
 import type { SchemaField } from 'src/utils/jsonSchema'
-import { entries } from 'src/utils/object'
+import { entries, hasNonEmptyValue } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
@@ -265,7 +265,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors()
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors(formName)
 
   useEffect(() => {
     setCalloutErrors(new ApiError('Remote error message'))
@@ -618,9 +618,11 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
 
 function FormData() {
   const myFormData = useWatch()
-  const myFormState = useFormState()
+  const form = useFormContext()
+  const myFormState = useFormState({ control: form.control })
 
-  // console.log(JSON.stringify(myFormData.base.items, null, 2))
+  console.log(myFormState.errors)
+  console.log(`form has errors: ${hasNonEmptyValue(myFormState.errors)}`)
 
   return (
     <Accordion>
@@ -814,13 +816,30 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         break
       case 'integer':
         formFieldComponent = (
-          <NumberInput onChange={(e) => registerOnChange({ target: { name: formField, value: e } })} {..._props} />
+          <NumberInput
+            onChange={(e) =>
+              registerOnChange({
+                target: {
+                  name: formField,
+                  value: Number(e), // else broken validation onChange
+                },
+              })
+            }
+            {..._props}
+          />
         )
         break
       case 'number':
         formFieldComponent = (
           <NumberInput
-            onChange={(e) => registerOnChange({ target: { name: formField, value: e } })}
+            onChange={(e) =>
+              registerOnChange({
+                target: {
+                  name: formField,
+                  value: Number(e), // else broken validation onChange
+                },
+              })
+            }
             precision={2}
             {..._props}
           />

@@ -40,3 +40,17 @@ export function entries<T>(obj: T): Array<[keyof T, NonNullable<T[keyof T]>]> {
   // @ts-ignore
   return Object.entries(obj)
 }
+
+export function hasNonEmptyValue(obj: any): boolean {
+  if (typeof obj !== 'object') {
+    return obj !== undefined && obj !== '' && obj !== null
+  }
+
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key) && hasNonEmptyValue(obj[key])) {
+      return true
+    }
+  }
+
+  return false
+}

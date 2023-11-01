@@ -313,6 +313,7 @@ export default function App() {
       formats: fullFormats,
     }),
     mode: 'all',
+    reValidateMode: 'onChange',
     defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
