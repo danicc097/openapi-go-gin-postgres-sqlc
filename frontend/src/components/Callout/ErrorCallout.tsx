@@ -6,17 +6,14 @@ import { ApiError } from 'src/api/mutator'
 import type { HTTPError } from 'src/gen/model'
 import { CalloutError, useFormSlice } from 'src/slices/form'
 import type { AppError } from 'src/types/ui'
+import { entries } from 'src/utils/object'
 interface ErrorCalloutProps {
   title: string
   errors?: string[]
 }
 
 export default function ErrorCallout({ title, errors }: ErrorCalloutProps) {
-  const formSlice = useFormSlice()
-
   if (!errors || errors.length === 0) return null
-
-  console.log({ errors })
 
   return errors?.length > 0 ? (
     <Alert icon={<IconAlertCircle size={16} />} title={title} color="red">
@@ -30,6 +27,7 @@ export default function ErrorCallout({ title, errors }: ErrorCalloutProps) {
 export const useCalloutErrors = (formName: string) => {
   const formSlice = useFormSlice()
   const calloutErrors = formSlice.form[formName]?.calloutErrors
+  const customErrors = formSlice.form[formName]?.customErrors
   const setCalloutErrors = (errors: CalloutError[]) => formSlice.setCalloutErrors(formName, errors)
 
   const extractCalloutErrors = () => {
@@ -70,9 +68,14 @@ export const useCalloutErrors = (formName: string) => {
   }
 
   const extractCalloutTitle = () => {
-    if (!calloutErrors) return ''
-
+    if (formSlice.form[formName]?.customErrors) {
+      return 'Validation error'
+    }
     const unknownError = 'An unknown error ocurred'
+
+    if (!calloutErrors) {
+      return unknownError
+    }
 
     for (const calloutError of calloutErrors) {
       if (calloutError instanceof ApiError) {
@@ -97,12 +100,13 @@ export const useCalloutErrors = (formName: string) => {
       if (calloutErrors instanceof AxiosError) return unknownError
     }
 
-    // errors unrelated to api calls -> validation error
-    return 'Validation error'
+    // errors unrelated to api calls and validation
+    return unknownError
   }
 
   return {
     calloutErrors,
+    customErrors,
     extractCalloutErrors,
     setCalloutErrors,
     extractCalloutTitle,

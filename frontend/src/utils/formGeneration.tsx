@@ -69,7 +69,7 @@ import {
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
-import ErrorCallout, { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
+import DynamicFormErrorCallout from 'src/components/Callout/DynamicFormErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
 import type { DemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
@@ -91,6 +91,8 @@ import { entries, hasNonEmptyValue, isObject, keys } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
+import { FormField, SchemaKey } from 'src/utils/form'
+import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -226,7 +228,7 @@ const DynamicFormProvider = ({ value, children }: DynamicFormProviderProps) => {
   return <DynamicFormContext.Provider value={value}>{children}</DynamicFormContext.Provider>
 }
 
-const useDynamicFormContext = (): DynamicFormContextValue => {
+export const useDynamicFormContext = (): DynamicFormContextValue => {
   const context = useContext(DynamicFormContext)
 
   if (!context) {
@@ -253,14 +255,6 @@ function renderTitle(key: FormField, title) {
     </>
   )
 }
-
-type ValidationErrors = Record<
-  SchemaKey,
-  {
-    message: string
-    index?: number
-  }
->
 
 const cardRadius = 6
 
@@ -299,50 +293,11 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
     }, {})
   }
 
-  const formState = useFormState({ control: form.control })
-
-  console.log(formState.errors)
-
-  // for deeply nested error, we just want to provide basic info in the callout for reference,
-  // so ignore intermediate indexes if any (input will have error anyway)
-
-  const rhfErrors = flattenRHFError({
-    obj: formState.errors,
-  })
-  console.log({ errorsBySchemaKey: rhfErrors })
-
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <>
         <FormData />
-        <ErrorCallout
-          title={extractCalloutTitle()}
-          // TODO: will be the same for all forms. better rename to FormErrorCallout
-          // and use form provider state there, so this becomes a oneliner <ErrorCallout formName={formName} />
-          errors={concat(
-            extractCalloutErrors(),
-            entries(rhfErrors).map(([schemaKey, error], idx) => {
-              let message = lowerFirst(error.message) // lowerCase breaks regexes
-              schemaKey = schemaKey.replace(/\.\d+$/, '') as SchemaKey // FIXME: in flattener instead
-
-              console.log({ schemaKey, error })
-              const itemName = options.labels[schemaKey] || ''
-
-              if (error.index) {
-                message = `item ${error.index + 1} ${message}`
-              }
-
-              const match = /match pattern "(.*?)"/g.exec(message)
-              if (match) {
-                message = `${message} (example: ${randexp(match[1] || '')})`
-              }
-
-              console.log({ message })
-
-              return `${itemName}: ${message}`
-            }),
-          )}
-        />
+        <DynamicFormErrorCallout />
         <form
           onSubmit={onSubmit}
           css={css`
@@ -359,75 +314,6 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }
 
 /**
- * Converts react-hook-form errors to simpler internal gen formats.
- * mode:
- *   - formField: ``item.0.nested.2``
- *   - schemaKey: ``item.nested``
- */
-function flattenRHFError({
-  obj,
-  prefix = '',
-  ignoredKeys = [],
-  mode = 'schemaKey',
-  index = null,
-}: {
-  obj: Record<any, any>
-  prefix?: string
-  ignoredKeys?: string[]
-  index?: number | null
-  mode?: 'formField' | 'schemaKey'
-}): ValidationErrors {
-  return Object.keys(obj).reduce((acc: ValidationErrors, key) => {
-    if (ignoredKeys.includes(key)) return acc
-
-    let pre = prefix.length ? `${prefix}.` : ''
-    if (mode == 'schemaKey') {
-      pre = pre.replace(/\d+\.$/, '')
-    }
-
-    const val = obj[key]
-    if (
-      typeof val === 'object' &&
-      !(val instanceof HTMLElement) && // inf recursion and useless
-      val !== null
-    ) {
-      if (Array.isArray(val)) {
-        for (const [idx, v] of val.entries()) {
-          // nested array of objects
-          if (isObject(v)) {
-            Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode, index: idx }))
-
-            return acc
-          }
-          // rhf error array
-          // extract any error (just one per schemakey in callout)
-          if (v) {
-            acc[pre + key] = { message: v.message, index: idx } // keep last index always
-          }
-        }
-
-        return acc
-      }
-
-      // must be rhf error
-      if (val.hasOwnProperty('type') && val.hasOwnProperty('ref') && val.hasOwnProperty('message')) {
-        if (mode == 'schemaKey') {
-          key = key.replace(/\.\d+$/, '')
-        }
-        acc[pre + key] = { message: val.message, index }
-
-        return acc
-      }
-      Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode }))
-    } else {
-      acc[pre + key] = val
-    }
-
-    return acc
-  }, {})
-}
-
-/**
  * Construct form accessor based on current schema field key and parent form field.
  */
 const constructFormField = (schemaKey: SchemaKey, parentFormField?: FormField) => {
@@ -435,9 +321,6 @@ const constructFormField = (schemaKey: SchemaKey, parentFormField?: FormField) =
 
   return (parentFormField ? `${parentFormField}.${currentFieldName}` : schemaKey) as FormField
 }
-
-type SchemaKey = Branded<string, 'SchemaKey'>
-type FormField = Branded<string, 'FormField'>
 
 type GeneratedInputsProps = {
   parentSchemaKey?: SchemaKey
@@ -1154,32 +1037,20 @@ function CustomMultiselect({
     })
 
   const formState = useFormState({ control: form.control })
-  // FIXME: use form slice customErrors instead
 
   const formSlice = useFormSlice()
   const multiselectFirstError = formSlice.form[formName]?.customErrors[formField]
 
   useEffect(() => {
     const formFieldErrors = _.get(formState.errors, formField)
-    console.log({ formFieldErrors, formField })
     if (isArray(formFieldErrors) && !multiselectFirstError) {
       formFieldErrors.forEach((error, index) => {
         if (!!error) {
           const message = `${itemName} number ${index + 1} ${error.message}`
-          // TODO: set callout error (only rendered after submit button CLICKED)
           formSlice.setCustomError(formName, formField, message)
         }
       })
-      console.log({
-        stateErrors: formState.errors,
-        multiselectFirstError,
-      })
     }
-
-    // inf loop... have to clear elsewhere (maybe onChange/onOptionSubmit)
-    // return () => {
-    //   formSlice.setCustomError(formName, formField, null)
-    // }
   }, [formState])
 
   return (
