@@ -22,9 +22,8 @@ import {
   localStorageColorSchemeManager,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
-import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
+import { PersistQueryClientProvider, type PersistedClient } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
-import { del, get, set } from 'idb-keyval'
 import ProtectedRoute from 'src/components/Permissions/ProtectedRoute'
 import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
 import { responseInterceptor } from 'src/queries/interceptors'
@@ -68,6 +67,7 @@ import '@mantine/dates/styles.css'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
 import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
+import { persister } from 'src/idb'
 
 const schema = {
   properties: {
@@ -206,26 +206,6 @@ const queryClient = new QueryClient({
 axios.interceptors.response.use(responseInterceptor, function (error) {
   return Promise.reject(error)
 })
-
-/**
- * Creates an Indexed DB persister
- * @see https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
- */
-function createIDBPersister(idbValidKey: IDBValidKey = 'reactQuery') {
-  return {
-    persistClient: async (client: PersistedClient) => {
-      set(idbValidKey, client)
-    },
-    restoreClient: async () => {
-      return await get<PersistedClient>(idbValidKey)
-    },
-    removeClient: async () => {
-      await del(idbValidKey)
-    },
-  } as Persister
-}
-
-export const persister = createIDBPersister()
 
 function ErrorFallback({ error }: any) {
   return (

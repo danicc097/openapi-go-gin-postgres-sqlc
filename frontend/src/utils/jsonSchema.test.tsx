@@ -379,8 +379,12 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.0.role',
       'demoWorkItemCreateForm-members.0.role-label',
+      'demoWorkItemCreateForm-members.0.userID',
+      'demoWorkItemCreateForm-members.0.userID-label',
       'demoWorkItemCreateForm-members.1.role',
       'demoWorkItemCreateForm-members.1.role-label',
+      'demoWorkItemCreateForm-members.1.userID',
+      'demoWorkItemCreateForm-members.1.userID-label',
       'demoWorkItemCreateForm-tagIDs-0',
       'demoWorkItemCreateForm-tagIDs-1',
       'demoWorkItemCreateForm-tagIDs-2',
@@ -388,6 +392,8 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-tagIDs-remove-button-0',
       'demoWorkItemCreateForm-tagIDs-remove-button-1',
       'demoWorkItemCreateForm-tagIDs-remove-button-2',
+      'demoWorkItemCreateForm-tagIDsMultiselect',
+      'demoWorkItemCreateForm-tagIDsMultiselect-label',
     ]
 
     const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id)
@@ -401,7 +407,7 @@ describe('form generation', () => {
       'base.items.1.items-title',
       'members-title',
       'tagIDs-title',
-      'tagIDsMultiselect-title',
+      // 'tagIDsMultiselect-title', // multiselects don't have titles, they use vanilla input labels
     ]
     const actualDataTestIds = [...document.querySelectorAll('[data-testid]')].map((e) => e.getAttribute('data-testid'))
 

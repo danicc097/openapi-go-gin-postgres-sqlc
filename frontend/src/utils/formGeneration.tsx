@@ -395,8 +395,8 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       ) : (
         <>
           {/*
-          FIXME: should only header if it's not a multiselect. else its add and remove via buttons
-          which needs header for title and `+ add $item`
+          FIXME: NestedHeader should only render if schemaKey field is not a multiselect, else we add and remove via buttons
+          which does need header for title and `+ add $item`
            */}{' '}
           <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
           <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
@@ -916,11 +916,11 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
   const form = useFormContext()
   const accordion = options.accordion?.[schemaKey]
 
-  return (
+  return options.selectOptions?.[schemaKey]?.type !== 'multiselect' ? (
     <div>
       <Flex direction="row" align="center">
         {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
-        {options.selectOptions?.[schemaKey]?.type !== 'multiselect' && (
+        {
           <Button
             size="xs"
             p={4}
@@ -937,10 +937,10 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
             color={'green'}
             id={`${formName}-${formField}-add-button`}
           >{`Add ${lowerFirst(itemName)}`}</Button>
-        )}
+        }
       </Flex>
     </div>
-  )
+  ) : null
 }
 
 const initialValueByType = (type?: SchemaField['type']) => {

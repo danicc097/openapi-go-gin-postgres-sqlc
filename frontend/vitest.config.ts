@@ -11,12 +11,29 @@ import { mergeConfig } from 'vite'
 
 const r = (p: string) => resolve(__dirname, p)
 
+// needed for absolute path resolution
+const alias: Record<string, string> = {
+  '~': r('src'),
+  src: r('./src'),
+  '~~': r('.'),
+  '~~/': r('./'),
+  '@@': r('.'),
+  '@@/': r('./'),
+  assets: r('./assets'),
+  public: r('./public'),
+  'public/': r('./public/'),
+  '@': r('./src'),
+}
+
 export default mergeConfig(
   viteConfig,
   defineConfig({
     // esbuild: {
     //   tsconfigRaw: {},
     // },
+    resolve: {
+      alias,
+    },
     test: {
       deps: {
         inline: ['framer-motion'],
