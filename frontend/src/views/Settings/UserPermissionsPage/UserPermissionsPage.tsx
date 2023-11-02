@@ -50,7 +50,7 @@ import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
 import ROLES from 'src/roles'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
-import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
+import ErrorCallout, { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
@@ -140,7 +140,9 @@ export default function UserPermissionsPage() {
     }
   }, [allUsers, userOptions])
 
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors()
+  const formName = 'user-permissions-form'
+
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
   // const { mutateAsync: updateUserAuthorization } = useUpdateUserAuthorization()
 

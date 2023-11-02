@@ -67,7 +67,7 @@ import '@mantine/code-highlight/styles.css'
 import '@mantine/dates/styles.css'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
-import { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
+import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 
 const schema = {
   properties: {
@@ -283,7 +283,7 @@ export default function App() {
         { items: ['0011', '0012'], name: 'item-2' },
       ],
       // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-      // targetDate: dayjs('2023-02-22').toDate(),
+      targetDate: dayjs('2023-02-22').toDate(),
       description: 'some text',
       kanbanStepID: 1,
       teamID: 1,

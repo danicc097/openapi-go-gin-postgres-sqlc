@@ -9,7 +9,7 @@ import type { AppError } from 'src/types/ui'
 
 export default function ErrorCallout({ title, formName }: { title: string; formName: string }) {
   const formSlice = useFormSlice()
-  const errors = formSlice.form[formName]?.errors
+  const errors = formSlice.form[formName]?.calloutErrors
 
   if (!errors) return null
 
@@ -34,7 +34,7 @@ function renderCalloutError(error: CalloutError) {
 
 export const useCalloutErrors = (formName: string) => {
   const formSlice = useFormSlice()
-  const calloutErrors = formSlice.form[formName]?.errors
+  const calloutErrors = formSlice.form[formName]?.calloutErrors
   const setCalloutErrors = (errors: CalloutError[]) => formSlice.setCalloutErrors(formName, errors)
 
   const extractCalloutErrors = () => {

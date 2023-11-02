@@ -69,7 +69,7 @@ import {
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
-import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
+import ErrorCallout, { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
 import type { DemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
@@ -89,6 +89,7 @@ import { getContrastYIQ } from 'src/utils/colors'
 import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries, hasNonEmptyValue } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
+import { useFormSlice } from 'src/slices/form'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -999,6 +1000,7 @@ function CustomMultiselect({
 
   const handleValueRemove = (val: string) => {
     console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
+    formSlice.setCustomError(formName, formField, null) // index position changed, misleading message
     form.unregister(formField) // needs to be called before setValue
     form.setValue(
       formField,
@@ -1039,24 +1041,32 @@ function CustomMultiselect({
     })
 
   const formState = useFormState({ control: form.control })
-  const [multiselectFirstError, setMultiselectFirstError] = useState<string | null>(null)
+  // FIXME: use form slice customErrors instead
+
+  const formSlice = useFormSlice()
+  const multiselectFirstError = formSlice.form[formName]?.customErrors[formField]
 
   useEffect(() => {
     const formFieldErrors = _.get(formState.errors, formField)
     console.log({ formFieldErrors, formField })
-    // FIXME: react hook form removes formFieldErrors on rerender
-    if (isArray(formFieldErrors)) {
+    if (isArray(formFieldErrors) && !multiselectFirstError) {
       formFieldErrors.forEach((error, index) => {
         if (!!error) {
           const message = `${itemName} number ${index + 1} ${error.message}`
           // TODO: set callout error (only rendered after submit button CLICKED)
-          setMultiselectFirstError(message)
+          formSlice.setCustomError(formName, formField, message)
         }
       })
-      console.log({ stateErrors: formState.errors, multiselectFirstError })
-    } else {
-      setMultiselectFirstError(null)
+      console.log({
+        stateErrors: formState.errors,
+        multiselectFirstError,
+      })
     }
+
+    // inf loop... have to clear elsewhere (maybe onChange/onOptionSubmit)
+    // return () => {
+    //   formSlice.setCustomError(formName, formField, null)
+    // }
   }, [formState])
 
   return (
@@ -1067,6 +1077,7 @@ function CustomMultiselect({
           const option = selectOptions.values.find(
             (option) => String(selectOptions.formValueTransformer(option)) === value,
           )
+          formSlice.setCustomError(formName, formField, null)
           registerOnChange({
             target: {
               name: formField,
@@ -1111,6 +1122,7 @@ function CustomMultiselect({
                   onKeyDown={(event) => {
                     if (event.key === 'Backspace' && search.length === 0) {
                       event.preventDefault()
+                      formSlice.setCustomError(formName, formField, null)
                       form.unregister(formField) // needs to be called before setValue
                       form.setValue(formField, formValues)
                     }

@@ -14,10 +14,10 @@ export type CalloutError = AppError | string
 export type CalloutWarning = string
 
 interface Form {
-  errors: CalloutError[]
-  warnings: CalloutWarning[]
+  calloutErrors: CalloutError[]
+  calloutWarnings: CalloutWarning[]
   // indexed by formField. Used for errors that aren't registered in react hook form
-  customErrors: Record<string, string>
+  customErrors: Record<string, string | null>
 }
 
 interface FormState {
@@ -26,9 +26,11 @@ interface FormState {
   }
   setCalloutWarning: (formName: string, warning: CalloutWarning[]) => void
   setCalloutErrors: (formName: string, error: CalloutError[]) => void
+  setCustomError: (formName: string, formField: string, error: string | null) => void
+  resetCustomErrors: (formName: string) => void
 }
 
-const initialForm: Form = { errors: [], warnings: [], customErrors: {} }
+const initialForm: Form = { calloutErrors: [], calloutWarnings: [], customErrors: {} }
 
 const useFormSlice = create<FormState>()(
   devtools(
@@ -47,7 +49,7 @@ const useFormSlice = create<FormState>()(
                   ...state.form,
                   [formName]: {
                     ...form,
-                    warnings: warnings,
+                    calloutWarnings: warnings,
                   },
                 },
               }
@@ -66,7 +68,7 @@ const useFormSlice = create<FormState>()(
                   ...state.form,
                   [formName]: {
                     ...form,
-                    errors: errors,
+                    calloutErrors: errors,
                   },
                 },
               }
@@ -74,7 +76,7 @@ const useFormSlice = create<FormState>()(
             false,
             `setCalloutErrors`,
           ),
-        setCustomError: (formName: string, formField: string, error: string) =>
+        setCustomError: (formName: string, formField: string, error: string | null) =>
           set(
             (state) => {
               const form = state.form[formName] || initialForm
