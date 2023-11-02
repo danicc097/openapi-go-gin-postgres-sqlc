@@ -10,18 +10,18 @@ import type { AppError } from 'src/types/ui'
 
 export const FORM_SLICE_PERSIST_KEY = 'form-slice'
 
-export type CalloutError = AppError | string | null
-export type CalloutWarning = string | null
+export type CalloutError = AppError | string
+export type CalloutWarning = string
 
 interface FormState {
   callout: {
     [formName: string]: {
-      errors: Array<CalloutError>
-      warnings: Array<CalloutWarning>
+      errors: CalloutError[]
+      warnings: CalloutWarning[]
     }
   }
-  setCalloutWarning: (formName: string, warning: CalloutWarning) => void
-  setCalloutError: (formName: string, error: CalloutError) => void
+  setCalloutWarning: (formName: string, warning: CalloutWarning[]) => void
+  setCalloutErrors: (formName: string, error: CalloutError[]) => void
 }
 
 const useFormSlice = create<FormState>()(
@@ -30,7 +30,7 @@ const useFormSlice = create<FormState>()(
     (set) => {
       return {
         callout: {},
-        setCalloutWarning: (formName: string, warning: string | null) =>
+        setCalloutWarning: (formName: string, warnings: CalloutWarning[]) =>
           set(
             (state) => {
               const form: FormState['callout'][string] = state.callout[formName] || { errors: [], warnings: [] }
@@ -41,7 +41,7 @@ const useFormSlice = create<FormState>()(
                   ...state.callout,
                   [formName]: {
                     ...form,
-                    warnings: warning ? [...form.warnings, warning] : form.warnings,
+                    warnings: warnings,
                   },
                 },
               }
@@ -49,7 +49,7 @@ const useFormSlice = create<FormState>()(
             false,
             `setCalloutWarning`,
           ),
-        setCalloutError: (formName: string, error: AppError | null) =>
+        setCalloutErrors: (formName: string, errors: CalloutError[]) =>
           set(
             (state) => {
               const form: FormState['callout'][string] = state.callout[formName] || { errors: [], warnings: [] }
@@ -60,13 +60,13 @@ const useFormSlice = create<FormState>()(
                   ...state.callout,
                   [formName]: {
                     ...form,
-                    errors: error ? [...form.errors, error] : form.errors,
+                    errors: errors,
                   },
                 },
               }
             },
             false,
-            `setCalloutError`,
+            `setCalloutErrors`,
           ),
       }
     },

@@ -35,7 +35,7 @@ function renderCalloutError(error: CalloutError) {
 export const useCalloutErrors = (formName: string) => {
   const formSlice = useFormSlice()
   const calloutErrors = formSlice.callout[formName]?.errors
-  const setCalloutError = (error: CalloutError) => formSlice.setCalloutError(formName, error)
+  const setCalloutErrors = (errors: CalloutError[]) => formSlice.setCalloutErrors(formName, errors)
 
   const extractCalloutErrors = () => {
     const errors: string[] = []
@@ -109,7 +109,7 @@ export const useCalloutErrors = (formName: string) => {
   return {
     calloutErrors,
     extractCalloutErrors,
-    setCalloutError,
+    setCalloutErrors,
     extractCalloutTitle,
   }
 }

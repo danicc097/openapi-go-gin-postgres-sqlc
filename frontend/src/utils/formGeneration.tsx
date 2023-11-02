@@ -266,7 +266,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
-  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.renderOrderPriority) {
@@ -1043,13 +1043,19 @@ function CustomMultiselect({
 
   useEffect(() => {
     const formFieldErrors = _.get(formState.errors, formField)
+    console.log({ formFieldErrors, formField })
+    // FIXME: react hook form removes formFieldErrors on rerender
     if (isArray(formFieldErrors)) {
       formFieldErrors.forEach((error, index) => {
         if (!!error) {
-          setMultiselectFirstError(`${itemName} number ${index + 1} ${error.message}`)
+          const message = `${itemName} number ${index + 1} ${error.message}`
+          // TODO: set callout error (only rendered after submit button CLICKED)
+          setMultiselectFirstError(message)
         }
       })
       console.log({ stateErrors: formState.errors, multiselectFirstError })
+    } else {
+      setMultiselectFirstError(null)
     }
   }, [formState])
 
@@ -1072,13 +1078,14 @@ function CustomMultiselect({
       >
         <Combobox.DropdownTarget>
           <PillsInput
-            error={multiselectFirstError}
             styles={{
               error: {},
             }}
             label={pluralize(upperFirst(itemName))}
             onClick={() => combobox.openDropdown()}
             {...inputProps}
+            // must override input props error
+            error={multiselectFirstError}
           >
             <Pill.Group>
               {formValues.length > 0 &&
@@ -1174,7 +1181,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
         </Combobox.Option>
       )
     })
-  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
   return (
     <Box miw={'100%'}>
@@ -1189,7 +1196,9 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
           )
           console.log({ onChangeOption: option })
           if (!option) {
-            setCalloutError(`${value} is not a valid ${itemName}`)
+            // in form gen we do want to concatenate errors, to be shown upon submit clicked.
+            // react hook form will show input errors as well on registered components
+            setCalloutErrors([...(calloutErrors || []), `${value} is not a valid ${itemName}`])
             return
           }
           await registerOnChange({
@@ -1243,7 +1252,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
 
 function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
-  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
   const selectOptions = options.selectOptions![schemaKey]!
   const itemName = singularize(options.labels[schemaKey] || '')
 

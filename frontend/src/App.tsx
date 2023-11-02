@@ -324,19 +324,19 @@ export default function App() {
   const errors = formState.errors
   const formSLice = useFormSlice()
   const [errorSet, seterrorSet] = useState(false)
-  const { extractCalloutErrors, setCalloutError, calloutErrors, extractCalloutTitle } =
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } =
     useCalloutErrors('demoWorkItemCreateForm')
 
   useEffect(() => {
     console.log('errors')
     console.log(errors)
     // if (Object.keys(errors).length > 0 && !errorSet) {
-    // setCalloutError('Validation error')
+    // setCalloutErrors('Validation error')
 
     // console.log('errors')
     // console.log(errors)
 
-    // setCalloutError('Validation error')
+    // setCalloutErrors('Validation error')
     // seterrorSet(true)
     // // console.log(formSLice.callout[formName])
     // // console.log(`form has errors: ${Object.keys(errors).length > 0}`)

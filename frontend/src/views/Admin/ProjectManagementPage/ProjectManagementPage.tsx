@@ -154,7 +154,7 @@ const demoProjectConfig: ExtendedProjectConfig<RestDemoWorkItemsResponse> = {
 export default function ProjectManagementPage() {
   const { addToast, dismissToast, theme } = useUISlice()
 
-  const [calloutErrors, setCalloutError] = useState<ValidationErrors>(null)
+  const [calloutErrors, setCalloutErrors] = useState<ValidationErrors>(null)
 
   const form = useForm<any>({
     initialValues: demoProjectConfig,
