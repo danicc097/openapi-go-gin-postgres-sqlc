@@ -13,32 +13,38 @@ export const FORM_SLICE_PERSIST_KEY = 'form-slice'
 export type CalloutError = AppError | string
 export type CalloutWarning = string
 
+interface Form {
+  errors: CalloutError[]
+  warnings: CalloutWarning[]
+  // indexed by formField. Used for errors that aren't registered in react hook form
+  customErrors: Record<string, string>
+}
+
 interface FormState {
-  callout: {
-    [formName: string]: {
-      errors: CalloutError[]
-      warnings: CalloutWarning[]
-    }
+  form: {
+    [formName: string]: Form
   }
   setCalloutWarning: (formName: string, warning: CalloutWarning[]) => void
   setCalloutErrors: (formName: string, error: CalloutError[]) => void
 }
+
+const initialForm: Form = { errors: [], warnings: [], customErrors: {} }
 
 const useFormSlice = create<FormState>()(
   devtools(
     // persist(
     (set) => {
       return {
-        callout: {},
+        form: {},
         setCalloutWarning: (formName: string, warnings: CalloutWarning[]) =>
           set(
             (state) => {
-              const form: FormState['callout'][string] = state.callout[formName] || { errors: [], warnings: [] }
+              const form = state.form[formName] || initialForm
 
               return {
                 ...state,
-                callout: {
-                  ...state.callout,
+                form: {
+                  ...state.form,
                   [formName]: {
                     ...form,
                     warnings: warnings,
@@ -52,15 +58,56 @@ const useFormSlice = create<FormState>()(
         setCalloutErrors: (formName: string, errors: CalloutError[]) =>
           set(
             (state) => {
-              const form: FormState['callout'][string] = state.callout[formName] || { errors: [], warnings: [] }
+              const form = state.form[formName] || initialForm
 
               return {
                 ...state,
-                callout: {
-                  ...state.callout,
+                form: {
+                  ...state.form,
                   [formName]: {
                     ...form,
                     errors: errors,
+                  },
+                },
+              }
+            },
+            false,
+            `setCalloutErrors`,
+          ),
+        setCustomError: (formName: string, formField: string, error: string) =>
+          set(
+            (state) => {
+              const form = state.form[formName] || initialForm
+
+              return {
+                ...state,
+                form: {
+                  ...state.form,
+                  [formName]: {
+                    ...form,
+                    customErrors: {
+                      ...form.customErrors,
+                      [formField]: error,
+                    },
+                  },
+                },
+              }
+            },
+            false,
+            `setCalloutErrors`,
+          ),
+        resetCustomErrors: (formName: string) =>
+          set(
+            (state) => {
+              const form = state.form[formName] || initialForm
+
+              return {
+                ...state,
+                form: {
+                  ...state.form,
+                  [formName]: {
+                    ...form,
+                    customErrors: {},
                   },
                 },
               }
