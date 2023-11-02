@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import _, { random, uniqueId } from 'lodash'
-import type { RestDemoWorkItemsResponse, ProjectConfig } from 'src/gen/model'
+import type { ProjectConfig } from 'src/gen/model'
 import moment from 'moment'
 // import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
 import ProtectedComponent from 'src/components/Permissions/ProtectedComponent'
@@ -12,7 +12,7 @@ import { generateColor } from 'src/utils/colors'
 import { css } from '@emotion/css'
 import type { ArrayElement } from 'src/types/utils'
 import { isValidURL } from 'src/utils/urls'
-import { removePrefix } from 'src/utils/strings' <
+import { removePrefix } from 'src/utils/strings'
 import { Text } from '@mantine/core'
 
 const exampleDemoWorkItem = {

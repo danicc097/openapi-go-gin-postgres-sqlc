@@ -90,6 +90,7 @@ import type { SchemaField } from 'src/utils/jsonSchema'
 import { entries, hasNonEmptyValue, isObject, keys } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
+import RandExp, { randexp } from 'randexp'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -305,10 +306,10 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
   // for deeply nested error, we just want to provide basic info in the callout for reference,
   // so ignore intermediate indexes if any (input will have error anyway)
 
-  const errorsBySchemaKey = flattenRHFError({
+  const rhfErrors = flattenRHFError({
     obj: formState.errors,
   })
-  console.log({ errorsBySchemaKey })
+  console.log({ errorsBySchemaKey: rhfErrors })
 
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
@@ -320,21 +321,26 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
           // and use form provider state there, so this becomes a oneliner <ErrorCallout formName={formName} />
           errors={concat(
             extractCalloutErrors(),
-            flatten(
-              entries(errorsBySchemaKey).map(([schemaKey, error], idx) => {
-                let message = lowerCase(error.message)
-                schemaKey = schemaKey.replace(/\.\d+$/, '') as SchemaKey // FIXME: in flattener instead
+            entries(rhfErrors).map(([schemaKey, error], idx) => {
+              let message = lowerFirst(error.message) // lowerCase breaks regexes
+              schemaKey = schemaKey.replace(/\.\d+$/, '') as SchemaKey // FIXME: in flattener instead
 
-                console.log({ schemaKey, error })
-                const itemName = options.labels[schemaKey] || ''
+              console.log({ schemaKey, error })
+              const itemName = options.labels[schemaKey] || ''
 
-                if (error.index !== undefined) {
-                  message = `item ${error.index + 1} ${message}`
-                }
+              if (error.index !== undefined) {
+                message = `item ${error.index + 1} ${message}`
+              }
 
-                return `${itemName}: ${message}`
-              }),
-            ),
+              const match = /match pattern "(.*?)"/g.exec(message)
+              if (match) {
+                message = `${message} (example: ${randexp(match[1] || '')})`
+              }
+
+              console.log({ message })
+
+              return `${itemName}: ${message}`
+            }),
           )}
         />
         <form
@@ -353,6 +359,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }
 
 /**
+ * Converts react-hook-form errors to simpler internal gen formats.
  * mode:
  *   - formField: ``item.0.nested.2``
  *   - schemaKey: ``item.nested``
@@ -375,10 +382,7 @@ function flattenRHFError({
 
     let pre = prefix.length ? `${prefix}.` : ''
     if (mode == 'schemaKey') {
-      console.log({ preb: pre })
       pre = pre.replace(/\d+\.$/, '')
-
-      console.log({ prea: pre })
     }
 
     const val = obj[key]
@@ -388,42 +392,37 @@ function flattenRHFError({
       val !== null
     ) {
       if (Array.isArray(val)) {
-        // can be nested array. if element type is object handle recursively, else
-        // extract the first error (just one per schemakey in callout)
         for (const [idx, v] of val.entries()) {
+          // nested array of objects
           if (isObject(v)) {
             Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode, index: idx }))
-            console.log({ step: 'array of objects', acc, key })
 
             return acc
           }
           // rhf error array
+          // extract any error (just one per schemakey in callout)
           if (v) {
             acc[pre + key] = { message: v.message, index: idx } // keep last index always
           }
         }
-        console.log({ step: 'isarry', acc, key })
 
         return acc
       }
 
       // must be rhf error
       if (val.hasOwnProperty('type') && val.hasOwnProperty('ref') && val.hasOwnProperty('message')) {
-        const error = [val.message]
         if (mode == 'schemaKey') {
           key = key.replace(/\.\d+$/, '')
         }
-        acc[pre + key] = { message: error, index }
-        console.log({ step: 'is error obj', acc, key })
+        acc[pre + key] = { message: val.message, index }
 
         return acc
       }
-      console.log({ obj, key, type: typeof val })
       Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode }))
     } else {
-      console.log({ step: '1', acc, key })
       acc[pre + key] = val
     }
+
     return acc
   }, {})
 }
@@ -853,15 +852,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     // explicit component given
     formFieldComponent = React.cloneElement(component, {
       ..._props,
-      // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
-      // props
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
       ...component.props, // allow user override
       ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
     })
-    // TODO: multiSelectOptions: https://codesandbox.io/s/watch-with-usefieldarray-forked-9383hz?file=/src/formGeneration.tsx
-    // which do allow custom labels by default and doesnt need workaround
-    // use them with tagIDs -> DbWorkItemTag[] -> tag.name
   } else if (selectOptions) {
     const props = {
       ..._propsWithoutRegister,
