@@ -8,7 +8,7 @@ import { CalloutError, useFormSlice } from 'src/slices/form'
 import type { AppError } from 'src/types/ui'
 interface ErrorCalloutProps {
   title: string
-  errors?: CalloutError[]
+  errors?: string[]
 }
 
 export default function ErrorCallout({ title, errors }: ErrorCalloutProps) {
@@ -21,18 +21,10 @@ export default function ErrorCallout({ title, errors }: ErrorCalloutProps) {
   return errors?.length > 0 ? (
     <Alert icon={<IconAlertCircle size={16} />} title={title} color="red">
       {errors.map((error, i) => (
-        <li key={i}>{renderCalloutError(error)}</li>
+        <li key={i}>{error}</li>
       ))}
     </Alert>
   ) : null
-}
-
-function renderCalloutError(error: CalloutError) {
-  if (error instanceof ApiError || error instanceof AxiosError) {
-    return error.message
-  }
-
-  return JSON.stringify(error)
 }
 
 export const useCalloutErrors = (formName: string) => {

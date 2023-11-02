@@ -87,7 +87,7 @@ import type {
 import { removeElementByIndex } from 'src/utils/array'
 import { getContrastYIQ } from 'src/utils/colors'
 import type { SchemaField } from 'src/utils/jsonSchema'
-import { entries, hasNonEmptyValue } from 'src/utils/object'
+import { entries, flatten, hasNonEmptyValue, keys } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 
@@ -292,11 +292,36 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 
   const formState = useFormState({ control: form.control })
 
+  console.log({ ffff: formState.errors })
+
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <>
         <FormData />
-        <ErrorCallout title={extractCalloutTitle()} errors={concat(calloutErrors || [])} />
+        <ErrorCallout
+          title={extractCalloutTitle()}
+          // TODO: will be the same for all forms. better rename to FormErrorCallout
+          // and use form provider state there, so this becomes a oneliner <ErrorCallout formName={formName} />
+          errors={concat(
+            extractCalloutErrors(),
+            entries(flatten({ obj: formState.errors }) as typeof formState.errors).map(([formField, error], idx) => {
+              console.log({ formField, error })
+              let message = lowerCase(error.message || '')
+              const schemaKey = formField
+              const itemName = options.labels[schemaKey] || ''
+
+              if (isArray(error)) {
+                error.forEach((el, index) => {
+                  if (el) {
+                    message = `item ${index + 1} ${el.message}`
+                  }
+                })
+              }
+
+              return `${itemName}: ${message}`
+            }),
+          )}
+        />
         <form
           onSubmit={onSubmit}
           css={css`

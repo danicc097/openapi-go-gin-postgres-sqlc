@@ -262,7 +262,7 @@ export default function UserPermissionsPage() {
 
   const element = (
     <FormProvider {...form}>
-      <ErrorCallout title={extractCalloutTitle()} errors={concat(calloutErrors || [])} />
+      <ErrorCallout title={extractCalloutTitle()} errors={concat(extractCalloutErrors())} />
       <Space pt={12} />
       <Title size={12}>
         <Text>Form</Text>
