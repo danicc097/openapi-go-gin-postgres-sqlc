@@ -54,32 +54,3 @@ export function hasNonEmptyValue(obj: any): boolean {
 
   return false
 }
-
-export function flatten({
-  obj,
-  prefix = '',
-  ignoredKeys = [],
-}: {
-  obj: Record<any, any>
-  prefix?: string
-  ignoredKeys?: string[]
-}) {
-  return Object.keys(obj).reduce((acc, key) => {
-    if (ignoredKeys.includes(key)) return acc
-
-    const pre = prefix.length ? `${prefix}.` : ''
-    const val = obj[key]
-    if (
-      typeof val === 'object' &&
-      !(val instanceof HTMLElement) && // inf recursion and useless
-      val !== null &&
-      !Array.isArray(val)
-    ) {
-      console.log({ obj, key, type: typeof val })
-      Object.assign(acc, flatten({ obj: val, prefix: pre + key, ignoredKeys }))
-    } else {
-      acc[pre + key] = val
-    }
-    return acc
-  }, {})
-}

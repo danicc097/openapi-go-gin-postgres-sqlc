@@ -87,7 +87,7 @@ import type {
 import { removeElementByIndex } from 'src/utils/array'
 import { getContrastYIQ } from 'src/utils/colors'
 import type { SchemaField } from 'src/utils/jsonSchema'
-import { entries, flatten, hasNonEmptyValue, keys } from 'src/utils/object'
+import { entries, hasNonEmptyValue, isObject, keys } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 
@@ -292,7 +292,10 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 
   const formState = useFormState({ control: form.control })
 
-  console.log({ ffff: formState.errors })
+  console.log(formState.errors)
+
+  const errorsBySchemaKey = flattenRHFError({ obj: formState.errors }) as typeof formState.errors
+  console.log({ errorsBySchemaKey })
 
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
@@ -304,10 +307,11 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
           // and use form provider state there, so this becomes a oneliner <ErrorCallout formName={formName} />
           errors={concat(
             extractCalloutErrors(),
-            entries(flatten({ obj: formState.errors }) as typeof formState.errors).map(([formField, error], idx) => {
-              console.log({ formField, error })
-              let message = lowerCase(error.message || '')
-              const schemaKey = formField
+            entries(errorsBySchemaKey).map(([schemaKey, error], idx) => {
+              let message = lowerCase(error?.message || '')
+              schemaKey = schemaKey.replace(/\.\d+$/, '')
+
+              console.log({ schemaKey, error })
               const itemName = options.labels[schemaKey] || ''
 
               if (isArray(error)) {
@@ -335,6 +339,84 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
       </>
     </DynamicFormProvider>
   )
+}
+
+/**
+ * mode:
+ *   - formField: ``item.0.nested.2``
+ *   - schemaKey: ``item.nested``
+ */
+function flattenRHFError({
+  obj,
+  prefix = '',
+  ignoredKeys = [],
+  mode = 'schemaKey',
+}: {
+  obj: Record<any, any>
+  prefix?: string
+  ignoredKeys?: string[]
+  mode?: 'formField' | 'schemaKey'
+}) {
+  return Object.keys(obj).reduce((acc, key) => {
+    if (ignoredKeys.includes(key)) return acc
+
+    let pre = prefix.length ? `${prefix}.` : ''
+    if (mode == 'schemaKey') {
+      console.log({ preb: pre })
+      pre = pre.replace(/\d+\.$/, '')
+
+      console.log({ prea: pre })
+    }
+
+    const val = obj[key]
+    if (
+      typeof val === 'object' &&
+      !(val instanceof HTMLElement) && // inf recursion and useless
+      val !== null
+    ) {
+      // must be rhf error
+      if (Array.isArray(val)) {
+        // can be nested array. if element type is object handle recursively, else
+        // extract all errors
+        const errors: string[] = []
+        for (const v of val) {
+          // just nested form objects
+          if (isObject(v)) {
+            Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode }))
+            console.log({ step: 'array of objects', acc, key })
+
+            return acc
+          }
+          // rhf error array
+          if (v) {
+            errors.push(v.message)
+          }
+        }
+        acc[pre + key] = errors
+        console.log({ step: 'isarry', acc, key })
+
+        return acc
+      }
+
+      // must be rhf error
+      if (val.hasOwnProperty('type') && val.hasOwnProperty('ref') && val.hasOwnProperty('message')) {
+        const error = [val.message]
+        if (mode == 'schemaKey') {
+          key = key.replace(/\.\d+$/, '')
+        }
+        acc[pre + key] = error
+        console.log({ step: 'is error obj', acc, key })
+
+        return acc
+      }
+      console.log({ obj, key, type: typeof val })
+      Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode }))
+    } else {
+      console.log({ step: '1', acc, key })
+      acc[pre + key] = val
+    }
+    return acc
+  }, {})
 }
 
 /**
