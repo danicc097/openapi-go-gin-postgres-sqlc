@@ -40,7 +40,7 @@ import { CodeHighlight } from '@mantine/code-highlight'
 import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
-import _, { concat, isArray, lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
+import _, { concat, flatten, isArray, lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
 import React, {
   useState,
   type ComponentProps,
@@ -253,6 +253,14 @@ function renderTitle(key: FormField, title) {
   )
 }
 
+type ValidationErrors = Record<
+  SchemaKey,
+  {
+    message: string
+    index?: number
+  }
+>
+
 const cardRadius = 6
 
 /**
@@ -294,7 +302,12 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 
   console.log(formState.errors)
 
-  const errorsBySchemaKey = flattenRHFError({ obj: formState.errors }) as typeof formState.errors
+  // for deeply nested error, we just want to provide basic info in the callout for reference,
+  // so ignore intermediate indexes if any (input will have error anyway)
+
+  const errorsBySchemaKey = flattenRHFError({
+    obj: formState.errors,
+  })
   console.log({ errorsBySchemaKey })
 
   return (
@@ -307,23 +320,21 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
           // and use form provider state there, so this becomes a oneliner <ErrorCallout formName={formName} />
           errors={concat(
             extractCalloutErrors(),
-            entries(errorsBySchemaKey).map(([schemaKey, error], idx) => {
-              let message = lowerCase(error?.message || '')
-              schemaKey = schemaKey.replace(/\.\d+$/, '')
+            flatten(
+              entries(errorsBySchemaKey).map(([schemaKey, error], idx) => {
+                let message = lowerCase(error.message)
+                schemaKey = schemaKey.replace(/\.\d+$/, '') as SchemaKey // FIXME: in flattener instead
 
-              console.log({ schemaKey, error })
-              const itemName = options.labels[schemaKey] || ''
+                console.log({ schemaKey, error })
+                const itemName = options.labels[schemaKey] || ''
 
-              if (isArray(error)) {
-                error.forEach((el, index) => {
-                  if (el) {
-                    message = `item ${index + 1} ${el.message}`
-                  }
-                })
-              }
+                if (error.index !== undefined) {
+                  message = `item ${error.index + 1} ${message}`
+                }
 
-              return `${itemName}: ${message}`
-            }),
+                return `${itemName}: ${message}`
+              }),
+            ),
           )}
         />
         <form
@@ -351,13 +362,15 @@ function flattenRHFError({
   prefix = '',
   ignoredKeys = [],
   mode = 'schemaKey',
+  index = null,
 }: {
   obj: Record<any, any>
   prefix?: string
   ignoredKeys?: string[]
+  index?: number | null
   mode?: 'formField' | 'schemaKey'
-}) {
-  return Object.keys(obj).reduce((acc, key) => {
+}): ValidationErrors {
+  return Object.keys(obj).reduce((acc: ValidationErrors, key) => {
     if (ignoredKeys.includes(key)) return acc
 
     let pre = prefix.length ? `${prefix}.` : ''
@@ -374,25 +387,21 @@ function flattenRHFError({
       !(val instanceof HTMLElement) && // inf recursion and useless
       val !== null
     ) {
-      // must be rhf error
       if (Array.isArray(val)) {
         // can be nested array. if element type is object handle recursively, else
-        // extract all errors
-        const errors: string[] = []
-        for (const v of val) {
-          // just nested form objects
+        // extract the first error (just one per schemakey in callout)
+        for (const [idx, v] of val.entries()) {
           if (isObject(v)) {
-            Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode }))
+            Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode, index: idx }))
             console.log({ step: 'array of objects', acc, key })
 
             return acc
           }
           // rhf error array
           if (v) {
-            errors.push(v.message)
+            acc[pre + key] = { message: v.message, index: idx } // keep last index always
           }
         }
-        acc[pre + key] = errors
         console.log({ step: 'isarry', acc, key })
 
         return acc
@@ -404,7 +413,7 @@ function flattenRHFError({
         if (mode == 'schemaKey') {
           key = key.replace(/\.\d+$/, '')
         }
-        acc[pre + key] = error
+        acc[pre + key] = { message: error, index }
         console.log({ step: 'is error obj', acc, key })
 
         return acc
