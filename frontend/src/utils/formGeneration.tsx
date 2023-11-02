@@ -40,7 +40,7 @@ import { CodeHighlight } from '@mantine/code-highlight'
 import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
-import _, { isArray, lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
+import _, { concat, isArray, lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
 import React, {
   useState,
   type ComponentProps,
@@ -267,6 +267,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
+  const formSlice = useFormSlice()
   const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
@@ -289,11 +290,13 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
     }, {})
   }
 
+  const formState = useFormState({ control: form.control })
+
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <>
         <FormData />
-        <ErrorCallout title={extractCalloutTitle()} formName={formName} />
+        <ErrorCallout title={extractCalloutTitle()} errors={concat(calloutErrors || [])} />
         <form
           onSubmit={onSubmit}
           css={css`

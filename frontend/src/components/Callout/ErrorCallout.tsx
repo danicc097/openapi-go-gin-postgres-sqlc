@@ -6,12 +6,15 @@ import { ApiError } from 'src/api/mutator'
 import type { HTTPError } from 'src/gen/model'
 import { CalloutError, useFormSlice } from 'src/slices/form'
 import type { AppError } from 'src/types/ui'
+interface ErrorCalloutProps {
+  title: string
+  errors?: CalloutError[]
+}
 
-export default function ErrorCallout({ title, formName }: { title: string; formName: string }) {
+export default function ErrorCallout({ title, errors }: ErrorCalloutProps) {
   const formSlice = useFormSlice()
-  const errors = formSlice.form[formName]?.calloutErrors
 
-  if (!errors) return null
+  if (!errors || errors.length === 0) return null
 
   console.log({ errors })
 

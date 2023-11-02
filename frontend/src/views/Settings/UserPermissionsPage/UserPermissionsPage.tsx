@@ -1,4 +1,4 @@
-import _, { capitalize, random } from 'lodash'
+import _, { capitalize, concat, random } from 'lodash'
 import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
 import type { Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
@@ -61,6 +61,7 @@ import { nameInitials } from 'src/utils/strings'
 import type { AppError } from 'src/types/ui'
 import classes from './UserPermissionsPage.module.css'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
+import { useFormSlice } from 'src/slices/form'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -261,7 +262,7 @@ export default function UserPermissionsPage() {
 
   const element = (
     <FormProvider {...form}>
-      <ErrorCallout title={extractCalloutTitle()} errors={extractCalloutErrors()} />
+      <ErrorCallout title={extractCalloutTitle()} errors={concat(calloutErrors || [])} />
       <Space pt={12} />
       <Title size={12}>
         <Text>Form</Text>
@@ -345,24 +346,21 @@ export default function UserPermissionsPage() {
         {selectedUser?.email && (
           <>
             <Divider m={8} />
-            {isAuthorized({ user, requiredRole: selectedUser.role }) && (
-              <>
-                <Select
-                  label={
-                    <Title size={15} mt={4} mb={4}>
-                      Update role
-                    </Title>
-                  }
-                  itemComponent={SelectRoleItem}
-                  data-test-subj="updateUserAuthForm__selectable_Role"
-                  defaultValue={selectedUser.role}
-                  data={roleOptions ?? []}
-                  {...registerProps}
-                  onChange={(value) => registerProps.onChange({ target: { name: 'role', value } })}
-                />
-                <Space pt={12} />
-              </>
-            )}
+            <Select
+              label={
+                <Title size={15} mt={4} mb={4}>
+                  Update role
+                </Title>
+              }
+              disabled={!isAuthorized({ user, requiredRole: selectedUser.role })}
+              // itemComponent={SelectRoleItem} // TODO: COMBOBOX
+              data-test-subj="updateUserAuthForm__selectable_Role"
+              defaultValue={selectedUser.role}
+              data={roleOptions ?? []}
+              {...registerProps}
+              onChange={(value) => registerProps.onChange({ target: { name: 'role', value } })}
+            />
+            <Space pt={12} />
             <Title size={15} mt={4} mb={4}>
               Update scopes
             </Title>
