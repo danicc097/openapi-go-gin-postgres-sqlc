@@ -1055,7 +1055,7 @@ function CustomMultiselect({
   }, [formState])
 
   return (
-    <Box miw={'100%'}>
+    <Box w={'100%'}>
       <Combobox
         store={combobox}
         onOptionSubmit={(value, props) => {
@@ -1183,7 +1183,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
   const parentSchemaKey = schemaKey.split('.').slice(0, -1).join('.') as SchemaKey
 
   return (
-    <Box miw={'100%'}>
+    <Box w={'100%'}>
       <Combobox
         store={combobox}
         withinPortal={true}

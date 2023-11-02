@@ -32,6 +32,7 @@ declare namespace TestTypes {
     items: {
       name: string
       userId: string[]
+      items: string[]
     }[]
     workItemTypeID: number
   }

@@ -152,8 +152,8 @@ const schema = {
 const formInitialValues = {
   base: {
     items: [
-      { items: ['0001', '0002'], name: 'item-1' },
-      { items: ['0011', '0012'], name: 'item-2' },
+      { items: ['0001', '0002'], userId: [], name: 'item-1' },
+      { items: ['0011', '0012'], userId: [], name: 'item-2' },
     ],
     closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
     // targetDate: dayjs('2023-02-22').toDate(),
@@ -191,6 +191,7 @@ const schemaFields: Record<GetKeys<TestTypes.DemoWorkItemCreateRequest>, SchemaF
   'base.teamID': { type: 'integer', required: true, isArray: false },
   'base.items': { type: 'object', required: false, isArray: true },
   'base.items.name': { type: 'string', required: true, isArray: false },
+  'base.items.userId': { type: 'string', required: false, isArray: true },
   'base.items.items': { type: 'string', required: false, isArray: true },
   'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
   demoProject: { isArray: false, required: true, type: 'object' },
@@ -263,6 +264,7 @@ describe('form generation', () => {
                 'base.items': 'items',
                 'base.items.name': 'name',
                 'base.items.items': 'items',
+                'base.items.userId': 'user',
                 'base.workItemTypeID': 'workItemTypeID',
                 demoProject: null, // won't render title
                 'demoProject.lastMessageAt': 'lastMessageAt',

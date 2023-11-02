@@ -94,6 +94,13 @@ const schema = {
         items: {
           items: {
             properties: {
+              items: {
+                items: {
+                  type: 'string',
+                  minLength: 1,
+                },
+                type: ['array', 'null'],
+              },
               userId: {
                 items: {
                   type: 'string',
@@ -283,8 +290,12 @@ export default function App() {
   const formInitialValues = {
     base: {
       items: [
-        { userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'], name: 'item-1' },
-        { userId: ['badid', 'badid2'], name: 'item-2' },
+        {
+          items: ['0001', '0002'],
+          userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'],
+          name: 'item-1',
+        },
+        { items: ['0011', '0012'], userId: ['badid', 'badid2'], name: 'item-2' },
       ],
       // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
       targetDate: dayjs('2023-02-22').toDate(),
@@ -428,6 +439,7 @@ export default function App() {
                               'base.items': { type: 'object', required: false, isArray: true },
                               'base.items.name': { type: 'string', required: true, isArray: false },
                               'base.items.userId': { type: 'string', required: false, isArray: true },
+                              'base.items.items': { type: 'string', required: false, isArray: true },
                               'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
                               demoProject: { isArray: false, required: true, type: 'object' },
                               'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
@@ -454,6 +466,7 @@ export default function App() {
                                 'base.teamID': 'Team',
                                 'base.items': 'Items',
                                 'base.items.name': 'Name',
+                                'base.items.items': 'Items',
                                 'base.items.userId': 'User',
                                 'base.workItemTypeID': 'Type',
                                 demoProject: null,
