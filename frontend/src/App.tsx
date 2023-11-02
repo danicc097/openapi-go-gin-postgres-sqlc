@@ -94,7 +94,7 @@ const schema = {
         items: {
           items: {
             properties: {
-              items: {
+              userId: {
                 items: {
                   type: 'string',
                   minLength: 1,
@@ -104,12 +104,10 @@ const schema = {
               name: {
                 type: 'string',
                 minLength: 1,
-                $schema: 'http://json-schema.org/draft-04/schema#',
               },
             },
-            required: ['items', 'name'],
+            required: ['userId', 'name'],
             type: 'object',
-            $schema: 'http://json-schema.org/draft-04/schema#',
           },
           type: ['array', 'null'],
         },
@@ -119,7 +117,6 @@ const schema = {
       },
       required: ['items', 'description', 'workItemTypeID', 'teamID', 'kanbanStepID', 'closed', 'targetDate'],
       type: 'object',
-      $schema: 'http://json-schema.org/draft-04/schema#',
     },
     demoProject: {
       properties: {
@@ -145,7 +142,6 @@ const schema = {
       },
       required: ['workItemID', 'ref', 'line', 'lastMessageAt', 'reopened'],
       type: 'object',
-      $schema: 'http://json-schema.org/draft-04/schema#',
     },
     members: {
       items: {
@@ -157,17 +153,14 @@ const schema = {
             'x-generated': '-',
             enum: ['preparer', 'reviewer'],
             description: "represents a database 'work_item_role'",
-            $schema: 'http://json-schema.org/draft-04/schema#',
           },
           userID: {
             type: 'string',
             minLength: 1,
-            $schema: 'http://json-schema.org/draft-04/schema#',
           },
         },
         required: ['userID', 'role'],
         type: 'object',
-        $schema: 'http://json-schema.org/draft-04/schema#',
       },
       type: ['array', 'null'],
     },
@@ -221,10 +214,19 @@ const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
 const UserPermissionsPage = React.lazy(() => import('src/views/Settings/UserPermissionsPage/UserPermissionsPage'))
 const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectManagementPage/ProjectManagementPage'))
 
+const uuids = [
+  'fcd252dc-72a4-4514-bdd1-3cac573a5fac',
+  '120cb364-2b18-49fb-b505-568834614c5d',
+  'bdab07d6-c2b4-44b0-b6d0-e87f62037cc1',
+  'ad52daf8-9bad-4671-b3f1-535178b0346e',
+  '3e82b3a5-5757-4860-8bf7-2e7962534328',
+  'd59d3a5c-b99f-40aa-9419-75a2bbb0fd52',
+]
+
 const members = [...Array(10)].map((x, i) => {
   const user = getGetCurrentUserMock()
   user.email = `${i}@mail.com`
-  user.userID = uuidv4()
+  user.userID = i <= uuids.length ? uuids[i] : uuidv4()
   return user
 })
 
@@ -241,6 +243,28 @@ const tags = [...Array(10)].map((x, i) => {
 
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
+const userIdSelectOption = selectOptionsBuilder({
+  type: 'select',
+  values: members,
+  //  TODO: transformers can be reusable between forms. could simply become
+  //  {
+  //   type: "select"
+  //   values: ...
+  //   ...userIdFormTransformers
+  // }
+  optionTransformer(el) {
+    return <UserComboboxOption user={el} />
+  },
+  formValueTransformer(el) {
+    return el.userID
+  },
+  pillTransformer(el) {
+    return <>{el.email}</>
+  },
+  searchValueTransformer(el) {
+    return `${el.email} ${el.fullName} ${el.username}`
+  },
+})
 export default function App() {
   useEffect(() => {
     document.body.style.background = 'none !important'
@@ -259,8 +283,8 @@ export default function App() {
   const formInitialValues = {
     base: {
       items: [
-        { items: ['0001', '0002'], name: 'item-1' },
-        { items: ['0011', '0012'], name: 'item-2' },
+        { userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'], name: 'item-1' },
+        { userId: ['badid', 'badid2'], name: 'item-2' },
       ],
       // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
       targetDate: dayjs('2023-02-22').toDate(),
@@ -278,7 +302,8 @@ export default function App() {
     // and show persistent callout _warning_ that X was deleted since it was not found.
     // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
     // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
-    tagIDs: [1, 2, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+    tagIDs: [1, 2, 'badid'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+    tagIDsMultiselect: null,
     // tagIDs: [0, 5, 8],
     demoProject: {
       lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
@@ -402,7 +427,7 @@ export default function App() {
                               'base.teamID': { type: 'integer', required: true, isArray: false },
                               'base.items': { type: 'object', required: false, isArray: true },
                               'base.items.name': { type: 'string', required: true, isArray: false },
-                              'base.items.items': { type: 'string', required: false, isArray: true },
+                              'base.items.userId': { type: 'string', required: false, isArray: true },
                               'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
                               demoProject: { isArray: false, required: true, type: 'object' },
                               'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
@@ -429,7 +454,7 @@ export default function App() {
                                 'base.teamID': 'Team',
                                 'base.items': 'Items',
                                 'base.items.name': 'Name',
-                                'base.items.items': 'Items',
+                                'base.items.userId': 'User',
                                 'base.workItemTypeID': 'Type',
                                 demoProject: null,
                                 'demoProject.lastMessageAt': 'Last message at',
@@ -460,28 +485,8 @@ export default function App() {
                                 'members.role': 'preparer',
                               },
                               selectOptions: {
-                                'members.userID': selectOptionsBuilder({
-                                  type: 'select',
-                                  values: members,
-                                  //  TODO: transformers can be reusable between forms. could simply become
-                                  //  {
-                                  //   type: "select"
-                                  //   values: ...
-                                  //   ...userIdFormTransformers
-                                  // }
-                                  optionTransformer(el) {
-                                    return <UserComboboxOption user={el} />
-                                  },
-                                  formValueTransformer(el) {
-                                    return el.userID
-                                  },
-                                  pillTransformer(el) {
-                                    return <>{el.email}</>
-                                  },
-                                  searchValueTransformer(el) {
-                                    return `${el.email} ${el.fullName} ${el.username}`
-                                  },
-                                }),
+                                'members.userID': userIdSelectOption,
+                                'base.items.userId': userIdSelectOption,
                                 tagIDs: selectOptionsBuilder({
                                   type: 'multiselect',
                                   searchValueTransformer(el) {

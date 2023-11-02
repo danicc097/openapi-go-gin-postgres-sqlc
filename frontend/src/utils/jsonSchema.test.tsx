@@ -47,6 +47,7 @@ const schema = {
         teamID: {
           type: 'integer',
         },
+        // purposely name them nested items to ensure correct recursion
         items: {
           items: {
             properties: {

@@ -744,6 +744,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       ..._propsWithoutRegister,
       ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
     }
+
     switch (selectOptions.type) {
       case 'select':
         formFieldComponent = (
@@ -1179,6 +1180,8 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
     })
   const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
+  const parentSchemaKey = schemaKey.split('.').slice(0, -1).join('.') as SchemaKey
+
   return (
     <Box miw={'100%'}>
       <Combobox
@@ -1208,7 +1211,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
       >
         <Combobox.Target withAriaAttributes={false}>
           <InputBase
-            label={singularize(upperFirst(itemName))}
+            label={!schemaFields[parentSchemaKey]?.isArray ? singularize(upperFirst(itemName)) : null}
             className={classes.select}
             component="button"
             type="button"
