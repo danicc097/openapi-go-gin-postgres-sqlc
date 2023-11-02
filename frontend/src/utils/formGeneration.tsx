@@ -328,7 +328,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
               console.log({ schemaKey, error })
               const itemName = options.labels[schemaKey] || ''
 
-              if (error.index !== undefined) {
+              if (error.index) {
                 message = `item ${error.index + 1} ${message}`
               }
 
@@ -514,7 +514,8 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
           {/*
           FIXME: should only header if it's not a multiselect. else its add and remove via buttons
           which needs header for title and `+ add $item`
-          <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} /> */}
+           */}{' '}
+          <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
           <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
         </>
       )
@@ -724,7 +725,6 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
         width: 100%;
       `}
     >
-      <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
       <Card radius={cardRadius} p={6} withBorder className={classes.arrayChildCard}>
         {children}
       </Card>
