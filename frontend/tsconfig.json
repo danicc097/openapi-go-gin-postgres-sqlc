@@ -14,7 +14,7 @@
     // react-hook-form
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
