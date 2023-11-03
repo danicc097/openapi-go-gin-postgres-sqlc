@@ -27,7 +27,7 @@ export default ({ mode }) => {
       }),
       tsconfigPaths({ root: '.' }),
       dynamicImport({}),
-      nodePolyfills(),
+      // nodePolyfills(),
     ],
     server: {
       port: Number(Config.FRONTEND_PORT) || 3020,
