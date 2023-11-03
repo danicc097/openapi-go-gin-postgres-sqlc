@@ -68,6 +68,7 @@ import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
 import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 import { persister } from 'src/idb'
+import { queryClient } from 'src/react-query'
 
 const schema = {
   properties: {
@@ -182,23 +183,6 @@ const schema = {
   type: 'object',
   'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
 }
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      cacheTime: 1000 * 60 * 5, // 5 min
-      // cacheTime: 0,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      staleTime: Infinity,
-      keepPreviousData: true,
-    },
-    mutations: {
-      cacheTime: 1000 * 60 * 5, // 5 minutes
-    },
-  },
-  // queryCache,
-})
 
 // axios.interceptors.request.use(requestInterceptor, function (error) {
 //   return Promise.reject(error)

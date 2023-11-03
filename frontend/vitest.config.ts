@@ -37,6 +37,9 @@ export default defineConfig((env) =>
       resolve: {
         alias,
       },
+      define: {
+        'process.env.TESTING': true,
+      },
       test: {
         deps: {
           optimizer: {

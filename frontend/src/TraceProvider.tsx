@@ -1,6 +1,6 @@
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
-// depends on zone.js. Recommended version if not using angular
-import { ZoneContextManager } from '@opentelemetry/context-zone' // confirmed results in Method Promise.prototype.then called on incompatible receiver [object Object]
+// NOTE: might be related to node version
+// import { ZoneContextManager } from '@opentelemetry/context-zone'
 // import { ZoneContextManager } from '@opentelemetry/context-zone-peer-dep' // tests work but `zone is not defined` on browser. do not install, breaks tests
 import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch'
 import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request'
@@ -17,6 +17,21 @@ import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } 
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web'
 import opentelemetry from '@opentelemetry/api'
 import { v4 as uuidv4 } from 'uuid'
+
+let ZoneContextManager
+
+// via vitest config defines
+if (import.meta.env.TESTING) {
+  // not recommended if not using angular but regular package breaks tests,
+  // resulting in Method Promise.prototype.then called on incompatible receiver [object Object]
+  import('@opentelemetry/context-zone-peer-dep').then((module) => {
+    ZoneContextManager = module
+  })
+} else {
+  import('@opentelemetry/context-zone').then((module) => {
+    ZoneContextManager = module
+  })
+}
 
 export const sessionID = uuidv4()
 

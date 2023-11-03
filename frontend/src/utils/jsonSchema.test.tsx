@@ -342,7 +342,7 @@ describe('form generation', () => {
       </MantineProvider>,
     )
 
-    console.log(view.container.innerHTML)
+    // console.log(view.container.innerHTML)
 
     const ids = [
       'demoWorkItemCreateForm-base.closed',
