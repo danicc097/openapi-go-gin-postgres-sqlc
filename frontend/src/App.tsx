@@ -217,7 +217,7 @@ const uuids = [
 const members = [...Array(10)].map((x, i) => {
   const user = getGetCurrentUserMock()
   user.email = `${i}@mail.com`
-  user.userID = i <= uuids.length ? uuids[i] : uuidv4()
+  user.userID = i < uuids.length ? uuids[i]! : uuidv4()
   return user
 })
 

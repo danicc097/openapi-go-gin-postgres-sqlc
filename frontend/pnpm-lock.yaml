@@ -227,16 +227,16 @@ dependencies:
     specifier: ^9.0.0
     version: 9.0.0
   vite-plugin-dynamic-import:
-    specifier: latest
+    specifier: 1.5.0
     version: 1.5.0
   vite-plugin-node-polyfills:
-    specifier: latest
+    specifier: 0.15.0
     version: 0.15.0(rollup@2.79.1)(vite@4.5.0)
   vite-tsconfig-paths:
-    specifier: latest
+    specifier: 4.2.1
     version: 4.2.1(typescript@5.1.3)(vite@4.5.0)
   vitest:
-    specifier: latest
+    specifier: 0.34.6
     version: 0.34.6(happy-dom@8.1.0)(jsdom@20.0.3)(terser@5.15.0)
   zustand:
     specifier: ^4.3.7
@@ -265,7 +265,7 @@ devDependencies:
     specifier: ^5.36.2
     version: 5.36.2(eslint@8.23.0)(typescript@5.1.3)
   '@vitejs/plugin-react':
-    specifier: latest
+    specifier: 4.1.1
     version: 4.1.1(vite@4.5.0)
   eslint:
     specifier: ^8.23.0
@@ -319,7 +319,7 @@ devDependencies:
     specifier: ^5.1.3
     version: 5.1.3
   vite:
-    specifier: latest
+    specifier: 4.5.0
     version: 4.5.0(@types/node@20.8.10)(terser@5.15.0)
 
 packages:
