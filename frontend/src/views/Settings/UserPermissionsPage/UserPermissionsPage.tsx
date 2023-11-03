@@ -36,7 +36,7 @@ import {
   Grid,
   Tooltip,
   Divider,
-  ComboboxItem,
+  type ComboboxItem,
   Combobox,
   useCombobox,
   InputBase,
