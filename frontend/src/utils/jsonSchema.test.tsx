@@ -47,10 +47,17 @@ const schema = {
         teamID: {
           type: 'integer',
         },
+        // purposely name them nested items to ensure correct recursion
         items: {
           items: {
             properties: {
               items: {
+                items: {
+                  type: 'string',
+                },
+                type: ['array', 'null'],
+              },
+              userId: {
                 items: {
                   type: 'string',
                 },
@@ -61,7 +68,7 @@ const schema = {
                 $schema: 'http://json-schema.org/draft-04/schema#',
               },
             },
-            required: ['items', 'name'],
+            required: ['userId', 'items', 'name'],
             type: 'object',
             $schema: 'http://json-schema.org/draft-04/schema#',
           },
@@ -151,8 +158,8 @@ const schema = {
 const formInitialValues = {
   base: {
     items: [
-      { items: ['0001', '0002'], name: 'item-1' },
-      { items: ['0011', '0012'], name: 'item-2' },
+      { items: ['0001', '0002'], userId: [], name: 'item-1' },
+      { items: ['0011', '0012'], userId: [], name: 'item-2' },
     ],
     closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
     // targetDate: dayjs('2023-02-22').toDate(),
@@ -190,6 +197,7 @@ const schemaFields: Record<GetKeys<TestTypes.DemoWorkItemCreateRequest>, SchemaF
   'base.teamID': { type: 'integer', required: true, isArray: false },
   'base.items': { type: 'object', required: false, isArray: true },
   'base.items.name': { type: 'string', required: true, isArray: false },
+  'base.items.userId': { type: 'string', required: false, isArray: true },
   'base.items.items': { type: 'string', required: false, isArray: true },
   'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
   demoProject: { isArray: false, required: true, type: 'object' },
@@ -262,6 +270,7 @@ describe('form generation', () => {
                 'base.items': 'items',
                 'base.items.name': 'name',
                 'base.items.items': 'items',
+                'base.items.userId': 'user',
                 'base.workItemTypeID': 'workItemTypeID',
                 demoProject: null, // won't render title
                 'demoProject.lastMessageAt': 'lastMessageAt',
@@ -333,6 +342,8 @@ describe('form generation', () => {
       </MantineProvider>,
     )
 
+    // console.log(view.container.innerHTML)
+
     const ids = [
       'demoWorkItemCreateForm-base.closed',
       'demoWorkItemCreateForm-base.closed-label',
@@ -348,6 +359,7 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
       'demoWorkItemCreateForm-base.items.0.name',
       'demoWorkItemCreateForm-base.items.0.name-label',
+      'demoWorkItemCreateForm-base.items.0.userId-add-button',
       'demoWorkItemCreateForm-base.items.1.items-0',
       'demoWorkItemCreateForm-base.items.1.items-1',
       'demoWorkItemCreateForm-base.items.1.items-add-button',
@@ -355,6 +367,7 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-base.items.1.items-remove-button-1',
       'demoWorkItemCreateForm-base.items.1.name',
       'demoWorkItemCreateForm-base.items.1.name-label',
+      'demoWorkItemCreateForm-base.items.1.userId-add-button',
       'demoWorkItemCreateForm-base.kanbanStepID',
       'demoWorkItemCreateForm-base.kanbanStepID-label',
       'demoWorkItemCreateForm-base.targetDate',
@@ -377,8 +390,12 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.0.role',
       'demoWorkItemCreateForm-members.0.role-label',
+      'demoWorkItemCreateForm-members.0.userID',
+      'demoWorkItemCreateForm-members.0.userID-label',
       'demoWorkItemCreateForm-members.1.role',
       'demoWorkItemCreateForm-members.1.role-label',
+      'demoWorkItemCreateForm-members.1.userID',
+      'demoWorkItemCreateForm-members.1.userID-label',
       'demoWorkItemCreateForm-tagIDs-0',
       'demoWorkItemCreateForm-tagIDs-1',
       'demoWorkItemCreateForm-tagIDs-2',
@@ -386,10 +403,11 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-tagIDs-remove-button-0',
       'demoWorkItemCreateForm-tagIDs-remove-button-1',
       'demoWorkItemCreateForm-tagIDs-remove-button-2',
+      'demoWorkItemCreateForm-tagIDsMultiselect',
+      'demoWorkItemCreateForm-tagIDsMultiselect-label',
     ]
 
     const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id)
-    console.log(actualIds.sort())
     expect(actualIds.sort()).toEqual(ids.sort())
 
     const dataTestIds = [
@@ -397,10 +415,12 @@ describe('form generation', () => {
       'base-title',
       'base.items-title',
       'base.items.0.items-title',
+      'base.items.0.userId-title',
       'base.items.1.items-title',
+      'base.items.1.userId-title',
       'members-title',
       'tagIDs-title',
-      'tagIDsMultiselect-title',
+      // 'tagIDsMultiselect-title', // multiselects don't have titles, they use vanilla input labels
     ]
     const actualDataTestIds = [...document.querySelectorAll('[data-testid]')].map((e) => e.getAttribute('data-testid'))
 

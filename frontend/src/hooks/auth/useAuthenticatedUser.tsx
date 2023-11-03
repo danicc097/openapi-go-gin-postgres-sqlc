@@ -1,9 +1,9 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
 import { useEffect, useRef } from 'react'
-import { persister } from 'src/App'
 import type { User } from 'src/gen/model'
 import { useGetCurrentUser } from 'src/gen/user/user'
+import { persister } from 'src/idb'
 import { ACCESS_TOKEN_COOKIE, UI_SLICE_PERSIST_KEY } from 'src/slices/ui'
 import { useIsFirstRender } from 'usehooks-ts'
 
@@ -13,7 +13,7 @@ export default function useAuthenticatedUser() {
   const currentUser = useGetCurrentUser()
   const isFirstRender = useIsFirstRender()
 
-  const isAuthenticated = !!currentUser.data?.data?.userID
+  const isAuthenticated = !!currentUser.data?.userID
 
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
@@ -37,7 +37,6 @@ export default function useAuthenticatedUser() {
     role: 'user',
     scopes: ['users:read', 'project-settings:write', 'team-settings:write', 'users:read', 'users:write'],
 
-    apiKey: null,
     teams: null,
     projects: null,
   }
@@ -66,16 +65,16 @@ export async function logUserOut(queryClient: QueryClient) {
 /**
  * To ensure a useEffect is only called once for shared hooks.
  */
-const useMountedRef = () => {
-  const mountedRef = useRef(false)
+export function useMountedRef() {
+  const mounted = useRef(false)
 
   useEffect(() => {
-    setTimeout(() => {
-      mountedRef.current = true
-    })
+    mounted.current = true
 
-    return () => (mountedRef.current = null)
+    return () => {
+      mounted.current = false
+    }
   }, [])
 
-  return mountedRef
+  return mounted
 }

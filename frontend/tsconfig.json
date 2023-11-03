@@ -14,7 +14,7 @@
     // react-hook-form
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
@@ -29,10 +29,10 @@
     "allowUnreachableCode": true,
     "noUncheckedIndexedAccess": true,
     "suppressImplicitAnyIndexErrors": false,
-    "paths": {
-      "@operationAuth": [
-        "operationAuth.gen.json"
-      ],
-    },
+    // "paths": {
+    //   "@operationAuth": [
+    //     "operationAuth.gen.json"
+    //   ],
+    // },
   },
 }

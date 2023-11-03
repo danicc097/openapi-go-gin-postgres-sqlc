@@ -40,7 +40,7 @@ import { CodeHighlight } from '@mantine/code-highlight'
 import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
-import _, { lowerFirst, memoize } from 'lodash'
+import _, { concat, flatten, isArray, lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
 import React, {
   useState,
   type ComponentProps,
@@ -65,10 +65,11 @@ import {
   useFormState,
   type UseFormRegisterReturn,
   type ChangeHandler,
+  type UseFormSetError,
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
-import ErrorCallout, { useCalloutErrors } from 'src/components/ErrorCallout/ErrorCallout'
+import DynamicFormErrorCallout from 'src/components/Callout/DynamicFormErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
 import type { DemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
@@ -86,8 +87,12 @@ import type {
 import { removeElementByIndex } from 'src/utils/array'
 import { getContrastYIQ } from 'src/utils/colors'
 import type { SchemaField } from 'src/utils/jsonSchema'
-import { entries } from 'src/utils/object'
+import { entries, hasNonEmptyValue, isObject, keys } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
+import { useFormSlice } from 'src/slices/form'
+import RandExp, { randexp } from 'randexp'
+import type { FormField, SchemaKey } from 'src/utils/form'
+import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -145,14 +150,18 @@ const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, op
   return <Box m={2}>{transformer(option)}</Box>
 }
 
-export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U extends PropertyKey = GetKeys<T>> = {
+export type DynamicFormOptions<
+  T extends object,
+  IgnoredFormKeys extends U | null,
+  U extends PropertyKey = GetKeys<T>,
+> = {
   labels: {
-    [key in Exclude<U, ExcludeKeys>]: string | null
+    [key in Exclude<U, IgnoredFormKeys>]: string | null
   }
-  renderOrderPriority?: Array<Exclude<keyof T, ExcludeKeys>>
+  renderOrderPriority?: Array<Exclude<keyof T, IgnoredFormKeys>>
   // used to populate form inputs if the form field is empty. Applies to all nested fields.
   defaultValues?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: DeepPartial<
+    [key in Exclude<U, IgnoredFormKeys>]: DeepPartial<
       PathType<
         T,
         // can fix key constraint error with U extends RecursiveKeyOf<T, ''> but not worth it due to cpu usage, just ignore
@@ -162,7 +171,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
     >
   }>
   selectOptions?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: ReturnType<
+    [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
       typeof selectOptionsBuilder<
         PathType<
           T,
@@ -177,7 +186,7 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
    * override default input component.
    */
   input?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: ReturnType<
+    [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
       typeof inputBuilder<
         PathType<
           T,
@@ -189,12 +198,13 @@ export type DynamicFormOptions<T extends object, ExcludeKeys extends U | null, U
     >
   }>
   propsOverride?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: {
+    [key in Exclude<U, IgnoredFormKeys>]: {
       description?: string
+      disabled?: boolean
     }
   }>
   accordion?: Partial<{
-    [key in Exclude<U, ExcludeKeys>]: {
+    [key in Exclude<U, IgnoredFormKeys>]: {
       defaultOpen?: boolean
       title?: JSX.Element
     }
@@ -218,7 +228,7 @@ const DynamicFormProvider = ({ value, children }: DynamicFormProviderProps) => {
   return <DynamicFormContext.Provider value={value}>{children}</DynamicFormContext.Provider>
 }
 
-const useDynamicFormContext = (): DynamicFormContextValue => {
+export const useDynamicFormContext = (): DynamicFormContextValue => {
   const context = useContext(DynamicFormContext)
 
   if (!context) {
@@ -228,9 +238,9 @@ const useDynamicFormContext = (): DynamicFormContextValue => {
   return context
 }
 
-type DynamicFormProps<T extends object, ExcludeKeys extends GetKeys<T> | null = null> = {
-  schemaFields: Record<Exclude<GetKeys<T>, ExcludeKeys>, SchemaField>
-  options: DynamicFormOptions<T, ExcludeKeys, GetKeys<T>>
+type DynamicFormProps<T extends object, IgnoredFormKeys extends GetKeys<T> | null = null> = {
+  schemaFields: Record<Exclude<GetKeys<T>, IgnoredFormKeys>, SchemaField>
+  options: DynamicFormOptions<T, IgnoredFormKeys, GetKeys<T>>
   formName: string
   onSubmit: React.FormEventHandler<HTMLFormElement>
 }
@@ -248,19 +258,20 @@ function renderTitle(key: FormField, title) {
 
 const cardRadius = 6
 
-export default function DynamicForm<T extends object, ExcludeKeys extends GetKeys<T> | null = null>({
+/**
+ *
+ * NOTE: arrays of arrays not supported.
+ */
+export default function DynamicForm<Form extends object, IgnoredFormKeys extends GetKeys<Form> | null = null>({
   formName,
   schemaFields,
   options,
   onSubmit,
-}: DynamicFormProps<T, ExcludeKeys>) {
+}: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors } = useCalloutErrors()
-
-  useEffect(() => {
-    setCalloutErrors(new ApiError('Remote error message'))
-  }, [])
+  const formSlice = useFormSlice()
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.renderOrderPriority) {
@@ -286,7 +297,7 @@ export default function DynamicForm<T extends object, ExcludeKeys extends GetKey
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <>
         <FormData />
-        <ErrorCallout title="Custom error title" errors={extractCalloutErrors()} />
+        <DynamicFormErrorCallout />
         <form
           onSubmit={onSubmit}
           css={css`
@@ -310,9 +321,6 @@ const constructFormField = (schemaKey: SchemaKey, parentFormField?: FormField) =
 
   return (parentFormField ? `${parentFormField}.${currentFieldName}` : schemaKey) as FormField
 }
-
-type SchemaKey = Branded<string, 'SchemaKey'>
-type FormField = Branded<string, 'FormField'>
 
 type GeneratedInputsProps = {
   parentSchemaKey?: SchemaKey
@@ -364,7 +372,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
 
     if (field.isArray && field.type !== 'object') {
       // nested array of nonbjects generation
-      return (
+      return accordion ? (
         <Card
           radius={cardRadius}
           key={schemaKey}
@@ -376,20 +384,23 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
           `}
         >
           {/* existing array fields, if any */}
-          {accordion ? (
+          {
             <FormAccordion schemaKey={schemaKey}>
               <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
               <Space p={10} />
               <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
             </FormAccordion>
-          ) : (
-            <>
-              <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
-              <Space p={6} />
-              <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
-            </>
-          )}
+          }
         </Card>
+      ) : (
+        <>
+          {/*
+          FIXME: NestedHeader should only render if schemaKey field is not a multiselect, else we add and remove via buttons
+          which does need header for title and `+ add $item`
+           */}{' '}
+          <NestedHeader formField={formField} schemaKey={schemaKey} itemName={itemName} />
+          <ArrayChildren formField={formField} schemaKey={schemaKey} inputProps={inputProps} />
+        </>
       )
     }
 
@@ -506,10 +517,10 @@ function ArrayOfObjectsChildren({
         `}
       >
         <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
-          <Flex justify={'end'}>
+          <Flex justify={'end'} mb={10}>
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
-          <Group>
+          <Group gap={10}>
             <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${k}` as FormField} />
           </Group>
         </Card>
@@ -534,6 +545,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
   const form = useFormContext()
   const theme = useMantineTheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
+  const itemName = singularize(options.labels[schemaKey] || '')
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
@@ -588,26 +600,28 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
   if (children.length === 0) return null
 
   return (
-    <Card radius={cardRadius} p={6} withBorder className={classes.arrayChildCard}>
-      <Flex
-        gap={6}
-        align="center"
-        direction="column"
-        css={css`
-          width: 100%;
-        `}
-      >
+    <Flex
+      gap={6}
+      align="left"
+      direction="column"
+      css={css`
+        width: 100%;
+      `}
+    >
+      <Card radius={cardRadius} p={6} withBorder className={classes.arrayChildCard}>
         {children}
-      </Flex>
-    </Card>
+      </Card>
+    </Flex>
   )
 }
 
 function FormData() {
   const myFormData = useWatch()
-  const myFormState = useFormState()
+  const form = useFormContext()
+  const myFormState = useFormState({ control: form.control })
 
-  // console.log(JSON.stringify(myFormData.base.items, null, 2))
+  console.log(myFormState.errors)
+  console.log(`form has errors: ${hasNonEmptyValue(myFormState.errors)}`)
 
   return (
     <Accordion>
@@ -682,18 +696,21 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     }
   }
 
-  const _props = {
-    ...registerProps,
+  const _propsWithoutRegister = {
     ...props?.input,
-    ...(propsOverride && propsOverride),
+    ...propsOverride,
     ...(!fieldState.isDirty && { defaultValue: convertValueByType(type, formValue) }),
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
     required: schemaFields[schemaKey]?.required && type !== 'boolean',
     placeholder: `Enter ${lowerFirst(singularize(options.labels[schemaKey] || ''))}`,
   }
 
-  let el: JSX.Element | null = null
-  const customEl: JSX.Element | null = null
+  const _props = {
+    ...registerProps,
+    ..._propsWithoutRegister,
+  }
+
+  let formFieldComponent: JSX.Element | null = null
   const component = options.input?.[schemaKey]?.component
   // TODO: componentPropsFn must return {}
   const componentPropsFn = options.input?.[schemaKey]?.propsFn
@@ -715,36 +732,39 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   }, [selectFocused])
 
   if (component) {
-    el = React.cloneElement(component, {
+    // explicit component given
+    formFieldComponent = React.cloneElement(component, {
       ..._props,
-      // TODO: this depends on component type, onChange should be customizable in options parameter with registerOnChange as fn param
-      // props
       onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
       ...component.props, // allow user override
       ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
     })
-    // TODO: multiSelectOptions: https://codesandbox.io/s/watch-with-usefieldarray-forked-9383hz?file=/src/formGeneration.tsx
-    // which do allow custom labels by default and doesnt need workaround
-    // use them with tagIDs -> DbWorkItemTag[] -> tag.name
   } else if (selectOptions) {
+    const props = {
+      ..._propsWithoutRegister,
+      ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
+    }
+
     switch (selectOptions.type) {
       case 'select':
-        el = (
+        formFieldComponent = (
           <CustomSelect
             formField={formField}
             registerOnChange={registerOnChange}
             schemaKey={schemaKey}
             itemName={itemName}
+            {...props}
           />
         )
         break
       case 'multiselect':
-        el = (
+        formFieldComponent = (
           <CustomMultiselect
             formField={formField}
             registerOnChange={registerOnChange}
             schemaKey={schemaKey}
             itemName={itemName}
+            {...props}
           />
         )
 
@@ -755,7 +775,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   } else {
     switch (schemaFields[schemaKey]?.type) {
       case 'string':
-        el = (
+        formFieldComponent = (
           <TextInput
             onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.value } })}
             {..._props}
@@ -763,7 +783,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'boolean':
-        el = (
+        formFieldComponent = (
           <Checkbox
             onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.checked } })}
             pt={10}
@@ -773,7 +793,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'date':
-        el = (
+        formFieldComponent = (
           <DateInput
             valueFormat="DD/MM/YYYY"
             onChange={(e) =>
@@ -787,7 +807,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'date-time':
-        el = (
+        formFieldComponent = (
           <DateTimePicker
             onChange={(e) =>
               registerOnChange({
@@ -800,12 +820,31 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'integer':
-        el = <NumberInput onChange={(e) => registerOnChange({ target: { name: formField, value: e } })} {..._props} />
+        formFieldComponent = (
+          <NumberInput
+            onChange={(e) =>
+              registerOnChange({
+                target: {
+                  name: formField,
+                  value: Number(e), // else broken validation onChange
+                },
+              })
+            }
+            {..._props}
+          />
+        )
         break
       case 'number':
-        el = (
+        formFieldComponent = (
           <NumberInput
-            onChange={(e) => registerOnChange({ target: { name: formField, value: e } })}
+            onChange={(e) =>
+              registerOnChange({
+                target: {
+                  name: formField,
+                  value: Number(e), // else broken validation onChange
+                },
+              })
+            }
             precision={2}
             {..._props}
           />
@@ -818,7 +857,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   return (
     <Flex align="center" gap={6} justify={'center'} {...props?.container}>
-      {customEl || el}
+      {formFieldComponent}
       {index !== undefined && (
         <RemoveButton
           formField={formFieldArrayPath}
@@ -841,7 +880,7 @@ type RemoveButtonProps = {
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
 const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) => {
   const form = useFormContext()
-  const theme = useMantineTheme()
+  const { colorScheme } = useMantineColorScheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
   return (
@@ -855,8 +894,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
           form.unregister(formField) // needs to be called before setValue
           form.setValue(formField, listItems as any)
         }}
-        // variant="filled"
-        className={classes.removeButton}
+        color={'#bd3535'}
         size="sm"
         id={`${formName}-${formField}-remove-button-${index}`}
       >
@@ -878,11 +916,11 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
   const form = useFormContext()
   const accordion = options.accordion?.[schemaKey]
 
-  return (
+  return options.selectOptions?.[schemaKey]?.type !== 'multiselect' ? (
     <div>
       <Flex direction="row" align="center">
         {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
-        {options.selectOptions?.[schemaKey]?.type !== 'multiselect' && (
+        {
           <Button
             size="xs"
             p={4}
@@ -899,10 +937,10 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
             color={'green'}
             id={`${formName}-${formField}-add-button`}
           >{`Add ${lowerFirst(itemName)}`}</Button>
-        )}
+        }
       </Flex>
     </div>
-  )
+  ) : null
 }
 
 const initialValueByType = (type?: SchemaField['type']) => {
@@ -926,6 +964,7 @@ type CustomPillProps = {
   value: any
   schemaKey: SchemaKey
   handleValueRemove: (val: string) => void
+  props?: React.HTMLProps<HTMLDivElement>
 }
 
 type CustomMultiselectProps = {
@@ -935,7 +974,13 @@ type CustomMultiselectProps = {
   itemName: string
 }
 
-function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }: CustomMultiselectProps) {
+function CustomMultiselect({
+  formField,
+  registerOnChange,
+  schemaKey,
+  itemName,
+  ...inputProps
+}: CustomMultiselectProps) {
   const form = useFormContext()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
@@ -951,6 +996,7 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
 
   const handleValueRemove = (val: string) => {
     console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
+    formSlice.setCustomError(formName, formField, null) // index position changed, misleading message
     form.unregister(formField) // needs to be called before setValue
     form.setValue(
       formField,
@@ -990,14 +1036,32 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
       )
     })
 
+  const formState = useFormState({ control: form.control })
+
+  const formSlice = useFormSlice()
+  const multiselectFirstError = formSlice.form[formName]?.customErrors[formField]
+
+  useEffect(() => {
+    const formFieldErrors = _.get(formState.errors, formField)
+    if (isArray(formFieldErrors) && !multiselectFirstError) {
+      formFieldErrors.forEach((error, index) => {
+        if (!!error) {
+          const message = `${itemName} number ${index + 1} ${error.message}`
+          formSlice.setCustomError(formName, formField, message)
+        }
+      })
+    }
+  }, [formState])
+
   return (
-    <Box miw={'100%'}>
+    <Box w={'100%'}>
       <Combobox
         store={combobox}
         onOptionSubmit={(value, props) => {
           const option = selectOptions.values.find(
             (option) => String(selectOptions.formValueTransformer(option)) === value,
           )
+          formSlice.setCustomError(formName, formField, null)
           registerOnChange({
             target: {
               name: formField,
@@ -1008,7 +1072,16 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
         withinPortal
       >
         <Combobox.DropdownTarget>
-          <PillsInput onClick={() => combobox.openDropdown()}>
+          <PillsInput
+            styles={{
+              error: {},
+            }}
+            label={pluralize(upperFirst(itemName))}
+            onClick={() => combobox.openDropdown()}
+            {...inputProps}
+            // must override input props error
+            error={multiselectFirstError}
+          >
             <Pill.Group>
               {formValues.length > 0 &&
                 formValues.map((formValue, i) => (
@@ -1033,6 +1106,7 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
                   onKeyDown={(event) => {
                     if (event.key === 'Backspace' && search.length === 0) {
                       event.preventDefault()
+                      formSlice.setCustomError(formName, formField, null)
                       form.unregister(formField) // needs to be called before setValue
                       form.setValue(formField, formValues)
                     }
@@ -1044,14 +1118,12 @@ function CustomMultiselect({ formField, registerOnChange, schemaKey, itemName }:
         </Combobox.DropdownTarget>
 
         <Combobox.Dropdown>
-          {/* FIXME: not opening search */}
-          {/* <Combobox.Search
-                  miw={'100%'}
-                  value={search}
-                  onChange={(event) => setSearch(event.currentTarget.value)}
-                  placeholder={`Search ${lowerFirst(itemName)}`}
-                /> */}
-          <Combobox.Options>{comboboxOptions}</Combobox.Options>
+          <Combobox.Options
+            mah={200} // scrollable
+            style={{ overflowY: 'auto' }}
+          >
+            {comboboxOptions}
+          </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
     </Box>
@@ -1065,7 +1137,7 @@ type CustomSelectProps = {
   itemName: string
 }
 
-function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: CustomSelectProps) {
+function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inputProps }: CustomSelectProps) {
   const form = useFormContext()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
@@ -1105,9 +1177,12 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
         </Combobox.Option>
       )
     })
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
+
+  const parentSchemaKey = schemaKey.split('.').slice(0, -1).join('.') as SchemaKey
 
   return (
-    <Box miw={'100%'}>
+    <Box w={'100%'}>
       <Combobox
         store={combobox}
         withinPortal={true}
@@ -1118,7 +1193,12 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
             (option) => String(selectOptions.formValueTransformer(option)) === value,
           )
           console.log({ onChangeOption: option })
-          if (!option) return
+          if (!option) {
+            // in form gen we do want to concatenate errors, to be shown upon submit clicked.
+            // react hook form will show input errors as well on registered components
+            setCalloutErrors([...(calloutErrors || []), `${value} is not a valid ${itemName}`])
+            return
+          }
           await registerOnChange({
             target: {
               name: formField,
@@ -1130,6 +1210,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
       >
         <Combobox.Target withAriaAttributes={false}>
           <InputBase
+            label={!schemaFields[parentSchemaKey]?.isArray ? singularize(upperFirst(itemName)) : null}
             className={classes.select}
             component="button"
             type="button"
@@ -1138,11 +1219,12 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
             onClick={() => combobox.toggleDropdown()}
             rightSectionPointerEvents="none"
             multiline
+            {...inputProps}
           >
             {selectedOption ? (
               comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
             ) : (
-              <Input.Placeholder>{`Pick ${lowerFirst(itemName)}`}</Input.Placeholder>
+              <Input.Placeholder>{`Pick ${singularize(lowerFirst(itemName))}`}</Input.Placeholder>
             )}
           </InputBase>
         </Combobox.Target>
@@ -1154,7 +1236,10 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
             onChange={(event) => setSearch(event.currentTarget.value)}
             placeholder={`Search ${lowerFirst(itemName)}`}
           />
-          <Combobox.Options>
+          <Combobox.Options
+            mah={200} // scrollable
+            style={{ overflowY: 'auto' }}
+          >
             {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
           </Combobox.Options>
         </Combobox.Dropdown>
@@ -1163,14 +1248,25 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName }: Cust
   )
 }
 
-function CustomPill({ value, schemaKey, handleValueRemove }: CustomPillProps): JSX.Element {
+function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
   const selectOptions = options.selectOptions![schemaKey]!
+  const itemName = singularize(options.labels[schemaKey] || '')
+
+  let invalidValue = null
 
   const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
+  if (!option) {
+    console.log(`${value} is not a valid ${singularize(lowerCase(itemName))}`)
 
-  let color
-  if (selectOptions?.labelColor) {
+    // explicitly set wrong values so that error positions make sense and the user knows there is a wrong form value beforehand
+    // instead of us deleting it implicitly
+    invalidValue = value
+  }
+
+  let color = '#bbbbbb' // for invalid values
+  if (selectOptions?.labelColor && !invalidValue) {
     color = selectOptions?.labelColor(option)
   }
 
@@ -1185,8 +1281,9 @@ function CustomPill({ value, schemaKey, handleValueRemove }: CustomPillProps): J
           color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'};
         }
       `}
+      {...props}
     >
-      <Box className={classes.valueComponentInnerBox}>{transformer(option)}</Box>
+      <Box className={classes.valueComponentInnerBox}>{invalidValue || transformer(option)}</Box>
       <CloseButton
         onMouseDown={() => handleValueRemove(value)}
         variant="transparent"

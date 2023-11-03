@@ -22,9 +22,8 @@ import {
   localStorageColorSchemeManager,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
-import { PersistQueryClientProvider, type PersistedClient, type Persister } from '@tanstack/react-query-persist-client'
+import { PersistQueryClientProvider, type PersistedClient } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
-import { del, get, set } from 'idb-keyval'
 import ProtectedRoute from 'src/components/Permissions/ProtectedRoute'
 import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
 import { responseInterceptor } from 'src/queries/interceptors'
@@ -41,7 +40,7 @@ import DynamicForm, {
 import type { DbWorkItemTag, User, WorkItemRole } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { validateField } from 'src/utils/validation'
-import { FormProvider, useForm, useWatch } from 'react-hook-form'
+import { FormProvider, useForm, useFormState, useWatch } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import dayjs from 'dayjs'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -65,6 +64,11 @@ import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
 import '@mantine/code-highlight/styles.css'
 import '@mantine/dates/styles.css'
+import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
+import { useFormSlice } from 'src/slices/form'
+import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
+import { persister } from 'src/idb'
+import { queryClient } from 'src/react-query'
 
 const schema = {
   properties: {
@@ -98,15 +102,20 @@ const schema = {
                 },
                 type: ['array', 'null'],
               },
+              userId: {
+                items: {
+                  type: 'string',
+                  minLength: 1,
+                },
+                type: ['array', 'null'],
+              },
               name: {
                 type: 'string',
                 minLength: 1,
-                $schema: 'http://json-schema.org/draft-04/schema#',
               },
             },
-            required: ['items', 'name'],
+            required: ['userId', 'name'],
             type: 'object',
-            $schema: 'http://json-schema.org/draft-04/schema#',
           },
           type: ['array', 'null'],
         },
@@ -116,7 +125,6 @@ const schema = {
       },
       required: ['items', 'description', 'workItemTypeID', 'teamID', 'kanbanStepID', 'closed', 'targetDate'],
       type: 'object',
-      $schema: 'http://json-schema.org/draft-04/schema#',
     },
     demoProject: {
       properties: {
@@ -142,7 +150,6 @@ const schema = {
       },
       required: ['workItemID', 'ref', 'line', 'lastMessageAt', 'reopened'],
       type: 'object',
-      $schema: 'http://json-schema.org/draft-04/schema#',
     },
     members: {
       items: {
@@ -154,17 +161,14 @@ const schema = {
             'x-generated': '-',
             enum: ['preparer', 'reviewer'],
             description: "represents a database 'work_item_role'",
-            $schema: 'http://json-schema.org/draft-04/schema#',
           },
           userID: {
             type: 'string',
             minLength: 1,
-            $schema: 'http://json-schema.org/draft-04/schema#',
           },
         },
         required: ['userID', 'role'],
         type: 'object',
-        $schema: 'http://json-schema.org/draft-04/schema#',
       },
       type: ['array', 'null'],
     },
@@ -180,49 +184,12 @@ const schema = {
   'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      cacheTime: 1000 * 60 * 5, // 5 min
-      // cacheTime: 0,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      staleTime: Infinity,
-      keepPreviousData: true,
-    },
-    mutations: {
-      cacheTime: 1000 * 60 * 5, // 5 minutes
-    },
-  },
-  // queryCache,
-})
-
 // axios.interceptors.request.use(requestInterceptor, function (error) {
 //   return Promise.reject(error)
 // })
 axios.interceptors.response.use(responseInterceptor, function (error) {
   return Promise.reject(error)
 })
-
-/**
- * Creates an Indexed DB persister
- * @see https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
- */
-function createIDBPersister(idbValidKey: IDBValidKey = 'reactQuery') {
-  return {
-    persistClient: async (client: PersistedClient) => {
-      set(idbValidKey, client)
-    },
-    restoreClient: async () => {
-      return await get<PersistedClient>(idbValidKey)
-    },
-    removeClient: async () => {
-      await del(idbValidKey)
-    },
-  } as Persister
-}
-
-export const persister = createIDBPersister()
 
 function ErrorFallback({ error }: any) {
   return (
@@ -238,10 +205,19 @@ const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
 const UserPermissionsPage = React.lazy(() => import('src/views/Settings/UserPermissionsPage/UserPermissionsPage'))
 const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectManagementPage/ProjectManagementPage'))
 
+const uuids = [
+  'fcd252dc-72a4-4514-bdd1-3cac573a5fac',
+  '120cb364-2b18-49fb-b505-568834614c5d',
+  'bdab07d6-c2b4-44b0-b6d0-e87f62037cc1',
+  'ad52daf8-9bad-4671-b3f1-535178b0346e',
+  '3e82b3a5-5757-4860-8bf7-2e7962534328',
+  'd59d3a5c-b99f-40aa-9419-75a2bbb0fd52',
+]
+
 const members = [...Array(10)].map((x, i) => {
   const user = getGetCurrentUserMock()
   user.email = `${i}@mail.com`
-  user.userID = uuidv4()
+  user.userID = i < uuids.length ? uuids[i]! : uuidv4()
   return user
 })
 
@@ -256,22 +232,30 @@ const tags = [...Array(10)].map((x, i) => {
   return tag
 })
 
-const userIdOptionTransformer = (el: User) => {
-  return (
-    <Group align="center" mr={8}>
-      <Flex align={'center'}>
-        <Avatar size={'28px'} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
-          {nameInitials(el?.fullName || '')}
-        </Avatar>
-        <Space p={5} />
-      </Flex>
-      <Box ml={'auto'}>{el?.email}</Box>
-    </Group>
-  )
-}
-
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
+const userIdSelectOption = selectOptionsBuilder({
+  type: 'select',
+  values: members,
+  //  TODO: transformers can be reusable between forms. could simply become
+  //  {
+  //   type: "select"
+  //   values: ...
+  //   ...userIdFormTransformers
+  // }
+  optionTransformer(el) {
+    return <UserComboboxOption user={el} />
+  },
+  formValueTransformer(el) {
+    return el.userID
+  },
+  pillTransformer(el) {
+    return <>{el.email}</>
+  },
+  searchValueTransformer(el) {
+    return `${el.email} ${el.fullName} ${el.username}`
+  },
+})
 export default function App() {
   useEffect(() => {
     document.body.style.background = 'none !important'
@@ -290,11 +274,15 @@ export default function App() {
   const formInitialValues = {
     base: {
       items: [
-        { items: ['0001', '0002'], name: 'item-1' },
-        { items: ['0011', '0012'], name: 'item-2' },
+        {
+          items: ['0001', '0002'],
+          userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'],
+          name: 'item-1',
+        },
+        { items: ['0011', '0012'], userId: ['badid', 'badid2'], name: 'item-2' },
       ],
       // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-      // targetDate: dayjs('2023-02-22').toDate(),
+      targetDate: dayjs('2023-02-22').toDate(),
       description: 'some text',
       kanbanStepID: 1,
       teamID: 1,
@@ -302,16 +290,22 @@ export default function App() {
       // title: {},
       workItemTypeID: 1,
     },
-    // TODO: need to check runtime type, else all fails catastrophically.
+    // TODO: formGeneration must not assume options do exist, else all fails catastrophically.
+    // it's not just checking types...
+    // 1. move callout errors state to zustand, and create callout warnings too
+    // 2.(sol 1) if option not found for initial data, remove from form values
+    // and show persistent callout _warning_ that X was deleted since it was not found.
     // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
-    // tagIDs: [1, 'fsfefes'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+    // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
+    tagIDs: [1, 2, 'badid'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+    tagIDsMultiselect: null,
+    // tagIDs: [0, 5, 8],
     demoProject: {
       lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
       ref: '12341234',
       workItemID: 1,
       reopened: false, // for create will ignore field for form gen
     },
-    tagIDs: [0, 5, 8],
     members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'bad userID' }],
   } as TestTypes.DemoWorkItemCreateRequest
 
@@ -321,16 +315,33 @@ export default function App() {
       formats: fullFormats,
     }),
     mode: 'all',
+    reValidateMode: 'onChange',
     defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors, defaultValues },
-  } = form
+  const { register, handleSubmit, control, formState } = form
+  const errors = formState.errors
+  const formSLice = useFormSlice()
+  const [errorSet, seterrorSet] = useState(false)
+  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } =
+    useCalloutErrors('demoWorkItemCreateForm')
+
+  useEffect(() => {
+    console.log('errors')
+    console.log(errors)
+    // if (Object.keys(errors).length > 0 && !errorSet) {
+    // setCalloutErrors('Validation error')
+
+    // console.log('errors')
+    // console.log(errors)
+
+    // setCalloutErrors('Validation error')
+    // seterrorSet(true)
+    // // console.log(formSLice.callout[formName])
+    // // console.log(`form has errors: ${Object.keys(errors).length > 0}`)
+    // }
+  }, [formState])
 
   // useEffect(() => {
   //   console.log(demoWorkItemCreateForm.values)
@@ -411,6 +422,7 @@ export default function App() {
                               'base.teamID': { type: 'integer', required: true, isArray: false },
                               'base.items': { type: 'object', required: false, isArray: true },
                               'base.items.name': { type: 'string', required: true, isArray: false },
+                              'base.items.userId': { type: 'string', required: false, isArray: true },
                               'base.items.items': { type: 'string', required: false, isArray: true },
                               'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
                               demoProject: { isArray: false, required: true, type: 'object' },
@@ -439,6 +451,7 @@ export default function App() {
                                 'base.items': 'Items',
                                 'base.items.name': 'Name',
                                 'base.items.items': 'Items',
+                                'base.items.userId': 'User',
                                 'base.workItemTypeID': 'Type',
                                 demoProject: null,
                                 'demoProject.lastMessageAt': 'Last message at',
@@ -469,26 +482,8 @@ export default function App() {
                                 'members.role': 'preparer',
                               },
                               selectOptions: {
-                                'members.userID': selectOptionsBuilder({
-                                  type: 'select',
-                                  values: members,
-                                  //  TODO: transformers can be reusable between forms. could simply become
-                                  //  {
-                                  //   type: "select"
-                                  //   values: ...
-                                  //   ...userIdFormTransformers
-                                  // }
-                                  optionTransformer: userIdOptionTransformer,
-                                  formValueTransformer(el) {
-                                    return el.userID
-                                  },
-                                  pillTransformer(el) {
-                                    return <>{el.email}</>
-                                  },
-                                  searchValueTransformer(el) {
-                                    return `${el.email} ${el.fullName} ${el.username}`
-                                  },
-                                }),
+                                'members.userID': userIdSelectOption,
+                                'base.items.userId': userIdSelectOption,
                                 tagIDs: selectOptionsBuilder({
                                   type: 'multiselect',
                                   searchValueTransformer(el) {
@@ -548,7 +543,8 @@ export default function App() {
                               // these should probably be all required later, to ensure formField is never used.
                               propsOverride: {
                                 'demoProject.line': {
-                                  description: 'This is some help text.',
+                                  description: 'This is some help text for a disabled field.',
+                                  disabled: true,
                                 },
                               },
                             }} // satisfies DynamicFormOptions<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason

@@ -1,21 +1,31 @@
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
-import { ZoneContextManager } from '@opentelemetry/context-zone'
-// import { ZoneContextManager } from '@opentelemetry/context-zone-peer-dep'
+// NOTE: might be related to node version
+// simply importing it causes test error...
+// import { ZoneContextManager } from '@opentelemetry/context-zone'
+// import { ZoneContextManager as ZoneContextManagerPeerDep } from '@opentelemetry/context-zone-peer-dep' // tests work but `zone is not defined` on browser. do not install, breaks tests
 import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch'
 import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { Resource } from '@opentelemetry/resources'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+// import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { ZipkinExporter } from '@opentelemetry/exporter-zipkin'
 import { BatchSpanProcessor, ConsoleSpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
-import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load'
-import { BatchSpanProcessorBase } from '@opentelemetry/sdk-trace-base/build/src/export/BatchSpanProcessorBase'
-import { B3Propagator } from '@opentelemetry/propagator-b3'
+// import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load'
+// import { BatchSpanProcessorBase } from '@opentelemetry/sdk-trace-base/build/src/export/BatchSpanProcessorBase'
+// import { B3Propagator } from '@opentelemetry/propagator-b3'
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from '@opentelemetry/core'
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web'
 import opentelemetry from '@opentelemetry/api'
 import { v4 as uuidv4 } from 'uuid'
+
+// let ContextManager
+
+// if (import.meta.env.TESTING) {
+//   ContextManager = ZoneContextManagerPeerDep
+// } else {
+//   ContextManager = ZoneContextManager
+// }
 
 export const sessionID = uuidv4()
 
@@ -58,9 +68,9 @@ export default function TraceProvider({ children }: TraceProviderProps) {
   )
   provider.addSpanProcessor(zipKinSpanProcessor)
 
-  const contextManager = new ZoneContextManager()
+  // const contextManager = new ContextManager()
   provider.register({
-    contextManager,
+    // contextManager,
     propagator: new CompositePropagator({
       propagators: [new W3CBaggagePropagator(), new W3CTraceContextPropagator()],
     }),

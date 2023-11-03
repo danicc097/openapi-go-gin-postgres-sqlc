@@ -7,7 +7,7 @@ describe('util types', async () => {
     expectTypeOf<PathType<TestTypes.DemoWorkItemCreateRequest, 'members.role'>>('reviewer')
     expectTypeOf<PathType<TestTypes.DemoWorkItemCreateRequest, 'members.userID'>>('1234')
 
-    const item = { name: '1234', items: ['1', '2'] }
+    const item = { name: '1234', items: ['1', '2'], userId: [] }
     expectTypeOf<PathType<TestTypes.DemoWorkItemCreateRequest, 'base.items'>>([item])
     expectTypeOf<PathType<TestTypes.DemoWorkItemCreateRequest, 'base.items.items'>>(item.items)
     expectTypeOf<PathType<TestTypes.DemoWorkItemCreateRequest, 'base.items.name'>>(item.name)

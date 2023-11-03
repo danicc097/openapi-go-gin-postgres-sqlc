@@ -18,14 +18,7 @@
 .arrayChildCard {
   width: 100%;
   background: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-7));
-}
-
-.removeButton {
-  background-color: light-dark(#7c1a1a, #b03434);
-  color: white;
-  :hover {
-    color: light-dark(#b03434, #7c1a1a);
-  }
+  gap: 6px;
 }
 
 .select {

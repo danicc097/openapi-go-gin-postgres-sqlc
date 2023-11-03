@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
-import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
+import { create } from 'zustand'
 
 export const ACCESS_TOKEN_COOKIE = 'myAppAccessToken'
 
