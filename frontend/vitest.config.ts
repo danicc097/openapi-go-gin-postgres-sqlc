@@ -8,6 +8,7 @@ import Config from './config.json'
 import { defineConfig } from 'vitest/config'
 import viteConfig from './vite.config'
 import { mergeConfig } from 'vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 const r = (p: string) => resolve(__dirname, p)
 
@@ -25,40 +26,46 @@ const alias: Record<string, string> = {
   '@': r('./src'),
 }
 
-export default mergeConfig(
-  viteConfig,
-  defineConfig({
-    // esbuild: {
-    //   tsconfigRaw: {},
-    // },
-    resolve: {
-      alias,
-    },
-    test: {
-      deps: {
-        inline: ['framer-motion'],
-      },
-      globals: true,
-      environmentOptions: {
-        jsdom: {
-          console: true,
-        },
-      },
-      environment: 'jsdom',
-      setupFiles: './src/setupTests.ts',
-      coverage: {
-        provider: 'c8',
-        reporter: ['text', 'html'],
-        exclude: ['node_modules/', 'src/setupTests.ts'],
-      },
-      // `vitest typecheck`, not run in watch (https://github.com/vitest-dev/vitest/issues/2299)
-      typecheck: {
-        ignoreSourceErrors: true,
-      },
-      css: false,
-      // transformMode: {
-      //   web: [/\.[jt]sx$/],
+export default defineConfig((env) =>
+  mergeConfig(
+    viteConfig(env),
+    defineConfig({
+      // esbuild: {
+      //   tsconfigRaw: {},
       // },
-    },
-  }),
+      resolve: {
+        alias,
+      },
+      test: {
+        deps: {
+          optimizer: {
+            web: {
+              include: ['framer-motion'],
+            },
+          },
+        },
+        globals: true,
+        environmentOptions: {
+          jsdom: {
+            console: true,
+          },
+        },
+        environment: 'jsdom',
+        setupFiles: './src/setupTests.ts',
+        coverage: {
+          provider: 'v8',
+          reporter: ['text', 'html'],
+          exclude: ['node_modules/', 'src/setupTests.ts'],
+        },
+        // `vitest typecheck`, not run in watch (https://github.com/vitest-dev/vitest/issues/2299)
+        typecheck: {
+          ignoreSourceErrors: true,
+        },
+        css: false,
+        // transformMode: {
+        //   web: [/\.[jt]sx$/],
+        // },
+      },
+    }),
+  ),
 )

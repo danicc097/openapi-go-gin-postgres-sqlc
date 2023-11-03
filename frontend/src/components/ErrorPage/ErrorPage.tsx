@@ -1,7 +1,6 @@
 import { css } from '@emotion/react'
 import { Title, Text, Button, Container, Group, useMantineTheme, useMantineColorScheme } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
-import { HEADER_HEIGHT } from 'src/components/Header'
 import HttpStatus from 'src/utils/httpStatus'
 import classes from './ErrorPage.module.css'
 

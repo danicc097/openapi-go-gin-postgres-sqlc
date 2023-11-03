@@ -1,4 +1,3 @@
-import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { Alert } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons'
@@ -7,6 +6,7 @@ import { useState } from 'react'
 import { ApiError } from 'src/api/mutator'
 import type { HTTPError } from 'src/gen/model'
 import type { AppError } from 'src/types/ui'
+import { create } from 'zustand'
 
 export const FORM_SLICE_PERSIST_KEY = 'form-slice'
 

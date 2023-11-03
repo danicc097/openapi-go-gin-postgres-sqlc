@@ -6,6 +6,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { resolve } from 'path'
 import dynamicImport from 'vite-plugin-dynamic-import'
 import Config from './config.json'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 dotenv.config()
 
@@ -26,6 +27,7 @@ export default ({ mode }) => {
       }),
       tsconfigPaths({ root: '.' }),
       dynamicImport({}),
+      nodePolyfills(),
     ],
     server: {
       port: Number(Config.FRONTEND_PORT) || 3020,
