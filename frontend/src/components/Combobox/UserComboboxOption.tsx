@@ -1,6 +1,6 @@
 import { Avatar, Group, Space } from '@mantine/core'
 import RoleBadge from 'src/components/Badges/RoleBadge'
-import { User } from 'src/gen/model'
+import type { User } from 'src/gen/model'
 import { nameInitials } from 'src/utils/strings'
 
 interface UserComboboxOptionProps {

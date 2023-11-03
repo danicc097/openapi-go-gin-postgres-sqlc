@@ -1,4 +1,4 @@
-import { PersistedClient, Persister } from '@tanstack/react-query-persist-client'
+import type { PersistedClient, Persister } from '@tanstack/react-query-persist-client'
 import { del, get, set } from 'idb-keyval'
 
 /**

@@ -4,7 +4,7 @@ import { AxiosError } from 'axios'
 import { useState } from 'react'
 import { ApiError } from 'src/api/mutator'
 import type { HTTPError } from 'src/gen/model'
-import { CalloutError, useFormSlice } from 'src/slices/form'
+import { type CalloutError, useFormSlice } from 'src/slices/form'
 import type { AppError } from 'src/types/ui'
 import { entries } from 'src/utils/object'
 interface ErrorCalloutProps {

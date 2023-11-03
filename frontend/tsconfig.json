@@ -8,6 +8,7 @@
       "DOM.Iterable",
       "ESNext"
     ],
+    "importsNotUsedAsValues": "error",
     "skipLibCheck": true,
     "allowJs": false,
     "strict": false,

@@ -65,7 +65,7 @@ import {
   useFormState,
   type UseFormRegisterReturn,
   type ChangeHandler,
-  UseFormSetError,
+  type UseFormSetError,
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
@@ -91,7 +91,7 @@ import { entries, hasNonEmptyValue, isObject, keys } from 'src/utils/object'
 import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
-import { FormField, SchemaKey } from 'src/utils/form'
+import type { FormField, SchemaKey } from 'src/utils/form'
 import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'

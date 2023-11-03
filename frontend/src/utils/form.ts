@@ -1,4 +1,4 @@
-import { Branded } from 'src/types/utils'
+import type { Branded } from 'src/types/utils'
 import { isObject } from 'src/utils/object'
 
 export type SchemaKey = Branded<string, 'SchemaKey'>
