@@ -64,6 +64,7 @@ export default defineConfig((env) =>
         // `vitest typecheck`, not run in watch (https://github.com/vitest-dev/vitest/issues/2299)
         typecheck: {
           ignoreSourceErrors: true,
+          tsconfig: `${__dirname}/tsconfig.json`,
         },
         css: false,
         // transformMode: {
