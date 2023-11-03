@@ -55,9 +55,6 @@ dependencies:
   '@opentelemetry/context-zone':
     specifier: ^1.17.1
     version: 1.17.1(@opentelemetry/api@1.6.0)
-  '@opentelemetry/context-zone-peer-dep':
-    specifier: ^1.17.1
-    version: 1.17.1(@opentelemetry/api@1.6.0)(zone.js@0.11.4)
   '@opentelemetry/core':
     specifier: ^1.17.1
     version: 1.17.1(@opentelemetry/api@1.6.0)

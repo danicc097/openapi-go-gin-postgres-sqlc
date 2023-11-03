@@ -1,7 +1,7 @@
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
-// zone.js
-// import { ZoneContextManager } from '@opentelemetry/context-zone' // confirmed results in Method Promise.prototype.then called on incompatible receiver [object Object]
-import { ZoneContextManager } from '@opentelemetry/context-zone-peer-dep'
+// depends on zone.js. Recommended version if not using angular
+import { ZoneContextManager } from '@opentelemetry/context-zone' // confirmed results in Method Promise.prototype.then called on incompatible receiver [object Object]
+// import { ZoneContextManager } from '@opentelemetry/context-zone-peer-dep' // tests work but `zone is not defined` on browser. do not install, breaks tests
 import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch'
 import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'

@@ -35,7 +35,6 @@
     "@opentelemetry/api": "^1.6.0",
     "@opentelemetry/auto-instrumentations-web": "^0.30.1",
     "@opentelemetry/context-zone": "^1.17.1",
-    "@opentelemetry/context-zone-peer-dep": "^1.17.1",
     "@opentelemetry/core": "^1.17.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.33.0",
     "@opentelemetry/exporter-zipkin": "^1.17.1",
