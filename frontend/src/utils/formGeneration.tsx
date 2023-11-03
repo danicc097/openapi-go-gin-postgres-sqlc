@@ -880,7 +880,7 @@ type RemoveButtonProps = {
 // needs to be own component to trigger rerender on delete, can't have conditional useWatch
 const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) => {
   const form = useFormContext()
-  const theme = useMantineTheme()
+  const { colorScheme } = useMantineColorScheme()
   const { formName, options, schemaFields } = useDynamicFormContext()
 
   return (
@@ -894,8 +894,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
           form.unregister(formField) // needs to be called before setValue
           form.setValue(formField, listItems as any)
         }}
-        // variant="filled"
-        className={classes.removeButton}
+        color={'#bd3535'}
         size="sm"
         id={`${formName}-${formField}-remove-button-${index}`}
       >

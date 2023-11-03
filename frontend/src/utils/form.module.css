@@ -21,14 +21,6 @@
   gap: 6px;
 }
 
-.removeButton {
-  background-color: light-dark(#7c1a1a, #b03434);
-  color: white;
-  :hover {
-    color: light-dark(#b03434, #7c1a1a);
-  }
-}
-
 .select {
 }
 
