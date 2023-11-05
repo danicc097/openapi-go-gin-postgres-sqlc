@@ -395,11 +395,11 @@ github.com/zitadel/logging v0.3.4 h1:9hZsTjMMTE3X2LUi0xcF9Q9EdLo+FAezeu52ireBbHM
 github.com/zitadel/logging v0.3.4/go.mod h1:aPpLQhE+v6ocNK0TWrBrd363hZ95KcI17Q1ixAQwZF0=
 github.com/zitadel/oidc/v2 v2.11.0 h1:Am4/yQr4iiM5bznRgF3FOp+wLdKx2gzSU73uyI9vvBE=
 github.com/zitadel/oidc/v2 v2.11.0/go.mod h1:enFSVBQI6aE0TEB1ntjXs9r6O6DEosxX4uhEBLBVD8o=
-go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.43.0 h1:B8JzkALYp9VVR85AE7geXia+D4shAoUjaCEaBxn8NO8=
-go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.43.0/go.mod h1:b4/TD3x8cVgX8ZCRioLqE0jAw1918mq95Q6tSYyc+g4=
+go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.45.0 h1:0KYeVr81ogcVRLXVcXFuPQMNZngplnP8MqrE8CqvHeg=
+go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.45.0/go.mod h1:ro3eEFOynMu0p59YVUFFbkOeaPREbqc5yDR2HnGpFc0=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.43.0 h1:7XZai4VhA473clBrOqqHdjHBImGfyEtv0qW4nnn/kAo=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.43.0/go.mod h1:1WpsUwjQrUJSNugfMlPn0rPRJ9Do7wwBgTBPK7MLiS4=
-go.opentelemetry.io/contrib/propagators/b3 v1.18.0 h1:hhSlPVi9AQwOmbMmptPNLfRZOLgENdRM2kb7z9LFe1A=
+go.opentelemetry.io/contrib/propagators/b3 v1.20.0 h1:Yty9Vs4F3D6/liF1o6FNt0PvN85h/BJJ6DQKJ3nrcM0=
 go.opentelemetry.io/contrib/propagators/jaeger v1.20.0 h1:iVhNKkMIpzyZqxk8jkDU2n4DFTD+FbpGacvooxEvyyc=
 go.opentelemetry.io/contrib/propagators/jaeger v1.20.0/go.mod h1:cpSABr0cm/AH/HhbJjn+AudBVUMgZWdfN3Gb+ZqxSZc=
 go.opentelemetry.io/otel v1.10.0/go.mod h1:NbvWjCthWHKBEUMpf0/v8ZRZlni86PpGFEMA9pnQSnQ=
