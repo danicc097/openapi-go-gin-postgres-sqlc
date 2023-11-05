@@ -43,7 +43,7 @@ require (
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.16.0
 	go.opentelemetry.io/otel/sdk v1.17.0
 	go.opentelemetry.io/otel/trace v1.19.0
-	go.uber.org/zap v1.25.0
+	go.uber.org/zap v1.26.0
 	golang.org/x/exp v0.0.0-20230728194245-b0cb94b80691
 	golang.org/x/sync v0.3.0
 	golang.org/x/text v0.13.0
@@ -53,7 +53,6 @@ require (
 require (
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
-	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.10.0-rc3 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
