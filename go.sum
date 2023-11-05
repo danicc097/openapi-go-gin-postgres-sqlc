@@ -45,8 +45,8 @@ github.com/danicc097/oidc-server/v3 v3.1.0 h1:lUEzn2VSiHn2iPPVG74N0wiGL0Ah0vDfYL
 github.com/danicc097/oidc-server/v3 v3.1.0/go.mod h1:dRbodhLy7B2hVEjtD2dnF8ZXj5QHfAP8QE4LtIfGvNk=
 github.com/danicc097/xo/v5 v5.1.0 h1:eHPTffQTNT4jQ7XmnOChK0QWG4so+z/lB6/eUmWObGU=
 github.com/danicc097/xo/v5 v5.1.0/go.mod h1:GjUeQp17H7P+3lt1CF5oyo7WtWs0IbmrcIIoxhKWYfE=
-github.com/dave/dst v0.27.2 h1:4Y5VFTkhGLC1oddtNwuxxe36pnyLxMFXT51FOzH8Ekc=
-github.com/dave/dst v0.27.2/go.mod h1:jHh6EOibnHgcUW3WjKHisiooEkYwqpHLBSX1iOBhEyc=
+github.com/dave/dst v0.27.3 h1:P1HPoMza3cMEquVf9kKy8yXsFirry4zEnWOdYPOoIzY=
+github.com/dave/dst v0.27.3/go.mod h1:jHh6EOibnHgcUW3WjKHisiooEkYwqpHLBSX1iOBhEyc=
 github.com/dave/jennifer v1.5.0 h1:HmgPN93bVDpkQyYbqhCHj5QlgvUkvEOzMyEvKLgCRrg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
