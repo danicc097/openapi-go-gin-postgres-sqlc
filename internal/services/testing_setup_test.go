@@ -12,6 +12,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -66,4 +67,13 @@ func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 
 	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
 	return ff
+}
+
+func newTestAuthService(t *testing.T) *services.Authorization {
+	logger := zaptest.NewLogger(t).Sugar()
+
+	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
+	require.NoError(t, err, "newTestAuthService")
+
+	return authzsvc
 }

@@ -7,16 +7,12 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestAuthorization_Roles(t *testing.T) {
 	t.Parallel()
 
-	svc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
-	if err != nil {
-		t.Fatalf("NewAuthorization: %v", err)
-	}
+	svc := newTestAuthService(t)
 
 	userRole := svc.RoleByName(models.RoleUser)
 	managerRole := svc.RoleByName(models.RoleManager)
@@ -32,10 +28,7 @@ func TestAuthorization_Roles(t *testing.T) {
 func TestAuthorization_Scopes(t *testing.T) {
 	t.Parallel()
 
-	svc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
-	if err != nil {
-		t.Fatalf("NewAuthorization: %v", err)
-	}
+	svc := newTestAuthService(t)
 
 	req := models.Scopes{models.ScopeTeamSettingsWrite}
 	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{}, req), "access restricted")

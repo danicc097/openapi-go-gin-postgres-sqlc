@@ -28,8 +28,7 @@ func TestUser_UpdateUser(t *testing.T) {
 
 	logger := zaptest.NewLogger(t).Sugar()
 
-	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
-	require.NoError(t, err)
+	authzsvc := newTestAuthService(t)
 
 	type args struct {
 		params *models.UpdateUserRequest
@@ -126,8 +125,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 
 	logger := zaptest.NewLogger(t).Sugar()
 
-	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
-	require.NoError(t, err)
+	authzsvc := newTestAuthService(t)
 
 	// TODO create users on demand with parameterized tests. same as repo ucp but using FakeUserRepo instead
 	// e.g. cannot_set_scope_unassigned_to_self  and can_set_scopes_asigned_to_self
