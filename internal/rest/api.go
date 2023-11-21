@@ -38,7 +38,7 @@ type Handlers struct {
 	provider       rp.RelyingParty
 }
 
-// NewHandlers returns an server implementation of an openapi specification.
+// NewHandlers returns a server implementation of an openapi specification.
 func NewHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	moviesvcclient v1.MovieGenreClient,
@@ -102,11 +102,6 @@ func NewHandlers(
 
 // middlewares to be applied after authMiddlewares, based on operation IDs.
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
-	// TODO: tx could be middleware. no need to check if context tx is undefined
-	// because itll always be, else it prematurely renders errors and abort
-	// if we forget to add mw tests just fail since all routes are tested...
-	// easiest would be to by default have tx mw in all routes, but the option
-	// to exclude an array of opIDs that turn the mw into a noop. (auth provider login, etc)
 	defaultMws := []gin.HandlerFunc{}
 
 	dbMw := newDBMiddleware(h.logger, h.pool)

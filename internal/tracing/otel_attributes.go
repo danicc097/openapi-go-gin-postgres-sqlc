@@ -14,6 +14,7 @@ const (
 	ParamsAttributeKey = attribute.Key("params")
 )
 
+// GetOTelSpanName returns a span name based on the calling package and function.
 func GetOTelSpanName(parentIndex int) string {
 	pc, _, _, _ := runtime.Caller(parentIndex)
 	funcPtr := runtime.FuncForPC(pc)

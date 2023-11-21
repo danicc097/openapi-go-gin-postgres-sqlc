@@ -1,3 +1,7 @@
+/**
+ * CLI for development/experimentation
+ */
+
 package main
 
 import (
