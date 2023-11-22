@@ -4,21 +4,45 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
 )
 
 type Notification struct {
-	logger *zap.SugaredLogger
-	nrepo  repos.Notification
+	logger   *zap.SugaredLogger
+	nrepo    repos.Notification
+	authzsvc *Authorization
+	usvc     *User
+}
+
+type NotificationCreateParamsBase struct {
+	Body   string    `json:"body"   nullable:"false" required:"true"`
+	Labels []string  `json:"labels" nullable:"false" required:"true"`
+	Link   *string   `json:"link"`
+	Sender db.UserID `json:"sender" nullable:"false" required:"true"`
+	Title  string    `json:"title"  nullable:"false" required:"true"`
+}
+
+type PersonalNotificationCreateParams struct {
+	NotificationCreateParamsBase
+	Receiver db.UserID `json:"receiver"`
+}
+
+type GlobalNotificationCreateParams struct {
+	NotificationCreateParamsBase
+	ReceiverRole models.Role `json:"receiverRole"`
 }
 
 // NewNotification returns a new Notification service.
-func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification) *Notification {
+func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification, authzsvc *Authorization, usvc *User) *Notification {
 	return &Notification{
-		logger: logger,
-		nrepo:  nrepo,
+		logger:   logger,
+		nrepo:    nrepo,
+		authzsvc: authzsvc,
+		usvc:     usvc,
 	}
 }
 
@@ -35,10 +59,43 @@ func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 }
 
 // Create creates a new notification.
-func (n *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error) {
+func (n *Notification) CreatePersonalNotification(ctx context.Context, d db.DBTX, params *PersonalNotificationCreateParams) (*db.Notification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	notification, err := n.nrepo.Create(ctx, d, params)
+	notification, err := n.nrepo.Create(ctx, d, &db.NotificationCreateParams{
+		Body:             params.Body,
+		Labels:           params.Labels,
+		Link:             params.Link,
+		Receiver:         &params.Receiver,
+		NotificationType: db.NotificationTypePersonal,
+		Title:            params.Title,
+		Sender:           params.Sender,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("nrepo.Create: %w", err)
+	}
+
+	return notification, nil
+}
+
+func (n *Notification) CreateGlobalNotification(ctx context.Context, d db.DBTX, params *GlobalNotificationCreateParams) (*db.Notification, error) {
+	defer newOTelSpan().Build(ctx).End()
+
+	role := n.authzsvc.RoleByName(params.ReceiverRole)
+	superAdmin, err := n.usvc.ByEmail(ctx, d, internal.Config.SuperAdmin.DefaultEmail)
+	if err != nil {
+		return nil, internal.WrapErrorf(err, models.ErrorCodePrivate, "could not get admin user: %s", err)
+	}
+
+	notification, err := n.nrepo.Create(ctx, d, &db.NotificationCreateParams{
+		Body:             params.Body,
+		Labels:           params.Labels,
+		Link:             params.Link,
+		ReceiverRank:     &role.Rank,
+		NotificationType: db.NotificationTypeGlobal,
+		Title:            params.Title,
+		Sender:           superAdmin.UserID,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("nrepo.Create: %w", err)
 	}

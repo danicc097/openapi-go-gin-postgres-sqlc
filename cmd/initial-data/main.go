@@ -71,6 +71,7 @@ func main() {
 	activitySvc := services.NewActivity(logger, activityRepo)
 	teamSvc := services.NewTeam(logger, teamRepo)
 	teSvc := services.NewTimeEntry(logger, teRepo, wiRepo)
+	notifSvc := services.NewNotification(logger, notifRepo, authzSvc, userSvc)
 	wiSvc := services.NewWorkItem(logger, wiTagRepo, wiRepo, userRepo, projectRepo)
 	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo, wiRepo, userRepo, wiSvc)
 	wiTagSvc := services.NewWorkItemTag(logger, wiTagRepo)
@@ -313,6 +314,32 @@ func main() {
 	 * NOTIFICATIONS
 	 *
 	 **/
+
+	for _, u := range users {
+		_, err := notifSvc.CreatePersonalNotification(ctx, pool, &services.PersonalNotificationCreateParams{
+			NotificationCreateParamsBase: services.NotificationCreateParamsBase{
+				Body:   "Notification for " + u.Email,
+				Labels: []string{"label 1", "label 2"},
+				Link:   pointers.New("https://somelink"),
+				Title:  "Important title",
+				Sender: superAdmin.UserID,
+			},
+			Receiver: u.UserID,
+		})
+		handleError(err)
+	}
+
+	_, err = notifSvc.CreateGlobalNotification(ctx, pool, &services.GlobalNotificationCreateParams{
+		NotificationCreateParamsBase: services.NotificationCreateParamsBase{
+			Body:   "Global notification for all users",
+			Labels: []string{"label 4"},
+			Link:   pointers.New("https://somelink"),
+			Title:  "Important title",
+			Sender: superAdmin.UserID,
+		},
+		ReceiverRole: models.RoleUser,
+	})
+	handleError(err)
 }
 
 func errAndExit(out []byte, err error) {

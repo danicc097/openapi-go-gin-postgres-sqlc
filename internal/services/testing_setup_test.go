@@ -69,7 +69,7 @@ func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 	return ff
 }
 
-func newTestAuthService(t *testing.T) *services.Authorization {
+func newTestAuthzService(t *testing.T) *services.Authorization {
 	logger := zaptest.NewLogger(t).Sugar()
 
 	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
