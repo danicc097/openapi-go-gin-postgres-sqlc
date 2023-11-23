@@ -75,6 +75,11 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 
 	u.logger.Infof("user %q registered", user.UserID)
 
+	// TODO: publish internal event --> consumer send mail, send teams message, etc.
+	// so we dont block here, make it easier to test, much cleaner (passing lots of unrelated services to constructor) and decoupled
+	// see watermill lib for event-driven.
+	// we want persistence for these, as well as retries (notifications).
+
 	return user, nil
 }
 
