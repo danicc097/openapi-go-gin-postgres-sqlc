@@ -32,6 +32,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
@@ -198,73 +199,21 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	case "prod", "e2e":
 		vg.Use(rlMw.Limit())
 	}
-	workitemrepo := reposwrappers.NewWorkItemWithTracing(
-		reposwrappers.NewWorkItemWithTimeout(
-			postgresql.NewWorkItem(),
-			reposwrappers.WorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	demoworkitemrepo := reposwrappers.NewDemoWorkItemWithTracing(
-		reposwrappers.NewDemoWorkItemWithTimeout(
-			postgresql.NewDemoWorkItem(),
-			reposwrappers.DemoWorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	demotwoworkitemrepo := reposwrappers.NewDemoTwoWorkItemWithTracing(
-		reposwrappers.NewDemoTwoWorkItemWithTimeout(
-			postgresql.NewDemoTwoWorkItem(),
-			reposwrappers.DemoTwoWorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	workitemtagrepo := reposwrappers.NewWorkItemTagWithTracing(
-		reposwrappers.NewWorkItemTagWithTimeout(
-			postgresql.NewWorkItemTag(),
-			reposwrappers.WorkItemTagWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	projectrepo := reposwrappers.NewProjectWithTracing(
-		reposwrappers.NewProjectWithTimeout(
-			postgresql.NewProject(),
-			reposwrappers.ProjectWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	urepo := reposwrappers.NewUserWithTracing(
-		reposwrappers.NewUserWithTimeout(
-			postgresql.NewUser(),
-			reposwrappers.UserWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	notifrepo := reposwrappers.NewNotificationWithTracing(
-		reposwrappers.NewNotificationWithTimeout(
-			postgresql.NewNotification(),
-			reposwrappers.NotificationWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
+	repos := createRepos()
 
 	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
-	workitemsvc := services.NewWorkItem(conf.Logger, workitemtagrepo, workitemrepo, urepo, projectrepo)
-	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, demoworkitemrepo, workitemrepo, urepo, workitemsvc)
-	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, demotwoworkitemrepo, workitemrepo, urepo, workitemsvc)
-	workitemtagsvc := services.NewWorkItemTag(conf.Logger, workitemtagrepo)
+	// TODO: services never accept other services. will construct internally as we need them.
+	// will need to make sure service constructor calls are idempotent
+	usvc := services.NewUser(conf.Logger, repos.User, repos.Notification, authzsvc)
+	workitemsvc := services.NewWorkItem(conf.Logger, repos.WorkItemTag, repos.WorkItem, repos.User, repos.Project)
+	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, repos.DemoWorkItem, repos.WorkItem, repos.User, workitemsvc)
+	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, repos.DemoTwoWorkItem, repos.WorkItem, repos.User, workitemsvc)
+	workitemtagsvc := services.NewWorkItemTag(conf.Logger, repos.WorkItemTag)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
+
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
 	handlers := NewHandlers(
@@ -428,6 +377,85 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 	}()
 
 	return errC, nil
+}
+
+type repositories struct {
+	WorkItem        repos.WorkItem
+	DemoWorkItem    repos.DemoWorkItem
+	DemoTwoWorkItem repos.DemoTwoWorkItem
+	WorkItemTag     repos.WorkItemTag
+	Project         repos.Project
+	User            repos.User
+	Notification    repos.Notification
+}
+
+func createRepos() repositories {
+	workitemrepo := reposwrappers.NewWorkItemWithTracing(
+		reposwrappers.NewWorkItemWithTimeout(
+			postgresql.NewWorkItem(),
+			reposwrappers.WorkItemWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	demoworkitemrepo := reposwrappers.NewDemoWorkItemWithTracing(
+		reposwrappers.NewDemoWorkItemWithTimeout(
+			postgresql.NewDemoWorkItem(),
+			reposwrappers.DemoWorkItemWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	demotwoworkitemrepo := reposwrappers.NewDemoTwoWorkItemWithTracing(
+		reposwrappers.NewDemoTwoWorkItemWithTimeout(
+			postgresql.NewDemoTwoWorkItem(),
+			reposwrappers.DemoTwoWorkItemWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	workitemtagrepo := reposwrappers.NewWorkItemTagWithTracing(
+		reposwrappers.NewWorkItemTagWithTimeout(
+			postgresql.NewWorkItemTag(),
+			reposwrappers.WorkItemTagWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	projectrepo := reposwrappers.NewProjectWithTracing(
+		reposwrappers.NewProjectWithTimeout(
+			postgresql.NewProject(),
+			reposwrappers.ProjectWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	urepo := reposwrappers.NewUserWithTracing(
+		reposwrappers.NewUserWithTimeout(
+			postgresql.NewUser(),
+			reposwrappers.UserWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	notifrepo := reposwrappers.NewNotificationWithTracing(
+		reposwrappers.NewNotificationWithTimeout(
+			postgresql.NewNotification(),
+			reposwrappers.NotificationWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+
+	return repositories{
+		WorkItem:        workitemrepo,
+		DemoWorkItem:    demoworkitemrepo,
+		DemoTwoWorkItem: demotwoworkitemrepo,
+		WorkItemTag:     workitemtagrepo,
+		Project:         projectrepo,
+		User:            urepo,
+		Notification:    notifrepo,
+	}
 }
 
 func createOpenAPIValidatorOptions() OAValidatorOptions {
