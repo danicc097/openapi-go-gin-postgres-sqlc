@@ -7,6 +7,16 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
+type Repos struct {
+	WorkItem        WorkItem
+	DemoWorkItem    DemoWorkItem
+	DemoTwoWorkItem DemoTwoWorkItem
+	WorkItemTag     WorkItemTag
+	Project         Project
+	User            User
+	Notification    Notification
+}
+
 type DemoWorkItemUpdateParams struct {
 	DemoProject *db.DemoWorkItemUpdateParams `json:"demoProject"`
 	Base        *db.WorkItemUpdateParams     `json:"base"`

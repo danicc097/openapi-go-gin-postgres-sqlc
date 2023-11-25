@@ -201,18 +201,17 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}
 	repos := createRepos()
 
-	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
+	authzsvc, err := services.NewAuthorization(conf.Logger)
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
 	// TODO: services never accept other services. will construct internally as we need them.
 	// will need to make sure service constructor calls are idempotent
-	usvc := services.NewUser(conf.Logger, repos.User, repos.Notification, authzsvc)
-	workitemsvc := services.NewWorkItem(conf.Logger, repos.WorkItemTag, repos.WorkItem, repos.User, repos.Project)
-	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, repos.DemoWorkItem, repos.WorkItem, repos.User, workitemsvc)
-	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, repos.DemoTwoWorkItem, repos.WorkItem, repos.User, workitemsvc)
-	workitemtagsvc := services.NewWorkItemTag(conf.Logger, repos.WorkItemTag)
-	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
+	usvc := services.NewUser(conf.Logger, repos)
+	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, repos)
+	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, repos)
+	workitemtagsvc := services.NewWorkItemTag(conf.Logger, repos)
+	authnsvc := services.NewAuthentication(conf.Logger, repos, conf.Pool)
 
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
@@ -248,7 +247,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 
 // Run configures a server and underlying services with the given configuration.
 // NewServer takes its own config as is now.
-func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
+func Run(env, specPath string) (<-chan error, error) {
 	var err error
 
 	if err = envvar.Load(env); err != nil {
@@ -306,8 +305,6 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 		Redis:                  rdb,
 		Logger:                 logger.Sugar(),
 		SpecPath:               specPath,
-		ScopePolicyPath:        scopePolicyPath,
-		RolePolicyPath:         rolePolicyPath,
 		MovieSvcClient:         v1.NewMovieGenreClient(movieSvcConn),
 		MyProviderCallbackPath: "/auth/myprovider/callback",
 	})
@@ -379,17 +376,7 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 	return errC, nil
 }
 
-type repositories struct {
-	WorkItem        repos.WorkItem
-	DemoWorkItem    repos.DemoWorkItem
-	DemoTwoWorkItem repos.DemoTwoWorkItem
-	WorkItemTag     repos.WorkItemTag
-	Project         repos.Project
-	User            repos.User
-	Notification    repos.Notification
-}
-
-func createRepos() repositories {
+func createRepos() repos.Repos {
 	workitemrepo := reposwrappers.NewWorkItemWithTracing(
 		reposwrappers.NewWorkItemWithTimeout(
 			postgresql.NewWorkItem(),
@@ -447,7 +434,7 @@ func createRepos() repositories {
 		nil,
 	)
 
-	return repositories{
+	return repos.Repos{
 		WorkItem:        workitemrepo,
 		DemoWorkItem:    demoworkitemrepo,
 		DemoTwoWorkItem: demotwoworkitemrepo,

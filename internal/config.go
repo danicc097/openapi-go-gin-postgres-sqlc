@@ -60,6 +60,9 @@ type AppConfig struct {
 	AppEnv       string `env:"APP_ENV"`
 	SigningKey   string `env:"SIGNING_KEY"`
 	BuildVersion string `env:"BUILD_VERSION,-"`
+
+	ScopePolicyPath string `env:"SCOPE_POLICY_PATH"`
+	RolePolicyPath  string `env:"SCOPE_POLICY_PATH"`
 }
 
 // NewAppConfig initializes app config from current environment variables.

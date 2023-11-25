@@ -10,15 +10,15 @@ import (
 )
 
 type WorkItemTag struct {
-	logger  *zap.SugaredLogger
-	witRepo repos.WorkItemTag
+	logger *zap.SugaredLogger
+	repos  repos.Repos
 }
 
 // NewWorkItemTag returns a new WorkItemTag service.
-func NewWorkItemTag(logger *zap.SugaredLogger, witRepo repos.WorkItemTag) *WorkItemTag {
+func NewWorkItemTag(logger *zap.SugaredLogger, repos repos.Repos) *WorkItemTag {
 	return &WorkItemTag{
-		logger:  logger,
-		witRepo: witRepo,
+		logger: logger,
+		repos:  repos,
 	}
 }
 
@@ -26,9 +26,9 @@ func NewWorkItemTag(logger *zap.SugaredLogger, witRepo repos.WorkItemTag) *WorkI
 func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	witObj, err := wit.witRepo.ByID(ctx, d, id)
+	witObj, err := wit.repos.WorkItemTag.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("witRepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.WorkItemTag.ByID: %w", err)
 	}
 
 	return witObj, nil
@@ -38,9 +38,9 @@ func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID
 func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	witObj, err := wit.witRepo.ByName(ctx, d, name, projectID)
+	witObj, err := wit.repos.WorkItemTag.ByName(ctx, d, name, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("witRepo.ByName: %w", err)
+		return nil, fmt.Errorf("repos.WorkItemTag.ByName: %w", err)
 	}
 
 	return witObj, nil
@@ -50,9 +50,9 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	witObj, err := wit.witRepo.Create(ctx, d, params)
+	witObj, err := wit.repos.WorkItemTag.Create(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("witRepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.WorkItemTag.Create: %w", err)
 	}
 
 	return witObj, nil
@@ -62,9 +62,9 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, 
 func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	witObj, err := wit.witRepo.Update(ctx, d, id, params)
+	witObj, err := wit.repos.WorkItemTag.Update(ctx, d, id, params)
 	if err != nil {
-		return nil, fmt.Errorf("witRepo.Update: %w", err)
+		return nil, fmt.Errorf("repos.WorkItemTag.Update: %w", err)
 	}
 
 	return witObj, nil
@@ -74,9 +74,9 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, 
 func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller *db.User, id db.WorkItemTagID) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	witObj, err := wit.witRepo.Delete(ctx, d, id)
+	witObj, err := wit.repos.WorkItemTag.Delete(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("witRepo.Delete: %w", err)
+		return nil, fmt.Errorf("repos.WorkItemTag.Delete: %w", err)
 	}
 
 	return witObj, nil

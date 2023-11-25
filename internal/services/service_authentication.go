@@ -7,6 +7,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/golang-jwt/jwt/v4"
@@ -24,14 +25,18 @@ type AppClaims struct {
 type Authentication struct {
 	pool   *pgxpool.Pool
 	logger *zap.SugaredLogger
+	repos  repos.Repos
 	usvc   *User
 }
 
 // NewAuthentication returns a new authentication service.
 // TODO should we use tx instead of providing pool only.
-func NewAuthentication(logger *zap.SugaredLogger, usvc *User, pool *pgxpool.Pool) *Authentication {
+func NewAuthentication(logger *zap.SugaredLogger, repos repos.Repos, pool *pgxpool.Pool) *Authentication {
+	usvc := NewUser(logger, repos)
+
 	return &Authentication{
 		logger: logger,
+		repos:  repos,
 		usvc:   usvc,
 		pool:   pool,
 	}
@@ -77,7 +82,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 	// superAdmin is registered without id since an account needs to exist beforehand (created via initial-data, for any env)
 	if userinfo.Email == cfg.SuperAdmin.DefaultEmail && superAdmin.ExternalID == "" {
 		// external ID is not editable via services.
-		superAdmin, err = a.usvc.urepo.Update(ctx, a.pool, superAdmin.UserID, &db.UserUpdateParams{
+		superAdmin, err = a.repos.User.Update(ctx, a.pool, superAdmin.UserID, &db.UserUpdateParams{
 			ExternalID: pointers.New(userinfo.Subject),
 		})
 		if err != nil {
