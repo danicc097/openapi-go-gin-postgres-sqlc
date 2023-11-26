@@ -8,6 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"go.uber.org/zap"
 )
 
@@ -18,22 +19,9 @@ type Notification struct {
 	usvc     *User
 }
 
-type NotificationCreateParamsBase struct {
-	Body   string    `json:"body"   nullable:"false" required:"true"`
-	Labels []string  `json:"labels" nullable:"false" required:"true"`
-	Link   *string   `json:"link"`
-	Sender db.UserID `json:"sender" nullable:"false" required:"true"`
-	Title  string    `json:"title"  nullable:"false" required:"true"`
-}
-
-type PersonalNotificationCreateParams struct {
-	NotificationCreateParamsBase
-	Receiver db.UserID `json:"receiver"`
-}
-
-type GlobalNotificationCreateParams struct {
-	NotificationCreateParamsBase
-	ReceiverRole models.Role `json:"receiverRole"`
+type NotificationCreateParams struct {
+	db.NotificationCreateParams
+	ReceiverRole *models.Role `json:"receiverRole"`
 }
 
 // NewNotification returns a new Notification service.
@@ -65,43 +53,23 @@ func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 }
 
 // Create creates a new notification.
-func (n *Notification) CreatePersonalNotification(ctx context.Context, d db.DBTX, params *PersonalNotificationCreateParams) (*db.Notification, error) {
+func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params *NotificationCreateParams) (*db.Notification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	notification, err := n.repos.Notification.Create(ctx, d, &db.NotificationCreateParams{
-		Body:             params.Body,
-		Labels:           params.Labels,
-		Link:             params.Link,
-		Receiver:         &params.Receiver,
-		NotificationType: db.NotificationTypePersonal,
-		Title:            params.Title,
-		Sender:           params.Sender,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("repos.Notification.Create: %w", err)
+	switch params.NotificationType {
+	case db.NotificationTypeGlobal:
+		if params.ReceiverRole == nil {
+			return nil, internal.NewErrorWithLocf(models.ErrorCodeInvalidArgument, []string{"receiverRole"}, "minimum receiver role is not set")
+		}
+		params.NotificationCreateParams.ReceiverRank = pointers.New(n.authzsvc.RoleByName(*params.ReceiverRole).Rank)
+		// let sender be whatever was set, no need to be superadmin
+	case db.NotificationTypePersonal:
+		if params.Receiver == nil {
+			return nil, internal.NewErrorWithLocf(models.ErrorCodeInvalidArgument, []string{"receiver"}, "receiver is not set")
+		}
 	}
 
-	return notification, nil
-}
-
-func (n *Notification) CreateGlobalNotification(ctx context.Context, d db.DBTX, params *GlobalNotificationCreateParams) (*db.Notification, error) {
-	defer newOTelSpan().Build(ctx).End()
-
-	role := n.authzsvc.RoleByName(params.ReceiverRole)
-	superAdmin, err := n.usvc.ByEmail(ctx, d, internal.Config.SuperAdmin.DefaultEmail)
-	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodePrivate, "could not get admin user: %s", err)
-	}
-
-	notification, err := n.repos.Notification.Create(ctx, d, &db.NotificationCreateParams{
-		Body:             params.Body,
-		Labels:           params.Labels,
-		Link:             params.Link,
-		ReceiverRank:     &role.Rank,
-		NotificationType: db.NotificationTypeGlobal,
-		Title:            params.Title,
-		Sender:           superAdmin.UserID,
-	})
+	notification, err := n.repos.Notification.Create(ctx, d, &params.NotificationCreateParams)
 	if err != nil {
 		return nil, fmt.Errorf("repos.Notification.Create: %w", err)
 	}
