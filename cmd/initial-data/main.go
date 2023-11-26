@@ -305,28 +305,30 @@ func main() {
 	 **/
 
 	for _, u := range users {
-		_, err := notifSvc.CreatePersonalNotification(ctx, pool, &services.PersonalNotificationCreateParams{
-			NotificationCreateParamsBase: services.NotificationCreateParamsBase{
-				Body:   "Notification for " + u.Email,
-				Labels: []string{"label 1", "label 2"},
-				Link:   pointers.New("https://somelink"),
-				Title:  "Important title",
-				Sender: superAdmin.UserID,
+		_, err := notifSvc.CreateNotification(ctx, pool, &services.NotificationCreateParams{
+			NotificationCreateParams: db.NotificationCreateParams{
+				Body:             "Notification for " + u.Email,
+				Labels:           []string{"label 1", "label 2"},
+				Link:             pointers.New("https://somelink"),
+				Title:            "Important title",
+				Sender:           superAdmin.UserID,
+				Receiver:         &u.UserID,
+				NotificationType: db.NotificationTypePersonal,
 			},
-			Receiver: u.UserID,
 		})
 		handleError(err)
 	}
 
-	_, err = notifSvc.CreateGlobalNotification(ctx, pool, &services.GlobalNotificationCreateParams{
-		NotificationCreateParamsBase: services.NotificationCreateParamsBase{
-			Body:   "Global notification for all users",
-			Labels: []string{"label 4"},
-			Link:   pointers.New("https://somelink"),
-			Title:  "Important title",
-			Sender: superAdmin.UserID,
+	_, err = notifSvc.CreateNotification(ctx, pool, &services.NotificationCreateParams{
+		NotificationCreateParams: db.NotificationCreateParams{
+			Body:             "Global notification for all users",
+			Labels:           []string{"label 4"},
+			Link:             pointers.New("https://somelink"),
+			Title:            "Important title",
+			Sender:           superAdmin.UserID,
+			NotificationType: db.NotificationTypeGlobal,
 		},
-		ReceiverRole: models.RoleUser,
+		ReceiverRole: pointers.New(models.RoleUser),
 	})
 	handleError(err)
 }

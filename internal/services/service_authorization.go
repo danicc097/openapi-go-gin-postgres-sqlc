@@ -78,6 +78,8 @@ func NewAuthorization(logger *zap.SugaredLogger) (*Authorization, error) {
 		return nil, fmt.Errorf("role policy loading: %w", err)
 	}
 
+	fmt.Printf("roles: %v\n", roles)
+
 	return &Authorization{
 		logger:         logger,
 		roles:          roles,
