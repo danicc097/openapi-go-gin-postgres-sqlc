@@ -55,15 +55,15 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	var apiKey *db.UserAPIKey
 
 	if params.WithAPIKey {
-		apiKey, err = ff.authnsvc.CreateAPIKeyForUser(ctx, user)
+		apiKey, err = ff.svc.Authentication.CreateAPIKeyForUser(ctx, user)
 		if err != nil {
-			return nil, fmt.Errorf("authnsvc.CreateAPIKeyForUser: %w", err)
+			return nil, fmt.Errorf("svc.Authentication.CreateAPIKeyForUser: %w", err)
 		}
 	}
 	if params.WithToken {
-		accessToken, err = ff.authnsvc.CreateAccessTokenForUser(ctx, user)
+		accessToken, err = ff.svc.Authentication.CreateAccessTokenForUser(ctx, user)
 		if err != nil {
-			return nil, fmt.Errorf("authnsvc.CreateAPIKeyForUser: %w", err)
+			return nil, fmt.Errorf("svc.Authentication.CreateAPIKeyForUser: %w", err)
 		}
 	}
 

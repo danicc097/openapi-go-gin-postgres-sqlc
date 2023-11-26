@@ -15,12 +15,9 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
@@ -28,7 +25,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 
 	_ "embed"
 )

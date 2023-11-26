@@ -8,10 +8,8 @@ import (
 // FixtureFactory provides fixtures to create randomized elements
 // in the data store.
 type FixtureFactory struct {
-	d        db.DBTX
-	svc      *services.Services
-	authnsvc *services.Authentication
-	authzsvc *services.Authorization
+	d   db.DBTX
+	svc *services.Services
 }
 
 // NewFixtureFactory returns a new FixtureFactory.
