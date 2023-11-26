@@ -14,16 +14,14 @@ import (
 
 type TimeEntry struct {
 	logger *zap.SugaredLogger
-	teRepo repos.TimeEntry
-	wiRepo repos.WorkItem
+	repos  *repos.Repos
 }
 
 // NewTimeEntry returns a new TimeEntry service.
-func NewTimeEntry(logger *zap.SugaredLogger, teRepo repos.TimeEntry, wiRepo repos.WorkItem) *TimeEntry {
+func NewTimeEntry(logger *zap.SugaredLogger, repos *repos.Repos) *TimeEntry {
 	return &TimeEntry{
 		logger: logger,
-		teRepo: teRepo,
-		wiRepo: wiRepo,
+		repos:  repos,
 	}
 }
 
@@ -31,9 +29,9 @@ func NewTimeEntry(logger *zap.SugaredLogger, teRepo repos.TimeEntry, wiRepo repo
 func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	teObj, err := a.teRepo.ByID(ctx, d, id)
+	teObj, err := a.repos.TimeEntry.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("teRepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.TimeEntry.ByID: %w", err)
 	}
 
 	return teObj, nil
@@ -58,9 +56,9 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 	}
 
 	if params.WorkItemID != nil {
-		wi, err := a.wiRepo.ByID(ctx, d, *params.WorkItemID, db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true}))
+		wi, err := a.repos.WorkItem.ByID(ctx, d, *params.WorkItemID, db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true}))
 		if err != nil {
-			return nil, fmt.Errorf("wiRepo.ByID: %w", err)
+			return nil, fmt.Errorf("repos.WorkItem.ByID: %w", err)
 		}
 
 		fmt.Printf("wi.WorkItemAssignedUsersJoin: %+v\n", wi.WorkItemAssignedUsersJoin)
@@ -76,9 +74,9 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 		}
 	}
 
-	teObj, err := a.teRepo.Create(ctx, d, params)
+	teObj, err := a.repos.TimeEntry.Create(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("teRepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.TimeEntry.Create: %w", err)
 	}
 
 	a.logger.Infof("created time entry by user %q", teObj.UserID)
@@ -90,9 +88,9 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	teObj, err := a.teRepo.Update(ctx, d, id, params)
+	teObj, err := a.repos.TimeEntry.Update(ctx, d, id, params)
 	if err != nil {
-		return nil, fmt.Errorf("teRepo.Update: %w", err)
+		return nil, fmt.Errorf("repos.TimeEntry.Update: %w", err)
 	}
 
 	return teObj, nil
@@ -102,9 +100,9 @@ func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, pa
 func (a *TimeEntry) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	teObj, err := a.teRepo.Delete(ctx, d, id)
+	teObj, err := a.repos.TimeEntry.Delete(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("teRepo.Delete: %w", err)
+		return nil, fmt.Errorf("repos.TimeEntry.Delete: %w", err)
 	}
 
 	return teObj, nil

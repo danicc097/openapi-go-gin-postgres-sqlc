@@ -5,11 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
@@ -82,6 +79,8 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		},
 	}
 
+	svcs := services.New(zap.S(), services.CreateTestRepos(), testPool)
+
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -90,16 +89,9 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			logger, _ := zap.NewDevelopment()
 			_, engine := gin.CreateTestContext(resp)
 
-			authzsvc, err := services.NewAuthorization(logger.Sugar(), "../../scopes.json", "../../roles.json")
-			if err != nil {
-				t.Fatalf("services.NewAuthorization: %v", err)
-			}
-			usvc := services.NewUser(logger.Sugar(), reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond), postgresql.NewNotification(), authzsvc)
-			authnsvc := services.NewAuthentication(logger.Sugar(), usvc, testPool)
+			authMw := newAuthMiddleware(logger.Sugar(), testPool, svcs)
 
-			authMw := newAuthMiddleware(logger.Sugar(), testPool, authnsvc, authzsvc, usvc)
-
-			ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
+			ff := servicetestutil.NewFixtureFactory(testPool, svcs)
 			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				Scopes:     tc.scopes,

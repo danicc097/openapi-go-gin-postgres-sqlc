@@ -27,27 +27,21 @@ tag belonging to project and a member that belongs to the team
 */
 
 type WorkItem struct {
-	logger      *zap.SugaredLogger
-	projectRepo repos.Project
-	wiTagRepo   repos.WorkItemTag
-	wiRepo      repos.WorkItem
-	userRepo    repos.User
+	logger *zap.SugaredLogger
+	repos  *repos.Repos
 }
 
 // NewWorkItem returns a new WorkItem service with common logic for all project workitems.
-func NewWorkItem(logger *zap.SugaredLogger, wiTagRepo repos.WorkItemTag, wiRepo repos.WorkItem, userRepo repos.User, projectRepo repos.Project) *WorkItem {
+func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 	return &WorkItem{
-		logger:      logger,
-		projectRepo: projectRepo,
-		wiTagRepo:   wiTagRepo,
-		wiRepo:      wiRepo,
-		userRepo:    userRepo,
+		logger: logger,
+		repos:  repos,
 	}
 }
 
 func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []Member) error {
 	for idx, member := range members {
-		user, err := w.userRepo.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{TeamsMember: true}))
+		user, err := w.repos.User.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{TeamsMember: true}))
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "user with id %s not found", member.UserID)
 		}
@@ -62,7 +56,7 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItem *db.Work
 			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "user %q does not belong to team %q", user.Email, workItem.TeamID)
 		}
 
-		err = w.wiRepo.AssignUser(ctx, d, &db.WorkItemAssignedUserCreateParams{
+		err = w.repos.WorkItem.AssignUser(ctx, d, &db.WorkItemAssignedUserCreateParams{
 			AssignedUser: member.UserID,
 			WorkItemID:   workItem.WorkItemID,
 			Role:         member.Role,
@@ -97,13 +91,13 @@ func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem 
 }
 
 func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models.Project, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
-	project, err := w.projectRepo.ByName(ctx, d, projectName, db.WithProjectJoin(db.ProjectJoins{Teams: true}))
+	project, err := w.repos.Project.ByName(ctx, d, projectName, db.WithProjectJoin(db.ProjectJoins{Teams: true}))
 	if err != nil {
 		return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{}, "project %s not found", projectName)
 	}
 
 	for idx, tagID := range tagIDs {
-		tag, err := w.wiTagRepo.ByID(ctx, d, tagID)
+		tag, err := w.repos.WorkItemTag.ByID(ctx, d, tagID)
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "tag with id %d not found", tagID)
 		}
@@ -112,7 +106,7 @@ func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models
 			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "tag %q does not belong to project %q", tag.Name, tag.ProjectJoin.Name)
 		}
 
-		err = w.wiRepo.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
+		err = w.repos.WorkItem.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
 			WorkItemTagID: tagID,
 			WorkItemID:    workItem.WorkItemID,
 		})

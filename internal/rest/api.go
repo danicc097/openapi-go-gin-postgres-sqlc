@@ -16,18 +16,9 @@ const (
 	apiKeyHeaderKey = "x-api-key"
 )
 
-type handlerServices struct {
-	user            *services.User
-	demoworkitem    *services.DemoWorkItem
-	demotwoworkitem *services.DemoTwoWorkItem
-	workitemtag     *services.WorkItemTag
-	authz           *services.Authorization
-	authn           *services.Authentication
-}
-
 // Handlers implements ServerInterface.
 type Handlers struct {
-	svc handlerServices
+	svc *services.Services
 
 	logger         *zap.SugaredLogger
 	pool           *pgxpool.Pool
@@ -38,17 +29,12 @@ type Handlers struct {
 	provider       rp.RelyingParty
 }
 
-// NewHandlers returns an server implementation of an openapi specification.
+// NewHandlers returns a server implementation of an openapi specification.
 func NewHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	moviesvcclient v1.MovieGenreClient,
 	specPath string,
-	usvc *services.User,
-	demoworkitemsvc *services.DemoWorkItem,
-	demotwoworkitemsvc *services.DemoTwoWorkItem,
-	workitemtagsvc *services.WorkItemTag,
-	authzsvc *services.Authorization,
-	authnsvc *services.Authentication,
+	svcs *services.Services,
 	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
 ) *Handlers {
@@ -85,28 +71,16 @@ func NewHandlers(
 		logger:         logger,
 		pool:           pool,
 		moviesvcclient: moviesvcclient,
-		svc: handlerServices{
-			user:            usvc,
-			authz:           authzsvc,
-			authn:           authnsvc,
-			demoworkitem:    demoworkitemsvc,
-			demotwoworkitem: demotwoworkitemsvc,
-			workitemtag:     workitemtagsvc,
-		},
-		authmw:   authmw,
-		event:    event,
-		provider: provider,
-		specPath: specPath,
+		svc:            svcs,
+		authmw:         authmw,
+		event:          event,
+		provider:       provider,
+		specPath:       specPath,
 	}
 }
 
 // middlewares to be applied after authMiddlewares, based on operation IDs.
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
-	// TODO: tx could be middleware. no need to check if context tx is undefined
-	// because itll always be, else it prematurely renders errors and abort
-	// if we forget to add mw tests just fail since all routes are tested...
-	// easiest would be to by default have tx mw in all routes, but the option
-	// to exclude an array of opIDs that turn the mw into a noop. (auth provider login, etc)
 	defaultMws := []gin.HandlerFunc{}
 
 	dbMw := newDBMiddleware(h.logger, h.pool)

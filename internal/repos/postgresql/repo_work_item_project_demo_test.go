@@ -45,7 +45,7 @@ func TestDemoWorkItem_Update(t *testing.T) {
 				},
 			},
 			want: func() *db.WorkItem {
-				u := *demoWorkItem
+				u := *demoWorkItem // copy
 				u.Description = "new description"
 				u.DemoWorkItemJoin.Line = "new line"
 

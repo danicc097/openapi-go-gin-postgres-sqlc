@@ -8,10 +8,12 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestDeleteUserRoute(t *testing.T) {
@@ -21,7 +23,8 @@ func TestDeleteUserRoute(t *testing.T) {
 	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	ff := newTestFixtureFactory(t)
+	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	tests := []struct {
 		name   string
@@ -70,7 +73,8 @@ func TestGetUserRoute(t *testing.T) {
 	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	ff := newTestFixtureFactory(t)
+	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	t.Run("authenticated_user", func(t *testing.T) {
 		t.Parallel()
@@ -106,7 +110,8 @@ func TestUpdateUserRoutes(t *testing.T) {
 	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	ff := newTestFixtureFactory(t)
+	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	// NOTE:
 	// scopes and roles part of rest layer. don't test any actual logic here, done in services

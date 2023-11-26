@@ -46,7 +46,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 			return
 		}
 
-		workItem, err := h.svc.demoworkitem.Create(ctx, tx, body.DemoWorkItemCreateParams)
+		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, body.DemoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
@@ -64,7 +64,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 			return
 		}
 
-		workItem, err := h.svc.demotwoworkitem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
+		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 

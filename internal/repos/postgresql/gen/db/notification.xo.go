@@ -25,7 +25,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type Notification struct {
 	NotificationID   NotificationID   `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`                                                 // notification_id
-	ReceiverRank     *int             `json:"receiverRank" db:"receiver_rank"`                                                                                      // receiver_rank
+	ReceiverRank     *int             `json:"-" db:"receiver_rank"`                                                                                                 // receiver_rank
 	Title            string           `json:"title" db:"title" required:"true" nullable:"false"`                                                                    // title
 	Body             string           `json:"body" db:"body" required:"true" nullable:"false"`                                                                      // body
 	Labels           []string         `json:"labels" db:"labels" required:"true" nullable:"false"`                                                                  // labels
@@ -48,7 +48,7 @@ type NotificationCreateParams struct {
 	Link             *string          `json:"link"`                                                                                          // link
 	NotificationType NotificationType `json:"notificationType" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 	Receiver         *UserID          `json:"receiver"`                                                                                      // receiver
-	ReceiverRank     *int             `json:"receiverRank"`                                                                                  // receiver_rank
+	ReceiverRank     *int             `json:"-"`                                                                                             // receiver_rank
 	Sender           UserID           `json:"sender" required:"true" nullable:"false"`                                                       // sender
 	Title            string           `json:"title" required:"true" nullable:"false"`                                                        // title
 }
@@ -78,7 +78,7 @@ type NotificationUpdateParams struct {
 	Link             **string          `json:"link"`                                                                          // link
 	NotificationType *NotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 	Receiver         **UserID          `json:"receiver"`                                                                      // receiver
-	ReceiverRank     **int             `json:"receiverRank"`                                                                  // receiver_rank
+	ReceiverRank     **int             `json:"-"`                                                                             // receiver_rank
 	Sender           *UserID           `json:"sender" nullable:"false"`                                                       // sender
 	Title            *string           `json:"title" nullable:"false"`                                                        // title
 }

@@ -14,11 +14,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +25,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 
 	_ "embed"
 )
@@ -51,6 +46,9 @@ func testMain(m *testing.M) int {
 
 	// call flag.Parse() here if TestMain uses flags
 	var err error
+
+	internal.Config.RolePolicyPath = "../../roles.json"
+	internal.Config.ScopePolicyPath = "../../scopes.json"
 
 	testPool, testSQLPool, err = testutil.NewDB()
 	if err != nil {
@@ -74,7 +72,7 @@ func (s *testServer) cleanup(t *testing.T) {
 }
 
 // runTestServer returns a test server and client.
-// We will require different middlewares depending on the test case, so a shared a global instance
+// We will require different middlewares depending on the test case, so a shared global instance
 // is not possible.
 func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.HandlerFunc) (*testServer, error) {
 	t.Helper()
@@ -109,19 +107,17 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 
 	_, err = openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("openapi3.NewLoader: %v", err))
 	}
 
 	srv, err := NewServer(Config{
 		// not necessary when using ServeHTTP. Won't actually listen.
 		// Address:         ":0", // random next available for each test server
-		Pool:            testPool,
-		Redis:           rdb,
-		Logger:          logger.Sugar(),
-		SpecPath:        "../../openapi.yaml",
-		MovieSvcClient:  &v1testing.FakeMovieGenreClient{},
-		ScopePolicyPath: "../../scopes.json",
-		RolePolicyPath:  "../../roles.json",
+		Pool:           testPool,
+		Redis:          rdb,
+		Logger:         logger.Sugar(),
+		SpecPath:       "../../openapi.yaml",
+		MovieSvcClient: &v1testing.FakeMovieGenreClient{},
 	}, WithMiddlewares(middlewares...))
 	if err != nil {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
@@ -133,30 +129,4 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 	}
 
 	return &testServer{server: srv.httpsrv, client: client}, nil
-}
-
-func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
-	t.Helper()
-
-	logger := zaptest.NewLogger(t).Sugar()
-	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
-	if err != nil {
-		t.Fatalf("services.NewAuthorization: %v", err)
-	}
-	usvc := services.NewUser(
-		logger,
-		reposwrappers.NewUserWithTracing(
-			reposwrappers.NewUserWithTimeout(
-				reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond), reposwrappers.UserWithTimeoutConfig{}),
-			postgresql.OtelName, nil),
-		reposwrappers.NewNotificationWithTracing(
-			reposwrappers.NewNotificationWithTimeout(
-				postgresql.NewNotification(), reposwrappers.NotificationWithTimeoutConfig{}),
-			postgresql.OtelName, nil),
-		authzsvc,
-	)
-	authnsvc := services.NewAuthentication(logger, usvc, testPool)
-
-	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
-	return ff
 }

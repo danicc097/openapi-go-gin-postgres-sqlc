@@ -14,6 +14,7 @@ import (
 
 	zapadapter "github.com/jackc/pgx-zap"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	// to open with "pgx" driver.
@@ -45,6 +46,10 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 	poolConfig, err := pgxpool.ParseConfig(dsn.String())
 	if err != nil {
 		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "pgx.ParseConfig")
+	}
+
+	poolConfig.ConnConfig.OnNotice = func(pc *pgconn.PgConn, n *pgconn.Notice) {
+		logger.Infof("Postgres notice: %+v", *n)
 	}
 
 	if cfg.Postgres.TraceEnabled {

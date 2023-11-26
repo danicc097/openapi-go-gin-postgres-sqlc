@@ -4,21 +4,39 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"go.uber.org/zap"
 )
 
 type Notification struct {
-	logger *zap.SugaredLogger
-	nrepo  repos.Notification
+	logger   *zap.SugaredLogger
+	repos    *repos.Repos
+	authzsvc *Authorization
+	usvc     *User
+}
+
+type NotificationCreateParams struct {
+	db.NotificationCreateParams
+	ReceiverRole *models.Role `json:"receiverRole"`
 }
 
 // NewNotification returns a new Notification service.
-func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification) *Notification {
+func NewNotification(logger *zap.SugaredLogger, repos *repos.Repos) *Notification {
+	usvc := NewUser(logger, repos)
+	authzsvc, err := NewAuthorization(logger)
+	if err != nil {
+		panic(fmt.Sprintf("NewAuthorization: %v", err))
+	}
+
 	return &Notification{
-		logger: logger,
-		nrepo:  nrepo,
+		logger:   logger,
+		repos:    repos,
+		authzsvc: authzsvc,
+		usvc:     usvc,
 	}
 }
 
@@ -26,21 +44,34 @@ func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification) *Notif
 func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	notification, err := n.nrepo.LatestUserNotifications(ctx, d, params)
+	notification, err := n.repos.Notification.LatestUserNotifications(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("nrepo.LatestUserNotifications: %w", err)
+		return nil, fmt.Errorf("repos.Notification.LatestUserNotifications: %w", err)
 	}
 
 	return notification, nil
 }
 
 // Create creates a new notification.
-func (n *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error) {
+func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params *NotificationCreateParams) (*db.Notification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	notification, err := n.nrepo.Create(ctx, d, params)
+	switch params.NotificationType {
+	case db.NotificationTypeGlobal:
+		if params.ReceiverRole == nil {
+			return nil, internal.NewErrorWithLocf(models.ErrorCodeInvalidArgument, []string{"receiverRole"}, "minimum receiver role is not set")
+		}
+		params.NotificationCreateParams.ReceiverRank = pointers.New(n.authzsvc.RoleByName(*params.ReceiverRole).Rank)
+		// let sender be whatever was set, no need to be superadmin
+	case db.NotificationTypePersonal:
+		if params.Receiver == nil {
+			return nil, internal.NewErrorWithLocf(models.ErrorCodeInvalidArgument, []string{"receiver"}, "receiver is not set")
+		}
+	}
+
+	notification, err := n.repos.Notification.Create(ctx, d, &params.NotificationCreateParams)
 	if err != nil {
-		return nil, fmt.Errorf("nrepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.Notification.Create: %w", err)
 	}
 
 	return notification, nil

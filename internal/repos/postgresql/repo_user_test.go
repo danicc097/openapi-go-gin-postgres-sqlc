@@ -4,11 +4,13 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -125,7 +127,8 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	userRepo := postgresql.NewUser()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
+
 	teamRepo := postgresql.NewTeam()
 	projectRepo := postgresql.NewProject()
 
@@ -215,7 +218,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 func TestUser_UserAPIKeys(t *testing.T) {
 	t.Parallel()
 
-	userRepo := postgresql.NewUser()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
 
 	t.Run("correct_api_key_creation", func(t *testing.T) {
 		t.Parallel()
@@ -283,7 +286,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 func TestUser_Create(t *testing.T) {
 	t.Parallel()
 
-	userRepo := postgresql.NewUser()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
 
 	type want struct {
 		FullName *string

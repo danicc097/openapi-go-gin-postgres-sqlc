@@ -18,25 +18,19 @@ import (
 
 // authMiddleware handles authentication and authorization middleware.
 type authMiddleware struct {
-	logger   *zap.SugaredLogger
-	pool     *pgxpool.Pool
-	authnsvc *services.Authentication
-	authzsvc *services.Authorization
-	usersvc  *services.User
+	logger *zap.SugaredLogger
+	pool   *pgxpool.Pool
+	svc    *services.Services
 }
 
 func newAuthMiddleware(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
-	authnsvc *services.Authentication,
-	authzsvc *services.Authorization,
-	usersvc *services.User,
+	svcs *services.Services,
 ) *authMiddleware {
 	return &authMiddleware{
-		logger:   logger,
-		pool:     pool,
-		authnsvc: authnsvc,
-		authzsvc: authzsvc,
-		usersvc:  usersvc,
+		logger: logger,
+		pool:   pool,
+		svc:    svcs,
 	}
 }
 
@@ -48,7 +42,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		apiKey := c.Request.Header.Get(apiKeyHeaderKey)
 		auth := c.Request.Header.Get("Authorization")
 		if apiKey != "" {
-			u, err := m.authnsvc.GetUserFromAPIKey(c.Request.Context(), apiKey)
+			u, err := m.svc.Authentication.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil || u == nil {
 				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from api key"))
 				c.Abort()
@@ -63,7 +57,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			return
 		}
 		if strings.HasPrefix(auth, "Bearer ") {
-			u, err := m.authnsvc.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
+			u, err := m.svc.Authentication.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
 			if err != nil || u == nil {
 				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token"))
 				c.Abort()
@@ -99,7 +93,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 		}
 
 		if config.MinimumRole != "" {
-			userRole, ok := m.authzsvc.RoleByRank(user.RoleRank)
+			userRole, ok := m.svc.Authorization.RoleByRank(user.RoleRank)
 			if !ok {
 				renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"))
 				c.Abort()
@@ -107,7 +101,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 				return
 			}
 
-			if err := m.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err == nil {
+			if err := m.svc.Authorization.HasRequiredRole(userRole, config.MinimumRole); err == nil {
 				c.Next()
 
 				return
@@ -115,7 +109,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 		}
 
 		if len(config.RequiredScopes) > 0 {
-			if err := m.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err == nil {
+			if err := m.svc.Authorization.HasRequiredScopes(user.Scopes, config.RequiredScopes); err == nil {
 				c.Next()
 
 				return

@@ -131,6 +131,14 @@ join_by() {
   fi
 }
 
+# breaks when separator has spaces, e.g. " | "
+# join_by() {
+#   [ "$#" -ge 1 ] || return 1
+#   local IFS="$1"
+#   shift
+#   printf '%s\n' "$*"
+# }
+
 to_pascal() {
   local string=$1
   local pascal_case=""

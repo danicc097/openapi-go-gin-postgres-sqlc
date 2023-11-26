@@ -15,10 +15,9 @@ import (
 )
 
 type User struct {
-	logger           *zap.SugaredLogger
-	urepo            repos.User
-	notificationrepo repos.Notification
-	authzsvc         *Authorization
+	logger   *zap.SugaredLogger
+	repos    *repos.Repos
+	authzsvc *Authorization
 }
 
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
@@ -35,12 +34,16 @@ type UserRegisterParams struct {
 }
 
 // NewUser returns a new User service.
-func NewUser(logger *zap.SugaredLogger, urepo repos.User, notificationrepo repos.Notification, authzsvc *Authorization) *User {
+func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
+	authzsvc, err := NewAuthorization(logger)
+	if err != nil {
+		panic(fmt.Sprintf("NewAuthorization: %v", err))
+	}
+
 	return &User{
-		logger:           logger,
-		urepo:            urepo,
-		authzsvc:         authzsvc,
-		notificationrepo: notificationrepo,
+		logger:   logger,
+		repos:    repos,
+		authzsvc: authzsvc,
 	}
 }
 
@@ -52,8 +55,6 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 		params.Role = models.RoleUser
 	}
 	role := u.authzsvc.RoleByName(params.Role)
-
-	fmt.Printf("role: %v\n", role)
 
 	// append default scopes for role upon registration regardless of provided params
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
@@ -68,12 +69,17 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 		Scopes:     params.Scopes,
 	}
 
-	user, err := u.urepo.Create(ctx, d, &repoParams)
+	user, err := u.repos.User.Create(ctx, d, &repoParams)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.User.Create: %w", err)
 	}
 
 	u.logger.Infof("user %q registered", user.UserID)
+
+	// TODO: publish internal event --> consumer send mail, send teams message, etc.
+	// so we dont block here, make it easier to test, much cleaner (passing lots of unrelated services to constructor) and decoupled
+	// see watermill lib for event-driven.
+	// we want persistence for these, as well as retries (notifications).
 
 	return user, nil
 }
@@ -89,9 +95,9 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller *db.U
 		return nil, errors.New("params cannot be nil")
 	}
 
-	user, err := u.urepo.ByID(ctx, d, id)
+	user, err := u.repos.User.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.User.ByID: %w", err)
 	}
 
 	adminRole := u.authzsvc.RoleByName(models.RoleAdmin)
@@ -109,9 +115,9 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller *db.U
 		up.LastName = pointers.New(params.LastName)
 	}
 
-	user, err = u.urepo.Update(ctx, d, id, &up)
+	user, err = u.repos.User.Update(ctx, d, id, &up)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.Update: %w", err)
+		return nil, fmt.Errorf("repos.User.Update: %w", err)
 	}
 
 	u.logger.Infof("user %q updated", user.UserID)
@@ -129,9 +135,9 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.Use
 		return nil, errors.New("params cannot be nil")
 	}
 
-	user, err := u.urepo.ByID(ctx, d, id)
+	user, err := u.repos.User.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.User.ByID: %w", err)
 	}
 
 	adminRole := u.authzsvc.RoleByName(models.RoleAdmin)
@@ -175,12 +181,12 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.Use
 		params.Scopes = pointers.New(u.authzsvc.DefaultScopes(*params.Role))
 	}
 
-	user, err = u.urepo.Update(ctx, d, id, &db.UserUpdateParams{
+	user, err = u.repos.User.Update(ctx, d, id, &db.UserUpdateParams{
 		Scopes:   params.Scopes,
 		RoleRank: rank,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("urepo.Update: %w", err)
+		return nil, fmt.Errorf("repos.User.Update: %w", err)
 	}
 
 	u.logger.Infof("user %q authorization updated", user.UserID)
@@ -191,9 +197,9 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.Use
 func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	uak, err := u.urepo.CreateAPIKey(ctx, d, user)
+	uak, err := u.repos.User.CreateAPIKey(ctx, d, user)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.CreateAPIKey: %w", err)
+		return nil, fmt.Errorf("repos.User.CreateAPIKey: %w", err)
 	}
 
 	u.logger.Infof("user %q api key created", user.UserID)
@@ -205,9 +211,9 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	user, err := u.urepo.ByExternalID(ctx, d, id)
+	user, err := u.repos.User.ByExternalID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.ByExternalID: %w", err)
+		return nil, fmt.Errorf("repos.User.ByExternalID: %w", err)
 	}
 
 	return user, nil
@@ -217,9 +223,9 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User
 func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	user, err := u.urepo.ByEmail(ctx, d, email)
+	user, err := u.repos.User.ByEmail(ctx, d, email)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.ByEmail: %w", err)
+		return nil, fmt.Errorf("repos.User.ByEmail: %w", err)
 	}
 
 	return user, nil
@@ -229,9 +235,9 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, 
 func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	user, err := u.urepo.ByUsername(ctx, d, username)
+	user, err := u.repos.User.ByUsername(ctx, d, username)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.ByUsername: %w", err)
+		return nil, fmt.Errorf("repos.User.ByUsername: %w", err)
 	}
 
 	return user, nil
@@ -241,9 +247,9 @@ func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.
 func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	user, err := u.urepo.ByAPIKey(ctx, d, apiKey)
+	user, err := u.repos.User.ByAPIKey(ctx, d, apiKey)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.ByAPIKey: %w", err)
+		return nil, fmt.Errorf("repos.User.ByAPIKey: %w", err)
 	}
 
 	return user, nil
@@ -253,9 +259,9 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 func (u *User) Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	user, err := u.urepo.Delete(ctx, d, id)
+	user, err := u.repos.User.Delete(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("urepo.Delete: %w", err)
+		return nil, fmt.Errorf("repos.User.Delete: %w", err)
 	}
 
 	u.logger.Infof("user %q deleted", user.UserID)
@@ -277,7 +283,7 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 
 	// user, err := u.notificationrepo.LatestUserNotifications(ctx, d, db.GetUserNotificationsParams{UserID: uid})
 	// if err != nil {
-	// 	return nil, fmt.Errorf("urepo.ByAPIKey: %w", err)
+	// 	return nil, fmt.Errorf("repos.User.ByAPIKey: %w", err)
 	// }
 
 	// return user, nil

@@ -3,19 +3,17 @@ package services_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -27,9 +25,6 @@ func TestUser_UpdateUser(t *testing.T) {
 	t.Parallel()
 
 	logger := zaptest.NewLogger(t).Sugar()
-
-	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
-	require.NoError(t, err)
 
 	type args struct {
 		params *models.UpdateUserRequest
@@ -94,15 +89,14 @@ func TestUser_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			urepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
-
-			notificationrepo := repostesting.NewFakeNotification()
+			repos := services.CreateTestRepos()
+			repos.Notification = repostesting.NewFakeNotification()
 
 			ctx := context.Background()
 			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
 			defer tx.Rollback(ctx)
 
-			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
+			u := services.NewUser(logger, repos)
 			got, err := u.Update(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
@@ -126,8 +120,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 
 	logger := zaptest.NewLogger(t).Sugar()
 
-	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t).Sugar(), "../../scopes.json", "../../roles.json")
-	require.NoError(t, err)
+	authzsvc, err := services.NewAuthorization(logger)
+	require.NoError(t, err, "newTestAuthService")
 
 	// TODO create users on demand with parameterized tests. same as repo ucp but using FakeUserRepo instead
 	// e.g. cannot_set_scope_unassigned_to_self  and can_set_scopes_asigned_to_self
@@ -163,7 +157,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				caller: testUsers.manager.User,
 			},
 			want: want{
-				Scopes: authzsvc.DefaultScopes(models.RoleManager), // when role is updated scopes are reset, and the ones in params ignored
+				Scopes: authzsvc.DefaultScopes(models.RoleManager),
 				Rank:   authzsvc.RoleByName(models.RoleManager).Rank,
 			},
 		},
@@ -271,15 +265,14 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			urepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
-
-			notificationrepo := repostesting.NewFakeNotification()
+			repos := services.CreateTestRepos()
+			repos.Notification = repostesting.NewFakeNotification()
 
 			ctx := context.Background()
 			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
 			defer tx.Rollback(ctx)
 
-			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
+			u := services.NewUser(logger, repos)
 			got, err := u.UpdateUserAuthorization(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
@@ -302,7 +295,9 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 func createTestUsers(t *testing.T) testUsers {
 	t.Helper()
 
-	ff := newTestFixtureFactory(t)
+	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+
+	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	guest, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,

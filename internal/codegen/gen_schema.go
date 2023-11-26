@@ -82,7 +82,7 @@ func newSpecReflector() *openapi3.Reflector {
 
 				tags, err := structtag.Parse(string(params.Field.Tag))
 				if err != nil {
-					panic(err)
+					panic(fmt.Sprintf("structtag.Parse: %v", err))
 				}
 
 				for _, t := range tags.Tags() {

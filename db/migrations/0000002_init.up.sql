@@ -170,6 +170,10 @@ create table notifications (
 
 create index on notifications (receiver_rank , notification_type , created_at);
 
+-- will use role enums for upper layers. this way we can extend create and update params
+-- instead of manually keeping in sync.
+comment on column notifications.receiver_rank is '"properties":private';
+
 comment on column notifications.sender is '"cardinality":M2O';
 
 comment on column notifications.receiver is '"cardinality":M2O';

@@ -59,15 +59,15 @@ type Authorization struct {
 
 // NewAuthorization returns a new Authorization service.
 // Existing roles and scopes will be loaded from the given policy JSON file paths.
-func NewAuthorization(logger *zap.SugaredLogger, scopePolicy string, rolePolicy string) (*Authorization, error) {
+func NewAuthorization(logger *zap.SugaredLogger) (*Authorization, error) {
 	roles := make(roles)
 	scopes := make(scopes)
 
-	scopeBlob, err := os.ReadFile(scopePolicy)
+	scopeBlob, err := os.ReadFile(internal.Config.ScopePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("scope policy: %w", err)
 	}
-	roleBlob, err := os.ReadFile(rolePolicy)
+	roleBlob, err := os.ReadFile(internal.Config.RolePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("role policy: %w", err)
 	}
@@ -77,6 +77,8 @@ func NewAuthorization(logger *zap.SugaredLogger, scopePolicy string, rolePolicy 
 	if err := json.Unmarshal(roleBlob, &roles); err != nil {
 		return nil, fmt.Errorf("role policy loading: %w", err)
 	}
+
+	fmt.Printf("roles: %v\n", roles)
 
 	return &Authorization{
 		logger:         logger,

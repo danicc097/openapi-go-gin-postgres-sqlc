@@ -39,15 +39,15 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	}
 
 	// don't use repos for tests
-	user, err := ff.usvc.Register(ctx, ff.d, ucp)
+	user, err := ff.svc.User.Register(ctx, ff.d, ucp)
 	if err != nil {
-		return nil, fmt.Errorf("usvc.Register: %w", err)
+		return nil, fmt.Errorf("svc.User.Register: %w", err)
 	}
 
 	if params.DeletedAt != nil {
-		user, err = ff.usvc.Delete(ctx, ff.d, user.UserID)
+		user, err = ff.svc.User.Delete(ctx, ff.d, user.UserID)
 		if err != nil {
-			return nil, fmt.Errorf("usvc.Delete: %w", err)
+			return nil, fmt.Errorf("svc.User.Delete: %w", err)
 		}
 	}
 
@@ -55,15 +55,15 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	var apiKey *db.UserAPIKey
 
 	if params.WithAPIKey {
-		apiKey, err = ff.authnsvc.CreateAPIKeyForUser(ctx, user)
+		apiKey, err = ff.svc.Authentication.CreateAPIKeyForUser(ctx, user)
 		if err != nil {
-			return nil, fmt.Errorf("authnsvc.CreateAPIKeyForUser: %w", err)
+			return nil, fmt.Errorf("svc.Authentication.CreateAPIKeyForUser: %w", err)
 		}
 	}
 	if params.WithToken {
-		accessToken, err = ff.authnsvc.CreateAccessTokenForUser(ctx, user)
+		accessToken, err = ff.svc.Authentication.CreateAccessTokenForUser(ctx, user)
 		if err != nil {
-			return nil, fmt.Errorf("authnsvc.CreateAPIKeyForUser: %w", err)
+			return nil, fmt.Errorf("svc.Authentication.CreateAPIKeyForUser: %w", err)
 		}
 	}
 

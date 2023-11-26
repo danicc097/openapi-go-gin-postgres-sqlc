@@ -53,27 +53,17 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	projectRepo := postgresql.NewProject()
-	notifRepo := postgresql.NewNotification()
-	userRepo := postgresql.NewUser()
-	activityRepo := postgresql.NewActivity()
-	teamRepo := postgresql.NewTeam()
-	teRepo := postgresql.NewTimeEntry()
-	demoWiRepo := postgresql.NewDemoWorkItem()
-	wiRepo := postgresql.NewWorkItem()
-	wiTagRepo := postgresql.NewWorkItemTag()
+	repositories := services.CreateRepos()
 
-	authzSvc, err := services.NewAuthorization(logger, scopePolicyPath, rolePolicyPath)
-	handleError(err)
-
-	userSvc := services.NewUser(logger, userRepo, notifRepo, authzSvc)
-	authnSvc := services.NewAuthentication(logger, userSvc, pool)
-	activitySvc := services.NewActivity(logger, activityRepo)
-	teamSvc := services.NewTeam(logger, teamRepo)
-	teSvc := services.NewTimeEntry(logger, teRepo, wiRepo)
-	wiSvc := services.NewWorkItem(logger, wiTagRepo, wiRepo, userRepo, projectRepo)
-	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo, wiRepo, userRepo, wiSvc)
-	wiTagSvc := services.NewWorkItemTag(logger, wiTagRepo)
+	// TODO: services.Create(logger, repositories, pool)
+	userSvc := services.NewUser(logger, repositories)
+	authnSvc := services.NewAuthentication(logger, repositories, pool)
+	activitySvc := services.NewActivity(logger, repositories)
+	teamSvc := services.NewTeam(logger, repositories)
+	teSvc := services.NewTimeEntry(logger, repositories)
+	notifSvc := services.NewNotification(logger, repositories)
+	demoWiSvc := services.NewDemoWorkItem(logger, repositories)
+	wiTagSvc := services.NewWorkItemTag(logger, repositories)
 
 	ctx := context.Background()
 
@@ -313,6 +303,34 @@ func main() {
 	 * NOTIFICATIONS
 	 *
 	 **/
+
+	for _, u := range users {
+		_, err := notifSvc.CreateNotification(ctx, pool, &services.NotificationCreateParams{
+			NotificationCreateParams: db.NotificationCreateParams{
+				Body:             "Notification for " + u.Email,
+				Labels:           []string{"label 1", "label 2"},
+				Link:             pointers.New("https://somelink"),
+				Title:            "Important title",
+				Sender:           superAdmin.UserID,
+				Receiver:         &u.UserID,
+				NotificationType: db.NotificationTypePersonal,
+			},
+		})
+		handleError(err)
+	}
+
+	_, err = notifSvc.CreateNotification(ctx, pool, &services.NotificationCreateParams{
+		NotificationCreateParams: db.NotificationCreateParams{
+			Body:             "Global notification for all users",
+			Labels:           []string{"label 4"},
+			Link:             pointers.New("https://somelink"),
+			Title:            "Important title",
+			Sender:           superAdmin.UserID,
+			NotificationType: db.NotificationTypeGlobal,
+		},
+		ReceiverRole: pointers.New(models.RoleUser),
+	})
+	handleError(err)
 }
 
 func errAndExit(out []byte, err error) {

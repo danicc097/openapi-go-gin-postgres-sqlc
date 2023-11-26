@@ -34,7 +34,6 @@ import (
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
@@ -58,8 +57,6 @@ type Config struct {
 	// SpecPath is the OpenAPI spec filepath.
 	SpecPath               string
 	MovieSvcClient         v1.MovieGenreClient
-	ScopePolicyPath        string
-	RolePolicyPath         string
 	MyProviderCallbackPath string
 }
 
@@ -70,12 +67,6 @@ func (c *Config) validate() error {
 	}
 	if c.SpecPath == "" {
 		return fmt.Errorf("no openapi spec path provided")
-	}
-	if c.ScopePolicyPath == "" {
-		return fmt.Errorf("no scope policy path provided")
-	}
-	if c.RolePolicyPath == "" {
-		return fmt.Errorf("no role policy path provided")
 	}
 	if c.Pool == nil {
 		return fmt.Errorf("no Postgres pool provided")
@@ -198,86 +189,18 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	case "prod", "e2e":
 		vg.Use(rlMw.Limit())
 	}
-	workitemrepo := reposwrappers.NewWorkItemWithTracing(
-		reposwrappers.NewWorkItemWithTimeout(
-			postgresql.NewWorkItem(),
-			reposwrappers.WorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	demoworkitemrepo := reposwrappers.NewDemoWorkItemWithTracing(
-		reposwrappers.NewDemoWorkItemWithTimeout(
-			postgresql.NewDemoWorkItem(),
-			reposwrappers.DemoWorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	demotwoworkitemrepo := reposwrappers.NewDemoTwoWorkItemWithTracing(
-		reposwrappers.NewDemoTwoWorkItemWithTimeout(
-			postgresql.NewDemoTwoWorkItem(),
-			reposwrappers.DemoTwoWorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	workitemtagrepo := reposwrappers.NewWorkItemTagWithTracing(
-		reposwrappers.NewWorkItemTagWithTimeout(
-			postgresql.NewWorkItemTag(),
-			reposwrappers.WorkItemTagWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	projectrepo := reposwrappers.NewProjectWithTracing(
-		reposwrappers.NewProjectWithTimeout(
-			postgresql.NewProject(),
-			reposwrappers.ProjectWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	urepo := reposwrappers.NewUserWithTracing(
-		reposwrappers.NewUserWithTimeout(
-			postgresql.NewUser(),
-			reposwrappers.UserWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	notifrepo := reposwrappers.NewNotificationWithTracing(
-		reposwrappers.NewNotificationWithTimeout(
-			postgresql.NewNotification(),
-			reposwrappers.NotificationWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
+	repos := services.CreateRepos()
 
-	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
-	if err != nil {
-		return nil, fmt.Errorf("NewAuthorization: %w", err)
-	}
-	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
-	workitemsvc := services.NewWorkItem(conf.Logger, workitemtagrepo, workitemrepo, urepo, projectrepo)
-	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, demoworkitemrepo, workitemrepo, urepo, workitemsvc)
-	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, demotwoworkitemrepo, workitemrepo, urepo, workitemsvc)
-	workitemtagsvc := services.NewWorkItemTag(conf.Logger, workitemtagrepo)
-	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
-	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
+	svcs := services.New(conf.Logger, repos, conf.Pool)
+
+	authmw := newAuthMiddleware(conf.Logger, conf.Pool, svcs)
 
 	handlers := NewHandlers(
 		conf.Logger,
 		conf.Pool,
 		conf.MovieSvcClient,
 		conf.SpecPath,
-		usvc,
-		demoworkitemsvc,
-		demotwoworkitemsvc,
-		workitemtagsvc,
-		authzsvc,
-		authnsvc,
+		svcs,
 		authmw, // middleware needed here since it's generated code
 		provider,
 	)
@@ -299,7 +222,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 
 // Run configures a server and underlying services with the given configuration.
 // NewServer takes its own config as is now.
-func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
+func Run(env, specPath string) (<-chan error, error) {
 	var err error
 
 	if err = envvar.Load(env); err != nil {
@@ -357,8 +280,6 @@ func Run(env, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, e
 		Redis:                  rdb,
 		Logger:                 logger.Sugar(),
 		SpecPath:               specPath,
-		ScopePolicyPath:        scopePolicyPath,
-		RolePolicyPath:         rolePolicyPath,
 		MovieSvcClient:         v1.NewMovieGenreClient(movieSvcConn),
 		MyProviderCallbackPath: "/auth/myprovider/callback",
 	})
