@@ -13,7 +13,7 @@ import (
 
 type Notification struct {
 	logger   *zap.SugaredLogger
-	nrepo    repos.Notification
+	repos    repos.Repos
 	authzsvc *Authorization
 	usvc     *User
 }
@@ -37,10 +37,16 @@ type GlobalNotificationCreateParams struct {
 }
 
 // NewNotification returns a new Notification service.
-func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification, authzsvc *Authorization, usvc *User) *Notification {
+func NewNotification(logger *zap.SugaredLogger, repos repos.Repos) *Notification {
+	usvc := NewUser(logger, repos)
+	authzsvc, err := NewAuthorization(logger)
+	if err != nil {
+		panic("NewAuthorization: %w")
+	}
+
 	return &Notification{
 		logger:   logger,
-		nrepo:    nrepo,
+		repos:    repos,
 		authzsvc: authzsvc,
 		usvc:     usvc,
 	}
@@ -50,9 +56,9 @@ func NewNotification(logger *zap.SugaredLogger, nrepo repos.Notification, authzs
 func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	notification, err := n.nrepo.LatestUserNotifications(ctx, d, params)
+	notification, err := n.repos.Notification.LatestUserNotifications(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("nrepo.LatestUserNotifications: %w", err)
+		return nil, fmt.Errorf("repos.Notification.LatestUserNotifications: %w", err)
 	}
 
 	return notification, nil
@@ -62,7 +68,7 @@ func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 func (n *Notification) CreatePersonalNotification(ctx context.Context, d db.DBTX, params *PersonalNotificationCreateParams) (*db.Notification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	notification, err := n.nrepo.Create(ctx, d, &db.NotificationCreateParams{
+	notification, err := n.repos.Notification.Create(ctx, d, &db.NotificationCreateParams{
 		Body:             params.Body,
 		Labels:           params.Labels,
 		Link:             params.Link,
@@ -72,7 +78,7 @@ func (n *Notification) CreatePersonalNotification(ctx context.Context, d db.DBTX
 		Sender:           params.Sender,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("nrepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.Notification.Create: %w", err)
 	}
 
 	return notification, nil
@@ -87,7 +93,7 @@ func (n *Notification) CreateGlobalNotification(ctx context.Context, d db.DBTX, 
 		return nil, internal.WrapErrorf(err, models.ErrorCodePrivate, "could not get admin user: %s", err)
 	}
 
-	notification, err := n.nrepo.Create(ctx, d, &db.NotificationCreateParams{
+	notification, err := n.repos.Notification.Create(ctx, d, &db.NotificationCreateParams{
 		Body:             params.Body,
 		Labels:           params.Labels,
 		Link:             params.Link,
@@ -97,7 +103,7 @@ func (n *Notification) CreateGlobalNotification(ctx context.Context, d db.DBTX, 
 		Sender:           superAdmin.UserID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("nrepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.Notification.Create: %w", err)
 	}
 
 	return notification, nil

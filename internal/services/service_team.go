@@ -11,14 +11,14 @@ import (
 
 type Team struct {
 	logger *zap.SugaredLogger
-	trepo  repos.Team
+	repos  repos.Repos
 }
 
 // NewTeam returns a new Team service.
-func NewTeam(logger *zap.SugaredLogger, trepo repos.Team) *Team {
+func NewTeam(logger *zap.SugaredLogger, repos repos.Repos) *Team {
 	return &Team{
 		logger: logger,
-		trepo:  trepo,
+		repos:  repos,
 	}
 }
 
@@ -26,9 +26,9 @@ func NewTeam(logger *zap.SugaredLogger, trepo repos.Team) *Team {
 func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	team, err := t.trepo.ByID(ctx, d, id)
+	team, err := t.repos.Team.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("trepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.Team.ByID: %w", err)
 	}
 
 	return team, nil
@@ -38,9 +38,9 @@ func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, err
 func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID) (*db.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	team, err := t.trepo.ByName(ctx, d, name, projectID)
+	team, err := t.repos.Team.ByName(ctx, d, name, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("trepo.ByName: %w", err)
+		return nil, fmt.Errorf("repos.Team.ByName: %w", err)
 	}
 
 	return team, nil
@@ -50,9 +50,9 @@ func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID db.
 func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	team, err := t.trepo.Create(ctx, d, params)
+	team, err := t.repos.Team.Create(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("trepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.Team.Create: %w", err)
 	}
 
 	return team, nil
@@ -62,9 +62,9 @@ func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParam
 func (t *Team) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (*db.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	team, err := t.trepo.Update(ctx, d, id, params)
+	team, err := t.repos.Team.Update(ctx, d, id, params)
 	if err != nil {
-		return nil, fmt.Errorf("trepo.Update: %w", err)
+		return nil, fmt.Errorf("repos.Team.Update: %w", err)
 	}
 
 	return team, nil
@@ -74,9 +74,9 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.T
 func (t *Team) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	team, err := t.trepo.Delete(ctx, d, id)
+	team, err := t.repos.Team.Delete(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("trepo.Delete: %w", err)
+		return nil, fmt.Errorf("repos.Team.Delete: %w", err)
 	}
 
 	return team, nil

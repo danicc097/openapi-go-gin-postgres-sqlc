@@ -11,14 +11,14 @@ import (
 
 type Activity struct {
 	logger *zap.SugaredLogger
-	aRepo  repos.Activity
+	repos  repos.Repos
 }
 
 // NewActivity returns a new Activity service.
-func NewActivity(logger *zap.SugaredLogger, aRepo repos.Activity) *Activity {
+func NewActivity(logger *zap.SugaredLogger, repos repos.Repos) *Activity {
 	return &Activity{
 		logger: logger,
-		aRepo:  aRepo,
+		repos:  repos,
 	}
 }
 
@@ -26,9 +26,9 @@ func NewActivity(logger *zap.SugaredLogger, aRepo repos.Activity) *Activity {
 func (a *Activity) ByID(ctx context.Context, d db.DBTX, id db.ActivityID) (*db.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	activity, err := a.aRepo.ByID(ctx, d, id)
+	activity, err := a.repos.Activity.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("aRepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.Activity.ByID: %w", err)
 	}
 
 	return activity, nil
@@ -38,9 +38,9 @@ func (a *Activity) ByID(ctx context.Context, d db.DBTX, id db.ActivityID) (*db.A
 func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID) (*db.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	activity, err := a.aRepo.ByName(ctx, d, name, projectID)
+	activity, err := a.repos.Activity.ByName(ctx, d, name, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("aRepo.ByName: %w", err)
+		return nil, fmt.Errorf("repos.Activity.ByName: %w", err)
 	}
 
 	return activity, nil
@@ -50,9 +50,9 @@ func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID
 func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID db.ProjectID) ([]db.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	activity, err := a.aRepo.ByProjectID(ctx, d, projectID)
+	activity, err := a.repos.Activity.ByProjectID(ctx, d, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("aRepo.ByProjectID: %w", err)
+		return nil, fmt.Errorf("repos.Activity.ByProjectID: %w", err)
 	}
 
 	return activity, nil
@@ -62,9 +62,9 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID db.Proj
 func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	activity, err := a.aRepo.Create(ctx, d, params)
+	activity, err := a.repos.Activity.Create(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("aRepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.Activity.Create: %w", err)
 	}
 
 	return activity, nil
@@ -74,9 +74,9 @@ func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCre
 func (a *Activity) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (*db.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	activity, err := a.aRepo.Update(ctx, d, id, params)
+	activity, err := a.repos.Activity.Update(ctx, d, id, params)
 	if err != nil {
-		return nil, fmt.Errorf("aRepo.Update: %w", err)
+		return nil, fmt.Errorf("repos.Activity.Update: %w", err)
 	}
 
 	return activity, nil
@@ -86,9 +86,9 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id db.ActivityID, para
 func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	activity, err := a.aRepo.Delete(ctx, d, id)
+	activity, err := a.repos.Activity.Delete(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("aRepo.Delete: %w", err)
+		return nil, fmt.Errorf("repos.Activity.Delete: %w", err)
 	}
 
 	return activity, nil

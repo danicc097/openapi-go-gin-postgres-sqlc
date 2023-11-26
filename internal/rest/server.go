@@ -32,10 +32,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
@@ -199,7 +197,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	case "prod", "e2e":
 		vg.Use(rlMw.Limit())
 	}
-	repos := createRepos()
+	repos := CreateRepos()
 
 	authzsvc, err := services.NewAuthorization(conf.Logger)
 	if err != nil {
@@ -374,75 +372,6 @@ func Run(env, specPath string) (<-chan error, error) {
 	}()
 
 	return errC, nil
-}
-
-func createRepos() repos.Repos {
-	workitemrepo := reposwrappers.NewWorkItemWithTracing(
-		reposwrappers.NewWorkItemWithTimeout(
-			postgresql.NewWorkItem(),
-			reposwrappers.WorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	demoworkitemrepo := reposwrappers.NewDemoWorkItemWithTracing(
-		reposwrappers.NewDemoWorkItemWithTimeout(
-			postgresql.NewDemoWorkItem(),
-			reposwrappers.DemoWorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	demotwoworkitemrepo := reposwrappers.NewDemoTwoWorkItemWithTracing(
-		reposwrappers.NewDemoTwoWorkItemWithTimeout(
-			postgresql.NewDemoTwoWorkItem(),
-			reposwrappers.DemoTwoWorkItemWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	workitemtagrepo := reposwrappers.NewWorkItemTagWithTracing(
-		reposwrappers.NewWorkItemTagWithTimeout(
-			postgresql.NewWorkItemTag(),
-			reposwrappers.WorkItemTagWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	projectrepo := reposwrappers.NewProjectWithTracing(
-		reposwrappers.NewProjectWithTimeout(
-			postgresql.NewProject(),
-			reposwrappers.ProjectWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	urepo := reposwrappers.NewUserWithTracing(
-		reposwrappers.NewUserWithTimeout(
-			postgresql.NewUser(),
-			reposwrappers.UserWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-	notifrepo := reposwrappers.NewNotificationWithTracing(
-		reposwrappers.NewNotificationWithTimeout(
-			postgresql.NewNotification(),
-			reposwrappers.NotificationWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
-
-	return repos.Repos{
-		WorkItem:        workitemrepo,
-		DemoWorkItem:    demoworkitemrepo,
-		DemoTwoWorkItem: demotwoworkitemrepo,
-		WorkItemTag:     workitemtagrepo,
-		Project:         projectrepo,
-		User:            urepo,
-		Notification:    notifrepo,
-	}
 }
 
 func createOpenAPIValidatorOptions() OAValidatorOptions {

@@ -269,6 +269,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
+			// TODO: services.CreateTestRepos, which have retry, etc.
 			urepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
 
 			notificationrepo := repostesting.NewFakeNotification()

@@ -14,7 +14,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -53,28 +52,17 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	projectRepo := postgresql.NewProject()
-	notifRepo := postgresql.NewNotification()
-	userRepo := postgresql.NewUser()
-	activityRepo := postgresql.NewActivity()
-	teamRepo := postgresql.NewTeam()
-	teRepo := postgresql.NewTimeEntry()
-	demoWiRepo := postgresql.NewDemoWorkItem()
-	wiRepo := postgresql.NewWorkItem()
-	wiTagRepo := postgresql.NewWorkItemTag()
+	repos := services.CreateRepos()
 
-	authzSvc, err := services.NewAuthorization(logger, scopePolicyPath, rolePolicyPath)
-	handleError(err)
-
-	userSvc := services.NewUser(logger, userRepo, notifRepo, authzSvc)
-	authnSvc := services.NewAuthentication(logger, userSvc, pool)
-	activitySvc := services.NewActivity(logger, activityRepo)
-	teamSvc := services.NewTeam(logger, teamRepo)
-	teSvc := services.NewTimeEntry(logger, teRepo, wiRepo)
-	notifSvc := services.NewNotification(logger, notifRepo, authzSvc, userSvc)
-	wiSvc := services.NewWorkItem(logger, wiTagRepo, wiRepo, userRepo, projectRepo)
-	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo, wiRepo, userRepo, wiSvc)
-	wiTagSvc := services.NewWorkItemTag(logger, wiTagRepo)
+	// TODO: services.Create(logger, repos, pool)
+	userSvc := services.NewUser(logger, repos)
+	authnSvc := services.NewAuthentication(logger, repos, pool)
+	activitySvc := services.NewActivity(logger, repos)
+	teamSvc := services.NewTeam(logger, repos)
+	teSvc := services.NewTimeEntry(logger, repos)
+	notifSvc := services.NewNotification(logger, repos)
+	demoWiSvc := services.NewDemoWorkItem(logger, repos)
+	wiTagSvc := services.NewWorkItemTag(logger, repos)
 
 	ctx := context.Background()
 

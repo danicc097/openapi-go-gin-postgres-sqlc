@@ -47,7 +47,7 @@ func testMain(m *testing.M) int {
 
 func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 	logger := zaptest.NewLogger(t).Sugar()
-	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
+	authzsvc, err := services.NewAuthorization(logger)
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)
 	}
@@ -72,7 +72,7 @@ func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 func newTestAuthzService(t *testing.T) *services.Authorization {
 	logger := zaptest.NewLogger(t).Sugar()
 
-	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
+	authzsvc, err := services.NewAuthorization(logger)
 	require.NoError(t, err, "newTestAuthService")
 
 	return authzsvc
