@@ -3,13 +3,10 @@ package services_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -27,8 +24,6 @@ func TestUser_UpdateUser(t *testing.T) {
 	t.Parallel()
 
 	logger := zaptest.NewLogger(t).Sugar()
-
-	authzsvc := newTestAuthzService(t)
 
 	type args struct {
 		params *models.UpdateUserRequest
@@ -93,15 +88,14 @@ func TestUser_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			urepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
-
-			notificationrepo := repostesting.NewFakeNotification()
+			repos := services.CreateTestRepos()
+			repos.Notification = repostesting.NewFakeNotification()
 
 			ctx := context.Background()
 			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
 			defer tx.Rollback(ctx)
 
-			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
+			u := services.NewUser(logger, repos)
 			got, err := u.Update(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
@@ -269,16 +263,14 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			// TODO: services.CreateTestRepos, which have retry, etc.
-			urepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
-
-			notificationrepo := repostesting.NewFakeNotification()
+			repos := services.CreateTestRepos()
+			repos.Notification = repostesting.NewFakeNotification()
 
 			ctx := context.Background()
 			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
 			defer tx.Rollback(ctx)
 
-			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
+			u := services.NewUser(logger, repos)
 			got, err := u.UpdateUserAuthorization(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)

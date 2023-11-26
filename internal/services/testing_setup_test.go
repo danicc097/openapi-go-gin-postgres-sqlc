@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -47,30 +45,22 @@ func testMain(m *testing.M) int {
 
 func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 	logger := zaptest.NewLogger(t).Sugar()
-	authzsvc, err := services.NewAuthorization(logger)
-	if err != nil {
-		t.Fatalf("services.NewAuthorization: %v", err)
-	}
-	usvc := services.NewUser(
-		logger,
-		reposwrappers.NewUserWithTracing(
-			reposwrappers.NewUserWithTimeout(
-				reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond), reposwrappers.UserWithTimeoutConfig{}),
-			postgresql.OtelName, nil),
-		reposwrappers.NewNotificationWithTracing(
-			reposwrappers.NewNotificationWithTimeout(
-				postgresql.NewNotification(), reposwrappers.NotificationWithTimeoutConfig{}),
-			postgresql.OtelName, nil),
-		authzsvc,
-	)
-	authnsvc := services.NewAuthentication(logger, usvc, testPool)
+	repos := services.CreateTestRepos()
+
+	authzsvc := newTestAuthzService(t)
+	usvc := services.NewUser(logger, repos)
+	authnsvc := services.NewAuthentication(logger, repos, testPool)
 
 	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
+
 	return ff
 }
 
 func newTestAuthzService(t *testing.T) *services.Authorization {
 	logger := zaptest.NewLogger(t).Sugar()
+
+	internal.Config.RolePolicyPath = "../../roles.json"
+	internal.Config.ScopePolicyPath = "../../scopes.json"
 
 	authzsvc, err := services.NewAuthorization(logger)
 	require.NoError(t, err, "newTestAuthService")
