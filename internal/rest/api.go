@@ -16,18 +16,9 @@ const (
 	apiKeyHeaderKey = "x-api-key"
 )
 
-type handlerServices struct {
-	user            *services.User
-	demoworkitem    *services.DemoWorkItem
-	demotwoworkitem *services.DemoTwoWorkItem
-	workitemtag     *services.WorkItemTag
-	authz           *services.Authorization
-	authn           *services.Authentication
-}
-
 // Handlers implements ServerInterface.
 type Handlers struct {
-	svc handlerServices
+	svc *services.Services
 
 	logger         *zap.SugaredLogger
 	pool           *pgxpool.Pool
@@ -43,12 +34,7 @@ func NewHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	moviesvcclient v1.MovieGenreClient,
 	specPath string,
-	usvc *services.User,
-	demoworkitemsvc *services.DemoWorkItem,
-	demotwoworkitemsvc *services.DemoTwoWorkItem,
-	workitemtagsvc *services.WorkItemTag,
-	authzsvc *services.Authorization,
-	authnsvc *services.Authentication,
+	svcs *services.Services,
 	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
 ) *Handlers {
@@ -85,18 +71,11 @@ func NewHandlers(
 		logger:         logger,
 		pool:           pool,
 		moviesvcclient: moviesvcclient,
-		svc: handlerServices{
-			user:            usvc,
-			authz:           authzsvc,
-			authn:           authnsvc,
-			demoworkitem:    demoworkitemsvc,
-			demotwoworkitem: demotwoworkitemsvc,
-			workitemtag:     workitemtagsvc,
-		},
-		authmw:   authmw,
-		event:    event,
-		provider: provider,
-		specPath: specPath,
+		svc:            svcs,
+		authmw:         authmw,
+		event:          event,
+		provider:       provider,
+		specPath:       specPath,
 	}
 }
 

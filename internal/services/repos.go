@@ -8,7 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 )
 
-// CreateTestRepos creates repositories for service usage.
+// CreateRepos creates repositories for service usage.
 func CreateRepos() *repos.Repos {
 	activityrepo := reposwrappers.NewActivityWithTracing(
 		reposwrappers.NewActivityWithTimeout(
@@ -136,7 +136,7 @@ func CreateRepos() *repos.Repos {
 func CreateTestRepos() *repos.Repos {
 	repos := CreateRepos()
 
-	repos.User = reposwrappers.NewUserWithRetry(repos.User, 10, 65*time.Millisecond) // created_at unique
+	repos.User = reposwrappers.NewUserWithRetry(repos.User, 5, 65*time.Millisecond) // created_at unique
 
 	return repos
 }

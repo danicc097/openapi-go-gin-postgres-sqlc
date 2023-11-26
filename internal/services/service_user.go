@@ -38,7 +38,7 @@ func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
 	// TODO: paths in AppConfig instead. same with specPath
 	authzsvc, err := NewAuthorization(logger)
 	if err != nil {
-		panic("NewAuthorization: %w")
+		panic(fmt.Sprintf("NewAuthorization: %v", err))
 	}
 
 	return &User{

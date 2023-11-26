@@ -7,15 +7,18 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestAdminPingRoute(t *testing.T) {
 	t.Parallel()
 
-	ff := newTestFixtureFactory(t)
+	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,

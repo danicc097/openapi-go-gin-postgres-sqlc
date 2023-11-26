@@ -50,7 +50,7 @@ func newOpenapiMiddleware(
 	// kinopenapi's own mux based on gorilla for validation only
 	router, err := gorillamux.NewRouter(spec)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("gorillamux.NewRouter: %v", err))
 	}
 
 	return &openapiMiddleware{

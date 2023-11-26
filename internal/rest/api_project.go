@@ -62,7 +62,7 @@ func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 		return
 	}
 
-	wit, err := h.svc.workitemtag.Create(c, h.pool, caller, &db.WorkItemTagCreateParams{
+	wit, err := h.svc.WorkItemTag.Create(c, h.pool, caller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[project],
 		Name:        body.Name,
 		Description: body.Description,

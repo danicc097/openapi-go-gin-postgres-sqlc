@@ -11,7 +11,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
@@ -80,6 +79,8 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		},
 	}
 
+	svcs := services.New(zap.S(), services.CreateTestRepos(), testPool)
+
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -88,16 +89,9 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			logger, _ := zap.NewDevelopment()
 			_, engine := gin.CreateTestContext(resp)
 
-			authzsvc, err := services.NewAuthorization(logger.Sugar())
-			require.NoError(t, err, "newTestAuthService")
+			authMw := newAuthMiddleware(logger.Sugar(), testPool, svcs)
 
-			repos := services.CreateTestRepos()
-			usvc := services.NewUser(logger.Sugar(), repos)
-			authnsvc := services.NewAuthentication(logger.Sugar(), repos, testPool)
-
-			authMw := newAuthMiddleware(logger.Sugar(), testPool, authnsvc, authzsvc, usvc)
-
-			ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
+			ff := servicetestutil.NewFixtureFactory(testPool, svcs)
 			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				Scopes:     tc.scopes,

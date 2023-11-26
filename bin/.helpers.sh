@@ -125,11 +125,19 @@ trim_string() {
 }
 
 join_by() {
-  [ "$#" -ge 1 ] || return 1
-  local IFS="$1"
-  shift
-  printf '%s\n' "$*"
+  local d=${1-} f=${2-}
+  if shift 2; then
+    printf %s "$f" "${@/#/$d}"
+  fi
 }
+
+# breaks when separator has spaces, e.g. " | "
+# join_by() {
+#   [ "$#" -ge 1 ] || return 1
+#   local IFS="$1"
+#   shift
+#   printf '%s\n' "$*"
+# }
 
 to_pascal() {
   local string=$1

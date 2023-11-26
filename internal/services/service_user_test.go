@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -294,7 +295,9 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 func createTestUsers(t *testing.T) testUsers {
 	t.Helper()
 
-	ff := newTestFixtureFactory(t)
+	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+
+	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	guest, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,

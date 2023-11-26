@@ -111,7 +111,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 
 	_, err = openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("openapi3.NewLoader: %v", err))
 	}
 
 	srv, err := NewServer(Config{
@@ -133,19 +133,4 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 	}
 
 	return &testServer{server: srv.httpsrv, client: client}, nil
-}
-
-func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
-	t.Helper()
-
-	logger := zaptest.NewLogger(t).Sugar()
-	repos := services.CreateTestRepos()
-
-	authzsvc, err := services.NewAuthorization(logger)
-	require.NoError(t, err, "newTestAuthService")
-	usvc := services.NewUser(logger, repos)
-	authnsvc := services.NewAuthentication(logger, repos, testPool)
-
-	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
-	return ff
 }

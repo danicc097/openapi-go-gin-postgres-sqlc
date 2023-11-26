@@ -191,31 +191,16 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}
 	repos := services.CreateRepos()
 
-	authzsvc, err := services.NewAuthorization(conf.Logger)
-	if err != nil {
-		return nil, fmt.Errorf("NewAuthorization: %w", err)
-	}
-	// TODO: services never accept other services. will construct internally as we need them.
-	// will need to make sure service constructor calls are idempotent
-	usvc := services.NewUser(conf.Logger, repos)
-	demoworkitemsvc := services.NewDemoWorkItem(conf.Logger, repos)
-	demotwoworkitemsvc := services.NewDemoTwoWorkItem(conf.Logger, repos)
-	workitemtagsvc := services.NewWorkItemTag(conf.Logger, repos)
-	authnsvc := services.NewAuthentication(conf.Logger, repos, conf.Pool)
+	svcs := services.New(conf.Logger, repos, conf.Pool)
 
-	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
+	authmw := newAuthMiddleware(conf.Logger, conf.Pool, svcs)
 
 	handlers := NewHandlers(
 		conf.Logger,
 		conf.Pool,
 		conf.MovieSvcClient,
 		conf.SpecPath,
-		usvc,
-		demoworkitemsvc,
-		demotwoworkitemsvc,
-		workitemtagsvc,
-		authzsvc,
-		authnsvc,
+		svcs,
 		authmw, // middleware needed here since it's generated code
 		provider,
 	)

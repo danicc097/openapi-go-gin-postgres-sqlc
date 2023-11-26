@@ -41,7 +41,7 @@ func NewNotification(logger *zap.SugaredLogger, repos *repos.Repos) *Notificatio
 	usvc := NewUser(logger, repos)
 	authzsvc, err := NewAuthorization(logger)
 	if err != nil {
-		panic("NewAuthorization: %w")
+		panic(fmt.Sprintf("NewAuthorization: %v", err))
 	}
 
 	return &Notification{

@@ -7,11 +7,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -44,18 +40,4 @@ func testMain(m *testing.M) int {
 	defer testPool.Close()
 
 	return m.Run()
-}
-
-func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
-	logger := zaptest.NewLogger(t).Sugar()
-	repos := services.CreateTestRepos()
-
-	authzsvc, err := services.NewAuthorization(logger)
-	require.NoError(t, err, "newTestAuthService")
-	usvc := services.NewUser(logger, repos)
-	authnsvc := services.NewAuthentication(logger, repos, testPool)
-
-	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
-
-	return ff
 }
