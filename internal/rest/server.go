@@ -57,8 +57,6 @@ type Config struct {
 	// SpecPath is the OpenAPI spec filepath.
 	SpecPath               string
 	MovieSvcClient         v1.MovieGenreClient
-	ScopePolicyPath        string
-	RolePolicyPath         string
 	MyProviderCallbackPath string
 }
 
@@ -69,12 +67,6 @@ func (c *Config) validate() error {
 	}
 	if c.SpecPath == "" {
 		return fmt.Errorf("no openapi spec path provided")
-	}
-	if c.ScopePolicyPath == "" {
-		return fmt.Errorf("no scope policy path provided")
-	}
-	if c.RolePolicyPath == "" {
-		return fmt.Errorf("no role policy path provided")
 	}
 	if c.Pool == nil {
 		return fmt.Errorf("no Postgres pool provided")

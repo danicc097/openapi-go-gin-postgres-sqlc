@@ -5,15 +5,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
@@ -90,12 +88,12 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			logger, _ := zap.NewDevelopment()
 			_, engine := gin.CreateTestContext(resp)
 
-			authzsvc, err := services.NewAuthorization(logger.Sugar(), "../../scopes.json", "../../roles.json")
-			if err != nil {
-				t.Fatalf("services.NewAuthorization: %v", err)
-			}
-			usvc := services.NewUser(logger.Sugar(), reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond), postgresql.NewNotification(), authzsvc)
-			authnsvc := services.NewAuthentication(logger.Sugar(), usvc, testPool)
+			authzsvc, err := services.NewAuthorization(logger.Sugar())
+			require.NoError(t, err, "newTestAuthService")
+
+			repos := services.CreateTestRepos()
+			usvc := services.NewUser(logger.Sugar(), repos)
+			authnsvc := services.NewAuthentication(logger.Sugar(), repos, testPool)
 
 			authMw := newAuthMiddleware(logger.Sugar(), testPool, authnsvc, authzsvc, usvc)
 

@@ -7,34 +7,37 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestAuthorization_Roles(t *testing.T) {
 	t.Parallel()
 
-	svc := newTestAuthzService(t)
+	authzsvc, err := services.NewAuthorization(zap.S())
+	require.NoError(t, err)
 
-	userRole := svc.RoleByName(models.RoleUser)
-	managerRole := svc.RoleByName(models.RoleManager)
+	userRole := authzsvc.RoleByName(models.RoleUser)
+	managerRole := authzsvc.RoleByName(models.RoleManager)
 
-	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleManager), "access restricted")
-	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleAdmin), "access restricted")
-	assert.ErrorContains(t, svc.HasRequiredRole(managerRole, models.RoleAdmin), "access restricted")
-	assert.ErrorContains(t, svc.HasRequiredRole(services.Role{}, models.RoleAdmin), "access restricted")
+	assert.ErrorContains(t, authzsvc.HasRequiredRole(userRole, models.RoleManager), "access restricted")
+	assert.ErrorContains(t, authzsvc.HasRequiredRole(userRole, models.RoleAdmin), "access restricted")
+	assert.ErrorContains(t, authzsvc.HasRequiredRole(managerRole, models.RoleAdmin), "access restricted")
+	assert.ErrorContains(t, authzsvc.HasRequiredRole(services.Role{}, models.RoleAdmin), "access restricted")
 
-	require.NoError(t, svc.HasRequiredRole(services.Role{Rank: managerRole.Rank, Name: models.RoleManager}, models.RoleManager))
+	require.NoError(t, authzsvc.HasRequiredRole(services.Role{Rank: managerRole.Rank, Name: models.RoleManager}, models.RoleManager))
 }
 
 func TestAuthorization_Scopes(t *testing.T) {
 	t.Parallel()
 
-	svc := newTestAuthzService(t)
+	authzsvc, err := services.NewAuthorization(zap.S())
+	require.NoError(t, err)
 
 	req := models.Scopes{models.ScopeTeamSettingsWrite}
-	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{}, req), "access restricted")
-	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
-	require.NoError(t, svc.HasRequiredScopes(models.Scopes{models.ScopeTeamSettingsWrite}, req))
+	assert.ErrorContains(t, authzsvc.HasRequiredScopes(models.Scopes{}, req), "access restricted")
+	assert.ErrorContains(t, authzsvc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
+	require.NoError(t, authzsvc.HasRequiredScopes(models.Scopes{models.ScopeTeamSettingsWrite}, req))
 
 	req = models.Scopes{models.ScopeTeamSettingsWrite, models.ScopeUsersRead}
-	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
+	assert.ErrorContains(t, authzsvc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
 }

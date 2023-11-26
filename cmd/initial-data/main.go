@@ -14,6 +14,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -52,17 +53,17 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	repos := services.CreateRepos()
+	repositories := services.CreateRepos()
 
-	// TODO: services.Create(logger, repos, pool)
-	userSvc := services.NewUser(logger, repos)
-	authnSvc := services.NewAuthentication(logger, repos, pool)
-	activitySvc := services.NewActivity(logger, repos)
-	teamSvc := services.NewTeam(logger, repos)
-	teSvc := services.NewTimeEntry(logger, repos)
-	notifSvc := services.NewNotification(logger, repos)
-	demoWiSvc := services.NewDemoWorkItem(logger, repos)
-	wiTagSvc := services.NewWorkItemTag(logger, repos)
+	// TODO: services.Create(logger, repositories, pool)
+	userSvc := services.NewUser(logger, repositories)
+	authnSvc := services.NewAuthentication(logger, repositories, pool)
+	activitySvc := services.NewActivity(logger, repositories)
+	teamSvc := services.NewTeam(logger, repositories)
+	teSvc := services.NewTimeEntry(logger, repositories)
+	notifSvc := services.NewNotification(logger, repositories)
+	demoWiSvc := services.NewDemoWorkItem(logger, repositories)
+	wiTagSvc := services.NewWorkItemTag(logger, repositories)
 
 	ctx := context.Background()
 

@@ -33,6 +33,9 @@ func testMain(m *testing.M) int {
 	// call flag.Parse() here if TestMain uses flags
 	var err error
 
+	internal.Config.RolePolicyPath = "../../roles.json"
+	internal.Config.ScopePolicyPath = "../../scopes.json"
+
 	testPool, testSQLPool, err = testutil.NewDB()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
@@ -47,23 +50,12 @@ func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 	logger := zaptest.NewLogger(t).Sugar()
 	repos := services.CreateTestRepos()
 
-	authzsvc := newTestAuthzService(t)
+	authzsvc, err := services.NewAuthorization(logger)
+	require.NoError(t, err, "newTestAuthService")
 	usvc := services.NewUser(logger, repos)
 	authnsvc := services.NewAuthentication(logger, repos, testPool)
 
 	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
 
 	return ff
-}
-
-func newTestAuthzService(t *testing.T) *services.Authorization {
-	logger := zaptest.NewLogger(t).Sugar()
-
-	internal.Config.RolePolicyPath = "../../roles.json"
-	internal.Config.ScopePolicyPath = "../../scopes.json"
-
-	authzsvc, err := services.NewAuthorization(logger)
-	require.NoError(t, err, "newTestAuthService")
-
-	return authzsvc
 }

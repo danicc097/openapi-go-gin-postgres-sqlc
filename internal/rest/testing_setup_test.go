@@ -14,14 +14,13 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
@@ -51,6 +50,9 @@ func testMain(m *testing.M) int {
 
 	// call flag.Parse() here if TestMain uses flags
 	var err error
+
+	internal.Config.RolePolicyPath = "../../roles.json"
+	internal.Config.ScopePolicyPath = "../../scopes.json"
 
 	testPool, testSQLPool, err = testutil.NewDB()
 	if err != nil {
@@ -115,13 +117,11 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 	srv, err := NewServer(Config{
 		// not necessary when using ServeHTTP. Won't actually listen.
 		// Address:         ":0", // random next available for each test server
-		Pool:            testPool,
-		Redis:           rdb,
-		Logger:          logger.Sugar(),
-		SpecPath:        "../../openapi.yaml",
-		MovieSvcClient:  &v1testing.FakeMovieGenreClient{},
-		ScopePolicyPath: "../../scopes.json",
-		RolePolicyPath:  "../../roles.json",
+		Pool:           testPool,
+		Redis:          rdb,
+		Logger:         logger.Sugar(),
+		SpecPath:       "../../openapi.yaml",
+		MovieSvcClient: &v1testing.FakeMovieGenreClient{},
 	}, WithMiddlewares(middlewares...))
 	if err != nil {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
@@ -139,23 +139,12 @@ func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 	t.Helper()
 
 	logger := zaptest.NewLogger(t).Sugar()
-	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
-	if err != nil {
-		t.Fatalf("services.NewAuthorization: %v", err)
-	}
-	usvc := services.NewUser(
-		logger,
-		reposwrappers.NewUserWithTracing(
-			reposwrappers.NewUserWithTimeout(
-				reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond), reposwrappers.UserWithTimeoutConfig{}),
-			postgresql.OtelName, nil),
-		reposwrappers.NewNotificationWithTracing(
-			reposwrappers.NewNotificationWithTimeout(
-				postgresql.NewNotification(), reposwrappers.NotificationWithTimeoutConfig{}),
-			postgresql.OtelName, nil),
-		authzsvc,
-	)
-	authnsvc := services.NewAuthentication(logger, usvc, testPool)
+	repos := services.CreateTestRepos()
+
+	authzsvc, err := services.NewAuthorization(logger)
+	require.NoError(t, err, "newTestAuthService")
+	usvc := services.NewUser(logger, repos)
+	authnsvc := services.NewAuthentication(logger, repos, testPool)
 
 	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
 	return ff
