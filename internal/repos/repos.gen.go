@@ -17,3 +17,9 @@ type Repos struct {
 	WorkItemTag     WorkItemTag
 	WorkItemType    WorkItemType
 }
+
+func New(activity Activity, demoTwoWorkItem DemoTwoWorkItem, demoWorkItem DemoWorkItem, kanbanStep KanbanStep, notification Notification, project Project, team Team, timeEntry TimeEntry, user User, workItem WorkItem, workItemComment WorkItemComment, workItemTag WorkItemTag, workItemType WorkItemType) *Repos {
+	return &Repos{
+		Activity: activity, DemoTwoWorkItem: demoTwoWorkItem, DemoWorkItem: demoWorkItem, KanbanStep: kanbanStep, Notification: notification, Project: project, Team: team, TimeEntry: timeEntry, User: user, WorkItem: workItem, WorkItemComment: workItemComment, WorkItemTag: workItemTag, WorkItemType: workItemType,
+	}
+}

@@ -13,7 +13,7 @@ import (
 
 type Notification struct {
 	logger   *zap.SugaredLogger
-	repos    repos.Repos
+	repos    *repos.Repos
 	authzsvc *Authorization
 	usvc     *User
 }
@@ -37,7 +37,7 @@ type GlobalNotificationCreateParams struct {
 }
 
 // NewNotification returns a new Notification service.
-func NewNotification(logger *zap.SugaredLogger, repos repos.Repos) *Notification {
+func NewNotification(logger *zap.SugaredLogger, repos *repos.Repos) *Notification {
 	usvc := NewUser(logger, repos)
 	authzsvc, err := NewAuthorization(logger)
 	if err != nil {

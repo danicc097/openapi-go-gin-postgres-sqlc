@@ -125,10 +125,10 @@ trim_string() {
 }
 
 join_by() {
-  local d=${1-} f=${2-}
-  if shift 2; then
-    printf %s "$f" "${@/#/$d}"
-  fi
+  [ "$#" -ge 1 ] || return 1
+  local IFS="$1"
+  shift
+  printf '%s\n' "$*"
 }
 
 to_pascal() {

@@ -14,11 +14,11 @@ import (
 
 type TimeEntry struct {
 	logger *zap.SugaredLogger
-	repos  repos.Repos
+	repos  *repos.Repos
 }
 
 // NewTimeEntry returns a new TimeEntry service.
-func NewTimeEntry(logger *zap.SugaredLogger, repos repos.Repos) *TimeEntry {
+func NewTimeEntry(logger *zap.SugaredLogger, repos *repos.Repos) *TimeEntry {
 	return &TimeEntry{
 		logger: logger,
 		repos:  repos,

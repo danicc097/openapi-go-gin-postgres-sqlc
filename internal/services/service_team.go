@@ -11,11 +11,11 @@ import (
 
 type Team struct {
 	logger *zap.SugaredLogger
-	repos  repos.Repos
+	repos  *repos.Repos
 }
 
 // NewTeam returns a new Team service.
-func NewTeam(logger *zap.SugaredLogger, repos repos.Repos) *Team {
+func NewTeam(logger *zap.SugaredLogger, repos *repos.Repos) *Team {
 	return &Team{
 		logger: logger,
 		repos:  repos,

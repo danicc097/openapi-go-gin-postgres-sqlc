@@ -14,7 +14,7 @@ import (
 
 type DemoTwoWorkItem struct {
 	logger *zap.SugaredLogger
-	repos  repos.Repos
+	repos  *repos.Repos
 	wiSvc  *WorkItem
 }
 
@@ -25,7 +25,7 @@ type DemoTwoWorkItemCreateParams struct {
 }
 
 // NewDemoTwoWorkItem returns a new DemoTwoWorkItem service.
-func NewDemoTwoWorkItem(logger *zap.SugaredLogger, repos repos.Repos) *DemoTwoWorkItem {
+func NewDemoTwoWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *DemoTwoWorkItem {
 	wiSvc := NewWorkItem(logger, repos)
 
 	return &DemoTwoWorkItem{

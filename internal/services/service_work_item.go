@@ -28,11 +28,11 @@ tag belonging to project and a member that belongs to the team
 
 type WorkItem struct {
 	logger *zap.SugaredLogger
-	repos  repos.Repos
+	repos  *repos.Repos
 }
 
 // NewWorkItem returns a new WorkItem service with common logic for all project workitems.
-func NewWorkItem(logger *zap.SugaredLogger, repos repos.Repos) *WorkItem {
+func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 	return &WorkItem{
 		logger: logger,
 		repos:  repos,

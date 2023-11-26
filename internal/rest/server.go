@@ -197,7 +197,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	case "prod", "e2e":
 		vg.Use(rlMw.Limit())
 	}
-	repos := CreateRepos()
+	repos := services.CreateRepos()
 
 	authzsvc, err := services.NewAuthorization(conf.Logger)
 	if err != nil {
