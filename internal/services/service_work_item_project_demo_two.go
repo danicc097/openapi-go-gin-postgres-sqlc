@@ -41,7 +41,7 @@ func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID)
 
 	wi, err := w.repos.DemoTwoWorkItem.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.DemoTwoWorkItem.ByID: %w", err)
 	}
 
 	return wi, nil
@@ -53,7 +53,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 
 	demoWi, err := w.repos.DemoTwoWorkItem.Create(ctx, d, params.DemoTwoWorkItemCreateParams)
 	if err != nil {
-		return nil, fmt.Errorf("demowiRepo.Create: %w", err)
+		return nil, fmt.Errorf("repos.DemoTwoWorkItem.Create: %w", err)
 	}
 
 	err = w.wiSvc.AssignTags(ctx, d, models.ProjectDemoTwo, demoWi, params.TagIDs)
@@ -72,7 +72,7 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 	opts := db.WithWorkItemJoin(db.WorkItemJoins{DemoTwoWorkItem: true, AssignedUsers: true, WorkItemTags: true})
 	wi, err := w.repos.DemoTwoWorkItem.ByID(ctx, d, demoWi.WorkItemID, opts)
 	if err != nil {
-		return nil, fmt.Errorf("demowiRepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.DemoTwoWorkItem.ByID: %w", err)
 	}
 
 	return wi, nil
@@ -84,7 +84,7 @@ func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemI
 
 	wi, err := w.repos.DemoTwoWorkItem.Update(ctx, d, id, params)
 	if err != nil {
-		return nil, fmt.Errorf("demowiRepo.Update: %w", err)
+		return nil, fmt.Errorf("repos.DemoTwoWorkItem.Update: %w", err)
 	}
 
 	return wi, nil
@@ -96,7 +96,7 @@ func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemI
 
 	wi, err := w.repos.WorkItem.Delete(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("demowiRepo.Delete: %w", err)
+		return nil, fmt.Errorf("repos.WorkItem.Delete: %w", err)
 	}
 
 	return wi, nil

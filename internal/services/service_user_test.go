@@ -18,7 +18,7 @@ import (
 )
 
 type testUsers struct {
-	guest, user, advancedUser, manager, admin *servicetestutil.CreateUserResult
+	guest, user, advancedUser, manager, admin *servicetestutil.CreateUserFixture
 }
 
 func TestUser_UpdateUser(t *testing.T) {
@@ -300,7 +300,7 @@ func createTestUsers(t *testing.T) testUsers {
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	guest, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-		Role:       models.RoleAdmin,
+		Role:       models.RoleGuest,
 		WithAPIKey: true,
 	})
 	require.NoError(t, err)
