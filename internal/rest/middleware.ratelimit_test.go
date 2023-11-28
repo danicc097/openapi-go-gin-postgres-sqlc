@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	"golang.org/x/time/rate"
 )
 
@@ -15,11 +15,11 @@ func TestRateLimitMiddleware(t *testing.T) {
 	t.Parallel()
 
 	resp := httptest.NewRecorder()
-	logger, _ := zap.NewDevelopment()
+	logger := zaptest.NewLogger(t).Sugar()
 	_, engine := gin.CreateTestContext(resp)
 	rl := 1
 	bl := 3
-	rlmw := newRateLimitMiddleware(logger.Sugar(), rate.Limit(rl), bl)
+	rlmw := newRateLimitMiddleware(logger, rate.Limit(rl), bl)
 
 	engine.Use(rlmw.Limit())
 	engine.GET("/", func(ctx *gin.Context) {

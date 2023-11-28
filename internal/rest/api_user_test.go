@@ -13,17 +13,19 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestDeleteUserRoute(t *testing.T) {
 	t.Parallel()
 
+	logger := zaptest.NewLogger(t).Sugar()
+
 	srv, err := runTestServer(t, testPool)
 	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(), testPool)
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	tests := []struct {
@@ -69,11 +71,13 @@ func TestDeleteUserRoute(t *testing.T) {
 func TestGetUserRoute(t *testing.T) {
 	t.Parallel()
 
+	logger := zaptest.NewLogger(t).Sugar()
+
 	srv, err := runTestServer(t, testPool)
 	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(), testPool)
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	t.Run("authenticated_user", func(t *testing.T) {
@@ -106,11 +110,13 @@ func TestGetUserRoute(t *testing.T) {
 func TestUpdateUserRoutes(t *testing.T) {
 	t.Parallel()
 
+	logger := zaptest.NewLogger(t).Sugar()
+
 	srv, err := runTestServer(t, testPool)
 	srv.cleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(), testPool)
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	// NOTE:
