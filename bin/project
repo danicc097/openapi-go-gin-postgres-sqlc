@@ -322,8 +322,8 @@ x.gen.pregen() {
     echo "$spec_content" >$SPEC_PATH
 
     echo "Updating roles and scopes in $SPEC_PATH"
-    ######## Sync enums with external sources and validate
-    ######## external json files are the source of truth
+    ######## Sync spec enums with external policy sources and validate existing schema enums.
+    ######## External json files are the source of truth, indexed by enum name
     # arrays can't be nested
     declare -A enum_src_files=(
       [Scope]="scopes.json"
@@ -361,6 +361,7 @@ x.gen.pregen() {
       enum_values[$enum]=$enum_list
     done
 
+    ######## IDE intellisense/validation
     yq -e ".definitions.Operation.properties +=
         {
           \"${enum_vext[Role]}\": {

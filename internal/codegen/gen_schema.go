@@ -33,11 +33,11 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 	reflector := newSpecReflector()
 
 	for idx, structName := range structNames {
-		// we need to compile gen-schema right after PublicStructs file is updated
+		// IMPORTANT: ensure structs are public
+		// We need to compile gen-schema right after PublicStructs file is updated
 		// cannot import packages at runtime
 		// if we have an uncompilable state then we need to update src to compile. no way around it
-		// UDPATE: use https://github.com/pkujhd/goloader instead of plugin pkg which cant reload changed go file at runtime
-		// or use yaegi
+		// to work around this would need something like yaegi, but might not support swaggest libs
 		st, ok := PublicStructs[structName]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", structName)
@@ -52,7 +52,6 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 
 		handleError(reflector.AddOperation(oc))
 
-		// IMPORTANT: ensure structs are public
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName].Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
 	}
 	s, err := reflector.Spec.MarshalYAML()
