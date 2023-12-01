@@ -412,14 +412,7 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 		// operation ids are preprocessed to pascal case
 		functions := getHandlersMethods(file)
 
-		var restOfOpIDs []string
-	tag:
-		for opTag, opIDs := range o.operations {
-			if opTag == tag {
-				continue tag
-			}
-			restOfOpIDs = append(restOfOpIDs, opIDs...)
-		}
+		restOfOpIDs := o.getOperationIDDifference(tag)
 
 	fn:
 		for _, opID := range functions {
@@ -468,6 +461,21 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 	}
 
 	return nil
+}
+
+// getOperationIDDifference returns the difference of all operation IDs
+// and those associated to a given tag.
+func (o *CodeGen) getOperationIDDifference(tag string) []string {
+	var restOfOpIDs []string
+
+	for opTag, opIDs := range o.operations {
+		if opTag == tag {
+			continue
+		}
+		restOfOpIDs = append(restOfOpIDs, opIDs...)
+	}
+
+	return restOfOpIDs
 }
 
 // findTagByOpID returns the corresponding tag for a given operation ID.

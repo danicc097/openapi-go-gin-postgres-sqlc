@@ -7,6 +7,7 @@ require (
 	github.com/danicc097/xo/v5 v5.1.0
 	github.com/dave/dst v0.27.3
 	github.com/deepmap/oapi-codegen v1.13.4
+	github.com/fatih/structs v1.1.0
 	github.com/fatih/structtag v1.2.0
 	github.com/getkin/kin-openapi v0.119.0
 	github.com/gin-contrib/cors v1.4.0
@@ -57,7 +58,6 @@ require (
 	github.com/bytedance/sonic v1.10.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.0 // indirect
-	github.com/fatih/structs v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
