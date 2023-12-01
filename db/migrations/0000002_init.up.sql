@@ -106,6 +106,7 @@ create table users (
   , role_rank smallint default 1 not null check (role_rank > 0)
   , has_personal_notifications boolean default false not null
   , has_global_notifications boolean default false not null
+  -- should have a new `id bigserial` col for pagination alongside existing uuid instead of this
   , created_at timestamp with time zone default current_timestamp not null unique
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone

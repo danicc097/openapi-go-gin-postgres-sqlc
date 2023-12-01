@@ -18,6 +18,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -331,6 +332,11 @@ func main() {
 		ReceiverRole: pointers.New(models.RoleUser),
 	})
 	handleError(err)
+
+	// TODO: notification service and tests
+	notifs, err := db.UserNotificationPaginatedByUserNotificationIDAsc(ctx, pool, 0, db.WithUserNotificationJoin(db.UserNotificationJoins{Notification: true}), db.WithUserNotificationLimit(5), db.WithUserNotificationFilters(map[string][]any{"user_id = $i": {users[1].UserID}}))
+	handleError(err)
+	format.PrintJSONByTag(notifs, "db")
 }
 
 func errAndExit(out []byte, err error) {
