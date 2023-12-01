@@ -228,7 +228,7 @@ func (h *Handlers) Baz() {}
 				handlersPath: tmpDir,
 			}
 
-			err := o.ensureFunctionMethods()
+			err := o.ensureHandlerMethodsExist()
 			if tc.errContains != "" {
 				assert.ErrorContains(t, err, tc.errContains)
 			} else {

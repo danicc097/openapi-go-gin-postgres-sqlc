@@ -95,7 +95,7 @@ func (o *CodeGen) EnsureCorrectMethodsPerTag() error {
 		return fmt.Errorf("analyze spec: %w", err)
 	}
 
-	if err := o.ensureFunctionMethods(); err != nil {
+	if err := o.ensureHandlerMethodsExist(); err != nil {
 		return fmt.Errorf("tag methods: %w", err)
 	}
 
@@ -372,15 +372,22 @@ func removeAndAppendHandlersMethod(src, target *dst.File, opID string) {
 	}
 }
 
-// ensureFunctionMethods parses the AST of each api_<lowercase of tag>.go file and
+// ensureHandlerMethodsExist parses the AST of each api_<lowercase of tag>.go file and
 // ensure it contains function methods for each operation ID.
-func (o *CodeGen) ensureFunctionMethods() error {
+func (o *CodeGen) ensureHandlerMethodsExist() error {
+	var errs []string
+
+	for tag := range o.operations {
+		handlersPath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", tag))
+		if _, err := os.Stat(handlersPath); err != nil {
+			errs = append(errs, fmt.Sprintf("missing file %s for new tag %q", handlersPath, tag))
+		}
+	}
+
 	tagFilePaths, err := filepath.Glob(filepath.Join(o.handlersPath, "api_*.go"))
 	if err != nil {
 		return fmt.Errorf("failed to find api_<tag>.go files: %w", err)
 	}
-
-	var errs []string
 
 	for _, tagFilePath := range tagFilePaths {
 		if strings.HasSuffix(tagFilePath, "_test.go") {
