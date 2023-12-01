@@ -360,8 +360,8 @@ github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXl
 github.com/swaggest/assertjson v1.9.0 h1:dKu0BfJkIxv/xe//mkCrK5yZbs79jL7OVf9Ija7o2xQ=
 github.com/swaggest/jsonschema-go v0.3.62 h1:eIE0aRklWa2eLJg2L/zqyWpKvgUPbq2oKOtrJGJkPH0=
 github.com/swaggest/jsonschema-go v0.3.62/go.mod h1:DYuKqdpms/edvywsX6p1zHXCZkdwB28wRaBdFCe3Duw=
-github.com/swaggest/openapi-go v0.2.41 h1:aO8Q5ZugBmbd16YcppG18e3T+tgU8NJrXA3HLPgnANI=
-github.com/swaggest/openapi-go v0.2.41/go.mod h1:Ww0uMQS11bz3jftWFi6+CA82yl6DHqTv9AE/LLVxzAs=
+github.com/swaggest/openapi-go v0.2.42 h1:pM/1WRIyU3JV9YUXqPEn6JLmc8CaEgSe507uV0RVPy4=
+github.com/swaggest/openapi-go v0.2.42/go.mod h1:Ww0uMQS11bz3jftWFi6+CA82yl6DHqTv9AE/LLVxzAs=
 github.com/swaggest/refl v1.3.0 h1:PEUWIku+ZznYfsoyheF97ypSduvMApYyGkYF3nabS0I=
 github.com/swaggest/refl v1.3.0/go.mod h1:3Ujvbmh1pfSbDYjC6JGG7nMgPvpG0ehQL4iNonnLNbg=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
