@@ -52,6 +52,19 @@ func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 	return notification, nil
 }
 
+// TODO: for usage via https://.../notifications/page?limit=X&user_notification_id=Y&direction=Z
+// // PaginatedUserNotifications gets user notifications ordered by creation date.
+// func (n *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+// 	defer newOTelSpan().Build(ctx).End()
+
+// 	notification, err := n.repos.Notification.LatestUserNotifications(ctx, d, params)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("repos.Notification.LatestUserNotifications: %w", err)
+// 	}
+
+// 	return notification, nil
+// }
+
 // Create creates a new notification.
 func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params *NotificationCreateParams) (*db.Notification, error) {
 	defer newOTelSpan().Build(ctx).End()

@@ -15,7 +15,7 @@ import (
 
 const GetUserNotifications = `-- name: GetUserNotifications :many
 select
-  user_notifications.user_notification_id, user_notifications.notification_id, user_notifications.read, user_notifications.user_id
+  user_notifications.user_notification_id, user_notifications.notification_id, user_notifications.read, user_notifications.user_id, user_notifications.created_at
   , notifications.notification_type
   , notifications.sender
   , notifications.title
@@ -28,7 +28,7 @@ from
 where
   user_notifications.user_id = $1
   and notifications.notification_type = $2::notification_type
-  and (created_at > $3
+  and (user_notifications.created_at > $3
     or $3 is null) -- first search null, infinite query using last created_at
 order by
   created_at desc
@@ -47,6 +47,7 @@ type GetUserNotificationsRow struct {
 	NotificationID     int32                `db:"notification_id" json:"notification_id"`
 	Read               bool                 `db:"read" json:"read"`
 	UserID             uuid.UUID            `db:"user_id" json:"user_id"`
+	CreatedAt          time.Time            `db:"created_at" json:"created_at"`
 	NotificationType   NotificationType     `db:"notification_type" json:"notification_type"`
 	Sender             uuid.UUID            `db:"sender" json:"sender"`
 	Title              string               `db:"title" json:"title"`
@@ -74,6 +75,7 @@ func (q *Queries) GetUserNotifications(ctx context.Context, db DBTX, arg GetUser
 			&i.NotificationID,
 			&i.Read,
 			&i.UserID,
+			&i.CreatedAt,
 			&i.NotificationType,
 			&i.Sender,
 			&i.Title,

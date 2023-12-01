@@ -14,7 +14,7 @@ from
 where
   user_notifications.user_id = @user_id
   and notifications.notification_type = @notification_type::notification_type
-  and (created_at > sqlc.narg('min_created_at')
+  and (user_notifications.created_at > sqlc.narg('min_created_at')
     or sqlc.narg('min_created_at') is null) -- first search null, infinite query using last created_at
 order by
   created_at desc

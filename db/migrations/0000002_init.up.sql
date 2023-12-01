@@ -184,6 +184,7 @@ create table user_notifications (
   , notification_id int not null
   , read boolean default false not null -- for badge. frontend simply sends a list of user_notification_id to mark as read
   , user_id uuid not null
+  , created_at timestamp with time zone default current_timestamp not null
   , unique (notification_id , user_id)
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (notification_id) references notifications (notification_id) on delete cascade
@@ -212,8 +213,8 @@ begin
     where
       user_id = new.receiver;
     --
-    insert into user_notifications (notification_id , user_id)
-      values (new.notification_id , new.receiver);
+    insert into user_notifications (notification_id , user_id, created_at)
+      values (new.notification_id , new.receiver, new.created_at);
   end if;
 
   if new.notification_type = 'global' then
@@ -233,8 +234,8 @@ begin
           role_rank >= new.receiver_rank)
     loop
       begin
-        insert into user_notifications (notification_id , user_id)
-          values (new.notification_id , receiver_id);
+        insert into user_notifications (notification_id , user_id, created_at)
+          values (new.notification_id , receiver_id, new.created_at);
       exception
         when others then
           -- ignore all errors since this may loop through a user that is getting deleted (tests), etc.
