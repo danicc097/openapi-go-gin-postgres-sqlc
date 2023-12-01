@@ -27,6 +27,9 @@ type ServerInterface interface {
 
 	// (GET /events)
 	Events(c *gin.Context, params externalRef0.EventsParams)
+	// Get paginated user notifications
+	// (GET /notifications/user/page)
+	GetPaginatedNotifications(c *gin.Context, params externalRef0.GetPaginatedNotificationsParams)
 	// Returns this very OpenAPI spec.
 	// (GET /openapi.yaml)
 	OpenapiYamlGet(c *gin.Context)
@@ -139,6 +142,62 @@ func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
 	}
 
 	siw.Handler.Events(c, params)
+}
+
+// GetPaginatedNotifications operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params externalRef0.GetPaginatedNotificationsParams
+
+	// ------------- Required query parameter "limit" -------------
+
+	if paramValue := c.Query("limit"); paramValue != "" {
+
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument limit is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "limit", c.Request.URL.Query(), &params.Limit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter limit: %s", err)})
+		return
+	}
+
+	// ------------- Required query parameter "direction" -------------
+
+	if paramValue := c.Query("direction"); paramValue != "" {
+
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument direction is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "direction", c.Request.URL.Query(), &params.Direction)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter direction: %s", err)})
+		return
+	}
+
+	// ------------- Required query parameter "cursor" -------------
+
+	if paramValue := c.Query("cursor"); paramValue != "" {
+
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument cursor is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "cursor", c.Request.URL.Query(), &params.Cursor)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter cursor: %s", err)})
+		return
+	}
+
+	siw.Handler.GetPaginatedNotifications(c, params)
 }
 
 // OpenapiYamlGet operation with its own middleware.
@@ -521,6 +580,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/events", append(
 		wrapper.Handler.authMiddlewares(Events),
 		append(wrapper.Handler.middlewares(Events), wrapper.Events)...,
+	)...)
+
+	router.GET(options.BaseURL+"/notifications/user/page", append(
+		wrapper.Handler.authMiddlewares(GetPaginatedNotifications),
+		append(wrapper.Handler.middlewares(GetPaginatedNotifications), wrapper.GetPaginatedNotifications)...,
 	)...)
 
 	router.GET(options.BaseURL+"/openapi.yaml", append(

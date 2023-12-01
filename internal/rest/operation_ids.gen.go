@@ -15,6 +15,9 @@ const (
 	// Operation IDs for the 'events' tag.
 	Events OperationID = "Events"
 
+	// Operation IDs for the 'notifications' tag.
+	GetPaginatedNotifications OperationID = "GetPaginatedNotifications"
+
 	// Operation IDs for the 'oidc' tag.
 	MyProviderCallback OperationID = "MyProviderCallback"
 	MyProviderLogin    OperationID = "MyProviderLogin"

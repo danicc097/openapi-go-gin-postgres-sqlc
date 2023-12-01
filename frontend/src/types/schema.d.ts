@@ -20,6 +20,10 @@ export interface paths {
   "/events": {
     get: operations["Events"];
   };
+  "/notifications/user/page": {
+    /** Get paginated user notifications */
+    get: operations["GetPaginatedNotifications"];
+  };
   "/ping": {
     /** Ping pongs */
     get: operations["Ping"];
@@ -562,6 +566,26 @@ export interface operations {
       200: {
         content: {
           "text/event-stream": string;
+        };
+      };
+    };
+  };
+  /** Get paginated user notifications */
+  GetPaginatedNotifications: {
+    parameters: {
+      query: {
+        limit: number;
+        direction: "asc" | "desc";
+        cursor: string;
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };

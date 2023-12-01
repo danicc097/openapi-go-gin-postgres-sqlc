@@ -213,8 +213,8 @@ begin
     where
       user_id = new.receiver;
     --
-    insert into user_notifications (notification_id , user_id, created_at)
-      values (new.notification_id , new.receiver, new.created_at);
+    insert into user_notifications (notification_id , user_id , created_at)
+      values (new.notification_id , new.receiver , new.created_at);
   end if;
 
   if new.notification_type = 'global' then
@@ -234,8 +234,8 @@ begin
           role_rank >= new.receiver_rank)
     loop
       begin
-        insert into user_notifications (notification_id , user_id, created_at)
-          values (new.notification_id , receiver_id, new.created_at);
+        insert into user_notifications (notification_id , user_id , created_at)
+          values (new.notification_id , receiver_id , new.created_at);
       exception
         when others then
           -- ignore all errors since this may loop through a user that is getting deleted (tests), etc.

@@ -29,6 +29,8 @@ type Handlers struct {
 	provider       rp.RelyingParty
 }
 
+var _ ServerInterface = (*Handlers)(nil)
+
 // NewHandlers returns a server implementation of an openapi specification.
 func NewHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,

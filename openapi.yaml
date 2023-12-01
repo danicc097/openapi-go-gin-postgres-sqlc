@@ -36,6 +36,27 @@ x-uuidParameter: &x-uuidParameter
       path: github.com/google/uuid
   example: 123e4567-e89b-12d3-a456-426614174000
   style: simple
+x-paginationLimitParameter: &x-paginationLimitParameter
+  name: limit
+  required: true
+  schema:
+    type: integer
+  in: query
+x-paginationDirectionParameter: &x-paginationDirectionParameter
+  name: direction
+  required: true
+  schema:
+    enum:
+      - asc
+      - desc
+    type: string
+  in: query
+x-paginationCursorParameter: &x-paginationCursorParameter
+  name: cursor
+  required: true
+  schema:
+    type: string
+  in: query
 x-require-authenticated: &x-require-authenticated
   security:
     - bearer_auth: []
@@ -110,6 +131,21 @@ paths:
                 type: string
       tags:
         - events
+  /notifications/user/page:
+    get:
+      description: ""
+      summary: Get paginated user notifications
+      operationId: GetPaginatedNotifications
+      parameters:
+        - *x-paginationLimitParameter
+        - *x-paginationDirectionParameter
+        - *x-paginationCursorParameter
+      tags:
+        - notifications
+      responses:
+        "200":
+          description: OK
+        !!merge <<: *x-error-response
   /ping:
     get:
       description: ""

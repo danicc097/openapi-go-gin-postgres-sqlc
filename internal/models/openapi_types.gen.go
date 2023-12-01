@@ -265,6 +265,20 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
+// Defines values for GetPaginatedNotificationsParamsDirection.
+const (
+	GetPaginatedNotificationsParamsDirectionAsc  GetPaginatedNotificationsParamsDirection = "asc"
+	GetPaginatedNotificationsParamsDirectionDesc GetPaginatedNotificationsParamsDirection = "desc"
+)
+
+// AllGetPaginatedNotificationsParamsDirectionValues returns all possible values for GetPaginatedNotificationsParamsDirection.
+func AllGetPaginatedNotificationsParamsDirectionValues() []GetPaginatedNotificationsParamsDirection {
+	return []GetPaginatedNotificationsParamsDirection{
+		GetPaginatedNotificationsParamsDirectionAsc,
+		GetPaginatedNotificationsParamsDirectionDesc,
+	}
+}
+
 // DbActivity defines the model for DbActivity.
 type DbActivity struct {
 	ActivityID   int    `json:"activityID"`
@@ -717,6 +731,16 @@ type UUID = uuid.UUID
 type EventsParams struct {
 	ProjectName Project `form:"projectName" json:"projectName"`
 }
+
+// GetPaginatedNotificationsParams defines parameters for GetPaginatedNotifications.
+type GetPaginatedNotificationsParams struct {
+	Limit     int                                      `form:"limit" json:"limit"`
+	Direction GetPaginatedNotificationsParamsDirection `form:"direction" json:"direction"`
+	Cursor    string                                   `form:"cursor" json:"cursor"`
+}
+
+// GetPaginatedNotificationsParamsDirection defines parameters for GetPaginatedNotifications.
+type GetPaginatedNotificationsParamsDirection string
 
 // GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
 type GetProjectWorkitemsParams struct {

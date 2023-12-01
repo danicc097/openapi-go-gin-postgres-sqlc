@@ -118,6 +118,9 @@ type ClientInterface interface {
 	// Events request
 	Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetPaginatedNotifications request
+	GetPaginatedNotifications(ctx context.Context, params *GetPaginatedNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// OpenapiYamlGet request
 	OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -246,6 +249,25 @@ func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEdito
 
 func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEventsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) GetPaginatedNotifications(ctx context.Context, params *GetPaginatedNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPaginatedNotificationsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -842,6 +864,75 @@ func NewEventsRequest(server string, params *EventsParams) (*http.Request, error
 		queryValues := queryURL.Query()
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "projectName", runtime.ParamLocationQuery, params.ProjectName); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetPaginatedNotificationsRequest generates requests for GetPaginatedNotifications
+func NewGetPaginatedNotificationsRequest(server string, params *GetPaginatedNotificationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notifications/user/page")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, params.Limit); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "direction", runtime.ParamLocationQuery, params.Direction); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, params.Cursor); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -1632,6 +1723,9 @@ type ClientWithResponsesInterface interface {
 	// Events request
 	EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error)
 
+	// GetPaginatedNotifications request
+	GetPaginatedNotificationsWithResponse(ctx context.Context, params *GetPaginatedNotificationsParams, reqEditors ...RequestEditorFn) (*GetPaginatedNotificationsResponse, error)
+
 	// OpenapiYamlGet request
 	OpenapiYamlGetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OpenapiYamlGetResponse, error)
 
@@ -1780,6 +1874,28 @@ func (r EventsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r EventsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPaginatedNotificationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPaginatedNotificationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPaginatedNotificationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2223,6 +2339,15 @@ func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, params *Ev
 	return ParseEventsResponse(rsp)
 }
 
+// GetPaginatedNotificationsWithResponse request returning *GetPaginatedNotificationsResponse
+func (c *ClientWithResponses) GetPaginatedNotificationsWithResponse(ctx context.Context, params *GetPaginatedNotificationsParams, reqEditors ...RequestEditorFn) (*GetPaginatedNotificationsResponse, error) {
+	rsp, err := c.GetPaginatedNotifications(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPaginatedNotificationsResponse(rsp)
+}
+
 // OpenapiYamlGetWithResponse request returning *OpenapiYamlGetResponse
 func (c *ClientWithResponses) OpenapiYamlGetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OpenapiYamlGetResponse, error) {
 	rsp, err := c.OpenapiYamlGet(ctx, reqEditors...)
@@ -2510,6 +2635,32 @@ func ParseEventsResponse(rsp *http.Response) (*EventsResponse, error) {
 	response := &EventsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetPaginatedNotificationsResponse parses an HTTP response from a GetPaginatedNotificationsWithResponse call
+func ParseGetPaginatedNotificationsResponse(rsp *http.Response) (*GetPaginatedNotificationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPaginatedNotificationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
 	}
 
 	return response, nil
