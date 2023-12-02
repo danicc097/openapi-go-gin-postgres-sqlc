@@ -10,6 +10,24 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
 
+/**
+ * Pagination
+ */
+
+type PaginationBaseResponse[T any] struct {
+	Page struct {
+		NextCursor string `json:"nextCursor"`
+	} `json:"page"`
+	Items []T `json:"items"`
+}
+
+type Notification struct {
+	db.UserNotification
+	db.Notification
+}
+
+type GetPaginatedNotificationsResponse = PaginationBaseResponse[Notification]
+
 // User represents an OpenAPI schema response for a User.
 type User struct {
 	db.User

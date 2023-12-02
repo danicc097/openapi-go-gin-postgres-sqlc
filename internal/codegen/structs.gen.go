@@ -140,6 +140,7 @@ var PublicStructs = map[string]any{
 	"RestDemoTwoWorkItemsResponse":     new(rest.DemoTwoWorkItemsResponse),
 	"RestDemoWorkItemCreateRequest":    new(rest.DemoWorkItemCreateRequest),
 	"RestDemoWorkItemsResponse":        new(rest.DemoWorkItemsResponse),
+	"RestNotification":                 new(rest.Notification),
 	"RestProjectBoardCreateRequest":    new(rest.ProjectBoardCreateRequest),
 	"RestProjectBoardResponse":         new(rest.ProjectBoardResponse),
 	"RestProjectName":                  new(rest.ProjectName),

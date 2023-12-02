@@ -145,6 +145,10 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPaginatedNotificationsResponse'
         !!merge <<: *x-error-response
       !!merge <<: *x-require-authenticated
   /ping:
@@ -527,6 +531,8 @@ components:
       example: 41131
       style: simple
   schemas:
+    GetPaginatedNotificationsResponse:
+      x-postgen-struct: RestGetPaginatedNotificationsResponse
     DbActivity: # Generated from internal structs. DO NOT EDIT.
       properties:
         activityID:
