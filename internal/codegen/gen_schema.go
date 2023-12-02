@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -33,7 +34,7 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 	reflector := newSpecReflector()
 
 	for idx, structName := range structNames {
-		// IMPORTANT: ensure structs are public
+		fmt.Fprintf(os.Stderr, "s %s\n", structName)
 		// We need to compile gen-schema right after PublicStructs file is updated
 		// cannot import packages at runtime
 		// if we have an uncompilable state then we need to update src to compile. no way around it
@@ -52,7 +53,18 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 
 		handleError(reflector.AddOperation(oc))
 
-		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName].Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
+		// IMPORTANT: ensure structs are public.
+		// FIXME: generic instantiated struct fails.
+		//        RestGetPaginatedNotificationsResponse is generated as $ref: '#/components/schemas/RestPaginationBaseResponseGithubComDanicc097OpenapiGoGinPostgresSqlcInternalRestNotification
+		// therefore key
+		x, ok := reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName]
+		if !ok {
+			s, err := reflector.Spec.MarshalYAML()
+			handleError(err)
+			fmt.Fprintf(os.Stderr, "s %s\n", string(s))
+			log.Fatalf("Could not generate %s", structName)
+		}
+		x.Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
 	}
 	s, err := reflector.Spec.MarshalYAML()
 	handleError(err)

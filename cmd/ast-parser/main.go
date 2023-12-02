@@ -25,7 +25,7 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	privateOnly, publicOnly bool
+	privateOnly, publicOnly, excludeGenerics bool
 
 	structsCmd    = flag.NewFlagSet("find-structs", flag.ExitOnError)
 	interfacesCmd = flag.NewFlagSet("find-interfaces", flag.ExitOnError)
@@ -83,16 +83,23 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 				if gen, ok := dec.(*ast.GenDecl); ok && gen.Tok == token.TYPE {
 					for _, spec := range gen.Specs {
 						if ts, ok := spec.(*ast.TypeSpec); ok {
+							isGeneric := ts.TypeParams != nil
 							obj, ok := pkg.TypesInfo.Defs[ts.Name]
 							if !ok {
 								continue
 							}
 							if _, ok := obj.Type().Underlying().(*types.Struct); ok {
+								structName := obj.Name()
 								if (obj.Exported() && privateOnly) || (!obj.Exported() && publicOnly) {
 									continue
 								}
 
-								sts = append(sts, obj.Name())
+								if isGeneric && excludeGenerics {
+									fmt.Fprintf(os.Stderr, "Skipping generic struct %s\n", structName)
+									continue
+								}
+
+								sts = append(sts, structName)
 							}
 						}
 					}
@@ -114,6 +121,7 @@ const loadMode = packages.NeedName |
 	packages.NeedTypesInfo
 
 func main() {
+	structsCmd.BoolVar(&excludeGenerics, "exclude-generics", false, "Find non generic structs only")
 	structsCmd.BoolVar(&privateOnly, "private-only", false, "Find private structs only")
 	structsCmd.BoolVar(&publicOnly, "public-only", false, "Find public structs only")
 

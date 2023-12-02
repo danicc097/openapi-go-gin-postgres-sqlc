@@ -136,21 +136,22 @@ var PublicStructs = map[string]any{
 
 	//
 
-	"RestDemoTwoWorkItemCreateRequest": new(rest.DemoTwoWorkItemCreateRequest),
-	"RestDemoTwoWorkItemsResponse":     new(rest.DemoTwoWorkItemsResponse),
-	"RestDemoWorkItemCreateRequest":    new(rest.DemoWorkItemCreateRequest),
-	"RestDemoWorkItemsResponse":        new(rest.DemoWorkItemsResponse),
-	"RestNotification":                 new(rest.Notification),
-	"RestProjectBoardCreateRequest":    new(rest.ProjectBoardCreateRequest),
-	"RestProjectBoardResponse":         new(rest.ProjectBoardResponse),
-	"RestProjectName":                  new(rest.ProjectName),
-	"RestSharedWorkItemFields":         new(rest.SharedWorkItemFields),
-	"RestTeamCreateRequest":            new(rest.TeamCreateRequest),
-	"RestTeamUpdateRequest":            new(rest.TeamUpdateRequest),
-	"RestUser":                         new(rest.User),
-	"RestWorkItemCommentCreateRequest": new(rest.WorkItemCommentCreateRequest),
-	"RestWorkItemResponse":             new(rest.WorkItemResponse),
-	"RestWorkItemTagCreateRequest":     new(rest.WorkItemTagCreateRequest),
+	"RestDemoTwoWorkItemCreateRequest":      new(rest.DemoTwoWorkItemCreateRequest),
+	"RestDemoTwoWorkItemsResponse":          new(rest.DemoTwoWorkItemsResponse),
+	"RestDemoWorkItemCreateRequest":         new(rest.DemoWorkItemCreateRequest),
+	"RestDemoWorkItemsResponse":             new(rest.DemoWorkItemsResponse),
+	"RestGetPaginatedNotificationsResponse": new(rest.GetPaginatedNotificationsResponse),
+	"RestNotification":                      new(rest.Notification),
+	"RestProjectBoardCreateRequest":         new(rest.ProjectBoardCreateRequest),
+	"RestProjectBoardResponse":              new(rest.ProjectBoardResponse),
+	"RestProjectName":                       new(rest.ProjectName),
+	"RestSharedWorkItemFields":              new(rest.SharedWorkItemFields),
+	"RestTeamCreateRequest":                 new(rest.TeamCreateRequest),
+	"RestTeamUpdateRequest":                 new(rest.TeamUpdateRequest),
+	"RestUser":                              new(rest.User),
+	"RestWorkItemCommentCreateRequest":      new(rest.WorkItemCommentCreateRequest),
+	"RestWorkItemResponse":                  new(rest.WorkItemResponse),
+	"RestWorkItemTagCreateRequest":          new(rest.WorkItemTagCreateRequest),
 
 	//
 

@@ -1549,12 +1549,11 @@ run_shared_services() {
 generate_structs_map() {
   # need new cli since this function is called before building the rest of tooling
   go build -o $BUILD_DIR/ast-parser cmd/ast-parser/main.go
-  ast-parser internal/rest/models.go
 
   local structs=()
   local enums=()
   local all_types=()
-  go-utils.find_structs structs "$PG_REPO_GEN/db"
+  go-utils.find_structs structs "$PG_REPO_GEN/db" # faster. we know no generics structs exist in gen pkg
   go-utils.find_enums enums "$PG_REPO_GEN/db"
   go-utils.find_all_types all_types "$PG_REPO_GEN/db"
   find_deleted_pkg_schemas all_types Db
@@ -1568,7 +1567,8 @@ generate_structs_map() {
   local structs=()
   local enums=()
   local all_types=()
-  go-utils.find_structs structs "internal/rest/models.go"
+  # TODO: --exclude-generics flag
+  mapfile -t structs < <(ast-parser find-structs --exclude-generics internal/rest/models.go)
   go-utils.find_enums enums "internal/rest/models.go"
   go-utils.find_all_types all_types "internal/rest/models.go"
   find_deleted_pkg_schemas all_types Rest
