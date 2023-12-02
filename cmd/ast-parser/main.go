@@ -1,3 +1,8 @@
+/**
+ * ast-parser allows for reliable extraction of structs and interfaces in the given files or directories.
+ * For simple cases where structs are defined directly with a type definition (not a generic instantiation),
+ * see bash helper go-utils.
+ */
 package main
 
 import (
