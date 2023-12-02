@@ -41,12 +41,27 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 	loadConfig := &packages.Config{
 		Fset: token.NewFileSet(),
 		Mode: loadMode,
+		// large packages still slow
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
 			if strings.Contains(filename, filepath) {
 				fmt.Printf("parsing file: %v\n", filename)
 
 				const mode = parser.AllErrors | parser.ParseComments
-				return parser.ParseFile(fset, filename, src, mode)
+
+				file, err := parser.ParseFile(fset, filename, src, mode)
+				if err != nil {
+					return nil, fmt.Errorf("parser.ParseFile: %w", err)
+				}
+
+				// TODO: speed up even more if we ignore function bodies, etc.
+				// Skip function bodies
+				for _, decl := range file.Decls {
+					if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+						funcDecl.Body = nil
+					}
+				}
+
+				return file, nil
 			}
 
 			return nil, nil
