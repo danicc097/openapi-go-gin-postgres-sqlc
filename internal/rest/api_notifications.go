@@ -18,5 +18,9 @@ func (h *Handlers) GetPaginatedNotifications(c *gin.Context, params models.GetPa
 		return
 	}
 
+	// TODO: pagination responses must have special format {_page: {nextCursor: <..>, ...}, items: <response>}
+	// can have generics for PaginationBaseResponse struct, and its implementations in rest models
+	// type MyPaginationResponse = PaginationBaseResponse[[]SomeThings] get converted to openapi schema
+	// and validated as usual
 	renderResponse(c, notifications, http.StatusOK)
 }
