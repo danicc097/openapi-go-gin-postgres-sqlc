@@ -149,6 +149,10 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 
 	var err error
 
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
 	// Parameter object where we will unmarshal all parameters from the context
 	var params externalRef0.GetPaginatedNotificationsParams
 

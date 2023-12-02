@@ -191,7 +191,7 @@ func (fake *FakeNotification) DeleteReturnsOnCall(i int, result1 *db.Notificatio
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) LatestUserNotifications(arg1 context.Context, arg2 db.DBTX, arg3 *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+func (fake *FakeNotification) LatestNotifications(arg1 context.Context, arg2 db.DBTX, arg3 *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
 	fake.latestUserNotificationsMutex.Lock()
 	ret, specificReturn := fake.latestUserNotificationsReturnsOnCall[len(fake.latestUserNotificationsArgsForCall)]
 	fake.latestUserNotificationsArgsForCall = append(fake.latestUserNotificationsArgsForCall, struct {
@@ -201,7 +201,7 @@ func (fake *FakeNotification) LatestUserNotifications(arg1 context.Context, arg2
 	}{arg1, arg2, arg3})
 	stub := fake.LatestUserNotificationsStub
 	fakeReturns := fake.latestUserNotificationsReturns
-	fake.recordInvocation("LatestUserNotifications", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("LatestNotifications", []interface{}{arg1, arg2, arg3})
 	fake.latestUserNotificationsMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3)

@@ -50,7 +50,9 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 		}
 	case GetPaginatedNotifications:
-		return []gin.HandlerFunc{}
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case GetProject:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),

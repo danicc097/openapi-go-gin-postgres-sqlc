@@ -59,7 +59,9 @@ type DemoTwoWorkItem interface {
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
-	LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	// now can replace GetUserNotifications with `...WithFilters`, in lieu of sqlc
+	LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error)
 	Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error)
 	Delete(ctx context.Context, d db.DBTX, id db.NotificationID) (*db.Notification, error)
 }

@@ -15,6 +15,9 @@ type Services struct {
 	WorkItemTag     *WorkItemTag
 	Authorization   *Authorization
 	Authentication  *Authentication
+	Notification    *Notification
+	TimeEntry       *TimeEntry
+	WorkItemType    *WorkItemType
 }
 
 func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Services {
@@ -22,6 +25,9 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 	demoworkitemsvc := NewDemoWorkItem(logger, repos)
 	demotwoworkitemsvc := NewDemoTwoWorkItem(logger, repos)
 	workitemtagsvc := NewWorkItemTag(logger, repos)
+	timeentrysvc := NewTimeEntry(logger, repos)
+	workitemtypesvc := NewWorkItemType(logger, repos)
+	notificationsvc := NewNotification(logger, repos)
 	authnsvc := NewAuthentication(logger, repos, pool)
 	authzsvc, err := NewAuthorization(authnsvc.logger)
 	if err != nil {
@@ -35,5 +41,8 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 		WorkItemTag:     workitemtagsvc,
 		Authorization:   authzsvc,
 		Authentication:  authnsvc,
+		Notification:    notificationsvc,
+		TimeEntry:       timeentrysvc,
+		WorkItemType:    workitemtypesvc,
 	}
 }

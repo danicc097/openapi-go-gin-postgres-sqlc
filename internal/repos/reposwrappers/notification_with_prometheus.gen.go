@@ -66,8 +66,8 @@ func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, id d
 	return _d.base.Delete(ctx, d, id)
 }
 
-// LatestUserNotifications implements repos.Notification
-func (_d NotificationWithPrometheus) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+// LatestNotifications implements repos.Notification
+func (_d NotificationWithPrometheus) LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -75,7 +75,7 @@ func (_d NotificationWithPrometheus) LatestUserNotifications(ctx context.Context
 			result = "error"
 		}
 
-		notificationDurationSummaryVec.WithLabelValues(_d.instanceName, "LatestUserNotifications", result).Observe(time.Since(_since).Seconds())
+		notificationDurationSummaryVec.WithLabelValues(_d.instanceName, "LatestNotifications", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.LatestUserNotifications(ctx, d, params)
+	return _d.base.LatestNotifications(ctx, d, params)
 }

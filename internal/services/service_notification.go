@@ -40,30 +40,30 @@ func NewNotification(logger *zap.SugaredLogger, repos *repos.Repos) *Notificatio
 	}
 }
 
-// LatestUserNotifications gets user notifications ordered by creation date.
-func (n *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+// LatestNotifications gets user notifications ordered by creation date.
+func (n *Notification) LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	notification, err := n.repos.Notification.LatestUserNotifications(ctx, d, params)
+	notification, err := n.repos.Notification.LatestNotifications(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("repos.Notification.LatestUserNotifications: %w", err)
+		return nil, fmt.Errorf("repos.Notification.LatestNotifications: %w", err)
 	}
 
 	return notification, nil
 }
 
 // TODO: for usage via https://.../notifications/page?limit=X&user_notification_id=Y&direction=Z
-// // PaginatedUserNotifications gets user notifications ordered by creation date.
-// func (n *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
-// 	defer newOTelSpan().Build(ctx).End()
+// // PaginatedNotifications gets user notifications ordered by creation date.
+func (n *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
+	defer newOTelSpan().Build(ctx).End()
 
-// 	notification, err := n.repos.Notification.LatestUserNotifications(ctx, d, params)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("repos.Notification.LatestUserNotifications: %w", err)
-// 	}
+	notifications, err := n.repos.Notification.PaginatedNotifications(ctx, d, userID, params)
+	if err != nil {
+		return nil, fmt.Errorf("repos.Notification.PaginatedNotifications: %w", err)
+	}
 
-// 	return notification, nil
-// }
+	return notifications, nil
+}
 
 // Create creates a new notification.
 func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params *NotificationCreateParams) (*db.Notification, error) {

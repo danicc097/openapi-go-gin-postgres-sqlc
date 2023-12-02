@@ -17,7 +17,7 @@
   "GetPaginatedNotifications": {
     "scopes": null,
     "role": null,
-    "requiresAuthentication": false
+    "requiresAuthentication": true
   },
   "Ping": {
     "scopes": null,

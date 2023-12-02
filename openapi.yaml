@@ -146,6 +146,7 @@ paths:
         "200":
           description: OK
         !!merge <<: *x-error-response
+      !!merge <<: *x-require-authenticated
   /ping:
     get:
       description: ""

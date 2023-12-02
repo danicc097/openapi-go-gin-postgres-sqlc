@@ -66,9 +66,9 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Not
 	return
 }
 
-// LatestUserNotifications implements repos.Notification
-func (_d NotificationWithRetry) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
-	ga1, err = _d.Notification.LatestUserNotifications(ctx, d, params)
+// LatestNotifications implements repos.Notification
+func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+	ga1, err = _d.Notification.LatestNotifications(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -80,7 +80,7 @@ func (_d NotificationWithRetry) LatestUserNotifications(ctx context.Context, d d
 			return
 		case <-_ticker.C:
 		}
-		ga1, err = _d.Notification.LatestUserNotifications(ctx, d, params)
+		ga1, err = _d.Notification.LatestNotifications(ctx, d, params)
 	}
 	return
 }

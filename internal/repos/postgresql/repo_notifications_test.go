@@ -36,7 +36,7 @@ func TestNotification_Create(t *testing.T) {
 		require.NoError(t, err)
 
 		params := db.GetUserNotificationsParams{UserID: receiver.UserID.UUID, NotificationType: db.NotificationTypePersonal}
-		nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
+		nn, err := notificationRepo.LatestNotifications(context.Background(), tx, &params)
 		require.NoError(t, err)
 
 		assert.Equal(t, ncp.Body, nn[0].Body)
@@ -78,7 +78,7 @@ func TestNotification_Create(t *testing.T) {
 
 		for userID, count := range notificationCount {
 			params := db.GetUserNotificationsParams{UserID: userID.UUID, NotificationType: db.NotificationTypeGlobal}
-			nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
+			nn, err := notificationRepo.LatestNotifications(context.Background(), tx, &params)
 			require.NoError(t, err)
 
 			assert.Equal(t, count, len(nn))
