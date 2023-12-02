@@ -10,10 +10,9 @@ import (
 	"go/types"
 	"log"
 	"os"
-	"path/filepath"
-	"sort"
+	"strings"
 
-	"golang.org/x/exp/maps"
+	"golang.org/x/tools/go/packages"
 )
 
 var (
@@ -84,6 +83,15 @@ func parseStructs(path string) ([]string, error) {
 	return sts, nil
 }
 
+const loadMode = packages.NeedName |
+	packages.NeedFiles |
+	packages.NeedCompiledGoFiles |
+	packages.NeedImports |
+	packages.NeedDeps |
+	packages.NeedTypes |
+	packages.NeedSyntax |
+	packages.NeedTypesInfo
+
 func main() {
 	structsCmd.BoolVar(&privateOnly, "private-only", false, "Find private structs only")
 	structsCmd.BoolVar(&publicOnly, "public-only", false, "Find public structs only")
@@ -107,33 +115,63 @@ func main() {
 	case "find-interfaces":
 		os.Exit(0)
 	case "find-structs":
-		structs := map[string]struct{}{}
-		for _, filename := range cmd.Args() {
-			err := filepath.Walk(filename, func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				if !info.IsDir() && filepath.Ext(path) == ".go" && filepath.Base(path) != "_test.go" {
-					sts, err := parseStructs(path)
-					if err != nil {
-						return fmt.Errorf("parseStructs: %w", err)
-					}
-					for _, st := range sts {
-						structs[st] = struct{}{}
-					}
+		loadConfig := &packages.Config{
+			Fset: token.NewFileSet(),
+			Mode: loadMode,
+			ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
+				if strings.Contains(filename, cmd.Args()[0]) {
+					fmt.Printf("parsing file: %v\n", filename)
+
+					// default behavior. could speed up even more when parsing a directory by ignoring function bodies, etc.
+					const mode = parser.AllErrors | parser.ParseComments
+					return parser.ParseFile(fset, filename, src, mode)
 				}
 
-				return nil
-			})
-			if err != nil {
-				log.Fatal(err)
+				return nil, nil
+			},
+		}
+		pkgs, err := packages.Load(loadConfig, "file="+cmd.Args()[0])
+		if err != nil {
+			panic(err)
+		}
+
+		for _, pkg := range pkgs {
+			for _, syn := range pkg.Syntax {
+				for _, dec := range syn.Decls {
+					fmt.Printf("dec: %v\n", dec)
+					if gen, ok := dec.(*ast.GenDecl); ok && gen != nil && gen.Tok == token.TYPE {
+						// print doc comment of the type
+						if gen.Doc != nil {
+							fmt.Println(gen.Doc.List[0])
+						}
+						for _, spec := range gen.Specs {
+							if ts, ok := spec.(*ast.TypeSpec); ok {
+								obj, ok := pkg.TypesInfo.Defs[ts.Name]
+								if !ok {
+									continue
+								}
+								typeName, ok := obj.(*types.TypeName)
+								if !ok {
+									continue
+								}
+								named, ok := typeName.Type().(*types.Named)
+								if !ok {
+									continue
+								}
+								// print the full name of the type
+								fmt.Println(named)
+
+								_, ok = named.Underlying().(*types.Struct)
+								if !ok {
+									continue
+								}
+
+								fmt.Printf("s.String(): %v\n", named.Obj().Name())
+							}
+						}
+					}
+				}
 			}
 		}
-		sts := maps.Keys(structs)
-		sort.Slice(sts, func(i, j int) bool {
-			return sts[i] < sts[j]
-		})
-		fmt.Printf("sts: %v\n", sts)
-		os.Exit(0)
 	}
 }
