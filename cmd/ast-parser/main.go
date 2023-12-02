@@ -43,28 +43,26 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 		Mode: loadMode,
 		// large packages still slow
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
-			if strings.Contains(filename, filepath) {
-				fmt.Printf("parsing file: %v\n", filename)
-
-				const mode = parser.AllErrors | parser.ParseComments
-
-				file, err := parser.ParseFile(fset, filename, src, mode)
-				if err != nil {
-					return nil, fmt.Errorf("parser.ParseFile: %w", err)
-				}
-
-				// TODO: speed up even more if we ignore function bodies, etc.
-				// Skip function bodies
-				for _, decl := range file.Decls {
-					if funcDecl, ok := decl.(*ast.FuncDecl); ok {
-						funcDecl.Body = nil
-					}
-				}
-
-				return file, nil
+			if !strings.Contains(filename, filepath) {
+				return nil, nil
 			}
 
-			return nil, nil
+			const mode = parser.AllErrors | parser.ParseComments
+
+			file, err := parser.ParseFile(fset, filename, src, mode)
+			if err != nil {
+				return nil, fmt.Errorf("parser.ParseFile: %w", err)
+			}
+
+			// Skip function bodies to speed up.
+			// NOTE: no improvement clearing struct fields beforehand
+			for _, decl := range file.Decls {
+				if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+					funcDecl.Body = nil
+				}
+			}
+
+			return file, nil
 		},
 	}
 
@@ -108,7 +106,6 @@ const loadMode = packages.NeedName |
 	packages.NeedDeps |
 	packages.NeedTypes |
 	packages.NeedSyntax |
-	packages.NeedSyntax |
 	packages.NeedTypesInfo
 
 func main() {
@@ -130,10 +127,8 @@ func main() {
 	}
 
 	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.go
-	switch os.Args[1] {
-	case "find-interfaces":
-		os.Exit(0)
-	case "find-structs":
+	switch flag := os.Args[1]; flag {
+	case "find-structs", "find-interfaces":
 		resultCh := make(chan []string)
 		errCh := make(chan error)
 
@@ -155,7 +150,9 @@ func main() {
 						}
 						if !info.IsDir() && filepath.Ext(path) == ".go" && filepath.Base(path) != "_test.go" {
 							wg.Add(1)
-							go parseStructs(path, resultCh, errCh)
+							if flag == "find-structs" {
+								go parseStructs(path, resultCh, errCh)
+							}
 						}
 
 						return nil
@@ -165,7 +162,9 @@ func main() {
 					}
 				} else {
 					wg.Add(1)
-					go parseStructs(filename, resultCh, errCh)
+					if flag == "find-structs" {
+						go parseStructs(filename, resultCh, errCh)
+					}
 				}
 
 				go func() {
@@ -174,10 +173,10 @@ func main() {
 					close(errCh)
 				}()
 
-				structs := map[string]struct{}{}
-				for sts := range resultCh {
-					for _, st := range sts {
-						structs[st] = struct{}{}
+				items := map[string]struct{}{}
+				for res := range resultCh {
+					for _, st := range res {
+						items[st] = struct{}{}
 					}
 				}
 
@@ -186,12 +185,11 @@ func main() {
 					log.Fatal(err)
 				}
 
-				sts := maps.Keys(structs)
-				sort.Slice(sts, func(i, j int) bool {
-					return sts[i] < sts[j]
+				sortedItems := maps.Keys(items)
+				sort.Slice(sortedItems, func(i, j int) bool {
+					return sortedItems[i] < sortedItems[j]
 				})
-				fmt.Printf("sts: %v\n", sts)
-				os.Exit(0)
+				fmt.Println(strings.Join(sortedItems, "\n"))
 			}
 		}
 	}
