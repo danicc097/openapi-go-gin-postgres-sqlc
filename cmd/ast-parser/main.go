@@ -6,6 +6,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -15,6 +16,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -23,9 +25,28 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+type ReflectTypeMap struct {
+	sync.Mutex
+	Map map[string]string
+}
+
+func (m *ReflectTypeMap) Add(structName, reflectTypeName string) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.Map[structName] = reflectTypeName
+}
+
+func (m *ReflectTypeMap) MarshalJSON() ([]byte, error) {
+	m.Lock()
+	defer m.Unlock()
+
+	return json.Marshal(m.Map)
+}
+
 //nolint:gochecknoglobals
 var (
-	privateOnly, publicOnly, excludeGenerics bool
+	privateOnly, publicOnly, excludeGenerics, createGenericsInstanceMap bool
 
 	structsCmd    = flag.NewFlagSet("find-structs", flag.ExitOnError)
 	interfacesCmd = flag.NewFlagSet("find-interfaces", flag.ExitOnError)
@@ -36,7 +57,27 @@ var (
 	}
 
 	wg sync.WaitGroup
+
+	reflectTypeMap = &ReflectTypeMap{Map: make(map[string]string)}
 )
+
+func isGenericInstance(s string) bool {
+	r := regexp.MustCompile(`\.?(.*\[.*)`)
+
+	return len(r.FindStringSubmatch(s)) > 0
+}
+
+// getReflectionType converts a generic instance type.Type string to its reflect.Type.Name.
+func getReflectionType(s string) string {
+	r := regexp.MustCompile(`.*\.(.*\[.*)`) // greedily match longest until last dot
+
+	matches := r.FindStringSubmatch(s)
+	if len(matches) > 0 {
+		return matches[1]
+	}
+
+	return s
+}
 
 func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error) {
 	defer wg.Done()
@@ -90,16 +131,19 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 							}
 							if _, ok := obj.Type().Underlying().(*types.Struct); ok {
 								structName := obj.Name()
+
+								if isGeneric && excludeGenerics {
+									fmt.Fprintf(os.Stderr, "Skipping generic struct %s\n", structName)
+
+									continue
+								}
 								if (obj.Exported() && privateOnly) || (!obj.Exported() && publicOnly) {
 									continue
 								}
 
-								fmt.Printf("obj.Name(): %v\n", obj.Name())
-								fmt.Printf("obj.Type(): %v\n", obj.Type())
-
-								if isGeneric && excludeGenerics {
-									fmt.Fprintf(os.Stderr, "Skipping generic struct %s\n", structName)
-									continue
+								if isGenericInstance(obj.Type().String()) {
+									reflectTypeName := getReflectionType(obj.Type().String())
+									reflectTypeMap.Add(structName, reflectTypeName)
 								}
 
 								sts = append(sts, structName)
@@ -124,6 +168,7 @@ const loadMode = packages.NeedName |
 	packages.NeedTypesInfo
 
 func main() {
+	structsCmd.BoolVar(&createGenericsInstanceMap, "create-generics-map", false, "Returns a JSON encoded map of structs to their generics reflection type name instead of a list of structs found")
 	structsCmd.BoolVar(&excludeGenerics, "exclude-generics", false, "Find non generic structs only")
 	structsCmd.BoolVar(&privateOnly, "private-only", false, "Find private structs only")
 	structsCmd.BoolVar(&publicOnly, "public-only", false, "Find public structs only")
@@ -140,6 +185,10 @@ func main() {
 	err := cmd.Parse(os.Args[2:])
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if createGenericsInstanceMap {
+		excludeGenerics = true
 	}
 
 	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.go
@@ -166,7 +215,8 @@ func main() {
 						}
 						if !info.IsDir() && filepath.Ext(path) == ".go" && filepath.Base(path) != "_test.go" {
 							wg.Add(1)
-							if flag == "find-structs" {
+							switch flag {
+							case "find-structs":
 								go parseStructs(path, resultCh, errCh)
 							}
 						}
@@ -178,7 +228,8 @@ func main() {
 					}
 				} else {
 					wg.Add(1)
-					if flag == "find-structs" {
+					switch flag {
+					case "find-structs":
 						go parseStructs(filename, resultCh, errCh)
 					}
 				}
@@ -199,6 +250,17 @@ func main() {
 				if len(errCh) > 0 {
 					err := <-errCh
 					log.Fatal(err)
+				}
+
+				if createGenericsInstanceMap {
+					jsonData, err := json.Marshal(reflectTypeMap)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					fmt.Println(string(jsonData))
+
+					os.Exit(0)
 				}
 
 				sortedItems := maps.Keys(items)
