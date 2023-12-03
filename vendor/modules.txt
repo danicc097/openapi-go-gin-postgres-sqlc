@@ -93,6 +93,9 @@ github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
 github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/magic
+# github.com/gdexlab/go-render v1.0.1
+## explicit
+github.com/gdexlab/go-render/render
 # github.com/getkin/kin-openapi v0.119.0
 ## explicit; go 1.18
 github.com/getkin/kin-openapi/openapi3
@@ -559,6 +562,7 @@ golang.org/x/crypto/sha3
 # golang.org/x/exp v0.0.0-20230728194245-b0cb94b80691
 ## explicit; go 1.20
 golang.org/x/exp/constraints
+golang.org/x/exp/maps
 golang.org/x/exp/slices
 # golang.org/x/mod v0.13.0
 ## explicit; go 1.18

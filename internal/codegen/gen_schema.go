@@ -59,9 +59,9 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 		// therefore key
 		x, ok := reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName]
 		if !ok {
-			s, err := reflector.Spec.MarshalYAML()
+			// s, err := reflector.Spec.MarshalYAML()
 			handleError(err)
-			fmt.Fprintf(os.Stderr, "s %s\n", string(s))
+			// fmt.Fprintf(os.Stderr, "s %s\n", string(s))
 			log.Fatalf("Could not generate %s", structName)
 		}
 		x.Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
@@ -84,6 +84,10 @@ func newSpecReflector() *openapi3.Reflector {
 			// both t.Name() and t.String() return a composed name
 			// RestGetPaginatedNotificationsResponse has
 			// defaultDefName: RestPaginationBaseResponse[GithubComDanicc097OpenapiGoGinPostgresSqlcInternalRestNotification]
+			// TODO: if we use ast-parser create-generics-map we can generate a JSON mapping real names to composed names
+			// right before gen-schema
+			// c := render.AsCode(g)
+			// fmt.Printf("c: %v\n", c)
 			return defaultDefName
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {

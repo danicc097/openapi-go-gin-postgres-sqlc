@@ -9,6 +9,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.13.4
 	github.com/fatih/structs v1.1.0
 	github.com/fatih/structtag v1.2.0
+	github.com/gdexlab/go-render v1.0.1
 	github.com/getkin/kin-openapi v0.119.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/pprof v1.4.0
