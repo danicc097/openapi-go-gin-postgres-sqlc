@@ -9,7 +9,6 @@ package model
 
 import (
 	"github.com/google/uuid"
-	"time"
 )
 
 type UserNotifications struct {
@@ -17,5 +16,4 @@ type UserNotifications struct {
 	NotificationID     int32     `db:"notification_id"`
 	Read               bool      `db:"read"`
 	UserID             uuid.UUID `db:"user_id"`
-	CreatedAt          time.Time `db:"created_at"`
 }

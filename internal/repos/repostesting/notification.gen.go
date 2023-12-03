@@ -40,18 +40,18 @@ type FakeNotification struct {
 		result1 *db.Notification
 		result2 error
 	}
-	LatestUserNotificationsStub        func(context.Context, db.DBTX, *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
-	latestUserNotificationsMutex       sync.RWMutex
-	latestUserNotificationsArgsForCall []struct {
+	LatestNotificationsStub        func(context.Context, db.DBTX, *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	latestNotificationsMutex       sync.RWMutex
+	latestNotificationsArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 *db.GetUserNotificationsParams
 	}
-	latestUserNotificationsReturns struct {
+	latestNotificationsReturns struct {
 		result1 []db.GetUserNotificationsRow
 		result2 error
 	}
-	latestUserNotificationsReturnsOnCall map[int]struct {
+	latestNotificationsReturnsOnCall map[int]struct {
 		result1 []db.GetUserNotificationsRow
 		result2 error
 	}
@@ -192,17 +192,17 @@ func (fake *FakeNotification) DeleteReturnsOnCall(i int, result1 *db.Notificatio
 }
 
 func (fake *FakeNotification) LatestNotifications(arg1 context.Context, arg2 db.DBTX, arg3 *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
-	fake.latestUserNotificationsMutex.Lock()
-	ret, specificReturn := fake.latestUserNotificationsReturnsOnCall[len(fake.latestUserNotificationsArgsForCall)]
-	fake.latestUserNotificationsArgsForCall = append(fake.latestUserNotificationsArgsForCall, struct {
+	fake.latestNotificationsMutex.Lock()
+	ret, specificReturn := fake.latestNotificationsReturnsOnCall[len(fake.latestNotificationsArgsForCall)]
+	fake.latestNotificationsArgsForCall = append(fake.latestNotificationsArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 *db.GetUserNotificationsParams
 	}{arg1, arg2, arg3})
-	stub := fake.LatestUserNotificationsStub
-	fakeReturns := fake.latestUserNotificationsReturns
+	stub := fake.LatestNotificationsStub
+	fakeReturns := fake.latestNotificationsReturns
 	fake.recordInvocation("LatestNotifications", []interface{}{arg1, arg2, arg3})
-	fake.latestUserNotificationsMutex.Unlock()
+	fake.latestNotificationsMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3)
 	}
@@ -212,46 +212,46 @@ func (fake *FakeNotification) LatestNotifications(arg1 context.Context, arg2 db.
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeNotification) LatestUserNotificationsCallCount() int {
-	fake.latestUserNotificationsMutex.RLock()
-	defer fake.latestUserNotificationsMutex.RUnlock()
-	return len(fake.latestUserNotificationsArgsForCall)
+func (fake *FakeNotification) LatestNotificationsCallCount() int {
+	fake.latestNotificationsMutex.RLock()
+	defer fake.latestNotificationsMutex.RUnlock()
+	return len(fake.latestNotificationsArgsForCall)
 }
 
-func (fake *FakeNotification) LatestUserNotificationsCalls(stub func(context.Context, db.DBTX, *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)) {
-	fake.latestUserNotificationsMutex.Lock()
-	defer fake.latestUserNotificationsMutex.Unlock()
-	fake.LatestUserNotificationsStub = stub
+func (fake *FakeNotification) LatestNotificationsCalls(stub func(context.Context, db.DBTX, *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)) {
+	fake.latestNotificationsMutex.Lock()
+	defer fake.latestNotificationsMutex.Unlock()
+	fake.LatestNotificationsStub = stub
 }
 
-func (fake *FakeNotification) LatestUserNotificationsArgsForCall(i int) (context.Context, db.DBTX, *db.GetUserNotificationsParams) {
-	fake.latestUserNotificationsMutex.RLock()
-	defer fake.latestUserNotificationsMutex.RUnlock()
-	argsForCall := fake.latestUserNotificationsArgsForCall[i]
+func (fake *FakeNotification) LatestNotificationsArgsForCall(i int) (context.Context, db.DBTX, *db.GetUserNotificationsParams) {
+	fake.latestNotificationsMutex.RLock()
+	defer fake.latestNotificationsMutex.RUnlock()
+	argsForCall := fake.latestNotificationsArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeNotification) LatestUserNotificationsReturns(result1 []db.GetUserNotificationsRow, result2 error) {
-	fake.latestUserNotificationsMutex.Lock()
-	defer fake.latestUserNotificationsMutex.Unlock()
-	fake.LatestUserNotificationsStub = nil
-	fake.latestUserNotificationsReturns = struct {
+func (fake *FakeNotification) LatestNotificationsReturns(result1 []db.GetUserNotificationsRow, result2 error) {
+	fake.latestNotificationsMutex.Lock()
+	defer fake.latestNotificationsMutex.Unlock()
+	fake.LatestNotificationsStub = nil
+	fake.latestNotificationsReturns = struct {
 		result1 []db.GetUserNotificationsRow
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) LatestUserNotificationsReturnsOnCall(i int, result1 []db.GetUserNotificationsRow, result2 error) {
-	fake.latestUserNotificationsMutex.Lock()
-	defer fake.latestUserNotificationsMutex.Unlock()
-	fake.LatestUserNotificationsStub = nil
-	if fake.latestUserNotificationsReturnsOnCall == nil {
-		fake.latestUserNotificationsReturnsOnCall = make(map[int]struct {
+func (fake *FakeNotification) LatestNotificationsReturnsOnCall(i int, result1 []db.GetUserNotificationsRow, result2 error) {
+	fake.latestNotificationsMutex.Lock()
+	defer fake.latestNotificationsMutex.Unlock()
+	fake.LatestNotificationsStub = nil
+	if fake.latestNotificationsReturnsOnCall == nil {
+		fake.latestNotificationsReturnsOnCall = make(map[int]struct {
 			result1 []db.GetUserNotificationsRow
 			result2 error
 		})
 	}
-	fake.latestUserNotificationsReturnsOnCall[i] = struct {
+	fake.latestNotificationsReturnsOnCall[i] = struct {
 		result1 []db.GetUserNotificationsRow
 		result2 error
 	}{result1, result2}
@@ -264,8 +264,8 @@ func (fake *FakeNotification) Invocations() map[string][][]interface{} {
 	defer fake.createMutex.RUnlock()
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
-	fake.latestUserNotificationsMutex.RLock()
-	defer fake.latestUserNotificationsMutex.RUnlock()
+	fake.latestNotificationsMutex.RLock()
+	defer fake.latestNotificationsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

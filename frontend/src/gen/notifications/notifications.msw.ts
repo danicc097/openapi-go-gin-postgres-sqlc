@@ -5,10 +5,32 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import { faker } from '@faker-js/faker'
 import { rest } from 'msw'
+import { NotificationType } from '.././model'
+
+export const getGetPaginatedNotificationsMock = () => ({
+  items: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    body: faker.word.sample(),
+    createdAt: (() => faker.date.past())(),
+    labels: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+      faker.word.sample(),
+    ),
+    link: faker.helpers.arrayElement([faker.word.sample(), null]),
+    notificationID: {},
+    notificationType: faker.helpers.arrayElement(Object.values(NotificationType)),
+    read: faker.datatype.boolean(),
+    receiver: faker.word.sample(),
+    sender: faker.word.sample(),
+    title: faker.word.sample(),
+    userID: faker.word.sample(),
+    userNotificationID: faker.number.int({ min: undefined, max: undefined }),
+  })),
+  page: { nextCursor: faker.word.sample() },
+})
 
 export const getNotificationsMSW = () => [
   rest.get('*/notifications/user/page', (_req, res, ctx) => {
-    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'))
+    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPaginatedNotificationsMock()))
   }),
 ]

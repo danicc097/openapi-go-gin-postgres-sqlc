@@ -766,18 +766,19 @@ x.gen.counterfeiter() {
 
     mkdir -p "$cache"
 
+    # FIXME: not invalidating cache correctly
     for key in ${!ifaces[@]}; do
       input_path="${key#*-}"
       iface="${key%%-*}"
       iface_content="$(go-utils.get_interface_methods $iface $input_path)"
 
-      cache_entry="$cache/$(echo "$key" | base64)"
-      if diff "$cache_entry" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
+      cache_entry_path="$cache/$(echo "$key" | base64)"
+      if diff "$cache_entry_path" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
         continue
       fi
 
       counterfeiter -o "${ifaces[$key]}" "$input_path" "$iface" 2>&1 &
-      echo "$iface_content" >"$cache_entry"
+      echo "$iface_content" >"$cache_entry_path"
       updated_ifaces+=("$key")
     done
 
@@ -1550,12 +1551,13 @@ generate_structs_map() {
   # need new cli since this function is called before building the rest of tooling
   go build -o $BUILD_DIR/ast-parser cmd/ast-parser/main.go
 
+  local path="$PG_REPO_GEN/db"
   local structs=()
   local enums=()
   local all_types=()
-  go-utils.find_structs structs "$PG_REPO_GEN/db" # faster. we know no generics structs exist in gen pkg
-  go-utils.find_enums enums "$PG_REPO_GEN/db"
-  go-utils.find_all_types all_types "$PG_REPO_GEN/db"
+  go-utils.find_structs structs "$path" # faster. we know no generics structs exist in gen pkg
+  go-utils.find_enums enums "$path"
+  go-utils.find_all_types all_types "$path"
   find_deleted_pkg_schemas all_types Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
@@ -1564,13 +1566,16 @@ generate_structs_map() {
   //
   ")
 
+  local path="internal/rest/models.go"
   local structs=()
   local enums=()
   local all_types=()
-  # TODO: --exclude-generics flag
-  mapfile -t structs < <(ast-parser find-structs --exclude-generics internal/rest/models.go)
-  go-utils.find_enums enums "internal/rest/models.go"
-  go-utils.find_all_types all_types "internal/rest/models.go"
+  # workaround for reflection type name with generics in swaggest
+  ast-parser find-structs --create-generics-map "$path" >"internal/codegen/reflectTypeMap.gen.json"
+
+  mapfile -t structs < <(ast-parser find-structs --exclude-generics "$path")
+  go-utils.find_enums enums "$path"
+  go-utils.find_all_types all_types "$path"
   find_deleted_pkg_schemas all_types Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")

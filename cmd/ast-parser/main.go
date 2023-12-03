@@ -143,7 +143,7 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 
 								if isGenericInstance(obj.Type().String()) {
 									reflectTypeName := getReflectionType(obj.Type().String())
-									reflectTypeMap.Add(structName, reflectTypeName)
+									reflectTypeMap.Add(reflectTypeName, structName)
 								}
 
 								sts = append(sts, structName)

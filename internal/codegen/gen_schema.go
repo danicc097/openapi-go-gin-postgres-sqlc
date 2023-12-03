@@ -4,6 +4,7 @@ gen-schema generates OpenAPI v3 schema portions from code.
 package codegen
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,6 +20,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"github.com/fatih/structtag"
 	"github.com/google/uuid"
+	"github.com/iancoleman/strcase"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
 )
@@ -34,7 +36,7 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 	reflector := newSpecReflector()
 
 	for idx, structName := range structNames {
-		fmt.Fprintf(os.Stderr, "s %s\n", structName)
+		// fmt.Fprintf(os.Stderr, "Generating struct %s\n", structName)
 		// We need to compile gen-schema right after PublicStructs file is updated
 		// cannot import packages at runtime
 		// if we have an uncompilable state then we need to update src to compile. no way around it
@@ -56,9 +58,9 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 		// IMPORTANT: ensure structs are public.
 		x, ok := reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName]
 		if !ok {
-			// s, err := reflector.Spec.MarshalYAML()
+			s, err := reflector.Spec.MarshalYAML()
 			handleError(err)
-			// fmt.Fprintf(os.Stderr, "s %s\n", string(s))
+			fmt.Fprint(os.Stderr, string(s))
 			log.Fatalf("Could not generate %s", structName)
 		}
 		x.Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
@@ -73,6 +75,15 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 func newSpecReflector() *openapi3.Reflector {
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
+	reflectTypeNames := map[string]string{}
+	jsonBlob, err := os.ReadFile("internal/codegen/reflectTypeMap.gen.json")
+	if err != nil {
+		log.Fatalf("Error reading reflect types: %v\n", err)
+	}
+	err = json.Unmarshal(jsonBlob, &reflectTypeNames)
+	if err != nil {
+		log.Fatalf("Error unmarshaling reflect types: %v\n", err)
+	}
 	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
 	reflector.DefaultOptions = append(reflector.DefaultOptions,
 		jsonschema.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
@@ -86,10 +97,16 @@ func newSpecReflector() *openapi3.Reflector {
 			// github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.Notification]
 			// NOTE: returning structName in intercept will not work since we intercept all indirect types here as well
 			// and would need a way to identify generic structs regardless
-			fmt.Printf("t.Name(): %v\n", t.Name())
+			// fmt.Printf("t.Name(): %v\n", t.Name())
 
 			// c := render.AsCode(g)
 			// fmt.Printf("c: %v\n", c)
+			if structName, ok := reflectTypeNames[t.Name()]; ok {
+				prefix := strcase.ToCamel(t.PkgPath()[strings.LastIndex(t.PkgPath(), "/")+1:])
+
+				return prefix + structName
+			}
+
 			return defaultDefName
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {

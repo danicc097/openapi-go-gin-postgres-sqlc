@@ -531,7 +531,19 @@ components:
       example: 41131
       style: simple
   schemas:
-    GetPaginatedNotificationsResponse:
+    GetPaginatedNotificationsResponse: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/RestNotification'
+          nullable: true
+          type: array
+        page:
+          properties:
+            nextCursor:
+              type: string
+          type: object
+      type: object
       x-postgen-struct: RestGetPaginatedNotificationsResponse
     DbActivity: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1588,6 +1600,84 @@ components:
         name: uuid
         path: github.com/google/uuid
     DbWorkItemTypeID: {}
+    DbNotificationID: {}
+    RestNotification: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        body:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+        link:
+          nullable: true
+          type: string
+        notificationID:
+          $ref: '#/components/schemas/DbNotificationID'
+        notificationType:
+          $ref: '#/components/schemas/NotificationType'
+        read:
+          type: boolean
+        receiver:
+          $ref: '#/components/schemas/DbUserID'
+        sender:
+          $ref: '#/components/schemas/DbUserID'
+        title:
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        userNotificationID:
+          type: integer
+      required:
+        - userNotificationID
+        - notificationID
+        - read
+        - userID
+        - createdAt
+        - notificationID
+        - title
+        - body
+        - labels
+        - createdAt
+        - sender
+        - notificationType
+      type: object
+    DbNotification: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        body:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+        link:
+          nullable: true
+          type: string
+        notificationID:
+          $ref: '#/components/schemas/DbNotificationID'
+        notificationType:
+          $ref: '#/components/schemas/NotificationType'
+        receiver:
+          $ref: '#/components/schemas/DbUserID'
+        sender:
+          $ref: '#/components/schemas/DbUserID'
+        title:
+          type: string
+      required:
+        - notificationID
+        - title
+        - body
+        - labels
+        - createdAt
+        - sender
+        - notificationType
+      type: object
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

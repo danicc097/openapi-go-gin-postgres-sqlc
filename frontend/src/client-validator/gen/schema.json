@@ -2,6 +2,30 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
+    "GetPaginatedNotificationsResponse": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/definitions/RestNotification"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "page": {
+          "properties": {
+            "nextCursor": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestGetPaginatedNotificationsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "DbActivity": {
       "properties": {
         "activityID": {
@@ -1597,9 +1621,137 @@
     },
     "DbWorkItemTypeID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbNotificationID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestNotification": {
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "minLength": 1
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notificationID": {
+          "$ref": "#/definitions/DbNotificationID"
+        },
+        "notificationType": {
+          "$ref": "#/definitions/NotificationType"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "receiver": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "sender": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID",
+        "createdAt",
+        "notificationID",
+        "title",
+        "body",
+        "labels",
+        "createdAt",
+        "sender",
+        "notificationType"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbNotification": {
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "minLength": 1
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notificationID": {
+          "$ref": "#/definitions/DbNotificationID"
+        },
+        "notificationType": {
+          "$ref": "#/definitions/NotificationType"
+        },
+        "receiver": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "sender": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "notificationID",
+        "title",
+        "body",
+        "labels",
+        "createdAt",
+        "sender",
+        "notificationType"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
+    "GetPaginatedNotificationsResponse": {
+      "$ref": "#/definitions/GetPaginatedNotificationsResponse"
+    },
     "DbActivity": {
       "$ref": "#/definitions/DbActivity"
     },
@@ -1773,6 +1925,15 @@
     },
     "DbWorkItemTypeID": {
       "$ref": "#/definitions/DbWorkItemTypeID"
+    },
+    "DbNotificationID": {
+      "$ref": "#/definitions/DbNotificationID"
+    },
+    "RestNotification": {
+      "$ref": "#/definitions/RestNotification"
+    },
+    "DbNotification": {
+      "$ref": "#/definitions/DbNotification"
     }
   }
 }

@@ -23,7 +23,7 @@ type PaginationBaseResponse[T any] struct {
 
 type Notification struct {
 	db.UserNotification
-	db.Notification
+	Notification db.Notification `json:"notification"` // notification_id clash
 }
 
 type GetPaginatedNotificationsResponse = PaginationBaseResponse[Notification]

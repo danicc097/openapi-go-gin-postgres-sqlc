@@ -335,6 +335,24 @@ type DbKanbanStep struct {
 	TimeTrackable bool   `json:"timeTrackable"`
 }
 
+// DbNotification defines the model for DbNotification.
+type DbNotification struct {
+	Body           string           `json:"body"`
+	CreatedAt      time.Time        `json:"createdAt"`
+	Labels         []string         `json:"labels"`
+	Link           *string          `json:"link"`
+	NotificationID DbNotificationID `json:"notificationID"`
+
+	// NotificationType represents a database 'notification_type'
+	NotificationType NotificationType `json:"notificationType"`
+	Receiver         *DbUserID        `json:"receiver,omitempty"`
+	Sender           DbUserID         `json:"sender"`
+	Title            string           `json:"title"`
+}
+
+// DbNotificationID defines the model for DbNotificationID.
+type DbNotificationID = interface{}
+
 // DbProject defines the model for DbProject.
 type DbProject struct {
 	BoardConfig ProjectConfig `json:"boardConfig"`
@@ -563,6 +581,14 @@ type DemoWorkItemsResponse struct {
 // - 'Private' marks an error to be hidden in response.
 type ErrorCode string
 
+// GetPaginatedNotificationsResponse defines the model for GetPaginatedNotificationsResponse.
+type GetPaginatedNotificationsResponse struct {
+	Items *[]RestNotification `json:"items"`
+	Page  *struct {
+		NextCursor *string `json:"nextCursor,omitempty"`
+	} `json:"page,omitempty"`
+}
+
 // HTTPError represents an error message response.
 type HTTPError struct {
 	Detail string `json:"detail"`
@@ -620,6 +646,24 @@ type ProjectConfigField struct {
 	Name          string `json:"name"`
 	Path          string `json:"path"`
 	ShowCollapsed bool   `json:"showCollapsed"`
+}
+
+// RestNotification defines the model for RestNotification.
+type RestNotification struct {
+	Body           string           `json:"body"`
+	CreatedAt      time.Time        `json:"createdAt"`
+	Labels         []string         `json:"labels"`
+	Link           *string          `json:"link"`
+	NotificationID DbNotificationID `json:"notificationID"`
+
+	// NotificationType represents a database 'notification_type'
+	NotificationType   NotificationType `json:"notificationType"`
+	Read               bool             `json:"read"`
+	Receiver           *DbUserID        `json:"receiver,omitempty"`
+	Sender             DbUserID         `json:"sender"`
+	Title              string           `json:"title"`
+	UserID             DbUserID         `json:"userID"`
+	UserNotificationID int              `json:"userNotificationID"`
 }
 
 // Role defines the model for Role.

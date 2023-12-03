@@ -6,8 +6,12 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Project = 'demo' | 'demo_two'
+/**
+ * represents a database 'notification_type'
+ */
+export type NotificationType = 'personal' | 'global'
 export type DbUserID = string
+export type Project = 'demo' | 'demo_two'
 export type Scope =
   | 'users:read'
   | 'users:write'
@@ -72,10 +76,6 @@ export type WorkItemRole = 'preparer' | 'reviewer'
 export type UuidUUID = string
 export type WorkItemCreateRequest = DemoWorkItemCreateRequest | DemoTwoWorkItemCreateRequest
 export type DbWorkItemRole = string
-/**
- * represents a database 'notification_type'
- */
-export type NotificationType = 'personal' | 'global'
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type DemoProject2KanbanSteps = 'Received'
 export type Demo2WorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
@@ -84,6 +84,27 @@ export type DemoTwoKanbanSteps = 'Received'
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
 
+export interface GetPaginatedNotificationsResponse {
+  items?: RestNotification[] | null
+  page?: {
+    nextCursor?: string
+  }
+}
+export interface RestNotification {
+  body: string
+  createdAt: string
+  labels: string[]
+  link?: string | null
+  notificationID: DbNotificationID
+  notificationType: NotificationType
+  read: boolean
+  receiver?: DbUserID
+  sender: DbUserID
+  title: string
+  userID: DbUserID
+  userNotificationID: number
+}
+export interface DbNotificationID {}
 export interface DbActivity {
   activityID: number
   description: string
@@ -385,3 +406,14 @@ export interface DbActivityCreateParams {
   projectID?: number
 }
 export interface DbWorkItemTypeID {}
+export interface DbNotification {
+  body: string
+  createdAt: string
+  labels: string[]
+  link?: string | null
+  notificationID: DbNotificationID
+  notificationType: NotificationType
+  receiver?: DbUserID
+  sender: DbUserID
+  title: string
+}

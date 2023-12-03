@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -28,7 +27,6 @@ type UserNotification struct {
 	NotificationID     NotificationID     `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`          // notification_id
 	Read               bool               `json:"read" db:"read" required:"true" nullable:"false"`                               // read
 	UserID             UserID             `json:"userID" db:"user_id" required:"true" nullable:"false"`                          // user_id
-	CreatedAt          time.Time          `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
 
 	NotificationJoin *Notification `json:"-" db:"notification_notification_id" openapi-go:"ignore"` // O2O notifications (generated from M2O)
 	UserJoin         *User         `json:"-" db:"user_user_id" openapi-go:"ignore"`                 // O2O users (generated from M2O)
@@ -94,26 +92,7 @@ func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
 
 type UserNotificationOrderBy string
 
-const (
-	UserNotificationCreatedAtDescNullsFirst UserNotificationOrderBy = " created_at DESC NULLS FIRST "
-	UserNotificationCreatedAtDescNullsLast  UserNotificationOrderBy = " created_at DESC NULLS LAST "
-	UserNotificationCreatedAtAscNullsFirst  UserNotificationOrderBy = " created_at ASC NULLS FIRST "
-	UserNotificationCreatedAtAscNullsLast   UserNotificationOrderBy = " created_at ASC NULLS LAST "
-)
-
-// WithUserNotificationOrderBy orders results by the given columns.
-func WithUserNotificationOrderBy(rows ...UserNotificationOrderBy) UserNotificationSelectConfigOption {
-	return func(s *UserNotificationSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
-			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
-		}
-	}
-}
+const ()
 
 type UserNotificationJoins struct {
 	Notification bool // O2O notifications
@@ -198,7 +177,7 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 	WHERE user_notification_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, un.CreatedAt, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	logf(sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
 
 	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
 	if err != nil {
@@ -308,7 +287,6 @@ func UserNotificationPaginatedByUserNotificationIDAsc(ctx context.Context, db DB
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.created_at,
 	user_notifications.notification_id,
 	user_notifications.read,
 	user_notifications.user_id,
@@ -391,7 +369,6 @@ func UserNotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, no
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.created_at,
 	user_notifications.notification_id,
 	user_notifications.read,
 	user_notifications.user_id,
@@ -474,7 +451,6 @@ func UserNotificationPaginatedByUserNotificationIDDesc(ctx context.Context, db D
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.created_at,
 	user_notifications.notification_id,
 	user_notifications.read,
 	user_notifications.user_id,
@@ -557,7 +533,6 @@ func UserNotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, n
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.created_at,
 	user_notifications.notification_id,
 	user_notifications.read,
 	user_notifications.user_id,
@@ -642,7 +617,6 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.created_at,
 	user_notifications.notification_id,
 	user_notifications.read,
 	user_notifications.user_id,
@@ -728,7 +702,6 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.created_at,
 	user_notifications.notification_id,
 	user_notifications.read,
 	user_notifications.user_id,
@@ -816,7 +789,6 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.created_at,
 	user_notifications.notification_id,
 	user_notifications.read,
 	user_notifications.user_id,
@@ -902,7 +874,6 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID UserID, opts .
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	user_notifications.created_at,
 	user_notifications.notification_id,
 	user_notifications.read,
 	user_notifications.user_id,

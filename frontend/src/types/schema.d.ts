@@ -98,6 +98,12 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    GetPaginatedNotificationsResponse: {
+      items?: components["schemas"]["RestNotification"][] | null;
+      page?: {
+        nextCursor?: string;
+      };
+    };
     DbActivity: {
       activityID: number;
       description: string;
@@ -515,6 +521,34 @@ export interface components {
     DbProjectID: unknown;
     DbUserID: string;
     DbWorkItemTypeID: unknown;
+    DbNotificationID: unknown;
+    RestNotification: {
+      body: string;
+      /** Format: date-time */
+      createdAt: string;
+      labels: string[];
+      link?: string | null;
+      notificationID: components["schemas"]["DbNotificationID"];
+      notificationType: components["schemas"]["NotificationType"];
+      read: boolean;
+      receiver?: components["schemas"]["DbUserID"];
+      sender: components["schemas"]["DbUserID"];
+      title: string;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
+    };
+    DbNotification: {
+      body: string;
+      /** Format: date-time */
+      createdAt: string;
+      labels: string[];
+      link?: string | null;
+      notificationID: components["schemas"]["DbNotificationID"];
+      notificationType: components["schemas"]["NotificationType"];
+      receiver?: components["schemas"]["DbUserID"];
+      sender: components["schemas"]["DbUserID"];
+      title: string;
+    };
   };
   responses: never;
   parameters: {
@@ -581,7 +615,11 @@ export interface operations {
     };
     responses: {
       /** @description OK */
-      200: never;
+      200: {
+        content: {
+          "application/json": components["schemas"]["GetPaginatedNotificationsResponse"];
+        };
+      };
       /** @description Error response */
       "4XX": {
         content: {

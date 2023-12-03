@@ -8,6 +8,7 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
+  GetPaginatedNotificationsResponse,
   DbActivity,
   DbKanbanStep,
   DbProject,
@@ -66,6 +67,9 @@ import {
   DbProjectID,
   DbUserID,
   DbWorkItemTypeID,
+  DbNotificationID,
+  RestNotification,
+  DbNotification,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -74,6 +78,18 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
 ajv.compile(jsonSchema)
 
 // Decoders
+export const GetPaginatedNotificationsResponseDecoder: Decoder<GetPaginatedNotificationsResponse> = {
+  definitionName: 'GetPaginatedNotificationsResponse',
+  schemaRef: '#/definitions/GetPaginatedNotificationsResponse',
+
+  decode(json: unknown): GetPaginatedNotificationsResponse {
+    const schema = ajv.getSchema(GetPaginatedNotificationsResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${GetPaginatedNotificationsResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, GetPaginatedNotificationsResponseDecoder.definitionName)
+  },
+}
 export const DbActivityDecoder: Decoder<DbActivity> = {
   definitionName: 'DbActivity',
   schemaRef: '#/definitions/DbActivity',
@@ -768,5 +784,41 @@ export const DbWorkItemTypeIDDecoder: Decoder<DbWorkItemTypeID> = {
       throw new Error(`Schema ${DbWorkItemTypeIDDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemTypeIDDecoder.definitionName)
+  },
+}
+export const DbNotificationIDDecoder: Decoder<DbNotificationID> = {
+  definitionName: 'DbNotificationID',
+  schemaRef: '#/definitions/DbNotificationID',
+
+  decode(json: unknown): DbNotificationID {
+    const schema = ajv.getSchema(DbNotificationIDDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbNotificationIDDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbNotificationIDDecoder.definitionName)
+  },
+}
+export const RestNotificationDecoder: Decoder<RestNotification> = {
+  definitionName: 'RestNotification',
+  schemaRef: '#/definitions/RestNotification',
+
+  decode(json: unknown): RestNotification {
+    const schema = ajv.getSchema(RestNotificationDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestNotificationDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestNotificationDecoder.definitionName)
+  },
+}
+export const DbNotificationDecoder: Decoder<DbNotification> = {
+  definitionName: 'DbNotification',
+  schemaRef: '#/definitions/DbNotification',
+
+  decode(json: unknown): DbNotification {
+    const schema = ajv.getSchema(DbNotificationDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbNotificationDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbNotificationDecoder.definitionName)
   },
 }

@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  GetPaginatedNotificationsResponse,
   DbActivity,
   DbKanbanStep,
   DbProject,
@@ -62,9 +63,16 @@ import {
   DbProjectID,
   DbUserID,
   DbWorkItemTypeID,
+  DbNotificationID,
+  RestNotification,
+  DbNotification,
 } from './models'
 
 export const schemaDefinitions = {
+  GetPaginatedNotificationsResponse: info<GetPaginatedNotificationsResponse>(
+    'GetPaginatedNotificationsResponse',
+    '#/definitions/GetPaginatedNotificationsResponse',
+  ),
   DbActivity: info<DbActivity>('DbActivity', '#/definitions/DbActivity'),
   DbKanbanStep: info<DbKanbanStep>('DbKanbanStep', '#/definitions/DbKanbanStep'),
   DbProject: info<DbProject>('DbProject', '#/definitions/DbProject'),
@@ -162,6 +170,9 @@ export const schemaDefinitions = {
   DbProjectID: info<DbProjectID>('DbProjectID', '#/definitions/DbProjectID'),
   DbUserID: info<DbUserID>('DbUserID', '#/definitions/DbUserID'),
   DbWorkItemTypeID: info<DbWorkItemTypeID>('DbWorkItemTypeID', '#/definitions/DbWorkItemTypeID'),
+  DbNotificationID: info<DbNotificationID>('DbNotificationID', '#/definitions/DbNotificationID'),
+  RestNotification: info<RestNotification>('RestNotification', '#/definitions/RestNotification'),
+  DbNotification: info<DbNotification>('DbNotification', '#/definitions/DbNotification'),
 }
 
 export interface SchemaInfo<T> {
