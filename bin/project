@@ -141,6 +141,7 @@ xsetup.backup-gen.cleanup() {
 }
 
 xsetup.backup-gen.restore() {
+  # FIXME: cache needs to be backed up and restored as well. else we get broken output.
   echo "Restoring previously generated code (branch $gen_backup_branch)..."
   wait
 
