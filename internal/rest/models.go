@@ -26,7 +26,7 @@ type Notification struct {
 	Notification db.Notification `json:"notification" required:"true"` // notification_id clash
 }
 
-type GetPaginatedNotificationsResponse = PaginationBaseResponse[Notification]
+type PaginatedNotificationsResponse = PaginationBaseResponse[Notification]
 
 // User represents an OpenAPI schema response for a User.
 type User struct {

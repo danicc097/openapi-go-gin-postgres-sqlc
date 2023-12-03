@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { GetPaginatedNotificationsResponse, GetPaginatedNotificationsParams } from '.././model'
+import type { PaginatedNotificationsResponse, GetPaginatedNotificationsParams } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -18,7 +18,7 @@ export const getPaginatedNotifications = (
   params: GetPaginatedNotificationsParams,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<GetPaginatedNotificationsResponse>(
+  return customInstance<PaginatedNotificationsResponse>(
     { url: `/notifications/user/page`, method: 'get', params },
     options,
   )

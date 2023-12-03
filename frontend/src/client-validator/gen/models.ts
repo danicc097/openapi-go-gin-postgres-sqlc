@@ -84,7 +84,7 @@ export type DemoTwoKanbanSteps = 'Received'
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
 
-export interface GetPaginatedNotificationsResponse {
+export interface PaginatedNotificationsResponse {
   items?: RestNotification[] | null
   page?: {
     nextCursor?: string

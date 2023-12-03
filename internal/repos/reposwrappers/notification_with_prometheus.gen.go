@@ -8,6 +8,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/prometheus/client_golang/prometheus"
@@ -78,4 +79,18 @@ func (_d NotificationWithPrometheus) LatestNotifications(ctx context.Context, d 
 		notificationDurationSummaryVec.WithLabelValues(_d.instanceName, "LatestNotifications", result).Observe(time.Since(_since).Seconds())
 	}()
 	return _d.base.LatestNotifications(ctx, d, params)
+}
+
+// PaginatedNotifications implements repos.Notification
+func (_d NotificationWithPrometheus) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		notificationDurationSummaryVec.WithLabelValues(_d.instanceName, "PaginatedNotifications", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.PaginatedNotifications(ctx, d, userID, params)
 }

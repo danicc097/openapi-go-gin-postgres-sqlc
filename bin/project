@@ -693,8 +693,8 @@ x.gen.gowrap() {
     local updated_ifaces=()
     for iface in ${repo_interfaces[@]}; do
       iface_content="$(go-utils.get_interface_methods $iface $repos)"
-      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
-        continue
+      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null; then
+        [[ $X_FORCE_REGEN -eq 0 ]] && continue
       fi
 
       for suffix in ${suffixes[@]}; do
@@ -772,8 +772,8 @@ x.gen.counterfeiter() {
       iface_content="$(go-utils.get_interface_methods $iface $input_path)"
 
       cache_entry_path="$cache/$(echo "$key" | base64)"
-      if diff "$cache_entry_path" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
-        continue
+      if diff "$cache_entry_path" <(echo "$iface_content") &>/dev/null; then
+        [[ $X_FORCE_REGEN -eq 0 ]] && continue
       fi
 
       counterfeiter -o "${ifaces[$key]}" "$input_path" "$iface" 2>&1 &

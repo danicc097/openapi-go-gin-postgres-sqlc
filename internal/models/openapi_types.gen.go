@@ -581,14 +581,6 @@ type DemoWorkItemsResponse struct {
 // - 'Private' marks an error to be hidden in response.
 type ErrorCode string
 
-// GetPaginatedNotificationsResponse defines the model for GetPaginatedNotificationsResponse.
-type GetPaginatedNotificationsResponse struct {
-	Items *[]RestNotification `json:"items"`
-	Page  *struct {
-		NextCursor *string `json:"nextCursor,omitempty"`
-	} `json:"page,omitempty"`
-}
-
 // HTTPError represents an error message response.
 type HTTPError struct {
 	Detail string `json:"detail"`
@@ -623,6 +615,14 @@ type InitializeProjectRequest struct {
 
 // NotificationType represents a database 'notification_type'
 type NotificationType string
+
+// PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
+type PaginatedNotificationsResponse struct {
+	Items *[]RestNotification `json:"items"`
+	Page  *struct {
+		NextCursor *string `json:"nextCursor,omitempty"`
+	} `json:"page,omitempty"`
+}
 
 // Project defines the model for Project.
 type Project string

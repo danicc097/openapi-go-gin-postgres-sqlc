@@ -98,7 +98,7 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    GetPaginatedNotificationsResponse: {
+    PaginatedNotificationsResponse: {
       items?: components["schemas"]["RestNotification"][] | null;
       page?: {
         nextCursor?: string;
@@ -609,7 +609,7 @@ export interface operations {
       /** @description OK */
       200: {
         content: {
-          "application/json": components["schemas"]["GetPaginatedNotificationsResponse"];
+          "application/json": components["schemas"]["PaginatedNotificationsResponse"];
         };
       };
       /** @description Error response */

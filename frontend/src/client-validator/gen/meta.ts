@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
-  GetPaginatedNotificationsResponse,
+  PaginatedNotificationsResponse,
   DbActivity,
   DbKanbanStep,
   DbProject,
@@ -69,9 +69,9 @@ import {
 } from './models'
 
 export const schemaDefinitions = {
-  GetPaginatedNotificationsResponse: info<GetPaginatedNotificationsResponse>(
-    'GetPaginatedNotificationsResponse',
-    '#/definitions/GetPaginatedNotificationsResponse',
+  PaginatedNotificationsResponse: info<PaginatedNotificationsResponse>(
+    'PaginatedNotificationsResponse',
+    '#/definitions/PaginatedNotificationsResponse',
   ),
   DbActivity: info<DbActivity>('DbActivity', '#/definitions/DbActivity'),
   DbKanbanStep: info<DbKanbanStep>('DbKanbanStep', '#/definitions/DbKanbanStep'),

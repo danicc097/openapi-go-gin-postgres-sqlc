@@ -1883,7 +1883,7 @@ func (r EventsResponse) StatusCode() int {
 type GetPaginatedNotificationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *GetPaginatedNotificationsResponse
+	JSON200      *PaginatedNotificationsResponse
 	JSON4XX      *HTTPError
 }
 
@@ -2656,7 +2656,7 @@ func ParseGetPaginatedNotificationsResponse(rsp *http.Response) (*GetPaginatedNo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest GetPaginatedNotificationsResponse
+		var dest PaginatedNotificationsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

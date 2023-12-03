@@ -8,7 +8,7 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
-  GetPaginatedNotificationsResponse,
+  PaginatedNotificationsResponse,
   DbActivity,
   DbKanbanStep,
   DbProject,
@@ -78,16 +78,16 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
 ajv.compile(jsonSchema)
 
 // Decoders
-export const GetPaginatedNotificationsResponseDecoder: Decoder<GetPaginatedNotificationsResponse> = {
-  definitionName: 'GetPaginatedNotificationsResponse',
-  schemaRef: '#/definitions/GetPaginatedNotificationsResponse',
+export const PaginatedNotificationsResponseDecoder: Decoder<PaginatedNotificationsResponse> = {
+  definitionName: 'PaginatedNotificationsResponse',
+  schemaRef: '#/definitions/PaginatedNotificationsResponse',
 
-  decode(json: unknown): GetPaginatedNotificationsResponse {
-    const schema = ajv.getSchema(GetPaginatedNotificationsResponseDecoder.schemaRef)
+  decode(json: unknown): PaginatedNotificationsResponse {
+    const schema = ajv.getSchema(PaginatedNotificationsResponseDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${GetPaginatedNotificationsResponseDecoder.definitionName} not found`)
+      throw new Error(`Schema ${PaginatedNotificationsResponseDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, GetPaginatedNotificationsResponseDecoder.definitionName)
+    return validateJson(json, schema, PaginatedNotificationsResponseDecoder.definitionName)
   },
 }
 export const DbActivityDecoder: Decoder<DbActivity> = {

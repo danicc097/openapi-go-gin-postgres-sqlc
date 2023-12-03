@@ -2,7 +2,7 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
-    "GetPaginatedNotificationsResponse": {
+    "PaginatedNotificationsResponse": {
       "properties": {
         "items": {
           "items": {
@@ -127,7 +127,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestGetPaginatedNotificationsResponse",
+      "x-postgen-struct": "RestPaginatedNotificationsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbActivity": {
@@ -3475,7 +3475,7 @@
     }
   },
   "properties": {
-    "GetPaginatedNotificationsResponse": {
+    "PaginatedNotificationsResponse": {
       "properties": {
         "items": {
           "items": {
@@ -3600,7 +3600,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestGetPaginatedNotificationsResponse",
+      "x-postgen-struct": "RestPaginatedNotificationsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbActivity": {
