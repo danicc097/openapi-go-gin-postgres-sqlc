@@ -79,9 +79,9 @@ func newSpecReflector() *openapi3.Reflector {
 	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
 	reflector.DefaultOptions = append(reflector.DefaultOptions,
 		jsonschema.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-			fmt.Fprintf(os.Stderr, "defaultDefName: %v\n", defaultDefName)
-
 			// TODO: need to handle struct instances from generic struct. e.g.
+			// see https://stackoverflow.com/questions/74838506/get-the-type-name-of-a-generic-struct-without-type-parameters
+			// both t.Name() and t.String() return a composed name
 			// RestGetPaginatedNotificationsResponse has
 			// defaultDefName: RestPaginationBaseResponse[GithubComDanicc097OpenapiGoGinPostgresSqlcInternalRestNotification]
 			return defaultDefName
