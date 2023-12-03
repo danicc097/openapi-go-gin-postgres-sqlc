@@ -125,6 +125,8 @@ xsetup.backup-gen() {
   gen_backup_stash_name="backup-stash-$gen_backup_branch"
 
   uuidgen >backup-gen-stash-dummy.txt
+  cp .gitignore .gitignore.bak
+  sed -i "s|^\*\.cache|#\*\.cache|" .gitignore
   git stash push -m "$gen_backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
   git checkout -b "$gen_backup_branch" &>/dev/null
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
@@ -138,10 +140,11 @@ xsetup.backup-gen.cleanup() {
   if [[ "$xsetup_backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
     restore_cache=0
   fi
+
+  mv .gitignore.bak .gitignore
 }
 
 xsetup.backup-gen.restore() {
-  # FIXME: cache needs to be backed up and restored as well. else we get broken output.
   echo "Restoring previously generated code (branch $gen_backup_branch)..."
   wait
 
