@@ -75,7 +75,7 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 func newSpecReflector() *openapi3.Reflector {
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
-	reflectTypeNames := map[string]string{}
+	reflectTypeNames := map[string]map[string]string{}
 	jsonBlob, err := os.ReadFile("internal/codegen/reflectTypeMap.gen.json")
 	if err != nil {
 		log.Fatalf("Error reading reflect types: %v\n", err)
@@ -101,10 +101,13 @@ func newSpecReflector() *openapi3.Reflector {
 
 			// c := render.AsCode(g)
 			// fmt.Printf("c: %v\n", c)
-			if structName, ok := reflectTypeNames[t.Name()]; ok {
-				prefix := strcase.ToCamel(t.PkgPath()[strings.LastIndex(t.PkgPath(), "/")+1:])
+			pkg := t.PkgPath()[strings.LastIndex(t.PkgPath(), "/")+1:]
+			if reflectType, ok := reflectTypeNames[pkg]; ok {
+				if structName, ok := reflectType[t.Name()]; ok {
+					prefix := strcase.ToCamel(pkg)
 
-				return prefix + structName
+					return prefix + structName
+				}
 			}
 
 			return defaultDefName

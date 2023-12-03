@@ -1627,47 +1627,14 @@
     },
     "RestNotification": {
       "properties": {
-        "body": {
-          "type": "string",
-          "minLength": 1
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "labels": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array",
-          "minLength": 1
-        },
-        "link": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "notification": {
+          "$ref": "#/definitions/DbNotification"
         },
         "notificationID": {
-          "$ref": "#/definitions/DbNotificationID"
-        },
-        "notificationType": {
-          "$ref": "#/definitions/NotificationType"
+          "type": "integer"
         },
         "read": {
           "type": "boolean"
-        },
-        "receiver": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "sender": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
         },
         "userID": {
           "$ref": "#/definitions/DbUserID"
@@ -1681,14 +1648,7 @@
         "notificationID",
         "read",
         "userID",
-        "createdAt",
-        "notificationID",
-        "title",
-        "body",
-        "labels",
-        "createdAt",
-        "sender",
-        "notificationType"
+        "notification"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"

@@ -650,20 +650,11 @@ type ProjectConfigField struct {
 
 // RestNotification defines the model for RestNotification.
 type RestNotification struct {
-	Body           string           `json:"body"`
-	CreatedAt      time.Time        `json:"createdAt"`
-	Labels         []string         `json:"labels"`
-	Link           *string          `json:"link"`
-	NotificationID DbNotificationID `json:"notificationID"`
-
-	// NotificationType represents a database 'notification_type'
-	NotificationType   NotificationType `json:"notificationType"`
-	Read               bool             `json:"read"`
-	Receiver           *DbUserID        `json:"receiver,omitempty"`
-	Sender             DbUserID         `json:"sender"`
-	Title              string           `json:"title"`
-	UserID             DbUserID         `json:"userID"`
-	UserNotificationID int              `json:"userNotificationID"`
+	Notification       DbNotification `json:"notification"`
+	NotificationID     int            `json:"notificationID"`
+	Read               bool           `json:"read"`
+	UserID             DbUserID       `json:"userID"`
+	UserNotificationID int            `json:"userNotificationID"`
 }
 
 // Role defines the model for Role.

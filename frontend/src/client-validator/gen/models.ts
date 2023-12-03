@@ -91,18 +91,22 @@ export interface GetPaginatedNotificationsResponse {
   }
 }
 export interface RestNotification {
+  notification: DbNotification
+  notificationID: number
+  read: boolean
+  userID: DbUserID
+  userNotificationID: number
+}
+export interface DbNotification {
   body: string
   createdAt: string
   labels: string[]
   link?: string | null
   notificationID: DbNotificationID
   notificationType: NotificationType
-  read: boolean
   receiver?: DbUserID
   sender: DbUserID
   title: string
-  userID: DbUserID
-  userNotificationID: number
 }
 export interface DbNotificationID {}
 export interface DbActivity {
@@ -406,14 +410,3 @@ export interface DbActivityCreateParams {
   projectID?: number
 }
 export interface DbWorkItemTypeID {}
-export interface DbNotification {
-  body: string
-  createdAt: string
-  labels: string[]
-  link?: string | null
-  notificationID: DbNotificationID
-  notificationType: NotificationType
-  receiver?: DbUserID
-  sender: DbUserID
-  title: string
-}

@@ -27,14 +27,18 @@ import (
 
 type ReflectTypeMap struct {
 	sync.Mutex
-	Map map[string]string
+	Map map[string]map[string]string
 }
 
-func (m *ReflectTypeMap) Add(structName, reflectTypeName string) {
+func (m *ReflectTypeMap) Add(structName string, reflectType ReflectionType) {
 	m.Lock()
 	defer m.Unlock()
 
-	m.Map[structName] = reflectTypeName
+	if _, ok := m.Map[reflectType.Pkg]; !ok {
+		m.Map[reflectType.Pkg] = map[string]string{}
+	}
+
+	m.Map[reflectType.Pkg][reflectType.Name] = structName
 }
 
 func (m *ReflectTypeMap) MarshalJSON() ([]byte, error) {
@@ -58,7 +62,7 @@ var (
 
 	wg sync.WaitGroup
 
-	reflectTypeMap = &ReflectTypeMap{Map: make(map[string]string)}
+	reflectTypeMap = &ReflectTypeMap{Map: map[string]map[string]string{}}
 )
 
 func isGenericInstance(s string) bool {
@@ -67,16 +71,24 @@ func isGenericInstance(s string) bool {
 	return len(r.FindStringSubmatch(s)) > 0
 }
 
+type ReflectionType struct {
+	Name string
+	Pkg  string
+}
+
 // getReflectionType converts a generic instance type.Type string to its reflect.Type.Name.
-func getReflectionType(s string) string {
-	r := regexp.MustCompile(`.*\.(.*\[.*)`) // greedily match longest until last dot
+func getReflectionType(s string) ReflectionType {
+	r := regexp.MustCompile(`.*/([a-zA-Z_]{1}[a-zA-Z0-9_]*)*.*\.(.*\[.*)`) // greedily match longest until last dot
 
 	matches := r.FindStringSubmatch(s)
 	if len(matches) > 0 {
-		return matches[1]
+		return ReflectionType{
+			Name: matches[2],
+			Pkg:  matches[1],
+		}
 	}
 
-	return s
+	return ReflectionType{Name: s}
 }
 
 func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error) {
@@ -143,7 +155,7 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 
 								if isGenericInstance(obj.Type().String()) {
 									reflectTypeName := getReflectionType(obj.Type().String())
-									reflectTypeMap.Add(reflectTypeName, structName)
+									reflectTypeMap.Add(structName, reflectTypeName)
 								}
 
 								sts = append(sts, structName)
@@ -253,13 +265,8 @@ func main() {
 				}
 
 				if createGenericsInstanceMap {
-					jsonData, err := json.Marshal(reflectTypeMap)
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					fmt.Println(string(jsonData))
-
+					bytes, _ := json.MarshalIndent(reflectTypeMap, "", "  ")
+					fmt.Println(string(bytes))
 					os.Exit(0)
 				}
 

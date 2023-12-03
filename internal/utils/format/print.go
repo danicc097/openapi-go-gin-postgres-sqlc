@@ -10,7 +10,7 @@ import (
 
 // PrintJSONByTag marshals to JSON.
 func PrintJSON(obj any) {
-	bytes, _ := json.MarshalIndent(obj, "  ", "  ")
+	bytes, _ := json.MarshalIndent(obj, "", "  ")
 	fmt.Println(string(bytes))
 }
 

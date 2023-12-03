@@ -11,18 +11,21 @@ import { NotificationType } from '.././model'
 
 export const getGetPaginatedNotificationsMock = () => ({
   items: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    body: faker.word.sample(),
-    createdAt: (() => faker.date.past())(),
-    labels: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-      faker.word.sample(),
-    ),
-    link: faker.helpers.arrayElement([faker.word.sample(), null]),
-    notificationID: {},
-    notificationType: faker.helpers.arrayElement(Object.values(NotificationType)),
+    notification: {
+      body: faker.word.sample(),
+      createdAt: (() => faker.date.past())(),
+      labels: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+        faker.word.sample(),
+      ),
+      link: faker.helpers.arrayElement([faker.word.sample(), null]),
+      notificationID: {},
+      notificationType: faker.helpers.arrayElement(Object.values(NotificationType)),
+      receiver: faker.word.sample(),
+      sender: faker.word.sample(),
+      title: faker.word.sample(),
+    },
+    notificationID: faker.number.int({ min: undefined, max: undefined }),
     read: faker.datatype.boolean(),
-    receiver: faker.word.sample(),
-    sender: faker.word.sample(),
-    title: faker.word.sample(),
     userID: faker.word.sample(),
     userNotificationID: faker.number.int({ min: undefined, max: undefined }),
   })),

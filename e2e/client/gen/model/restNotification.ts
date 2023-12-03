@@ -5,21 +5,13 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbNotificationID } from './dbNotificationID'
-import type { NotificationType } from './notificationType'
+import type { DbNotification } from './dbNotification'
 import type { DbUserID } from './dbUserID'
 
 export interface RestNotification {
-  body: string
-  createdAt: Date
-  labels: string[]
-  link?: string | null
-  notificationID: DbNotificationID
-  notificationType: NotificationType
+  notification: DbNotification
+  notificationID: number
   read: boolean
-  receiver?: DbUserID
-  sender: DbUserID
-  title: string
   userID: DbUserID
   userNotificationID: number
 }

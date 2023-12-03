@@ -1603,30 +1603,12 @@ components:
     DbNotificationID: {}
     RestNotification: # Generated from internal structs. DO NOT EDIT.
       properties:
-        body:
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-        link:
-          nullable: true
-          type: string
+        notification:
+          $ref: '#/components/schemas/DbNotification'
         notificationID:
-          $ref: '#/components/schemas/DbNotificationID'
-        notificationType:
-          $ref: '#/components/schemas/NotificationType'
+          type: integer
         read:
           type: boolean
-        receiver:
-          $ref: '#/components/schemas/DbUserID'
-        sender:
-          $ref: '#/components/schemas/DbUserID'
-        title:
-          type: string
         userID:
           $ref: '#/components/schemas/DbUserID'
         userNotificationID:
@@ -1636,14 +1618,7 @@ components:
         - notificationID
         - read
         - userID
-        - createdAt
-        - notificationID
-        - title
-        - body
-        - labels
-        - createdAt
-        - sender
-        - notificationType
+        - notification
       type: object
     DbNotification: # Generated from internal structs. DO NOT EDIT.
       properties:

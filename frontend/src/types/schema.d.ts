@@ -523,17 +523,9 @@ export interface components {
     DbWorkItemTypeID: unknown;
     DbNotificationID: unknown;
     RestNotification: {
-      body: string;
-      /** Format: date-time */
-      createdAt: string;
-      labels: string[];
-      link?: string | null;
-      notificationID: components["schemas"]["DbNotificationID"];
-      notificationType: components["schemas"]["NotificationType"];
+      notification: components["schemas"]["DbNotification"];
+      notificationID: number;
       read: boolean;
-      receiver?: components["schemas"]["DbUserID"];
-      sender: components["schemas"]["DbUserID"];
-      title: string;
       userID: components["schemas"]["DbUserID"];
       userNotificationID: number;
     };
