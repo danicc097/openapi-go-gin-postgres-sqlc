@@ -5,6 +5,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -53,6 +54,22 @@ type FakeNotification struct {
 	}
 	latestNotificationsReturnsOnCall map[int]struct {
 		result1 []db.GetUserNotificationsRow
+		result2 error
+	}
+	PaginatedNotificationsStub        func(context.Context, db.DBTX, db.UserID, models.GetPaginatedNotificationsParams) ([]db.UserNotification, error)
+	paginatedNotificationsMutex       sync.RWMutex
+	paginatedNotificationsArgsForCall []struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 db.UserID
+		arg4 models.GetPaginatedNotificationsParams
+	}
+	paginatedNotificationsReturns struct {
+		result1 []db.UserNotification
+		result2 error
+	}
+	paginatedNotificationsReturnsOnCall map[int]struct {
+		result1 []db.UserNotification
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -257,6 +274,73 @@ func (fake *FakeNotification) LatestNotificationsReturnsOnCall(i int, result1 []
 	}{result1, result2}
 }
 
+func (fake *FakeNotification) PaginatedNotifications(arg1 context.Context, arg2 db.DBTX, arg3 db.UserID, arg4 models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
+	fake.paginatedNotificationsMutex.Lock()
+	ret, specificReturn := fake.paginatedNotificationsReturnsOnCall[len(fake.paginatedNotificationsArgsForCall)]
+	fake.paginatedNotificationsArgsForCall = append(fake.paginatedNotificationsArgsForCall, struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 db.UserID
+		arg4 models.GetPaginatedNotificationsParams
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.PaginatedNotificationsStub
+	fakeReturns := fake.paginatedNotificationsReturns
+	fake.recordInvocation("PaginatedNotifications", []interface{}{arg1, arg2, arg3, arg4})
+	fake.paginatedNotificationsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeNotification) PaginatedNotificationsCallCount() int {
+	fake.paginatedNotificationsMutex.RLock()
+	defer fake.paginatedNotificationsMutex.RUnlock()
+	return len(fake.paginatedNotificationsArgsForCall)
+}
+
+func (fake *FakeNotification) PaginatedNotificationsCalls(stub func(context.Context, db.DBTX, db.UserID, models.GetPaginatedNotificationsParams) ([]db.UserNotification, error)) {
+	fake.paginatedNotificationsMutex.Lock()
+	defer fake.paginatedNotificationsMutex.Unlock()
+	fake.PaginatedNotificationsStub = stub
+}
+
+func (fake *FakeNotification) PaginatedNotificationsArgsForCall(i int) (context.Context, db.DBTX, db.UserID, models.GetPaginatedNotificationsParams) {
+	fake.paginatedNotificationsMutex.RLock()
+	defer fake.paginatedNotificationsMutex.RUnlock()
+	argsForCall := fake.paginatedNotificationsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeNotification) PaginatedNotificationsReturns(result1 []db.UserNotification, result2 error) {
+	fake.paginatedNotificationsMutex.Lock()
+	defer fake.paginatedNotificationsMutex.Unlock()
+	fake.PaginatedNotificationsStub = nil
+	fake.paginatedNotificationsReturns = struct {
+		result1 []db.UserNotification
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeNotification) PaginatedNotificationsReturnsOnCall(i int, result1 []db.UserNotification, result2 error) {
+	fake.paginatedNotificationsMutex.Lock()
+	defer fake.paginatedNotificationsMutex.Unlock()
+	fake.PaginatedNotificationsStub = nil
+	if fake.paginatedNotificationsReturnsOnCall == nil {
+		fake.paginatedNotificationsReturnsOnCall = make(map[int]struct {
+			result1 []db.UserNotification
+			result2 error
+		})
+	}
+	fake.paginatedNotificationsReturnsOnCall[i] = struct {
+		result1 []db.UserNotification
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeNotification) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -266,6 +350,8 @@ func (fake *FakeNotification) Invocations() map[string][][]interface{} {
 	defer fake.deleteMutex.RUnlock()
 	fake.latestNotificationsMutex.RLock()
 	defer fake.latestNotificationsMutex.RUnlock()
+	fake.paginatedNotificationsMutex.RLock()
+	defer fake.paginatedNotificationsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -766,7 +766,6 @@ x.gen.counterfeiter() {
 
     mkdir -p "$cache"
 
-    # FIXME: not invalidating cache correctly
     for key in ${!ifaces[@]}; do
       input_path="${key#*-}"
       iface="${key%%-*}"
