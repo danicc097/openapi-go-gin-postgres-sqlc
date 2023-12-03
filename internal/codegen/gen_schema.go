@@ -54,9 +54,6 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 		handleError(reflector.AddOperation(oc))
 
 		// IMPORTANT: ensure structs are public.
-		// FIXME: generic instantiated struct fails.
-		//        RestGetPaginatedNotificationsResponse is generated as $ref: '#/components/schemas/RestPaginationBaseResponseGithubComDanicc097OpenapiGoGinPostgresSqlcInternalRestNotification
-		// therefore key
 		x, ok := reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName]
 		if !ok {
 			// s, err := reflector.Spec.MarshalYAML()
@@ -79,13 +76,18 @@ func newSpecReflector() *openapi3.Reflector {
 	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
 	reflector.DefaultOptions = append(reflector.DefaultOptions,
 		jsonschema.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-			// TODO: need to handle struct instances from generic struct. e.g.
 			// see https://stackoverflow.com/questions/74838506/get-the-type-name-of-a-generic-struct-without-type-parameters
 			// both t.Name() and t.String() return a composed name
 			// RestGetPaginatedNotificationsResponse has
 			// defaultDefName: RestPaginationBaseResponse[GithubComDanicc097OpenapiGoGinPostgresSqlcInternalRestNotification]
 			// TODO: if we use ast-parser create-generics-map we can generate a JSON mapping real names to composed names
 			// right before gen-schema
+			// PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.Notification] may be mapped to
+			// github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.Notification]
+			// NOTE: returning structName in intercept will not work since we intercept all indirect types here as well
+			// and would need a way to identify generic structs regardless
+			fmt.Printf("t.Name(): %v\n", t.Name())
+
 			// c := render.AsCode(g)
 			// fmt.Printf("c: %v\n", c)
 			return defaultDefName

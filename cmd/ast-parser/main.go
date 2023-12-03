@@ -94,6 +94,9 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 									continue
 								}
 
+								fmt.Printf("obj.Name(): %v\n", obj.Name())
+								fmt.Printf("obj.Type(): %v\n", obj.Type())
+
 								if isGeneric && excludeGenerics {
 									fmt.Fprintf(os.Stderr, "Skipping generic struct %s\n", structName)
 									continue
