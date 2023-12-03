@@ -12,6 +12,19 @@
       "processId": 0
     },
     {
+      "name": "Test codegen gen-schema",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "cwd": ".",
+      "program": "cmd/codegen/main.go",
+      "args": [
+        "gen-schema",
+        "--struct-names",
+        "RestGetPaginatedNotificationsResponse"
+      ]
+    },
+    {
       "name": "Launch Gin Server",
       "type": "go",
       "request": "launch",
