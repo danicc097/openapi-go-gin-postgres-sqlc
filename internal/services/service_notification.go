@@ -52,8 +52,7 @@ func (n *Notification) LatestNotifications(ctx context.Context, d db.DBTX, param
 	return notification, nil
 }
 
-// TODO: for usage via https://.../notifications/page?limit=X&user_notification_id=Y&direction=Z
-// // PaginatedNotifications gets user notifications ordered by creation date.
+// PaginatedNotifications gets user notifications by cursor.
 func (n *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
 	defer newOTelSpan().Build(ctx).End()
 

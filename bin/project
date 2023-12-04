@@ -44,7 +44,7 @@ GEN_POSTGRES_DB="gen_db"
 
 # determines if gen cache should be restore at program exit. 0|1
 need_cache_restore=0
-# stores the first executing function to track if caching gen is already running,
+# stores the first executing function of xsetup.backup-gen to track if caching gen is already running,
 # to allow for nested xsetup.backup-gen and cache-cleanup inside multiple functions.
 xsetup_backup_gen_caller=""
 
@@ -147,7 +147,7 @@ xsetup.backup-gen.restore() {
   wait # for any pending job
 
   git reset --hard && git clean -df &>/dev/null
-  rm -rf "$CACHE" # else `already exists, no checkout` upon stash apply
+  rm -rf "$CACHE" # else `already exists, no checkout` upon stash apply since we have just reset gitignore
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 }
 
@@ -1951,11 +1951,13 @@ exit-cleanup() {
     xsetup.backup-gen.restore
   fi
 
-  # shared cleanup regardless of gen success
-  git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
-  rm -f backup-gen-stash-dummy.txt
-  mv .gitignore.bak .gitignore # remove after cache has been restored
-  git branch -D "$gen_backup_branch" &>/dev/null || true
+  if test -n "$xsetup_backup_gen_caller"; then
+    # shared cleanup regardless of gen success
+    git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
+    rm -f backup-gen-stash-dummy.txt
+    mv .gitignore.bak .gitignore # remove after cache has been restored
+    git branch -D "$gen_backup_branch" &>/dev/null || true
+  fi
   cd "$starting_cwd" || true
 }
 

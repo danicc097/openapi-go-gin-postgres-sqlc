@@ -94,8 +94,6 @@ func (u *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, us
 		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid cursor for paginated notifications: %s", params.Cursor)
 	}
 
-	fmt.Printf("userID.UUID: %v\n", userID.UUID)
-
 	opts := []db.UserNotificationSelectConfigOption{
 		db.WithUserNotificationFilters(map[string][]any{
 			"user_id = $i": {userID},
