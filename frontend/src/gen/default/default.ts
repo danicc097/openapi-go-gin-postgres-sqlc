@@ -31,7 +31,10 @@ export const getPingQueryKey = () => {
   return [`/ping`] as const
 }
 
-export const getPingInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = HTTPError>(options?: {
+export const getPingInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof ping>>,
+  TError = void | HTTPError,
+>(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }) => {
@@ -49,12 +52,12 @@ export const getPingInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof pi
 }
 
 export type PingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof ping>>>
-export type PingInfiniteQueryError = HTTPError
+export type PingInfiniteQueryError = void | HTTPError
 
 /**
  * @summary Ping pongs
  */
-export const usePingInfinite = <TData = Awaited<ReturnType<typeof ping>>, TError = HTTPError>(options?: {
+export const usePingInfinite = <TData = Awaited<ReturnType<typeof ping>>, TError = void | HTTPError>(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -67,7 +70,7 @@ export const usePingInfinite = <TData = Awaited<ReturnType<typeof ping>>, TError
   return query
 }
 
-export const getPingQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = HTTPError>(options?: {
+export const getPingQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = void | HTTPError>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }) => {
@@ -85,12 +88,12 @@ export const getPingQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TE
 }
 
 export type PingQueryResult = NonNullable<Awaited<ReturnType<typeof ping>>>
-export type PingQueryError = HTTPError
+export type PingQueryError = void | HTTPError
 
 /**
  * @summary Ping pongs
  */
-export const usePing = <TData = Awaited<ReturnType<typeof ping>>, TError = HTTPError>(options?: {
+export const usePing = <TData = Awaited<ReturnType<typeof ping>>, TError = void | HTTPError>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {

@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -61,7 +62,7 @@ func TestDeleteUserRoute(t *testing.T) {
 			require.NoError(t, err, "ff.CreateUser: %s")
 
 			ures, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID.UUID, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
-
+			fmt.Printf("ures.Body: %v\n", string(ures.Body))
 			require.NoError(t, err)
 			assert.Equal(t, tc.status, ures.StatusCode())
 		})

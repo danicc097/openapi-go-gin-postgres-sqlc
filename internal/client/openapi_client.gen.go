@@ -2126,6 +2126,7 @@ func (r GetCurrentUserResponse) StatusCode() int {
 type DeleteUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON4XX      *HTTPError
 }
 
 // Status returns HTTPResponse.Status
@@ -2927,6 +2928,16 @@ func ParseDeleteUserResponse(rsp *http.Response) (*DeleteUserResponse, error) {
 	response := &DeleteUserResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
 	}
 
 	return response, nil

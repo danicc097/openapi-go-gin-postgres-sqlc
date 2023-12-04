@@ -16,7 +16,7 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
-import type { UpdateUserAuthRequest, UpdateUserRequest, User } from '.././model'
+import type { HTTPError, UpdateUserAuthRequest, UpdateUserRequest, User } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -190,7 +190,7 @@ export const deleteUser = (id: string, options?: SecondParameter<typeof customIn
   return customInstance<void>({ url: `/user/${id}`, method: 'delete' }, options)
 }
 
-export const getDeleteUserMutationOptions = <TError = unknown, TContext = unknown>(options?: {
+export const getDeleteUserMutationOptions = <TError = HTTPError, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext>
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext> => {
@@ -207,12 +207,12 @@ export const getDeleteUserMutationOptions = <TError = unknown, TContext = unknow
 
 export type DeleteUserMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>
 
-export type DeleteUserMutationError = unknown
+export type DeleteUserMutationError = HTTPError
 
 /**
  * @summary deletes the user by id
  */
-export const useDeleteUser = <TError = unknown, TContext = unknown>(options?: {
+export const useDeleteUser = <TError = HTTPError, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError, { id: string }, TContext>
   request?: SecondParameter<typeof customInstance>
 }) => {

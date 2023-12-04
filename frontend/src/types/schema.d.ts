@@ -621,6 +621,10 @@ export interface operations {
           "application/json": components["schemas"]["PaginatedNotificationsResponse"];
         };
       };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
       /** @description Error response */
       "4XX": {
         content: {
@@ -638,6 +642,10 @@ export interface operations {
           "text/plain": string;
         };
       };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
       /** @description Error response */
       "4XX": {
         content: {
@@ -666,6 +674,10 @@ export interface operations {
           "text/plain": string;
         };
       };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
       /** @description Error response */
       "4XX": {
         content: {
@@ -721,8 +733,16 @@ export interface operations {
     responses: {
       /** @description User deleted successfully */
       204: never;
-      /** @description User not found */
-      404: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
     };
   };
   /** updates the user by id */

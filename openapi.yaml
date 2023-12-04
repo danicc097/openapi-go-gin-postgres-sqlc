@@ -58,8 +58,14 @@ x-require-authenticated: &x-require-authenticated
   security:
     - bearer_auth: []
     - api_key: []
-# TODO: 403 and 401 separated, just when require-authenticated
+# 403 and 401 will have precedence over 4XX, else we
+# get response validation failure (500) on a 403 and 401
+# since we don't use HTTPError schema
 x-error-response: &x-error-response
+  403:
+    description: Unauthorized
+  401:
+    description: Unauthenticated
   4XX:
     description: Error response
     content:
@@ -98,7 +104,7 @@ paths:
     get:
       operationId: MyProviderCallback
       responses:
-        "200":
+        200:
           description: callback for MyProvider auth server
       tags:
         - oidc
@@ -120,7 +126,7 @@ paths:
             $ref: '#/components/schemas/Project'
           in: query
       responses:
-        "200":
+        200:
           description: events
           content:
             text/event-stream:
@@ -140,7 +146,7 @@ paths:
       tags:
         - notifications
       responses:
-        "200":
+        200:
           description: OK
           content:
             application/json:
@@ -154,7 +160,7 @@ paths:
       summary: Ping pongs
       operationId: Ping
       responses:
-        "200":
+        200:
           description: OK
           content:
             text/plain:
@@ -167,7 +173,7 @@ paths:
       summary: Returns this very OpenAPI spec.
       operationId: OpenapiYamlGet
       responses:
-        "200":
+        200:
           description: OpenAPI YAML file.
           content:
             application/x-yaml:
@@ -180,7 +186,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: AdminPing
       responses:
-        "200":
+        200:
           description: OK
           content:
             text/plain:
@@ -197,7 +203,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetCurrentUser
       responses:
-        "200":
+        200:
           content:
             application/json:
               schema:
@@ -220,7 +226,7 @@ paths:
         description: Updated user object
         required: true
       responses:
-        "204":
+        204:
           description: User auth updated successfully.
       x-required-scopes:
         - scopes:write
@@ -234,10 +240,9 @@ paths:
       parameters:
         - *x-uuidParameter
       responses:
-        "204":
+        204:
           description: User deleted successfully
-        "404":
-          description: User not found
+        !!merge <<: *x-error-response
       tags:
         - user
       x-required-scopes:
@@ -257,7 +262,7 @@ paths:
         description: Updated user object
         required: true
       responses:
-        "200":
+        200:
           content:
             application/json:
               schema:
@@ -282,7 +287,7 @@ paths:
               $ref: '#/components/schemas/InitializeProjectRequest'
         required: true
       responses:
-        "204":
+        204:
           description: Success.
       tags:
         - project
@@ -295,7 +300,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ProjectName'
       responses:
-        "200":
+        200:
           description: Project.
           content:
             application/json:
@@ -311,7 +316,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ProjectName'
       responses:
-        "200":
+        200:
           description: Project config.
           content:
             application/json:
@@ -332,7 +337,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ProjectConfig'
       responses:
-        "204":
+        204:
           description: Config updated successfully.
       x-required-role: admin
       tags:
@@ -345,7 +350,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ProjectName'
       responses:
-        "200":
+        200:
           description: Success.
           content:
             application/json:
@@ -384,7 +389,7 @@ paths:
             type: boolean
           name: deleted
       responses:
-        "200":
+        200:
           description: Success.
           content:
             application/json:
@@ -408,7 +413,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ProjectName'
       responses:
-        "201":
+        201:
           description: Success.
           content:
             application/json:
@@ -428,7 +433,7 @@ paths:
               $ref: '#/components/schemas/WorkItemCreateRequest'
         required: true
       responses:
-        "201":
+        201:
           description: Success.
           content:
             application/json:
@@ -445,7 +450,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Serial'
       responses:
-        "200":
+        200:
           description: Success.
           content:
             application/json:
@@ -461,7 +466,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Serial'
       responses:
-        "200":
+        200:
           description: Success.
           content:
             application/json:
@@ -477,7 +482,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Serial'
       responses:
-        "204":
+        204:
           description: Success.
       tags:
         - workitem
@@ -495,7 +500,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Serial'
       responses:
-        "200":
+        200:
           description: Success.
           content:
             application/json:

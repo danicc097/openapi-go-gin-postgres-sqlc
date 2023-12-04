@@ -124,7 +124,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 
 func extractValidationError(err error) *models.HTTPValidationError {
 	var origErrs []string
-	var vErrs []models.ValidationError
+	var vErrs []models.ValidationError // nolint: prealloc
 
 	unwrappedErr := err
 
