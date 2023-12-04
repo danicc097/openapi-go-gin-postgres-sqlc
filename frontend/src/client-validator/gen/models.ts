@@ -86,8 +86,8 @@ export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
 
 export interface PaginatedNotificationsResponse {
-  items?: RestNotification[] | null
-  page?: RestPaginationPage
+  items: RestNotification[] | null
+  page: RestPaginationPage
 }
 export interface RestNotification {
   notification: DbNotification

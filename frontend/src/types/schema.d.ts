@@ -101,8 +101,8 @@ export interface components {
     /** @enum {string} */
     Direction: "asc" | "desc";
     PaginatedNotificationsResponse: {
-      items?: components["schemas"]["RestNotification"][] | null;
-      page?: components["schemas"]["RestPaginationPage"];
+      items: components["schemas"]["RestNotification"][] | null;
+      page: components["schemas"]["RestPaginationPage"];
     };
     DbActivity: {
       activityID: number;

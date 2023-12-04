@@ -542,6 +542,9 @@ components:
           type: array
         page:
           $ref: '#/components/schemas/RestPaginationPage'
+      required:
+        - page
+        - items
       type: object
       x-postgen-struct: RestPaginatedNotificationsResponse
     DbActivity: # Generated from internal structs. DO NOT EDIT.

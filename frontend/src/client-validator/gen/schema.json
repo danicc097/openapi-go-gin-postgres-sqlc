@@ -25,6 +25,10 @@
           "$ref": "#/definitions/RestPaginationPage"
         }
       },
+      "required": [
+        "page",
+        "items"
+      ],
       "type": "object",
       "x-postgen-struct": "RestPaginatedNotificationsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"

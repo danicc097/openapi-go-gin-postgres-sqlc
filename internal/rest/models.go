@@ -19,8 +19,8 @@ type PaginationPage struct {
 }
 
 type PaginationBaseResponse[T any] struct {
-	Page  PaginationPage `json:"page"`
-	Items []T            `json:"items"`
+	Page  PaginationPage `json:"page"  required:"true"`
+	Items []T            `json:"items" required:"true"`
 }
 
 type Notification struct {

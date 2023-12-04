@@ -9,6 +9,6 @@ import type { RestNotification } from './restNotification'
 import type { RestPaginationPage } from './restPaginationPage'
 
 export interface PaginatedNotificationsResponse {
-  items?: RestNotification[] | null
-  page?: RestPaginationPage
+  items: RestNotification[] | null
+  page: RestPaginationPage
 }

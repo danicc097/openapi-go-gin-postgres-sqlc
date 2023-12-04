@@ -630,7 +630,7 @@ type NotificationType string
 // PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
 type PaginatedNotificationsResponse struct {
 	Items *[]RestNotification `json:"items"`
-	Page  *RestPaginationPage `json:"page,omitempty"`
+	Page  RestPaginationPage  `json:"page"`
 }
 
 // Project defines the model for Project.
