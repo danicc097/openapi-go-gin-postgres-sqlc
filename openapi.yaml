@@ -539,10 +539,7 @@ components:
           nullable: true
           type: array
         page:
-          properties:
-            nextCursor:
-              type: string
-          type: object
+          $ref: '#/components/schemas/RestPaginationPage'
       type: object
       x-postgen-struct: RestPaginatedNotificationsResponse
     DbActivity: # Generated from internal structs. DO NOT EDIT.
@@ -1601,25 +1598,6 @@ components:
         path: github.com/google/uuid
     DbWorkItemTypeID: {}
     DbNotificationID: {}
-    RestNotification: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        notification:
-          $ref: '#/components/schemas/DbNotification'
-        notificationID:
-          type: integer
-        read:
-          type: boolean
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        userNotificationID:
-          type: integer
-      required:
-        - userNotificationID
-        - notificationID
-        - read
-        - userID
-        - notification
-      type: object
     DbNotification: # Generated from internal structs. DO NOT EDIT.
       properties:
         body:
@@ -1652,6 +1630,46 @@ components:
         - createdAt
         - sender
         - notificationType
+      type: object
+    DbUserNotification: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        notificationID:
+          type: integer
+        read:
+          type: boolean
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        userNotificationID:
+          type: integer
+      required:
+        - userNotificationID
+        - notificationID
+        - read
+        - userID
+      type: object
+    RestPaginationPage: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        nextCursor:
+          type: string
+      type: object
+    RestNotification: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        notification:
+          $ref: '#/components/schemas/DbNotification'
+        notificationID:
+          type: integer
+        read:
+          type: boolean
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        userNotificationID:
+          type: integer
+      required:
+        - userNotificationID
+        - notificationID
+        - read
+        - userID
+        - notification
       type: object
   examples: # Generated from internal structs. DO NOT EDIT.
     User:

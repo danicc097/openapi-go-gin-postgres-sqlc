@@ -64,8 +64,10 @@ import {
   DbUserID,
   DbWorkItemTypeID,
   DbNotificationID,
-  RestNotification,
   DbNotification,
+  DbUserNotification,
+  RestPaginationPage,
+  RestNotification,
 } from './models'
 
 export const schemaDefinitions = {
@@ -171,8 +173,10 @@ export const schemaDefinitions = {
   DbUserID: info<DbUserID>('DbUserID', '#/definitions/DbUserID'),
   DbWorkItemTypeID: info<DbWorkItemTypeID>('DbWorkItemTypeID', '#/definitions/DbWorkItemTypeID'),
   DbNotificationID: info<DbNotificationID>('DbNotificationID', '#/definitions/DbNotificationID'),
-  RestNotification: info<RestNotification>('RestNotification', '#/definitions/RestNotification'),
   DbNotification: info<DbNotification>('DbNotification', '#/definitions/DbNotification'),
+  DbUserNotification: info<DbUserNotification>('DbUserNotification', '#/definitions/DbUserNotification'),
+  RestPaginationPage: info<RestPaginationPage>('RestPaginationPage', '#/definitions/RestPaginationPage'),
+  RestNotification: info<RestNotification>('RestNotification', '#/definitions/RestNotification'),
 }
 
 export interface SchemaInfo<T> {

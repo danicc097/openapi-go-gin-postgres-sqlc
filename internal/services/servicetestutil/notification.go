@@ -17,7 +17,7 @@ type CreateNotificationParams struct {
 }
 
 // CreatePersonalNotification creates a new notification with the given configuration.
-func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params CreateNotificationParams) (*db.Notification, error) {
+func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params CreateNotificationParams) (*db.UserNotification, error) {
 	admin, err := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
 	if err != nil {
 		return nil, fmt.Errorf("ff.CreateUser: %w", err)
@@ -25,7 +25,7 @@ func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params
 	n, err := ff.svc.Notification.CreateNotification(ctx, ff.db, &services.NotificationCreateParams{
 		NotificationCreateParams: db.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
-			Labels:           []string{"label " + string(testutil.RandomInt(1, 9999))},
+			Labels:           []string{"label " + fmt.Sprint(testutil.RandomInt(1, 9999))},
 			Link:             pointers.New("https://somelink"),
 			Title:            testutil.RandomNameIdentifier(0, "-"),
 			Sender:           admin.User.UserID,
@@ -40,8 +40,9 @@ func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params
 	return n, nil
 }
 
-// CreateGlobalNotification creates a new notification with the given configuration.
-func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params CreateNotificationParams) (*db.Notification, error) {
+// CreateGlobalNotification creates a new global notification with the given configuration.
+// Returns the resulting user notification fan out.
+func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params CreateNotificationParams) (*db.UserNotification, error) {
 	admin, err := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
 	if err != nil {
 		return nil, fmt.Errorf("ff.CreateUser: %w", err)
@@ -49,7 +50,7 @@ func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params C
 	n, err := ff.svc.Notification.CreateNotification(ctx, ff.db, &services.NotificationCreateParams{
 		NotificationCreateParams: db.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
-			Labels:           []string{"label " + string(testutil.RandomInt(1, 9999))},
+			Labels:           []string{"label " + fmt.Sprint(testutil.RandomInt(1, 9999))},
 			Link:             pointers.New("https://somelink"),
 			Title:            testutil.RandomNameIdentifier(0, "-"),
 			Sender:           admin.User.UserID,

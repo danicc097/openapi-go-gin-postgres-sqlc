@@ -5,7 +5,11 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { DbUserID } from './dbUserID'
 
-export type PaginatedNotificationsResponsePage = {
-  nextCursor?: string
+export interface DbUserNotification {
+  notificationID: number
+  read: boolean
+  userID: DbUserID
+  userNotificationID: number
 }

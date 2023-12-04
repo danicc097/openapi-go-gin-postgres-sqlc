@@ -11,7 +11,7 @@ import (
 )
 
 type FakeNotification struct {
-	CreateStub        func(context.Context, db.DBTX, *db.NotificationCreateParams) (*db.Notification, error)
+	CreateStub        func(context.Context, db.DBTX, *db.NotificationCreateParams) (*db.UserNotification, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
@@ -19,11 +19,11 @@ type FakeNotification struct {
 		arg3 *db.NotificationCreateParams
 	}
 	createReturns struct {
-		result1 *db.Notification
+		result1 *db.UserNotification
 		result2 error
 	}
 	createReturnsOnCall map[int]struct {
-		result1 *db.Notification
+		result1 *db.UserNotification
 		result2 error
 	}
 	DeleteStub        func(context.Context, db.DBTX, db.NotificationID) (*db.Notification, error)
@@ -76,7 +76,7 @@ type FakeNotification struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeNotification) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.NotificationCreateParams) (*db.Notification, error) {
+func (fake *FakeNotification) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.NotificationCreateParams) (*db.UserNotification, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
@@ -103,7 +103,7 @@ func (fake *FakeNotification) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeNotification) CreateCalls(stub func(context.Context, db.DBTX, *db.NotificationCreateParams) (*db.Notification, error)) {
+func (fake *FakeNotification) CreateCalls(stub func(context.Context, db.DBTX, *db.NotificationCreateParams) (*db.UserNotification, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
@@ -116,28 +116,28 @@ func (fake *FakeNotification) CreateArgsForCall(i int) (context.Context, db.DBTX
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeNotification) CreateReturns(result1 *db.Notification, result2 error) {
+func (fake *FakeNotification) CreateReturns(result1 *db.UserNotification, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	fake.createReturns = struct {
-		result1 *db.Notification
+		result1 *db.UserNotification
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) CreateReturnsOnCall(i int, result1 *db.Notification, result2 error) {
+func (fake *FakeNotification) CreateReturnsOnCall(i int, result1 *db.UserNotification, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	if fake.createReturnsOnCall == nil {
 		fake.createReturnsOnCall = make(map[int]struct {
-			result1 *db.Notification
+			result1 *db.UserNotification
 			result2 error
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 *db.Notification
+		result1 *db.UserNotification
 		result2 error
 	}{result1, result2}
 }

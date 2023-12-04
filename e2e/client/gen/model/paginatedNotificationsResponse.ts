@@ -6,9 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { RestNotification } from './restNotification'
-import type { PaginatedNotificationsResponsePage } from './paginatedNotificationsResponsePage'
+import type { RestPaginationPage } from './restPaginationPage'
 
 export interface PaginatedNotificationsResponse {
   items?: RestNotification[] | null
-  page?: PaginatedNotificationsResponsePage
+  page?: RestPaginationPage
 }

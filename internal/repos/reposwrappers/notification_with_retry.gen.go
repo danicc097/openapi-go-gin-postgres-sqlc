@@ -30,8 +30,8 @@ func NewNotificationWithRetry(base repos.Notification, retryCount int, retryInte
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (np1 *db.Notification, err error) {
-	np1, err = _d.Notification.Create(ctx, d, params)
+func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (up1 *db.UserNotification, err error) {
+	up1, err = _d.Notification.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -43,7 +43,7 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *d
 			return
 		case <-_ticker.C:
 		}
-		np1, err = _d.Notification.Create(ctx, d, params)
+		up1, err = _d.Notification.Create(ctx, d, params)
 	}
 	return
 }

@@ -101,9 +101,10 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 		Mode: loadMode,
 		// large packages still slow
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
-			if !strings.Contains(filename, filepath) {
-				return nil, nil
-			}
+			// IMPORTANT: we need to include every file and package.
+			// if !strings.Contains(filename, filepath) {
+			// 	return nil, nil
+			// }
 
 			const mode = parser.AllErrors | parser.ParseComments
 

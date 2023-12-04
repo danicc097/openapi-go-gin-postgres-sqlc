@@ -23,7 +23,12 @@ type PaginationBaseResponse[T any] struct {
 	Items []T            `json:"items"`
 }
 
-type PaginatedNotificationsResponse = PaginationBaseResponse[db.UserNotification]
+type Notification struct {
+	db.UserNotification
+	Notification db.Notification `json:"notification" required:"true"` // notification_id clash
+}
+
+type PaginatedNotificationsResponse = PaginationBaseResponse[Notification]
 
 // User represents an OpenAPI schema response for a User.
 type User struct {

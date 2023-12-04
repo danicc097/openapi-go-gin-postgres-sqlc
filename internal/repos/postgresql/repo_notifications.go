@@ -79,13 +79,19 @@ func (u *Notification) LatestNotifications(ctx context.Context, d db.DBTX, param
 	return nn, nil
 }
 
-func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error) {
+func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.UserNotification, error) {
 	notification, err := db.CreateNotification(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not create notification: %w", parseDBErrorDetail(err))
 	}
 
-	return notification, nil
+	// only retrieve 1 user notification at most
+	nn, err := db.UserNotificationsByNotificationID(ctx, d, notification.NotificationID, db.WithUserNotificationLimit(1))
+	if len(nn) == 0 {
+		return nil, fmt.Errorf("could not create notification fan out: %w", parseDBErrorDetail(err))
+	}
+
+	return &nn[0], nil
 }
 
 func (u *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {

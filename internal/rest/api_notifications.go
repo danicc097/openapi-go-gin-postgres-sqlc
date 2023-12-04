@@ -12,18 +12,25 @@ func (h *Handlers) GetPaginatedNotifications(c *gin.Context, params models.GetPa
 	defer newOTelSpanWithUser(c).End()
 	caller := getUserFromCtx(c)
 
-	notifications, err := h.svc.Notification.PaginatedNotifications(c.Request.Context(), h.pool, caller.UserID, params)
+	nn, err := h.svc.Notification.PaginatedNotifications(c.Request.Context(), h.pool, caller.UserID, params)
 	if err != nil {
 		renderErrorResponse(c, "Could not fetch notifications", err)
 
 		return
 	}
-	fmt.Printf("notifications: %v\n", notifications)
+
+	items := make([]Notification, len(nn))
+	for i, un := range nn {
+		items[i] = Notification{
+			UserNotification: un,
+			Notification:     *un.NotificationJoin,
+		}
+	}
 	res := PaginatedNotificationsResponse{
 		Page: PaginationPage{
-			NextCursor: fmt.Sprint(notifications[len(notifications)-1].UserNotificationID),
+			NextCursor: fmt.Sprint(nn[len(nn)-1].UserNotificationID),
 		},
-		Items: notifications,
+		Items: items,
 	}
 
 	renderResponse(c, res, http.StatusOK)

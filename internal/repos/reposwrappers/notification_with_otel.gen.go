@@ -37,7 +37,7 @@ func NewNotificationWithTracing(base repos.Notification, instance string, spanDe
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (np1 *db.Notification, err error) {
+func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (up1 *db.UserNotification, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -45,7 +45,7 @@ func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params 
 				"ctx":    ctx,
 				"d":      d,
 				"params": params}, map[string]interface{}{
-				"np1": np1,
+				"up1": up1,
 				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)

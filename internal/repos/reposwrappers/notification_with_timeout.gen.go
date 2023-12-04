@@ -38,7 +38,7 @@ func NewNotificationWithTimeout(base repos.Notification, config NotificationWith
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (np1 *db.Notification, err error) {
+func (_d NotificationWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (up1 *db.UserNotification, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)

@@ -65,7 +65,7 @@ func (n *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, us
 }
 
 // Create creates a new notification.
-func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params *NotificationCreateParams) (*db.Notification, error) {
+func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params *NotificationCreateParams) (*db.UserNotification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	switch params.NotificationType {

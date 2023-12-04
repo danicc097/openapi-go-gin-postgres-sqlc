@@ -40,7 +40,7 @@ func NewNotificationWithPrometheus(base repos.Notification, instanceName string)
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (np1 *db.Notification, err error) {
+func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (up1 *db.UserNotification, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

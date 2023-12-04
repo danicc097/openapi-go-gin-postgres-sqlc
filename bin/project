@@ -1569,9 +1569,9 @@ generate_structs_map() {
   local enums=()
   local all_types=()
   # workaround for reflection type name with generics in swaggest
-  ast-parser find-structs --create-generics-map "$path" >"internal/codegen/reflectTypeMap.gen.json"
+  ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json"
 
-  mapfile -t structs < <(ast-parser find-structs --exclude-generics "$path")
+  mapfile -t structs < <(ast-parser find-structs --exclude-generics --public-only "$path")
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
   find_deleted_pkg_schemas all_types Rest

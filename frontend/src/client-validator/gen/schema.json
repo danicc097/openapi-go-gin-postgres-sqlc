@@ -14,12 +14,7 @@
           ]
         },
         "page": {
-          "properties": {
-            "nextCursor": {
-              "type": "string"
-            }
-          },
-          "type": "object"
+          "$ref": "#/definitions/RestPaginationPage"
         }
       },
       "type": "object",
@@ -1625,34 +1620,6 @@
     "DbNotificationID": {
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestNotification": {
-      "properties": {
-        "notification": {
-          "$ref": "#/definitions/DbNotification"
-        },
-        "notificationID": {
-          "type": "integer"
-        },
-        "read": {
-          "type": "boolean"
-        },
-        "userID": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "userNotificationID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "userNotificationID",
-        "notificationID",
-        "read",
-        "userID",
-        "notification"
-      ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "DbNotification": {
       "properties": {
         "body": {
@@ -1703,6 +1670,67 @@
         "createdAt",
         "sender",
         "notificationType"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserNotification": {
+      "properties": {
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestPaginationPage": {
+      "properties": {
+        "nextCursor": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestNotification": {
+      "properties": {
+        "notification": {
+          "$ref": "#/definitions/DbNotification"
+        },
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID",
+        "notification"
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1889,11 +1917,17 @@
     "DbNotificationID": {
       "$ref": "#/definitions/DbNotificationID"
     },
-    "RestNotification": {
-      "$ref": "#/definitions/RestNotification"
-    },
     "DbNotification": {
       "$ref": "#/definitions/DbNotification"
+    },
+    "DbUserNotification": {
+      "$ref": "#/definitions/DbUserNotification"
+    },
+    "RestPaginationPage": {
+      "$ref": "#/definitions/RestPaginationPage"
+    },
+    "RestNotification": {
+      "$ref": "#/definitions/RestNotification"
     }
   }
 }

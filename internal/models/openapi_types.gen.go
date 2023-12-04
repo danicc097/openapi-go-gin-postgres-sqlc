@@ -420,6 +420,14 @@ type DbUserAPIKey struct {
 // DbUserID defines the model for DbUserID.
 type DbUserID = uuid.UUID
 
+// DbUserNotification defines the model for DbUserNotification.
+type DbUserNotification struct {
+	NotificationID     int      `json:"notificationID"`
+	Read               bool     `json:"read"`
+	UserID             DbUserID `json:"userID"`
+	UserNotificationID int      `json:"userNotificationID"`
+}
+
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
 	ClosedAt       *time.Time             `json:"closedAt"`
@@ -619,9 +627,7 @@ type NotificationType string
 // PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
 type PaginatedNotificationsResponse struct {
 	Items *[]RestNotification `json:"items"`
-	Page  *struct {
-		NextCursor *string `json:"nextCursor,omitempty"`
-	} `json:"page,omitempty"`
+	Page  *RestPaginationPage `json:"page,omitempty"`
 }
 
 // Project defines the model for Project.
@@ -655,6 +661,11 @@ type RestNotification struct {
 	Read               bool           `json:"read"`
 	UserID             DbUserID       `json:"userID"`
 	UserNotificationID int            `json:"userNotificationID"`
+}
+
+// RestPaginationPage defines the model for RestPaginationPage.
+type RestPaginationPage struct {
+	NextCursor *string `json:"nextCursor,omitempty"`
 }
 
 // Role defines the model for Role.

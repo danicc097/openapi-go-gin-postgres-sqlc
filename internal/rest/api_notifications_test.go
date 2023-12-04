@@ -2,7 +2,7 @@ package rest
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -35,19 +35,18 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 		})
 		require.NoError(t, err, "ff.CreateUser: %s")
 
-		_, err = ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.User.UserID})
+		notification, err := ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.User.UserID})
 		require.NoError(t, err)
 
 		p := &models.GetPaginatedNotificationsParams{Limit: 5, Direction: models.GetPaginatedNotificationsParamsDirectionAsc, Cursor: "0"}
 		nres, err := srv.client.GetPaginatedNotificationsWithResponse(context.Background(), p, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, nres.StatusCode())
-		t.Log(string(nres.Body))
-		got, err := json.Marshal(nres.JSON200)
-		require.NoError(t, err)
-		want, err := json.Marshal(&PaginatedNotificationsResponse{Page: PaginationPage{NextCursor: }})
-		require.NoError(t, err)
 
-		assert.JSONEqf(t, string(want), string(got), "")
+		got := nres.JSON200
+		assert.Equal(t, fmt.Sprint(notification.UserNotificationID), *got.Page.NextCursor)
+		assert.Len(t, *got.Items, 1)
+		assert.True(t, (*got.Items)[0].UserID == ufixture.User.UserID.UUID)
+		assert.True(t, (*got.Items)[0].Read == false)
 	})
 }

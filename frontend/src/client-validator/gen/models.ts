@@ -86,9 +86,7 @@ export type DemoWorkItemTypes = 'Type 1'
 
 export interface PaginatedNotificationsResponse {
   items?: RestNotification[] | null
-  page?: {
-    nextCursor?: string
-  }
+  page?: RestPaginationPage
 }
 export interface RestNotification {
   notification: DbNotification
@@ -109,6 +107,9 @@ export interface DbNotification {
   title: string
 }
 export interface DbNotificationID {}
+export interface RestPaginationPage {
+  nextCursor?: string
+}
 export interface DbActivity {
   activityID: number
   description: string
@@ -410,3 +411,9 @@ export interface DbActivityCreateParams {
   projectID?: number
 }
 export interface DbWorkItemTypeID {}
+export interface DbUserNotification {
+  notificationID: number
+  read: boolean
+  userID: DbUserID
+  userNotificationID: number
+}

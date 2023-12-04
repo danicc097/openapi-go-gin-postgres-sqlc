@@ -68,8 +68,10 @@ import {
   DbUserID,
   DbWorkItemTypeID,
   DbNotificationID,
-  RestNotification,
   DbNotification,
+  DbUserNotification,
+  RestPaginationPage,
+  RestNotification,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -798,18 +800,6 @@ export const DbNotificationIDDecoder: Decoder<DbNotificationID> = {
     return validateJson(json, schema, DbNotificationIDDecoder.definitionName)
   },
 }
-export const RestNotificationDecoder: Decoder<RestNotification> = {
-  definitionName: 'RestNotification',
-  schemaRef: '#/definitions/RestNotification',
-
-  decode(json: unknown): RestNotification {
-    const schema = ajv.getSchema(RestNotificationDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${RestNotificationDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, RestNotificationDecoder.definitionName)
-  },
-}
 export const DbNotificationDecoder: Decoder<DbNotification> = {
   definitionName: 'DbNotification',
   schemaRef: '#/definitions/DbNotification',
@@ -820,5 +810,41 @@ export const DbNotificationDecoder: Decoder<DbNotification> = {
       throw new Error(`Schema ${DbNotificationDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbNotificationDecoder.definitionName)
+  },
+}
+export const DbUserNotificationDecoder: Decoder<DbUserNotification> = {
+  definitionName: 'DbUserNotification',
+  schemaRef: '#/definitions/DbUserNotification',
+
+  decode(json: unknown): DbUserNotification {
+    const schema = ajv.getSchema(DbUserNotificationDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbUserNotificationDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbUserNotificationDecoder.definitionName)
+  },
+}
+export const RestPaginationPageDecoder: Decoder<RestPaginationPage> = {
+  definitionName: 'RestPaginationPage',
+  schemaRef: '#/definitions/RestPaginationPage',
+
+  decode(json: unknown): RestPaginationPage {
+    const schema = ajv.getSchema(RestPaginationPageDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestPaginationPageDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestPaginationPageDecoder.definitionName)
+  },
+}
+export const RestNotificationDecoder: Decoder<RestNotification> = {
+  definitionName: 'RestNotification',
+  schemaRef: '#/definitions/RestNotification',
+
+  decode(json: unknown): RestNotification {
+    const schema = ajv.getSchema(RestNotificationDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestNotificationDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestNotificationDecoder.definitionName)
   },
 }

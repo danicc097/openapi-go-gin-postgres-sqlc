@@ -100,9 +100,7 @@ export interface components {
   schemas: {
     PaginatedNotificationsResponse: {
       items?: components["schemas"]["RestNotification"][] | null;
-      page?: {
-        nextCursor?: string;
-      };
+      page?: components["schemas"]["RestPaginationPage"];
     };
     DbActivity: {
       activityID: number;
@@ -522,13 +520,6 @@ export interface components {
     DbUserID: string;
     DbWorkItemTypeID: unknown;
     DbNotificationID: unknown;
-    RestNotification: {
-      notification: components["schemas"]["DbNotification"];
-      notificationID: number;
-      read: boolean;
-      userID: components["schemas"]["DbUserID"];
-      userNotificationID: number;
-    };
     DbNotification: {
       body: string;
       /** Format: date-time */
@@ -540,6 +531,22 @@ export interface components {
       receiver?: components["schemas"]["DbUserID"];
       sender: components["schemas"]["DbUserID"];
       title: string;
+    };
+    DbUserNotification: {
+      notificationID: number;
+      read: boolean;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
+    };
+    RestPaginationPage: {
+      nextCursor?: string;
+    };
+    RestNotification: {
+      notification: components["schemas"]["DbNotification"];
+      notificationID: number;
+      read: boolean;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
     };
   };
   responses: never;
