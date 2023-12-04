@@ -64,7 +64,7 @@ func (n *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, us
 	return notifications, nil
 }
 
-// Create creates a new notification.
+// Create creates a new notification. In case of global notifications returns a single one from the fan out.
 func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params *NotificationCreateParams) (*db.UserNotification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
@@ -88,13 +88,3 @@ func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params
 
 	return notification, nil
 }
-
-// TODO: latest joins on sender and returns id, username.
-// paginated notification should have orderby id (somehow missing when its pk) and each index query should also have
-// ...By..._PaginatedBy<cursor_cols> queries (will always be unique fns).
-// this way we could paginate e.g. on notification id DESC where user_id = <current_user_id>
-// using UserNotificationsByUserID_PaginatedByNotificationID
-// instead of repeatedly calling FKUser_Sender, or generating an adhoc query,
-// we could have a cache of users client-side, so if sender's user_id is unknown we just GET /users/ with a bunch of ids, return all at once and be done with it.
-// or better yet server side cache for X hours of `users map[uuid]User` for both sender and receiver joins, since contextual info will barely change and ids certainly won't change.
-// MarkAsRead,

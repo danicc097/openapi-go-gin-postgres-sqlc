@@ -41,7 +41,7 @@ func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params
 }
 
 // CreateGlobalNotification creates a new global notification with the given configuration.
-// Returns the resulting user notification fan out.
+// Returns a single user notification from the fan out.
 func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params CreateNotificationParams) (*db.UserNotification, error) {
 	admin, err := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
 	if err != nil {
