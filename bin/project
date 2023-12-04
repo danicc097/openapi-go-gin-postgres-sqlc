@@ -43,7 +43,7 @@ readonly MAX_FNAME_LOG_LEN=13
 GEN_POSTGRES_DB="gen_db"
 
 # determines if gen cache should be restore at program exit. 0|1
-restore_cache=0
+need_cache_restore=0
 # stores the first executing function to track if caching gen is already running,
 # to allow for nested xsetup.backup-gen and cache-cleanup inside multiple functions.
 xsetup_backup_gen_caller=""
@@ -124,36 +124,31 @@ xsetup.backup-gen() {
 
   gen_backup_stash_name="backup-stash-$gen_backup_branch"
 
-  uuidgen >backup-gen-stash-dummy.txt
+  echo "$gen_backup_branch" >backup-gen-stash-dummy.txt
   cp .gitignore .gitignore.bak
-  sed -i "s|^\*\.cache|#\*\.cache|" .gitignore
+  sed -i "s|^\*\.cache|#\*\.cache|" .gitignore # include cache in stash
   git stash push -m "$gen_backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
   git checkout -b "$gen_backup_branch" &>/dev/null
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 
-  restore_cache=1
+  need_cache_restore=1
 }
 
 xsetup.backup-gen.cleanup() {
-  # only accept gen if the main function that backup it up in the first place
+  # only accept gen if the main function that backed it up in the first place
   # finishes successfully, i.e. this very function was called
   if [[ "$xsetup_backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
-    restore_cache=0
+    need_cache_restore=0
   fi
-
-  mv .gitignore.bak .gitignore
 }
 
 xsetup.backup-gen.restore() {
   echo "Restoring previously generated code (branch $gen_backup_branch)..."
-  wait
+  wait # for any pending job
 
   git reset --hard && git clean -df &>/dev/null
+  rm -rf "$CACHE" # else `already exists, no checkout` upon stash apply
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
-
-  rm -rf "$CACHE"/*.md5 # cache is not up to date due to forced exit and restore
-  # TODO: delete specific folders like $CACHE/{counterfeiter,gowrap} only if
-  # failure on those tools specifically
 }
 
 xsetup.drop-and-migrate-gen-db() {
@@ -1952,15 +1947,16 @@ exit-cleanup() {
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true
 
-  if [[ $restore_cache = 1 && -z $X_NO_CACHE ]]; then
+  if [[ $need_cache_restore = 1 && -z $X_NO_CACHE ]]; then
     xsetup.backup-gen.restore
   fi
 
-  rm -f backup-gen-stash-dummy.txt
+  # shared cleanup regardless of gen success
   git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
+  rm -f backup-gen-stash-dummy.txt
+  mv .gitignore.bak .gitignore # remove after cache has been restored
   git branch -D "$gen_backup_branch" &>/dev/null || true
   cd "$starting_cwd" || true
-
 }
 
 killgroup() {
