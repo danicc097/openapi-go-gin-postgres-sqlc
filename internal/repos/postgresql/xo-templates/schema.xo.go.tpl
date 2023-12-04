@@ -100,7 +100,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 // {{ func_name_context $i "" }} retrieves a row from '{{ schema $t.SQLName }}' as a {{ $t.GoName }}.
 //
 // Generated from index '{{ $i.SQLName }}'.
-{{ func_context $i "" "" $t }} {
+{{ func_context $i "" "" $t "" }} {
 	{{ initial_opts $i }}
 
 	for _, o := range opts {
@@ -176,7 +176,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- $ps := .Data -}}
 {{- range $p := $ps -}}
 // {{ func_name_context $p "" }} calls the stored {{ $p.Type }} '{{ $p.Signature }}' on db.
-{{ func_context $p "" "" "" }} {
+{{ func_context $p "" "" "" "" }} {
 {{- if and (driver "mysql") (eq $p.Type "procedure") (not $p.Void) }}
 	// At the moment, the Go MySQL driver does not support stored procedures
 	// with out parameters
@@ -432,12 +432,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 {{ end }}
 
-{{ range $order := combine_values "Asc" "Desc" }}
 {{ range $cursor_fields := cursor_columns $t $constraints $tables }}
 {{ if len $cursor_fields }}
-{{ $suffix := print "PaginatedBy" (fields_to_goname $cursor_fields "") $order }}
-// {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }} in {{ $order }} order.
-{{ func_context $t $suffix $cursor_fields $t }} {
+{{ $suffix := print "PaginatedBy" (fields_to_goname $cursor_fields "") }}
+// {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
+{{ func_context $t $suffix $cursor_fields $t "direction Direction" }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {
@@ -468,7 +467,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	}
 
 
-	{{ sqlstr_paginated $t $tables $cursor_fields $order }}
+	{{ sqlstr_paginated $t $tables $cursor_fields }}
 	sqlstr += c.limit
   sqlstr = "/* {{ func_name_context $t $suffix }} */\n"+sqlstr
 
@@ -476,15 +475,14 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 	rows, err := {{ db_paginated "Query" $t $cursor_fields }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/{{ $order }}/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	return res, nil
 }
-{{ end }}
 {{ end }}
 {{ end }}
 

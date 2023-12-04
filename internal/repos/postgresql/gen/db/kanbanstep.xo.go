@@ -241,8 +241,8 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// KanbanStepPaginatedByKanbanStepIDAsc returns a cursor-paginated list of KanbanStep in Asc order.
-func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStepID KanbanStepID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+// KanbanStepPaginatedByKanbanStepID returns a cursor-paginated list of KanbanStep.
+func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanStepID, direction Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -291,6 +291,11 @@ func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStep
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
@@ -300,28 +305,28 @@ func KanbanStepPaginatedByKanbanStepIDAsc(ctx context.Context, db DB, kanbanStep
 	kanban_steps.step_order,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
-	 WHERE kanban_steps.kanban_step_id > $1
+	 WHERE kanban_steps.kanban_step_id %s $1
 	 %s   %s 
   ORDER BY 
-		kanban_step_id Asc`, selects, joins, filters, groupbys)
+		kanban_step_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* KanbanStepPaginatedByKanbanStepIDAsc */\n" + sqlstr
+	sqlstr = "/* KanbanStepPaginatedByKanbanStepID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
 
-// KanbanStepPaginatedByProjectIDAsc returns a cursor-paginated list of KanbanStep in Asc order.
-func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+// KanbanStepPaginatedByProjectID returns a cursor-paginated list of KanbanStep.
+func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -370,6 +375,11 @@ func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID Pro
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
@@ -379,28 +389,28 @@ func KanbanStepPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID Pro
 	kanban_steps.step_order,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
-	 WHERE kanban_steps.project_id > $1
+	 WHERE kanban_steps.project_id %s $1
 	 %s   %s 
   ORDER BY 
-		project_id Asc`, selects, joins, filters, groupbys)
+		project_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* KanbanStepPaginatedByProjectIDAsc */\n" + sqlstr
+	sqlstr = "/* KanbanStepPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }
 
-// KanbanStepPaginatedByStepOrderAsc returns a cursor-paginated list of KanbanStep in Asc order.
-func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+// KanbanStepPaginatedByStepOrder returns a cursor-paginated list of KanbanStep.
+func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, direction Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -449,6 +459,11 @@ func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
@@ -458,259 +473,22 @@ func KanbanStepPaginatedByStepOrderAsc(ctx context.Context, db DB, stepOrder int
 	kanban_steps.step_order,
 	kanban_steps.time_trackable %s 
 	 FROM public.kanban_steps %s 
-	 WHERE kanban_steps.step_order > $1
+	 WHERE kanban_steps.step_order %s $1
 	 %s   %s 
   ORDER BY 
-		step_order Asc`, selects, joins, filters, groupbys)
+		step_order %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* KanbanStepPaginatedByStepOrderAsc */\n" + sqlstr
+	sqlstr = "/* KanbanStepPaginatedByStepOrder */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
-	}
-	return res, nil
-}
-
-// KanbanStepPaginatedByKanbanStepIDDesc returns a cursor-paginated list of KanbanStep in Desc order.
-func KanbanStepPaginatedByKanbanStepIDDesc(ctx context.Context, db DB, kanbanStepID KanbanStepID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, kanbanStepTableProjectSelectSQL)
-		joinClauses = append(joinClauses, kanbanStepTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, kanbanStepTableProjectGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable %s 
-	 FROM public.kanban_steps %s 
-	 WHERE kanban_steps.kanban_step_id < $1
-	 %s   %s 
-  ORDER BY 
-		kanban_step_id Desc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* KanbanStepPaginatedByKanbanStepIDDesc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
-	}
-	return res, nil
-}
-
-// KanbanStepPaginatedByProjectIDDesc returns a cursor-paginated list of KanbanStep in Desc order.
-func KanbanStepPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, kanbanStepTableProjectSelectSQL)
-		joinClauses = append(joinClauses, kanbanStepTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, kanbanStepTableProjectGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable %s 
-	 FROM public.kanban_steps %s 
-	 WHERE kanban_steps.project_id < $1
-	 %s   %s 
-  ORDER BY 
-		project_id Desc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* KanbanStepPaginatedByProjectIDDesc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
-	}
-	return res, nil
-}
-
-// KanbanStepPaginatedByStepOrderDesc returns a cursor-paginated list of KanbanStep in Desc order.
-func KanbanStepPaginatedByStepOrderDesc(ctx context.Context, db DB, stepOrder int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, kanbanStepTableProjectSelectSQL)
-		joinClauses = append(joinClauses, kanbanStepTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, kanbanStepTableProjectGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	kanban_steps.color,
-	kanban_steps.description,
-	kanban_steps.kanban_step_id,
-	kanban_steps.name,
-	kanban_steps.project_id,
-	kanban_steps.step_order,
-	kanban_steps.time_trackable %s 
-	 FROM public.kanban_steps %s 
-	 WHERE kanban_steps.step_order < $1
-	 %s   %s 
-  ORDER BY 
-		step_order Desc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* KanbanStepPaginatedByStepOrderDesc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
 	return res, nil
 }

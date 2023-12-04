@@ -232,8 +232,8 @@ func (en *EntityNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// EntityNotificationPaginatedByEntityNotificationIDAsc returns a cursor-paginated list of EntityNotification in Asc order.
-func EntityNotificationPaginatedByEntityNotificationIDAsc(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
+// EntityNotificationPaginatedByEntityNotificationID returns a cursor-paginated list of EntityNotification.
+func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db DB, entityNotificationID EntityNotificationID, direction Direction, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -276,76 +276,9 @@ func EntityNotificationPaginatedByEntityNotificationIDAsc(ctx context.Context, d
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	entity_notifications.created_at,
-	entity_notifications.entity,
-	entity_notifications.entity_notification_id,
-	entity_notifications.id,
-	entity_notifications.message,
-	entity_notifications.topic %s 
-	 FROM public.entity_notifications %s 
-	 WHERE entity_notifications.entity_notification_id > $1
-	 %s   %s 
-  ORDER BY 
-		entity_notification_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* EntityNotificationPaginatedByEntityNotificationIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{entityNotificationID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/Asc/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[EntityNotification])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Entity notification", Err: err}))
-	}
-	return res, nil
-}
-
-// EntityNotificationPaginatedByEntityNotificationIDDesc returns a cursor-paginated list of EntityNotification in Desc order.
-func EntityNotificationPaginatedByEntityNotificationIDDesc(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
-	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -356,22 +289,22 @@ func EntityNotificationPaginatedByEntityNotificationIDDesc(ctx context.Context, 
 	entity_notifications.message,
 	entity_notifications.topic %s 
 	 FROM public.entity_notifications %s 
-	 WHERE entity_notifications.entity_notification_id < $1
+	 WHERE entity_notifications.entity_notification_id %s $1
 	 %s   %s 
   ORDER BY 
-		entity_notification_id Desc`, selects, joins, filters, groupbys)
+		entity_notification_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* EntityNotificationPaginatedByEntityNotificationIDDesc */\n" + sqlstr
+	sqlstr = "/* EntityNotificationPaginatedByEntityNotificationID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{entityNotificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/Desc/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
+		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[EntityNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Entity notification", Err: err}))
+		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
 	return res, nil
 }

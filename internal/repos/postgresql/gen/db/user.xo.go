@@ -504,8 +504,8 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
-// UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
-func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
+// UserPaginatedByCreatedAt returns a cursor-paginated list of User.
+func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction Direction, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -596,133 +596,9 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.email,
-	users.external_id,
-	users.first_name,
-	users.full_name,
-	users.has_global_notifications,
-	users.has_personal_notifications,
-	users.last_name,
-	users.role_rank,
-	users.scopes,
-	users.updated_at,
-	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
-	 WHERE users.created_at > $1
-	 %s   AND users.deleted_at is %s  %s 
-  ORDER BY 
-		created_at Asc`, selects, joins, filters, c.deletedAt, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* UserPaginatedByCreatedAtAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", &XoError{Entity: "User", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
-	}
-	return res, nil
-}
-
-// UserPaginatedByCreatedAtDesc returns a cursor-paginated list of User in Desc order.
-func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
-	}
-
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
-	}
-
-	if c.joins.TimeEntries {
-		selectClauses = append(selectClauses, userTableTimeEntriesSelectSQL)
-		joinClauses = append(joinClauses, userTableTimeEntriesJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTimeEntriesGroupBySQL)
-	}
-
-	if c.joins.UserNotifications {
-		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
-		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
-	}
-
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
-	}
-
-	if c.joins.UserAPIKey {
-		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
-		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
-		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
-	}
-
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
-	}
-
-	if c.joins.WorkItemComments {
-		selectClauses = append(selectClauses, userTableWorkItemCommentsSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemCommentsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemCommentsGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -742,22 +618,22 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 	users.user_id,
 	users.username %s 
 	 FROM public.users %s 
-	 WHERE users.created_at < $1
+	 WHERE users.created_at %s $1
 	 %s   AND users.deleted_at is %s  %s 
   ORDER BY 
-		created_at Desc`, selects, joins, filters, c.deletedAt, groupbys)
+		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* UserPaginatedByCreatedAtDesc */\n" + sqlstr
+	sqlstr = "/* UserPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", &XoError{Entity: "User", Err: err}))
+		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
+		return nil, logerror(fmt.Errorf("User/Paginated/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
 	}
 	return res, nil
 }

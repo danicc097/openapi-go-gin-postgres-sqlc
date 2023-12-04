@@ -269,8 +269,8 @@ func (bask *BookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc returns a cursor-paginated list of BookAuthorsSurrogateKey in Asc order.
-func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.Context, db DB, bookAuthorsSurrogateKeyID BookAuthorsSurrogateKeyID, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
+// BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID returns a cursor-paginated list of BookAuthorsSurrogateKey.
+func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID BookAuthorsSurrogateKeyID, direction Direction, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
 	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -325,86 +325,9 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc(ctx context.
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	book_authors_surrogate_key.author_id,
-	book_authors_surrogate_key.book_authors_surrogate_key_id,
-	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM xo_tests.book_authors_surrogate_key %s 
-	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id > $1
-	 %s   %s 
-  ORDER BY 
-		book_authors_surrogate_key_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
-	}
-	return res, nil
-}
-
-// BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc returns a cursor-paginated list of BookAuthorsSurrogateKey in Desc order.
-func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context.Context, db DB, bookAuthorsSurrogateKeyID BookAuthorsSurrogateKeyID, opts ...BookAuthorsSurrogateKeySelectConfigOption) ([]BookAuthorsSurrogateKey, error) {
-	c := &BookAuthorsSurrogateKeySelectConfig{joins: BookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
-	}
-
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, bookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, bookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, bookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -413,22 +336,22 @@ func BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc(ctx context
 	book_authors_surrogate_key.book_id,
 	book_authors_surrogate_key.pseudonym %s 
 	 FROM xo_tests.book_authors_surrogate_key %s 
-	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id < $1
+	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id %s $1
 	 %s   %s 
   ORDER BY 
-		book_authors_surrogate_key_id Desc`, selects, joins, filters, groupbys)
+		book_authors_surrogate_key_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyIDDesc */\n" + sqlstr
+	sqlstr = "/* BookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookAuthorsSurrogateKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+		return nil, logerror(fmt.Errorf("BookAuthorsSurrogateKey/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
 	return res, nil
 }

@@ -1951,13 +1951,12 @@ exit-cleanup() {
     xsetup.backup-gen.restore
   fi
 
-  if test -n "$xsetup_backup_gen_caller"; then
-    # shared cleanup regardless of gen success
-    git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
-    rm -f backup-gen-stash-dummy.txt
-    mv .gitignore.bak .gitignore # remove after cache has been restored
-    git branch -D "$gen_backup_branch" &>/dev/null || true
-  fi
+  # shared cleanup regardless of gen success
+  git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
+  rm -f backup-gen-stash-dummy.txt
+  mv .gitignore.bak .gitignore || true
+  git branch -D "$gen_backup_branch" &>/dev/null || true
+
   cd "$starting_cwd" || true
 }
 

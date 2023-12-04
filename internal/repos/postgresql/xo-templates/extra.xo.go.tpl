@@ -1,6 +1,13 @@
 {{ define "extra" -}}
 {{- $tables := .Data.Tables -}}
 
+type Direction string
+
+const (
+  DirectionAsc Direction = "asc"
+  DirectionDesc Direction = "desc"
+)
+
 func newPointer[T any](v T) *T {
 	return &v
 }

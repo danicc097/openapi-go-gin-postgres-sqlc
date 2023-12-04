@@ -239,8 +239,8 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of WorkItem in Asc order.
-func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+// WorkItemPaginatedByWorkItemID returns a cursor-paginated list of WorkItem.
+func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction Direction, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -295,85 +295,9 @@ func WorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID Wor
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	work_items.description,
-	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
-	 WHERE work_items.work_item_id > $1
-	 %s   %s 
-  ORDER BY 
-		work_item_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* WorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
-	}
-	return res, nil
-}
-
-// WorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of WorkItem in Desc order.
-func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.DemoWorkItem {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
-	}
-
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -381,22 +305,22 @@ func WorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID Wo
 	work_items.title,
 	work_items.work_item_id %s 
 	 FROM xo_tests.work_items %s 
-	 WHERE work_items.work_item_id < $1
+	 WHERE work_items.work_item_id %s $1
 	 %s   %s 
   ORDER BY 
-		work_item_id Desc`, selects, joins, filters, groupbys)
+		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
+	sqlstr = "/* WorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }

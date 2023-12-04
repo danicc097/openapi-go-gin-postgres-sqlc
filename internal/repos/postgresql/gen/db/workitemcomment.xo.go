@@ -256,8 +256,8 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemCommentPaginatedByWorkItemCommentIDAsc returns a cursor-paginated list of WorkItemComment in Asc order.
-func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+// WorkItemCommentPaginatedByWorkItemCommentID returns a cursor-paginated list of WorkItemComment.
+func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, direction Direction, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -312,88 +312,9 @@ func WorkItemCommentPaginatedByWorkItemCommentIDAsc(ctx context.Context, db DB, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_comments.created_at,
-	work_item_comments.message,
-	work_item_comments.updated_at,
-	work_item_comments.user_id,
-	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
-	 WHERE work_item_comments.work_item_comment_id > $1
-	 %s   %s 
-  ORDER BY 
-		work_item_comment_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item comment", Err: err}))
-	}
-	return res, nil
-}
-
-// WorkItemCommentPaginatedByWorkItemCommentIDDesc returns a cursor-paginated list of WorkItemComment in Desc order.
-func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.User {
-		selectClauses = append(selectClauses, workItemCommentTableUserSelectSQL)
-		joinClauses = append(joinClauses, workItemCommentTableUserJoinSQL)
-		groupByClauses = append(groupByClauses, workItemCommentTableUserGroupBySQL)
-	}
-
-	if c.joins.WorkItem {
-		selectClauses = append(selectClauses, workItemCommentTableWorkItemSelectSQL)
-		joinClauses = append(joinClauses, workItemCommentTableWorkItemJoinSQL)
-		groupByClauses = append(groupByClauses, workItemCommentTableWorkItemGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -404,22 +325,22 @@ func WorkItemCommentPaginatedByWorkItemCommentIDDesc(ctx context.Context, db DB,
 	work_item_comments.work_item_comment_id,
 	work_item_comments.work_item_id %s 
 	 FROM public.work_item_comments %s 
-	 WHERE work_item_comments.work_item_comment_id < $1
+	 WHERE work_item_comments.work_item_comment_id %s $1
 	 %s   %s 
   ORDER BY 
-		work_item_comment_id Desc`, selects, joins, filters, groupbys)
+		work_item_comment_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentIDDesc */\n" + sqlstr
+	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item comment", Err: err}))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
 	return res, nil
 }

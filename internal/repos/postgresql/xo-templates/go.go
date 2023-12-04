@@ -1893,7 +1893,7 @@ func (f *Funcs) func_name_context(v any, suffix string) string {
 }
 
 // funcfn builds a func definition.
-func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table Table) string {
+func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table Table, extraFields string) string {
 	var params, returns []string
 	if context {
 		params = append(params, "ctx context.Context")
@@ -1903,6 +1903,9 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table 
 	case Query:
 		for _, z := range x.Params {
 			params = append(params, fmt.Sprintf("%s %s", z.Name, z.Type))
+		}
+		if extraFields != "" {
+			params = append(params, extraFields)
 		}
 		switch {
 		case x.Exec:
@@ -1918,6 +1921,9 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table 
 		}
 	case Proc:
 		params = append(params, f.params(x.Params, true, table))
+		if extraFields != "" {
+			params = append(params, extraFields)
+		}
 		if !x.Void {
 			for _, ret := range x.Returns {
 				returns = append(returns, f.typefn(ret.Type))
@@ -1925,6 +1931,9 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table 
 		}
 	case Index:
 		params = append(params, f.params(x.Fields, true, table))
+		if extraFields != "" {
+			params = append(params, extraFields)
+		}
 		params = append(params, "opts ..."+x.Table.GoName+"SelectConfigOption")
 		rt := x.Table.GoName
 		if !x.IsUnique {
@@ -1935,6 +1944,10 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table 
 		returns = append(returns, rt)
 	case Table: // Paginated query
 		params = append(params, f.params(columns, true, table))
+		if extraFields != "" {
+			params = append(params, extraFields)
+		}
+
 		params = append(params, "opts ..."+x.GoName+"SelectConfigOption")
 		rt := "[]" + x.GoName
 
@@ -1949,6 +1962,7 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table 
 	if len(params) > 0 {
 		p = strings.Join(params, ", ")
 	}
+
 	return fmt.Sprintf("func %s(%s) (%s)", name, p, strings.Join(returns, ", "))
 }
 
@@ -2274,7 +2288,7 @@ func With%[1]sFilters(filters map[string][]any) %[1]sSelectConfigOption {
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
-func (f *Funcs) func_context(v any, suffix string, columns any, w any) string {
+func (f *Funcs) func_context(v any, suffix string, columns any, w any, extraFields string) string {
 	var cc []Field
 	var t Table
 	switch x := columns.(type) {
@@ -2290,11 +2304,11 @@ func (f *Funcs) func_context(v any, suffix string, columns any, w any) string {
 		t = Table{}
 	}
 
-	return f.funcfn(f.func_name_context(v, suffix), f.contextfn(), v, cc, t)
+	return f.funcfn(f.func_name_context(v, suffix), f.contextfn(), v, cc, t, extraFields)
 }
 
 // func_none genarates a func signature for v without context.
-func (f *Funcs) func_none(v any, columns any) string {
+func (f *Funcs) func_none(v any, columns any, extraFields string) string {
 	var cc []Field
 	switch x := columns.(type) {
 	case []Field:
@@ -2302,7 +2316,7 @@ func (f *Funcs) func_none(v any, columns any) string {
 	default:
 		cc = []Field{}
 	}
-	return f.funcfn(f.func_name_none(v), false, v, cc, Table{})
+	return f.funcfn(f.func_name_none(v), false, v, cc, Table{}, extraFields)
 }
 
 // recv builds a receiver func definition.
@@ -2825,7 +2839,7 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 }
 
 // sqlstr_paginated builds a cursor-paginated query string from columns.
-func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field, order string) string {
+func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field) string {
 	var groupbys []string
 	switch x := v.(type) {
 	case Table:
@@ -2854,13 +2868,9 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field, order st
 		var n int
 		var orderbys []string
 		for _, c := range columns {
-			operator := "<"
-			if strings.ToLower(order) == "asc" {
-				operator = ">"
-			}
-			filters = append(filters, fmt.Sprintf("%s.%s %s %s", x.SQLName, c.SQLName, operator, f.nth(n)))
+			filters = append(filters, fmt.Sprintf("%s.%s %%s %s", x.SQLName, c.SQLName, f.nth(n))) // operator is now %s based on `direction`
 			// TODO generate paginated for indexes as well.
-			orderbys = append(orderbys, c.SQLName+" "+order)
+			orderbys = append(orderbys, c.SQLName+" %s ")
 			n++
 		}
 
@@ -2881,18 +2891,28 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field, order st
 
 		buf := f.sqlstrBase(x)
 
+		buf.WriteString(`
+		operator := "<"
+		if direction == DirectionAsc {
+			operator = ">"
+		}
+	`)
 		if tableHasDeletedAt {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins, filters, c.deletedAt, groupbys)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins%s, filters, c.deletedAt, groupbys %s)",
 				strings.Join(lines, "\n\t"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
 				groupbyClause,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
+				strings.Repeat(", operator", len(orderbys)),
+				strings.Repeat(", direction", len(orderbys)),
 			))
 		} else {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, groupbys)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins%s, filters, groupbys %s)",
 				strings.Join(lines, "\n\t"),
 				groupbyClause,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
+				strings.Repeat(", operator", len(orderbys)),
+				strings.Repeat(", direction", len(orderbys)),
 			))
 		}
 
@@ -2928,6 +2948,7 @@ func (f *Funcs) sqlstrBase(x Table) *strings.Builder {
 		if len(groupByClauses) > 0 {
 			groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 		}
+
 		`)
 
 	return buf

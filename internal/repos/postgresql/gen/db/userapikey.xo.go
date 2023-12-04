@@ -237,8 +237,8 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// UserAPIKeyPaginatedByUserAPIKeyIDAsc returns a cursor-paginated list of UserAPIKey in Asc order.
-func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+// UserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of UserAPIKey.
+func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, direction Direction, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -287,80 +287,9 @@ func UserAPIKeyPaginatedByUserAPIKeyIDAsc(ctx context.Context, db DB, userAPIKey
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	user_api_keys.api_key,
-	user_api_keys.expires_on,
-	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s 
-	 FROM public.user_api_keys %s 
-	 WHERE user_api_keys.user_api_key_id > $1
-	 %s   %s 
-  ORDER BY 
-		user_api_key_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "User api key", Err: err}))
-	}
-	return res, nil
-}
-
-// UserAPIKeyPaginatedByUserAPIKeyIDDesc returns a cursor-paginated list of UserAPIKey in Desc order.
-func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.User {
-		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
-		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
-		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -369,22 +298,22 @@ func UserAPIKeyPaginatedByUserAPIKeyIDDesc(ctx context.Context, db DB, userAPIKe
 	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM public.user_api_keys %s 
-	 WHERE user_api_keys.user_api_key_id < $1
+	 WHERE user_api_keys.user_api_key_id %s $1
 	 %s   %s 
   ORDER BY 
-		user_api_key_id Desc`, selects, joins, filters, groupbys)
+		user_api_key_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyIDDesc */\n" + sqlstr
+	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "User api key", Err: err}))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/pgx.CollectRows: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	return res, nil
 }
