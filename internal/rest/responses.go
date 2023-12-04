@@ -213,8 +213,12 @@ func renderResponse(c *gin.Context, res any, status int) {
 	}
 }
 
+// parseBody attempts to bind the given struct to the request body
+// and returns whether the caller should exit early or not.
 func parseBody(c *gin.Context, body any) bool {
 	if err := c.BindJSON(body); err != nil {
+		// openapi validator should have caught a validation error beforehand
+		// for routes that have validator mw enabled.
 		renderErrorResponse(c, "Invalid data", internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid data"))
 
 		return true

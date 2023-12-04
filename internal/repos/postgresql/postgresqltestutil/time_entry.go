@@ -19,7 +19,7 @@ func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userI
 	ucp := RandomTimeEntryCreateParams(t, activityID, userID, workItemID, teamID)
 
 	te, err := teRepo.Create(context.Background(), d, ucp)
-	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return te, nil
 }

@@ -32,7 +32,7 @@ func TestAdminPingRoute(t *testing.T) {
 
 	srv, err := runTestServer(t, testPool)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-	srv.cleanup(t)
+	srv.setupCleanup(t)
 
 	t.Run("authorized", func(t *testing.T) {
 		t.Parallel()

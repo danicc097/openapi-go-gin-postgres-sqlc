@@ -14,7 +14,7 @@ func TestPingRoute(t *testing.T) {
 
 	srv, err := runTestServer(t, testPool)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-	srv.cleanup(t)
+	srv.setupCleanup(t)
 
 	res, err := srv.client.PingWithResponse(context.Background())
 	require.NoError(t, err)

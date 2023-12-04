@@ -76,7 +76,7 @@ func TestSSEStream(t *testing.T) {
 		},
 	)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-	srv.cleanup(t)
+	srv.setupCleanup(t)
 
 	stopCh := make(chan bool)
 	go func() {

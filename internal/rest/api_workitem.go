@@ -29,7 +29,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 
 		return
 	}
-	span.SetAttributes(tracing.ParamsAttribute(jsonBody))
+	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
 
 	body := &models.WorkItemCreateRequest{}

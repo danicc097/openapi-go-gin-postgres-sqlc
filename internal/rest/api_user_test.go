@@ -22,7 +22,7 @@ func TestDeleteUserRoute(t *testing.T) {
 	logger := zaptest.NewLogger(t).Sugar()
 
 	srv, err := runTestServer(t, testPool)
-	srv.cleanup(t)
+	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
@@ -74,7 +74,7 @@ func TestGetUserRoute(t *testing.T) {
 	logger := zaptest.NewLogger(t).Sugar()
 
 	srv, err := runTestServer(t, testPool)
-	srv.cleanup(t)
+	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
@@ -113,7 +113,7 @@ func TestUpdateUserRoutes(t *testing.T) {
 	logger := zaptest.NewLogger(t).Sugar()
 
 	srv, err := runTestServer(t, testPool)
-	srv.cleanup(t)
+	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)

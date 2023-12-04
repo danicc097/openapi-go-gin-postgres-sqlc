@@ -65,7 +65,7 @@ type testServer struct {
 	client *client.ClientWithResponses
 }
 
-func (s *testServer) cleanup(t *testing.T) {
+func (s *testServer) setupCleanup(t *testing.T) {
 	t.Cleanup(func() {
 		s.server.Close()
 	})

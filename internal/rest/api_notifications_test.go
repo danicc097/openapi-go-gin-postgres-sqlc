@@ -21,19 +21,19 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 	logger := zaptest.NewLogger(t).Sugar()
 
 	srv, err := runTestServer(t, testPool)
-	srv.cleanup(t)
+	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
-	t.Run("all notifications", func(t *testing.T) {
+	t.Run("user notifications", func(t *testing.T) {
 		t.Parallel()
 
 		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			WithAPIKey: true,
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
+		require.NoError(t, err)
 
 		notification, err := ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.User.UserID})
 		require.NoError(t, err)

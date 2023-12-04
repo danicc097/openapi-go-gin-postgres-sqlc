@@ -11,7 +11,8 @@ import (
 // Filterable with <attribute>="...".
 const (
 	UserIDAttributeKey = attribute.Key("user-id") // for outermost layer only
-	ParamsAttributeKey = attribute.Key("params")
+
+	MetadataAttributeKey = attribute.Key("metadata")
 )
 
 // GetOTelSpanName returns a span name based on the calling package and function.
@@ -25,12 +26,13 @@ func GetOTelSpanName(parentIndex int) string {
 	return strings.TrimPrefix(funcPtr.Name(), "github.com/danicc097/openapi-go-gin-postgres-sqlc/")
 }
 
-func ParamsAttribute(params any) attribute.KeyValue {
+// MetadataAttribute allows adding metadata in a standard way to a span.
+func MetadataAttribute(metadata any) attribute.KeyValue {
 	p := ""
-	s, err := json.Marshal(params)
+	s, err := json.Marshal(metadata)
 	if err == nil {
 		p = string(s)
 	}
 
-	return ParamsAttributeKey.String(p)
+	return MetadataAttributeKey.String(p)
 }
