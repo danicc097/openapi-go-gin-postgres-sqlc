@@ -98,6 +98,7 @@ func (u *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, us
 		db.WithUserNotificationFilters(map[string][]any{
 			"user_id = $i": {userID},
 		}),
+		db.WithUserNotificationJoin(db.UserNotificationJoins{Notification: true}),
 	}
 	if params.Limit > 0 {
 		opts = append(opts, db.WithUserNotificationLimit(params.Limit))

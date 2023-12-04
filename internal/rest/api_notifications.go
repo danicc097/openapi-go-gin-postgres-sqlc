@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -17,10 +18,13 @@ func (h *Handlers) GetPaginatedNotifications(c *gin.Context, params models.GetPa
 
 		return
 	}
+	fmt.Printf("notifications: %v\n", notifications)
+	res := PaginatedNotificationsResponse{
+		Page: PaginationPage{
+			NextCursor: fmt.Sprint(notifications[len(notifications)-1].UserNotificationID),
+		},
+		Items: notifications,
+	}
 
-	// TODO: pagination responses must have special format {_page: {nextCursor: <..>, ...}, items: <response>}
-	// can have generics for PaginationBaseResponse struct, and its implementations in rest models
-	// type MyPaginationResponse = PaginationBaseResponse[[]SomeThings] get converted to openapi schema
-	// and validated as usual
-	renderResponse(c, notifications, http.StatusOK)
+	renderResponse(c, res, http.StatusOK)
 }

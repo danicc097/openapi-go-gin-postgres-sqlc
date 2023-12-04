@@ -14,19 +14,16 @@ import (
  * Pagination
  */
 
+type PaginationPage struct {
+	NextCursor string `json:"nextCursor"`
+}
+
 type PaginationBaseResponse[T any] struct {
-	Page struct {
-		NextCursor string `json:"nextCursor"`
-	} `json:"page"`
-	Items []T `json:"items"`
+	Page  PaginationPage `json:"page"`
+	Items []T            `json:"items"`
 }
 
-type Notification struct {
-	db.UserNotification
-	Notification db.Notification `json:"notification" required:"true"` // notification_id clash
-}
-
-type PaginatedNotificationsResponse = PaginationBaseResponse[Notification]
+type PaginatedNotificationsResponse = PaginationBaseResponse[db.UserNotification]
 
 // User represents an OpenAPI schema response for a User.
 type User struct {
