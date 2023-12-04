@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -193,7 +194,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 }
 
 // SchemaMigrationPaginatedByVersion returns a cursor-paginated list of SchemaMigration.
-func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version SchemaMigrationID, direction Direction, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
+func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version SchemaMigrationID, direction models.Direction, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
 	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -237,7 +238,7 @@ func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version Schem
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

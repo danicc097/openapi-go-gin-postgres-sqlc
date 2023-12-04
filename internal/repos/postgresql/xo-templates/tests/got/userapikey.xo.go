@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -237,7 +238,7 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 }
 
 // UserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of UserAPIKey.
-func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, direction Direction, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, direction models.Direction, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -287,7 +288,7 @@ func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID 
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

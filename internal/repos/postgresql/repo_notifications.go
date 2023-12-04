@@ -110,7 +110,7 @@ func (u *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, us
 		opts = append(opts, db.WithUserNotificationLimit(params.Limit))
 	}
 
-	notifications, err := db.UserNotificationPaginatedByUserNotificationID(ctx, d, db.UserNotificationID(userNotificationID), db.Direction(params.Direction), opts...)
+	notifications, err := db.UserNotificationPaginatedByUserNotificationID(ctx, d, db.UserNotificationID(userNotificationID), params.Direction, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could get paginated notifications: %w", parseDBErrorDetail(err))
 	}

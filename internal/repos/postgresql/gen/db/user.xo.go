@@ -505,7 +505,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 }
 
 // UserPaginatedByCreatedAt returns a cursor-paginated list of User.
-func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction Direction, opts ...UserSelectConfigOption) ([]User, error) {
+func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -597,7 +597,7 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

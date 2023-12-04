@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -245,7 +246,7 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 }
 
 // ActivityPaginatedByActivityID returns a cursor-paginated list of Activity.
-func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID ActivityID, direction Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID ActivityID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -301,7 +302,7 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 
@@ -333,7 +334,7 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 }
 
 // ActivityPaginatedByProjectID returns a cursor-paginated list of Activity.
-func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -389,7 +390,7 @@ func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectI
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

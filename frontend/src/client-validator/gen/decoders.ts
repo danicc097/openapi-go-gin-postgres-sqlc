@@ -8,6 +8,7 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
+  Direction,
   PaginatedNotificationsResponse,
   DbActivity,
   DbKanbanStep,
@@ -80,6 +81,18 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
 ajv.compile(jsonSchema)
 
 // Decoders
+export const DirectionDecoder: Decoder<Direction> = {
+  definitionName: 'Direction',
+  schemaRef: '#/definitions/Direction',
+
+  decode(json: unknown): Direction {
+    const schema = ajv.getSchema(DirectionDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DirectionDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DirectionDecoder.definitionName)
+  },
+}
 export const PaginatedNotificationsResponseDecoder: Decoder<PaginatedNotificationsResponse> = {
   definitionName: 'PaginatedNotificationsResponse',
   schemaRef: '#/definitions/PaginatedNotificationsResponse',

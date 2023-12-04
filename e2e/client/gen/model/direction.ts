@@ -6,11 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type GetPaginatedNotificationsDirection =
-  typeof GetPaginatedNotificationsDirection[keyof typeof GetPaginatedNotificationsDirection]
+export type Direction = typeof Direction[keyof typeof Direction]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const GetPaginatedNotificationsDirection = {
+export const Direction = {
   asc: 'asc',
   desc: 'desc',
 } as const

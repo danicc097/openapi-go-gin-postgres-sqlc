@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -242,7 +243,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 }
 
 // KanbanStepPaginatedByKanbanStepID returns a cursor-paginated list of KanbanStep.
-func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanStepID, direction Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanStepID, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -292,7 +293,7 @@ func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID 
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 
@@ -326,7 +327,7 @@ func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID 
 }
 
 // KanbanStepPaginatedByProjectID returns a cursor-paginated list of KanbanStep.
-func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -376,7 +377,7 @@ func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID Projec
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 
@@ -410,7 +411,7 @@ func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID Projec
 }
 
 // KanbanStepPaginatedByStepOrder returns a cursor-paginated list of KanbanStep.
-func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, direction Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -460,7 +461,7 @@ func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, d
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

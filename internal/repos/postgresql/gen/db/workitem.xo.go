@@ -479,7 +479,7 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 }
 
 // WorkItemPaginatedByWorkItemID returns a cursor-paginated list of WorkItem.
-func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction Direction, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -577,7 +577,7 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -231,7 +232,7 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 }
 
 // UserNotificationPaginatedByUserNotificationID returns a cursor-paginated list of UserNotification.
-func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, userNotificationID UserNotificationID, direction Direction, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, userNotificationID UserNotificationID, direction models.Direction, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -287,7 +288,7 @@ func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, u
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 
@@ -318,7 +319,7 @@ func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, u
 }
 
 // UserNotificationPaginatedByNotificationID returns a cursor-paginated list of UserNotification.
-func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID NotificationID, direction Direction, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID NotificationID, direction models.Direction, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -374,7 +375,7 @@ func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notif
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

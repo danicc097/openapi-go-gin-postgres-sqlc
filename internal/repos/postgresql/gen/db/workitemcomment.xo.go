@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -257,7 +258,7 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 }
 
 // WorkItemCommentPaginatedByWorkItemCommentID returns a cursor-paginated list of WorkItemComment.
-func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, direction Direction, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, direction models.Direction, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -313,7 +314,7 @@ func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, wor
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

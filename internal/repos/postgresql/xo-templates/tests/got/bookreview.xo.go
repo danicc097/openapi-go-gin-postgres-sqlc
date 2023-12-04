@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -220,7 +221,7 @@ func (br *BookReview) Delete(ctx context.Context, db DB) error {
 }
 
 // BookReviewPaginatedByBookReviewID returns a cursor-paginated list of BookReview.
-func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID BookReviewID, direction Direction, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID BookReviewID, direction models.Direction, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -276,7 +277,7 @@ func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID 
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 
@@ -306,7 +307,7 @@ func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID 
 }
 
 // BookReviewPaginatedByBookID returns a cursor-paginated list of BookReview.
-func BookReviewPaginatedByBookID(ctx context.Context, db DB, bookID BookID, direction Direction, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewPaginatedByBookID(ctx context.Context, db DB, bookID BookID, direction models.Direction, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -362,7 +363,7 @@ func BookReviewPaginatedByBookID(ctx context.Context, db DB, bookID BookID, dire
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

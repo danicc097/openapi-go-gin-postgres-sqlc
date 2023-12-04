@@ -233,7 +233,7 @@ func (en *EntityNotification) Delete(ctx context.Context, db DB) error {
 }
 
 // EntityNotificationPaginatedByEntityNotificationID returns a cursor-paginated list of EntityNotification.
-func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db DB, entityNotificationID EntityNotificationID, direction Direction, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
+func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db DB, entityNotificationID EntityNotificationID, direction models.Direction, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -277,7 +277,7 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

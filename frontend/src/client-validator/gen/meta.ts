@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  Direction,
   PaginatedNotificationsResponse,
   DbActivity,
   DbKanbanStep,
@@ -71,6 +72,7 @@ import {
 } from './models'
 
 export const schemaDefinitions = {
+  Direction: info<Direction>('Direction', '#/definitions/Direction'),
   PaginatedNotificationsResponse: info<PaginatedNotificationsResponse>(
     'PaginatedNotificationsResponse',
     '#/definitions/PaginatedNotificationsResponse',

@@ -6,6 +6,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+export type Direction = 'asc' | 'desc'
 /**
  * represents a database 'notification_type'
  */

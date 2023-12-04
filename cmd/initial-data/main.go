@@ -334,7 +334,7 @@ func main() {
 	handleError(err)
 
 	// TODO: notification service and tests
-	notifs, err := db.UserNotificationPaginatedByUserNotificationID(ctx, pool, 0, db.DirectionAsc, db.WithUserNotificationJoin(db.UserNotificationJoins{Notification: true}), db.WithUserNotificationLimit(5), db.WithUserNotificationFilters(map[string][]any{"user_id = $i": {users[1].UserID}}))
+	notifs, err := db.UserNotificationPaginatedByUserNotificationID(ctx, pool, 0, models.DirectionAsc, db.WithUserNotificationJoin(db.UserNotificationJoins{Notification: true}), db.WithUserNotificationLimit(5), db.WithUserNotificationFilters(map[string][]any{"user_id = $i": {users[1].UserID}}))
 	handleError(err)
 	format.PrintJSONByTag(notifs, "db")
 }

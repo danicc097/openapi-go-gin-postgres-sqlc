@@ -436,7 +436,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ if len $cursor_fields }}
 {{ $suffix := print "PaginatedBy" (fields_to_goname $cursor_fields "") }}
 // {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
-{{ func_context $t $suffix $cursor_fields $t "direction Direction" }} {
+{{ func_context $t $suffix $cursor_fields $t "direction models.Direction" }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {

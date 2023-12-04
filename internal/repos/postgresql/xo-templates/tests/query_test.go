@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests/got"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -33,12 +34,12 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 
 	ctx := context.Background()
 
-	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.DirectionDesc, db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
+	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), models.DirectionDesc, db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
 	require.NoError(t, err)
 	assert.Len(t, ee, 1)
 	assert.Equal(t, ee[0].Name, "element -2 days")
 
-	ee, err = db.PagElementPaginatedByCreatedAt(ctx, testPool, ee[0].CreatedAt, db.DirectionDesc, db.WithPagElementLimit(2))
+	ee, err = db.PagElementPaginatedByCreatedAt(ctx, testPool, ee[0].CreatedAt, models.DirectionDesc, db.WithPagElementLimit(2))
 	require.NoError(t, err)
 	assert.Len(t, ee, 2)
 	assert.Equal(t, ee[0].Name, "element -3 days")
@@ -50,12 +51,12 @@ func Test_Filters(t *testing.T) {
 
 	ctx := context.Background()
 
-	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), db.DirectionDesc, db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
+	ee, err := db.PagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), models.DirectionDesc, db.WithPagElementLimit(1), db.WithPagElementJoin(db.PagElementJoins{}))
 	require.NoError(t, err)
 	assert.Len(t, ee, 1)
 	assert.Equal(t, ee[0].Name, "element -2 days")
 
-	ee, err = db.PagElementPaginatedByCreatedAt(ctx, testPool, ee[0].CreatedAt, db.DirectionDesc, db.WithPagElementLimit(2))
+	ee, err = db.PagElementPaginatedByCreatedAt(ctx, testPool, ee[0].CreatedAt, models.DirectionDesc, db.WithPagElementLimit(2))
 	require.NoError(t, err)
 	assert.Len(t, ee, 2)
 	assert.Equal(t, ee[0].Name, "element -3 days")
@@ -213,7 +214,7 @@ func TestCustomFilters(t *testing.T) {
 
 	ctx := context.Background()
 
-	uu, err := db.UserPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-999*time.Hour), db.DirectionAsc,
+	uu, err := db.UserPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-999*time.Hour), models.DirectionAsc,
 		db.WithUserJoin(db.UserJoins{UserAPIKey: true, BooksAuthor: true}),
 		db.WithUserFilters(map[string][]any{
 			"xo_tests.users.name = any ($i)":       {[]string{"Jane Smith"}}, // unique

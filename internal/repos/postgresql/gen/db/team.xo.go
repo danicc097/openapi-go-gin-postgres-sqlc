@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -288,7 +289,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 }
 
 // TeamPaginatedByTeamID returns a cursor-paginated list of Team.
-func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction Direction, opts ...TeamSelectConfigOption) ([]Team, error) {
+func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction models.Direction, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -350,7 +351,7 @@ func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction 
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 
@@ -383,7 +384,7 @@ func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction 
 }
 
 // TeamPaginatedByProjectID returns a cursor-paginated list of Team.
-func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction Direction, opts ...TeamSelectConfigOption) ([]Team, error) {
+func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -445,7 +446,7 @@ func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, d
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

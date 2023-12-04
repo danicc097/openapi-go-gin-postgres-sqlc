@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { GetPaginatedNotificationsDirection } from './getPaginatedNotificationsDirection'
+import type { Direction } from './direction'
 
 export type GetPaginatedNotificationsParams = {
   limit: number
-  direction: GetPaginatedNotificationsDirection
+  direction: Direction
   cursor: string
 }

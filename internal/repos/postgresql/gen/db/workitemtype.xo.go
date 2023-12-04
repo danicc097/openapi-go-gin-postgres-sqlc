@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -226,7 +227,7 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 }
 
 // WorkItemTypePaginatedByWorkItemTypeID returns a cursor-paginated list of WorkItemType.
-func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID WorkItemTypeID, direction Direction, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID WorkItemTypeID, direction models.Direction, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -276,7 +277,7 @@ func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemT
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 
@@ -308,7 +309,7 @@ func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemT
 }
 
 // WorkItemTypePaginatedByProjectID returns a cursor-paginated list of WorkItemType.
-func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction Direction, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -358,7 +359,7 @@ func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID Proj
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

@@ -10,10 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // PagElement represents a row from 'xo_tests.pag_element'.
@@ -239,7 +241,7 @@ func (pe *PagElement) Delete(ctx context.Context, db DB) error {
 }
 
 // PagElementPaginatedByCreatedAt returns a cursor-paginated list of PagElement.
-func PagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction Direction, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
+func PagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
 	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -289,7 +291,7 @@ func PagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.T
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

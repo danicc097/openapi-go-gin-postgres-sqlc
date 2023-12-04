@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -183,7 +184,7 @@ func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 }
 
 // DummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of DummyJoin.
-func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID, direction Direction, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID, direction models.Direction, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -227,7 +228,7 @@ func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID Dum
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

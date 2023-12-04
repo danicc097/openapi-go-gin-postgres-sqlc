@@ -121,6 +121,20 @@ func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
 	}
 }
 
+// Defines values for Direction.
+const (
+	DirectionAsc  Direction = "asc"
+	DirectionDesc Direction = "desc"
+)
+
+// AllDirectionValues returns all possible values for Direction.
+func AllDirectionValues() []Direction {
+	return []Direction{
+		DirectionAsc,
+		DirectionDesc,
+	}
+}
+
 // ErrorCode Represents standardized HTTP error types.
 // Notes:
 // - 'Private' marks an error to be hidden in response.
@@ -262,20 +276,6 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	return []WorkItemRole{
 		WorkItemRolePreparer,
 		WorkItemRoleReviewer,
-	}
-}
-
-// Defines values for GetPaginatedNotificationsParamsDirection.
-const (
-	GetPaginatedNotificationsParamsDirectionAsc  GetPaginatedNotificationsParamsDirection = "asc"
-	GetPaginatedNotificationsParamsDirectionDesc GetPaginatedNotificationsParamsDirection = "desc"
-)
-
-// AllGetPaginatedNotificationsParamsDirectionValues returns all possible values for GetPaginatedNotificationsParamsDirection.
-func AllGetPaginatedNotificationsParamsDirectionValues() []GetPaginatedNotificationsParamsDirection {
-	return []GetPaginatedNotificationsParamsDirection{
-		GetPaginatedNotificationsParamsDirectionAsc,
-		GetPaginatedNotificationsParamsDirectionDesc,
 	}
 }
 
@@ -584,6 +584,9 @@ type DemoWorkItemsResponse struct {
 	WorkItemTypeID   int                    `json:"workItemTypeID"`
 }
 
+// Direction defines the model for Direction.
+type Direction string
+
 // ErrorCode Represents standardized HTTP error types.
 // Notes:
 // - 'Private' marks an error to be hidden in response.
@@ -780,13 +783,10 @@ type EventsParams struct {
 
 // GetPaginatedNotificationsParams defines parameters for GetPaginatedNotifications.
 type GetPaginatedNotificationsParams struct {
-	Limit     int                                      `form:"limit" json:"limit"`
-	Direction GetPaginatedNotificationsParamsDirection `form:"direction" json:"direction"`
-	Cursor    string                                   `form:"cursor" json:"cursor"`
+	Limit     int       `form:"limit" json:"limit"`
+	Direction Direction `form:"direction" json:"direction"`
+	Cursor    string    `form:"cursor" json:"cursor"`
 }
-
-// GetPaginatedNotificationsParamsDirection defines parameters for GetPaginatedNotifications.
-type GetPaginatedNotificationsParamsDirection string
 
 // GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
 type GetProjectWorkitemsParams struct {

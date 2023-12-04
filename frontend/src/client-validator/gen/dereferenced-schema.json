@@ -2,6 +2,14 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
+    "Direction": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "PaginatedNotificationsResponse": {
       "properties": {
         "items": {
@@ -3516,6 +3524,14 @@
     }
   },
   "properties": {
+    "Direction": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "PaginatedNotificationsResponse": {
       "properties": {
         "items": {

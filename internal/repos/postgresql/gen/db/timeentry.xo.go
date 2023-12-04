@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -309,7 +310,7 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 }
 
 // TimeEntryPaginatedByTimeEntryID returns a cursor-paginated list of TimeEntry.
-func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID, direction Direction, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID, direction models.Direction, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -377,7 +378,7 @@ func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID Tim
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

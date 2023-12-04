@@ -98,6 +98,8 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    /** @enum {string} */
+    Direction: "asc" | "desc";
     PaginatedNotificationsResponse: {
       items?: components["schemas"]["RestNotification"][] | null;
       page?: components["schemas"]["RestPaginationPage"];
@@ -608,7 +610,7 @@ export interface operations {
     parameters: {
       query: {
         limit: number;
-        direction: "asc" | "desc";
+        direction: components["schemas"]["Direction"];
         cursor: string;
       };
     };

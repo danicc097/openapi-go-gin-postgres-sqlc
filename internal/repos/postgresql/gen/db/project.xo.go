@@ -335,7 +335,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 }
 
 // ProjectPaginatedByProjectID returns a cursor-paginated list of Project.
-func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction Direction, opts ...ProjectSelectConfigOption) ([]Project, error) {
+func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ProjectSelectConfigOption) ([]Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -409,7 +409,7 @@ func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

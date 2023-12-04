@@ -2893,7 +2893,7 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field) string {
 
 		buf.WriteString(`
 		operator := "<"
-		if direction == DirectionAsc {
+		if direction == models.DirectionAsc {
 			operator = ">"
 		}
 	`)

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -194,7 +195,7 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 }
 
 // WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID returns a cursor-paginated list of WorkItemWorkItemTag.
-func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID WorkItemTagID, workItemID WorkItemID, direction Direction, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID WorkItemTagID, workItemID WorkItemID, direction models.Direction, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -250,7 +251,7 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

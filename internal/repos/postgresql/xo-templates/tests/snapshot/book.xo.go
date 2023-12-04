@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -298,7 +299,7 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 }
 
 // BookPaginatedByBookID returns a cursor-paginated list of Book.
-func BookPaginatedByBookID(ctx context.Context, db DB, bookID BookID, direction Direction, opts ...BookSelectConfigOption) ([]Book, error) {
+func BookPaginatedByBookID(ctx context.Context, db DB, bookID BookID, direction models.Direction, opts ...BookSelectConfigOption) ([]Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -366,7 +367,7 @@ func BookPaginatedByBookID(ctx context.Context, db DB, bookID BookID, direction 
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

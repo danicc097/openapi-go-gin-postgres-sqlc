@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -203,7 +204,7 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 }
 
 // MoviePaginatedByMovieID returns a cursor-paginated list of Movie.
-func MoviePaginatedByMovieID(ctx context.Context, db DB, movieID MovieID, direction Direction, opts ...MovieSelectConfigOption) ([]Movie, error) {
+func MoviePaginatedByMovieID(ctx context.Context, db DB, movieID MovieID, direction models.Direction, opts ...MovieSelectConfigOption) ([]Movie, error) {
 	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -247,7 +248,7 @@ func MoviePaginatedByMovieID(ctx context.Context, db DB, movieID MovieID, direct
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 

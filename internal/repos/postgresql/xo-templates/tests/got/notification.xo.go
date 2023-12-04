@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -228,7 +229,7 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 }
 
 // NotificationPaginatedByNotificationID returns a cursor-paginated list of Notification.
-func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID NotificationID, direction Direction, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID NotificationID, direction models.Direction, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -284,7 +285,7 @@ func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificat
 	}
 
 	operator := "<"
-	if direction == DirectionAsc {
+	if direction == models.DirectionAsc {
 		operator = ">"
 	}
 
