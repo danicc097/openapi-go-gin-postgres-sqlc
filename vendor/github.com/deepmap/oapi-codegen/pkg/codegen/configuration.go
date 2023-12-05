@@ -18,10 +18,14 @@ type Configuration struct {
 	OutputOptions     OutputOptions        `yaml:"output-options,omitempty"`
 	ImportMapping     map[string]string    `yaml:"import-mapping,omitempty"` // ImportMapping specifies the golang package path for each external reference
 	AdditionalImports []AdditionalImport   `yaml:"additional-imports,omitempty"`
+	// NoVCSVersionOverride allows overriding the version of the application for cases where no Version Control System (VCS) is available when building, for instance when using a Nix derivation.
+	// See documentation for how to use it in examples/no-vcs-version-override/README.md
+	NoVCSVersionOverride *string `yaml:"-"`
 }
 
 // GenerateOptions specifies which supported output formats to generate.
 type GenerateOptions struct {
+	IrisServer    bool `yaml:"iris-server,omitempty"`    // IrisServer specifies whether to generate iris server boilerplate
 	ChiServer     bool `yaml:"chi-server,omitempty"`     // ChiServer specifies whether to generate chi server boilerplate
 	FiberServer   bool `yaml:"fiber-server,omitempty"`   // FiberServer specifies whether to generate fiber server boilerplate
 	EchoServer    bool `yaml:"echo-server,omitempty"`    // EchoServer specifies whether to generate echo server boilerplate
@@ -75,6 +79,11 @@ type CompatibilityOptions struct {
 	// This resolves the behavior such that middlewares are chained in the order they are invoked.
 	// Please see https://github.com/deepmap/oapi-codegen/issues/841
 	ApplyGorillaMiddlewareFirstToLast bool `yaml:"apply-gorilla-middleware-first-to-last,omitempty"`
+	// CircularReferenceLimit allows controlling the limit for circular reference checking.
+	// In some OpenAPI specifications, we have a higher number of circular
+	// references than is allowed out-of-the-box, but can be tuned to allow
+	// traversing them.
+	CircularReferenceLimit int `yaml:"circular-reference-limit"`
 }
 
 // OutputOptions are used to modify the output code in some way.
@@ -111,6 +120,9 @@ func (o Configuration) Validate() error {
 
 	// Only one server type should be specified at a time.
 	nServers := 0
+	if o.Generate.IrisServer {
+		nServers++
+	}
 	if o.Generate.ChiServer {
 		nServers++
 	}
