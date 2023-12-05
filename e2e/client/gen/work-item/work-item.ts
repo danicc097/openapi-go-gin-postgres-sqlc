@@ -26,7 +26,7 @@ export const createWorkitem = (
 /**
  * @summary get workitem
  */
-export const getWorkitem = (id: number, options?: SecondParameter<typeof customInstance>) => {
+export const getWorkItem = (id: number, options?: SecondParameter<typeof customInstance>) => {
   return customInstance<DbWorkItem>({ url: `/workitem/${id}/`, method: 'get' }, options)
 }
 /**

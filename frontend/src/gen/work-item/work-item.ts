@@ -85,7 +85,7 @@ export const useCreateWorkitem = <TError = unknown, TContext = unknown>(options?
 /**
  * @summary get workitem
  */
-export const getWorkitem = (id: number, options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
+export const getWorkItem = (id: number, options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
   return customInstance<DbWorkItem>({ url: `/workitem/${id}/`, method: 'get', signal }, options)
 }
 
@@ -93,10 +93,10 @@ export const getGetWorkItemQueryKey = (id: number) => {
   return [`/workitem/${id}/`] as const
 }
 
-export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = unknown>(
+export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
   id: number,
   options?: {
-    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkitem>>, TError, TData>
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ) => {
@@ -104,26 +104,26 @@ export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<ty
 
   const queryKey = queryOptions?.queryKey ?? getGetWorkItemQueryKey(id)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkitem>>> = ({ signal }) =>
-    getWorkitem(id, requestOptions, signal)
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItem>>> = ({ signal }) =>
+    getWorkItem(id, requestOptions, signal)
 
   return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getWorkitem>>,
+    Awaited<ReturnType<typeof getWorkItem>>,
     TError,
     TData
   > & { queryKey: QueryKey }
 }
 
-export type GetWorkItemInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkitem>>>
+export type GetWorkItemInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>
 export type GetWorkItemInfiniteQueryError = unknown
 
 /**
  * @summary get workitem
  */
-export const useGetWorkItemInfinite = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = unknown>(
+export const useGetWorkItemInfinite = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
   id: number,
   options?: {
-    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkitem>>, TError, TData>
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -136,10 +136,10 @@ export const useGetWorkItemInfinite = <TData = Awaited<ReturnType<typeof getWork
   return query
 }
 
-export const getGetWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = unknown>(
+export const getGetWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
   id: number,
   options?: {
-    query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkitem>>, TError, TData>
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ) => {
@@ -147,26 +147,26 @@ export const getGetWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof get
 
   const queryKey = queryOptions?.queryKey ?? getGetWorkItemQueryKey(id)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkitem>>> = ({ signal }) =>
-    getWorkitem(id, requestOptions, signal)
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItem>>> = ({ signal }) =>
+    getWorkItem(id, requestOptions, signal)
 
   return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getWorkitem>>,
+    Awaited<ReturnType<typeof getWorkItem>>,
     TError,
     TData
   > & { queryKey: QueryKey }
 }
 
-export type GetWorkItemQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkitem>>>
+export type GetWorkItemQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>
 export type GetWorkItemQueryError = unknown
 
 /**
  * @summary get workitem
  */
-export const useGetWorkItem = <TData = Awaited<ReturnType<typeof getWorkitem>>, TError = unknown>(
+export const useGetWorkItem = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
   id: number,
   options?: {
-    query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkitem>>, TError, TData>
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
