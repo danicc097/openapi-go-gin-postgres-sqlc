@@ -33,11 +33,14 @@ func (license *License) UnmarshalJSON(data []byte) error {
 	type LicenseBis License
 	var x LicenseBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "name")
 	delete(x.Extensions, "url")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*license = License(x)
 	return nil
 }

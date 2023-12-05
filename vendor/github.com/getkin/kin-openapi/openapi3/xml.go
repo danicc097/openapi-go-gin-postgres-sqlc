@@ -46,7 +46,7 @@ func (xml *XML) UnmarshalJSON(data []byte) error {
 	type XMLBis XML
 	var x XMLBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "name")
@@ -54,6 +54,9 @@ func (xml *XML) UnmarshalJSON(data []byte) error {
 	delete(x.Extensions, "prefix")
 	delete(x.Extensions, "attribute")
 	delete(x.Extensions, "wrapped")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*xml = XML(x)
 	return nil
 }

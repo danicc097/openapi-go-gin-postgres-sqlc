@@ -6,26 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-
-	"github.com/go-openapi/jsonpointer"
 )
-
-type SecuritySchemes map[string]*SecuritySchemeRef
-
-// JSONLookup implements https://pkg.go.dev/github.com/go-openapi/jsonpointer#JSONPointable
-func (s SecuritySchemes) JSONLookup(token string) (interface{}, error) {
-	ref, ok := s[token]
-	if ref == nil || !ok {
-		return nil, fmt.Errorf("object has no field %q", token)
-	}
-
-	if ref.Ref != "" {
-		return &Ref{Ref: ref.Ref}, nil
-	}
-	return ref.Value, nil
-}
-
-var _ jsonpointer.JSONPointable = (*SecuritySchemes)(nil)
 
 // SecurityScheme is specified by OpenAPI/Swagger standard version 3.
 // See https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#security-scheme-object
@@ -107,7 +88,7 @@ func (ss *SecurityScheme) UnmarshalJSON(data []byte) error {
 	type SecuritySchemeBis SecurityScheme
 	var x SecuritySchemeBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "type")
@@ -118,6 +99,9 @@ func (ss *SecurityScheme) UnmarshalJSON(data []byte) error {
 	delete(x.Extensions, "bearerFormat")
 	delete(x.Extensions, "flows")
 	delete(x.Extensions, "openIdConnectUrl")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*ss = SecurityScheme(x)
 	return nil
 }
@@ -265,13 +249,16 @@ func (flows *OAuthFlows) UnmarshalJSON(data []byte) error {
 	type OAuthFlowsBis OAuthFlows
 	var x OAuthFlowsBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "implicit")
 	delete(x.Extensions, "password")
 	delete(x.Extensions, "clientCredentials")
 	delete(x.Extensions, "authorizationCode")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*flows = OAuthFlows(x)
 	return nil
 }
@@ -342,13 +329,16 @@ func (flow *OAuthFlow) UnmarshalJSON(data []byte) error {
 	type OAuthFlowBis OAuthFlow
 	var x OAuthFlowBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "authorizationUrl")
 	delete(x.Extensions, "tokenUrl")
 	delete(x.Extensions, "refreshUrl")
 	delete(x.Extensions, "scopes")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*flow = OAuthFlow(x)
 	return nil
 }

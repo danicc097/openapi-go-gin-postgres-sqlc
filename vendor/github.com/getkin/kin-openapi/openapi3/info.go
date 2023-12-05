@@ -47,7 +47,7 @@ func (info *Info) UnmarshalJSON(data []byte) error {
 	type InfoBis Info
 	var x InfoBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "title")
@@ -56,6 +56,9 @@ func (info *Info) UnmarshalJSON(data []byte) error {
 	delete(x.Extensions, "contact")
 	delete(x.Extensions, "license")
 	delete(x.Extensions, "version")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*info = Info(x)
 	return nil
 }
