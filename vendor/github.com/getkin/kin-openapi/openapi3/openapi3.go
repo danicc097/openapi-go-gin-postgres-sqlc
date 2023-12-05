@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/go-openapi/jsonpointer"
 )
 
 // T is the root of an OpenAPI v3 document
@@ -15,13 +17,40 @@ type T struct {
 	OpenAPI      string               `json:"openapi" yaml:"openapi"` // Required
 	Components   *Components          `json:"components,omitempty" yaml:"components,omitempty"`
 	Info         *Info                `json:"info" yaml:"info"`   // Required
-	Paths        Paths                `json:"paths" yaml:"paths"` // Required
+	Paths        *Paths               `json:"paths" yaml:"paths"` // Required
 	Security     SecurityRequirements `json:"security,omitempty" yaml:"security,omitempty"`
 	Servers      Servers              `json:"servers,omitempty" yaml:"servers,omitempty"`
 	Tags         Tags                 `json:"tags,omitempty" yaml:"tags,omitempty"`
 	ExternalDocs *ExternalDocs        `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
 
 	visited visitedComponent
+}
+
+var _ jsonpointer.JSONPointable = (*T)(nil)
+
+// JSONLookup implements https://pkg.go.dev/github.com/go-openapi/jsonpointer#JSONPointable
+func (doc *T) JSONLookup(token string) (interface{}, error) {
+	switch token {
+	case "openapi":
+		return doc.OpenAPI, nil
+	case "components":
+		return doc.Components, nil
+	case "info":
+		return doc.Info, nil
+	case "paths":
+		return doc.Paths, nil
+	case "security":
+		return doc.Security, nil
+	case "servers":
+		return doc.Servers, nil
+	case "tags":
+		return doc.Tags, nil
+	case "externalDocs":
+		return doc.ExternalDocs, nil
+	}
+
+	v, _, err := jsonpointer.GetForToken(doc.Extensions, token)
+	return v, err
 }
 
 // MarshalJSON returns the JSON encoding of T.
@@ -56,7 +85,7 @@ func (doc *T) UnmarshalJSON(data []byte) error {
 	type TBis T
 	var x TBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "openapi")
@@ -67,24 +96,31 @@ func (doc *T) UnmarshalJSON(data []byte) error {
 	delete(x.Extensions, "servers")
 	delete(x.Extensions, "tags")
 	delete(x.Extensions, "externalDocs")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*doc = T(x)
 	return nil
 }
 
 func (doc *T) AddOperation(path string, method string, operation *Operation) {
-	if doc.Paths == nil {
-		doc.Paths = make(Paths)
-	}
-	pathItem := doc.Paths[path]
+	pathItem := doc.Paths.Value(path)
 	if pathItem == nil {
 		pathItem = &PathItem{}
-		doc.Paths[path] = pathItem
+		if doc.Paths == nil {
+			doc.Paths = NewPaths()
+		}
+		doc.Paths.Set(path, pathItem)
 	}
 	pathItem.SetOperation(method, operation)
 }
 
 func (doc *T) AddServer(server *Server) {
 	doc.Servers = append(doc.Servers, server)
+}
+
+func (doc *T) AddServers(servers ...*Server) {
+	doc.Servers = append(doc.Servers, servers...)
 }
 
 // Validate returns an error if T does not comply with the OpenAPI spec.

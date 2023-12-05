@@ -259,7 +259,7 @@ func (o *CodeGen) analyzeSpec() error {
 		errors = append(errors, fmt.Errorf("error validating openapi spec: %w", err).Error())
 	}
 
-	for path, pi := range openapi.Paths {
+	for path, pi := range openapi.Paths.Map() {
 		ops := pi.Operations()
 		for method, op := range ops {
 			if op.OperationID == "" {

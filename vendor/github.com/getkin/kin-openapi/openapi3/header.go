@@ -8,23 +8,6 @@ import (
 	"github.com/go-openapi/jsonpointer"
 )
 
-type Headers map[string]*HeaderRef
-
-var _ jsonpointer.JSONPointable = (*Headers)(nil)
-
-// JSONLookup implements https://pkg.go.dev/github.com/go-openapi/jsonpointer#JSONPointable
-func (h Headers) JSONLookup(token string) (interface{}, error) {
-	ref, ok := h[token]
-	if ref == nil || !ok {
-		return nil, fmt.Errorf("object has no field %q", token)
-	}
-
-	if ref.Ref != "" {
-		return &Ref{Ref: ref.Ref}, nil
-	}
-	return ref.Value, nil
-}
-
 // Header is specified by OpenAPI/Swagger 3.0 standard.
 // See https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#header-object
 type Header struct {
@@ -89,7 +72,7 @@ func (header *Header) Validate(ctx context.Context, opts ...ValidationOption) er
 		return fmt.Errorf("header schema is invalid: %w", e)
 	}
 
-	if (header.Schema == nil) == (header.Content == nil) {
+	if (header.Schema == nil) == (len(header.Content) == 0) {
 		e := fmt.Errorf("parameter must contain exactly one of content and schema: %v", header)
 		return fmt.Errorf("header schema is invalid: %w", e)
 	}
@@ -100,6 +83,11 @@ func (header *Header) Validate(ctx context.Context, opts ...ValidationOption) er
 	}
 
 	if content := header.Content; content != nil {
+		e := errors.New("parameter content must only contain one entry")
+		if len(content) > 1 {
+			return fmt.Errorf("header content is invalid: %w", e)
+		}
+
 		if err := content.Validate(ctx); err != nil {
 			return fmt.Errorf("header content is invalid: %w", err)
 		}

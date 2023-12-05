@@ -12,8 +12,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/deepmap/oapi-codegen/pkg/codegen"
 	"github.com/deepmap/oapi-codegen/pkg/util"
+	"github.com/deepmap/oapi-codegen/v2/pkg/codegen"
 	"github.com/getkin/kin-openapi/openapi3"
 	"gopkg.in/yaml.v3"
 )

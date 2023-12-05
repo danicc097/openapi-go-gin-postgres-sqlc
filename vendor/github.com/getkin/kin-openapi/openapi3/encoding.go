@@ -68,7 +68,7 @@ func (encoding *Encoding) UnmarshalJSON(data []byte) error {
 	type EncodingBis Encoding
 	var x EncodingBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "contentType")
@@ -76,6 +76,9 @@ func (encoding *Encoding) UnmarshalJSON(data []byte) error {
 	delete(x.Extensions, "style")
 	delete(x.Extensions, "explode")
 	delete(x.Extensions, "allowReserved")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*encoding = Encoding(x)
 	return nil
 }
