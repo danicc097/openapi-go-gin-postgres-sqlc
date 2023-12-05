@@ -204,8 +204,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		authmw, // middleware needed here since it's generated code
 		provider,
 	)
-	_ = handlers
-	// RegisterHandlers(vg, handlers)
+	RegisterHandlers(vg, handlers)
 
 	conf.Logger.Info("Server started")
 
