@@ -40,7 +40,7 @@ func newAuthMiddleware(
 func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := c.Request.Header.Get(apiKeyHeaderKey)
-		auth := c.Request.Header.Get("Authorization")
+		auth := c.Request.Header.Get(authorizationHeaderKey)
 		if apiKey != "" {
 			u, err := m.svc.Authentication.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil || u == nil {
@@ -51,6 +51,9 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			}
 
 			ctxWithUser(c, u)
+
+			// TODO: generic ctxWithSpan(c, u) called on all handlers by default, and then
+			// in EnsureAuthenticated we getSpanFromCtx(c) and do span.SetAttributes(userIDAttribute(c))
 
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
@@ -64,7 +67,9 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 
 				return
 			}
+
 			ctxWithUser(c, u)
+
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
 			return
@@ -139,7 +144,7 @@ func verifyAuthentication(c context.Context, input *openapi3filter.Authenticatio
 			return fmt.Errorf("http security scheme only supports 'bearer' scheme")
 		}
 
-		authHeader, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey("Authorization")]
+		authHeader, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(authorizationHeaderKey)]
 		if !found {
 			return fmt.Errorf("authorization header missing")
 		}

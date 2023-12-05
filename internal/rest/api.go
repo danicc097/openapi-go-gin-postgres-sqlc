@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	apiKeyHeaderKey = "x-api-key"
+	apiKeyHeaderKey        = "x-api-key"
+	authorizationHeaderKey = "x-api-key"
 )
 
 // Handlers implements ServerInterface.
