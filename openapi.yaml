@@ -197,6 +197,237 @@ paths:
       tags:
         - admin
       x-required-role: admin
+  /project/{projectName}/team/:
+    post:
+      summary: create team.
+      !!merge <<: *x-require-authenticated
+      operationId: CreateTeam
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamCreateRequest'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        !!merge <<: *x-error-response
+      tags:
+        - team
+  /project/{projectName}/team/{id}/:
+    get:
+      summary: get team.
+      !!merge <<: *x-require-authenticated
+      operationId: GetTeam
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        !!merge <<: *x-error-response
+      tags:
+        - team
+    patch:
+      summary: update team.
+      !!merge <<: *x-require-authenticated
+      operationId: UpdateTeam
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamUpdateRequest'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        !!merge <<: *x-error-response
+      tags:
+        - team
+    delete:
+      summary: delete team.
+      !!merge <<: *x-require-authenticated
+      operationId: DeleteTeam
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - team
+  /project/{projectName}/workItemTag/:
+    post:
+      summary: create workitemtag.
+      !!merge <<: *x-require-authenticated
+      operationId: CreateWorkItemTag
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkItemTagCreateRequest'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemTag'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemTag
+  /project/{projectName}/workItemTag/{id}/:
+    get:
+      summary: get workitemtag.
+      !!merge <<: *x-require-authenticated
+      operationId: GetWorkItemTag
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemTag'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemTag
+    patch:
+      summary: update workitemtag.
+      !!merge <<: *x-require-authenticated
+      operationId: UpdateWorkItemTag
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkItemTagUpdateRequest'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemTag'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemTag
+    delete:
+      summary: delete workitemtag.
+      !!merge <<: *x-require-authenticated
+      operationId: DeleteWorkItemTag
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - workItemTag
+  /project/{projectName}/workItemType/:
+    post:
+      summary: create workitemtype.
+      !!merge <<: *x-require-authenticated
+      operationId: CreateWorkItemType
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkItemTypeCreateRequest'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemType'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemType
+  /project/{projectName}/workItemType/{id}/:
+    get:
+      summary: get workitemtype.
+      !!merge <<: *x-require-authenticated
+      operationId: GetWorkItemType
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemType'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemType
+    patch:
+      summary: update workitemtype.
+      !!merge <<: *x-require-authenticated
+      operationId: UpdateWorkItemType
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkItemTypeUpdateRequest'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemType'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemType
+    delete:
+      summary: delete workitemtype.
+      !!merge <<: *x-require-authenticated
+      operationId: DeleteWorkItemType
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - workItemType
   /user/me:
     get:
       summary: returns the logged in user
@@ -355,7 +586,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectBoardResponse'
+                $ref: '#/components/schemas/ProjectBoard'
       tags:
         - project
   # https://stackoverflow.com/a/32820784/11995537
@@ -395,30 +626,8 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/DemoWorkItemsResponse'
-                  - $ref: '#/components/schemas/DemoTwoWorkItemsResponse'
-      tags:
-        - project
-  /project/{projectName}/tag/:
-    post:
-      summary: create workitem tag
-      !!merge <<: *x-require-authenticated
-      operationId: CreateWorkitemTag
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkItemTagCreateRequest'
-        required: true
-      parameters:
-        - $ref: '#/components/parameters/ProjectName'
-      responses:
-        201:
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DbWorkItemTag'
+                  - $ref: '#/components/schemas/DemoWorkItems'
+                  - $ref: '#/components/schemas/DemoTwoWorkItems'
       tags:
         - project
   /workitem/:
@@ -441,14 +650,14 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/DbWorkItem'
       tags:
-        - workitem
+        - workItem
   /workitem/{id}/:
     get:
       summary: get workitem
       !!merge <<: *x-require-authenticated
       operationId: GetWorkitem
       parameters:
-        - $ref: '#/components/parameters/Serial'
+        - $ref: '#/components/parameters/SerialID'
       responses:
         200:
           description: Success.
@@ -458,13 +667,13 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/DbWorkItem'
       tags:
-        - workitem
+        - workItem
     patch:
       summary: update workitem
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkitem
       parameters:
-        - $ref: '#/components/parameters/Serial'
+        - $ref: '#/components/parameters/SerialID'
       responses:
         200:
           description: Success.
@@ -474,18 +683,18 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/DbWorkItem'
       tags:
-        - workitem
+        - workItem
     delete:
       summary: delete workitem
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkitem
       parameters:
-        - $ref: '#/components/parameters/Serial'
+        - $ref: '#/components/parameters/SerialID'
       responses:
         204:
           description: Success.
       tags:
-        - workitem
+        - workItem
   /workitem/{id}/comments/:
     post:
       summary: create workitem comment
@@ -498,7 +707,7 @@ paths:
               $ref: '#/components/schemas/WorkItemCommentCreateRequest'
         required: true
       parameters:
-        - $ref: '#/components/parameters/Serial'
+        - $ref: '#/components/parameters/SerialID'
       responses:
         200:
           description: Success.
@@ -508,7 +717,7 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/DbWorkItemComment'
       tags:
-        - workitem
+        - workItem
 components:
   parameters:
     ProjectName:
@@ -522,7 +731,7 @@ components:
       example: demo
       style: simple
     UUID: *x-uuidParameter
-    Serial:
+    SerialID:
       description: integer identifier
       explode: false
       in: path
@@ -533,6 +742,147 @@ components:
       example: 41131
       style: simple
   schemas:
+    WorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      required:
+        - color
+        - description
+        - name
+        - projectID
+      type: object
+      x-postgen-struct: RestWorkItemTagCreateRequest
+    WorkItemTagUpdateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      type: object
+      x-postgen-struct: RestWorkItemTagUpdateRequest
+    WorkItemTag: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        workItemTagID:
+          type: integer
+      required:
+        - workItemTagID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-postgen-struct: RestWorkItemTag
+    WorkItemTypeCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      required:
+        - color
+        - description
+        - name
+        - projectID
+      type: object
+      x-postgen-struct: RestWorkItemTypeCreateRequest
+    WorkItemTypeUpdateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      type: object
+      x-postgen-struct: RestWorkItemTypeUpdateRequest
+    WorkItemType: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemTypeID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-postgen-struct: RestWorkItemType
+    TeamCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      required:
+        - description
+        - name
+        - projectID
+      type: object
+      x-postgen-struct: RestTeamCreateRequest
+    TeamUpdateRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+      x-postgen-struct: RestTeamUpdateRequest
+    Team: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        teamID:
+          type: integer
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - teamID
+        - projectID
+        - name
+        - description
+        - createdAt
+        - updatedAt
+      type: object
+      x-postgen-struct: RestTeam
     Direction:
       type: string
       enum:
@@ -582,8 +932,6 @@ components:
           type: integer
         name:
           type: string
-        projectID:
-          type: integer
         stepOrder:
           type: integer
         timeTrackable:
@@ -656,8 +1004,6 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
         workItemTagID:
           type: integer
       required:
@@ -677,8 +1023,6 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
         workItemTypeID:
           type: integer
       required:
@@ -861,7 +1205,7 @@ components:
         - path
         - name
       type: object
-    DemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+    DemoWorkItems: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -932,8 +1276,8 @@ components:
         - updatedAt
         - demoWorkItem
       type: object
-      x-postgen-struct: RestDemoWorkItemsResponse
-    DemoTwoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+      x-postgen-struct: RestDemoWorkItems
+    DemoTwoWorkItems: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -1004,7 +1348,7 @@ components:
         - updatedAt
         - demoTwoWorkItem
       type: object
-      x-postgen-struct: RestDemoTwoWorkItemsResponse
+      x-postgen-struct: RestDemoTwoWorkItems
     InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         tags:
@@ -1019,14 +1363,14 @@ components:
           type: array
       type: object
       x-postgen-struct: RestProjectBoardCreateRequest
-    ProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
+    ProjectBoard: # Generated from internal structs. DO NOT EDIT.
       properties:
         projectName:
           $ref: '#/components/schemas/Project'
       required:
         - projectName
       type: object
-      x-postgen-struct: RestProjectBoardResponse
+      x-postgen-struct: RestProjectBoard
     User: # Generated from internal structs. DO NOT EDIT.
       properties:
         apiKey:
@@ -1336,23 +1680,6 @@ components:
         - updatedAt
       type: object
       x-postgen-struct: DbWorkItem
-    WorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-      required:
-        - color
-        - description
-        - name
-      type: object
-      x-postgen-struct: RestWorkItemTagCreateRequest
     DemoTwoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         base:
@@ -1456,12 +1783,11 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          $ref: '#/components/schemas/DbProjectID'
       required:
         - color
         - description
         - name
+        - projectID
       type: object
     DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
       type: string

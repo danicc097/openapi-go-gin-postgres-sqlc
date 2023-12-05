@@ -85,6 +85,56 @@ export type DemoTwoKanbanSteps = 'Received'
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
 
+export interface WorkItemTagCreateRequest {
+  color: string
+  description: string
+  name: string
+}
+export interface WorkItemTagUpdateRequest {
+  color?: string
+  description?: string
+  name?: string
+}
+export interface WorkItemTag {
+  color: string
+  description: string
+  name: string
+  workItemTagID: number
+}
+export interface WorkItemTypeCreateRequest {
+  color: string
+  description: string
+  name: string
+}
+export interface WorkItemTypeUpdateRequest {
+  color?: string
+  description?: string
+  name?: string
+}
+export interface WorkItemType {
+  color: string
+  description: string
+  name: string
+  workItemTypeID: number
+}
+export interface TeamCreateRequest {
+  description: string
+  name: string
+  projectID: number
+}
+export interface TeamUpdateRequest {
+  description?: string
+  name?: string
+  projectID?: number
+}
+export interface Team {
+  createdAt: string
+  description: string
+  name: string
+  projectID: number
+  teamID: number
+  updatedAt: string
+}
 export interface PaginatedNotificationsResponse {
   items: RestNotification[] | null
   page: RestPaginationPage
@@ -123,7 +173,6 @@ export interface DbKanbanStep {
   description: string
   kanbanStepID: number
   name: string
-  projectID: number
   stepOrder: number
   timeTrackable: boolean
 }
@@ -159,14 +208,12 @@ export interface DbWorkItemTag {
   color: string
   description: string
   name: string
-  projectID: number
   workItemTagID: number
 }
 export interface DbWorkItemType {
   color: string
   description: string
   name: string
-  projectID: number
   workItemTypeID: number
 }
 export interface DbDemoWorkItem {
@@ -212,7 +259,7 @@ export interface DbWorkItemComment {
   workItemCommentID: number
   workItemID: number
 }
-export interface DemoWorkItemsResponse {
+export interface DemoWorkItems {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -232,7 +279,7 @@ export interface DemoWorkItemsResponse {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface DemoTwoWorkItemsResponse {
+export interface DemoTwoWorkItems {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -265,15 +312,13 @@ export interface DbWorkItemTagCreateParams {
   color: string
   description: string
   name: string
-  projectID?: DbProjectID
 }
-export interface DbProjectID {}
 export interface DbTeamCreateParams {
   description: string
   name: string
   projectID: number
 }
-export interface ProjectBoardResponse {
+export interface ProjectBoard {
   projectName: Project
 }
 export interface User {
@@ -394,12 +439,6 @@ export interface DbWorkItem {
   workItemID: number
   workItemTypeID: number
 }
-export interface WorkItemTagCreateRequest {
-  color: string
-  description: string
-  name: string
-  projectID?: number
-}
 export interface WorkItemCommentCreateRequest {
   message: string
   userID: DbUserID
@@ -411,6 +450,7 @@ export interface DbActivityCreateParams {
   name: string
   projectID?: number
 }
+export interface DbProjectID {}
 export interface DbWorkItemTypeID {}
 export interface DbUserNotification {
   notificationID: number

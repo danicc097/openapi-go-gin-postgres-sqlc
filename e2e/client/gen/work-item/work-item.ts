@@ -59,8 +59,3 @@ export const createWorkitemComment = (
     options,
   )
 }
-export type CreateWorkitemResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
-export type GetWorkitemResult = NonNullable<Awaited<ReturnType<typeof getWorkitem>>>
-export type UpdateWorkitemResult = NonNullable<Awaited<ReturnType<typeof updateWorkitem>>>
-export type DeleteWorkitemResult = NonNullable<Awaited<ReturnType<typeof deleteWorkitem>>>
-export type CreateWorkitemCommentResult = NonNullable<Awaited<ReturnType<typeof createWorkitemComment>>>

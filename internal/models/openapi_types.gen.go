@@ -330,7 +330,6 @@ type DbKanbanStep struct {
 	Description   string `json:"description"`
 	KanbanStepID  int    `json:"kanbanStepID"`
 	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
 	StepOrder     int    `json:"stepOrder"`
 	TimeTrackable bool   `json:"timeTrackable"`
 }
@@ -477,16 +476,14 @@ type DbWorkItemTag struct {
 	Color         string `json:"color"`
 	Description   string `json:"description"`
 	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
 	WorkItemTagID int    `json:"workItemTagID"`
 }
 
 // DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
 type DbWorkItemTagCreateParams struct {
-	Color       string       `json:"color"`
-	Description string       `json:"description"`
-	Name        string       `json:"name"`
-	ProjectID   *DbProjectID `json:"projectID,omitempty"`
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
 }
 
 // DbWorkItemType defines the model for DbWorkItemType.
@@ -494,7 +491,6 @@ type DbWorkItemType struct {
 	Color          string `json:"color"`
 	Description    string `json:"description"`
 	Name           string `json:"name"`
-	ProjectID      int    `json:"projectID"`
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
@@ -528,8 +524,8 @@ type DemoTwoWorkItemCreateRequest struct {
 // DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
 type DemoTwoWorkItemTypes string
 
-// DemoTwoWorkItemsResponse defines the model for DemoTwoWorkItemsResponse.
-type DemoTwoWorkItemsResponse struct {
+// DemoTwoWorkItems defines the model for DemoTwoWorkItems.
+type DemoTwoWorkItems struct {
 	ClosedAt         *time.Time             `json:"closedAt"`
 	CreatedAt        time.Time              `json:"createdAt"`
 	DeletedAt        *time.Time             `json:"deletedAt"`
@@ -562,8 +558,8 @@ type DemoWorkItemCreateRequest struct {
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
 type DemoWorkItemTypes string
 
-// DemoWorkItemsResponse defines the model for DemoWorkItemsResponse.
-type DemoWorkItemsResponse struct {
+// DemoWorkItems defines the model for DemoWorkItems.
+type DemoWorkItems struct {
 	ClosedAt         *time.Time             `json:"closedAt"`
 	CreatedAt        time.Time              `json:"createdAt"`
 	DeletedAt        *time.Time             `json:"deletedAt"`
@@ -636,8 +632,8 @@ type PaginatedNotificationsResponse struct {
 // Project defines the model for Project.
 type Project string
 
-// ProjectBoardResponse defines the model for ProjectBoardResponse.
-type ProjectBoardResponse struct {
+// ProjectBoard defines the model for ProjectBoard.
+type ProjectBoard struct {
 	ProjectName Project `json:"projectName"`
 }
 
@@ -685,6 +681,30 @@ type ServicesMember struct {
 	// Role represents a database 'work_item_role'
 	Role   WorkItemRole `json:"role"`
 	UserID DbUserID     `json:"userID"`
+}
+
+// Team defines the model for Team.
+type Team struct {
+	CreatedAt   time.Time `json:"createdAt"`
+	Description string    `json:"description"`
+	Name        string    `json:"name"`
+	ProjectID   int       `json:"projectID"`
+	TeamID      int       `json:"teamID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+// TeamCreateRequest defines the model for TeamCreateRequest.
+type TeamCreateRequest struct {
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
+}
+
+// TeamUpdateRequest defines the model for TeamUpdateRequest.
+type TeamUpdateRequest struct {
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
 }
 
 // Topics string identifiers for SSE event listeners.
@@ -759,19 +779,55 @@ type WorkItemCreateRequest struct {
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
+// WorkItemTag defines the model for WorkItemTag.
+type WorkItemTag struct {
+	Color         string `json:"color"`
+	Description   string `json:"description"`
+	Name          string `json:"name"`
+	WorkItemTagID int    `json:"workItemTagID"`
+}
+
 // WorkItemTagCreateRequest defines the model for WorkItemTagCreateRequest.
 type WorkItemTagCreateRequest struct {
 	Color       string `json:"color"`
 	Description string `json:"description"`
 	Name        string `json:"name"`
-	ProjectID   *int   `json:"projectID,omitempty"`
+}
+
+// WorkItemTagUpdateRequest defines the model for WorkItemTagUpdateRequest.
+type WorkItemTagUpdateRequest struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+}
+
+// WorkItemType defines the model for WorkItemType.
+type WorkItemType struct {
+	Color          string `json:"color"`
+	Description    string `json:"description"`
+	Name           string `json:"name"`
+	WorkItemTypeID int    `json:"workItemTypeID"`
+}
+
+// WorkItemTypeCreateRequest defines the model for WorkItemTypeCreateRequest.
+type WorkItemTypeCreateRequest struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+}
+
+// WorkItemTypeUpdateRequest defines the model for WorkItemTypeUpdateRequest.
+type WorkItemTypeUpdateRequest struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
 }
 
 // ProjectName defines the model for ProjectName.
 type ProjectName = Project
 
-// Serial defines the model for Serial.
-type Serial = int
+// SerialID defines the model for SerialID.
+type SerialID = int
 
 // UUID defines the model for UUID.
 type UUID = uuid.UUID
@@ -800,8 +856,23 @@ type UpdateProjectConfigJSONRequestBody = ProjectConfig
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 type InitializeProjectJSONRequestBody = InitializeProjectRequest
 
-// CreateWorkitemTagJSONRequestBody defines body for CreateWorkitemTag for application/json ContentType.
-type CreateWorkitemTagJSONRequestBody = WorkItemTagCreateRequest
+// CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
+type CreateTeamJSONRequestBody = TeamCreateRequest
+
+// UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
+type UpdateTeamJSONRequestBody = TeamUpdateRequest
+
+// CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
+type CreateWorkItemTagJSONRequestBody = WorkItemTagCreateRequest
+
+// UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
+type UpdateWorkItemTagJSONRequestBody = WorkItemTagUpdateRequest
+
+// CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
+type CreateWorkItemTypeJSONRequestBody = WorkItemTypeCreateRequest
+
+// UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
+type UpdateWorkItemTypeJSONRequestBody = WorkItemTypeUpdateRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest

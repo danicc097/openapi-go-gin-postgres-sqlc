@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DemoWorkItemsResponse } from './demoWorkItemsResponse'
-import type { DemoTwoWorkItemsResponse } from './demoTwoWorkItemsResponse'
+import type { DemoWorkItems } from './demoWorkItems'
+import type { DemoTwoWorkItems } from './demoTwoWorkItems'
 
-export type GetProjectWorkitems200 = DemoWorkItemsResponse | DemoTwoWorkItemsResponse
+export type GetProjectWorkitems200 = DemoWorkItems | DemoTwoWorkItems

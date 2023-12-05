@@ -110,6 +110,7 @@ func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {
 	type tag = string
 	const foo = tag("foo")
 	const bar = tag("bar")
+	const barCamelCase = tag("barCamelCase")
 
 	type handlerFiles map[tag]tagHandlerFile
 
@@ -173,8 +174,8 @@ func (h *Handlers) Baz() {}
 		},
 		{
 			name:        "no correct file created yet",
-			errContains: []string{`api_bar.go for new tag "bar"`, "missing file"},
-			operations:  map[tag][]string{foo: {"Foo"}, bar: {"Bar"}},
+			errContains: []string{`api_bar_camel_case.go for new tag "barCamelCase"`, "missing file"},
+			operations:  map[tag][]string{foo: {"Foo"}, barCamelCase: {"Bar"}},
 			files: func() handlerFiles {
 				content := `package rest
 

@@ -4,6 +4,15 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  WorkItemTagCreateRequest,
+  WorkItemTagUpdateRequest,
+  WorkItemTag,
+  WorkItemTypeCreateRequest,
+  WorkItemTypeUpdateRequest,
+  WorkItemType,
+  TeamCreateRequest,
+  TeamUpdateRequest,
+  Team,
   Direction,
   PaginatedNotificationsResponse,
   DbActivity,
@@ -19,10 +28,10 @@ import {
   DbWorkItemComment,
   ProjectConfig,
   ProjectConfigField,
-  DemoWorkItemsResponse,
-  DemoTwoWorkItemsResponse,
+  DemoWorkItems,
+  DemoTwoWorkItems,
   InitializeProjectRequest,
-  ProjectBoardResponse,
+  ProjectBoard,
   User,
   HTTPValidationError,
   ErrorCode,
@@ -38,7 +47,6 @@ import {
   UuidUUID,
   WorkItemCreateRequest,
   DbWorkItem,
-  WorkItemTagCreateRequest,
   DemoTwoWorkItemCreateRequest,
   DemoWorkItemCreateRequest,
   WorkItemCommentCreateRequest,
@@ -72,6 +80,27 @@ import {
 } from './models'
 
 export const schemaDefinitions = {
+  WorkItemTagCreateRequest: info<WorkItemTagCreateRequest>(
+    'WorkItemTagCreateRequest',
+    '#/definitions/WorkItemTagCreateRequest',
+  ),
+  WorkItemTagUpdateRequest: info<WorkItemTagUpdateRequest>(
+    'WorkItemTagUpdateRequest',
+    '#/definitions/WorkItemTagUpdateRequest',
+  ),
+  WorkItemTag: info<WorkItemTag>('WorkItemTag', '#/definitions/WorkItemTag'),
+  WorkItemTypeCreateRequest: info<WorkItemTypeCreateRequest>(
+    'WorkItemTypeCreateRequest',
+    '#/definitions/WorkItemTypeCreateRequest',
+  ),
+  WorkItemTypeUpdateRequest: info<WorkItemTypeUpdateRequest>(
+    'WorkItemTypeUpdateRequest',
+    '#/definitions/WorkItemTypeUpdateRequest',
+  ),
+  WorkItemType: info<WorkItemType>('WorkItemType', '#/definitions/WorkItemType'),
+  TeamCreateRequest: info<TeamCreateRequest>('TeamCreateRequest', '#/definitions/TeamCreateRequest'),
+  TeamUpdateRequest: info<TeamUpdateRequest>('TeamUpdateRequest', '#/definitions/TeamUpdateRequest'),
+  Team: info<Team>('Team', '#/definitions/Team'),
   Direction: info<Direction>('Direction', '#/definitions/Direction'),
   PaginatedNotificationsResponse: info<PaginatedNotificationsResponse>(
     'PaginatedNotificationsResponse',
@@ -90,16 +119,13 @@ export const schemaDefinitions = {
   DbWorkItemComment: info<DbWorkItemComment>('DbWorkItemComment', '#/definitions/DbWorkItemComment'),
   ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
   ProjectConfigField: info<ProjectConfigField>('ProjectConfigField', '#/definitions/ProjectConfigField'),
-  DemoWorkItemsResponse: info<DemoWorkItemsResponse>('DemoWorkItemsResponse', '#/definitions/DemoWorkItemsResponse'),
-  DemoTwoWorkItemsResponse: info<DemoTwoWorkItemsResponse>(
-    'DemoTwoWorkItemsResponse',
-    '#/definitions/DemoTwoWorkItemsResponse',
-  ),
+  DemoWorkItems: info<DemoWorkItems>('DemoWorkItems', '#/definitions/DemoWorkItems'),
+  DemoTwoWorkItems: info<DemoTwoWorkItems>('DemoTwoWorkItems', '#/definitions/DemoTwoWorkItems'),
   InitializeProjectRequest: info<InitializeProjectRequest>(
     'InitializeProjectRequest',
     '#/definitions/InitializeProjectRequest',
   ),
-  ProjectBoardResponse: info<ProjectBoardResponse>('ProjectBoardResponse', '#/definitions/ProjectBoardResponse'),
+  ProjectBoard: info<ProjectBoard>('ProjectBoard', '#/definitions/ProjectBoard'),
   User: info<User>('User', '#/definitions/User'),
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
   ErrorCode: info<ErrorCode>('ErrorCode', '#/definitions/ErrorCode'),
@@ -115,10 +141,6 @@ export const schemaDefinitions = {
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   WorkItemCreateRequest: info<WorkItemCreateRequest>('WorkItemCreateRequest', '#/definitions/WorkItemCreateRequest'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
-  WorkItemTagCreateRequest: info<WorkItemTagCreateRequest>(
-    'WorkItemTagCreateRequest',
-    '#/definitions/WorkItemTagCreateRequest',
-  ),
   DemoTwoWorkItemCreateRequest: info<DemoTwoWorkItemCreateRequest>(
     'DemoTwoWorkItemCreateRequest',
     '#/definitions/DemoTwoWorkItemCreateRequest',

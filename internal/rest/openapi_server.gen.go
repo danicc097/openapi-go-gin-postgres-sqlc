@@ -51,9 +51,42 @@ type ServerInterface interface {
 	// creates initial data (teams, tags...) for a new project
 	// (POST /project/{projectName}/initialize)
 	InitializeProject(c *gin.Context, projectName externalRef0.ProjectName)
-	// create workitem tag
-	// (POST /project/{projectName}/tag/)
-	CreateWorkitemTag(c *gin.Context, projectName externalRef0.ProjectName)
+	// create team.
+	// (POST /project/{projectName}/team/)
+	CreateTeam(c *gin.Context, projectName externalRef0.ProjectName)
+	// delete team.
+	// (DELETE /project/{projectName}/team/{id}/)
+	DeleteTeam(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// get team.
+	// (GET /project/{projectName}/team/{id}/)
+	GetTeam(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// update team.
+	// (PATCH /project/{projectName}/team/{id}/)
+	UpdateTeam(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// create workitemtag.
+	// (POST /project/{projectName}/workItemTag/)
+	CreateWorkItemTag(c *gin.Context, projectName externalRef0.ProjectName)
+	// delete workitemtag.
+	// (DELETE /project/{projectName}/workItemTag/{id}/)
+	DeleteWorkItemTag(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// get workitemtag.
+	// (GET /project/{projectName}/workItemTag/{id}/)
+	GetWorkItemTag(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// update workitemtag.
+	// (PATCH /project/{projectName}/workItemTag/{id}/)
+	UpdateWorkItemTag(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// create workitemtype.
+	// (POST /project/{projectName}/workItemType/)
+	CreateWorkItemType(c *gin.Context, projectName externalRef0.ProjectName)
+	// delete workitemtype.
+	// (DELETE /project/{projectName}/workItemType/{id}/)
+	DeleteWorkItemType(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// get workitemtype.
+	// (GET /project/{projectName}/workItemType/{id}/)
+	GetWorkItemType(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// update workitemtype.
+	// (PATCH /project/{projectName}/workItemType/{id}/)
+	UpdateWorkItemType(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
 	// returns workitems for a project
 	// (GET /project/{projectName}/workitems)
 	GetProjectWorkitems(c *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams)
@@ -74,16 +107,16 @@ type ServerInterface interface {
 	CreateWorkitem(c *gin.Context)
 	// delete workitem
 	// (DELETE /workitem/{id}/)
-	DeleteWorkitem(c *gin.Context, id externalRef0.Serial)
+	DeleteWorkitem(c *gin.Context, id externalRef0.SerialID)
 	// get workitem
 	// (GET /workitem/{id}/)
-	GetWorkitem(c *gin.Context, id externalRef0.Serial)
+	GetWorkitem(c *gin.Context, id externalRef0.SerialID)
 	// update workitem
 	// (PATCH /workitem/{id}/)
-	UpdateWorkitem(c *gin.Context, id externalRef0.Serial)
+	UpdateWorkitem(c *gin.Context, id externalRef0.SerialID)
 	// create workitem comment
 	// (POST /workitem/{id}/comments/)
-	CreateWorkitemComment(c *gin.Context, id externalRef0.Serial)
+	CreateWorkitemComment(c *gin.Context, id externalRef0.SerialID)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -321,8 +354,8 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 	siw.Handler.InitializeProject(c, projectName)
 }
 
-// CreateWorkitemTag operation with its own middleware.
-func (siw *ServerInterfaceWrapper) CreateWorkitemTag(c *gin.Context) {
+// CreateTeam operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateTeam(c *gin.Context) {
 
 	var err error
 
@@ -339,7 +372,319 @@ func (siw *ServerInterfaceWrapper) CreateWorkitemTag(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.CreateWorkitemTag(c, projectName)
+	siw.Handler.CreateTeam(c, projectName)
+}
+
+// DeleteTeam operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteTeam(c, projectName, id)
+}
+
+// GetTeam operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetTeam(c, projectName, id)
+}
+
+// UpdateTeam operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateTeam(c, projectName, id)
+}
+
+// CreateWorkItemTag operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateWorkItemTag(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateWorkItemTag(c, projectName)
+}
+
+// DeleteWorkItemTag operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteWorkItemTag(c, projectName, id)
+}
+
+// GetWorkItemTag operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetWorkItemTag(c, projectName, id)
+}
+
+// UpdateWorkItemTag operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateWorkItemTag(c, projectName, id)
+}
+
+// CreateWorkItemType operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateWorkItemType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateWorkItemType(c, projectName)
+}
+
+// DeleteWorkItemType operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteWorkItemType(c, projectName, id)
+}
+
+// GetWorkItemType operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetWorkItemType(c, projectName, id)
+}
+
+// UpdateWorkItemType operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateWorkItemType(c, projectName, id)
 }
 
 // GetProjectWorkitems operation with its own middleware.
@@ -471,7 +816,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Serial
+	var id externalRef0.SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -492,7 +837,7 @@ func (siw *ServerInterfaceWrapper) GetWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Serial
+	var id externalRef0.SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -513,7 +858,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Serial
+	var id externalRef0.SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -534,7 +879,7 @@ func (siw *ServerInterfaceWrapper) CreateWorkitemComment(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Serial
+	var id externalRef0.SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -626,9 +971,64 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(InitializeProject), wrapper.InitializeProject)...,
 	)...)
 
-	router.POST(options.BaseURL+"/project/:projectName/tag/", append(
-		wrapper.Handler.authMiddlewares(CreateWorkitemTag),
-		append(wrapper.Handler.middlewares(CreateWorkitemTag), wrapper.CreateWorkitemTag)...,
+	router.POST(options.BaseURL+"/project/:projectName/team/", append(
+		wrapper.Handler.authMiddlewares(CreateTeam),
+		append(wrapper.Handler.middlewares(CreateTeam), wrapper.CreateTeam)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/project/:projectName/team/:id/", append(
+		wrapper.Handler.authMiddlewares(DeleteTeam),
+		append(wrapper.Handler.middlewares(DeleteTeam), wrapper.DeleteTeam)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:projectName/team/:id/", append(
+		wrapper.Handler.authMiddlewares(GetTeam),
+		append(wrapper.Handler.middlewares(GetTeam), wrapper.GetTeam)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/project/:projectName/team/:id/", append(
+		wrapper.Handler.authMiddlewares(UpdateTeam),
+		append(wrapper.Handler.middlewares(UpdateTeam), wrapper.UpdateTeam)...,
+	)...)
+
+	router.POST(options.BaseURL+"/project/:projectName/workItemTag/", append(
+		wrapper.Handler.authMiddlewares(CreateWorkItemTag),
+		append(wrapper.Handler.middlewares(CreateWorkItemTag), wrapper.CreateWorkItemTag)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/project/:projectName/workItemTag/:id/", append(
+		wrapper.Handler.authMiddlewares(DeleteWorkItemTag),
+		append(wrapper.Handler.middlewares(DeleteWorkItemTag), wrapper.DeleteWorkItemTag)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:projectName/workItemTag/:id/", append(
+		wrapper.Handler.authMiddlewares(GetWorkItemTag),
+		append(wrapper.Handler.middlewares(GetWorkItemTag), wrapper.GetWorkItemTag)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/project/:projectName/workItemTag/:id/", append(
+		wrapper.Handler.authMiddlewares(UpdateWorkItemTag),
+		append(wrapper.Handler.middlewares(UpdateWorkItemTag), wrapper.UpdateWorkItemTag)...,
+	)...)
+
+	router.POST(options.BaseURL+"/project/:projectName/workItemType/", append(
+		wrapper.Handler.authMiddlewares(CreateWorkItemType),
+		append(wrapper.Handler.middlewares(CreateWorkItemType), wrapper.CreateWorkItemType)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/project/:projectName/workItemType/:id/", append(
+		wrapper.Handler.authMiddlewares(DeleteWorkItemType),
+		append(wrapper.Handler.middlewares(DeleteWorkItemType), wrapper.DeleteWorkItemType)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:projectName/workItemType/:id/", append(
+		wrapper.Handler.authMiddlewares(GetWorkItemType),
+		append(wrapper.Handler.middlewares(GetWorkItemType), wrapper.GetWorkItemType)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/project/:projectName/workItemType/:id/", append(
+		wrapper.Handler.authMiddlewares(UpdateWorkItemType),
+		append(wrapper.Handler.middlewares(UpdateWorkItemType), wrapper.UpdateWorkItemType)...,
 	)...)
 
 	router.GET(options.BaseURL+"/project/:projectName/workitems", append(

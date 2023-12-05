@@ -9,11 +9,9 @@ import type {
   InitializeProjectRequest,
   DbProject,
   ProjectConfig,
-  ProjectBoardResponse,
+  ProjectBoard,
   GetProjectWorkitems200,
   GetProjectWorkitemsParams,
-  DbWorkItemTag,
-  WorkItemTagCreateRequest,
 } from '.././model'
 import { customInstance } from '../../api/mutator'
 
@@ -75,7 +73,7 @@ export const updateProjectConfig = (
  * @summary returns board data for a project
  */
 export const getProjectBoard = (projectName: 'demo' | 'demo_two', options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<ProjectBoardResponse>({ url: `/project/${projectName}/board`, method: 'get' }, options)
+  return customInstance<ProjectBoard>({ url: `/project/${projectName}/board`, method: 'get' }, options)
 }
 /**
  * @summary returns workitems for a project
@@ -90,28 +88,9 @@ export const getProjectWorkitems = (
     options,
   )
 }
-/**
- * @summary create workitem tag
- */
-export const createWorkitemTag = (
-  projectName: 'demo' | 'demo_two',
-  workItemTagCreateRequest: WorkItemTagCreateRequest,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<DbWorkItemTag>(
-    {
-      url: `/project/${projectName}/tag/`,
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      data: workItemTagCreateRequest,
-    },
-    options,
-  )
-}
 export type InitializeProjectResult = NonNullable<Awaited<ReturnType<typeof initializeProject>>>
 export type GetProjectResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
 export type GetProjectConfigResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
 export type UpdateProjectConfigResult = NonNullable<Awaited<ReturnType<typeof updateProjectConfig>>>
 export type GetProjectBoardResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
 export type GetProjectWorkitemsResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
-export type CreateWorkitemTagResult = NonNullable<Awaited<ReturnType<typeof createWorkitemTag>>>

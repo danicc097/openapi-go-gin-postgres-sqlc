@@ -10,6 +10,5 @@ export interface DbWorkItemType {
   color: string
   description: string
   name: string
-  projectID: number
   workItemTypeID: number
 }

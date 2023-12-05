@@ -12,7 +12,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// create workitem.
+// create workitem comment.
+func (h *Handlers) CreateWorkitemComment(c *gin.Context, id int) {
+	ctx := c.Request.Context()
+
+	defer newOTelSpanWithUser(c).End()
+
+	// caller := getUserFromCtx(c)
+	tx := getTxFromCtx(c)
+	defer tx.Rollback(ctx)
+
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
 func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -53,7 +65,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 			return
 		}
 
-		res = DemoWorkItemsResponse{
+		res = DemoWorkItems{
 			WorkItem:             *workItem,
 			SharedWorkItemFields: SharedWorkItemFields{},
 			DemoWorkItem:         *workItem.DemoWorkItemJoin,
@@ -71,7 +83,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 			return
 		}
 
-		res = DemoTwoWorkItemsResponse{
+		res = DemoTwoWorkItems{
 			WorkItem:             *workItem,
 			SharedWorkItemFields: SharedWorkItemFields{},
 			DemoTwoWorkItem:      *workItem.DemoTwoWorkItemJoin,
@@ -83,56 +95,4 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, res)
-}
-
-// delete workitem.
-func (h *Handlers) DeleteWorkitem(c *gin.Context, id int) {
-	ctx := c.Request.Context()
-
-	defer newOTelSpanWithUser(c).End()
-
-	// caller := getUserFromCtx(c)
-	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
-
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-// get workitem.
-func (h *Handlers) GetWorkitem(c *gin.Context, id int) {
-	ctx := c.Request.Context()
-
-	defer newOTelSpanWithUser(c).End()
-
-	// caller := getUserFromCtx(c)
-	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
-
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-// update workitem.
-func (h *Handlers) UpdateWorkitem(c *gin.Context, id int) {
-	ctx := c.Request.Context()
-
-	defer newOTelSpanWithUser(c).End()
-
-	// caller := getUserFromCtx(c)
-	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
-
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-// create workitem comment.
-func (h *Handlers) CreateWorkitemComment(c *gin.Context, id int) {
-	ctx := c.Request.Context()
-
-	defer newOTelSpanWithUser(c).End()
-
-	// caller := getUserFromCtx(c)
-	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
-
-	c.JSON(http.StatusNotImplemented, "not implemented")
 }

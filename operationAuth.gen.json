@@ -34,6 +34,66 @@
     "role": "admin",
     "requiresAuthentication": true
   },
+  "CreateTeam": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetTeam": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateTeam": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteTeam": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "CreateWorkItemTag": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetWorkItemTag": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateWorkItemTag": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteWorkItemTag": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "CreateWorkItemType": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetWorkItemType": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateWorkItemType": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteWorkItemType": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
   "GetCurrentUser": {
     "scopes": null,
     "role": null,
@@ -84,11 +144,6 @@
     "requiresAuthentication": true
   },
   "GetProjectWorkitems": {
-    "scopes": null,
-    "role": null,
-    "requiresAuthentication": true
-  },
-  "CreateWorkitemTag": {
     "scopes": null,
     "role": null,
     "requiresAuthentication": true

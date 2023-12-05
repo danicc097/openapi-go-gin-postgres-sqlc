@@ -55,9 +55,15 @@ const (
 	tagsAnnot annotation = `"tags"`
 
 	propertiesJoinOperator = ","
-	// ignore fields when marshalling to JSON
-	propertyPrivate          = "private"
-	propertyFieldNotRequired = "not-required"
+	// propertyJSONPrivate sets a json:"-" tag.
+	propertyJSONPrivate = "private"
+	// propertyOpenAPINotRequired marks schema field as not required
+	propertyOpenAPINotRequired = "not-required"
+	// propertyOpenAPIHidden makes schema generator skip over field.
+	// Useful when we don't need a property in db (Create|Update)Params to
+	// be set by client or we want to replace it with a more user-friendly field
+	// that gets converted to the db field
+	propertyOpenAPIHidden = "hidden"
 
 	// example: "properties":private,another-property && "type":models.Project && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
 )
@@ -311,6 +317,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Short:      "g",
 				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}"
 {{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
+{{- end }}
+{{- if .hidden }} openapi-go:"ignore"
 {{- end }}
 {{- if .required }} required:"true"
 {{- end }}
@@ -2161,7 +2169,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 				for _, col := range m2mExtraCols {
 					tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"", camel(col.GoName), col.SQLName)
 					properties := extractPropertiesAnnotation(col.Annotations[propertiesAnnot])
-					isPrivate := contains(properties, propertyPrivate)
+					isPrivate := contains(properties, propertyJSONPrivate)
 					if !isPrivate {
 						tag = tag + ` required:"true"`
 					}
@@ -3716,8 +3724,9 @@ func (f *Funcs) typefn(typ string) string {
 // field generates a field definition for a struct.
 func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
-	isPrivate := contains(field.Properties, propertyPrivate)
-	notRequired := contains(field.Properties, propertyFieldNotRequired)
+	isPrivate := contains(field.Properties, propertyJSONPrivate)
+	notRequired := contains(field.Properties, propertyOpenAPINotRequired)
+	hidden := contains(field.Properties, propertyOpenAPIHidden)
 	isPointer := strings.HasPrefix(field.Type, "*")
 	af := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
@@ -3757,6 +3766,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		"required":      !isPointer && !isPrivate && (!notRequired || !skipExtraTags),
 		"skipExtraTags": skipExtraTags,
 		"nullable":      nullable,
+		"hidden":        hidden,
 	}); err != nil {
 		return "", err
 	}
@@ -3931,7 +3941,7 @@ func analyzeField(table Table, field Field) analyzedField {
 // fieldmapping generates field mappings from a struct to another.
 func (f *Funcs) fieldmapping(field Field, recv string, public bool) (string, error) {
 	if public {
-		if contains(field.Properties, propertyPrivate) {
+		if contains(field.Properties, propertyJSONPrivate) {
 			return "", nil
 		}
 	}

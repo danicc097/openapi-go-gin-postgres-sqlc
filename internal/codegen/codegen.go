@@ -20,6 +20,7 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/kenshaw/snaker"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
@@ -378,7 +379,8 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 	var errs []string
 
 	for tag := range o.operations {
-		handlersPath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", tag))
+		snakeTag := snaker.CamelToSnake(tag)
+		handlersPath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag))
 		if _, err := os.Stat(handlersPath); err != nil {
 			errs = append(errs, fmt.Sprintf("missing file %s for new tag %q", handlersPath, tag))
 		}
@@ -418,11 +420,12 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 		for _, opID := range functions {
 			if contains(restOfOpIDs, opID) {
 				correspondingTag := o.findTagByOpID(opID)
+				snakeTag := snaker.CamelToSnake(correspondingTag)
 
-				correctFilePath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", correspondingTag))
+				correctFilePath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag))
 				content, err := os.ReadFile(correctFilePath)
 				if err != nil {
-					errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", opID, correspondingTag))
+					errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", opID, snakeTag))
 
 					break fn
 				}
@@ -432,7 +435,10 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 					return fmt.Errorf("failed to parse file %s: %w", tagFilePath, err)
 				}
 
-				fmt.Printf("Moving handler %q to correct file (%s -> %s)", opID, path.Base(tagFilePath), path.Base(correctFilePath))
+				if path.Base(tagFilePath) == path.Base(correctFilePath) {
+					continue fn
+				}
+				fmt.Printf("Moving handler %q to correct file (%s -> %s)\n", opID, path.Base(tagFilePath), path.Base(correctFilePath))
 				removeAndAppendHandlersMethod(file, correctFile, opID)
 
 				err = writeASTToFile(correctFilePath, correctFile)
@@ -449,11 +455,19 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 			}
 		}
 
-		for _, opID := range o.operations[tag] {
-			if !contains(functions, opID) {
-				errs = append(errs, fmt.Sprintf("missing function method for operation ID %q in api_%s.go", opID, tag))
-			}
-		}
+		// TODO: we could store the set of operation ids that have to be implemented and their paths instead
+		// in opids.gen.tmp
+		// and then in exit-cleanup remove all *.gen.tmp
+		// of erroring out
+		// then once client-server is generated we parse ast of internal/rest/openapi_server.gen.go
+		// and get append a method the same way we removeAndAppendHandlersMethod
+
+		// for _, opID := range o.operations[tag] {
+		// 	snakeTag := snaker.CamelToSnake(tag)
+		// 	if !contains(functions, opID) {
+		// 		errs = append(errs, fmt.Sprintf("missing function method for operation ID %q in api_%s.go", opID, snakeTag))
+		// 	}
+		// }
 	}
 
 	if len(errs) > 0 {

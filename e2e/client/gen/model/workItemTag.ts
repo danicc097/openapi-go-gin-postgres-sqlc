@@ -6,4 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type DemoWorkItemsResponseMetadata = { [key: string]: unknown }
+export interface WorkItemTag {
+  color: string
+  description: string
+  name: string
+  workItemTagID: number
+}

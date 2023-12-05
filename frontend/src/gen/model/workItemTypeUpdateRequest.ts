@@ -5,8 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Project } from './project'
 
-export interface ProjectBoardResponse {
-  projectName: Project
+export interface WorkItemTypeUpdateRequest {
+  color?: string
+  description?: string
+  name?: string
 }

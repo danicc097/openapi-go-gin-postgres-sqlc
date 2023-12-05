@@ -25,7 +25,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemType struct {
 	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                         // work_item_type_id
-	ProjectID      ProjectID      `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
+	ProjectID      ProjectID      `json:"projectID" db:"project_id" openapi-go:"ignore" required:"true" nullable:"false"`                 // project_id
 	Name           string         `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
 	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
 	Color          string         `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
@@ -39,7 +39,7 @@ type WorkItemTypeCreateParams struct {
 	Color       string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description string    `json:"description" required:"true" nullable:"false"`                                        // description
 	Name        string    `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID   ProjectID `json:"projectID" nullable:"false"`                                                          // project_id
+	ProjectID   ProjectID `json:"projectID" openapi-go:"ignore" required:"true" nullable:"false"`                      // project_id
 }
 
 type WorkItemTypeID int
@@ -61,7 +61,7 @@ type WorkItemTypeUpdateParams struct {
 	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description *string    `json:"description" nullable:"false"`                                        // description
 	Name        *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID   *ProjectID `json:"projectID" nullable:"false"`                                          // project_id
+	ProjectID   *ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"`                      // project_id
 }
 
 // SetUpdateParams updates public.work_item_types struct fields with the specified params.
