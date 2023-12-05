@@ -28,7 +28,7 @@ export const getCreateWorkitemMock = () =>
     },
   ])
 
-export const getGetWorkitemMock = () =>
+export const getGetWorkItemMock = () =>
   faker.helpers.arrayElement([
     {
       closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
@@ -85,7 +85,7 @@ export const getWorkItemMSW = () => [
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getCreateWorkitemMock()))
   }),
   rest.get('*/workitem/:id/', (_req, res, ctx) => {
-    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetWorkitemMock()))
+    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetWorkItemMock()))
   }),
   rest.patch('*/workitem/:id/', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getUpdateWorkitemMock()))

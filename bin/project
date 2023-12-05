@@ -1954,7 +1954,7 @@ exit-cleanup() {
   # shared cleanup regardless of gen success
   git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
   rm -f backup-gen-stash-dummy.txt
-  mv .gitignore.bak .gitignore || true
+  mv .gitignore.bak .gitignore &>/dev/null || true
   git branch -D "$gen_backup_branch" &>/dev/null || true
 
   cd "$starting_cwd" || true

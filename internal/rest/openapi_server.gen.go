@@ -110,7 +110,7 @@ type ServerInterface interface {
 	DeleteWorkitem(c *gin.Context, id externalRef0.SerialID)
 	// get workitem
 	// (GET /workitem/{id}/)
-	GetWorkitem(c *gin.Context, id externalRef0.SerialID)
+	GetWorkItem(c *gin.Context, id externalRef0.SerialID)
 	// update workitem
 	// (PATCH /workitem/{id}/)
 	UpdateWorkitem(c *gin.Context, id externalRef0.SerialID)
@@ -831,8 +831,8 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 	siw.Handler.DeleteWorkitem(c, id)
 }
 
-// GetWorkitem operation with its own middleware.
-func (siw *ServerInterfaceWrapper) GetWorkitem(c *gin.Context) {
+// GetWorkItem operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 
 	var err error
 
@@ -849,7 +849,7 @@ func (siw *ServerInterfaceWrapper) GetWorkitem(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetWorkitem(c, id)
+	siw.Handler.GetWorkItem(c, id)
 }
 
 // UpdateWorkitem operation with its own middleware.
@@ -1067,8 +1067,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	)...)
 
 	router.GET(options.BaseURL+"/workitem/:id/", append(
-		wrapper.Handler.authMiddlewares(GetWorkitem),
-		append(wrapper.Handler.middlewares(GetWorkitem), wrapper.GetWorkitem)...,
+		wrapper.Handler.authMiddlewares(GetWorkItem),
+		append(wrapper.Handler.middlewares(GetWorkItem), wrapper.GetWorkItem)...,
 	)...)
 
 	router.PATCH(options.BaseURL+"/workitem/:id/", append(

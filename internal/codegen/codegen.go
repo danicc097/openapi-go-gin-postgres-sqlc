@@ -5,10 +5,13 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"go/ast"
 	"go/format"
 	"go/parser"
+	"go/printer"
 	"go/token"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -455,12 +458,18 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 			}
 		}
 
-		// TODO: we could store the set of operation ids that have to be implemented and their paths instead
-		// in opids.gen.tmp
-		// and then in exit-cleanup remove all *.gen.tmp
-		// of erroring out
-		// then once client-server is generated we parse ast of internal/rest/openapi_server.gen.go
-		// and get append a method the same way we removeAndAppendHandlersMethod
+		/* TODO: we call this after gen.client-server as `codegen implement-server`
+		 which will:
+		   - load o.operations
+			 - call subset of code only to find missing functino methods
+		  - parse ast of ast of internal/rest/openapi_server.gen.go and return method map.
+			- append method to ast of "api_%s.go" as in removeAndAppendHandlersMethod
+			`func (h *Handlers) %s {
+					c.JSON(http.StatusNotImplemented, "not implemented")
+					}
+			- we can even keep comments up to date in the rest of files (they include paths and methods so are useful for context)
+			`
+		*/
 
 		// for _, opID := range o.operations[tag] {
 		// 	snakeTag := snaker.CamelToSnake(tag)
@@ -475,6 +484,78 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 	}
 
 	return nil
+}
+
+func (o *CodeGen) ImplementServer() error {
+	fmt.Printf("o.getServerInterfaceMethods(): %v\n", o.getServerInterfaceMethods())
+
+	return nil
+}
+
+// getServerInterfaceMethods returns the generated server interface methods
+// indexed by operation id.
+func (o *CodeGen) getServerInterfaceMethods() map[string]string {
+	src, err := os.ReadFile("internal/rest/openapi_server.gen.go")
+	if err != nil {
+		log.Fatalf("Error reading server interface file: %s", err)
+	}
+
+	// `import-mapping` oapi config generates unnamed imports
+	src = bytes.ReplaceAll(src, []byte("externalRef0"), []byte("models"))
+
+	fset := token.NewFileSet()
+	node, err := parser.ParseFile(fset, "src.go", string(src), parser.AllErrors|parser.ParseComments)
+	if err != nil {
+		log.Fatalf("Error parsing server interface file: %s", err)
+	}
+
+	serverInterfaceMethods := map[string]string{}
+
+	for _, decl := range node.Decls {
+		genDecl, ok := decl.(*ast.GenDecl)
+		if !ok {
+			continue
+		}
+		for _, spec := range genDecl.Specs {
+			typeSpec, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
+			}
+			interfaceType, ok := typeSpec.Type.(*ast.InterfaceType)
+			if !ok {
+				continue
+			}
+			for _, method := range interfaceType.Methods.List {
+				operationID := method.Names[0].Name
+				t, ok := method.Type.(*ast.FuncType)
+				if !ok {
+					continue
+				}
+				params := extractParameters(t)
+				fullMethod := fmt.Sprintf("%s(%s)", operationID, params)
+				serverInterfaceMethods[operationID] = fullMethod
+			}
+		}
+	}
+
+	return serverInterfaceMethods
+}
+
+func extractParameters(ft *ast.FuncType) string {
+	var params []string
+	for _, field := range ft.Params.List {
+		for _, name := range field.Names {
+			params = append(params, fmt.Sprintf("%s %s", name.Name, exprToString(field.Type)))
+		}
+	}
+	return strings.Join(params, ", ")
+}
+
+// exprToString converts an AST expression to its string representation.
+func exprToString(expr ast.Expr) string {
+	var buf strings.Builder
+	printer.Fprint(&buf, token.NewFileSet(), expr)
+	return buf.String()
 }
 
 // getOperationIDDifference returns the difference of all operation IDs

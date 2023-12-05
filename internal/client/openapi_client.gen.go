@@ -221,8 +221,8 @@ type ClientInterface interface {
 	// DeleteWorkitem request
 	DeleteWorkitem(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetWorkitem request
-	GetWorkitem(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetWorkItem request
+	GetWorkItem(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateWorkitem request
 	UpdateWorkitem(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1031,8 +1031,8 @@ func (c *Client) DeleteWorkitem(ctx context.Context, id SerialID, reqEditors ...
 	}
 }
 
-func (c *Client) GetWorkitem(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetWorkitemRequest(c.Server, id)
+func (c *Client) GetWorkItem(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWorkItemRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -2402,8 +2402,8 @@ func NewDeleteWorkitemRequest(server string, id SerialID) (*http.Request, error)
 	return req, nil
 }
 
-// NewGetWorkitemRequest generates requests for GetWorkitem
-func NewGetWorkitemRequest(server string, id SerialID) (*http.Request, error) {
+// NewGetWorkItemRequest generates requests for GetWorkItem
+func NewGetWorkItemRequest(server string, id SerialID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2675,8 +2675,8 @@ type ClientWithResponsesInterface interface {
 	// DeleteWorkitem request
 	DeleteWorkitemWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error)
 
-	// GetWorkitem request
-	GetWorkitemWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*GetWorkitemResponse, error)
+	// GetWorkItem request
+	GetWorkItemWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*GetWorkItemResponse, error)
 
 	// UpdateWorkitem request
 	UpdateWorkitemWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error)
@@ -3376,7 +3376,7 @@ func (r DeleteWorkitemResponse) StatusCode() int {
 	return 0
 }
 
-type GetWorkitemResponse struct {
+type GetWorkItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -3385,7 +3385,7 @@ type GetWorkitemResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetWorkitemResponse) Status() string {
+func (r GetWorkItemResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3393,7 +3393,7 @@ func (r GetWorkitemResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetWorkitemResponse) StatusCode() int {
+func (r GetWorkItemResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3815,13 +3815,13 @@ func (c *ClientWithResponses) DeleteWorkitemWithResponse(ctx context.Context, id
 	return ParseDeleteWorkitemResponse(rsp)
 }
 
-// GetWorkitemWithResponse request returning *GetWorkitemResponse
-func (c *ClientWithResponses) GetWorkitemWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*GetWorkitemResponse, error) {
-	rsp, err := c.GetWorkitem(ctx, id, reqEditors...)
+// GetWorkItemWithResponse request returning *GetWorkItemResponse
+func (c *ClientWithResponses) GetWorkItemWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*GetWorkItemResponse, error) {
+	rsp, err := c.GetWorkItem(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetWorkitemResponse(rsp)
+	return ParseGetWorkItemResponse(rsp)
 }
 
 // UpdateWorkitemWithResponse request returning *UpdateWorkitemResponse
@@ -4660,15 +4660,15 @@ func ParseDeleteWorkitemResponse(rsp *http.Response) (*DeleteWorkitemResponse, e
 	return response, nil
 }
 
-// ParseGetWorkitemResponse parses an HTTP response from a GetWorkitemWithResponse call
-func ParseGetWorkitemResponse(rsp *http.Response) (*GetWorkitemResponse, error) {
+// ParseGetWorkItemResponse parses an HTTP response from a GetWorkItemWithResponse call
+func ParseGetWorkItemResponse(rsp *http.Response) (*GetWorkItemResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetWorkitemResponse{
+	response := &GetWorkItemResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

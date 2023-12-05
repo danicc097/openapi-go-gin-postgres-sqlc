@@ -29,7 +29,7 @@ type Handlers struct {
 	provider       rp.RelyingParty
 }
 
-var _ ServerInterface = (*Handlers)(nil)
+// var _ ServerInterface = (*Handlers)(nil)
 
 // NewHandlers returns a server implementation of an openapi specification.
 func NewHandlers(

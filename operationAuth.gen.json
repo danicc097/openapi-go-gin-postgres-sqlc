@@ -153,7 +153,7 @@
     "role": null,
     "requiresAuthentication": true
   },
-  "GetWorkitem": {
+  "GetWorkItem": {
     "scopes": null,
     "role": null,
     "requiresAuthentication": true

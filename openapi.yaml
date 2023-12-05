@@ -655,7 +655,7 @@ paths:
     get:
       summary: get workitem
       !!merge <<: *x-require-authenticated
-      operationId: GetWorkitem
+      operationId: GetWorkItem
       parameters:
         - $ref: '#/components/parameters/SerialID'
       responses:

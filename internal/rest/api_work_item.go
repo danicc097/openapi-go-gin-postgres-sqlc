@@ -13,7 +13,7 @@ import (
 )
 
 // create workitem comment.
-func (h *Handlers) CreateWorkitemComment(c *gin.Context, id int) {
+func (h *Handlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
 	ctx := c.Request.Context()
 
 	defer newOTelSpanWithUser(c).End()
