@@ -487,22 +487,12 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 			}
 		}
 
-		/* TODO: we call this after gen.client-server as `codegen implement-server`
-		 which will:
-		   - load o.operations
-			 - call subset of code only to find missing functino methods
-		  - parse ast of ast of internal/rest/openapi_server.gen.go and return method map.
-			- append method to ast of "api_%s.go" as in removeAndAppendHandlersMethod
-			`func (h *Handlers) %s {
-					c.JSON(http.StatusNotImplemented, "not implemented")
-					}
-			- we can even keep comments up to date in the rest of files (they include paths and methods so are useful for context)
-			`
-		*/
-
 		for _, opID := range o.operations[tag] {
 			if !contains(functions, opID) {
-				// FIXME: not catching everything... just teams now
+				// NOTE: not worth syncing all opIDs to keep signature changes in sync, we get decent enough errors
+				// to handle bad interface implementations, such as
+				// have CreateTeam(*gin.Context, models.Project)
+				// want CreateTeam(*gin.Context, models.Project, int)
 				o.missingOperationIDImplementations[opID] = struct{}{}
 			}
 		}
